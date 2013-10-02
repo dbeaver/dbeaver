@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,21 +31,21 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 
 /**
- * DB2 Authorisations on Modules
+ * DB2 Authorisations on Procedures
  * 
  * @author Denis Forveille
  */
-public class DB2AuthModule extends DB2AuthBase {
+public class DB2AuthProcedure extends DB2AuthBase {
 
     private DB2AuthHeldType execute;
 
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2AuthModule(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Module db2Module, ResultSet resultSet)
+    public DB2AuthProcedure(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Routine db2Routine, ResultSet resultSet)
         throws DBException
     {
-        super(monitor, db2Grantee, db2Module, resultSet);
+        super(monitor, db2Grantee, db2Routine, resultSet);
 
         this.execute = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "EXECUTEAUTH"));
     }

@@ -349,10 +349,20 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return procedureCache.getObjects(monitor, this);
     }
 
+    public DB2Routine getProcedure(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return procedureCache.getObject(monitor, this, name);
+    }
+
     @Association
     public Collection<DB2Routine> getUDFs(DBRProgressMonitor monitor) throws DBException
     {
         return udfCache.getObjects(monitor, this);
+    }
+
+    public DB2Routine getUDF(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return udfCache.getObject(monitor, this, name);
     }
 
     @Association

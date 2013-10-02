@@ -24,11 +24,14 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Package;
+import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -50,7 +53,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
 
     private static String SQL;
 
-    // TODO DF: Add missing auth: routines, schemas, columns
+    // TODO DF: Add auths for Methods
 
     static {
 
@@ -58,7 +61,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         // 8 cols : CONTROLAUTH ALTERAUTH DELETEAUTH INDEXAUTH INSERTAUTH REFAUTH SELECTAUTH UPDATEAUTH
         // 6 cols : USAGEAUTH ALTERINAUTH CREATEINAUTH DROPINAUTH BINDAUTH EXECUTEAUTH
 
-        StringBuilder sb = new StringBuilder(2048);
+        StringBuilder sb = new StringBuilder(4096);
 
         sb.append("SELECT GRANTOR,GRANTORTYPE");
         sb.append("     , '").append(DB2ObjectType.TABLE.name()).append("' AS OBJ_TYPE");
@@ -71,58 +74,28 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
 
         sb.append(" UNION ALL ");
 
+        // COLNAME in USAGEAUTH
+        // PRIVTYPE in ALTERINAUTH
+        // GRANTABLE in ALTERINAUTH
         sb.append("SELECT GRANTOR,GRANTORTYPE");
-        sb.append("     , '").append(DB2ObjectType.INDEX.name()).append("' AS OBJ_TYPE");
-        sb.append("     , INDSCHEMA AS OBJ_SCHEMA, INDNAME AS OBJ_NAME");
-        sb.append("     , CONTROLAUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
-        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL");
-        sb.append("  FROM SYSCAT.INDEXAUTH");
+        sb.append("     , '").append(DB2ObjectType.COLUMN.name()).append("' AS OBJ_TYPE");
+        sb.append("     , TABSCHEMA AS OBJ_SCHEMA, TABNAME AS OBJ_NAME");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , COLNAME, PRIVTYPE, GRANTABLE, NULL, NULL, NULL");
+        sb.append("  FROM SYSCAT.COLAUTH ");
         sb.append(" WHERE GRANTEETYPE = ?");// 3
         sb.append("   AND GRANTEE = ?");// 4
 
         sb.append(" UNION ALL ");
 
         sb.append("SELECT GRANTOR,GRANTORTYPE");
-        sb.append("     , '").append(DB2ObjectType.SEQUENCE.name()).append("' AS OBJ_TYPE");
-        sb.append("     , SEQSCHEMA AS OBJ_SCHEMA, SEQNAME AS OBJ_NAME");
-        sb.append("     , NULL, ALTERAUTH, NULL, NULL, NULL, NULL, NULL, NULL");
-        sb.append("     , USAGEAUTH, NULL, NULL, NULL, NULL, NULL");
-        sb.append("  FROM SYSCAT.SEQUENCEAUTH");
+        sb.append("     , '").append(DB2ObjectType.INDEX.name()).append("' AS OBJ_TYPE");
+        sb.append("     , INDSCHEMA AS OBJ_SCHEMA, INDNAME AS OBJ_NAME");
+        sb.append("     , CONTROLAUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("  FROM SYSCAT.INDEXAUTH");
         sb.append(" WHERE GRANTEETYPE = ?");// 5
         sb.append("   AND GRANTEE = ?");// 6
-
-        sb.append(" UNION ALL ");
-
-        sb.append("SELECT GRANTOR,GRANTORTYPE");
-        sb.append("     , '").append(DB2ObjectType.TABLESPACE.name()).append("' AS OBJ_TYPE");
-        sb.append("     , NULL AS OBJ_SCHEMA, TBSPACE AS OBJ_NAME");
-        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
-        sb.append("     , USEAUTH, NULL, NULL, NULL, NULL, NULL");
-        sb.append("  FROM SYSCAT.TBSPACEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 7
-        sb.append("   AND GRANTEE = ?");// 8
-
-        sb.append(" UNION ALL ");
-
-        sb.append("SELECT GRANTOR,GRANTORTYPE");
-        sb.append("     , '").append(DB2ObjectType.SCHEMA.name()).append("' AS OBJ_TYPE");
-        sb.append("     , NULL AS OBJ_SCHEMA, SCHEMANAME AS OBJ_NAME");
-        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
-        sb.append("     , NULL, ALTERINAUTH, CREATEINAUTH, DROPINAUTH, NULL, NULL");
-        sb.append("  FROM SYSCAT.SCHEMAAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 9
-        sb.append("   AND GRANTEE = ?");// 10
-
-        sb.append(" UNION ALL ");
-
-        sb.append("SELECT GRANTOR,GRANTORTYPE");
-        sb.append("     , '").append(DB2ObjectType.PACKAGE.name()).append("' AS OBJ_TYPE");
-        sb.append("     , PKGSCHEMA AS OBJ_SCHEMA, PKGNAME AS OBJ_NAME");
-        sb.append("     , CONTROLAUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
-        sb.append("     , NULL, NULL, NULL, NULL, BINDAUTH, EXECUTEAUTH");
-        sb.append("  FROM SYSCAT.PACKAGEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 11
-        sb.append("   AND GRANTEE = ?");// 12
 
         sb.append(" UNION ALL ");
 
@@ -132,8 +105,65 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , NULL, NULL, NULL, NULL, NULL, EXECUTEAUTH");
         sb.append("  FROM SYSCAT.MODULEAUTH");
+        sb.append(" WHERE GRANTEETYPE = ?");// 7
+        sb.append("   AND GRANTEE = ?");// 8
+
+        sb.append(" UNION ALL ");
+
+        sb.append("SELECT GRANTOR,GRANTORTYPE");
+        sb.append("     , '").append(DB2ObjectType.PACKAGE.name()).append("' AS OBJ_TYPE");
+        sb.append("     , PKGSCHEMA AS OBJ_SCHEMA, PKGNAME AS OBJ_NAME");
+        sb.append("     , CONTROLAUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , NULL, NULL, NULL, NULL, BINDAUTH, EXECUTEAUTH");
+        sb.append("  FROM SYSCAT.PACKAGEAUTH");
+        sb.append(" WHERE GRANTEETYPE = ?");// 9
+        sb.append("   AND GRANTEE = ?");// 10
+
+        sb.append(" UNION ALL ");
+
+        // ROUTINETYPE in USAGEAUTH
+        sb.append("SELECT GRANTOR,GRANTORTYPE");
+        sb.append("     , '").append(DB2ObjectType.PROCEDURE.name()).append("' AS OBJ_TYPE"); // PROCEDURE or FUNCTION or METHOD
+        sb.append("     , SCHEMA AS OBJ_SCHEMA, SPECIFICNAME AS OBJ_NAME");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , ROUTINETYPE, NULL, NULL, NULL, NULL, EXECUTEAUTH");
+        sb.append("  FROM SYSCAT.ROUTINEAUTH");
+        sb.append(" WHERE GRANTEETYPE = ?");// 11
+        sb.append("   AND GRANTEE = ?");// 12
+        sb.append("   AND ROUTINETYPE NOT IN ('" + DB2RoutineType.M.name() + "')"); // DF: Exclude Methods for now
+
+        sb.append(" UNION ALL ");
+
+        sb.append("SELECT GRANTOR,GRANTORTYPE");
+        sb.append("     , '").append(DB2ObjectType.SCHEMA.name()).append("' AS OBJ_TYPE");
+        sb.append("     , NULL AS OBJ_SCHEMA, SCHEMANAME AS OBJ_NAME");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , NULL, ALTERINAUTH, CREATEINAUTH, DROPINAUTH, NULL, NULL");
+        sb.append("  FROM SYSCAT.SCHEMAAUTH");
         sb.append(" WHERE GRANTEETYPE = ?");// 13
         sb.append("   AND GRANTEE = ?");// 14
+
+        sb.append(" UNION ALL ");
+
+        sb.append("SELECT GRANTOR,GRANTORTYPE");
+        sb.append("     , '").append(DB2ObjectType.SEQUENCE.name()).append("' AS OBJ_TYPE");
+        sb.append("     , SEQSCHEMA AS OBJ_SCHEMA, SEQNAME AS OBJ_NAME");
+        sb.append("     , NULL, ALTERAUTH, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , USAGEAUTH, NULL, NULL, NULL, NULL, NULL");
+        sb.append("  FROM SYSCAT.SEQUENCEAUTH");
+        sb.append(" WHERE GRANTEETYPE = ?");// 15
+        sb.append("   AND GRANTEE = ?");// 16
+
+        sb.append(" UNION ALL ");
+
+        sb.append("SELECT GRANTOR,GRANTORTYPE");
+        sb.append("     , '").append(DB2ObjectType.TABLESPACE.name()).append("' AS OBJ_TYPE");
+        sb.append("     , NULL AS OBJ_SCHEMA, TBSPACE AS OBJ_NAME");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , USEAUTH, NULL, NULL, NULL, NULL, NULL");
+        sb.append("  FROM SYSCAT.TBSPACEAUTH");
+        sb.append(" WHERE GRANTEETYPE = ?");// 17
+        sb.append("   AND GRANTEE = ?");// 18
 
         sb.append(" UNION ALL ");
 
@@ -145,8 +175,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , READAUTH AS USAGEAUTH, WRITEAUTH AS ALTERINAUTH, NULL, NULL, NULL, NULL");
         sb.append("  FROM SYSCAT.VARIABLEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 15
-        sb.append("   AND GRANTEE = ?");// 16
+        sb.append(" WHERE GRANTEETYPE = ?");// 19
+        sb.append("   AND GRANTEE = ?");// 20
 
         sb.append(" ORDER BY OBJ_SCHEMA, OBJ_NAME, OBJ_TYPE");
         sb.append(" WITH UR");
@@ -177,6 +207,10 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         dbStat.setString(14, userName);
         dbStat.setString(15, userType);
         dbStat.setString(16, userName);
+        dbStat.setString(17, userType);
+        dbStat.setString(18, userName);
+        dbStat.setString(19, userType);
+        dbStat.setString(20, userName);
         return dbStat;
     }
 
@@ -193,6 +227,50 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         DB2ObjectType objectType = CommonUtils.valueOf(DB2ObjectType.class, JDBCUtils.safeGetString(resultSet, "OBJ_TYPE"));
 
         switch (objectType) {
+        case COLUMN:
+            String columnName = JDBCUtils.safeGetStringTrimmed(resultSet, "USAGEAUTH");
+            DB2TableColumn db2TableColumn = DB2Utils.findColumnxBySchemaNameAndTableNameAndname(monitor, db2DataSource,
+                objectSchemaName, objectName, columnName);
+            return new DB2AuthColumn(monitor, db2Grantee, db2TableColumn, resultSet);
+
+        case INDEX:
+            DB2Index db2Index = DB2Utils.findIndexBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            return new DB2AuthIndex(monitor, db2Grantee, db2Index, resultSet);
+
+        case MODULE:
+            DB2Module db2Module = DB2Utils.findModuleBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            return new DB2AuthModule(monitor, db2Grantee, db2Module, resultSet);
+
+        case PACKAGE:
+            DB2Package db2Package = DB2Utils.findPackageBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            return new DB2AuthPackage(monitor, db2Grantee, db2Package, resultSet);
+
+        case PROCEDURE:
+            // Can be a Function or a Procedure
+            DB2RoutineType routineType = CommonUtils.valueOf(DB2RoutineType.class,
+                JDBCUtils.safeGetStringTrimmed(resultSet, "USAGEAUTH"));
+
+            switch (routineType) {
+            case F:
+                DB2Routine db2Udf = DB2Utils.findUDFBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+                return new DB2AuthUDF(monitor, db2Grantee, db2Udf, resultSet);
+            case P:
+                DB2Routine db2Procedure = DB2Utils.findProcedureBySchemaNameAndName(monitor, db2DataSource, objectSchemaName,
+                    objectName);
+                return new DB2AuthProcedure(monitor, db2Grantee, db2Procedure, resultSet);
+            default:
+                throw new DBException("Programming error: Methods are not supported yet and the SELECT statement must exclude them");
+            }
+
+        case SCHEMA:
+            DB2Schema db2Schema = db2DataSource.getSchema(monitor, objectName);
+            return new DB2AuthSchema(monitor, db2Grantee, db2Schema, resultSet);
+
+        case SEQUENCE:
+            DB2Sequence db2Sequence = DB2Utils
+                .findSequenceBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            return new DB2AuthSequence(monitor, db2Grantee, db2Sequence, resultSet);
+
         case TABLE:
             // Can be a Table or a View..
             DB2TableBase db2TableBase = DB2Utils.findTableBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
@@ -203,27 +281,6 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
                 return new DB2AuthTable(monitor, db2Grantee, db2TableBase, resultSet);
             }
 
-        case INDEX:
-            DB2Index db2Index = DB2Utils.findIndexBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-            return new DB2AuthIndex(monitor, db2Grantee, db2Index, resultSet);
-
-        case MODULE:
-            DB2Module db2Module = DB2Utils.findModuleBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-            return new DB2AuthModule(monitor, db2Grantee, db2Module, resultSet);
-
-        case SCHEMA:
-            DB2Schema db2Schema = db2DataSource.getSchema(monitor, objectName);
-            return new DB2AuthSchema(monitor, db2Grantee, db2Schema, resultSet);
-
-        case PACKAGE:
-            DB2Package db2Package = DB2Utils.findPackageBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-            return new DB2AuthPackage(monitor, db2Grantee, db2Package, resultSet);
-
-        case SEQUENCE:
-            DB2Sequence db2Sequence = DB2Utils
-                .findSequenceBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-            return new DB2AuthSequence(monitor, db2Grantee, db2Sequence, resultSet);
-
         case TABLESPACE:
             DB2Tablespace db2Tablespace = db2DataSource.getTablespace(monitor, objectName);
             return new DB2AuthTablespace(monitor, db2Grantee, db2Tablespace, resultSet);
@@ -233,8 +290,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
             return new DB2AuthVariable(monitor, db2Grantee, db2Variable, resultSet);
 
         default:
-            throw new DBException("Structural problem. " + objectType + " autorisation not implemented");
+            throw new DBException("Programming error: " + objectType
+                + " is not supported yet and the SELECT statement must exclude it");
         }
-
     }
 }
