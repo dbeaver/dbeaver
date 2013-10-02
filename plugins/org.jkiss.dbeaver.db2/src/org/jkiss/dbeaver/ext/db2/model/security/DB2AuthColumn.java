@@ -21,33 +21,50 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 
 /**
- * DB2 Authorisations on Modules
+ * DB2 Authorisations on Columns
  * 
  * @author Denis Forveille
  */
-public class DB2AuthModule extends DB2AuthBase {
+public class DB2AuthColumn extends DB2AuthBase {
 
-    private DB2AuthHeldType execute;
+    private static final String UPDATE_PRIVILEGE = "U";
+
+    private DB2AuthHeldType reference = DB2AuthHeldType.N;
+    private DB2AuthHeldType update = DB2AuthHeldType.N;;
 
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2AuthModule(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Module db2Module, ResultSet resultSet)
+    public DB2AuthColumn(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2TableColumn db2TableColumn, ResultSet resultSet)
         throws DBException
     {
-        super(monitor, db2Grantee, db2Module, resultSet);
+        super(monitor, db2Grantee, db2TableColumn, resultSet);
 
-        this.execute = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "EXECUTEAUTH"));
+        String privType = JDBCUtils.safeGetString(resultSet, "ALTERINAUTH");
+        String grantable = JDBCUtils.safeGetString(resultSet, "ALTERINAUTH");
+
+        if (privType.equals(UPDATE_PRIVILEGE)) {
+            if (grantable.equals(DB2AuthHeldType.N)) {
+                update = DB2AuthHeldType.Y;
+            } else {
+                update = DB2AuthHeldType.G;
+            }
+        } else {
+            if (grantable.equals(DB2AuthHeldType.N)) {
+                reference = DB2AuthHeldType.Y;
+            } else {
+                reference = DB2AuthHeldType.G;
+            }
+        }
     }
 
     // -----------------
@@ -67,9 +84,15 @@ public class DB2AuthModule extends DB2AuthBase {
     }
 
     @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
-    public DB2AuthHeldType getExecute()
+    public DB2AuthHeldType getReference()
     {
-        return execute;
+        return reference;
+    }
+
+    @Property(viewable = true, order = 21, category = DB2Constants.CAT_AUTH)
+    public DB2AuthHeldType getUpdate()
+    {
+        return update;
     }
 
 }
