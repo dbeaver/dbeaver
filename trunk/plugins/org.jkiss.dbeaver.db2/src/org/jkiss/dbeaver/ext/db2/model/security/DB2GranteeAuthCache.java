@@ -50,7 +50,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
 
     private static String SQL;
 
-    // TODO DF: Add missing auth: functions, columns etc..
+    // TODO DF: Add missing auth: routines, schemas, columns
 
     static {
 
