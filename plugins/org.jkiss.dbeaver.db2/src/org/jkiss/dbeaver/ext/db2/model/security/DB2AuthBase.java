@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2SchemaObject;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -53,16 +54,22 @@ public abstract class DB2AuthBase extends DB2Object<DB2Grantee> implements DBAPr
         super(db2Grantee, JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA") + "."
             + JDBCUtils.safeGetString(resultSet, "OBJ_NAME"), true);
 
-        DB2DataSource db2DataSource = db2Grantee.getDataSource();
-        String objectSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA");
-        if (objectSchemaName != null) {
-            this.objectSchema = db2DataSource.getSchema(monitor, objectSchemaName);
+        // get schema from object itself if this is a DB2SchemaObject
+        if (object instanceof DB2SchemaObject) {
+            this.objectSchema = ((DB2SchemaObject) object).getSchema();
+        } else {
+            DB2DataSource db2DataSource = db2Grantee.getDataSource();
+            String objectSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA");
+            if (objectSchemaName != null) {
+                this.objectSchema = db2DataSource.getSchema(monitor, objectSchemaName);
+            }
         }
 
         this.object = object;
 
-        String grantorName = JDBCUtils.safeGetString(resultSet, "GRANTOR");
-        this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
+        String grantorName = JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTOR");
+        this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class,
+            JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTORTYPE"));
         switch (grantorType) {
         case U:
             this.grantor = db2Grantee.getDataSource().getUser(monitor, grantorName);

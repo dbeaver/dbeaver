@@ -53,17 +53,16 @@ public class DB2AuthXMLSchema extends DB2AuthBase {
     // -----------------
     // Properties
     // -----------------
+    @Property(viewable = true, order = 1)
+    public DB2Schema getObjectSchema()
+    {
+        return super.getObjectSchema();
+    }
+
     @Property(viewable = true, order = 2)
     public DBSObject getObject()
     {
         return super.getObject();
-    }
-
-    @Override
-    @Property(hidden = true)
-    public DB2Schema getObjectSchema()
-    {
-        return super.getObjectSchema();
     }
 
     @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
