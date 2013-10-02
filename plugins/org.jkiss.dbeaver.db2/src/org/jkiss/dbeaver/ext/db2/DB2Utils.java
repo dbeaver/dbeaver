@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
+import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
@@ -521,6 +522,23 @@ public class DB2Utils {
             return null;
         }
         return db2Schema.getView(monitor, db2ViewName);
+    }
+
+    public static DB2XMLSchema findXMLSchemaByById(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Long xmlSchemaId)
+        throws DBException
+    {
+        if (db2DataSource == null) {
+            return null;
+        }
+        // We have to iterate all Schemas...
+        for (DB2Schema db2Schema : db2DataSource.getSchemas(monitor)) {
+            for (DB2XMLSchema db2XMLSchema : db2Schema.getXMLSchemas(monitor)) {
+                if (db2XMLSchema.getId() == xmlSchemaId) {
+                    return db2XMLSchema;
+                }
+            }
+        }
+        return null;
     }
 
     private DB2Utils()
