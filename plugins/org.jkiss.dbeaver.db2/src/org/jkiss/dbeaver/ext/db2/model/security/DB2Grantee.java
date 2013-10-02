@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DB2 Super class for Users, Groups and Roles (=Grantees)
@@ -42,6 +44,8 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     private final DB2GranteeRoleCache roleCache = new DB2GranteeRoleCache();
     private final DB2GranteeDatabaseAuthCache databaseAuthCache = new DB2GranteeDatabaseAuthCache();
 
+    private Map<Class<?>, Collection<? extends DB2AuthBase>> cachePerObject;
+
     private String name;
 
     // -----------------------
@@ -51,6 +55,8 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     {
         super(dataSource, true);
         this.name = JDBCUtils.safeGetString(resultSet, "GRANTEE");
+
+        cachePerObject = new HashMap<Class<?>, Collection<? extends DB2AuthBase>>(12);
     }
 
     // -----------------
@@ -65,6 +71,9 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
         authCache.clearCache();
         roleCache.clearCache();
         databaseAuthCache.clearCache();
+
+        cachePerObject.clear();
+
         return true;
     }
 
@@ -84,110 +93,78 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
         return databaseAuthCache.getObjects(monitor, this);
     }
 
-    // DF: all of those could probably be cached and factorised
-
     @Association
     public Collection<DB2AuthTable> getTablesAuths(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<DB2AuthTable> listTablesAuths = new ArrayList<DB2AuthTable>();
-        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
-            if (db2Auth instanceof DB2AuthTable) {
-                listTablesAuths.add((DB2AuthTable) db2Auth);
-            }
-
-        }
-        return listTablesAuths;
+        return getAuths(monitor, DB2AuthTable.class);
     }
 
     @Association
     public Collection<DB2AuthView> getViewsAuths(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<DB2AuthView> listViewsAuths = new ArrayList<DB2AuthView>();
-        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
-            if (db2Auth instanceof DB2AuthView) {
-                listViewsAuths.add((DB2AuthView) db2Auth);
-            }
-
-        }
-        return listViewsAuths;
+        return getAuths(monitor, DB2AuthView.class);
     }
 
     @Association
     public Collection<DB2AuthIndex> getIndexesAuths(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<DB2AuthIndex> listIndexesAuths = new ArrayList<DB2AuthIndex>();
-        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
-            if (db2Auth instanceof DB2AuthIndex) {
-                listIndexesAuths.add((DB2AuthIndex) db2Auth);
-            }
-
-        }
-        return listIndexesAuths;
+        return getAuths(monitor, DB2AuthIndex.class);
     }
 
     @Association
     public Collection<DB2AuthSequence> getSequencesAuths(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<DB2AuthSequence> listSequenceAuths = new ArrayList<DB2AuthSequence>();
-        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
-            if (db2Auth instanceof DB2AuthSequence) {
-                listSequenceAuths.add((DB2AuthSequence) db2Auth);
-            }
-
-        }
-        return listSequenceAuths;
+        return getAuths(monitor, DB2AuthSequence.class);
     }
 
     @Association
     public Collection<DB2AuthTablespace> getTablespacesAuths(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<DB2AuthTablespace> listTablespacesAuths = new ArrayList<DB2AuthTablespace>();
-        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
-            if (db2Auth instanceof DB2AuthTablespace) {
-                listTablespacesAuths.add((DB2AuthTablespace) db2Auth);
-            }
-
-        }
-        return listTablespacesAuths;
+        return getAuths(monitor, DB2AuthTablespace.class);
     }
 
     @Association
     public Collection<DB2AuthSchema> getSchemasAuths(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<DB2AuthSchema> listSchemasAuths = new ArrayList<DB2AuthSchema>();
-        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
-            if (db2Auth instanceof DB2AuthSchema) {
-                listSchemasAuths.add((DB2AuthSchema) db2Auth);
-            }
-
-        }
-        return listSchemasAuths;
+        return getAuths(monitor, DB2AuthSchema.class);
     }
 
     @Association
     public Collection<DB2AuthPackage> getPackagesAuths(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<DB2AuthPackage> listPackagesAuths = new ArrayList<DB2AuthPackage>();
-        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
-            if (db2Auth instanceof DB2AuthPackage) {
-                listPackagesAuths.add((DB2AuthPackage) db2Auth);
-            }
-
-        }
-        return listPackagesAuths;
+        return getAuths(monitor, DB2AuthPackage.class);
     }
 
     @Association
     public Collection<DB2AuthModule> getModulesAuths(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<DB2AuthModule> listModulesAuths = new ArrayList<DB2AuthModule>();
-        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
-            if (db2Auth instanceof DB2AuthModule) {
-                listModulesAuths.add((DB2AuthModule) db2Auth);
-            }
+        return getAuths(monitor, DB2AuthModule.class);
+    }
 
+    @Association
+    public Collection<DB2AuthVariable> getVariablesAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAuths(monitor, DB2AuthVariable.class);
+    }
+
+    // -----------------
+    // Helper
+    // -----------------
+
+    // Filter
+    @SuppressWarnings("unchecked")
+    private <T extends DB2AuthBase> Collection<T> getAuths(DBRProgressMonitor monitor, Class<T> authClass) throws DBException
+    {
+        Collection<T> listAuths = (Collection<T>) cachePerObject.get(authClass.getClass());
+        if (listAuths == null) {
+            listAuths = new ArrayList<T>();
+            for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
+                if (authClass.isInstance(db2Auth)) {
+                    listAuths.add((T) db2Auth);
+                }
+            }
         }
-        return listModulesAuths;
+        return listAuths;
     }
 
     // -----------------
