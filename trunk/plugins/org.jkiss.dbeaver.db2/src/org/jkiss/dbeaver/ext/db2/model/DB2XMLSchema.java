@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Timestamp;
 
@@ -44,7 +45,6 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
     private Long id;
     private String targetNameSpace;
     private String schemaLocation;
-    private SQLXML objectInfo;
     private DB2XSRType objectType;
     private String owner;
     private DB2OwnerType ownerType;
@@ -54,17 +54,19 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
     private DB2XSRDecomposition decomposition;
     private String remarks;
 
+    private SQLXML objectInfo;
+    private String objectInfoString;
+
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2XMLSchema(DB2Schema schema, ResultSet dbResult)
+    public DB2XMLSchema(DB2Schema schema, ResultSet dbResult) throws SQLException
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "OBJECTNAME"), true);
 
         this.id = JDBCUtils.safeGetLong(dbResult, "OBJECTID");
         this.targetNameSpace = JDBCUtils.safeGetString(dbResult, "TARGETNAMESPACE");
         this.schemaLocation = JDBCUtils.safeGetString(dbResult, "SCHEMALOCATION");
-        this.objectInfo = JDBCUtils.safeGetXML(dbResult, "OBJECTINFO");
         this.objectType = CommonUtils.valueOf(DB2XSRType.class, JDBCUtils.safeGetString(dbResult, "OBJECTTYPE"));
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
@@ -73,6 +75,11 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
         this.status = CommonUtils.valueOf(DB2XSRStatus.class, JDBCUtils.safeGetString(dbResult, "STATUS"));
         this.decomposition = CommonUtils.valueOf(DB2XSRDecomposition.class, JDBCUtils.safeGetString(dbResult, "DECOMPOSITION"));
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        // TODO DF: @Properties does not handle SQLXML types.
+        // Transform it into String
+        this.objectInfo = JDBCUtils.safeGetXML(dbResult, "OBJECTINFO");
+        this.objectInfoString = objectInfo.getString();
     }
 
     // -----------------
@@ -138,9 +145,9 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
     }
 
     @Property(viewable = false, order = 13)
-    public SQLXML getObjectInfo()
+    public String getObjectInfoxString()
     {
-        return objectInfo;
+        return objectInfoString;
     }
 
     @Override
