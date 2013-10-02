@@ -82,9 +82,9 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     // -----------------
 
     @Association
-    public Collection<DB2RoleAuth> getRoles(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2AuthColumn> getColumnsAuths(DBRProgressMonitor monitor) throws DBException
     {
-        return roleCache.getObjects(monitor, this);
+        return getAuths(monitor, DB2AuthColumn.class);
     }
 
     @Association
@@ -94,15 +94,9 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     }
 
     @Association
-    public Collection<DB2AuthTable> getTablesAuths(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2AuthUDF> getFunctionsAuths(DBRProgressMonitor monitor) throws DBException
     {
-        return getAuths(monitor, DB2AuthTable.class);
-    }
-
-    @Association
-    public Collection<DB2AuthView> getViewsAuths(DBRProgressMonitor monitor) throws DBException
-    {
-        return getAuths(monitor, DB2AuthView.class);
+        return getAuths(monitor, DB2AuthUDF.class);
     }
 
     @Association
@@ -112,21 +106,9 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     }
 
     @Association
-    public Collection<DB2AuthSequence> getSequencesAuths(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2AuthModule> getModulesAuths(DBRProgressMonitor monitor) throws DBException
     {
-        return getAuths(monitor, DB2AuthSequence.class);
-    }
-
-    @Association
-    public Collection<DB2AuthTablespace> getTablespacesAuths(DBRProgressMonitor monitor) throws DBException
-    {
-        return getAuths(monitor, DB2AuthTablespace.class);
-    }
-
-    @Association
-    public Collection<DB2AuthSchema> getSchemasAuths(DBRProgressMonitor monitor) throws DBException
-    {
-        return getAuths(monitor, DB2AuthSchema.class);
+        return getAuths(monitor, DB2AuthModule.class);
     }
 
     @Association
@@ -136,15 +118,51 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     }
 
     @Association
-    public Collection<DB2AuthModule> getModulesAuths(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2AuthProcedure> getProceduresAuths(DBRProgressMonitor monitor) throws DBException
     {
-        return getAuths(monitor, DB2AuthModule.class);
+        return getAuths(monitor, DB2AuthProcedure.class);
+    }
+
+    @Association
+    public Collection<DB2RoleAuth> getRoles(DBRProgressMonitor monitor) throws DBException
+    {
+        return roleCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<DB2AuthSchema> getSchemasAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAuths(monitor, DB2AuthSchema.class);
+    }
+
+    @Association
+    public Collection<DB2AuthSequence> getSequencesAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAuths(monitor, DB2AuthSequence.class);
+    }
+
+    @Association
+    public Collection<DB2AuthTable> getTablesAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAuths(monitor, DB2AuthTable.class);
+    }
+
+    @Association
+    public Collection<DB2AuthTablespace> getTablespacesAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAuths(monitor, DB2AuthTablespace.class);
     }
 
     @Association
     public Collection<DB2AuthVariable> getVariablesAuths(DBRProgressMonitor monitor) throws DBException
     {
         return getAuths(monitor, DB2AuthVariable.class);
+    }
+
+    @Association
+    public Collection<DB2AuthView> getViewsAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAuths(monitor, DB2AuthView.class);
     }
 
     // -----------------

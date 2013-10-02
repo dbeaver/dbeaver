@@ -26,9 +26,11 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Package;
+import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
@@ -407,24 +409,18 @@ public class DB2Utils {
         return null;
     }
 
-    public static DB2Table findTableBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2TableName) throws DBException
+    public static DB2TableColumn findColumnxBySchemaNameAndTableNameAndname(DBRProgressMonitor monitor,
+        DB2DataSource db2DataSource, String db2SchemaName, String db2TableName, String db2ColumnName) throws DBException
     {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
             return null;
         }
-        return db2Schema.getTable(monitor, db2TableName);
-    }
-
-    public static DB2Nickname findNicknameBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2NicknameName) throws DBException
-    {
-        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
-        if (db2Schema == null) {
+        DB2Table db2Table = db2Schema.getTable(monitor, db2TableName);
+        if (db2Table == null) {
             return null;
         }
-        return db2Schema.getNickname(monitor, db2NicknameName);
+        return db2Table.getAttribute(monitor, db2ColumnName);
     }
 
     public static DB2Index findIndexBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
@@ -437,26 +433,6 @@ public class DB2Utils {
         return db2Schema.getIndex(monitor, db2IndexName);
     }
 
-    public static DB2Sequence findSequenceBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2SequenceName) throws DBException
-    {
-        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
-        if (db2Schema == null) {
-            return null;
-        }
-        return db2Schema.getSequence(monitor, db2SequenceName);
-    }
-
-    public static DB2View findViewBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2ViewName) throws DBException
-    {
-        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
-        if (db2Schema == null) {
-            return null;
-        }
-        return db2Schema.getView(monitor, db2ViewName);
-    }
-
     public static DB2Module findModuleBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
         String db2SchemaName, String db2ModuleName) throws DBException
     {
@@ -465,6 +441,16 @@ public class DB2Utils {
             return null;
         }
         return db2Schema.getModule(monitor, db2ModuleName);
+    }
+
+    public static DB2Nickname findNicknameBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2NicknameName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getNickname(monitor, db2NicknameName);
     }
 
     public static DB2Package findPackageBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
@@ -477,6 +463,36 @@ public class DB2Utils {
         return db2Schema.getPackage(monitor, db2PackageName);
     }
 
+    public static DB2Routine findProcedureBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2ProcedureName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getProcedure(monitor, db2ProcedureName);
+    }
+
+    public static DB2Sequence findSequenceBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2SequenceName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getSequence(monitor, db2SequenceName);
+    }
+
+    public static DB2Table findTableBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2TableName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getTable(monitor, db2TableName);
+    }
+
     public static DB2Trigger findTriggerBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
         String db2SchemaName, String db2TriggerName) throws DBException
     {
@@ -485,6 +501,26 @@ public class DB2Utils {
             return null;
         }
         return db2Schema.getTrigger(monitor, db2TriggerName);
+    }
+
+    public static DB2Routine findUDFBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2FunctionName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getUDF(monitor, db2FunctionName);
+    }
+
+    public static DB2View findViewBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2ViewName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getView(monitor, db2ViewName);
     }
 
     private DB2Utils()
