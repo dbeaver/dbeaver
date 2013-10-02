@@ -29,6 +29,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Cache for Routine parameters
+ * 
+ * @author Denis Forveille
+ * 
+ */
 public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2RoutineParm> {
 
     private static String SQL;
@@ -40,6 +46,7 @@ public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2Routine
         sb.append(" WHERE ROUTINESCHEMA = ?");
         sb.append("   AND SPECIFICNAME = ?");
         sb.append(" ORDER BY ORDINAL");
+        sb.append(" WITH UR");
         SQL = sb.toString();
     }
 

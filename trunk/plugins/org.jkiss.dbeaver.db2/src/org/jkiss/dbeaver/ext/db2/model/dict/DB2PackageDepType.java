@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Type of Trigger Dependency
+ * DB2 Type of Package Dependency
  * 
  * @author Denis Forveille
  */

@@ -31,7 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cache for DB2 Procedures
+ * Cache for DB2 Routines (UDF + procedures)
  * 
  * @author Denis Forveille
  */

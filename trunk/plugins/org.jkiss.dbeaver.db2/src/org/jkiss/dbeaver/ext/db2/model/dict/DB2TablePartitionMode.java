@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Table partition Mode
+ * DB2 Table Partition Mode
  * 
  * @author Denis Forveille
  */

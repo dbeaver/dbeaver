@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Routine Origin
+ * DB2 Table Partition Access Mode
  * 
  * @author Denis Forveille
  */

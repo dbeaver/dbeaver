@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 
 /**
- * DB2 Foreign Key Rule
+ * DB2 Foreign Key Delete/Update Rule
  * 
  * @author Denis Forveille
  */
