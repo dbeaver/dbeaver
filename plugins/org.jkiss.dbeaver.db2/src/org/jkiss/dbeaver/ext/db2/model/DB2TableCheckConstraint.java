@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCheckConstraintType;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
@@ -143,7 +144,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     @Override
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
-        return text;
+        return SQLUtils.formatSQL(getDataSource(), text);
     }
 
     @Override
