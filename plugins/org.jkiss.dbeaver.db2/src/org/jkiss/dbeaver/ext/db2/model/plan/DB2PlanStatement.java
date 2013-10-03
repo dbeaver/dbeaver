@@ -25,11 +25,16 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 EXPLAIN_STATEMENT table
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2PlanStatement {
@@ -39,7 +44,7 @@ public class DB2PlanStatement {
     static {
         StringBuilder sb = new StringBuilder(1024);
         sb.append("SELECT *");
-        sb.append(" FROM %s.%s");
+        sb.append("  FROM %s.%s");
         sb.append(" WHERE EXPLAIN_REQUESTER = ?"); // 1
         sb.append("   AND EXPLAIN_TIME = ?");// 2
         sb.append("   AND SOURCE_NAME = ?");// 3
@@ -48,7 +53,7 @@ public class DB2PlanStatement {
         sb.append("   AND EXPLAIN_LEVEL = ?");// 6
         sb.append("   AND STMTNO = ?");// 7
         sb.append("   AND SECTNO = ?");// 8
-        sb.append(" WITH UR");// 8
+        sb.append(" WITH UR");
         SEL_BASE_SELECT = sb.toString();
     }
 

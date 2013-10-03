@@ -108,16 +108,16 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
         this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        // DB2 v10.1+ Columns
-        this.eventUpdate = JDBCUtils.safeGetBoolean(dbResult, "EVENTUPDATE", DB2YesNo.Y.name());
-        this.eventDelete = JDBCUtils.safeGetBoolean(dbResult, "EVENTDELETE", DB2YesNo.Y.name());
-        this.eventInsert = JDBCUtils.safeGetBoolean(dbResult, "EVENTINSERT", DB2YesNo.Y.name());
-        this.secure = JDBCUtils.safeGetBoolean(dbResult, "SECURE", DB2YesNo.Y.name());
-        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
-        this.libId = JDBCUtils.safeGetInteger(dbResult, "LIB_ID");
-        this.precompileOptions = JDBCUtils.safeGetString(dbResult, "PRECOMPILE_OPTIONS");
-        this.compileOptions = JDBCUtils.safeGetString(dbResult, "COMPILE_OPTIONS");
-
+        if (table.getDataSource().getVersion() >= DB2Constants.DB2v10_1) {
+            this.eventUpdate = JDBCUtils.safeGetBoolean(dbResult, "EVENTUPDATE", DB2YesNo.Y.name());
+            this.eventDelete = JDBCUtils.safeGetBoolean(dbResult, "EVENTDELETE", DB2YesNo.Y.name());
+            this.eventInsert = JDBCUtils.safeGetBoolean(dbResult, "EVENTINSERT", DB2YesNo.Y.name());
+            this.secure = JDBCUtils.safeGetBoolean(dbResult, "SECURE", DB2YesNo.Y.name());
+            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+            this.libId = JDBCUtils.safeGetInteger(dbResult, "LIB_ID");
+            this.precompileOptions = JDBCUtils.safeGetString(dbResult, "PRECOMPILE_OPTIONS");
+            this.compileOptions = JDBCUtils.safeGetString(dbResult, "COMPILE_OPTIONS");
+        }
     }
 
     public DB2Trigger(DB2Schema schema, DB2Table table, String name)

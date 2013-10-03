@@ -100,9 +100,25 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // ------------
     // Constructors
     // ------------
-    public DB2Schema(DB2DataSource dataSource, String name)
+    public DB2Schema(DB2DataSource db2DataSource, ResultSet dbResult)
     {
-        super(dataSource, true);
+        this(db2DataSource, JDBCUtils.safeGetStringTrimmed(dbResult, "SCHEMANAME"));
+
+        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this.ownerType = DB2OwnerType.valueOf(JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        if (db2DataSource.getVersion() >= DB2Constants.DB2v10_1) {
+            this.auditPolicyID = JDBCUtils.safeGetInteger(dbResult, "AUDITPOLICYID");
+            this.auditPolicyName = JDBCUtils.safeGetString(dbResult, "AUDITPOLICYNAME");
+            this.dataCapture = JDBCUtils.safeGetBoolean(dbResult, "DATACAPTURE", DB2YesNo.Y.name());
+        }
+    }
+
+    public DB2Schema(DB2DataSource db2DataSource, String name)
+    {
+        super(db2DataSource, true);
         this.name = name;
 
         this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class, C_SEQ, name);
@@ -112,21 +128,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         this.moduleCache = new JDBCObjectSimpleCache<DB2Schema, DB2Module>(DB2Module.class, C_MOD, name);
     }
 
-    public DB2Schema(DB2DataSource dataSource, ResultSet dbResult)
-    {
-        this(dataSource, JDBCUtils.safeGetStringTrimmed(dbResult, "SCHEMANAME"));
-
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = DB2OwnerType.valueOf(JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
-
-        // DB2 v10.1+ columns
-        this.auditPolicyID = JDBCUtils.safeGetInteger(dbResult, "AUDITPOLICYID");
-        this.auditPolicyName = JDBCUtils.safeGetString(dbResult, "AUDITPOLICYNAME");
-        this.dataCapture = JDBCUtils.safeGetBoolean(dbResult, "DATACAPTURE", DB2YesNo.Y.name());
-    }
-
+    // -----------------
+    // Business Contract
+    // -----------------
     @Override
     public boolean isSystem()
     {
