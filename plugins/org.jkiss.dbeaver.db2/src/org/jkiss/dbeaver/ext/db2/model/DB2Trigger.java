@@ -199,13 +199,13 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     // -----------------
 
     @Override
-    @Property(viewable = true, editable = false, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return super.getName();
     }
 
-    @Property(viewable = true, editable = false, order = 2, id = "Schema")
+    @Property(viewable = true, order = 2, id = "Schema")
     public DB2Schema getSchema()
     {
         return super.getParentObject();
@@ -254,13 +254,13 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
         return eventInsert;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+    @Property(viewable = false, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
         return owner;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+    @Property(viewable = false, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
@@ -284,19 +284,19 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
         return funcPath;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
+    @Property(viewable = false, category = DB2Constants.CAT_DATETIME)
     public Timestamp getCreateTime()
     {
         return createTime;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
+    @Property(viewable = false, category = DB2Constants.CAT_DATETIME)
     public Timestamp getLastRegenTime()
     {
         return lastRegenTime;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
+    @Property(viewable = false, category = DB2Constants.CAT_DATETIME)
     public Timestamp getAlterTime()
     {
         return alterTime;

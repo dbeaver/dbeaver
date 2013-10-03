@@ -69,37 +69,37 @@ public class DB2TriggerDep extends DB2Object<DB2Trigger> {
     // -----------------
 
     @Override
-    @Property(viewable = true, editable = false, id = "Name", order = 1)
+    @Property(viewable = true, id = "Name", order = 1)
     public String getName()
     {
         return super.getName();
     }
 
-    @Property(viewable = true, editable = false, order = 2)
+    @Property(viewable = true, order = 2)
     public DB2TriggerDepType getTriggerDepType()
     {
         return triggerDepType;
     }
 
-    @Property(viewable = true, editable = false, order = 3)
+    @Property(viewable = true, order = 3)
     public DB2Schema getDepSchema()
     {
         return depSchema;
     }
 
-    @Property(viewable = true, editable = false, order = 4)
+    @Property(viewable = true, order = 4)
     public DBSObject getDepObject()
     {
         return depObject;
     }
 
-    @Property(viewable = true, editable = false)
+    @Property(viewable = true)
     public String getDepModuleId()
     {
         return depModuleId;
     }
 
-    @Property(viewable = true, editable = false)
+    @Property(viewable = true)
     public String getTabAuth()
     {
         return tabAuth;
