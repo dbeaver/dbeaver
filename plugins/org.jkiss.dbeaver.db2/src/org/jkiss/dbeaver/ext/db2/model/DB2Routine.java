@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -191,7 +192,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         if ((language != null) && (language.equals(DB2RoutineLanguage.SQL))) {
-            return text;
+            return SQLUtils.formatSQL(getDataSource(), text);
         } else {
             return "N/A";
         }

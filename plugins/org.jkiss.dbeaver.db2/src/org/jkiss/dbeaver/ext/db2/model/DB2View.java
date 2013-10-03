@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -142,7 +143,7 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     @Override
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
-        return text;
+        return SQLUtils.formatSQL(getDataSource(), text);
     }
 
     @Override
@@ -150,11 +151,6 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     {
         // TODO Auto-generated method stub
 
-    }
-
-    public String getDDL(DBRProgressMonitor monitor) throws DBException
-    {
-        return text;
     }
 
     // -----------------
@@ -170,6 +166,13 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     // -----------------
     // Properties
     // -----------------
+
+    @Override
+    @Property(viewable = false, editable = false, updatable = false)
+    public String getDescription()
+    {
+        return super.getDescription();
+    }
 
     @Override
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
