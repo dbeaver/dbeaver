@@ -121,18 +121,20 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.validate = JDBCUtils.safeGetString(dbResult, "VALIDATE");
         this.dynamicRules = JDBCUtils.safeGetString(dbResult, "DYNAMICRULES");
         this.sqlerror = JDBCUtils.safeGetString(dbResult, "SQLERROR");
-        this.busTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "BUSTIMESENSITIVE", DB2YesNo.Y.name());
-        this.sysTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "SYSTIMESENSITIVE", DB2YesNo.Y.name());
-        this.keepDynamic = JDBCUtils.safeGetBoolean(dbResult, "KEEPDYNAMIC", DB2YesNo.Y.name());
-        this.staticAsDynamic = JDBCUtils.safeGetBoolean(dbResult, "STATICASDYNAMIC", DB2YesNo.Y.name());
 
         this.firstBindTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.lastBindTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_BIND_TIME");
         this.explicitBindTime = JDBCUtils.safeGetTimestamp(dbResult, "EXPLICIT_BIND_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
-
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        if (schema.getDataSource().getVersion() >= DB2Constants.DB2v10_1) {
+            this.busTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "BUSTIMESENSITIVE", DB2YesNo.Y.name());
+            this.sysTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "SYSTIMESENSITIVE", DB2YesNo.Y.name());
+            this.keepDynamic = JDBCUtils.safeGetBoolean(dbResult, "KEEPDYNAMIC", DB2YesNo.Y.name());
+            this.staticAsDynamic = JDBCUtils.safeGetBoolean(dbResult, "STATICASDYNAMIC", DB2YesNo.Y.name());
+        }
 
         packageDepCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class, C_DEP, schema.getName(),
             getName());

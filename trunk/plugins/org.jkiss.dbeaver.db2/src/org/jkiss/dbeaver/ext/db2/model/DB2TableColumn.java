@@ -87,8 +87,6 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.generated = JDBCUtils.safeGetBoolean(dbResult, "GENERATED", DB2YesNo.Y.name());
         this.generatedText = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.compress = CommonUtils.valueOf(DB2TableColumnCompression.class, JDBCUtils.safeGetString(dbResult, "COMPRESS"));
-        this.rowBegin = JDBCUtils.safeGetBoolean(dbResult, "ROWBEGIN", DB2YesNo.Y.name());
-        this.rowEnd = JDBCUtils.safeGetBoolean(dbResult, "ROWEND", DB2YesNo.Y.name());
         this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
         this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
         this.colcard = JDBCUtils.safeGetLong(dbResult, "COLCARD");
@@ -100,6 +98,11 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.partKeySeq = JDBCUtils.safeGetInteger(dbResult, "PARTKEYSEQ");
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        if (tableBase.getDataSource().getVersion() >= DB2Constants.DB2v10_1) {
+            this.rowBegin = JDBCUtils.safeGetBoolean(dbResult, "ROWBEGIN", DB2YesNo.Y.name());
+            this.rowEnd = JDBCUtils.safeGetBoolean(dbResult, "ROWEND", DB2YesNo.Y.name());
+        }
 
         // Set DataTypes data
         // Search for DataType

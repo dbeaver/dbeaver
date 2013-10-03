@@ -94,11 +94,14 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         this.pageSize = JDBCUtils.safeGetInteger(dbResult, "PAGESIZE");
         this.dbpgName = JDBCUtils.safeGetString(dbResult, "DBPGNAME");
         this.dropRecovery = JDBCUtils.safeGetBoolean(dbResult, "DROP_RECOVERY", DB2YesNo.Y.name());
-        this.dataTag = JDBCUtils.safeGetInteger(dbResult, "DATATAG");
-        this.sgName = JDBCUtils.safeGetString(dbResult, "SGNAME");
-        this.sgId = JDBCUtils.safeGetInteger(dbResult, "SGID");
-        this.effectivePrefetchSize = JDBCUtils.safeGetInteger(dbResult, "EFFECTIVEPREFETCHSIZE");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        if (db2DataSource.getVersion() >= DB2Constants.DB2v10_1) {
+            this.dataTag = JDBCUtils.safeGetInteger(dbResult, "DATATAG");
+            this.sgName = JDBCUtils.safeGetString(dbResult, "SGNAME");
+            this.sgId = JDBCUtils.safeGetInteger(dbResult, "SGID");
+            this.effectivePrefetchSize = JDBCUtils.safeGetInteger(dbResult, "EFFECTIVEPREFETCHSIZE");
+        }
 
         Integer bufferpoolId = JDBCUtils.safeGetInteger(dbResult, "BUFFERPOOLID");
         bufferpool = DB2Utils.findBufferpoolById(VoidProgressMonitor.INSTANCE, db2DataSource, bufferpoolId);
