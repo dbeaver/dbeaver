@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.Clob;
@@ -75,14 +76,61 @@ public class DB2Utils {
 
     // ADMIN ACTIONS
     private static final String CALL_ADS = "CALL SYSPROC.ADMIN_DROP_SCHEMA(?,NULL,?,?)";
-    private static final String SEL_DB_PARAMS = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
-    private static final String SEL_DBM_PARAMS = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
+
+    // DBCFG/DBMCFG
+    private static final String SEL_DBCFG = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
+    private static final String SEL_DBMCFG = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
 
     // APPLICATIONS
+    private static final String AUT_APP;
     private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
     private static final String FORCE_APP = "CALL SYSPROC.ADMIN_CMD( 'force application (%d)')";
 
     private static final String LINE_SEP = "\n";
+
+    static {
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("SELECT 1");
+        sb.append("  FROM TABLE (SYSPROC.AUTH_LIST_AUTHORITIES_FOR_AUTHID (?, 'U')) AS T ");
+        sb.append(" WHERE AUTHORITY IN ('SYSMON','SYSMAINT','SYSADM','SYSCTRL')");
+        sb.append("   AND 'Y' in (D_USER,D_GROUP,D_PUBLIC,ROLE_USER,ROLE_GROUP,ROLE_PUBLIC,D_ROLE)");
+        sb.append(" WITH UR");
+        AUT_APP = sb.toString();
+    }
+
+    // ------------------------
+    // Check for Authorisations
+    // ------------------------
+    public static Boolean userIsAuthorisedForAPPLICATIONS(JDBCExecutionContext context, String authId) throws SQLException
+    {
+        LOG.debug("Check is user '" + authId + "' is authorised for SYSIBMADM Views");
+        String res = JDBCUtils.queryString(context, AUT_APP, authId);
+        if (res == null) {
+            return false;
+        }
+
+        // TODO DF: Incomplete need to check thistoo:
+
+        // For all administrative views in the SYSIBMADM schema, you need SELECT privilege on the view. This can be validated
+        // with the following query to check that your authorization ID, or a group or a role to which you belong, has SELECT
+        // privilege (that is, it meets the search criteria and is listed in the GRANTEE column):
+        //
+        // SELECT GRANTEE, GRANTEETYPE
+        // FROM SYSCAT.TABAUTH
+        // WHERE TABSCHEMA = 'SYSIBMADM' AND TABNAME = '<view_name>' AND
+        // SELECTAUTH <> 'N'
+        //
+        // where <view_name> is the name of the administrative view.
+        // With the exception of SYSIBMADM.AUTHORIZATIONIDS, SYSIBMADM.OBJECTOWNERS, and SYSIBMADM.PRIVILEGES, you also need
+        // EXECUTE privilege on the underlying administrative table function. The underlying administrative table function is
+        // listed in the authorization section of the administrative view. This can be validated with the following query:
+        //
+        // SELECT GRANTEE, GRANTEETYPE
+        // FROM SYSCAT.ROUTINEAUTH
+        // WHERE SCHEMA = 'SYSPROC' AND SPECIFICNAME = '<routine_name>' AND
+        // EXECUTEAUTH <> 'N'
+        return true;
+    }
 
     public static Boolean callAdminDropSchema(DBRProgressMonitor monitor, DB2DataSource dataSource, String schemaName,
         String errorSchemaName, String errorTableName) throws SQLException
@@ -269,15 +317,10 @@ public class DB2Utils {
         }
     }
 
-    /**
-     * "Force" (ie "Kill") an application
-     * 
-     * @param monitor
-     * @param dataSource
-     * @param applicationId
-     * @return
-     * @throws SQLException
-     */
+    // ---------------------
+    // DBA Data and Actions
+    // ---------------------
+
     public static Boolean forceApplication(DBRProgressMonitor monitor, DB2DataSource dataSource, Long agentId) throws SQLException
     {
         LOG.debug("Force Application : " + agentId.toString());
@@ -322,7 +365,7 @@ public class DB2Utils {
         LOG.debug("readDBCfg");
 
         List<DB2Parameter> listDBParameters = new ArrayList<DB2Parameter>();
-        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DB_PARAMS);
+        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DBCFG);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
@@ -343,7 +386,7 @@ public class DB2Utils {
         LOG.debug("readDBMCfg");
 
         List<DB2Parameter> listDBMParameters = new ArrayList<DB2Parameter>();
-        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DBM_PARAMS);
+        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DBMCFG);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
@@ -359,19 +402,10 @@ public class DB2Utils {
         return listDBMParameters;
     }
 
-    // -----------------------
-    // Static MetaData Helpers
-    // -----------------------
+    // ---------------
+    // Objects Finders
+    // ---------------
 
-    /**
-     * Lookup a DB2Tablespace by its Id
-     * 
-     * @param monitor
-     * @param db2DataSource
-     * @param tablespaceId
-     * @return DB2Tablespace
-     * @throws DBException
-     */
     public static DB2Tablespace findTablespaceById(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Integer tablespaceId)
         throws DBException
     {
@@ -386,16 +420,6 @@ public class DB2Utils {
         return null;
     }
 
-    /**
-     * Lookup a DB2Bufferpool by its Id
-     * 
-     * 
-     * @param monitor
-     * @param db2DataSource
-     * @param bufferpoolId
-     * @return
-     * @throws DBException
-     */
     public static DB2Bufferpool findBufferpoolById(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Integer bufferpoolId)
         throws DBException
     {

@@ -48,6 +48,8 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     private String owner;
     private DB2OwnerType ownerType;
 
+    private Integer tableId;
+
     private Timestamp createTime;
     private Timestamp alterTime;
     private Timestamp invalidateTime;
@@ -64,6 +66,8 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+
+        this.tableId = JDBCUtils.safeGetInteger(dbResult, "TABLEID");
 
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
@@ -174,8 +178,14 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
         return ownerType;
     }
 
+    @Property(viewable = true, order = 98)
+    public Integer getTableId()
+    {
+        return tableId;
+    }
+
     @Override
-    @Property(viewable = false, editable = true, updatable = true)
+    @Property(viewable = false, order = 99, editable = true, updatable = true)
     public String getDescription()
     {
         return remarks;
