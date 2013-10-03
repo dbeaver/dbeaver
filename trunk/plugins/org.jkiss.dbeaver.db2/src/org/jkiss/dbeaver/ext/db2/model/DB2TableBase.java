@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -46,6 +47,12 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
 
     private String owner;
     private DB2OwnerType ownerType;
+
+    private Timestamp createTime;
+    private Timestamp alterTime;
+    private Timestamp invalidateTime;
+    private Timestamp lastRegenTime;
+
     private String remarks;
 
     // -----------------
@@ -57,6 +64,12 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+        this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
+        this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
+
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
     }
 
@@ -123,6 +136,30 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     public DB2Schema getSchema()
     {
         return super.getContainer();
+    }
+
+    @Property(viewable = false, editable = false, order = 100, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getCreateTime()
+    {
+        return createTime;
+    }
+
+    @Property(viewable = false, editable = false, order = 101, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getAlterTime()
+    {
+        return alterTime;
+    }
+
+    @Property(viewable = false, editable = false, order = 102, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getInvalidateTime()
+    {
+        return invalidateTime;
+    }
+
+    @Property(viewable = false, editable = false, order = 103, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getLastRegenTime()
+    {
+        return lastRegenTime;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)

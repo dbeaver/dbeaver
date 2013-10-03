@@ -72,9 +72,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
     private DB2TableStatus status;
     private DB2TableType type;
-    private Timestamp createTime;
-    private Timestamp alterTime;
-    private Timestamp invalidateTime;
 
     private DB2Tablespace tablespace;
     private DB2Tablespace indexTablespace;
@@ -110,9 +107,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
         this.status = CommonUtils.valueOf(DB2TableStatus.class, JDBCUtils.safeGetString(dbResult, "STATUS"));
         this.type = CommonUtils.valueOf(DB2TableType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
-        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
-        this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
         this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
 
         this.dataCapture = JDBCUtils.safeGetString(dbResult, "DATACAPTURE");
@@ -365,24 +359,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     public void setLongTablespace(DB2Tablespace longTablespace)
     {
         this.longTablespace = longTablespace;
-    }
-
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getCreateTime()
-    {
-        return createTime;
-    }
-
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getAlterTime()
-    {
-        return alterTime;
-    }
-
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getInvalidateTime()
-    {
-        return invalidateTime;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
