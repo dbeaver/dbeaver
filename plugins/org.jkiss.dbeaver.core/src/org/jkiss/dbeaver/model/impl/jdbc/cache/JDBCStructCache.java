@@ -35,18 +35,18 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * JDBC structured objects cache.
- * Stores objects themselves and their child objects.
+ * JDBC structured objects cache. Stores objects themselves and their child objects.
  */
-public abstract class JDBCStructCache<
-    OWNER extends DBSObject,
-    OBJECT extends DBSObject,
-    CHILD extends DBSObject>
-    extends JDBCObjectCache<OWNER, OBJECT> implements DBSStructCache<OWNER, OBJECT, CHILD>
-{
+public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject> extends
+    JDBCObjectCache<OWNER, OBJECT> implements DBSStructCache<OWNER, OBJECT, CHILD> {
     static final Log log = LogFactory.getLog(JDBCStructCache.class);
 
     private final Object objectNameColumn;
@@ -66,24 +66,26 @@ public abstract class JDBCStructCache<
 
     /**
      * Reads children objects from database
-     * @param monitor monitor
-     * @param forObject object for which to read children. If null then reads children for all objects in this container.
-     * @throws org.jkiss.dbeaver.DBException on error
+     * 
+     * @param monitor
+     *            monitor
+     * @param forObject
+     *            object for which to read children. If null then reads children for all objects in this container.
+     * @throws org.jkiss.dbeaver.DBException
+     *             on error
      */
-    public void loadChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject)
-        throws DBException
+    public void loadChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject) throws DBException
     {
-        if ((forObject == null && this.childrenCached) ||
-            (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))) ||
-            monitor.isCanceled())
-        {
+        if ((forObject == null && this.childrenCached)
+            || (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))) || monitor.isCanceled()) {
             return;
         }
         if (forObject == null) {
             super.loadObjects(monitor, owner);
         }
 
-        JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load child objects");
+        JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META,
+            "Load child objects");
         try {
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<OBJECT, List<CHILD>>();
 
@@ -100,9 +102,9 @@ public abstract class JDBCStructCache<
                         }
                         String objectName;
                         if (objectNameColumn instanceof Number) {
-                            objectName = JDBCUtils.safeGetString(dbResult, ((Number)objectNameColumn).intValue());
+                            objectName = JDBCUtils.safeGetString(dbResult, ((Number) objectNameColumn).intValue());
                         } else {
-                            objectName = JDBCUtils.safeGetString(dbResult, objectNameColumn.toString());
+                            objectName = JDBCUtils.safeGetStringTrimmed(dbResult, objectNameColumn.toString());
                         }
 
                         OBJECT object = forObject;
@@ -155,19 +157,15 @@ public abstract class JDBCStructCache<
                     } else if (!objectMap.containsKey(forObject)) {
                         cacheChildren(forObject, new ArrayList<CHILD>());
                     }
-                }
-                finally {
+                } finally {
                     dbResult.close();
                 }
-            }
-            finally {
+            } finally {
                 dbStat.close();
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             throw new DBException(ex);
-        }
-        finally {
+        } finally {
             context.close();
         }
     }
@@ -188,7 +186,9 @@ public abstract class JDBCStructCache<
 
     /**
      * Returns cache for child objects. Creates cache i it doesn't exists
-     * @param forObject parent object
+     * 
+     * @param forObject
+     *            parent object
      * @return cache
      */
     public DBSObjectCache<OBJECT, CHILD> getChildrenCache(final OBJECT forObject)
@@ -207,8 +207,7 @@ public abstract class JDBCStructCache<
         }
     }
 
-    public Collection<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject)
-        throws DBException
+    public Collection<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject) throws DBException
     {
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
@@ -217,8 +216,7 @@ public abstract class JDBCStructCache<
         }
     }
 
-    public CHILD getChild(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject, String objectName)
-        throws DBException
+    public CHILD getChild(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject, String objectName) throws DBException
     {
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
