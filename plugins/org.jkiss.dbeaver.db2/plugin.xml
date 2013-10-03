@@ -382,6 +382,7 @@
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SequenceManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2RoutineManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
 
 <!-- DF Not mature enough for first version       
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2DataTypeManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
