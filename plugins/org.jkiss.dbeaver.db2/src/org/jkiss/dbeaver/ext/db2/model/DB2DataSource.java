@@ -120,6 +120,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private String activeSchemaName;
     private String planTableSchemaName;
+    private Boolean isAuthorisedForAPPLICATIONS;
 
     // -----------------------
     // Constructors
@@ -177,6 +178,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
                 if (this.activeSchemaName != null) {
                     this.activeSchemaName = this.activeSchemaName.trim();
                 }
+
+                this.isAuthorisedForAPPLICATIONS = DB2Utils.userIsAuthorisedForAPPLICATIONS(context, activeSchemaName);
 
                 listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
                 listDBParameters = DB2Utils.readDBCfg(monitor, context);
@@ -494,6 +497,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException
     {
         return listDBMParameters;
+    }
+
+    public boolean isAuthorisedForAPPLICATIONS()
+    {
+        return isAuthorisedForAPPLICATIONS;
     }
 
     // -------------------------

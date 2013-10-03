@@ -64,14 +64,14 @@
       </menuContribution>
     </extension>
 -->    
-
+<!--
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.db2.actions.DB2ObjectAdapter">
             <adapter type="org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject"/>
             <adapter type="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
         </factory>
     </extension>
-
+-->
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
@@ -243,12 +243,15 @@
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings" >
                     
-                    <object type="org.jkiss.dbeaver.ext.db2.model.app.DB2ApplicationEditor" label="%tree.applications.node.name" icon="#admin" description="Server application manager" editor="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"/>
-                    
+                    <object type="org.jkiss.dbeaver.ext.db2.model.app.DB2ApplicationEditor" 
+                            label="%tree.applications.node.name" 
+                            icon="#admin" 
+                            description="Server application manager" 
+                            editor="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
+                            visibleIf="object.dataSource.authorisedForAPPLICATIONS"/>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" label="%tree.dbparameters.node.name" icon="#info" description="Database Configuration">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" label="%tree.dbmparameters.node.name" icon="#info" description="Database Manager Configuration">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbmParameters" icon="#info" navigable="false" virtual="true"/>
                     </folder>

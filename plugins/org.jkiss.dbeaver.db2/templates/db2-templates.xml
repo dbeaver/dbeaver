@@ -28,23 +28,23 @@
               context="sql_db2" 
               autoinsert="true" 
               description="values (current timestamp)">
-       values (current timestamp);
+VALUED (CURRENT TIMESTAMP);
     </template>
 
     <template id="org.jkiss.dbeaver.templates.cmdreorg" 
               name="cmdreorg" 
               context="sql_db2" 
               autoinsert="true" 
-              description="reorg table">
-       call sysproc.cmd('reorg table ${table}');
+              description="Reorg Table">
+call SYSPROC.ADMIN_CMD('REORG TABLE ${table}');
     </template>
 
     <template id="org.jkiss.dbeaver.templates.cmdrunstats" 
               name="cmdrunstats" 
               context="sql_db2" 
               autoinsert="true" 
-              description="runstats on table">
-       call sysproc.cmd('runstats on table ${table} with distribution and detailed indexes all');
+              description="Runstats on Table">
+call SYSPROC.ADMIN_CMD('RUNSTATS On TABLE ${table} WITH DISTRIBUTION AND DETAILED INDEXES ALL');
     </template>
 
     <template id="org.jkiss.dbeaver.templates.cmdAdminDropSchema" 
@@ -53,7 +53,7 @@
               autoinsert="true" 
               description="Admin Drop Schema"
               >
-       call sysproc.admin_drop_schema('${schema}',null,,'&lt;error schema&gt;',','&lt;error table&gt;');
+call SYSPROC.ADMIN_DROP_SCHEMA('${schema}',null,?,?);
     </template>
     
     <template id="org.jkiss.dbeaver.templates.cmdAdminCopySchema" 
@@ -61,7 +61,7 @@
               context="sql_db2" 
               autoinsert="true" 
               description="Admin Copy Schema">
-       call sysproc.admin_copy_schema('${schema}','&lt;target schema&gt;','COPY', NULL, '&lt;source ts1, source ts2&gt;','&lt;target ts1, target ts2&gt;','&lt;error schema&gt;',','&lt;error table&gt;');
+call SYSPROC.ADMIN_COPY_SCHEMA('${schema}','&lt;target schema&gt;','COPY', NULL, '&lt;source ts1, source ts2&gt;','&lt;target ts1, target ts2&gt;',?,?);
     </template>
 
 </templates>
