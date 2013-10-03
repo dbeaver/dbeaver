@@ -355,15 +355,21 @@
                 description="%editor.package.declaration.description" 
                 icon="#sql_text" 
                 position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
+                type="section">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
         </editor>
-        <editor id="source.ddl" class="org.jkiss.dbeaver.ext.db2.editors.DB2ObjectDDLEditor"
-            label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+        <editor id="source.ddl" 
+                class="org.jkiss.dbeaver.ext.db2.editors.DB2ObjectDDLEditor"
+                label="DDL" 
+                description="DDL" 
+                icon="#sql_text" 
+                position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
+                type="section">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
         </editor>
         
@@ -374,11 +380,11 @@
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ForeignKeyManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2UniqueKeyManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SequenceManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
 
 <!-- DF Not mature enough for first version       
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2DataTypeManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
 -->        
     </extension>
 
