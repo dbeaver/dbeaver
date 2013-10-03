@@ -103,7 +103,7 @@ public class DB2Utils {
     // ------------------------
     public static Boolean userIsAuthorisedForAPPLICATIONS(JDBCExecutionContext context, String authId) throws SQLException
     {
-        LOG.debug("Check is user '" + authId + "' is authorised for SYSIBMADM Views");
+        LOG.debug("Check if user '" + authId + "' is authorised for SYSIBMADM Views");
         String res = JDBCUtils.queryString(context, AUT_APP, authId);
         if (res == null) {
             return false;
@@ -236,7 +236,7 @@ public class DB2Utils {
     public static String checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
         throws DBCException
     {
-        LOG.debug("Check EXPLAIN tables in " + explainTableSchemaName);
+        LOG.debug("Check EXPLAIN tables in '" + explainTableSchemaName + "'");
 
         monitor.beginTask("Check EXPLAIN tables", 1);
 
@@ -255,7 +255,7 @@ public class DB2Utils {
                 return explainTableSchemaName;
 
             } catch (SQLException e) {
-                System.out.println(e.getErrorCode() + " " + e.getSQLState() + " " + e.getMessage());
+                LOG.debug("RC:" + e.getErrorCode() + " SQLState:" + e.getSQLState() + " " + e.getMessage());
                 if (e.getErrorCode() == CALL_INST_OBJ_BAD_RC) {
                     LOG.debug("No valid EXPLAIN tables found in schema " + explainTableSchemaName + ". Check within " + SYSTOOLS
                         + ".");
@@ -265,7 +265,7 @@ public class DB2Utils {
                         LOG.debug("EXPLAIN tables with schema " + SYSTOOLS + " found.");
                         return SYSTOOLS;
                     } catch (SQLException e2) {
-                        System.out.println("" + e.getErrorCode());
+                        LOG.debug("RC:" + e2.getErrorCode() + " SQLState:" + e2.getSQLState() + " " + e2.getMessage());
                         if (e.getErrorCode() == CALL_INST_OBJ_BAD_RC) {
                             LOG.warn("No valid EXPLAIN tables found in schema " + SYSTOOLS);
                             return null;

@@ -36,6 +36,12 @@ public class DB2Constants {
     public static final String PROP_TRACE_APPEND = DBConstants.INTERNAL_PROP_PREFIX + "trace.append";
     public static final String PROP_TRACE_LEVEL = DBConstants.INTERNAL_PROP_PREFIX + "trace.level";
 
+    // DB2 Versions
+    public static final Double DB2v9_5 = 9.5;
+    public static final Double DB2v9_7 = 9.7;
+    public static final Double DB2v10_1 = 10.1;
+    public static final Double DB2v10_5 = 10.5;
+
     // Display Categories
     public static final String CAT_AUDIT = "Audit";
     public static final String CAT_AUTH = "Authorities";

@@ -35,7 +35,6 @@ public class DB2Bufferpool extends DB2GlobalObject {
     private String dbpgName;
     private Integer nPages;
     private Integer pageSize;
-    private Integer estore;
     private Integer numBlockPages;
     private Integer blockSize;
 
@@ -52,7 +51,6 @@ public class DB2Bufferpool extends DB2GlobalObject {
         this.dbpgName = JDBCUtils.safeGetString(dbResult, "DBPGNAME");
         this.nPages = JDBCUtils.safeGetInteger(dbResult, "NPAGES");
         this.pageSize = JDBCUtils.safeGetInteger(dbResult, "PAGESIZE");
-        this.estore = JDBCUtils.safeGetInteger(dbResult, "ESTORE");
         this.numBlockPages = JDBCUtils.safeGetInteger(dbResult, "NUMBLOCKPAGES");
         this.blockSize = JDBCUtils.safeGetInteger(dbResult, "BLOCKSIZE");
     }
@@ -90,12 +88,6 @@ public class DB2Bufferpool extends DB2GlobalObject {
     public Integer getPageSize()
     {
         return pageSize;
-    }
-
-    @Property(viewable = true, editable = false, order = 6)
-    public Integer getEstore()
-    {
-        return estore;
     }
 
     @Property(viewable = true, editable = false, order = 7)

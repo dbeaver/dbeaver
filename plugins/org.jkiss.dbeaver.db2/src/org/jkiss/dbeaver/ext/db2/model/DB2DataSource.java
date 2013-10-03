@@ -122,6 +122,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private String planTableSchemaName;
     private Boolean isAuthorisedForAPPLICATIONS;
 
+    private Double version; // Database Version
+
     // -----------------------
     // Constructors
     // -----------------------
@@ -156,6 +158,16 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
             info.addSQLKeyword(kw);
         }
+
+        version = 0.0;
+        try {
+            version = Integer.valueOf(metaData.getDatabaseMajorVersion()).doubleValue();
+            version += Integer.valueOf(metaData.getDatabaseMinorVersion()).doubleValue() / 10;
+        } catch (SQLException e) {
+            LOG.warn("SQLException when reading database version. Set it to 0.0 : " + e.getMessage());
+        }
+        LOG.debug("Database version : " + version);
+
         return info;
     }
 
@@ -170,25 +182,23 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     {
         super.initialize(monitor);
 
-        {
-            final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
-            try {
-                // Get active schema
-                this.activeSchemaName = JDBCUtils.queryString(context, GET_CURRENT_SCHEMA);
-                if (this.activeSchemaName != null) {
-                    this.activeSchemaName = this.activeSchemaName.trim();
-                }
-
-                this.isAuthorisedForAPPLICATIONS = DB2Utils.userIsAuthorisedForAPPLICATIONS(context, activeSchemaName);
-
-                listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
-                listDBParameters = DB2Utils.readDBCfg(monitor, context);
-
-            } catch (SQLException e) {
-                LOG.warn(e);
-            } finally {
-                context.close();
+        final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+        try {
+            // Get active schema
+            this.activeSchemaName = JDBCUtils.queryString(context, GET_CURRENT_SCHEMA);
+            if (this.activeSchemaName != null) {
+                this.activeSchemaName = this.activeSchemaName.trim();
             }
+
+            this.isAuthorisedForAPPLICATIONS = DB2Utils.userIsAuthorisedForAPPLICATIONS(context, activeSchemaName);
+
+            listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
+            listDBParameters = DB2Utils.readDBCfg(monitor, context);
+
+        } catch (SQLException e) {
+            LOG.warn(e);
+        } finally {
+            context.close();
         }
 
         this.dataTypeCache.getObjects(monitor, this);
@@ -526,6 +536,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DBSObjectCache<DB2DataSource, DB2Variable> getVariableCache()
     {
         return variableCache;
+    }
+
+    public Double getVersion()
+    {
+        return version;
     }
 
 }
