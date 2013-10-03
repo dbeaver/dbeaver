@@ -38,9 +38,23 @@ import java.sql.SQLException;
  */
 public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> {
 
-    private static final String SQL_TABS = "SELECT * FROM SYSCAT.VIEWS WHERE VIEWSCHEMA=? ORDER BY VIEWNAME WITH UR";
+    private static final String SQL_VIEWS;
     private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? AND TABNAME = ? ORDER BY COLNO WITH UR";
     private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? ORDER BY TABNAME, COLNO WITH UR";
+
+    static {
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("SELECT *");
+        sb.append(" FROM SYSCAT.TABLES T");
+        sb.append("    , SYSCAT.VIEWS V");
+        sb.append(" WHERE V.VIEWSCHEMA = ?");
+        sb.append("   AND T.TABSCHEMA = V.VIEWSCHEMA");
+        sb.append("   AND T.TABNAME = V.VIEWNAME");
+        sb.append(" ORDER BY VIEWNAME");
+        sb.append(" WITH UR");
+
+        SQL_VIEWS = sb.toString();
+    }
 
     public DB2ViewCache()
     {
@@ -51,7 +65,7 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_TABS);
+        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_VIEWS);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
