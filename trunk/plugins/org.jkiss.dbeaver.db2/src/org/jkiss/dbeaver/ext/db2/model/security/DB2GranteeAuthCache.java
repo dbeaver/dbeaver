@@ -54,8 +54,6 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
 
     private static String SQL;
 
-    // TODO DF: Add auths for Methods
-
     static {
 
         // Auth Columns:
@@ -131,7 +129,6 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("  FROM SYSCAT.ROUTINEAUTH");
         sb.append(" WHERE GRANTEETYPE = ?");// 11
         sb.append("   AND GRANTEE = ?");// 12
-        sb.append("   AND ROUTINETYPE NOT IN ('" + DB2RoutineType.M.name() + "')"); // DF: Exclude Methods for now
 
         sb.append(" UNION ALL ");
 
@@ -251,12 +248,15 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
             case F:
                 DB2Routine db2Udf = DB2Utils.findUDFBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
                 return new DB2AuthUDF(monitor, db2Grantee, db2Udf, resultSet);
+            case M:
+                DB2Routine db2Method = DB2Utils.findMethodBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+                return new DB2AuthMethod(monitor, db2Grantee, db2Method, resultSet);
             case P:
                 DB2Routine db2Procedure = DB2Utils.findProcedureBySchemaNameAndName(monitor, db2DataSource, objectSchemaName,
                     objectName);
                 return new DB2AuthProcedure(monitor, db2Grantee, db2Procedure, resultSet);
             default:
-                throw new DBException("Programming error: Methods are not supported yet and the SELECT statement must exclude them");
+                throw new DBException(routineType + " isnt a vald DB2RoutineType");
             }
 
         case SCHEMA:

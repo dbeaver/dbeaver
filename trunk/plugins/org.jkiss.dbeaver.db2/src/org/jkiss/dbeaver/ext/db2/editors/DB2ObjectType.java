@@ -168,12 +168,18 @@ public enum DB2ObjectType implements DBSObjectType {
                 routine = schema.getUdfCache().getObject(monitor, schema, tokens[0]);
                 if (routine == null) {
                     routine = schema.getProcedureCache().getObject(monitor, schema, tokens[0]);
+                    if (routine == null) {
+                        routine = schema.getMethodCache().getObject(monitor, schema, tokens[0]);
+                    }
                 }
             } else {
                 DB2Module module = schema.getModuleCache().getObject(monitor, schema, tokens[0]);
                 routine = module.getFunctionCache().getObject(monitor, module, tokens[1]);
                 if (routine == null) {
                     routine = module.getProcedureCache().getObject(monitor, module, tokens[1]);
+                    if (routine == null) {
+                        routine = module.getMethodCache().getObject(monitor, module, tokens[1]);
+                    }
                 }
             }
             return routine;

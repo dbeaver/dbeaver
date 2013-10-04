@@ -511,6 +511,16 @@ public class DB2Utils {
         return db2Schema.getPackage(monitor, db2PackageName);
     }
 
+    public static DB2Routine findMethodBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2MethodName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getMethod(monitor, db2MethodName);
+    }
+
     public static DB2Routine findProcedureBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
         String db2SchemaName, String db2ProcedureName) throws DBException
     {

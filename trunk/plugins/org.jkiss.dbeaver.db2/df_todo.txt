@@ -35,6 +35,7 @@ Serge to check?
   - looked for icon sessions.png used by myslq and oracle, didn't find it
   - missing PK columns indicator/icon in columns lists (Unique, foreign)
   - Enhance EXPLAIN facility with a graphic view of nodes -> Later
+  - CLob/Blob/XML type viewer in @Properties -> later
   
 Missing Menu Actions
   - Almost everywhere
@@ -58,14 +59,15 @@ Missing Menu Actions
     - Server OS INFO
 
 Missing metadata:
+- DB2TableColum
+  - Masks + Row Permissions (SYSCAT.CONTROLS)
 - DB2Routines
+  = methods
   - variables, rowfields
   - dependencies
   - options
 - DB2TablePartion
   - keys in DATAPARTITIONEXPRESSION 
-- XML Schemas  
-  - add dependencies
 - Federated Function Mappings (routinesfederated, funcmapping)
 - Federated Remote indexes (indexoptions)
 
