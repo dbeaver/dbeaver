@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
+import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
@@ -117,6 +118,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private List<DB2Parameter> listDBParameters;
     private List<DB2Parameter> listDBMParameters;
+    private List<DB2XMLString> listXMLStrings;
 
     private String activeSchemaName;
     private String planTableSchemaName;
@@ -194,6 +196,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
             listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
             listDBParameters = DB2Utils.readDBCfg(monitor, context);
+            listXMLStrings = DB2Utils.readXMLStrings(monitor, context);
 
         } catch (SQLException e) {
             LOG.warn(e);
@@ -267,6 +270,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
     {
         // TODO DF: No idea what to do with this method, what it is used for...
+    }
+
+    public boolean isAuthorisedForAPPLICATIONS()
+    {
+        return isAuthorisedForAPPLICATIONS;
     }
 
     // --------------------------
@@ -509,9 +517,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         return listDBMParameters;
     }
 
-    public boolean isAuthorisedForAPPLICATIONS()
+    public List<DB2XMLString> getXmlStrings(DBRProgressMonitor monitor) throws DBException
     {
-        return isAuthorisedForAPPLICATIONS;
+        return listXMLStrings;
     }
 
     // -------------------------

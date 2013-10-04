@@ -227,6 +227,9 @@
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Variable" label="%tree.variables.node.name" icon="#data_types" description="Global Variables">
                         <items label="%tree.variable.node.name" path="variable" property="variables" icon="#variable"/>
                     </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.info.DB2XMLString" label="%tree.xmlstrings.node.name" icon="#parameters" description="XML Strings">
+                        <items label="%tree.xmlstring.node.name" path="xmlstring" property="xmlStrings" icon="#parameter" navigable="false" virtual="true"/>
+                    </folder>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool" label="%tree.bufferpools.node.name" icon="#bufferpools" description="Bufferpools">
