@@ -16,12 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.edit;
+package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
@@ -29,13 +28,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * DB2 Trigger Manager
+ * DB2 XML Schema Manager
  * 
  * @author Denis Forveille
  */
-public class DB2TriggerManager extends JDBCObjectEditor<DB2Trigger, DB2Schema> {
-
-    private static final String SQL_DROP_TRIGGER = "DROP TRIGGER %s";
+public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject & DBPSaveableObject, CONTAINER_TYPE extends DBSObject>
+    extends JDBCObjectEditor<OBJECT_TYPE, CONTAINER_TYPE> {
 
     @Override
     public long getMakerOptions()
@@ -43,23 +41,23 @@ public class DB2TriggerManager extends JDBCObjectEditor<DB2Trigger, DB2Schema> {
         return FEATURE_CREATE_UNSUPPORTED;
     }
 
+    public abstract String buildDropStatement(OBJECT_TYPE object);
+
     @Override
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        String triggerName = command.getObject().getFullQualifiedName();
-        IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop trigger", String.format(SQL_DROP_TRIGGER,
-            triggerName));
+        IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop", buildDropStatement(command.getObject()));
         return new IDatabasePersistAction[] { action };
     }
 
     @Override
-    public DBSObjectCache<? extends DBSObject, DB2Trigger> getObjectsCache(DB2Trigger db2Trigger)
+    public DBSObjectCache<CONTAINER_TYPE, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object)
     {
-        return db2Trigger.getSchema().getTriggerCache();
+        return null;
     }
 
     @Override
-    protected DB2Trigger createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Schema db2Schema,
+    protected OBJECT_TYPE createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, CONTAINER_TYPE owner,
         Object copyFrom)
     {
         return null;

@@ -42,4 +42,9 @@ public class DB2SourceDeclarationEditor extends SQLEditorNested<DB2SourceObject>
         getEditorInput().getPropertySource().setPropertyValue(DB2Constants.PROP_SOURCE_DECLARATION, sourceText);
     }
 
+    @Override
+    protected boolean isReadOnly()
+    {
+        return true;
+    }
 }
