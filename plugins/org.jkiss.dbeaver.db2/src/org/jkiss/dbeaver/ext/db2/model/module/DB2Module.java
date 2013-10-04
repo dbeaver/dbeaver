@@ -48,12 +48,14 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
 
     private static final String C_CON = "SELECT * FROM SYSCAT.CONDITIONS WHERE CONDSCHEMA = ? AND CONDMODULENAME = ? ORDER BY CONDNAME WITH UR";
     private static final String C_FCT = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINEMODULENAME = ? AND ROUTINETYPE = 'F' ORDER BY ROUTINENAME WITH UR";
+    private static final String C_MOD = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINEMODULENAME = ? AND ROUTINETYPE = 'M' ORDER BY ROUTINENAME WITH UR";
     private static final String C_PRC = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINEMODULENAME = ? AND ROUTINETYPE = 'P' ORDER BY ROUTINENAME WITH UR";
     private static final String C_TYP = "SELECT * FROM SYSCAT.DATATYPES WHERE TYPESCHEMA = ? AND TYPEMODULENAME = ? ORDER BY TYPENAME WITH UR";
     private static final String C_VAR = "SELECT * FROM SYSCAT.VARIABLES WHERE VARSCHEMA = ? AND VARMODULENAME = ? ORDER BY VARNAME WITH UR";
 
     private final DBSObjectCache<DB2Module, DB2ModuleCondition> conditionCache;
     private final DBSObjectCache<DB2Module, DB2Routine> functionCache;
+    private final DBSObjectCache<DB2Module, DB2Routine> methodCache;
     private final DBSObjectCache<DB2Module, DB2Routine> procedureCache;
     private final DBSObjectCache<DB2Module, DB2DataType> typeCache;
     private final DBSObjectCache<DB2Module, DB2Variable> variableCache;
@@ -85,6 +87,7 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
         this.conditionCache = new JDBCObjectSimpleCache<DB2Module, DB2ModuleCondition>(DB2ModuleCondition.class, C_CON,
             schema.getName(), name);
         this.functionCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_FCT, schema.getName(), name);
+        this.methodCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_MOD, schema.getName(), name);
         this.procedureCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_PRC, schema.getName(), name);
         this.typeCache = new JDBCObjectSimpleCache<DB2Module, DB2DataType>(DB2DataType.class, C_TYP, schema.getName(), name);
         this.variableCache = new JDBCObjectSimpleCache<DB2Module, DB2Variable>(DB2Variable.class, C_VAR, schema.getName(), name);
@@ -207,6 +210,11 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
     public DBSObjectCache<DB2Module, DB2Routine> getFunctionCache()
     {
         return functionCache;
+    }
+
+    public DBSObjectCache<DB2Module, DB2Routine> getMethodCache()
+    {
+        return methodCache;
     }
 
     public DBSObjectCache<DB2Module, DB2Routine> getProcedureCache()
