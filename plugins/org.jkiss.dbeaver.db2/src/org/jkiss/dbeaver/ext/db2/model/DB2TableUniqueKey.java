@@ -71,7 +71,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
         this.enableQueryOpt = JDBCUtils.safeGetBoolean(dbResult, "ENABLEQUERYOPT", DB2YesNo.Y.name());
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        if (table.getDataSource().getVersion() >= DB2Constants.DB2v10_1) {
+        if (table.getDataSource().isAtLeastV10_1()) {
             this.trusted = JDBCUtils.safeGetBoolean(dbResult, "TRUSTED", DB2YesNo.Y.name());
         }
 

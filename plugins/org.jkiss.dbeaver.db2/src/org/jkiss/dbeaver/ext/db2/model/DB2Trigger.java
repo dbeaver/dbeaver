@@ -108,7 +108,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
         this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        if (table.getDataSource().getVersion() >= DB2Constants.DB2v10_1) {
+        if (table.getDataSource().isAtLeastV10_1()) {
             this.eventUpdate = JDBCUtils.safeGetBoolean(dbResult, "EVENTUPDATE", DB2YesNo.Y.name());
             this.eventDelete = JDBCUtils.safeGetBoolean(dbResult, "EVENTDELETE", DB2YesNo.Y.name());
             this.eventInsert = JDBCUtils.safeGetBoolean(dbResult, "EVENTINSERT", DB2YesNo.Y.name());
