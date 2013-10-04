@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineParmsCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineLanguage;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineOrigin;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineValidType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
@@ -57,6 +58,8 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     private final DB2RoutineParmsCache parmsCache = new DB2RoutineParmsCache();
 
     private DB2Schema db2Schema;
+
+    private DB2RoutineType type;
 
     private String routineName;
     private Integer routineId;
@@ -94,6 +97,9 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
 
         this.routineName = JDBCUtils.safeGetString(dbResult, "ROUTINENAME");
         this.routineId = JDBCUtils.safeGetInteger(dbResult, "ROUTINEID");
+
+        this.type = CommonUtils.valueOf(DB2RoutineType.class, JDBCUtils.safeGetString(dbResult, "ROUTINETYPE"));
+
         this.origin = CommonUtils.valueOf(DB2RoutineOrigin.class, JDBCUtils.safeGetString(dbResult, "ORIGIN"));
         this.language = CommonUtils.valueOf(DB2RoutineLanguage.class, JDBCUtils.safeGetStringTrimmed(dbResult, "LANGUAGE"));
         this.dialect = JDBCUtils.safeGetString(dbResult, "DIALECT");
@@ -125,6 +131,14 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
 
     }
 
+    public DB2RoutineType getType()
+    {
+        return type;
+    }
+
+    // -----------------
+    // Business Contract
+    // -----------------
     @Override
     public DBSObjectState getObjectState()
     {
@@ -154,19 +168,19 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     @Override
     public DBSProcedureType getProcedureType()
     {
-        return DBSProcedureType.PROCEDURE;
+        return type.getProcedureType();
     }
 
     @Override
     public String getFullQualifiedName()
     {
-        return name; // TODO DF: to be reviewed
+        return parent.getName() + "." + name;
     }
 
     @Override
     public DBSObjectContainer getContainer()
     {
-        return null; // TODO DF
+        return getContainer();
     }
 
     // -----------------
@@ -185,7 +199,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     @Override
     public DB2SourceType getSourceType()
     {
-        return DB2SourceType.PROCEDURE;
+        return type.getSourceType();
     }
 
     @Override
