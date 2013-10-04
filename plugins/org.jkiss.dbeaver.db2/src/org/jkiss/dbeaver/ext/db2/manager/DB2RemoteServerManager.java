@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Federated Server Manager
@@ -35,5 +36,11 @@ public class DB2RemoteServerManager extends DB2AbstractDropOnlyManager<DB2Remote
     {
         String name = db2RemoteServer.getName();
         return String.format(SQL_DROP, name);
+    }
+
+    @Override
+    public DBSObjectCache<DB2DataSource, DB2RemoteServer> getObjectsCache(DB2RemoteServer db2RemoteServer)
+    {
+        return db2RemoteServer.getDataSource().getRemoteServerCache();
     }
 }

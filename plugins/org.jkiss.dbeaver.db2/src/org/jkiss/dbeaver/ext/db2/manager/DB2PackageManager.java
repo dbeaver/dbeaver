@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2Package;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Package Manager
@@ -36,4 +37,11 @@ public class DB2PackageManager extends DB2AbstractDropOnlyManager<DB2Package, DB
         String fullyQualifiedName = db2Package.getFullQualifiedName();
         return String.format(SQL_DROP, fullyQualifiedName);
     }
+
+    @Override
+    public DBSObjectCache<DB2Schema, DB2Package> getObjectsCache(DB2Package db2Package)
+    {
+        return db2Package.getSchema().getPackageCache();
+    }
+
 }

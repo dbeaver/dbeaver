@@ -18,15 +18,16 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Role Manager
  * 
  * @author Denis Forveille
  */
-public class DB2RoleManager extends DB2AbstractDropOnlyManager<DB2Role, DB2Schema> {
+public class DB2RoleManager extends DB2AbstractDropOnlyManager<DB2Role, DB2DataSource> {
 
     private static final String SQL_DROP = "DROP ROLE %s";
 
@@ -36,4 +37,11 @@ public class DB2RoleManager extends DB2AbstractDropOnlyManager<DB2Role, DB2Schem
         String name = db2Role.getName();
         return String.format(SQL_DROP, name);
     }
+
+    @Override
+    public DBSObjectCache<DB2DataSource, DB2Role> getObjectsCache(DB2Role db2Role)
+    {
+        return db2Role.getDataSource().getRoleCache();
+    }
+
 }

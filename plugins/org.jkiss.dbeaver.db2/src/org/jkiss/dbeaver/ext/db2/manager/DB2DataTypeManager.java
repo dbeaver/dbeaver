@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Data Type Manager
@@ -35,5 +36,11 @@ public class DB2DataTypeManager extends DB2AbstractDropOnlyManager<DB2DataType, 
     {
         String fullyQualifiedName = db2DataType.getFullQualifiedName();
         return String.format(SQL_DROP, fullyQualifiedName);
+    }
+
+    @Override
+    public DBSObjectCache<DB2Schema, DB2DataType> getObjectsCache(DB2DataType db2DataType)
+    {
+        return db2DataType.getSchema().getUdtCache();
     }
 }

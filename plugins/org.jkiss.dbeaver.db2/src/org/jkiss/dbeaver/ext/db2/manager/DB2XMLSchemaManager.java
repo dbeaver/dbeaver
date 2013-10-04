@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 XML Schema Manager
@@ -35,5 +36,11 @@ public class DB2XMLSchemaManager extends DB2AbstractDropOnlyManager<DB2XMLSchema
     {
         String fullyQualifiedName = db2XMLSchema.getFullQualifiedName();
         return String.format(SQL_DROP, fullyQualifiedName);
+    }
+
+    @Override
+    public DBSObjectCache<DB2Schema, DB2XMLSchema> getObjectsCache(DB2XMLSchema db2XMLSchema)
+    {
+        return db2XMLSchema.getSchema().getXmlSchemaCache();
     }
 }

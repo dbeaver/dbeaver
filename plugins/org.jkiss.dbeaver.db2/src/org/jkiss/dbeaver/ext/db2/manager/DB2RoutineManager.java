@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Routine Manager
@@ -47,4 +48,21 @@ public class DB2RoutineManager extends DB2AbstractDropOnlyManager<DB2Routine, DB
             throw new IllegalStateException(db2Routine.getType() + " not suppoted");
         }
     }
+
+    @Override
+    public DBSObjectCache<DB2Schema, DB2Routine> getObjectsCache(DB2Routine db2Routine)
+    {
+        switch (db2Routine.getType()) {
+        case F:
+            return db2Routine.getSchema().getUdfCache();
+        case M:
+            return db2Routine.getSchema().getMethodCache();
+        case P:
+            return db2Routine.getSchema().getProcedureCache();
+        default:
+            throw new IllegalStateException(db2Routine.getType() + " is not a supported DB2RoutineType");
+        }
+
+    }
+
 }

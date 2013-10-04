@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Federated Nickname Manager
@@ -36,4 +37,11 @@ public class DB2NicknameManager extends DB2AbstractDropOnlyManager<DB2Nickname, 
         String fullyQualifiedName = db2Nickname.getFullQualifiedName();
         return String.format(SQL_DROP, fullyQualifiedName);
     }
+
+    @Override
+    public DBSObjectCache<DB2Schema, DB2Nickname> getObjectsCache(DB2Nickname db2Nickname)
+    {
+        return db2Nickname.getSchema().getNicknameCache();
+    }
+
 }

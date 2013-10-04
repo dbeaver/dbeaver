@@ -21,34 +21,44 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cache for DB2 Routines (UDF + procedures)
+ * Cache for DB2 Routines (UDF + Methods + Procedures)
  * 
  * @author Denis Forveille
  */
 public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
 
-    private static final String SQL_P = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'P' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
     private static final String SQL_F = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'F' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_M = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'M' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_P = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'P' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
 
-    private String sql;
+    private final String sql;
 
-    public DB2RoutineCache(DBSProcedureType procedureType)
+    public DB2RoutineCache(DB2RoutineType routineType)
     {
         super();
-        if (procedureType.equals(DBSProcedureType.FUNCTION)) {
+
+        switch (routineType) {
+        case F:
             sql = SQL_F;
-        } else {
+            break;
+        case M:
+            sql = SQL_M;
+            break;
+        case P:
             sql = SQL_P;
+            break;
+        default:
+            throw new IllegalArgumentException(routineType + " is not a supported DB2RoutineType");
         }
     }
 

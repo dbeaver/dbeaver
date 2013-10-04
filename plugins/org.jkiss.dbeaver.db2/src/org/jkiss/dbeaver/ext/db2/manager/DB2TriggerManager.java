@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Trigger Manager
@@ -35,6 +36,12 @@ public class DB2TriggerManager extends DB2AbstractDropOnlyManager<DB2Trigger, DB
     {
         String fullyQualifiedName = db2Trigger.getFullQualifiedName();
         return String.format(SQL_DROP, fullyQualifiedName);
+    }
+
+    @Override
+    public DBSObjectCache<DB2Schema, DB2Trigger> getObjectsCache(DB2Trigger db2Trigger)
+    {
+        return db2Trigger.getSchema().getTriggerCache();
     }
 
 }
