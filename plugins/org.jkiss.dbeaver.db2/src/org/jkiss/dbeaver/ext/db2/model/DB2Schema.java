@@ -147,7 +147,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         if (getName().equals("DB2QP")) {
             return true;
         }
-        if (getName().equals("SESSION")) {
+        if (getName().equals("SQLJ")) {
+            return true;
+        }
+        if (getName().equals("NULLID")) {
             return true;
         }
         return false;
