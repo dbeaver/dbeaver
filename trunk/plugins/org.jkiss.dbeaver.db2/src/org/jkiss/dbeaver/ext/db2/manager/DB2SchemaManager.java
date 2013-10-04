@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * DB2 Schema Manager
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource> {
@@ -59,10 +59,8 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
     }
 
     @Override
-    protected DB2Schema createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                             DBECommandContext context,
-                                             DB2DataSource parent,
-                                             Object copyFrom)
+    protected DB2Schema createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2DataSource parent,
+        Object copyFrom)
     {
         NewSchemaDialog dialog = new NewSchemaDialog(workbenchWindow.getShell());
         if (dialog.open() != IDialogConstants.OK_ID) {
@@ -83,7 +81,7 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
         String schemaName = command.getObject().getName();
         AbstractDatabasePersistAction action = new AbstractDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
             schemaName));
-        return new IDatabasePersistAction[]{action};
+        return new IDatabasePersistAction[] { action };
     }
 
     @Override
@@ -92,14 +90,14 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
         String schemaName = command.getObject().getName();
         IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
             schemaName));
-        return new IDatabasePersistAction[]{action};
+        return new IDatabasePersistAction[] { action };
     }
 
     // --------
     // Dialog
     // --------
 
-    static class NewSchemaDialog extends Dialog {
+    private static class NewSchemaDialog extends Dialog {
 
         private String schemaName;
 
