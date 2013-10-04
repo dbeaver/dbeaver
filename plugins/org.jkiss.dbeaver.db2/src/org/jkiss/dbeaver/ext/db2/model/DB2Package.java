@@ -129,7 +129,7 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        if (schema.getDataSource().getVersion() >= DB2Constants.DB2v10_1) {
+        if (schema.getDataSource().isAtLeastV10_1()) {
             this.busTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "BUSTIMESENSITIVE", DB2YesNo.Y.name());
             this.sysTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "SYSTIMESENSITIVE", DB2YesNo.Y.name());
             this.keepDynamic = JDBCUtils.safeGetBoolean(dbResult, "KEEPDYNAMIC", DB2YesNo.Y.name());

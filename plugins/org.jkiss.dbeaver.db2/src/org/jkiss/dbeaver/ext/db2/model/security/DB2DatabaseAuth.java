@@ -99,7 +99,7 @@ public class DB2DatabaseAuth extends DB2GlobalObject implements DBAPrivilege {
         this.dataAccess = JDBCUtils.safeGetBoolean(resultSet, "DATAACCESSAUTH", DB2YesNo.Y.name());
         this.accessControl = JDBCUtils.safeGetBoolean(resultSet, "ACCESSCTRLAUTH", DB2YesNo.Y.name());
 
-        if (dataSource.getVersion() >= DB2Constants.DB2v10_1) {
+        if (dataSource.isAtLeastV10_1()) {
             this.createSecure = JDBCUtils.safeGetBoolean(resultSet, "CREATESECUREAUTH", DB2YesNo.Y.name());
         }
     }
