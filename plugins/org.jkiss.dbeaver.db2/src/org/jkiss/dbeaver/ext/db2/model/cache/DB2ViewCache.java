@@ -58,7 +58,7 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
 
     public DB2ViewCache()
     {
-        super("VIEWNAME");
+        super("TABNAME");
         setListOrderComparator(DBUtils.<DB2View> nameComparator());
     }
 
