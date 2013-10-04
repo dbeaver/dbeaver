@@ -52,7 +52,8 @@ import java.sql.SQLException;
  */
 public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2AuthBase> {
 
-    private static String SQL;
+    private static final String SQL;
+    private static final String SQL_WITHOUT_MODULE;
 
     static {
 
@@ -99,24 +100,13 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append(" UNION ALL ");
 
         sb.append("SELECT GRANTOR,GRANTORTYPE");
-        sb.append("     , '").append(DB2ObjectType.MODULE.name()).append("' AS OBJ_TYPE");
-        sb.append("     , MODULESCHEMA AS OBJ_SCHEMA, MODULENAME AS OBJ_NAME");
-        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
-        sb.append("     , NULL, NULL, NULL, NULL, NULL, EXECUTEAUTH");
-        sb.append("  FROM SYSCAT.MODULEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 7
-        sb.append("   AND GRANTEE = ?");// 8
-
-        sb.append(" UNION ALL ");
-
-        sb.append("SELECT GRANTOR,GRANTORTYPE");
         sb.append("     , '").append(DB2ObjectType.PACKAGE.name()).append("' AS OBJ_TYPE");
         sb.append("     , PKGSCHEMA AS OBJ_SCHEMA, PKGNAME AS OBJ_NAME");
         sb.append("     , CONTROLAUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , NULL, NULL, NULL, NULL, BINDAUTH, EXECUTEAUTH");
         sb.append("  FROM SYSCAT.PACKAGEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 9
-        sb.append("   AND GRANTEE = ?");// 10
+        sb.append(" WHERE GRANTEETYPE = ?");// 7
+        sb.append("   AND GRANTEE = ?");// 8
 
         sb.append(" UNION ALL ");
 
@@ -127,8 +117,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , ROUTINETYPE, NULL, NULL, NULL, NULL, EXECUTEAUTH");
         sb.append("  FROM SYSCAT.ROUTINEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 11
-        sb.append("   AND GRANTEE = ?");// 12
+        sb.append(" WHERE GRANTEETYPE = ?");// 9
+        sb.append("   AND GRANTEE = ?");// 10
 
         sb.append(" UNION ALL ");
 
@@ -138,8 +128,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , NULL, ALTERINAUTH, CREATEINAUTH, DROPINAUTH, NULL, NULL");
         sb.append("  FROM SYSCAT.SCHEMAAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 13
-        sb.append("   AND GRANTEE = ?");// 14
+        sb.append(" WHERE GRANTEETYPE = ?");// 11
+        sb.append("   AND GRANTEE = ?");// 12
 
         sb.append(" UNION ALL ");
 
@@ -149,8 +139,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , NULL, ALTERAUTH, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , USAGEAUTH, NULL, NULL, NULL, NULL, NULL");
         sb.append("  FROM SYSCAT.SEQUENCEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 15
-        sb.append("   AND GRANTEE = ?");// 16
+        sb.append(" WHERE GRANTEETYPE = ?");// 13
+        sb.append("   AND GRANTEE = ?");// 14
 
         sb.append(" UNION ALL ");
 
@@ -160,8 +150,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , USEAUTH, NULL, NULL, NULL, NULL, NULL");
         sb.append("  FROM SYSCAT.TBSPACEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 17
-        sb.append("   AND GRANTEE = ?");// 18
+        sb.append(" WHERE GRANTEETYPE = ?");// 15
+        sb.append("   AND GRANTEE = ?");// 16
 
         sb.append(" UNION ALL ");
 
@@ -173,8 +163,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , READAUTH AS USAGEAUTH, WRITEAUTH AS ALTERINAUTH, NULL, NULL, NULL, NULL");
         sb.append("  FROM SYSCAT.VARIABLEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 19
-        sb.append("   AND GRANTEE = ?");// 20
+        sb.append(" WHERE GRANTEETYPE = ?");// 17
+        sb.append("   AND GRANTEE = ?");// 18
 
         sb.append(" UNION ALL ");
 
@@ -185,13 +175,26 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
         sb.append("     , USAGEAUTH, NULL , NULL, NULL, NULL, NULL");
         sb.append("  FROM SYSCAT.XSROBJECTAUTH ");
-        sb.append(" WHERE GRANTEETYPE = ?");// 21
-        sb.append("   AND GRANTEE = ?");// 22
+        sb.append(" WHERE GRANTEETYPE = ?");// 19
+        sb.append("   AND GRANTEE = ?");// 20
 
-        sb.append(" ORDER BY OBJ_SCHEMA, OBJ_NAME, OBJ_TYPE");
-        sb.append(" WITH UR");
+        StringBuilder sb2 = new StringBuilder(512);
+        sb2.append(" UNION ALL ");
+        sb2.append("SELECT GRANTOR,GRANTORTYPE");
+        sb2.append("     , '").append(DB2ObjectType.MODULE.name()).append("' AS OBJ_TYPE");
+        sb2.append("     , MODULESCHEMA AS OBJ_SCHEMA, MODULENAME AS OBJ_NAME");
+        sb2.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb2.append("     , NULL, NULL, NULL, NULL, NULL, EXECUTEAUTH");
+        sb2.append("  FROM SYSCAT.MODULEAUTH");
+        sb2.append(" WHERE GRANTEETYPE = ?");// 21
+        sb2.append("   AND GRANTEE = ?");// 22
 
-        SQL = sb.toString();
+        StringBuilder sb3 = new StringBuilder(64);
+        sb3.append(" ORDER BY OBJ_SCHEMA, OBJ_NAME, OBJ_TYPE");
+        sb3.append(" WITH UR");
+
+        SQL = sb.toString() + sb2.toString() + sb3.toString();
+        SQL_WITHOUT_MODULE = sb.toString() + sb3.toString();
     }
 
     @Override
@@ -200,8 +203,18 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         String userType = db2Grantee.getType().name();
         String userName = db2Grantee.getName();
 
-        JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
-        for (int i = 1; i < 22;) {
+        String sql;
+        int nbMax;
+        if (db2Grantee.getDataSource().isAtLeastV9_7()) {
+            sql = SQL;
+            nbMax = 22;
+        } else {
+            sql = SQL_WITHOUT_MODULE;
+            nbMax = 20;
+        }
+
+        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        for (int i = 1; i <= nbMax;) {
             dbStat.setString(i++, userType);
             dbStat.setString(i++, userName);
         }

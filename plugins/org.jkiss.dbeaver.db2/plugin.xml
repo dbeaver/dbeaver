@@ -170,7 +170,11 @@
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false"/>
                              </items>
                           </folder>
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.module.DB2Module" label="%tree.modules.node.name" icon="#modules" description="Modules">
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.module.DB2Module" 
+                                  label="%tree.modules.node.name" 
+                                  icon="#modules" 
+                                  description="Modules" 
+                                  visibleIf="object.dataSource.atLeastV9_7" >
                              <items label="%tree.module.node.name" path="module" property="modules" icon="#module">
                                 <items label="%tree.conditions.node.name" path="condition" property="conditions" icon="#condition" navigable="false"/>
                                 <items label="%tree.functions.node.name" path="function" property="functions" icon="#function" navigable="false"/>
@@ -275,7 +279,7 @@
                            <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
                            <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
-                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false"/>
+                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="object.dataSource.atLeastV9_7"/>
                            <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
                            <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
                            <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
@@ -294,7 +298,7 @@
                            <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
                            <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
-                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false"/>
+                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="object.dataSource.atLeastV9_7"/>
                            <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
                            <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
                            <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
@@ -313,7 +317,7 @@
                            <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
                            <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
-                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false"/>
+                           <items label="%tree.modulesauths.node.name" path="moduleauth" property="modulesAuths" icon="#modulesauth" navigable="false" visibleIf="object.dataSource.atLeastV9_7"/>
                            <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
                            <items label="%tree.proceduresauths.node.name" path="procedureauth" property="proceduresAuths" icon="#proceduresauth" navigable="false"/>
                            <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
