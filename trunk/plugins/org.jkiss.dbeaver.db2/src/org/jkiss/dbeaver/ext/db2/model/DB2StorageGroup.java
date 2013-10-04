@@ -66,7 +66,7 @@ public class DB2StorageGroup extends DB2GlobalObject implements DBPNamedObject {
         this.deviceWriteRate = JDBCUtils.safeGetDouble(dbResult, "DEVICEWRITERATE");
         this.dataTag = JDBCUtils.safeGetInteger(dbResult, "DATATAG");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
-        if (db2DataSource.getVersion() >= DB2Constants.DB2v10_5) {
+        if (db2DataSource.isAtLeastV10_5()) {
             this.cachingTier = JDBCUtils.safeGetInteger(dbResult, "CACHINGTIER");
         }
 

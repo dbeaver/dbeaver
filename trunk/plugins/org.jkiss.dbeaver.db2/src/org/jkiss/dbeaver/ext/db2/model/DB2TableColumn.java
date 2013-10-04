@@ -99,7 +99,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        if (tableBase.getDataSource().getVersion() >= DB2Constants.DB2v10_1) {
+        if (tableBase.getDataSource().isAtLeastV10_1()) {
             this.rowBegin = JDBCUtils.safeGetBoolean(dbResult, "ROWBEGIN", DB2YesNo.Y.name());
             this.rowEnd = JDBCUtils.safeGetBoolean(dbResult, "ROWEND", DB2YesNo.Y.name());
         }

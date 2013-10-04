@@ -95,7 +95,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         this.dropRecovery = JDBCUtils.safeGetBoolean(dbResult, "DROP_RECOVERY", DB2YesNo.Y.name());
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        if (db2DataSource.getVersion() >= DB2Constants.DB2v10_1) {
+        if (db2DataSource.isAtLeastV10_1()) {
             this.dataTag = JDBCUtils.safeGetInteger(dbResult, "DATATAG");
             this.effectivePrefetchSize = JDBCUtils.safeGetInteger(dbResult, "EFFECTIVEPREFETCHSIZE");
 

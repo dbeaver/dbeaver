@@ -164,12 +164,12 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             info.addSQLKeyword(kw);
         }
 
-        version = 0.0;
+        version = 99.0; // By default = latest version
         try {
             version = Integer.valueOf(metaData.getDatabaseMajorVersion()).doubleValue();
             version += Integer.valueOf(metaData.getDatabaseMinorVersion()).doubleValue() / 10;
         } catch (SQLException e) {
-            LOG.warn("SQLException when reading database version. Set it to 0.0 : " + e.getMessage());
+            LOG.warn("SQLException when reading database version. Set it to 99.0 : " + e.getMessage());
         }
         LOG.debug("Database version : " + version);
 
@@ -538,6 +538,30 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     // -------------------------
+    // Version Testing
+    // -------------------------
+
+    public Boolean isAtLeastV9_5()
+    {
+        return version >= DB2Constants.DB2v9_5;
+    }
+
+    public Boolean isAtLeastV9_7()
+    {
+        return version >= DB2Constants.DB2v9_7;
+    }
+
+    public Boolean isAtLeastV10_1()
+    {
+        return version >= DB2Constants.DB2v10_1;
+    }
+
+    public Boolean isAtLeastV10_5()
+    {
+        return version >= DB2Constants.DB2v10_5;
+    }
+
+    // -------------------------
     // Standards Getters
     // -------------------------
 
@@ -564,11 +588,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DBSObjectCache<DB2DataSource, DB2Variable> getVariableCache()
     {
         return variableCache;
-    }
-
-    public Double getVersion()
-    {
-        return version;
     }
 
 }
