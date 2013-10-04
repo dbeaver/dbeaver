@@ -165,16 +165,8 @@
                            </items>
                        </folder>
                        <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.appobjects.node.name" icon="#appobjects" description="Application Objects">
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="icon/udt.gif" description="User Defined Types">
-                             <items label="%tree.type.node.name" path="UDT" property="UDTs" icon="#data_type" />
-                          </folder>
                           <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icon/udf.gif" description="Functions">
                              <items label="%tree.function.node.name" path="UDF" property="UDFs" icon="#procedure">
-                                <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false"/>
-                             </items>
-                          </folder>
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
-                             <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false"/>
                              </items>
                           </folder>
@@ -196,6 +188,14 @@
                                    <items label="%tree.statement.node.name" path="statement" property="statements" icon="#statement"/>
                                 </folder>
                              </items>
+                          </folder>
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                             <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false"/>
+                             </items>
+                          </folder>
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.udts.node.name" icon="icon/udt.gif" description="User Defined Types">
+                             <items label="%tree.udt.node.name" path="UDT" property="UDTs" icon="#data_type" />
                           </folder>
                        </folder>
                     </items>
@@ -386,20 +386,22 @@
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
         </editor>
         
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SchemaManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TableManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TableColumnManager" objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2IndexManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ForeignKeyManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2UniqueKeyManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SequenceManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2RoutineManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
-
-<!-- DF Not mature enough for first version       
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2DataTypeManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
--->        
+        
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2AliasManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Alias"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2BufferpoolManager" objectType="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2NicknameManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2Nickname"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2SchemaManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2SequenceManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TriggerManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2XMLSchemaManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema"/>
+        
     </extension>
 
     <extension point="org.eclipse.ui.editors">
