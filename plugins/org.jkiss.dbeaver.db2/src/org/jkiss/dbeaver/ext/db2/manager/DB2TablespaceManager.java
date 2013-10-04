@@ -19,21 +19,21 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2StorageGroup;
+import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 
 /**
  * DB2 Storage Group Manager
  * 
  * @author Denis Forveille
  */
-public class DB2StorageGroupManager extends DB2AbstractDropOnlyManager<DB2StorageGroup, DB2DataSource> {
+public class DB2TablespaceManager extends DB2AbstractDropOnlyManager<DB2Tablespace, DB2DataSource> {
 
-    private static final String SQL_DROP = "DROP STOGROUP %s RESTRICT";
+    private static final String SQL_DROP = "DROP TABLESPACE %s";
 
     @Override
-    public String buildDropStatement(DB2StorageGroup db2StorageGroup)
+    public String buildDropStatement(DB2Tablespace db2Tablespace)
     {
-        String name = db2StorageGroup.getName();
+        String name = db2Tablespace.getName();
         return String.format(SQL_DROP, name);
     }
 }
