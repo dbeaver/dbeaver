@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 
 /**
- * DB2 TrBufferpool Manager
+ * DB2 Bufferpool Manager
  * 
  * @author Denis Forveille
  */
