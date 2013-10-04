@@ -247,6 +247,9 @@
                             </folder>
                         </items>
                     </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2StorageGroup" label="%tree.storagegroups.node.name" icon="#folder_storagegroup" description="Storage Groups">
+                        <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="#storagegroup"/>
+                    </folder>
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings" >
                     

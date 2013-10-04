@@ -82,6 +82,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private static final String C_DT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR";
     private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
     private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
+    private static final String C_SG = "SELECT * FROM SYSCAT.STOGROUPS ORDER BY SGNAME WITH UR";
     private static final String C_RL = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
     private static final String C_VR = "SELECT * FROM SYSCAT.VARIABLES WHERE VARMODULENAME IS NULL ORDER BY VARNAME WITH UR";
 
@@ -101,6 +102,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         DB2Bufferpool.class, C_BP);
     private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(
         DB2Tablespace.class, C_TS);
+    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache = new JDBCObjectSimpleCache<DB2DataSource, DB2StorageGroup>(
+        DB2StorageGroup.class, C_SG);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
         DB2Role.class, C_RL);
     private final DBSObjectCache<DB2DataSource, DB2Variable> variableCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Variable>(
@@ -218,6 +221,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         this.variableCache.clearCache();
 
         this.tablespaceCache.clearCache();
+        this.storagegroupCache.clearCache();
         this.bufferpoolCache.clearCache();
         this.schemaCache.clearCache();
         this.dataTypeCache.clearCache();
@@ -416,6 +420,17 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Association
+    public Collection<DB2StorageGroup> getStorageGroups(DBRProgressMonitor monitor) throws DBException
+    {
+        return storagegroupCache.getObjects(monitor, this);
+    }
+
+    public DB2StorageGroup getStorageGroup(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return storagegroupCache.getObject(monitor, this, name);
+    }
+
+    @Association
     public Collection<DB2Bufferpool> getBufferpools(DBRProgressMonitor monitor) throws DBException
     {
         return bufferpoolCache.getObjects(monitor, this);
@@ -539,6 +554,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DBSObjectCache<DB2DataSource, DB2Tablespace> getTablespaceCache()
     {
         return tablespaceCache;
+    }
+
+    public DBSObjectCache<DB2DataSource, DB2StorageGroup> getStorageGroupCache()
+    {
+        return storagegroupCache;
     }
 
     public DBSObjectCache<DB2DataSource, DB2Variable> getVariableCache()
