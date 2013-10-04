@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Alias Manager
@@ -48,4 +49,11 @@ public class DB2AliasManager extends DB2AbstractDropOnlyManager<DB2Alias, DB2Sch
             throw new IllegalArgumentException(db2Alias.getType() + " as DB2AliasTYpe is not supported");
         }
     }
+
+    @Override
+    public DBSObjectCache<DB2Schema, DB2Alias> getObjectsCache(DB2Alias db2Alias)
+    {
+        return db2Alias.getSchema().getAliasCache();
+    }
+
 }

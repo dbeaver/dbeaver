@@ -565,6 +565,16 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // Standards Getters
     // -------------------------
 
+    public DBSObjectCache<DB2DataSource, DB2Bufferpool> getBufferpoolCache()
+    {
+        return bufferpoolCache;
+    }
+
+    public DBSObjectCache<DB2DataSource, DB2RemoteServer> getRemoteServerCache()
+    {
+        return remoteServerCache;
+    }
+
     public DBSObjectCache<DB2DataSource, DB2Schema> getSchemaCache()
     {
         return schemaCache;
@@ -588,6 +598,16 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DBSObjectCache<DB2DataSource, DB2Variable> getVariableCache()
     {
         return variableCache;
+    }
+
+    public DBSObjectCache<DB2DataSource, DB2Role> getRoleCache()
+    {
+        return roleCache;
+    }
+
+    public DBSObjectCache<DB2DataSource, DB2Wrapper> getWrapperCache()
+    {
+        return wrapperCache;
     }
 
 }

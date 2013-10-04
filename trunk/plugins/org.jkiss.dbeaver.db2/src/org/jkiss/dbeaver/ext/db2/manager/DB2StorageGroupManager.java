@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2StorageGroup;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Storage Group Manager
@@ -35,5 +36,11 @@ public class DB2StorageGroupManager extends DB2AbstractDropOnlyManager<DB2Storag
     {
         String name = db2StorageGroup.getName();
         return String.format(SQL_DROP, name);
+    }
+
+    @Override
+    public DBSObjectCache<DB2DataSource, DB2StorageGroup> getObjectsCache(DB2StorageGroup db2StorageGroup)
+    {
+        return db2StorageGroup.getDataSource().getStorageGroupCache();
     }
 }
