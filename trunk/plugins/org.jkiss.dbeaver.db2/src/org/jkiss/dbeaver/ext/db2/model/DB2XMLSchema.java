@@ -25,7 +25,10 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2XSRDecomposition;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2XSRStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2XSRType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -34,6 +37,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Timestamp;
+import java.util.Collection;
 
 /**
  * DB2 XML Schema (XSR)
@@ -41,6 +45,10 @@ import java.sql.Timestamp;
  * @author Denis Forveille
  */
 public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObject {
+
+    private static final String C_DEP = "SELECT * FROM SYSCAT.XSROBJECTDEP  WHERE OBJECTSCHEMA = ? AND OBJECTNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
+
+    private final DBSObjectCache<DB2XMLSchema, DB2XMLSchemaDep> xmlschemaDepCache;
 
     private Long id;
     private String targetNameSpace;
@@ -80,6 +88,10 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
         // Transform it into String
         this.objectInfo = JDBCUtils.safeGetXML(dbResult, "OBJECTINFO");
         this.objectInfoString = objectInfo.getString();
+
+        xmlschemaDepCache = new JDBCObjectSimpleCache<DB2XMLSchema, DB2XMLSchemaDep>(DB2XMLSchemaDep.class, C_DEP,
+            schema.getName(), getName());
+
     }
 
     // -----------------
@@ -88,7 +100,18 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
     @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
+        xmlschemaDepCache.clearCache();
         return true;
+    }
+
+    // -----------------
+    // Association
+    // -----------------
+
+    @Association
+    public Collection<DB2XMLSchemaDep> getXmlschemaDeps(DBRProgressMonitor monitor) throws DBException
+    {
+        return xmlschemaDepCache.getObjects(monitor, this);
     }
 
     // -----------------
