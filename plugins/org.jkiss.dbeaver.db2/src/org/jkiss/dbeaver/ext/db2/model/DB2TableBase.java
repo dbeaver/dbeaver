@@ -43,7 +43,7 @@ import java.util.Collections;
  * @author Denis Forveille
  */
 public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> implements DBPNamedObject2, DBPRefreshableObject,
-    DB2StatefulObject {
+    DB2StatefulObject, Comparable<DB2TableBase> {
 
     private String owner;
     private DB2OwnerType ownerType;
@@ -82,6 +82,10 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
         super(container, name, persisted);
     }
 
+    // -----------------
+    // Business Contract
+    // -----------------
+
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
@@ -93,6 +97,12 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     public String getFullQualifiedName()
     {
         return getContainer().getName() + "." + this.getName();
+    }
+
+    @Override
+    public int compareTo(DB2TableBase o)
+    {
+        return getName().compareTo(o.getName());
     }
 
     // -----------------

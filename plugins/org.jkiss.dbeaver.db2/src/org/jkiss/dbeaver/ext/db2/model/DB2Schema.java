@@ -51,6 +51,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DB2Schema
@@ -88,6 +90,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private final DB2TableReferenceCache referenceCache = new DB2TableReferenceCache(tableCache);
     private final DB2TableCheckConstraintCache checkCache = new DB2TableCheckConstraintCache(tableCache);
 
+    // Combined Cache for the content assist to work. Aliases being not DB2TableBase, they are alas not included...
+    private Map<String, DB2TableBase> allKindOfTableCache;
+
     private String name;
     private String owner;
     private DB2OwnerType ownerType;
@@ -100,7 +105,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // ------------
     // Constructors
     // ------------
-    public DB2Schema(DB2DataSource db2DataSource, ResultSet dbResult)
+    public DB2Schema(DB2DataSource db2DataSource, ResultSet dbResult) throws DBException
     {
         this(db2DataSource, JDBCUtils.safeGetStringTrimmed(dbResult, "SCHEMANAME"));
 
@@ -114,6 +119,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             this.auditPolicyName = JDBCUtils.safeGetString(dbResult, "AUDITPOLICYNAME");
             this.dataCapture = JDBCUtils.safeGetBoolean(dbResult, "DATACAPTURE", DB2YesNo.Y.name());
         }
+
     }
 
     public DB2Schema(DB2DataSource db2DataSource, String name)
@@ -216,21 +222,36 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // --------------------------
 
     @Override
-    public Class<DB2Table> getChildType(DBRProgressMonitor monitor) throws DBException
+    public Class<DB2TableBase> getChildType(DBRProgressMonitor monitor) throws DBException
     {
-        return DB2Table.class;
+        return DB2TableBase.class;
     }
 
     @Override
-    public Collection<DB2Table> getChildren(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableBase> getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        return tableCache.getObjects(monitor, this);
+        // Build only once, a combined cache of ""Tables"" for content assist to work
+        if (allKindOfTableCache == null) {
+
+            allKindOfTableCache = new HashMap<String, DB2TableBase>(128);
+
+            for (DB2Table db2Table : tableCache.getObjects(monitor, this)) {
+                allKindOfTableCache.put(db2Table.getName(), db2Table);
+            }
+            for (DB2View db2View : viewCache.getObjects(monitor, this)) {
+                allKindOfTableCache.put(db2View.getName(), db2View);
+            }
+            for (DB2Nickname db2Nickname : nicknameCache.getObjects(monitor, this)) {
+                allKindOfTableCache.put(db2Nickname.getName(), db2Nickname);
+            }
+        }
+        return allKindOfTableCache.values();
     }
 
     @Override
-    public DB2Table getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    public DB2TableBase getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
-        return tableCache.getObject(monitor, this, childName);
+        return allKindOfTableCache.get(childName);
     }
 
     // -----------------
