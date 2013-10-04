@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 
 /**
- * DB2 Nickname Manager
+ * DB2 Federated Nickname Manager
  * 
  * @author Denis Forveille
  */
