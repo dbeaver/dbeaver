@@ -43,7 +43,7 @@ import java.util.Collections;
  * @author Denis Forveille
  */
 public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> implements DBPNamedObject2, DBPRefreshableObject,
-    DB2StatefulObject, Comparable<DB2TableBase> {
+    DB2StatefulObject {
 
     private String owner;
     private DB2OwnerType ownerType;
@@ -97,12 +97,6 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     public String getFullQualifiedName()
     {
         return getContainer().getName() + "." + this.getName();
-    }
-
-    @Override
-    public int compareTo(DB2TableBase o)
-    {
-        return getName().compareTo(o.getName());
     }
 
     // -----------------

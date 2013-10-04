@@ -33,8 +33,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -109,7 +107,7 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     }
 
     @Override
-    public JDBCStructCache<DB2Schema, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
+    public JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> getCache()
     {
         return getContainer().getViewCache();
     }
