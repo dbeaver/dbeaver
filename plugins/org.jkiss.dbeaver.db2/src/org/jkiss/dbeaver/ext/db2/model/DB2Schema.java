@@ -51,8 +51,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * DB2Schema
@@ -233,7 +233,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         // Build only once, a combined cache of ""Tables"" for content assist to work
         if (allKindOfTableCache == null) {
 
-            allKindOfTableCache = new HashMap<String, DB2TableBase>(128);
+            allKindOfTableCache = new TreeMap<String, DB2TableBase>(); // TreeMap to keep things ordered
 
             for (DB2Table db2Table : tableCache.getObjects(monitor, this)) {
                 allKindOfTableCache.put(db2Table.getName(), db2Table);
