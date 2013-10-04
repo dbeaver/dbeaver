@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * DB2 XML Schema Manager
+ * DB2 Base class for Managers that only handle DROP statements
  * 
  * @author Denis Forveille
  */

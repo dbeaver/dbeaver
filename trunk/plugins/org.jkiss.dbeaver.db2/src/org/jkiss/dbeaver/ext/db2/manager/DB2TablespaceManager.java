@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 
 /**
- * DB2 Storage Group Manager
+ * DB2 Tablespace Manager
  * 
  * @author Denis Forveille
  */
