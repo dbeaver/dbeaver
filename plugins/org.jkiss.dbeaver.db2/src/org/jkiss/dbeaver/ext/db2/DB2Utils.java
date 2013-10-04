@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
+import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
 import org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
@@ -77,9 +78,10 @@ public class DB2Utils {
     // ADMIN ACTIONS
     private static final String CALL_ADS = "CALL SYSPROC.ADMIN_DROP_SCHEMA(?,NULL,?,?)";
 
-    // DBCFG/DBMCFG
+    // DBCFG/DBMCFG/XMLStrings
     private static final String SEL_DBCFG = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
-    private static final String SEL_DBMCFG = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
+    private static final String SEL_DBMCFG = "SELECT * FROM SYSIBMADM.DBMCFG ORDER BY NAME WITH UR";
+    private static final String SEL_XMLSTRINGS = "SELECT * FROM SYSCAT.XMLSTRINGS ORDER BY STRINGID WITH UR";
 
     // APPLICATIONS
     private static final String AUT_APP;
@@ -400,6 +402,27 @@ public class DB2Utils {
             dbStat.close();
         }
         return listDBMParameters;
+    }
+
+    public static List<DB2XMLString> readXMLStrings(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException
+    {
+        LOG.debug("readXMLStrings");
+
+        List<DB2XMLString> listXMLStrings = new ArrayList<DB2XMLString>();
+        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_XMLSTRINGS);
+        try {
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            try {
+                while (dbResult.next()) {
+                    listXMLStrings.add(new DB2XMLString((DB2DataSource) context.getDataSource(), dbResult));
+                }
+            } finally {
+                dbResult.close();
+            }
+        } finally {
+            dbStat.close();
+        }
+        return listXMLStrings;
     }
 
     // ---------------
