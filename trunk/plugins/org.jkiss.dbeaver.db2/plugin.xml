@@ -395,7 +395,6 @@
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2IndexManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ForeignKeyManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2UniqueKeyManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
         
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2AliasManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Alias"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2BufferpoolManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool"/>
@@ -412,6 +411,7 @@
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TablespaceManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2TriggerManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2VariableManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Variable"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ViewManager"         objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2WrapperManager"      objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2XMLSchemaManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema"/>
         
