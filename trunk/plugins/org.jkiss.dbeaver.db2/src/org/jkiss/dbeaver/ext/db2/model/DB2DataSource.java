@@ -541,22 +541,22 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // Version Testing
     // -------------------------
 
-    public Boolean isAtLeastV9_5()
+    public boolean isAtLeastV9_5()
     {
         return version >= DB2Constants.DB2v9_5;
     }
 
-    public Boolean isAtLeastV9_7()
+    public boolean isAtLeastV9_7()
     {
         return version >= DB2Constants.DB2v9_7;
     }
 
-    public Boolean isAtLeastV10_1()
+    public boolean isAtLeastV10_1()
     {
         return version >= DB2Constants.DB2v10_1;
     }
 
-    public Boolean isAtLeastV10_5()
+    public boolean isAtLeastV10_5()
     {
         return version >= DB2Constants.DB2v10_5;
     }

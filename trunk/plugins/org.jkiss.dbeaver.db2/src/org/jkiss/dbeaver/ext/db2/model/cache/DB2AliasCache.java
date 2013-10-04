@@ -36,7 +36,8 @@ import java.sql.SQLException;
  */
 public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
 
-    private static String SQL_ALL;
+    private static final String SQL_WITHOUT_MODULE;
+    private static final String SQL;
 
     static {
         StringBuilder sb = new StringBuilder(1024);
@@ -58,29 +59,40 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         sb.append("  WHERE SEQSCHEMA = ?"); // 2
         sb.append("    AND SEQTYPE = 'A'");
 
-        sb.append(" UNION ALL");
+        StringBuilder sb2 = new StringBuilder(256);
+        sb2.append(" UNION ALL");
+        sb2.append(" SELECT 'MODULE' as TYPE ");
+        sb2.append("       , MODULENAME AS NAME");
+        sb2.append("       , BASE_MODULESCHEMA AS BASE_SCHEMA");
+        sb2.append("       , BASE_MODULENAME AS BASE_NAME");
+        sb2.append("   FROM SYSCAT.MODULES");
+        sb2.append("  WHERE MODULESCHEMA = ?"); // 3
+        sb2.append("    AND MODULETYPE = 'A'");
 
-        sb.append(" SELECT 'MODULE' as TYPE ");
-        sb.append("       , MODULENAME AS NAME");
-        sb.append("       , BASE_MODULESCHEMA AS BASE_SCHEMA");
-        sb.append("       , BASE_MODULENAME AS BASE_NAME");
-        sb.append("   FROM SYSCAT.MODULES");
-        sb.append("  WHERE MODULESCHEMA = ?"); // 3
-        sb.append("    AND MODULETYPE = 'A'");
+        StringBuilder sb3 = new StringBuilder(64);
+        sb3.append(" ORDER BY NAME");
+        sb3.append("        , TYPE");
+        sb3.append(" WITH UR");
 
-        sb.append(" ORDER BY NAME");
-        sb.append("        , TYPE");
-        sb.append(" WITH UR");
-        SQL_ALL = sb.toString();
+        SQL = sb.toString() + sb2.toString() + sb3.toString();
+        SQL_WITHOUT_MODULE = sb.toString() + sb3.toString();
     }
 
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_ALL);
+        String sql;
+        if (db2Schema.getDataSource().isAtLeastV9_7()) {
+            sql = SQL;
+        } else {
+            sql = SQL_WITHOUT_MODULE;
+        }
+        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
         dbStat.setString(2, db2Schema.getName());
-        dbStat.setString(3, db2Schema.getName());
+        if (db2Schema.getDataSource().isAtLeastV9_7()) {
+            dbStat.setString(3, db2Schema.getName());
+        }
         return dbStat;
     }
 
