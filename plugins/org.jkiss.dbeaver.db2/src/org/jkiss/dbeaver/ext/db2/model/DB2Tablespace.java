@@ -64,8 +64,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     private String dbpgName;
     private Boolean dropRecovery;
     private Integer dataTag;
-    private String sgName;
-    private Integer sgId;
+    private DB2StorageGroup storageGroup;
     private Integer effectivePrefetchSize;
     private String remarks;
 
@@ -98,9 +97,12 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
 
         if (db2DataSource.getVersion() >= DB2Constants.DB2v10_1) {
             this.dataTag = JDBCUtils.safeGetInteger(dbResult, "DATATAG");
-            this.sgName = JDBCUtils.safeGetString(dbResult, "SGNAME");
-            this.sgId = JDBCUtils.safeGetInteger(dbResult, "SGID");
             this.effectivePrefetchSize = JDBCUtils.safeGetInteger(dbResult, "EFFECTIVEPREFETCHSIZE");
+
+            String storageGroupName = JDBCUtils.safeGetString(dbResult, "SGNAME");
+            if (storageGroupName != null) {
+                this.storageGroup = db2DataSource.getStorageGroup(VoidProgressMonitor.INSTANCE, storageGroupName);
+            }
         }
 
         Integer bufferpoolId = JDBCUtils.safeGetInteger(dbResult, "BUFFERPOOLID");
@@ -120,134 +122,128 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     // -----------------
 
     @Override
-    @Property(viewable = true, editable = false, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
     }
 
-    @Property(viewable = true, editable = false, order = 2)
+    @Property(viewable = true, order = 2)
     public Integer getTbspaceId()
     {
         return tbspaceId;
     }
 
-    @Property(viewable = true, editable = false, order = 3)
+    @Property(viewable = true, order = 3)
     public DB2Bufferpool getBufferPool()
     {
         return bufferpool;
     }
 
-    @Property(viewable = true, editable = false, order = 4)
+    @Property(viewable = true, order = 4)
+    public DB2StorageGroup getStorageGroup()
+    {
+        return storageGroup;
+    }
+
+    @Property(viewable = true, order = 5)
     public Integer getPageSize()
     {
         return pageSize;
     }
 
-    @Property(viewable = true, editable = false, order = 5)
+    @Property(viewable = true, order = 6)
     public DB2TablespaceType getTbspaceType()
     {
         return tbspaceType;
     }
 
-    @Property(viewable = true, editable = false, order = 6)
+    @Property(viewable = true, order = 7)
     public DB2TablespaceDataType getDataType()
     {
         return dataType;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+    @Property(viewable = false, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
         return owner;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+    @Property(viewable = false, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
+    @Property(viewable = false, category = DB2Constants.CAT_DATETIME)
     public Timestamp getCreateTime()
     {
         return createTime;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
+    @Property(viewable = false, category = DB2Constants.CAT_PERFORMANCE)
     public Integer getExtentSize()
     {
         return extentSize;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
+    @Property(viewable = false, category = DB2Constants.CAT_PERFORMANCE)
     public Integer getPrefetchSize()
     {
         return prefetchSize;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
+    @Property(viewable = false, category = DB2Constants.CAT_PERFORMANCE)
     public Double getOverHead()
     {
         return overHead;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
+    @Property(viewable = false, category = DB2Constants.CAT_PERFORMANCE)
     public Double getTransferRate()
     {
         return transferRate;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
+    @Property(viewable = false, category = DB2Constants.CAT_PERFORMANCE)
     public Double getWriteOverHead()
     {
         return writeOverHead;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
+    @Property(viewable = false, category = DB2Constants.CAT_PERFORMANCE)
     public Double getWriteTransferRate()
     {
         return writeTransferRate;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
+    @Property(viewable = false, category = DB2Constants.CAT_PERFORMANCE)
     public Integer getEffectivePrefetchSize()
     {
         return effectivePrefetchSize;
     }
 
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false)
     public String getDbpgName()
     {
         return dbpgName;
     }
 
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false)
     public Boolean getDropRecovery()
     {
         return dropRecovery;
     }
 
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false)
     public Integer getDataTag()
     {
         return dataTag;
     }
 
-    @Property(viewable = false, editable = false)
-    public String getSgName()
-    {
-        return sgName;
-    }
-
-    @Property(viewable = false, editable = false)
-    public Integer getSgId()
-    {
-        return sgId;
-    }
-
     @Override
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false)
     public String getDescription()
     {
         return remarks;
