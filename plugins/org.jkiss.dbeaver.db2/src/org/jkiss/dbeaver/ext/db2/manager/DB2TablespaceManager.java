@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 
 /**
  * DB2 Tablespace Manager
@@ -35,5 +36,11 @@ public class DB2TablespaceManager extends DB2AbstractDropOnlyManager<DB2Tablespa
     {
         String name = db2Tablespace.getName();
         return String.format(SQL_DROP, name);
+    }
+
+    @Override
+    public DBSObjectCache<DB2DataSource, DB2Tablespace> getObjectsCache(DB2Tablespace db2Tablespace)
+    {
+        return db2Tablespace.getDataSource().getTablespaceCache();
     }
 }

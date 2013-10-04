@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableUniqueKeyCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
@@ -45,7 +46,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 import java.sql.ResultSet;
@@ -79,8 +79,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private final DB2NicknameCache nicknameCache = new DB2NicknameCache();
     private final DBSObjectCache<DB2Schema, DB2XMLSchema> xmlSchemaCache;
 
-    private final DB2RoutineCache procedureCache = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
-    private final DB2RoutineCache udfCache = new DB2RoutineCache(DBSProcedureType.FUNCTION);
+    private final DB2RoutineCache udfCache = new DB2RoutineCache(DB2RoutineType.F);
+    private final DB2RoutineCache methodCache = new DB2RoutineCache(DB2RoutineType.M);
+    private final DB2RoutineCache procedureCache = new DB2RoutineCache(DB2RoutineType.P);
     private final DBSObjectCache<DB2Schema, DB2DataType> udtCache;
     private final DBSObjectCache<DB2Schema, DB2Module> moduleCache;
 
@@ -552,6 +553,11 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DBSObjectCache<DB2Schema, DB2XMLSchema> getXmlSchemaCache()
     {
         return xmlSchemaCache;
+    }
+
+    public DBSObjectCache<DB2Schema, DB2Routine> getMethodCache()
+    {
+        return methodCache;
     }
 
 }
