@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.edit;
+package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     private static final String CMD_COMMENT = "Comment on Column";
     private static final String CMD_REORG = "Reorg table";
 
-    private static final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+    private static final String LINE_SEPARATOR = ContentUtils.getDefaultLineSeparator();
 
     // -----------------
     // Business Contract
@@ -126,7 +127,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
 
         Boolean required = (Boolean) command.getProperty("required");
         if (required != null) {
-            sb.append(lineSeparator);
+            sb.append(LINE_SEPARATOR);
             if (required) {
                 sb.append(CLAUSE_SET_NULL);
             } else {
@@ -136,7 +137,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
 
         String type = (String) command.getProperty("type");
         if (type != null) {
-            sb.append(lineSeparator);
+            sb.append(LINE_SEPARATOR);
             sb.append(CLAUSE_SET_TYPE);
             sb.append(type);
         }
@@ -146,7 +147,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
 
     private IDatabasePersistAction buildCommentAction(DB2TableColumn db2Column)
     {
-        if ((db2Column.getDescription() != null) && (db2Column.getDescription().trim().length() > 0)) {
+        if (CommonUtils.isNotEmpty(db2Column.getDescription())) {
             String tableName = db2Column.getTable().getFullQualifiedName();
             String columnName = db2Column.getName();
             String comment = db2Column.getDescription();

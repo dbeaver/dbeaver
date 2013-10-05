@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.db2.actions.DB2ObjectPersistAction;
-import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewDepCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewCheck;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
@@ -72,6 +70,10 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
         this.readOnly = JDBCUtils.safeGetBoolean(dbResult, "READONLY", DB2YesNo.Y.name());
     }
 
+    // -----------------
+    // Business Contract
+    // -----------------
+
     @Override
     public boolean isView()
     {
@@ -95,15 +97,12 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
-        // this.valid = DB2Utils.getObjectStatus(monitor, this,
-        // DB2ObjectType.VIEW);
     }
 
-    // @Override
+    @Override
     public IDatabasePersistAction[] getCompileActions()
     {
-        return new IDatabasePersistAction[] { new DB2ObjectPersistAction(DB2ObjectType.VIEW, "Compile view", "ALTER VIEW "
-            + getFullQualifiedName() + " COMPILE") };
+        return null;
     }
 
     @Override

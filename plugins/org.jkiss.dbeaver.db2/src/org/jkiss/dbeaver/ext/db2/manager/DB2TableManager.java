@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.edit;
+package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -27,14 +27,13 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCache;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +61,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     private static final String CMD_COMMENT = "Comment on Table";
     private static final String CMD_RENAME = "Rename Table";
 
-    private static final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+    private static final String LINE_SEPARATOR = ContentUtils.getDefaultLineSeparator();
 
     private static final Class<?>[] CHILD_TYPES = { DB2TableColumn.class, DB2TableUniqueKey.class, DB2TableForeignKey.class,
         DB2Index.class };
@@ -78,9 +77,9 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     }
 
     @Override
-    public DBSObjectCache<? extends DBSObject, DB2Table> getObjectsCache(DB2Table object)
+    public DBSObjectCache<DB2Schema, DB2Table> getObjectsCache(DB2Table object)
     {
-        return (DB2TableCache) object.getSchema().getTableCache();
+        return object.getSchema().getTableCache();
     }
 
     // ------
@@ -101,17 +100,17 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
 
         // Add Tablespaces infos
         if (db2Table.getTablespace() != null) {
-            ddl.append(lineSeparator);
+            ddl.append(LINE_SEPARATOR);
             ddl.append(CLAUSE_IN_TS);
             ddl.append(db2Table.getTablespace().getName());
         }
         if (db2Table.getIndexTablespace() != null) {
-            ddl.append(lineSeparator);
+            ddl.append(LINE_SEPARATOR);
             ddl.append(CLAUSE_IN_TS_IX);
             ddl.append(db2Table.getIndexTablespace().getName());
         }
         if (db2Table.getLongTablespace() != null) {
-            ddl.append(lineSeparator);
+            ddl.append(LINE_SEPARATOR);
             ddl.append(CLAUSE_IN_TS_LONG);
             ddl.append(db2Table.getLongTablespace().getName());
         }
@@ -125,8 +124,8 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
         if (commentAction == null) {
             return super.makeStructObjectCreateActions(command);
         } else {
-            List<IDatabasePersistAction> actionList =
-                new ArrayList<IDatabasePersistAction>(Arrays.asList(super.makeStructObjectCreateActions(command)));
+            List<IDatabasePersistAction> actionList = new ArrayList<IDatabasePersistAction>(Arrays.asList(super
+                .makeStructObjectCreateActions(command)));
             actionList.add(commentAction);
             return actionList.toArray(new IDatabasePersistAction[actionList.size()]);
         }
@@ -168,7 +167,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     {
         String sql = String.format(SQL_RENAME_TABLE, command.getObject().getName(), command.getNewName());
         IDatabasePersistAction[] actions = new IDatabasePersistAction[1];
-        actions[0] = new AbstractDatabasePersistAction(CMD_RENAME, sql); //$NON-NLS-1$
+        actions[0] = new AbstractDatabasePersistAction(CMD_RENAME, sql);
         return actions;
     }
 
@@ -183,7 +182,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     // -------
     private IDatabasePersistAction buildCommentAction(DB2Table db2Table)
     {
-        if ((db2Table.getDescription() != null) && (db2Table.getDescription().trim().length() > 0)) {
+        if (CommonUtils.isNotEmpty(db2Table.getDescription())) {
             String commentSQL = String.format(SQL_COMMENT, db2Table.getFullQualifiedName(), db2Table.getDescription());
             return new AbstractDatabasePersistAction(CMD_COMMENT, commentSQL);
         } else {
