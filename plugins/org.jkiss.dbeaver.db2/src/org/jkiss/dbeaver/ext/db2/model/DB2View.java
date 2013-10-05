@@ -19,13 +19,11 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewDepCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewCheck;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
-import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
-import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -100,12 +98,6 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     }
 
     @Override
-    public IDatabasePersistAction[] getCompileActions()
-    {
-        return null;
-    }
-
-    @Override
     public JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> getCache()
     {
         return getContainer().getViewCache();
@@ -132,22 +124,9 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     // -----------------
 
     @Override
-    public DB2SourceType getSourceType()
-    {
-        return DB2SourceType.VIEW;
-    }
-
-    @Override
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         return SQLUtils.formatSQL(getDataSource(), text);
-    }
-
-    @Override
-    public void setSourceDeclaration(String source)
-    {
-        // TODO Auto-generated method stub
-
     }
 
     // -----------------

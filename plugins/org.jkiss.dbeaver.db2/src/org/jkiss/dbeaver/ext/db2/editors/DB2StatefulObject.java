@@ -16,19 +16,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+package org.jkiss.dbeaver.ext.db2.editors;
 
-package org.jkiss.dbeaver.ext.db2.model.source;
-
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 
 /**
- * Stored code interface
+ * DB2StatefulObject
  */
-public interface DB2SourceObjectEx extends DB2SourceObject {
+public interface DB2StatefulObject extends DBSObjectStateful {
+    @Override
+    DB2DataSource getDataSource();
 
-    String getSourceDefinition(DBRProgressMonitor monitor) throws DBException;
-
-    void setSourceDefinition(String source);
+    DB2Schema getSchema();
 
 }

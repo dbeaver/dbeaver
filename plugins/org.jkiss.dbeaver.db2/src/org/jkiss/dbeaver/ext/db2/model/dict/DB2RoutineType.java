@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
-import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
@@ -28,25 +27,23 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
  * @author Denis Forveille
  */
 public enum DB2RoutineType implements DBPNamedObject {
-    F("Function", DBSProcedureType.FUNCTION, DB2SourceType.FUNCTION),
+    F("Function", DBSProcedureType.FUNCTION),
 
-    M("Method", DBSProcedureType.PROCEDURE, DB2SourceType.PROCEDURE),
+    M("Method", DBSProcedureType.PROCEDURE),
 
-    P("Procedure", DBSProcedureType.PROCEDURE, DB2SourceType.PROCEDURE);
+    P("Procedure", DBSProcedureType.PROCEDURE);
 
     private String name;
     private DBSProcedureType procedureType;
-    private DB2SourceType sourceType;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2RoutineType(String name, DBSProcedureType procedureType, DB2SourceType sourceType)
+    private DB2RoutineType(String name, DBSProcedureType procedureType)
     {
         this.name = name;
         this.procedureType = procedureType;
-        this.sourceType = sourceType;
     }
 
     // -----------------------
@@ -71,11 +68,6 @@ public enum DB2RoutineType implements DBPNamedObject {
     public DBSProcedureType getProcedureType()
     {
         return procedureType;
-    }
-
-    public DB2SourceType getSourceType()
-    {
-        return sourceType;
     }
 
 }
