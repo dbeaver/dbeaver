@@ -143,7 +143,6 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
-        // TODO DF: what to do here?
     }
 
     // -----------------

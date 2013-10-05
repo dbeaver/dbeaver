@@ -159,17 +159,16 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
         final JDBCDataSourceInfo info = new JDBCDataSourceInfo(metaData);
-        // TODO DF: Needs to be reviewed
         for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
             info.addSQLKeyword(kw);
         }
 
-        version = 99.0; // By default = latest version
+        version = DB2Constants.DB2v99_9;
         try {
             version = Integer.valueOf(metaData.getDatabaseMajorVersion()).doubleValue();
             version += Integer.valueOf(metaData.getDatabaseMinorVersion()).doubleValue() / 10;
         } catch (SQLException e) {
-            LOG.warn("SQLException when reading database version. Set it to 99.0 : " + e.getMessage());
+            LOG.warn("SQLException when reading database version. Set it to " + DB2Constants.DB2v99_9 + " : " + e.getMessage());
         }
         LOG.debug("Database version : " + version);
 

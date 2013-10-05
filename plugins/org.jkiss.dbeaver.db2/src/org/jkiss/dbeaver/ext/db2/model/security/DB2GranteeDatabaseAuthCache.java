@@ -42,7 +42,6 @@ public class DB2GranteeDatabaseAuthCache extends JDBCObjectCache<DB2Grantee, DB2
         final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
         dbStat.setString(1, db2Grantee.getType().name());
         dbStat.setString(2, db2Grantee.getName());
-        // TODO DF: Only 1 row. This should be OK but those values are overriden later ...
         // dbStat.setMaxRows(1);
         // dbStat.setFetchSize(1); // Only 1 row per user
         return dbStat;

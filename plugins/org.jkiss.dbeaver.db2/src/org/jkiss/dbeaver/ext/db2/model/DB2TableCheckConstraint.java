@@ -130,7 +130,6 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
-        // TODO Auto-generated method stub
     }
 
     @Override

@@ -29,9 +29,9 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 public enum DB2TriggerValid implements DBPNamedObject {
     N("Invalid", DBSObjectState.INVALID),
 
-    X("Inoperative", DBSObjectState.INVALID), // TODO DF: No exact correspondance
+    X("Inoperative", DBSObjectState.INVALID), // DF: No exact correspondance
 
-    Y("Valid", DBSObjectState.ACTIVE); // TODO DF: No exact correspondance
+    Y("Valid", DBSObjectState.ACTIVE); // DF: No exact correspondance
 
     private String name;
     private DBSObjectState state;

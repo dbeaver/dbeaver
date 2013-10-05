@@ -89,8 +89,6 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
-        // TODO DF : What to do here?
-
     }
 
     @Override
