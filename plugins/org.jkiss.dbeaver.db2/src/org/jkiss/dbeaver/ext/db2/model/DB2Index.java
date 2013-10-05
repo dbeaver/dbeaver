@@ -146,7 +146,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         try {
             return getContainer().getIndexCache().getChildren(monitor, getContainer(), this);
         } catch (DBException e) {
-            // TODO DF: Don't know what to do with this exception except log it
+            // DF: Don't know what to do with this exception except log it
             LOG.error("DBException swallowed during getAttributeReferences", e);
             return null;
         }
