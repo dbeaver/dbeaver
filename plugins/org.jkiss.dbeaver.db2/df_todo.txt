@@ -39,16 +39,6 @@ Missing Menu Actions
   - DB2Schema. Menu "Tools" with
       call sysproc.admin_drop_schema
       call sysproc.admin_copy_schema
-      Remove "edit" action on schema
-  - DB2Tables. Menu "Tools" with 
-      call sysproc.admin_cmd("reorg table xx");
-      call sysproc.admin_cmd("runstats table xx");
-      call sysproc.admin_cmd("load table xx");
-      call sysproc.admin_cmd("export table xx");
-      call sysproc.admin_cmd("import table xx");
-      call sysproc.admin_cmd("describe table xx");
-      call sysproc.ADMIN_MOVE_TABLE();
-     set integrity
   - DataSource
     - call sysproc.admin_cmd("backup...");
     - display current locks
