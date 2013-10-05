@@ -130,6 +130,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.dataTypeSchema = dataType.getSchema();
         setTypeName(dataType.getFullQualifiedName());
         setValueType(dataType.getTypeID());
+        setRequired(true);
     }
 
     // -----------------
