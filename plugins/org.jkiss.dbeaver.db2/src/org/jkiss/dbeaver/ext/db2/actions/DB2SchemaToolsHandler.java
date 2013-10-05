@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,6 +40,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.SQLException;
 
+/**
+ * (Work In Progress)
+ * 
+ * Actions on Schemas
+ * 
+ * @author Denis Forveille
+ * 
+ */
 public class DB2SchemaToolsHandler extends AbstractHandler {
 
     private static final String DROP = "org.jkiss.dbeaver.ext.db2.schema.drop";

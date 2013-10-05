@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 
 /**
  * Display Source text (Read Only) of DB2 object that has such item
+ * 
+ * @author Denis Forveille
  */
 public class DB2SourceDeclarationEditor extends SQLEditorNested<DB2SourceObject> {
 
