@@ -181,7 +181,9 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         // DF: Refresh parent cache ie cache for schemaof indexes/triggers different from table schema?
         tableIndexCache.clearCache();
         tableTriggerCache.clearCache();
-        partitionCache.clearCache();
+        if (partitionCache != null) {
+            partitionCache.clearCache();
+        }
 
         getContainer().getConstraintCache().clearObjectCache(this);
         getContainer().getAssociationCache().clearObjectCache(this);
