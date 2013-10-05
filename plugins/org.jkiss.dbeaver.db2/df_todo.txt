@@ -3,7 +3,6 @@ TODO:
 - Go through all "TODO" markers
 
 Problems :
-- (minor importance) investigate while DDL generation does not work for some kind of "regular tables"
 - when the user tries to delete a schema but the SQL drop fail (ie because it is linked to an existing object)
   or 
   the user cancels a drop action after viewing the drop command, 
@@ -22,7 +21,6 @@ Improvements:
   - Enhance Search
     - Add Tablespaces, indexes, foreign keys, modules, routines ...
   - Propagate and use monitors everywhere
-  - Lazy loading
   - Split DB2Tables into distinct sub types:
     - Regular
     - MQT
@@ -38,8 +36,6 @@ Serge to check?
   - CLob/Blob/XML type viewer in @Properties -> later
   
 Missing Menu Actions
-  - Almost everywhere
-    - Editors  / Object creators / Managers
   - DB2Schema. Menu "Tools" with
       call sysproc.admin_drop_schema
       call sysproc.admin_copy_schema
@@ -55,19 +51,18 @@ Missing Menu Actions
      set integrity
   - DataSource
     - call sysproc.admin_cmd("backup...");
-    - current locks
-    - Server OS INFO
+    - display current locks
+    - display Server OS INFO
 
 Missing metadata:
-- DB2TableColum
+- DB2TablePartition
+  - keys in DATAPARTITIONEXPRESSION 
+- DB2TableColum (DB2 v10.1+)
   - Masks + Row Permissions (SYSCAT.CONTROLS)
 - DB2Routines
-  = methods
-  - variables, rowfields
+  - methods
   - dependencies
   - options
-- DB2TablePartion
-  - keys in DATAPARTITIONEXPRESSION 
 - Federated Function Mappings (routinesfederated, funcmapping)
 - Federated Remote indexes (indexoptions)
 
