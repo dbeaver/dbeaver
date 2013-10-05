@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.edit.DB2ColumnDataTypeListProvider;
+import org.jkiss.dbeaver.ext.db2.editors.DB2ColumnDataTypeListProvider;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnCompression;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
