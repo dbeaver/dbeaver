@@ -257,6 +257,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Override
     public DB2TableBase getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
+        if (allKindOfTableCache == null) {
+            getChildren(monitor);
+        }
         return allKindOfTableCache.get(childName);
     }
 
