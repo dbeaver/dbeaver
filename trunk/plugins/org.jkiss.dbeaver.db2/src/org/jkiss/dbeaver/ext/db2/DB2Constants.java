@@ -41,6 +41,7 @@ public class DB2Constants {
     public static final Double DB2v9_7 = 9.7;
     public static final Double DB2v10_1 = 10.1;
     public static final Double DB2v10_5 = 10.5;
+    public static final Double DB2v99_9 = 99.9;
 
     // Display Categories
     public static final String CAT_AUDIT = "Audit";
@@ -59,14 +60,7 @@ public class DB2Constants {
     // Schema for system datatypes
     public static final String SYSTEM_DATATYPE_SCHEMA = "SYSIBM";
 
-    // ------------------
-    // TODO DF Sortout those remaining consts..
-    // --------------------------
-    //
-    public static final String PROP_SOURCE_DEFINITION = "sourceDefinition";
-    public static final String PROP_SOURCE_DECLARATION = "sourceDeclaration";
-
-    public static final String PREF_KEY_DDL_FORMAT = "db2.ddl.format";
+    // Keywords
 
     public static final String[] ADVANCED_KEYWORDS = { "ALIAS", "ALLOW", "APPLICATION", "ASSOCIATE", "ASUTIME", "AUDIT", "AUX",
         "AUXILIARY", "BEFORE", "BINARY", "BUFFERPOOL", "CACHE", "CALL", "CALLED", "CAPTURE", "CARDINALITY", "CCSID", "CLUSTER",

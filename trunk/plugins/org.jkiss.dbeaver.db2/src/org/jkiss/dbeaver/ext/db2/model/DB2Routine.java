@@ -146,7 +146,6 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
-        // TODO DF: What to do here?
     }
 
     @Override
