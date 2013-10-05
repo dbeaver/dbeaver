@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineParmsCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineLanguage;
@@ -29,8 +29,6 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineValidType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
-import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
-import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -159,13 +157,6 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     }
 
     @Override
-    public IDatabasePersistAction[] getCompileActions()
-    {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public DBSProcedureType getProcedureType()
     {
         return type.getProcedureType();
@@ -197,12 +188,6 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     // -----------------
 
     @Override
-    public DB2SourceType getSourceType()
-    {
-        return type.getSourceType();
-    }
-
-    @Override
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         if ((language != null) && (language.equals(DB2RoutineLanguage.SQL))) {
@@ -210,13 +195,6 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
         } else {
             return "N/A";
         }
-    }
-
-    @Override
-    public void setSourceDeclaration(String source)
-    {
-        // TODO Auto-generated method stub
-
     }
 
     // -----------------------

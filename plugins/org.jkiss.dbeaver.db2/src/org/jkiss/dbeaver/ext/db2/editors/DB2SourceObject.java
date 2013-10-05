@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,19 +16,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.model.source;
+package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * DB2StatefulObject
+ * Object that provide a DDL text
+ * 
+ * @author Denis Forveille
  */
-public interface DB2StatefulObject extends DBSObjectStateful {
-    @Override
-    DB2DataSource getDataSource();
+public interface DB2SourceObject extends DB2StatefulObject {
 
-    DB2Schema getSchema();
+    String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException;
 
 }
