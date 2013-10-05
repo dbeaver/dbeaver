@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.edit;
+package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -51,8 +52,15 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
 
     private static final String CONS_FK_NAME = "%s_%s_FK";
 
-    private static final DBSForeignKeyModifyRule[] FK_RULES = { DBSForeignKeyModifyRule.NO_ACTION, DBSForeignKeyModifyRule.CASCADE,
-        DBSForeignKeyModifyRule.RESTRICT, DBSForeignKeyModifyRule.SET_NULL, DBSForeignKeyModifyRule.SET_DEFAULT };
+    private static final DBSForeignKeyModifyRule[] FK_RULES;
+
+    static {
+        List<DBSForeignKeyModifyRule> rules = new ArrayList<DBSForeignKeyModifyRule>(DB2DeleteUpdateRule.values().length);
+        for (DB2DeleteUpdateRule db2DeleteUpdateRule : DB2DeleteUpdateRule.values()) {
+            rules.add(db2DeleteUpdateRule.getRule());
+        }
+        FK_RULES = rules.toArray(new DBSForeignKeyModifyRule[] {});
+    }
 
     // -----------------
     // Business Contract

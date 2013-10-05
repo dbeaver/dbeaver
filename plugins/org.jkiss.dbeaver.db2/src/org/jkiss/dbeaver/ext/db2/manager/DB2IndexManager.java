@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.edit;
+package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -50,7 +50,7 @@ public class DB2IndexManager extends JDBCIndexManager<DB2Index, DB2Table> {
 
     private static final String CONS_IX_NAME = "%s_%s_IDX";
 
-    private static List<DBSIndexType> IX_TYPES;
+    private static final List<DBSIndexType> IX_TYPES;
 
     static {
         IX_TYPES = new ArrayList<DBSIndexType>(DB2IndexType.values().length);
@@ -59,7 +59,6 @@ public class DB2IndexManager extends JDBCIndexManager<DB2Index, DB2Table> {
                 IX_TYPES.add(db2IndexType.getDBSIndexType());
             }
         }
-
     }
 
     @Override
