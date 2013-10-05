@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerDepCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerEvent;
@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerGranularity;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerTime;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerValid;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
-import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
-import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -153,28 +151,9 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     // -----------------
 
     @Override
-    public DB2SourceType getSourceType()
-    {
-        return DB2SourceType.TRIGGER;
-    }
-
-    @Override
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         return SQLUtils.formatSQL(getDataSource(), text);
-    }
-
-    @Override
-    public void setSourceDeclaration(String source)
-    {
-        this.text = source;
-    }
-
-    @Override
-    public IDatabasePersistAction[] getCompileActions()
-    {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     // -----------------

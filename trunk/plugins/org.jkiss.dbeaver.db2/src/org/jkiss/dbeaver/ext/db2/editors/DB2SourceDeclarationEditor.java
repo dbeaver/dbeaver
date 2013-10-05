@@ -20,13 +20,11 @@
 package org.jkiss.dbeaver.ext.db2.editors;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 
 /**
- * DB2 source declaration editor
+ * Display Source text (Read Only) of DB2 object that has such item
  */
 public class DB2SourceDeclarationEditor extends SQLEditorNested<DB2SourceObject> {
 
@@ -37,14 +35,14 @@ public class DB2SourceDeclarationEditor extends SQLEditorNested<DB2SourceObject>
     }
 
     @Override
-    protected void setSourceText(String sourceText)
-    {
-        getEditorInput().getPropertySource().setPropertyValue(DB2Constants.PROP_SOURCE_DECLARATION, sourceText);
-    }
-
-    @Override
     protected boolean isReadOnly()
     {
         return true;
     }
+
+    @Override
+    protected void setSourceText(String sourceText)
+    {
+    }
+
 }

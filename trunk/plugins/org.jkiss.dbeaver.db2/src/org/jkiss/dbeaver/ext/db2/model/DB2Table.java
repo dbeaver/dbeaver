@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.edit.DB2TableTablespaceListProvider;
+import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableAccessMode;
@@ -35,7 +36,6 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableRefreshMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
-import org.jkiss.dbeaver.ext.db2.model.source.DB2StatefulObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -60,7 +60,7 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2StatefulObject {
+public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject {
 
     private static final Log log = LogFactory.getLog(DB2Table.class);
 
@@ -168,12 +168,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     }
 
     @Override
-    public DBSObjectState getObjectState()
-    {
-        return status.getState();
-    }
-
-    @Override
     public JDBCStructCache<DB2Schema, DB2Table, DB2TableColumn> getCache()
     {
         return getContainer().getTableCache();
@@ -197,12 +191,18 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public DBSObjectState getObjectState()
     {
-        // TODO DF: What to do here?
+        return status.getState();
     }
 
-    public String getDDL(DBRProgressMonitor monitor) throws DBException
+    @Override
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+    }
+
+    @Override
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         // TODO DF: How to get line separator ?
         return DB2Utils.generateDDLforTable(monitor, ";", getDataSource(), this);
