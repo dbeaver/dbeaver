@@ -28,7 +28,7 @@
               context="sql_db2" 
               autoinsert="true" 
               description="values (current timestamp)">
-VALUED (CURRENT TIMESTAMP);
+VALUES (CURRENT TIMESTAMP);
     </template>
 
     <template id="org.jkiss.dbeaver.templates.cmdreorg" 
