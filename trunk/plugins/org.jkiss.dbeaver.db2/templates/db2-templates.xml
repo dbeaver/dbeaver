@@ -31,22 +31,6 @@
 VALUES (CURRENT TIMESTAMP);
     </template>
 
-    <template id="org.jkiss.dbeaver.templates.cmdreorg" 
-              name="cmdreorg" 
-              context="sql_db2" 
-              autoinsert="true" 
-              description="Reorg Table">
-call SYSPROC.ADMIN_CMD('REORG TABLE ${table}');
-    </template>
-
-    <template id="org.jkiss.dbeaver.templates.cmdrunstats" 
-              name="cmdrunstats" 
-              context="sql_db2" 
-              autoinsert="true" 
-              description="Runstats on Table">
-call SYSPROC.ADMIN_CMD('RUNSTATS ON TABLE ${table} WITH DISTRIBUTION AND DETAILED INDEXES ALL');
-    </template>
-
     <template id="org.jkiss.dbeaver.templates.cmdAdminDropSchema" 
               name="cmdAdminDropSchema" 
               context="sql_db2" 
