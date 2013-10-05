@@ -44,7 +44,7 @@ call SYSPROC.ADMIN_CMD('REORG TABLE ${table}');
               context="sql_db2" 
               autoinsert="true" 
               description="Runstats on Table">
-call SYSPROC.ADMIN_CMD('RUNSTATS On TABLE ${table} WITH DISTRIBUTION AND DETAILED INDEXES ALL');
+call SYSPROC.ADMIN_CMD('RUNSTATS ON TABLE ${table} WITH DISTRIBUTION AND DETAILED INDEXES ALL');
     </template>
 
     <template id="org.jkiss.dbeaver.templates.cmdAdminDropSchema" 
