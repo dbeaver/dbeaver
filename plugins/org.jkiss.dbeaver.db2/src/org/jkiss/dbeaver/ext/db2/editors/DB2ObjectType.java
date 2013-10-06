@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Package;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -103,6 +104,16 @@ public enum DB2ObjectType implements DBSObjectType {
         public DB2Module findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
             return schema.getModuleCache().getObject(monitor, schema, objectName);
+        }
+    }),
+
+    MQT(DBIcon.TREE_TABLE.getImage(), DB2MaterializedQueryTable.class, new ObjectFinder() {
+
+        @Override
+        public DB2MaterializedQueryTable findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName)
+            throws DBException
+        {
+            return schema.getMaterializedQueryTableCache().getObject(monitor, schema, objectName);
         }
     }),
 

@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCompressionMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableDropRule;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableLockSize;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionMode;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableRefreshMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
@@ -81,8 +80,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     private String constChecked;
     private DB2TablePartitionMode partitionMode;
     private Boolean append;
-    private DB2TableRefreshMode refreshMode;
-    private Timestamp refreshTime;
     private DB2TableLockSize lockSize;
     private String volatileMode;
     private DB2TableCompressionMode compression;
@@ -103,8 +100,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     {
         super(monitor, schema, dbResult);
 
-        setName(JDBCUtils.safeGetString(dbResult, "TABNAME"));
-
         this.status = CommonUtils.valueOf(DB2TableStatus.class, JDBCUtils.safeGetString(dbResult, "STATUS"));
         this.type = CommonUtils.valueOf(DB2TableType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
         this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
@@ -113,7 +108,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         this.constChecked = JDBCUtils.safeGetString(dbResult, "CONST_CHECKED");
         this.partitionMode = CommonUtils.valueOf(DB2TablePartitionMode.class, JDBCUtils.safeGetString(dbResult, "PARTITION_MODE"));
         this.append = JDBCUtils.safeGetBoolean(dbResult, "APPEND_MODE", DB2YesNo.Y.name());
-        this.refreshTime = JDBCUtils.safeGetTimestamp(dbResult, "REFRESH_TIME");
         this.volatileMode = JDBCUtils.safeGetString(dbResult, "VOLATILE");
         this.compression = CommonUtils.valueOf(DB2TableCompressionMode.class, JDBCUtils.safeGetString(dbResult, "COMPRESSION"));
         this.accessMode = CommonUtils.valueOf(DB2TableAccessMode.class, JDBCUtils.safeGetString(dbResult, "ACCESS_MODE"));
@@ -125,10 +119,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         this.fPages = JDBCUtils.safeGetLongNullable(dbResult, "FPAGES");
         this.overFLow = JDBCUtils.safeGetLongNullable(dbResult, "OVERFLOW");
 
-        String refreshModeString = JDBCUtils.safeGetString(dbResult, "REFRESH");
-        if (CommonUtils.isNotEmpty(refreshModeString)) {
-            this.refreshMode = CommonUtils.valueOf(DB2TableRefreshMode.class, refreshModeString);
-        }
         String lockSizeString = JDBCUtils.safeGetString(dbResult, "LOCKSIZE");
         if (CommonUtils.isNotEmpty(lockSizeString)) {
             this.lockSize = CommonUtils.valueOf(DB2TableLockSize.class, lockSizeString);
@@ -397,18 +387,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     public String getVolatileMode()
     {
         return volatileMode;
-    }
-
-    @Property(viewable = false, editable = false, order = 102)
-    public DB2TableRefreshMode getRefreshMode()
-    {
-        return refreshMode;
-    }
-
-    @Property(viewable = false, editable = false, order = 103)
-    public Timestamp getRefreshTime()
-    {
-        return refreshTime;
     }
 
     @Property(viewable = false, editable = false, order = 104)

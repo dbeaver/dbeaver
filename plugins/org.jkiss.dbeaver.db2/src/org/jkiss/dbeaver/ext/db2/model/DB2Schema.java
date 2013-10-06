@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2AliasCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2IndexCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2MaterializedQueryTableCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2NicknameCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCache;
@@ -71,12 +72,14 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // DB2Schema's children
     private final DB2TableCache tableCache = new DB2TableCache();
     private final DB2ViewCache viewCache = new DB2ViewCache();
+    private final DB2MaterializedQueryTableCache mqtCache = new DB2MaterializedQueryTableCache();
+    private final DB2NicknameCache nicknameCache = new DB2NicknameCache();
+
     private final DBSObjectCache<DB2Schema, DB2Sequence> sequenceCache;
     private final DB2IndexCache indexCache = new DB2IndexCache();
     private final DB2TriggerCache triggerCache = new DB2TriggerCache();
     private final DB2AliasCache aliasCache = new DB2AliasCache();
     private final DBSObjectCache<DB2Schema, DB2Package> packageCache;
-    private final DB2NicknameCache nicknameCache = new DB2NicknameCache();
     private final DBSObjectCache<DB2Schema, DB2XMLSchema> xmlSchemaCache;
 
     private final DB2RoutineCache udfCache = new DB2RoutineCache(DB2RoutineType.F);
@@ -172,6 +175,11 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             tableCache.loadObjects(monitor, this);
             monitor.subTask("Cache Views");
             viewCache.getObjects(monitor, this);
+            monitor.subTask("Cache MQTs");
+            mqtCache.getObjects(monitor, this);
+            monitor.subTask("Cache Nicknames");
+            nicknameCache.getObjects(monitor, this);
+
             monitor.subTask("Cache Check Constraints");
             checkCache.getObjects(monitor, this);
             monitor.subTask("Cache Sequences");
@@ -202,6 +210,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     {
         tableCache.clearCache();
         viewCache.clearCache();
+        mqtCache.clearCache();
+        nicknameCache.clearCache();
+
         packageCache.clearCache();
         procedureCache.clearCache();
         udfCache.clearCache();
@@ -246,6 +257,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             }
             for (DB2View db2View : viewCache.getObjects(monitor, this)) {
                 allKindOfTableCache.put(db2View.getName(), db2View);
+            }
+            for (DB2MaterializedQueryTable db2Mqt : mqtCache.getObjects(monitor, this)) {
+                allKindOfTableCache.put(db2Mqt.getName(), db2Mqt);
             }
             for (DB2Nickname db2Nickname : nicknameCache.getObjects(monitor, this)) {
                 allKindOfTableCache.put(db2Nickname.getName(), db2Nickname);
@@ -298,6 +312,17 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DB2Nickname getNickname(DBRProgressMonitor monitor, String name) throws DBException
     {
         return nicknameCache.getObject(monitor, this, name, DB2Nickname.class);
+    }
+
+    @Association
+    public Collection<DB2MaterializedQueryTable> getMaterializedQueryTables(DBRProgressMonitor monitor) throws DBException
+    {
+        return mqtCache.getTypedObjects(monitor, this, DB2MaterializedQueryTable.class);
+    }
+
+    public DB2MaterializedQueryTable getMaterializedQueryTable(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return mqtCache.getObject(monitor, this, name, DB2MaterializedQueryTable.class);
     }
 
     @Association
@@ -497,6 +522,11 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DB2NicknameCache getNicknameCache()
     {
         return nicknameCache;
+    }
+
+    public DB2MaterializedQueryTableCache getMaterializedQueryTableCache()
+    {
+        return mqtCache;
     }
 
     public DBSObjectCache<DB2Schema, DB2DataType> getUdtCache()

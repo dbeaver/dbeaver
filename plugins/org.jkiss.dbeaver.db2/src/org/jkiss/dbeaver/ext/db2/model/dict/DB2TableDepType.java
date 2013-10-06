@@ -41,7 +41,7 @@ public enum DB2TableDepType implements DBPNamedObject {
 
     R("UDT", DB2ObjectType.UDT),
 
-    S("MQT", DB2ObjectType.TABLE),
+    S("MQT", DB2ObjectType.MQT),
 
     T("Table", DB2ObjectType.TABLE),
 

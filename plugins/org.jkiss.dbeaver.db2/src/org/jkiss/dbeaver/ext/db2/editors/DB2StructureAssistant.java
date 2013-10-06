@@ -54,16 +54,15 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     private static final Log LOG = LogFactory.getLog(DB2StructureAssistant.class);
 
     // TODO DF: Work in progess
-    // For now only support Search/Autocomplete on Aliases, Tables, Views and Nicknames
 
     private static final DBSObjectType[] SUPP_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
-        DB2ObjectType.NICKNAME, DB2ObjectType.COLUMN, };
+        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.COLUMN, };
 
     private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
-        DB2ObjectType.NICKNAME, };
+        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, };
 
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
-        DB2ObjectType.NICKNAME, };
+        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, };
 
     private static String SQL_TABLES_ALL;
     private static String SQL_TABLES_SCHEMA;
@@ -144,9 +143,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         int nbResults = 0;
 
-        // Tables, Alias, Views, NicsearchObjectNameMaskknames
+        // Tables, Alias, Views, Nicknames, MQT
         if ((db2ObjectTypes.contains(DB2ObjectType.ALIAS)) || (db2ObjectTypes.contains(DB2ObjectType.TABLE))
-            || (db2ObjectTypes.contains(DB2ObjectType.NICKNAME)) || (db2ObjectTypes.contains(DB2ObjectType.VIEW))) {
+            || (db2ObjectTypes.contains(DB2ObjectType.NICKNAME)) || (db2ObjectTypes.contains(DB2ObjectType.VIEW))
+            || (db2ObjectTypes.contains(DB2ObjectType.MQT))) {
+
             searchTables(context, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
 
             if (nbResults >= maxResults) {
@@ -361,13 +362,15 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                 listChars.add('G');
                 listChars.add('H');
                 listChars.add('L');
-                listChars.add('S');
                 listChars.add('T');
                 listChars.add('U');
             }
             if (objectType.equals(DB2ObjectType.VIEW)) {
                 listChars.add('V');
                 listChars.add('W');
+            }
+            if (objectType.equals(DB2ObjectType.MQT)) {
+                listChars.add('S');
             }
             if (objectType.equals(DB2ObjectType.NICKNAME)) {
                 listChars.add('N');

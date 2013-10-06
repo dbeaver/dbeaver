@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewCheck;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableRefreshMode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -30,28 +29,30 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Collection;
 
 /**
- * DB2 View
+ * DB2 MQT
  * 
  * @author Denis Forveille
  */
-public class DB2View extends DB2ViewBase implements DB2SourceObject {
+public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceObject {
 
-    private DB2ViewCheck viewCheck;
-    private Boolean readOnly;
+    private DB2TableRefreshMode refreshMode;
+    private Timestamp refreshTime;
 
     // -----------------
     // Constructors
     // -----------------
 
-    public DB2View(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult)
+    public DB2MaterializedQueryTable(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult)
     {
         super(monitor, schema, dbResult);
 
-        this.viewCheck = CommonUtils.valueOf(DB2ViewCheck.class, JDBCUtils.safeGetString(dbResult, "VIEWCHECK"));
-        this.readOnly = JDBCUtils.safeGetBoolean(dbResult, "READONLY", DB2YesNo.Y.name());
+        this.refreshTime = JDBCUtils.safeGetTimestamp(dbResult, "REFRESH_TIME");
+        this.refreshMode = CommonUtils.valueOf(DB2TableRefreshMode.class, JDBCUtils.safeGetString(dbResult, "REFRESH"));
+
     }
 
     // -----------------
@@ -61,21 +62,21 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     @Override
     public boolean isView()
     {
-        return true;
+        return true; // DF: Not sure of that..
     }
 
     @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().getViewCache().clearChildrenCache(this);
+        getContainer().getMaterializedQueryTableCache().clearChildrenCache(this);
         super.refreshObject(monitor);
         return true;
     }
 
     @Override
-    public JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> getCache()
+    public JDBCStructCache<DB2Schema, DB2MaterializedQueryTable, DB2TableColumn> getCache()
     {
-        return getContainer().getViewCache();
+        return getContainer().getMaterializedQueryTableCache();
     }
 
     // -----------------
@@ -85,13 +86,13 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     @Override
     public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException
     {
-        return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
+        return getContainer().getMaterializedQueryTableCache().getChildren(monitor, getContainer(), this);
     }
 
     @Override
     public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
     {
-        return getContainer().getViewCache().getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().getMaterializedQueryTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     // -----------------
@@ -99,7 +100,7 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     // -----------------
 
     @Association
-    public Collection<DB2ViewBaseDep> getViewDeps(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2ViewBaseDep> getMQTDeps(DBRProgressMonitor monitor) throws DBException
     {
         return viewBaseDepCache.getObjects(monitor, this);
     }
@@ -108,23 +109,16 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     // Properties
     // -----------------
 
-    @Property(viewable = true, editable = false, order = 21)
-    public Boolean getReadOnly()
+    @Property(viewable = true, editable = false, order = 102)
+    public DB2TableRefreshMode getRefreshMode()
     {
-        return readOnly;
+        return refreshMode;
     }
 
-    @Property(viewable = true, editable = false, order = 22)
-    public DB2ViewCheck getViewCheck()
+    @Property(viewable = true, editable = false, order = 103)
+    public Timestamp getRefreshTime()
     {
-        return viewCheck;
-    }
-
-    @Override
-    @Property(hidden = true)
-    public Integer getTableId()
-    {
-        return super.getTableId();
+        return refreshTime;
     }
 
 }
