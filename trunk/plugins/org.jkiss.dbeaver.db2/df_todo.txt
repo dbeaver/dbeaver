@@ -2,13 +2,6 @@
 TODO:
 - Go through all "TODO" markers
 
-Problems :
-- when the user tries to delete a schema but the SQL drop fail (ie because it is linked to an existing object)
-  or 
-  the user cancels a drop action after viewing the drop command, 
-  then the schema disappear from the list
-  -> the schema must disappear from the schema list ONLY if the drop succedeed..
-
 Manage explain/ddl generation table creation 
 - EXPLAIN tables may be created in any schema where the user has the right to create them
   -> the schema for explain tables should be in DB2 preferences PER DATASPURCE. 
