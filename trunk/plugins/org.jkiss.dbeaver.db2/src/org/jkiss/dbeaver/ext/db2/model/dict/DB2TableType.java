@@ -38,7 +38,7 @@ public enum DB2TableType implements DBPNamedObject {
 
     N("Nickname", DB2ObjectType.NICKNAME),
 
-    S("Materialized query table", DB2ObjectType.TABLE),
+    S("Materialized Query Table", DB2ObjectType.MQT),
 
     T("Table (untyped)", DB2ObjectType.TABLE),
 

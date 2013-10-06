@@ -21,9 +21,7 @@ Improvements:
   - Enhance Search
     - Add Tablespaces, indexes, foreign keys, modules, routines ...
   - Propagate and use monitors everywhere
-  - Split DB2Tables into distinct sub types:
-    - Regular
-    - MQT
+  - Optionnaly seperate some kinds of DB2Tables into distinct sub types:
     - Temporary Tables
     - Hierachies..
   - DB2DataType

@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -50,7 +50,11 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
         sb.append(" WHERE V.VIEWSCHEMA = ?");
         sb.append("   AND T.TABSCHEMA = V.VIEWSCHEMA");
         sb.append("   AND T.TABNAME = V.VIEWNAME");
-        sb.append(" ORDER BY VIEWNAME");
+        sb.append("   AND T.TYPE IN (");
+        sb.append("                  '" + DB2TableType.V.name() + "'");
+        sb.append("                 ,'" + DB2TableType.W.name() + "'");
+        sb.append("                 )");
+        sb.append(" ORDER BY T.TABNAME");
         sb.append(" WITH UR");
 
         SQL_VIEWS = sb.toString();
@@ -59,7 +63,6 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     public DB2ViewCache()
     {
         super("TABNAME");
-        setListOrderComparator(DBUtils.<DB2View> nameComparator());
     }
 
     @Override

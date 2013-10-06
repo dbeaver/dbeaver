@@ -282,13 +282,18 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
             return new DB2AuthSequence(monitor, db2Grantee, db2Sequence, resultSet);
 
         case TABLE:
-            // Can be a Table or a View..
+            // Can be a Table, a View or an MQT..
             DB2TableBase db2TableBase = DB2Utils.findTableBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-            if (db2TableBase == null) {
-                db2TableBase = DB2Utils.findViewBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-                return new DB2AuthView(monitor, db2Grantee, db2TableBase, resultSet);
-            } else {
+            if (db2TableBase != null) {
                 return new DB2AuthTable(monitor, db2Grantee, db2TableBase, resultSet);
+            } else {
+                db2TableBase = DB2Utils.findViewBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+                if (db2TableBase != null) {
+                    return new DB2AuthView(monitor, db2Grantee, db2TableBase, resultSet);
+                } else {
+                    db2TableBase = DB2Utils.findMQTBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+                    return new DB2AuthMaterializedQueryTable(monitor, db2Grantee, db2TableBase, resultSet);
+                }
             }
 
         case TABLESPACE:

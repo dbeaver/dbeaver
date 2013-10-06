@@ -166,6 +166,12 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     }
 
     @Association
+    public Collection<DB2AuthMaterializedQueryTable> getMQTAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return getAuths(monitor, DB2AuthMaterializedQueryTable.class);
+    }
+
+    @Association
     public Collection<DB2AuthXMLSchema> getXMLSchemasAuths(DBRProgressMonitor monitor) throws DBException
     {
         return getAuths(monitor, DB2AuthXMLSchema.class);
