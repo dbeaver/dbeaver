@@ -41,8 +41,8 @@ import java.util.List;
  */
 public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableForeignKey, DB2TableKeyColumn> {
 
-    private static String SQL_FK_TAB;
-    private static String SQL_FK_ALL;
+    private static final String SQL_FK_TAB;
+    private static final String SQL_FK_ALL;
 
     static {
         StringBuilder sb = new StringBuilder(512);

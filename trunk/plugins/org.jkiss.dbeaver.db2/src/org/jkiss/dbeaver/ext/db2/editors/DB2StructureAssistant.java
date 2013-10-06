@@ -356,24 +356,24 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         List<Character> listChars = new ArrayList<Character>(objectTypes.size());
         for (DB2ObjectType objectType : objectTypes) {
             if (objectType.equals(DB2ObjectType.ALIAS)) {
-                listChars.add('A');
+                listChars.add(DB2TableType.A.name().charAt(0));
             }
             if (objectType.equals(DB2ObjectType.TABLE)) {
-                listChars.add('G');
-                listChars.add('H');
-                listChars.add('L');
-                listChars.add('T');
-                listChars.add('U');
+                listChars.add(DB2TableType.G.name().charAt(0));
+                listChars.add(DB2TableType.H.name().charAt(0));
+                listChars.add(DB2TableType.L.name().charAt(0));
+                listChars.add(DB2TableType.T.name().charAt(0));
+                listChars.add(DB2TableType.U.name().charAt(0));
             }
             if (objectType.equals(DB2ObjectType.VIEW)) {
-                listChars.add('V');
-                listChars.add('W');
+                listChars.add(DB2TableType.V.name().charAt(0));
+                listChars.add(DB2TableType.W.name().charAt(0));
             }
             if (objectType.equals(DB2ObjectType.MQT)) {
-                listChars.add('S');
+                listChars.add(DB2TableType.S.name().charAt(0));
             }
             if (objectType.equals(DB2ObjectType.NICKNAME)) {
-                listChars.add('N');
+                listChars.add(DB2TableType.N.name().charAt(0));
             }
 
         }

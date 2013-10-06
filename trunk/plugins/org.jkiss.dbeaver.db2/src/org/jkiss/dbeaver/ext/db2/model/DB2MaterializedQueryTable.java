@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableRefreshMode;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -93,16 +92,6 @@ public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceO
     public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
     {
         return getContainer().getMaterializedQueryTableCache().getChild(monitor, getContainer(), this, attributeName);
-    }
-
-    // -----------------
-    // Association
-    // -----------------
-
-    @Association
-    public Collection<DB2ViewBaseDep> getMQTDeps(DBRProgressMonitor monitor) throws DBException
-    {
-        return viewBaseDepCache.getObjects(monitor, this);
     }
 
     // -----------------

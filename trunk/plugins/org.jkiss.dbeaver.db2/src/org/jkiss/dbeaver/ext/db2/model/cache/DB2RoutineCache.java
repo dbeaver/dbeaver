@@ -37,35 +37,21 @@ import java.sql.SQLException;
  */
 public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
 
-    private static final String SQL_F = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'F' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
-    private static final String SQL_M = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'M' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
-    private static final String SQL_P = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'P' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_BASE = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= '%s' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
 
-    private final String sql;
+    private final String SQL;
 
     public DB2RoutineCache(DB2RoutineType routineType)
     {
         super();
 
-        switch (routineType) {
-        case F:
-            sql = SQL_F;
-            break;
-        case M:
-            sql = SQL_M;
-            break;
-        case P:
-            sql = SQL_P;
-            break;
-        default:
-            throw new IllegalArgumentException(routineType + " is not a supported DB2RoutineType");
-        }
+        SQL = String.format(SQL_BASE, routineType.name());
     }
 
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
     {
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }

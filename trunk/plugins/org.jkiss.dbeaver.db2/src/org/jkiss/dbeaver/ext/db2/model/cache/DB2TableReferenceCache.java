@@ -41,8 +41,8 @@ import java.util.List;
  */
 public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableReference, DB2TableKeyColumn> {
 
-    private static String SQL_REF_TAB;
-    private static String SQL_REF_ALL;
+    private static final String SQL_REF_TAB;
+    private static final String SQL_REF_ALL;
 
     static {
         StringBuilder sb = new StringBuilder(256);

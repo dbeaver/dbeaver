@@ -44,8 +44,8 @@ import java.util.List;
 public final class DB2TableCheckConstraintCache extends
     JDBCCompositeCache<DB2Schema, DB2Table, DB2TableCheckConstraint, DB2TableCheckConstraintColumn> {
 
-    private static String SQL_CK_TAB;
-    private static String SQL_CK_ALL;
+    private static final String SQL_CK_TAB;
+    private static final String SQL_CK_ALL;
 
     static {
         StringBuilder sb = new StringBuilder(512);
