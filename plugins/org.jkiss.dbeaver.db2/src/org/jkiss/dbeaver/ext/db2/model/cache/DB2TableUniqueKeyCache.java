@@ -43,8 +43,8 @@ import java.util.List;
  */
 public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableUniqueKey, DB2TableKeyColumn> {
 
-    private static String SQL_UK_TAB;
-    private static String SQL_UK_ALL;
+    private static final String SQL_UK_TAB;
+    private static final String SQL_UK_ALL;
 
     static {
         StringBuilder sb = new StringBuilder(512);

@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewCheck;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -92,16 +91,6 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
     {
         return getContainer().getViewCache().getChild(monitor, getContainer(), this, attributeName);
-    }
-
-    // -----------------
-    // Association
-    // -----------------
-
-    @Association
-    public Collection<DB2ViewBaseDep> getViewDeps(DBRProgressMonitor monitor) throws DBException
-    {
-        return viewBaseDepCache.getObjects(monitor, this);
     }
 
     // -----------------

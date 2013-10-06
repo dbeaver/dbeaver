@@ -37,7 +37,7 @@ import java.sql.SQLException;
  */
 public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2RoutineParm> {
 
-    private static String SQL;
+    private static final String SQL;
 
     static {
         StringBuilder sb = new StringBuilder(256);

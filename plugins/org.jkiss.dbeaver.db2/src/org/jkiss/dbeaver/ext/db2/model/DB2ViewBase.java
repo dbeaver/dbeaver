@@ -35,7 +35,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 
 /**
- * Base class for view-like object(Viewsm MQT)
+ * Base class for view-like objects (Views, MQT)
  * 
  * @author Denis Forveille
  */
