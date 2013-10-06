@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -361,20 +362,29 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private String getPlanTableSchemaName(DBCExecutionContext context) throws DBCException
     {
-        if (planTableSchemaName == null) {
 
-            // TODO DF: not sure of "activeSchema".
-            // Explain tables could be created in any schema or at default, in SYSTOOLS
-            // Should be "CURRENT USER" in fact..
-            planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, activeSchemaName);
+        if (CommonUtils.isEmpty(planTableSchemaName)) {
+            // Explain tables have not been validated now
 
+            // / Read schema from preferences
+            planTableSchemaName = getContainer().getPreferenceStore().getString(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME);
+
+            // User didn't visit the preference yet
+            if (CommonUtils.isEmpty(planTableSchemaName)) {
+                planTableSchemaName = DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME_DEFAULT;
+                getContainer().getPreferenceStore().setValue(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME, planTableSchemaName);
+            }
+
+            // Check validity of explain tables
+            planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, planTableSchemaName);
             if (planTableSchemaName == null) {
-                // Plan table not found - try to create new one
+
+                // Plan table not valid with schema in preference
+                // Give a message to the user to set valid tables schema in preference
                 // TODO DF: ask the user in what schema to create the tables
                 if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), PLAN_TABLE_TIT, PLAN_TABLE_MSG)) {
                     return null;
                 }
-                planTableSchemaName = "SYSTOOLS";
                 DB2Utils.createExplainTables(context.getProgressMonitor(), this, planTableSchemaName);
             }
         }
