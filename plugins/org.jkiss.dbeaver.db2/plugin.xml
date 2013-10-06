@@ -435,5 +435,21 @@
             id="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor">
         </editor>
     </extension>
+    
+    <extension point="org.eclipse.ui.propertyPages">
+       <page category="org.jkiss.dbeaver.preferences.main.common" id="org.jkiss.dbeaver.preferences.db2.general" class="org.jkiss.dbeaver.ext.db2.views.DB2PreferencePage" name="DB2">
+          <enabledWhen>
+             <or>
+                <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
+             </or>
+          </enabledWhen>
+       </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.db2.general" class="org.jkiss.dbeaver.ext.db2.views.DB2PreferencePage" name="DB2">
+        </page>
+    </extension>
 
 </plugin>
