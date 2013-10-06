@@ -1,6 +1,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 import org.eclipse.jface.text.templates.TemplateContext;
+import org.eclipse.jface.text.templates.TemplateVariable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,10 +31,21 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
         resolveTables(monitor, dataSource, context, entities);
     }
 
+    public void resolve(TemplateVariable variable, TemplateContext context)
+    {
+        super.resolve(variable, context);
+        if (variable instanceof SQLVariable) {
+            ((SQLVariable)variable).setResolver(this);
+        }
+    }
+
     static void resolveTables(DBRProgressMonitor monitor, DBPDataSource dataSource, TemplateContext context, List<DBSEntity> entities) throws DBException
     {
-        String catalogName = context.getVariable(SQLContainerResolver.VAR_NAME_CATALOG);
-        String schemaName = context.getVariable(SQLContainerResolver.VAR_NAME_SCHEMA);
+        TemplateVariable schemaVariable = ((SQLContext) context).getTemplateVariable(SQLContainerResolver.VAR_NAME_SCHEMA);
+        TemplateVariable catalogVariable = ((SQLContext) context).getTemplateVariable(SQLContainerResolver.VAR_NAME_CATALOG);
+
+        String catalogName = catalogVariable == null ? null : catalogVariable.getDefaultValue();
+        String schemaName = schemaVariable == null ? null : schemaVariable.getDefaultValue();
         DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (objectContainer == null) {
             return;
