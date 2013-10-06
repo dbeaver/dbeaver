@@ -135,8 +135,18 @@
                                 <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns" >
                                     <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ViewDep" label="%tree.viewdeps.node.name" icon="#dependencies" description="View Dependencies" navigable="false">
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ViewBaseDep" label="%tree.viewdeps.node.name" icon="#dependencies" description="View Dependencies" navigable="false">
                                    <items label="%tree.viewdep.node.name" path="viewdep" property="viewDeps" icon="#viewdep"/>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable" label="%tree.mqts.node.name" icon="#folder_view" description="MQTs">
+                            <items label="%tree.mqt.node.name" path="materializedQueryTable" property="materializedQueryTables" icon="#mqt">
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn" label="%tree.columns.node.name" icon="#columns" description="MQT columns" >
+                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column"/>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ViewBaseDep" label="%tree.mqtdeps.node.name" icon="#dependencies" description="MQT Dependencies" navigable="false">
+                                   <items label="%tree.mqtdep.node.name" path="MQTdep" property="MQTDeps" icon="#mqtdep"/>
                                 </folder>
                             </items>
                         </folder>
@@ -280,6 +290,7 @@
                            <items label="%tree.users.node.name" path="role" property="roleDeps" icon="#user" navigable="false"/>
                            <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
                            <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
+                           <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
                            <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
                            <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
@@ -299,6 +310,7 @@
                            <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth"  navigable="false"/>
                            <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
                            <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
+                           <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
                            <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
                            <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
@@ -318,6 +330,7 @@
                            <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth"  navigable="false"/>
                            <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
                            <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
+                           <items label="%tree.mqtsauths.node.name" path="mqtauth" property="MQTAuths" icon="#mqtauth" navigable="false"/>
                            <items label="%tree.columnsauths.node.name" path="columnauth" property="columnsAuths" icon="#columnsauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
                            <items label="%tree.functionsauths.node.name" path="functionauth" property="functionsAuths" icon="#functionsauth" navigable="false"/>
@@ -379,6 +392,7 @@
                 position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
                 type="section">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint"/>
@@ -392,6 +406,7 @@
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ForeignKeyManager"   objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2IndexManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2ModuleManager"       objectType="org.jkiss.dbeaver.ext.db2.model.module.DB2Module"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2MQTManager"          objectType="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2NicknameManager"     objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2PackageManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Package"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2RemoteServerManager" objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer"/>

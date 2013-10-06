@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -32,35 +32,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cache for DB2 Tables
+ * Cache for DB2 MQT
  * 
  * @author Denis Forveille
  */
-public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB2TableColumn> {
+public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Schema, DB2MaterializedQueryTable, DB2TableColumn> {
 
-    private static final String SQL_TABS;
-    private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY COLNO WITH UR";
-    private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? ORDER BY TABNAME, COLNO WITH UR";
+    private static final String SQL_VIEWS;
+    private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? AND TABNAME = ? ORDER BY COLNO WITH UR";
+    private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? ORDER BY TABNAME, COLNO WITH UR";
 
     static {
         StringBuilder sb = new StringBuilder(512);
         sb.append("SELECT *");
-        sb.append(" FROM SYSCAT.TABLES");
-        sb.append(" WHERE TABSCHEMA = ?");
-        sb.append("   AND TYPE IN (");
-        sb.append("                  '" + DB2TableType.H.name() + "'");
-        sb.append("                 ,'" + DB2TableType.L.name() + "'");
-        sb.append("                 ,'" + DB2TableType.T.name() + "'");
-        sb.append("                 ,'" + DB2TableType.U.name() + "'");
-        sb.append("                 ,'" + DB2TableType.G.name() + "'");
-        sb.append("                 )");
-        sb.append(" ORDER BY TABNAME");
+        sb.append(" FROM SYSCAT.TABLES T");
+        sb.append("    , SYSCAT.VIEWS V");
+        sb.append(" WHERE V.VIEWSCHEMA = ?");
+        sb.append("   AND T.TABSCHEMA = V.VIEWSCHEMA");
+        sb.append("   AND T.TABNAME = V.VIEWNAME");
+        sb.append("   AND T.TYPE = '" + DB2TableType.S.name() + "'");
+        sb.append(" ORDER BY T.TABNAME");
         sb.append(" WITH UR");
 
-        SQL_TABS = sb.toString();
+        SQL_VIEWS = sb.toString();
     }
 
-    public DB2TableCache()
+    public DB2MaterializedQueryTableCache()
     {
         super("TABNAME");
     }
@@ -68,42 +65,42 @@ public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_TABS);
+        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_VIEWS);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2Table fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2MaterializedQueryTable fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult)
+        throws SQLException, DBException
     {
-        return new DB2Table(context.getProgressMonitor(), db2Schema, dbResult);
+        return new DB2MaterializedQueryTable(context.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable)
-        throws SQLException
+    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema,
+        DB2MaterializedQueryTable forMqt) throws SQLException
     {
 
         String sql;
-        if (forTable != null) {
+        if (forMqt != null) {
             sql = SQL_COLS_TAB;
         } else {
             sql = SQL_COLS_ALL;
         }
         JDBCPreparedStatement dbStat = context.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
-        if (forTable != null) {
-            dbStat.setString(2, forTable.getName());
+        if (forMqt != null) {
+            dbStat.setString(2, forMqt.getName());
         }
         return dbStat;
     }
 
     @Override
-    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table db2Table, ResultSet dbResult)
-        throws SQLException, DBException
+    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2MaterializedQueryTable db2MQT,
+        ResultSet dbResult) throws SQLException, DBException
     {
-        return new DB2TableColumn(context.getProgressMonitor(), db2Table, dbResult);
+        return new DB2TableColumn(context.getProgressMonitor(), db2MQT, dbResult);
     }
 
 }

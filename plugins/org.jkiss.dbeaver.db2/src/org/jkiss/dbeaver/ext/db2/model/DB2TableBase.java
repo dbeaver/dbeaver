@@ -64,6 +64,8 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     {
         super(schema, true);
 
+        setName(JDBCUtils.safeGetString(dbResult, "TABNAME"));
+
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
 

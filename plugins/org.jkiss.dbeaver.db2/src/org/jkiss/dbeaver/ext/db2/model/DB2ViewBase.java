@@ -20,38 +20,46 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewCheck;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewBaseDepCache;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
+import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
 
 /**
- * DB2 View
+ * Base class for view-like object(Viewsm MQT)
  * 
  * @author Denis Forveille
  */
-public class DB2View extends DB2ViewBase implements DB2SourceObject {
+public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObject {
 
-    private DB2ViewCheck viewCheck;
-    private Boolean readOnly;
+    protected final DB2ViewBaseDepCache viewBaseDepCache = new DB2ViewBaseDepCache();
+
+    private DB2ViewStatus valid;
+    private String text;
+    private String funcPath;
 
     // -----------------
     // Constructors
     // -----------------
 
-    public DB2View(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult)
+    public DB2ViewBase(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult)
     {
         super(monitor, schema, dbResult);
 
-        this.viewCheck = CommonUtils.valueOf(DB2ViewCheck.class, JDBCUtils.safeGetString(dbResult, "VIEWCHECK"));
-        this.readOnly = JDBCUtils.safeGetBoolean(dbResult, "READONLY", DB2YesNo.Y.name());
+        setName(JDBCUtils.safeGetString(dbResult, "TABNAME"));
+
+        this.valid = CommonUtils.valueOf(DB2ViewStatus.class, JDBCUtils.safeGetString(dbResult, "VALID"));
+        this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
+        this.funcPath = JDBCUtils.safeGetString(dbResult, "FUNC_PATH");
     }
 
     // -----------------
@@ -65,33 +73,31 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     }
 
     @Override
+    public DBSObjectState getObjectState()
+    {
+        return valid.getState();
+    }
+
+    @Override
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+    }
+
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().getViewCache().clearChildrenCache(this);
-        super.refreshObject(monitor);
+        viewBaseDepCache.clearCache();
         return true;
     }
 
-    @Override
-    public JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> getCache()
-    {
-        return getContainer().getViewCache();
-    }
-
     // -----------------
-    // Columns
+    // Source
     // -----------------
 
     @Override
-    public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
-        return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
-    }
-
-    @Override
-    public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
-    {
-        return getContainer().getViewCache().getChild(monitor, getContainer(), this, attributeName);
+        return SQLUtils.formatSQL(getDataSource(), text);
     }
 
     // -----------------
@@ -108,23 +114,30 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     // Properties
     // -----------------
 
-    @Property(viewable = true, editable = false, order = 21)
-    public Boolean getReadOnly()
+    @Override
+    @Property(viewable = false, editable = false, updatable = false)
+    public String getDescription()
     {
-        return readOnly;
-    }
-
-    @Property(viewable = true, editable = false, order = 22)
-    public DB2ViewCheck getViewCheck()
-    {
-        return viewCheck;
+        return super.getDescription();
     }
 
     @Override
-    @Property(hidden = true)
-    public Integer getTableId()
+    @Property(viewable = true, editable = false, order = 1)
+    public String getName()
     {
-        return super.getTableId();
+        return super.getName();
+    }
+
+    @Property(viewable = true, editable = false, order = 20)
+    public DB2ViewStatus getValid()
+    {
+        return valid;
+    }
+
+    @Property(viewable = false, editable = false, order = 20)
+    public String getFuncPath()
+    {
+        return funcPath;
     }
 
 }

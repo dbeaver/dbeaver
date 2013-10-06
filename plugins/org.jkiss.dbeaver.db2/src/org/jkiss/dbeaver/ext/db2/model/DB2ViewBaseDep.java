@@ -30,11 +30,11 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 
 /**
- * DB2 View Dependency
+ * DB2 Views like Dependency
  * 
  * @author Denis Forveille
  */
-public class DB2ViewDep extends DB2Object<DB2View> {
+public class DB2ViewBaseDep extends DB2Object<DB2ViewBase> {
 
     private DB2TableDepType tableDepType;
     private DB2Schema depSchema;
@@ -46,10 +46,10 @@ public class DB2ViewDep extends DB2Object<DB2View> {
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2ViewDep(DBRProgressMonitor monitor, DB2View db2View, ResultSet resultSet) throws DBException
+    public DB2ViewBaseDep(DBRProgressMonitor monitor, DB2ViewBase db2ViewBase, ResultSet resultSet) throws DBException
     {
         // TODO DF: Bad should be BTYPE+BSCHEMA+BNAME
-        super(db2View, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
+        super(db2ViewBase, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
 
         this.depModuleId = JDBCUtils.safeGetString(resultSet, "BMODULEID");
         this.tabAuth = JDBCUtils.safeGetString(resultSet, "TABAUTH");
