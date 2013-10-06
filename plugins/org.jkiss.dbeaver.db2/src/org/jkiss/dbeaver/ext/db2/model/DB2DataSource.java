@@ -173,6 +173,15 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
         LOG.debug("Database version : " + version);
 
+        // Set explain tables schema from preferences
+        planTableSchemaName = getContainer().getPreferenceStore().getString(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME);
+        if (CommonUtils.isEmpty(planTableSchemaName)) {
+            LOG.debug("planTableSchemaName was not set in preferences, set it to default :"
+                + DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME_DEFAULT);
+            planTableSchemaName = DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME_DEFAULT;
+            getContainer().getPreferenceStore().setValue(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME, planTableSchemaName);
+        }
+
         return info;
     }
 
@@ -368,12 +377,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
             // / Read schema from preferences
             planTableSchemaName = getContainer().getPreferenceStore().getString(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME);
-
-            // User didn't visit the preference yet
-            if (CommonUtils.isEmpty(planTableSchemaName)) {
-                planTableSchemaName = DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME_DEFAULT;
-                getContainer().getPreferenceStore().setValue(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME, planTableSchemaName);
-            }
 
             // Check validity of explain tables
             planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, planTableSchemaName);

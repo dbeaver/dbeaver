@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * DB2 Preference Page
@@ -76,12 +75,7 @@ public class DB2PreferencePage extends TargetPrefPage {
     @Override
     protected void loadPreferences(IPreferenceStore store)
     {
-        String planTableSchemaName = store.getString(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME);
-        if (CommonUtils.isEmpty(planTableSchemaName)) {
-            planTableSchemaName = DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME_DEFAULT;
-            store.setValue(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME, planTableSchemaName);
-        }
-        explainTableSchemaNameText.setText(planTableSchemaName);
+        explainTableSchemaNameText.setText(store.getString(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME));
     }
 
     @Override
