@@ -47,7 +47,7 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
                         {
                             try {
                                 List<DBSEntity> entities = new ArrayList<DBSEntity>();
-                                SQLEntityResolver.resolveTables(monitor, ((IDataSourceProvider) context).getDataSource(), entities);
+                                SQLEntityResolver.resolveTables(monitor, ((IDataSourceProvider) context).getDataSource(), context, entities);
                                 if (!CommonUtils.isEmpty(entities)) {
                                     DBSEntity table = DBUtils.findObject(entities, tableName);
                                     if (table != null) {

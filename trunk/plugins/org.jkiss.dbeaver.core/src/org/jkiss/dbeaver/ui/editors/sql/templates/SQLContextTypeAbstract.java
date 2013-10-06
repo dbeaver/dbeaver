@@ -14,6 +14,8 @@ package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
 import org.eclipse.jface.text.templates.TemplateContextType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 public abstract class SQLContextTypeAbstract extends TemplateContextType {
 
@@ -39,6 +41,10 @@ public abstract class SQLContextTypeAbstract extends TemplateContextType {
     private void addDatabaseProposals()
     {
         addResolver(new SQLEntityResolver());
+        addResolver(new SQLContainerResolver<DBSSchema>(
+            SQLContainerResolver.VAR_NAME_SCHEMA, "Schema", DBSSchema.class));
+        addResolver(new SQLContainerResolver<DBSCatalog>(
+            SQLContainerResolver.VAR_NAME_CATALOG, "Catalog", DBSCatalog.class));
         addResolver(new SQLAttributeResolver());
     }
 
