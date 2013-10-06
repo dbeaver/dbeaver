@@ -445,6 +445,10 @@ public class OracleDataSource extends JDBCDataSource
     public String getPlanTableName(JDBCExecutionContext context)
         throws SQLException
     {
+        String tableName = getContainer().getPreferenceStore().getString(OracleConstants.PREF_EXPLAIN_TABLE_NAME);
+        if (!CommonUtils.isEmpty(tableName)) {
+            return tableName;
+        }
         if (planTableName == null) {
             String[] candidateNames = new String[] {"PLAN_TABLE", "TOAD_PLAN_TABLE"};
             for (String candidate : candidateNames) {
