@@ -1,33 +1,23 @@
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.templates.TemplateContext;
-import org.eclipse.jface.text.templates.TemplateVariableResolver;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
  * Entity resolver
  */
-public class SQLEntityResolver extends TemplateVariableResolver {
-
-    static final Log log = LogFactory.getLog(SQLEntityResolver.class);
+public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
 
     public SQLEntityResolver()
     {
@@ -35,41 +25,12 @@ public class SQLEntityResolver extends TemplateVariableResolver {
     }
 
     @Override
-    protected String[] resolveAll(final TemplateContext context)
+    protected void resolveObjects(DBRProgressMonitor monitor, DBPDataSource dataSource, TemplateContext context, List<DBSEntity> entities) throws DBException
     {
-        final List<DBSEntity> entities = new ArrayList<DBSEntity>();
-        if (context instanceof IDataSourceProvider) {
-            try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            resolveTables(monitor, ((IDataSourceProvider) context).getDataSource(), entities);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
-            } catch (InterruptedException e) {
-                // skip
-            }
-        }
-        if (!CommonUtils.isEmpty(entities)) {
-            String[] result = new String[entities.size()];
-            for (int i = 0; i < entities.size(); i++) {
-                DBSEntity entity = entities.get(i);
-                result[i] = entity.getName();
-            }
-            return result;
-        }
-        return super.resolveAll(context);
+        resolveTables(monitor, dataSource, context, entities);
     }
 
-    static void resolveTables(DBRProgressMonitor monitor, DBPDataSource dataSource, List<DBSEntity> entities) throws DBException
+    static void resolveTables(DBRProgressMonitor monitor, DBPDataSource dataSource, TemplateContext context, List<DBSEntity> entities) throws DBException
     {
         DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
         if (objectSelector != null) {
