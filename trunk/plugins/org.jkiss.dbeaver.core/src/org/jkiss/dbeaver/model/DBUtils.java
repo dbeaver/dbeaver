@@ -201,6 +201,16 @@ public final class DBUtils {
         return validName;
     }
 
+    /**
+     * Finds catalog, schema or table within specified object container
+     * @param monitor progress monitor
+     * @param rootSC container
+     * @param catalogName catalog name (optional)
+     * @param schemaName schema name (optional)
+     * @param tableName table name (optional)
+     * @return found object or null
+     * @throws DBException
+     */
     public static DBSObject getObjectByPath(
             DBRProgressMonitor monitor,
             DBSObjectContainer rootSC,
@@ -233,6 +243,9 @@ public final class DBUtils {
                 return null;
             }
             rootSC = (DBSObjectContainer) schema;
+        }
+        if (tableName == null) {
+            return rootSC;
         }
         Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
         if (DBSTable.class.isAssignableFrom(childType)) {
