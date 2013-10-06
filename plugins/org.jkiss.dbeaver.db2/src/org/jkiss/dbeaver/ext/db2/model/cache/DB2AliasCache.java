@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -47,7 +48,7 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         sb.append("      , BASE_TABNAME AS BASE_NAME");
         sb.append("   FROM SYSCAT.TABLES");
         sb.append("  WHERE TABSCHEMA = ?"); // 1
-        sb.append("    AND TYPE = 'A'");
+        sb.append("    AND TYPE = '").append(DB2TableType.A.name()).append("'");
 
         sb.append(" UNION ALL");
 
@@ -57,7 +58,7 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         sb.append("       , BASE_SEQNAME AS BASE_NAME");
         sb.append("   FROM SYSCAT.SEQUENCES");
         sb.append("  WHERE SEQSCHEMA = ?"); // 2
-        sb.append("    AND SEQTYPE = 'A'");
+        sb.append("    AND SEQTYPE = '").append(DB2TableType.A.name()).append("'");
 
         StringBuilder sb2 = new StringBuilder(256);
         sb2.append(" UNION ALL");
@@ -67,7 +68,7 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         sb2.append("       , BASE_MODULENAME AS BASE_NAME");
         sb2.append("   FROM SYSCAT.MODULES");
         sb2.append("  WHERE MODULESCHEMA = ?"); // 3
-        sb2.append("    AND MODULETYPE = 'A'");
+        sb2.append("    AND MODULETYPE = '").append(DB2TableType.A.name()).append("'");
 
         StringBuilder sb3 = new StringBuilder(64);
         sb3.append(" ORDER BY NAME");
