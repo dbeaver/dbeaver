@@ -32,15 +32,21 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
 
     static void resolveTables(DBRProgressMonitor monitor, DBPDataSource dataSource, TemplateContext context, List<DBSEntity> entities) throws DBException
     {
-        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-        if (objectSelector != null) {
-            DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
-            if (objectContainer != null) {
-                makeProposalsFromChildren(monitor, objectContainer, entities);
-                return;
+        String catalogName = context.getVariable(SQLContainerResolver.VAR_NAME_CATALOG);
+        String schemaName = context.getVariable(SQLContainerResolver.VAR_NAME_SCHEMA);
+        DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        if (objectContainer == null) {
+            return;
+        }
+        if (!CommonUtils.isEmpty(catalogName) || !CommonUtils.isEmpty(schemaName)) {
+            // Find container for specified schema/catalog
+            objectContainer = (DBSObjectContainer)DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, null);
+        } else {
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+            if (objectSelector != null) {
+                objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
             }
         }
-        DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (objectContainer != null) {
             makeProposalsFromChildren(monitor, objectContainer, entities);
         }
