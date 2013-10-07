@@ -1,8 +1,8 @@
 Major:
 
-Search refactoring (scripts search)
-Localizations
-DB2 & PostgreSQL & MS SQL plugins
+Use separate connection for metadata and editors (configurable + on request)
+Async autocomplete
+ROWID support
 
 Minor:
 
@@ -18,8 +18,6 @@ Office formats support (xls, doc) for export/import. Possibly office extension.
 
 Search in multiple data sources
 Search results reflect on disconnect
-
-Use separate connection for metadata and editors (configurable + on request)
 
 Generic driver config for additional metadata reading (stored procedures, ete).
 Columns ordering/search (record mode)
