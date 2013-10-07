@@ -73,7 +73,6 @@ public class DB2Utils {
 
     // EXPLAIN
     private static final String CALL_INST_OBJ = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
-    private static final String SYSTOOLS = "SYSTOOLS";
     private static final int CALL_INST_OBJ_BAD_RC = -438;
 
     // ADMIN ACTIONS
@@ -236,7 +235,7 @@ public class DB2Utils {
         }
     }
 
-    public static String checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
+    public static Boolean checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
         throws DBCException
     {
         LOG.debug("Check EXPLAIN tables in '" + explainTableSchemaName + "'");
@@ -255,26 +254,13 @@ public class DB2Utils {
                 stmtSP.setString(4, explainTableSchemaName); // Schema
                 stmtSP.execute();
                 LOG.debug("EXPLAIN tables with schema " + explainTableSchemaName + " found.");
-                return explainTableSchemaName;
 
+                return true;
             } catch (SQLException e) {
                 LOG.debug("RC:" + e.getErrorCode() + " SQLState:" + e.getSQLState() + " " + e.getMessage());
                 if (e.getErrorCode() == CALL_INST_OBJ_BAD_RC) {
-                    LOG.debug("No valid EXPLAIN tables found in schema " + explainTableSchemaName + ". Check within " + SYSTOOLS
-                        + ".");
-                    try {
-                        stmtSP.setString(4, SYSTOOLS); // Schema
-                        stmtSP.execute();
-                        LOG.debug("EXPLAIN tables with schema " + SYSTOOLS + " found.");
-                        return SYSTOOLS;
-                    } catch (SQLException e2) {
-                        LOG.debug("RC:" + e2.getErrorCode() + " SQLState:" + e2.getSQLState() + " " + e2.getMessage());
-                        if (e.getErrorCode() == CALL_INST_OBJ_BAD_RC) {
-                            LOG.warn("No valid EXPLAIN tables found in schema " + SYSTOOLS);
-                            return null;
-                        }
-                        throw new DBCException(e);
-                    }
+                    LOG.debug("No valid EXPLAIN tables found in schema '" + explainTableSchemaName + "'.");
+                    return false;
                 }
                 throw new DBCException(e);
             } finally {
