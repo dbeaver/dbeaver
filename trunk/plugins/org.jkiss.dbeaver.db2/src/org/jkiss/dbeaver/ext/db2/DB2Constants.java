@@ -37,8 +37,7 @@ public class DB2Constants {
     public static final String PROP_TRACE_LEVEL = DBConstants.INTERNAL_PROP_PREFIX + "trace.level";
 
     // Explain Tables
-    public static final String PREF_EXPLAIN_TABLE_SCHEMA_NAME = "db2.explain.table.schema";
-    public static final String PREF_EXPLAIN_TABLE_SCHEMA_NAME_DEFAULT = "SYSTOOLS";
+    public static final String EXPLAIN_SCHEMA_NAME_DEFAULT = "SYSTOOLS";
 
     // DB2 Versions
     public static final Double DB2v9_5 = 9.5;
