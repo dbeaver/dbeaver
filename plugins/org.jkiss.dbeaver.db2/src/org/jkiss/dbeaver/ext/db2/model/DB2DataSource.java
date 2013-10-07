@@ -141,7 +141,54 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DB2DataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
     {
         super(monitor, container);
-        getContainer().getPreferenceStore().setValue("db2.explain.plan.schema", "toto");
+    }
+
+    // -----------------------
+    // Initialisation/Structure
+    // -----------------------
+
+    @Override
+    public void initialize(DBRProgressMonitor monitor) throws DBException
+    {
+        super.initialize(monitor);
+
+        final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+        try {
+            // Get active schema
+            this.activeSchemaName = JDBCUtils.queryString(context, GET_CURRENT_SCHEMA);
+            if (this.activeSchemaName != null) {
+                this.activeSchemaName = this.activeSchemaName.trim();
+            }
+
+            this.isAuthorisedForAPPLICATIONS = DB2Utils.userIsAuthorisedForAPPLICATIONS(context, activeSchemaName);
+
+            listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
+            listDBParameters = DB2Utils.readDBCfg(monitor, context);
+            listXMLStrings = DB2Utils.readXMLStrings(monitor, context);
+
+        } catch (SQLException e) {
+            LOG.warn(e);
+        } finally {
+            context.close();
+        }
+
+        this.dataTypeCache.getObjects(monitor, this);
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public Object getAdapter(Class adapter)
+    {
+        if (adapter == DBSStructureAssistant.class) {
+            return new DB2StructureAssistant(this);
+        }
+        return null;
+    }
+
+    @Override
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    {
+        // TODO DF: No idea what to do with this method, what it is used for...
     }
 
     // -----------------------
@@ -185,34 +232,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     protected Map<String, String> getInternalConnectionProperties()
     {
         return DB2DataSourceProvider.getConnectionsProps();
-    }
-
-    @Override
-    public void initialize(DBRProgressMonitor monitor) throws DBException
-    {
-        super.initialize(monitor);
-
-        final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
-        try {
-            // Get active schema
-            this.activeSchemaName = JDBCUtils.queryString(context, GET_CURRENT_SCHEMA);
-            if (this.activeSchemaName != null) {
-                this.activeSchemaName = this.activeSchemaName.trim();
-            }
-
-            this.isAuthorisedForAPPLICATIONS = DB2Utils.userIsAuthorisedForAPPLICATIONS(context, activeSchemaName);
-
-            listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
-            listDBParameters = DB2Utils.readDBCfg(monitor, context);
-            listXMLStrings = DB2Utils.readXMLStrings(monitor, context);
-
-        } catch (SQLException e) {
-            LOG.warn(e);
-        } finally {
-            context.close();
-        }
-
-        this.dataTypeCache.getObjects(monitor, this);
     }
 
     @Override
@@ -263,22 +282,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             LOG.error("DBException occurred when reading system dataTYpe : " + typeName, e);
             return null;
         }
-    }
-
-    @Override
-    @SuppressWarnings("rawtypes")
-    public Object getAdapter(Class adapter)
-    {
-        if (adapter == DBSStructureAssistant.class) {
-            return new DB2StructureAssistant(this);
-        }
-        return null;
-    }
-
-    @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
-    {
-        // TODO DF: No idea what to do with this method, what it is used for...
     }
 
     public boolean isAuthorisedForAPPLICATIONS()
