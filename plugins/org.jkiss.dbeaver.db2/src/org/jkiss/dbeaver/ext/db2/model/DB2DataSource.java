@@ -78,6 +78,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private static final String GET_CURRENT_SCHEMA = "VALUES(CURRENT SCHEMA)";
     private static final String SET_CURRENT_SCHEMA = "SET CURRENT SCHEMA = %s";
+    private static final String GET_SESSION_USER = "VALUES(SESSION_USER)";
 
     private static final String C_SCHEMA = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
     private static final String C_DT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR";
@@ -93,7 +94,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
     private static final String PLAN_TABLE_MIS = "EXPLAIN tables not found. Query can't be explained";
-    private static final String PLAN_TABLE_MSG = "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
+    private static final String PLAN_TABLE_MSG1 = "Tables for EXPLAIN not found within current authorization Id (%s) nor in SYSTOOLS. ";
+    private static final String PLAN_TABLE_MSG2 = "\n\nDo you want DBeaver to create new EXPLAIN tables?";
+    private static final String PLAN_TABLE_MSG = PLAN_TABLE_MSG1 + PLAN_TABLE_MSG2;
 
     private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Schema>(
         DB2Schema.class, C_SCHEMA);
@@ -125,8 +128,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private List<DB2XMLString> listXMLStrings;
 
     private String activeSchemaName;
-    private String planTableSchemaName;
     private Boolean isAuthorisedForAPPLICATIONS;
+
+    private String schemaForExplainTables;
 
     private Double version; // Database Version
 
@@ -164,6 +168,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             info.addSQLKeyword(kw);
         }
 
+        // Compute Database version
         version = DB2Constants.DB2v99_9;
         try {
             version = Integer.valueOf(metaData.getDatabaseMajorVersion()).doubleValue();
@@ -172,15 +177,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             LOG.warn("SQLException when reading database version. Set it to " + DB2Constants.DB2v99_9 + " : " + e.getMessage());
         }
         LOG.debug("Database version : " + version);
-
-        // Set explain tables schema from preferences
-        planTableSchemaName = getContainer().getPreferenceStore().getString(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME);
-        if (CommonUtils.isEmpty(planTableSchemaName)) {
-            LOG.debug("planTableSchemaName was not set in preferences, set it to default :"
-                + DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME_DEFAULT);
-            planTableSchemaName = DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME_DEFAULT;
-            getContainer().getPreferenceStore().setValue(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME, planTableSchemaName);
-        }
 
         return info;
     }
@@ -371,27 +367,43 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private String getPlanTableSchemaName(DBCExecutionContext context) throws DBCException
     {
-
-        if (CommonUtils.isEmpty(planTableSchemaName)) {
-            // Explain tables have not been validated now
-
-            // / Read schema from preferences
-            planTableSchemaName = getContainer().getPreferenceStore().getString(DB2Constants.PREF_EXPLAIN_TABLE_SCHEMA_NAME);
-
-            // Check validity of explain tables
-            planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, planTableSchemaName);
-            if (planTableSchemaName == null) {
-
-                // Plan table not valid with schema in preference
-                // Give a message to the user to set valid tables schema in preference
-                // TODO DF: ask the user in what schema to create the tables
-                if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), PLAN_TABLE_TIT, PLAN_TABLE_MSG)) {
-                    return null;
-                }
-                DB2Utils.createExplainTables(context.getProgressMonitor(), this, planTableSchemaName);
-            }
+        // Schema for explain tables has already been verified. Use it
+        if (CommonUtils.isNotEmpty(schemaForExplainTables)) {
+            return schemaForExplainTables;
         }
-        return planTableSchemaName;
+
+        // Verify explain table from current authorization id
+        String sessionUserSchema;
+        try {
+            sessionUserSchema = JDBCUtils.queryString((JDBCExecutionContext) context, GET_SESSION_USER).trim();
+        } catch (SQLException e) {
+            throw new DBCException(e);
+        }
+        Boolean ok = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, sessionUserSchema);
+        if (ok) {
+            LOG.debug("Valid explain tables found in " + sessionUserSchema);
+            schemaForExplainTables = sessionUserSchema;
+            return schemaForExplainTables;
+        }
+
+        // Verify explain table from SYSTOOLS
+        ok = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT);
+        if (ok) {
+            LOG.debug("Valid explain tables found in " + DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT);
+            schemaForExplainTables = DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT;
+            return schemaForExplainTables;
+        }
+
+        // No valid explain tables found, propose to create them in current authId
+        String msg = String.format(PLAN_TABLE_MSG, sessionUserSchema);
+        if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), PLAN_TABLE_TIT, msg)) {
+            return null;
+        }
+
+        // Try to create explain tables within current authorizartionID
+        DB2Utils.createExplainTables(context.getProgressMonitor(), this, sessionUserSchema);
+
+        return sessionUserSchema;
     }
 
     // --------------
