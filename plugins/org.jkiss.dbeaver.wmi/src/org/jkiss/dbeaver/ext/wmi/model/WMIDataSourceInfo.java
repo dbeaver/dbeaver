@@ -250,4 +250,9 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     {
         return DBPIdentifierCase.MIXED;
     }
+
+    @Override
+    public boolean supportsResultSetLimit() {
+        return true;
+    }
 }

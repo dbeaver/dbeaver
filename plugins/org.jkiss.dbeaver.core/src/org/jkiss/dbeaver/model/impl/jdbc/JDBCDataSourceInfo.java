@@ -534,6 +534,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean supportsResultSetLimit() {
+        return true;
+    }
+
+    @Override
     public boolean supportsBatchUpdates()
     {
         return supportsBatchUpdates;
