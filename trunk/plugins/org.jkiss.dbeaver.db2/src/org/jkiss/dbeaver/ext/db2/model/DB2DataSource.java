@@ -359,7 +359,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Override
     public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
     {
-        String ptSchemaname = getPlanTableSchemaName(context);
+        String ptSchemaname = getExplainTablesSchemaName(context);
         if (ptSchemaname == null) {
             throw new DBCException(PLAN_TABLE_MIS);
         }
@@ -368,9 +368,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         return plan;
     }
 
-    private String getPlanTableSchemaName(DBCExecutionContext context) throws DBCException
+    private String getExplainTablesSchemaName(DBCExecutionContext context) throws DBCException
     {
-        // Schema for explain tables has already been verified. Use it
+        // Schema for explain tables has already been verified. Use it as-is
         if (CommonUtils.isNotEmpty(schemaForExplainTables)) {
             return schemaForExplainTables;
         }
@@ -408,15 +408,21 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         // Ask the user in what tablespace to create the Explain tables
         try {
             List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, (JDBCExecutionContext) context);
+
+            // NO Usable Tablespace found: End of the game..
             if (listTablespaces.isEmpty()) {
-                UIUtils.showErrorDialog(DBeaverUI.getActiveWorkbenchShell(), "Aucun TS", "Aucun TS");
+                UIUtils.showErrorDialog(DBeaverUI.getActiveWorkbenchShell(), "No TS Found", "No TS Found");
                 return null;
             }
-            // Build a dialog
+
+            // Build a dialog with the list of usable tablespaces for teh user to choose
             String tablespaceName = listTablespaces.get(0);
 
             // Try to create explain tables within current authorizartionID in given tablespace
             DB2Utils.createExplainTables(context.getProgressMonitor(), this, sessionUserSchema, tablespaceName);
+
+            // Hourra!
+            schemaForExplainTables = sessionUserSchema;
         } catch (SQLException e) {
             throw new DBCException(e);
         }
