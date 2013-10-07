@@ -253,7 +253,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     public DriverDescriptor createDriver()
     {
-        return new DriverDescriptor(this, SecurityUtils.generateGUID(false));
+        return createDriver(SecurityUtils.generateGUID(false));
+    }
+
+    public DriverDescriptor createDriver(String id)
+    {
+        return new DriverDescriptor(this, id);
     }
 
     public void addDriver(DriverDescriptor driver)

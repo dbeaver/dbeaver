@@ -1175,6 +1175,8 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_data_format_label_type;
 
+    public static String pref_page_database_general_separate_meta_connection;
+
 	public static String pref_page_database_general_checkbox_case_sensitive_names;
 
 	public static String pref_page_database_general_checkbox_keep_cursor;

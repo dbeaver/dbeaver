@@ -45,6 +45,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     private Button sortCaseInsensitiveCheck;
     private Button groupByDriverCheck;
 
+    private Button separateMetaConnectionCheck;
     private Button caseSensitiveNamesCheck;
 
     public PrefPageDatabaseGeneral()
@@ -83,6 +84,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         {
             Group metadataGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_metadata, 2, SWT.NONE, 0);
 
+            separateMetaConnectionCheck = UIUtils.createLabelCheckbox(metadataGroup, CoreMessages.pref_page_database_general_separate_meta_connection, false);
             caseSensitiveNamesCheck = UIUtils.createLabelCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, false);
         }
 
@@ -101,6 +103,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         expandOnConnectCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT));
         sortCaseInsensitiveCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY));
         groupByDriverCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_GROUP_BY_DRIVER));
+        separateMetaConnectionCheck.setSelection(store.getBoolean(PrefConstants.META_SEPARATE_CONNECTION));
         caseSensitiveNamesCheck.setSelection(store.getBoolean(PrefConstants.META_CASE_SENSITIVE));
     }
 
@@ -115,6 +118,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         store.setValue(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
         store.setValue(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
         store.setValue(PrefConstants.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
+        store.setValue(PrefConstants.META_SEPARATE_CONNECTION, separateMetaConnectionCheck.getSelection());
         store.setValue(PrefConstants.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
         RuntimeUtils.savePreferenceStore(store);
 
