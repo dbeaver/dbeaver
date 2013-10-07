@@ -584,11 +584,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curDataSource = null;
                     return;
                 }
-                DriverDescriptor driver = provider.getDriver(atts.getValue(RegistryConstants.ATTR_DRIVER));
+                String driverId = atts.getValue(RegistryConstants.ATTR_DRIVER);
+                DriverDescriptor driver = provider.getDriver(driverId);
                 if (driver == null) {
-                    log.warn("Can't find driver " + atts.getValue(RegistryConstants.ATTR_DRIVER) + " in datasource provider " + provider.getId() + " for datasource '" + name + "'");
-                    curDataSource = null;
-                    return;
+                    log.warn("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + name + "'. Create new driver");
+                    driver = provider.createDriver(driverId);
+                    provider.addDriver(driver);
                 }
                 curDataSource = new DataSourceDescriptor(
                     DataSourceRegistry.this,
@@ -626,6 +627,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 dataSources.add(curDataSource);
             } else if (localName.equals(RegistryConstants.TAG_CONNECTION)) {
                 if (curDataSource != null) {
+                    DriverDescriptor driver = curDataSource.getDriver();
+                    if (CommonUtils.isEmpty(driver.getName())) {
+                        // Broken driver - seems to be just created
+                        driver.setName(atts.getValue(RegistryConstants.ATTR_URL));
+                        driver.setDriverClassName("java.sql.Driver");
+                    }
                     curDataSource.getConnectionInfo().setHostName(atts.getValue(RegistryConstants.ATTR_HOST));
                     curDataSource.getConnectionInfo().setHostPort(atts.getValue(RegistryConstants.ATTR_PORT));
                     curDataSource.getConnectionInfo().setServerName(atts.getValue(RegistryConstants.ATTR_SERVER));
