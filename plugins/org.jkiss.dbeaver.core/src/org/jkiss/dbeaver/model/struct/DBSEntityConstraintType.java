@@ -28,7 +28,8 @@ public class DBSEntityConstraintType
     public static final DBSEntityConstraintType FOREIGN_KEY = new DBSEntityConstraintType("fk", "FOREIGN KEY", CoreMessages.model_struct_Foreign_Key, true, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType PRIMARY_KEY = new DBSEntityConstraintType("pk", "PRIMARY KEY", CoreMessages.model_struct_Primary_Key, false, true); //$NON-NLS-1$
     public static final DBSEntityConstraintType UNIQUE_KEY = new DBSEntityConstraintType("unique", "UNIQUE KEY", CoreMessages.model_struct_Unique_Key, false, true); //$NON-NLS-1$
-    public static final DBSEntityConstraintType VIRTUAL_KEY = new DBSEntityConstraintType("virtual", "VIRTUAL KEY", CoreMessages.model_struct_Unique_Key, false, true); //$NON-NLS-1$
+    public static final DBSEntityConstraintType VIRTUAL_KEY = new DBSEntityConstraintType("virtual", "VIRTUAL KEY", CoreMessages.model_struct_Virtual_Key, false, true); //$NON-NLS-1$
+    public static final DBSEntityConstraintType PSEUDO_KEY = new DBSEntityConstraintType("pseudo", "PSEUDO", CoreMessages.model_struct_Pseudo_Key, false, true); //$NON-NLS-1$
     public static final DBSEntityConstraintType CHECK = new DBSEntityConstraintType("check", "CHECK", CoreMessages.model_struct_Check, false, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType NOT_NULL = new DBSEntityConstraintType("notnull", "NOT NULL", CoreMessages.model_struct_Not_NULL, false, false); //$NON-NLS-1$
     public static final DBSEntityConstraintType INDEX = new DBSEntityConstraintType("index", "Index", "Index", false, false); //$NON-NLS-1$

@@ -40,6 +40,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     private final int index;
     private final String label;
     private final DBPDataKind dataKind;
+    private DBDPseudoAttribute pseudoAttribute;
 
     public LocalResultSetColumn(LocalResultSet resultSet, int index, String label, DBPDataKind dataKind)
     {
@@ -88,7 +89,13 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     @Override
     public DBDPseudoAttribute getPseudoAttribute()
     {
-        return null;
+        return pseudoAttribute;
+    }
+
+    @Override
+    public void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute)
+    {
+        this.pseudoAttribute = pseudoAttribute;
     }
 
     @Override

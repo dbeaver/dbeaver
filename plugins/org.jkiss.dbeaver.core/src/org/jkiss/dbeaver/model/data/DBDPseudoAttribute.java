@@ -19,7 +19,12 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 /**
  * Pseudo attribute
@@ -71,5 +76,124 @@ public class DBDPseudoAttribute implements DBPNamedObject {
     public String toString()
     {
         return name + " (" + type + ")";
+    }
+
+    public DBSEntityAttribute createFakeAttribute(DBSEntity owner, DBCAttributeMetaData attribute)
+    {
+        return new FakeEntityAttribute(owner, attribute);
+    }
+
+    public static DBDPseudoAttribute getAttribute(DBDPseudoAttribute[] attributes, DBDPseudoAttributeType type)
+    {
+        if (attributes == null || attributes.length == 0) {
+            return null;
+        }
+        for (DBDPseudoAttribute attribute : attributes) {
+            if (attribute.getType() == type) {
+                return attribute;
+            }
+        }
+        return null;
+    }
+
+    private class FakeEntityAttribute implements DBSEntityAttribute {
+        private DBSEntity owner;
+        private DBCAttributeMetaData attribute;
+
+        public FakeEntityAttribute(DBSEntity owner, DBCAttributeMetaData attribute)
+        {
+            this.owner = owner;
+            this.attribute = attribute;
+        }
+
+        @Override
+        public boolean isSequence()
+        {
+            return false;
+        }
+
+        @Override
+        public int getOrdinalPosition()
+        {
+            return attribute.getIndex();
+        }
+
+        @Override
+        public String getDefaultValue()
+        {
+            return null;
+        }
+
+        @Override
+        public DBSEntity getParentObject()
+        {
+            return owner;
+        }
+
+        @Override
+        public String getDescription()
+        {
+            return description;
+        }
+
+        @Override
+        public DBPDataSource getDataSource()
+        {
+            return owner.getDataSource();
+        }
+
+        @Override
+        public String getName()
+        {
+            return name;
+        }
+
+        @Override
+        public boolean isPersisted()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isRequired()
+        {
+            return attribute.isRequired();
+        }
+
+        @Override
+        public String getTypeName()
+        {
+            return attribute.getTypeName();
+        }
+
+        @Override
+        public int getTypeID()
+        {
+            return attribute.getTypeID();
+        }
+
+        @Override
+        public DBPDataKind getDataKind()
+        {
+            return attribute.getDataKind();
+        }
+
+        @Override
+        public int getScale()
+        {
+            return attribute.getScale();
+        }
+
+        @Override
+        public int getPrecision()
+        {
+            return attribute.getPrecision();
+        }
+
+        @Override
+        public long getMaxLength()
+        {
+            return attribute.getMaxLength();
+        }
     }
 }

@@ -9,6 +9,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -49,6 +51,16 @@ public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjec
         for (DBSObject child : children) {
             if (objectType.isInstance(child)) {
                 names.add(objectType.cast(child));
+            }
+        }
+        if (names.isEmpty()) {
+            // Nothing found - maybe we should go deeper in active container
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, container);
+            if (objectSelector != null) {
+                container = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
+                if (container != null) {
+                    makeProposalsFromChildren(monitor, container, names);
+                }
             }
         }
     }

@@ -75,6 +75,12 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
     DBDPseudoAttribute getPseudoAttribute();
 
     /**
+     * Annotate this meta attribute with pseudo attribute information
+     * @param pseudoAttribute pseudo attribute info
+     */
+    void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute);
+
+    /**
      * Column metadata
      * @return column metadata
      * @throws DBCException on any DB error

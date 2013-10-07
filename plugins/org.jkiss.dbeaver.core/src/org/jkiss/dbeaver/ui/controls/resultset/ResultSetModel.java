@@ -265,7 +265,13 @@ public class ResultSetModel {
             this.clearData();
             this.columns = columns;
             this.visibleColumns.clear();
-            Collections.addAll(this.visibleColumns, this.columns);
+            for (DBDAttributeBinding binding : this.columns) {
+                DBDPseudoAttribute pseudoAttribute = binding.getMetaAttribute().getPseudoAttribute();
+                if (pseudoAttribute == null) {
+                    // Make visible "real" attributes
+                    this.visibleColumns.add(binding);
+                }
+            }
             this.dataFilter = createDataFilter();
         }
         return update;
