@@ -2,14 +2,6 @@
 TODO:
 - Go through all "TODO" markers
 
-Manage explain/ddl generation table creation 
-- EXPLAIN tables may be created in any schema where the user has the right to create them
-  -> the schema for explain tables should be in DB2 preferences PER DATASPURCE. 
-  -> By default it should be in SYSTOOLS (best place for that)
-  -> the first time the user tries to do an explain, if EXPLAIN tables can not be found or are not usable 
-    in standard locations (CURRENT USER then SYSTOOLS) then ask the user where to create the tables. 
-    Create them and store the schema for explain tables in DATASOURCE preferences..
- 
 Improvements:
   - Enhance Search
     - Add Tablespaces, indexes, foreign keys, modules, routines ...
