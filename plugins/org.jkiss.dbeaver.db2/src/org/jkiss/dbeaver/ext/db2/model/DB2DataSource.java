@@ -21,12 +21,15 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
+import org.jkiss.dbeaver.ext.db2.editors.DB2TablespaceChooser;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
@@ -58,9 +61,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -91,12 +94,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
     private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
     private static final String C_UM = "SELECT * FROM SYSCAT.USEROPTIONS WHERE OPTION = 'REMOTE_AUTHID' ORDER BY SERVERNAME,AUTHID WITH UR";
-
-    private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
-    private static final String PLAN_TABLE_MIS = "EXPLAIN tables not found. Query can't be explained";
-    private static final String PLAN_TABLE_MSG1 = "Tables for EXPLAIN not found within current authorization Id (%s) nor in SYSTOOLS. ";
-    private static final String PLAN_TABLE_MSG2 = "\n\nDo you want DBeaver to create new EXPLAIN tables?";
-    private static final String PLAN_TABLE_MSG = PLAN_TABLE_MSG1 + PLAN_TABLE_MSG2;
 
     private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Schema>(
         DB2Schema.class, C_SCHEMA);
@@ -361,7 +358,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     {
         String ptSchemaname = getExplainTablesSchemaName(context);
         if (ptSchemaname == null) {
-            throw new DBCException(PLAN_TABLE_MIS);
+            throw new DBCException(DB2Messages.dialog_explain_no_tables_found_ex);
         }
         DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
         plan.explain((JDBCExecutionContext) context);
@@ -370,10 +367,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private String getExplainTablesSchemaName(DBCExecutionContext context) throws DBCException
     {
-        // Schema for explain tables has already been verified. Use it as-is
-        if (CommonUtils.isNotEmpty(schemaForExplainTables)) {
-            return schemaForExplainTables;
-        }
+        // // Schema for explain tables has already been verified. Use it as-is
+        // if (CommonUtils.isNotEmpty(schemaForExplainTables)) {
+        // return schemaForExplainTables;
+        // }
 
         DBRProgressMonitor monitor = context.getProgressMonitor();
 
@@ -400,8 +397,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
 
         // No valid explain tables found, propose to create them in current authId
-        String msg = String.format(PLAN_TABLE_MSG, sessionUserSchema);
-        if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), PLAN_TABLE_TIT, msg)) {
+        String msg = String.format(DB2Messages.dialog_explain_ask_to_create, sessionUserSchema);
+        if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), DB2Messages.dialog_explain_no_tables, msg)) {
             return null;
         }
 
@@ -411,12 +408,27 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
             // NO Usable Tablespace found: End of the game..
             if (listTablespaces.isEmpty()) {
-                UIUtils.showErrorDialog(DBeaverUI.getActiveWorkbenchShell(), "No TS Found", "No TS Found");
+                UIUtils.showErrorDialog(DBeaverUI.getActiveWorkbenchShell(), DB2Messages.dialog_explain_no_tablespace_found_title,
+                    DB2Messages.dialog_explain_no_tablespace_found_title);
                 return null;
             }
 
-            // Build a dialog with the list of usable tablespaces for teh user to choose
-            String tablespaceName = listTablespaces.get(0);
+            // Build a dialog with the list of usable tablespaces for the user to choose
+            final DB2TablespaceChooser tsChooserDialog = new DB2TablespaceChooser(DBeaverUI.getActiveWorkbenchShell(),
+                listTablespaces);
+            RunnableWithResult<Integer> confirmer = new RunnableWithResult<Integer>() {
+                @Override
+                public void run()
+                {
+                    result = tsChooserDialog.open();
+                }
+            };
+            UIUtils.runInUI(DBeaverUI.getActiveWorkbenchShell(), confirmer);
+            if (confirmer.getResult() != IDialogConstants.OK_ID) {
+                return null;
+            }
+
+            String tablespaceName = tsChooserDialog.getSelectedTablespace();
 
             // Try to create explain tables within current authorizartionID in given tablespace
             DB2Utils.createExplainTables(context.getProgressMonitor(), this, sessionUserSchema, tablespaceName);
