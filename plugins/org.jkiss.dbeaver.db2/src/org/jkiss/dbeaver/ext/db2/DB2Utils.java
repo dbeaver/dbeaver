@@ -74,6 +74,7 @@ public class DB2Utils {
     // EXPLAIN
     private static final String CALL_INST_OBJ = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
     private static final int CALL_INST_OBJ_BAD_RC = -438;
+    private static final String SEL_LIST_TS = "SELECT TBSPACE FROM SYSCAT.TBSPACEAUTH WHERE GRANTEE IN ('PUBLIC',SESSION_USER) AND USEAUTH In ('Y','G')";
 
     // ADMIN ACTIONS
     private static final String CALL_ADS = "CALL SYSPROC.ADMIN_DROP_SCHEMA(?,NULL,?,?)";
@@ -155,7 +156,10 @@ public class DB2Utils {
         }
     }
 
+    // ------------------------
     // Generate DDL
+    // ------------------------
+
     // TODO DF: Tables in SYSTOOLS tables must exist first
     public static String generateDDLforTable(DBRProgressMonitor monitor, String statementDelimiter, DB2DataSource dataSource,
         DB2Table db2Table) throws DBException
@@ -235,6 +239,33 @@ public class DB2Utils {
         }
     }
 
+    // ------------------------
+    // EXPLAIN
+    // ------------------------
+
+    public static List<String> getListOfUsableTsForExplain(DBRProgressMonitor monitor, JDBCExecutionContext context)
+        throws SQLException
+    {
+        LOG.debug("Get List Of Usable Tablespaces For Explain Tables");
+
+        List<String> listTablespaces = new ArrayList<String>();
+        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_LIST_TS);
+        try {
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            try {
+                while (dbResult.next()) {
+                    listTablespaces.add(dbResult.getString(1));
+                }
+            } finally {
+                dbResult.close();
+            }
+        } finally {
+            dbStat.close();
+        }
+
+        return listTablespaces;
+    }
+
     public static Boolean checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
         throws DBCException
     {
@@ -274,8 +305,8 @@ public class DB2Utils {
         }
     }
 
-    public static void createExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
-        throws DBCException
+    public static void createExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName,
+        String tablespaceName) throws DBCException
     {
         LOG.debug("Create EXPLAIN tables in " + explainTableSchemaName);
 
@@ -287,7 +318,7 @@ public class DB2Utils {
             try {
                 stmtSP.setString(1, "EXPLAIN"); // EXPLAIN
                 stmtSP.setString(2, "C"); // Create
-                stmtSP.setString(3, ""); // Tablespace
+                stmtSP.setString(3, tablespaceName); // Tablespace
                 stmtSP.setString(4, explainTableSchemaName); // Schema
                 stmtSP.executeUpdate();
 
