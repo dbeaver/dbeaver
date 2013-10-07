@@ -23,6 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
+import org.jkiss.dbeaver.model.data.DBDPseudoReferrer;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -52,15 +55,15 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     private String alias;
     private List<JDBCColumnMetaData> columns = new ArrayList<JDBCColumnMetaData>();
     private List<JDBCTableIdentifier> identifiers;
-    private DBSEntity table;
+    private DBSEntity entity;
 
-    JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSEntity table, String catalogName, String schemaName, String tableName, String alias)
+    JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSEntity entity, String catalogName, String schemaName, String tableName, String alias)
     {
         this.resultSetMetaData = resultSetMetaData;
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.tableName = tableName;
-        this.table = table;
+        this.entity = entity;
         this.alias = alias;
     }
 
@@ -73,7 +76,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     public DBSEntity getEntity(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (table == null) {
+        if (entity == null) {
             final DBPDataSource dataSource = resultSetMetaData.getResultSet().getContext().getDataSource();
             final DBSObjectContainer sc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
             if (sc != null) {
@@ -87,15 +90,15 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                     tableObject = DBUtils.getObjectByPath(monitor, sc, catalogName, schemaName, tableName);
                 }
                 if (tableObject == null) {
-                    throw new DBException("Table '" + tableName + "' not found in metadata catalog");
+                    log.debug("Table '" + tableName + "' not found in metadata catalog");
                 } else if (tableObject instanceof DBSEntity) {
-                    table = (DBSEntity) tableObject;
+                    entity = (DBSEntity) tableObject;
                 } else {
-                    throw new DBException("Unsupported table class: " + tableObject.getClass().getName());
+                    log.debug("Unsupported table class: " + tableObject.getClass().getName());
                 }
             }
         }
-        return table;
+        return entity;
     }
 
     @Override
@@ -121,57 +124,61 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {
-        DBSEntity table;
-        try {
-            table = getEntity(monitor);
-        } catch (DBException e) {
-            // Table not recognized
-            log.debug(e);
-            return null;
-        }
-
         if (identifiers == null) {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
 
-            if (table instanceof DBSTable && ((DBSTable) table).isView()) {
-                // Skip physical identifiers for views. There are nothing anyway
-
-            } else {
-                // Check constraints
-                Collection<? extends DBSEntityConstraint> uniqueKeys = table.getConstraints(monitor);
-                if (!CommonUtils.isEmpty(uniqueKeys)) {
-                    for (DBSEntityConstraint constraint : uniqueKeys) {
-                        if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
-                            identifiers.add(
-                                new JDBCTableIdentifier(monitor, (DBSEntityReferrer)constraint, this));
-                        }
+            DBSEntity table = getEntity(monitor);
+            if (table != null) {
+                // Check for pseudo attrs (ROWID)
+                for (JDBCColumnMetaData column : columns) {
+                    DBDPseudoAttribute pseudoAttribute = column.getPseudoAttribute();
+                    if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
+                        identifiers.add(new JDBCTableIdentifier(monitor, new DBDPseudoReferrer(table, column), this));
+                        break;
                     }
                 }
-                if (identifiers.isEmpty() && table instanceof DBSTable) {
-                    try {
-                        // Check indexes only if no unique constraints found
-                        Collection<? extends DBSTableIndex> indexes = ((DBSTable)table).getIndexes(monitor);
-                        if (!CommonUtils.isEmpty(indexes)) {
-                            for (DBSTableIndex index : indexes) {
-                                if (index.isUnique()) {
-                                    identifiers.add(
-                                        new JDBCTableIdentifier(monitor, index, this));
-                                }
+
+                if (table instanceof DBSTable && ((DBSTable) table).isView()) {
+                    // Skip physical identifiers for views. There are nothing anyway
+
+                } else if (identifiers.isEmpty()) {
+
+                    // Check constraints
+                    Collection<? extends DBSEntityConstraint> uniqueKeys = table.getConstraints(monitor);
+                    if (!CommonUtils.isEmpty(uniqueKeys)) {
+                        for (DBSEntityConstraint constraint : uniqueKeys) {
+                            if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
+                                identifiers.add(
+                                    new JDBCTableIdentifier(monitor, (DBSEntityReferrer)constraint, this));
                             }
                         }
-                    } catch (DBException e) {
-                        // Indexes are not supported or not available
-                        // Just skip them
-                        log.debug(e);
+                    }
+                    if (identifiers.isEmpty() && table instanceof DBSTable) {
+                        try {
+                            // Check indexes only if no unique constraints found
+                            Collection<? extends DBSTableIndex> indexes = ((DBSTable)table).getIndexes(monitor);
+                            if (!CommonUtils.isEmpty(indexes)) {
+                                for (DBSTableIndex index : indexes) {
+                                    if (index.isUnique()) {
+                                        identifiers.add(
+                                            new JDBCTableIdentifier(monitor, index, this));
+                                    }
+                                }
+                            }
+                        } catch (DBException e) {
+                            // Indexes are not supported or not available
+                            // Just skip them
+                            log.debug(e);
+                        }
                     }
                 }
-            }
-            if (CommonUtils.isEmpty(identifiers)) {
-                // No physical identifiers
-                // Make new or use existing virtual identifier
-                DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table, true);
-                identifiers.add(new JDBCTableIdentifier(monitor, virtualEntity.getBestIdentifier(), this));
+                if (CommonUtils.isEmpty(identifiers)) {
+                    // No physical identifiers
+                    // Make new or use existing virtual identifier
+                    DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table, true);
+                    identifiers.add(new JDBCTableIdentifier(monitor, virtualEntity.getBestIdentifier(), this));
+                }
             }
         }
         if (!CommonUtils.isEmpty(identifiers)) {

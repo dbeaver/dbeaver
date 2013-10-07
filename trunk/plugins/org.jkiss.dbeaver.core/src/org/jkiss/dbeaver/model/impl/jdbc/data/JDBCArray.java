@@ -60,7 +60,12 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         DBSDataType type;
         if (context.getDataSource() instanceof DBPDataTypeProvider) {
             try {
-                type = ((DBPDataTypeProvider) context.getDataSource()).resolveDataType(context.getProgressMonitor(), array.getBaseTypeName());
+                String baseTypeName = array.getBaseTypeName();
+                type = ((DBPDataTypeProvider) context.getDataSource()).resolveDataType(context.getProgressMonitor(), baseTypeName);
+                if (type == null) {
+                    log.error("Can't resolve SQL array data type '" + baseTypeName + "'");
+                    return null;
+                }
             } catch (Exception e) {
                 log.error("Error resolving data type", e);
                 return null;

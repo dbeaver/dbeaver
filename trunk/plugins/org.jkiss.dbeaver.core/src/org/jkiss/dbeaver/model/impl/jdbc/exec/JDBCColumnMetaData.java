@@ -323,7 +323,11 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         if (tableMetaData == null) {
             return null;
         }
-        tableColumn = tableMetaData.getEntity(monitor).getAttribute(monitor, name);
+        DBSEntity entity = tableMetaData.getEntity(monitor);
+        if (entity == null) {
+            return null;
+        }
+        tableColumn = entity.getAttribute(monitor, name);
         return tableColumn;
     }
 

@@ -25,9 +25,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -107,10 +105,29 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             log.warn(e);
         }
 
+        DBDPseudoAttribute rowIdAttribute = null;
+        if (this instanceof DBDPseudoAttributeContainer) {
+            try {
+                rowIdAttribute = DBDPseudoAttribute.getAttribute(
+                    ((DBDPseudoAttributeContainer) this).getPseudoAttributes(),
+                    DBDPseudoAttributeType.ROWID);
+            } catch (DBException e) {
+                log.warn("Can't get pseudo attributes for '" + getName() + "'", e);
+            }
+        }
+        String tableAlias = null;
         StringBuilder query = new StringBuilder(100);
-        query.append("SELECT * FROM ").append(getFullQualifiedName()); //$NON-NLS-1$
-        appendQueryConditions(query, dataFilter);
-        appendQueryOrder(query, dataFilter);
+        if (rowIdAttribute != null) {
+            // If we have pseudo attributes then query gonna be more complex
+            tableAlias = DBUtils.getQuotedIdentifier(this);
+            query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
+            query.append(",").append(tableAlias).append(".").append(rowIdAttribute.getQueryExpression());
+            query.append(" FROM ").append(getFullQualifiedName()).append(" ").append(tableAlias); //$NON-NLS-1$
+        } else {
+            query.append("SELECT * FROM ").append(getFullQualifiedName()); //$NON-NLS-1$
+        }
+        appendQueryConditions(query, tableAlias, dataFilter);
+        appendQueryOrder(query, tableAlias, dataFilter);
 
         monitor.subTask(CoreMessages.model_jdbc_fetch_table_data);
         DBCStatement dbStat = DBUtils.prepareStatement(
@@ -128,6 +145,17 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 DBCResultSet dbResult = dbStat.openResultSet();
                 if (dbResult != null) {
                     try {
+                        if (rowIdAttribute != null) {
+                            // Annotate last attribute with row id
+                            List<DBCAttributeMetaData> metaAttributes = dbResult.getResultSetMetaData().getAttributes();
+                            for (int i = metaAttributes.size(); i > 0; i--) {
+                                DBCAttributeMetaData attr = metaAttributes.get(i - 1);
+                                if (rowIdAttribute.getAlias().equalsIgnoreCase(attr.getName())) {
+                                    attr.setPseudoAttribute(rowIdAttribute);
+                                    break;
+                                }
+                            }
+                        }
                         dataReceiver.fetchStart(context, dbResult);
 
                         try {
@@ -176,7 +204,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM "); //$NON-NLS-1$
         query.append(getFullQualifiedName());
-        appendQueryConditions(query, dataFilter);
+        appendQueryConditions(query, null, dataFilter);
         monitor.subTask(CoreMessages.model_jdbc_fetch_table_row_count);
         DBCStatement dbStat = context.prepareStatement(
             DBCStatementType.QUERY,
@@ -314,21 +342,21 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new BatchImpl(dbStat, keyAttributes, null, false);
     }
 
-    private void appendQueryConditions(StringBuilder query, DBDDataFilter dataFilter)
+    private void appendQueryConditions(StringBuilder query, String tableAlias, DBDDataFilter dataFilter)
     {
         if (dataFilter != null && dataFilter.hasConditions()) {
             query.append(" WHERE "); //$NON-NLS-1$
-            dataFilter.appendConditionString(getDataSource(), query);
+            dataFilter.appendConditionString(getDataSource(), tableAlias, query);
         }
     }
 
-    private void appendQueryOrder(StringBuilder query, DBDDataFilter dataFilter)
+    private void appendQueryOrder(StringBuilder query, String tableAlias, DBDDataFilter dataFilter)
     {
         if (dataFilter != null) {
             // Construct ORDER BY
             if (dataFilter.hasOrdering()) {
                 query.append(" ORDER BY "); //$NON-NLS-1$
-                dataFilter.appendOrderString(getDataSource(), null, query);
+                dataFilter.appendOrderString(getDataSource(), tableAlias, query);
             }
         }
     }
