@@ -375,6 +375,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             return schemaForExplainTables;
         }
 
+        DBRProgressMonitor monitor = context.getProgressMonitor();
+
         // Verify explain table from current authorization id
         String sessionUserSchema;
         try {
@@ -382,7 +384,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         } catch (SQLException e) {
             throw new DBCException(e);
         }
-        Boolean ok = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, sessionUserSchema);
+        Boolean ok = DB2Utils.checkExplainTables(monitor, this, sessionUserSchema);
         if (ok) {
             LOG.debug("Valid explain tables found in " + sessionUserSchema);
             schemaForExplainTables = sessionUserSchema;
@@ -390,7 +392,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
 
         // Verify explain table from SYSTOOLS
-        ok = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT);
+        ok = DB2Utils.checkExplainTables(monitor, this, DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT);
         if (ok) {
             LOG.debug("Valid explain tables found in " + DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT);
             schemaForExplainTables = DB2Constants.EXPLAIN_SCHEMA_NAME_DEFAULT;
@@ -403,8 +405,21 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             return null;
         }
 
-        // Try to create explain tables within current authorizartionID
-        DB2Utils.createExplainTables(context.getProgressMonitor(), this, sessionUserSchema);
+        // Ask the user in what tablespace to create the Explain tables
+        try {
+            List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, (JDBCExecutionContext) context);
+            if (listTablespaces.isEmpty()) {
+                UIUtils.showErrorDialog(DBeaverUI.getActiveWorkbenchShell(), "Aucun TS", "Aucun TS");
+                return null;
+            }
+            // Build a dialog
+            String tablespaceName = listTablespaces.get(0);
+
+            // Try to create explain tables within current authorizartionID in given tablespace
+            DB2Utils.createExplainTables(context.getProgressMonitor(), this, sessionUserSchema, tablespaceName);
+        } catch (SQLException e) {
+            throw new DBCException(e);
+        }
 
         return sessionUserSchema;
     }
