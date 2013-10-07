@@ -475,6 +475,7 @@
                     webURL="http://www.vertica.com/"
                     description="Driver for Vertica Database">
                     <file type="jar" path="drivers/vertica/vertica-jdk5-6.1.2-0.jar" url="*"/>
+                    <parameter name="supports-limits" value="false"/>
                 </driver>
                 <driver
                     id="cassandra_jkiss"

@@ -274,4 +274,5 @@ public interface DBPDataSourceInfo
 
     DBPIdentifierCase storesQuotedCase();
 
+    boolean supportsResultSetLimit();
 }

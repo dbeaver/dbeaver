@@ -32,6 +32,7 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_INDEXES = "supports-indexes";
     public static final String PARAM_SUPPORTS_SUBQUERIES = "supports-subqueries";
     public static final String PARAM_SUPPORTS_SELECT_COUNT = "supports-select-count";
+    public static final String PARAM_SUPPORTS_LIMITS = "supports-limits";
     public static final String PARAM_OMIT_TYPE_CACHE = "omit-type-cache";
     public static final String PARAM_OMIT_CATALOG = "omit-catalog";
     public static final String PARAM_ALL_OBJECTS_PATTERN = "all-objects-pattern";
