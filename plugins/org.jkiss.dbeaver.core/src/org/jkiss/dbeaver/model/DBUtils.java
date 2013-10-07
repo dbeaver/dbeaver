@@ -493,18 +493,20 @@ public final class DBUtils {
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
                 DBSEntity ownerEntity = meta.getEntity().getEntity(monitor);
-                DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
-                if (rowIdentifier == null) {
-                    DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(monitor);
-                    if (entityIdentifier == null) {
-                        continue;
+                if (ownerEntity != null) {
+                    DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
+                    if (rowIdentifier == null) {
+                        DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(monitor);
+                        if (entityIdentifier == null) {
+                            continue;
+                        }
+                        rowIdentifier = new DBDRowIdentifier(
+                            ownerEntity,
+                            entityIdentifier);
+                        locatorMap.put(ownerEntity, rowIdentifier);
                     }
-                    rowIdentifier = new DBDRowIdentifier(
-                        ownerEntity,
-                        entityIdentifier);
-                    locatorMap.put(ownerEntity, rowIdentifier);
+                    column.initValueLocator(tableColumn, rowIdentifier);
                 }
-                column.initValueLocator(tableColumn, rowIdentifier);
             }
         }
         catch (DBException e) {

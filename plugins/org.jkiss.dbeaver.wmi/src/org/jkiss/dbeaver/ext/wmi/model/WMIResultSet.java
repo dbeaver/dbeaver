@@ -318,6 +318,12 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         }
 
         @Override
+        public void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute)
+        {
+            // ignore
+        }
+
+        @Override
         public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException
         {
             return classObject == null ? null : classObject.getAttribute(monitor, getName());
