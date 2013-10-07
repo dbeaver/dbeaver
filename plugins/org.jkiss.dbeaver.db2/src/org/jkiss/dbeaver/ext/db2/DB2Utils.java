@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -74,7 +75,24 @@ public class DB2Utils {
     // EXPLAIN
     private static final String CALL_INST_OBJ = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
     private static final int CALL_INST_OBJ_BAD_RC = -438;
-    private static final String SEL_LIST_TS = "SELECT TBSPACE FROM SYSCAT.TBSPACEAUTH WHERE GRANTEE IN ('PUBLIC',SESSION_USER) AND USEAUTH In ('Y','G')";
+    private static final String SEL_LIST_TS;
+
+    static {
+        StringBuilder sb = new StringBuilder(512);
+        sb.append("SELECT TA.TBSPACE");
+        sb.append("  FROM SYSCAT.TBSPACEAUTH TA");
+        sb.append("     , SYSCAT.TABLESPACES T");
+        sb.append(" WHERE TA.GRANTEE IN ('PUBLIC',SESSION_USER)");
+        sb.append("   AND TA.USEAUTH In ('Y','G')");
+        sb.append("   AND T.TBSPACE = TA.TBSPACE");
+        sb.append("   AND T.DATATYPE IN (");
+        sb.append("                     '").append(DB2TablespaceDataType.A.name()).append("'");
+        sb.append("                    ,'").append(DB2TablespaceDataType.L.name()).append("'");
+        sb.append("                     )");
+        sb.append(" ORDER BY TA.TBSPACE");
+        sb.append(" WITH UR");
+        SEL_LIST_TS = sb.toString();
+    }
 
     // ADMIN ACTIONS
     private static final String CALL_ADS = "CALL SYSPROC.ADMIN_DROP_SCHEMA(?,NULL,?,?)";

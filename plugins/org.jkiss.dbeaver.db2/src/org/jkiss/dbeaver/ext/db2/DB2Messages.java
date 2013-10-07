@@ -80,31 +80,16 @@ public class DB2Messages extends NLS {
     public static String edit_db2_trigger_manager_dialog_title;
     public static String edit_db2_sequence_manager_dialog_title;
 
+    public static String dialog_explain_choose_tablespace;
+    public static String dialog_explain_choose_tablespace_tablespace;
+    public static String dialog_explain_no_tables;
+    public static String dialog_explain_no_tablespace_found;
+    public static String dialog_explain_no_tablespace_found_title;
+    public static String dialog_explain_no_tables_found_ex;
+    public static String dialog_explain_ask_to_create;
+
     public static String editors_db2_application_editor_title_force_application;
     public static String editors_db2_application_editor_action_force;
     public static String editors_db2_application_editor_confirm_action;
 
-    public static String editors_db2_source_abstract_editor_action_name;
-    public static String editors_db2_source_abstract_editor_state;
-    public static String tools_script_execute_wizard_error_sqlplus_not_found;
-    public static String tools_script_execute_wizard_page_name;
-    public static String tools_script_execute_wizard_page_settings_button_browse;
-    public static String tools_script_execute_wizard_page_settings_group_input;
-    public static String tools_script_execute_wizard_page_settings_label_input_file;
-    public static String tools_script_execute_wizard_page_settings_page_description;
-    public static String tools_script_execute_wizard_page_settings_page_name;
-    public static String views_db2_compiler_dialog_button_compile;
-    public static String views_db2_compiler_dialog_button_compile_all;
-    public static String views_db2_compiler_dialog_column_name;
-    public static String views_db2_compiler_dialog_column_type;
-    public static String views_db2_compiler_dialog_message_compilation_error;
-    public static String views_db2_compiler_dialog_message_compilation_success;
-    public static String views_db2_compiler_dialog_message_compile_unit;
-    public static String views_db2_compiler_dialog_title;
-    public static String views_db2_compiler_log_viewer_action_clear_log;
-    public static String views_db2_compiler_log_viewer_action_copy;
-    public static String views_db2_compiler_log_viewer_action_select_all;
-    public static String views_db2_compiler_log_viewer_column_line;
-    public static String views_db2_compiler_log_viewer_column_message;
-    public static String views_db2_compiler_log_viewer_column_pos;
 }
