@@ -45,11 +45,13 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
     }
 
     private final String scriptDelimiter;
+    private final boolean supportsLimits;
 
     public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
     {
         super(metaData);
         scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+        supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
     }
 
     @Override
@@ -62,5 +64,10 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
     public Collection<String> getExecuteKeywords()
     {
         return EXEC_KEYWORDS;
+    }
+
+    @Override
+    public boolean supportsResultSetLimit() {
+        return supportsLimits;
     }
 }
