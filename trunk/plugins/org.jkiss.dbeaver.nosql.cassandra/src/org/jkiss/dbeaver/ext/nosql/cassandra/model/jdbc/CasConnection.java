@@ -18,9 +18,9 @@ import java.sql.*;
  */
 public class CasConnection extends JDBCConnectionImpl {
 
-    public CasConnection(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
+    public CasConnection(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
-        super(connector, monitor, purpose, taskTitle, isolated);
+        super(connector, monitor, purpose, taskTitle);
     }
 
     @Override

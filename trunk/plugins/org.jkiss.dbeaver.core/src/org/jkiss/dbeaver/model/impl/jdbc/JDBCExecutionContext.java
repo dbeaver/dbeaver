@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 
-import java.sql.SQLException;
-
 /**
  * JDBCExecutionContext
  */
@@ -46,9 +44,10 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     private final JDBCDataSource dataSource;
     private volatile JDBCConnectionHolder connectionHolder;
 
-    public JDBCExecutionContext(JDBCDataSource dataSource)
+    public JDBCExecutionContext(JDBCDataSource dataSource, DBRProgressMonitor monitor) throws DBCException
     {
         this.dataSource = dataSource;
+        connect(monitor);
     }
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
@@ -73,14 +72,9 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     }
 
     @Override
-    public JDBCConnectionHolder openIsolatedConnection(DBRProgressMonitor monitor) throws SQLException {
-        throw new SQLException("Could not open isolated connection");
-    }
-
-    @Override
     public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
-        return dataSource.createConnection(monitor, this, purpose, taskTitle, false);
+        return dataSource.createConnection(monitor, this, purpose, taskTitle);
     }
 
     @Override

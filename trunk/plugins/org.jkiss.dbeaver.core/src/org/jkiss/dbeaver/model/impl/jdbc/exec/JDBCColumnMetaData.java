@@ -83,7 +83,6 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
         this.label = resultSetMeta.getColumnLabel(index);
         this.name = resultSetMeta.getColumnName(index);
-        boolean hasData = false;
 
         String fetchedTableName = null;
         try {
@@ -133,37 +132,30 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             catch (DBException e) {
                 log.warn(e);
             }
-            if (this.tableColumn != null) {
-                this.notNull = this.tableColumn.isRequired();
-                this.displaySize = this.tableColumn.getMaxLength();
-                DBSObject tableParent = ownerEntity.getParentObject();
-                DBSObject tableGrandParent = tableParent == null ? null : tableParent.getParentObject();
-                this.catalogName = tableParent instanceof DBSCatalog ? tableParent.getName() : tableGrandParent instanceof DBSCatalog ? tableGrandParent.getName() : null;
-                this.schemaName = tableParent instanceof DBSSchema ? tableParent.getName() : null;
-                this.tableName = fetchedTableName;
-                this.typeID = this.tableColumn.getTypeID();
-                this.typeName = this.tableColumn.getTypeName();
-                this.readOnly = false;
-                this.writable = true;
-                this.sequence = this.tableColumn.isSequence();
-                this.precision = this.tableColumn.getPrecision();
-                this.scale = this.tableColumn.getScale();
-
-                try {
-                    this.tableMetaData = resultSetMeta.getTableMetaData(ownerEntity);
-                    if (this.tableMetaData != null) {
-                        this.tableMetaData.addColumn(this);
-                    }
-                }
-                catch (DBException e) {
-                    log.warn(e);
-                }
-                hasData = true;
+            try {
+                this.tableMetaData = resultSetMeta.getTableMetaData(ownerEntity);
             }
-
+            catch (DBException e) {
+                log.warn(e);
+            }
         }
 
-        if (!hasData) {
+        if (this.tableColumn != null) {
+            this.notNull = this.tableColumn.isRequired();
+            this.displaySize = this.tableColumn.getMaxLength();
+            DBSObject tableParent = ownerEntity.getParentObject();
+            DBSObject tableGrandParent = tableParent == null ? null : tableParent.getParentObject();
+            this.catalogName = tableParent instanceof DBSCatalog ? tableParent.getName() : tableGrandParent instanceof DBSCatalog ? tableGrandParent.getName() : null;
+            this.schemaName = tableParent instanceof DBSSchema ? tableParent.getName() : null;
+            this.tableName = fetchedTableName;
+            this.typeID = this.tableColumn.getTypeID();
+            this.typeName = this.tableColumn.getTypeName();
+            this.readOnly = false;
+            this.writable = true;
+            this.sequence = this.tableColumn.isSequence();
+            this.precision = this.tableColumn.getPrecision();
+            this.scale = this.tableColumn.getScale();
+        } else {
             this.notNull = resultSetMeta.isNullable(index) == ResultSetMetaData.columnNoNulls;
             try {
                 this.displaySize = resultSetMeta.getColumnDisplaySize(index);
@@ -190,19 +182,22 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             } catch (Exception e) {
                 this.scale = 0;
             }
+        }
 
+        if (this.tableMetaData == null) {
             try {
                 if (!CommonUtils.isEmpty(this.tableName)) {
                     this.tableMetaData = resultSetMeta.getTableMetaData(catalogName, schemaName, tableName);
-                    if (this.tableMetaData != null) {
-                        this.tableMetaData.addColumn(this);
-                    }
                 }
             }
             catch (DBException e) {
                 log.warn(e);
             }
         }
+        if (this.tableMetaData != null) {
+            this.tableMetaData.addColumn(this);
+        }
+
         dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSource().getContext().getDataSource(), typeName, typeID);
     }
 
