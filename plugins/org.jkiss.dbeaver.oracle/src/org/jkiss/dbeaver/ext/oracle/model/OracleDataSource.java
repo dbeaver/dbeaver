@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -83,7 +83,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBException
+    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBCException
     {
         // Set tns admin directory
         DBPClientHome clientHome = getContainer().getClientHome();

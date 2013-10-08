@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -78,11 +80,9 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
     }
 
     @Override
-    public DBCSession openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
+    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor) throws DBCException
     {
-        // Open simple context.
-        // Isolated connections doesn't make sense in WMI
-        return openSession(monitor, purpose, task);
+        return this;
     }
 
     @Override

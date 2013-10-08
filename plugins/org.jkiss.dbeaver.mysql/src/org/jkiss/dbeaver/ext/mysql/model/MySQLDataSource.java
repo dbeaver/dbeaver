@@ -351,7 +351,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBException {
+    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBCException {
         JDBCConnectionHolder mysqlConnection = super.openConnection(monitor);
 
         {
