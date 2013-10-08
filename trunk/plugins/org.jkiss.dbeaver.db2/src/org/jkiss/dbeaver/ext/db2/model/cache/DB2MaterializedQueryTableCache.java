@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -63,22 +63,22 @@ public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Sch
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_VIEWS);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_VIEWS);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2MaterializedQueryTable fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult)
+    protected DB2MaterializedQueryTable fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult)
         throws SQLException, DBException
     {
-        return new DB2MaterializedQueryTable(context.getProgressMonitor(), db2Schema, dbResult);
+        return new DB2MaterializedQueryTable(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema,
+    protected JDBCStatement prepareChildrenStatement(JDBCSession session, DB2Schema db2Schema,
         DB2MaterializedQueryTable forMqt) throws SQLException
     {
 
@@ -88,7 +88,7 @@ public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Sch
         } else {
             sql = SQL_COLS_ALL;
         }
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
         if (forMqt != null) {
             dbStat.setString(2, forMqt.getName());
@@ -97,10 +97,10 @@ public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Sch
     }
 
     @Override
-    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2MaterializedQueryTable db2MQT,
+    protected DB2TableColumn fetchChild(JDBCSession session, DB2Schema db2Schema, DB2MaterializedQueryTable db2MQT,
         ResultSet dbResult) throws SQLException, DBException
     {
-        return new DB2TableColumn(context.getProgressMonitor(), db2MQT, dbResult);
+        return new DB2TableColumn(session.getProgressMonitor(), db2MQT, dbResult);
     }
 
 }

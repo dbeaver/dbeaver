@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -49,7 +48,6 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 

@@ -343,23 +343,23 @@ class ResultSetPersister {
 
         private Throwable executeStatements(DBRProgressMonitor monitor)
         {
-            DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_job_update);
+            DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_job_update);
             try {
                 monitor.beginTask(
                     CoreMessages.controls_resultset_viewer_monitor_aply_changes,
                     ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
                 monitor.subTask(CoreMessages.controls_resultset_check_autocommit_state);
                 try {
-                    this.autocommit = context.getTransactionManager().isAutoCommit();
+                    this.autocommit = session.getTransactionManager().isAutoCommit();
                 }
                 catch (DBCException e) {
                     ResultSetViewer.log.warn("Could not determine autocommit state", e);
                     this.autocommit = true;
                 }
                 monitor.worked(1);
-                if (!this.autocommit && context.getTransactionManager().supportsSavepoints()) {
+                if (!this.autocommit && session.getTransactionManager().supportsSavepoints()) {
                     try {
-                        this.savepoint = context.getTransactionManager().setSavepoint(null);
+                        this.savepoint = session.getTransactionManager().setSavepoint(null);
                     }
                     catch (Throwable e) {
                         // May be savepoints not supported
@@ -372,7 +372,7 @@ class ResultSetPersister {
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
                             DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
-                                context,
+                                session,
                                 DBDAttributeValue.getAttributes(statement.keyAttributes));
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
@@ -383,7 +383,7 @@ class ResultSetPersister {
                             processStatementChanges(statement);
                         }
                         catch (DBException e) {
-                            processStatementError(statement, context);
+                            processStatementError(statement, session);
                             return e;
                         }
                         monitor.worked(1);
@@ -393,7 +393,7 @@ class ResultSetPersister {
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
                             DBSDataManipulator.ExecuteBatch batch = dataContainer.insertData(
-                                context,
+                                session,
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
                                 statement.needKeys() ? new KeyDataReceiver(statement) : null);
                             try {
@@ -405,7 +405,7 @@ class ResultSetPersister {
                             processStatementChanges(statement);
                         }
                         catch (DBException e) {
-                            processStatementError(statement, context);
+                            processStatementError(statement, session);
                             return e;
                         }
                         monitor.worked(1);
@@ -415,7 +415,7 @@ class ResultSetPersister {
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
                             DBSDataManipulator.ExecuteBatch batch = dataContainer.updateData(
-                                context,
+                                session,
                                 DBDAttributeValue.getAttributes(statement.updateAttributes),
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
                                 null);
@@ -437,7 +437,7 @@ class ResultSetPersister {
                             processStatementChanges(statement);
                         }
                         catch (DBException e) {
-                            processStatementError(statement, context);
+                            processStatementError(statement, session);
                             return e;
                         }
                         monitor.worked(1);
@@ -448,7 +448,7 @@ class ResultSetPersister {
                 finally {
                     if (this.savepoint != null) {
                         try {
-                            context.getTransactionManager().releaseSavepoint(this.savepoint);
+                            session.getTransactionManager().releaseSavepoint(this.savepoint);
                         }
                         catch (Throwable e) {
                             // Maybe savepoints not supported
@@ -459,7 +459,7 @@ class ResultSetPersister {
             }
             finally {
                 monitor.done();
-                context.close();
+                session.close();
             }
         }
 
@@ -468,11 +468,11 @@ class ResultSetPersister {
             statement.executed = true;
         }
 
-        private void processStatementError(DataStatementInfo statement, DBCExecutionContext context)
+        private void processStatementError(DataStatementInfo statement, DBCSession session)
         {
             statement.executed = false;
             try {
-                context.getTransactionManager().rollback(savepoint);
+                session.getTransactionManager().rollback(savepoint);
             }
             catch (Throwable e) {
                 ResultSetViewer.log.debug("Error during transaction rollback", e);
@@ -502,22 +502,22 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
+        public void fetchStart(DBCSession session, DBCResultSet resultSet)
             throws DBCException
         {
 
         }
 
         @Override
-        public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
+        public void fetchRow(DBCSession session, DBCResultSet resultSet)
             throws DBCException
         {
             DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
             List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
             for (int i = 0; i < keyAttributes.size(); i++) {
                 DBCAttributeMetaData keyAttribute = keyAttributes.get(i);
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, keyAttribute);
-                Object keyValue = valueHandler.fetchValueObject(context, resultSet, keyAttribute, i);
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(session, keyAttribute);
+                Object keyValue = valueHandler.fetchValueObject(session, resultSet, keyAttribute, i);
                 if (keyValue == null) {
                     // [MSSQL] Sometimes driver returns empty list of generated keys if
                     // table has auto-increment columns and user performs simple row update
@@ -558,7 +558,7 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchEnd(DBCExecutionContext context)
+        public void fetchEnd(DBCSession session)
             throws DBCException
         {
 

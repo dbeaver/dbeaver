@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
 import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -198,7 +198,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Grantee db2Grantee) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Grantee db2Grantee) throws SQLException
     {
         String userType = db2Grantee.getType().name();
         String userName = db2Grantee.getName();
@@ -213,7 +213,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
             nbMax = 20;
         }
 
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         for (int i = 1; i <= nbMax;) {
             dbStat.setString(i++, userType);
             dbStat.setString(i++, userName);
@@ -222,11 +222,11 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
     }
 
     @Override
-    protected DB2AuthBase fetchObject(JDBCExecutionContext context, DB2Grantee db2Grantee, ResultSet resultSet)
+    protected DB2AuthBase fetchObject(JDBCSession session, DB2Grantee db2Grantee, ResultSet resultSet)
         throws SQLException, DBException
     {
         DB2DataSource db2DataSource = db2Grantee.getDataSource();
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
 
         String objectSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA");
         String objectName = JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_NAME");

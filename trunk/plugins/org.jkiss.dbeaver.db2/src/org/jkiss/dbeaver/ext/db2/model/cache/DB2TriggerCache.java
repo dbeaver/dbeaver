@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -42,24 +42,24 @@ public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
     private static final String SQL_TRIG_ALL = "SELECT * FROM SYSCAT.TRIGGERS WHERE TRIGSCHEMA = ? ORDER BY TRIGNAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
     {
-        JDBCPreparedStatement dbStat = context.prepareStatement(SQL_TRIG_ALL);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SQL_TRIG_ALL);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2Trigger fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
+    protected DB2Trigger fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
         DBException
     {
 
         // Look for related table
         String tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
-        DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(context.getProgressMonitor(), db2Schema.getDataSource(),
+        DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
             tableSchemaName, tableName);
 
-        return new DB2Trigger(context.getProgressMonitor(), db2Schema, db2Table, dbResult);
+        return new DB2Trigger(session.getProgressMonitor(), db2Schema, db2Table, dbResult);
     }
 }

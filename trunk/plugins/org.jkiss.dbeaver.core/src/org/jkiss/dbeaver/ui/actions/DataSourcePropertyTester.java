@@ -65,7 +65,7 @@ public class DataSourcePropertyTester extends PropertyTester
         } else if (PROP_TRANSACTION_ACTIVE.equals(property)) {
             if (dataSourceContainer.isConnected()) {
                 DBPDataSource dataSource = dataSourceContainer.getDataSource();
-                QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSession(dataSource);
+                QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(dataSource);
                 QMMTransactionInfo transaction = session.getTransaction();
                 if (transaction != null) {
                     QMMTransactionSavepointInfo savepoint = transaction.getCurrentSavepoint();

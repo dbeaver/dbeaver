@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Execution context
  */
-public interface DBCExecutionContext extends DBPCloseableObject, DBDPreferences {
+public interface DBCSession extends DBPCloseableObject, DBDPreferences {
 
     String getTaskTitle();
 

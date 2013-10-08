@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -153,10 +153,10 @@ public class CassandraKeyspace implements DBSSchema
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, CassandraKeyspace owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, CassandraKeyspace owner)
             throws SQLException
         {
-            return context.getMetaData().getTables(
+            return session.getMetaData().getTables(
                 null,
                 owner.getName(),
                 null,
@@ -164,7 +164,7 @@ public class CassandraKeyspace implements DBSSchema
         }
 
         @Override
-        protected CassandraColumnFamily fetchObject(JDBCExecutionContext context, CassandraKeyspace owner, ResultSet dbResult)
+        protected CassandraColumnFamily fetchObject(JDBCSession session, CassandraKeyspace owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             boolean isSystemTable = owner.getName().equals("system");
@@ -177,10 +177,10 @@ public class CassandraKeyspace implements DBSSchema
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, CassandraKeyspace owner, CassandraColumnFamily forTable)
+        protected JDBCStatement prepareChildrenStatement(JDBCSession session, CassandraKeyspace owner, CassandraColumnFamily forTable)
             throws SQLException
         {
-            return context.getMetaData().getColumns(
+            return session.getMetaData().getColumns(
                 null,
                 owner.getName(),
                 forTable == null ? null : forTable.getName(),
@@ -188,7 +188,7 @@ public class CassandraKeyspace implements DBSSchema
         }
 
         @Override
-        protected CassandraColumn fetchChild(JDBCExecutionContext context, CassandraKeyspace owner, CassandraColumnFamily columnFamily, ResultSet dbResult)
+        protected CassandraColumn fetchChild(JDBCSession session, CassandraKeyspace owner, CassandraColumnFamily columnFamily, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new CassandraColumn(

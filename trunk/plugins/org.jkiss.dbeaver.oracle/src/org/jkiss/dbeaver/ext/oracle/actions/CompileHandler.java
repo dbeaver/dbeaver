@@ -48,7 +48,7 @@ import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -223,7 +223,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             return true;
         }
 
-        final JDBCExecutionContext context = unit.getDataSource().openContext(
+        final JDBCSession session = unit.getDataSource().openSession(
             monitor,
             DBCExecutionPurpose.UTIL,
             "Compile '" + unit.getName() + "'");
@@ -237,7 +237,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     break;
                 }
                 try {
-                    final DBCStatement dbStat = context.prepareStatement(
+                    final DBCStatement dbStat = session.prepareStatement(
                         DBCStatementType.QUERY,
                         script,
                         false, false, false);
@@ -252,7 +252,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     throw e;
                 }
                 if (action instanceof OracleObjectPersistAction) {
-                    if (!logObjectErrors(context, compileLog, unit, ((OracleObjectPersistAction) action).getObjectType())) {
+                    if (!logObjectErrors(session, compileLog, unit, ((OracleObjectPersistAction) action).getObjectType())) {
                         success = false;
                     }
                 }
@@ -265,18 +265,18 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
 
             return success;
         } finally {
-            context.close();
+            session.close();
         }
     }
 
     public static boolean logObjectErrors(
-        JDBCExecutionContext context,
+        JDBCSession session,
         Log compileLog,
         OracleSourceObject unit,
         OracleObjectType objectType)
     {
         try {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE");
             try {
                 dbStat.setString(1, unit.getSchema().getName());

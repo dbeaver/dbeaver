@@ -18,11 +18,11 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -164,7 +164,7 @@ public final class SQLUtils {
         return query.substring(startPos, endPos);
     }
 
-    public static String getQueryOutputParameter(DBCExecutionContext context, String query)
+    public static String getQueryOutputParameter(DBCSession session, String query)
     {
         final Matcher matcher = PATTERN_OUT_PARAM.matcher(query);
         if (matcher.find()) {

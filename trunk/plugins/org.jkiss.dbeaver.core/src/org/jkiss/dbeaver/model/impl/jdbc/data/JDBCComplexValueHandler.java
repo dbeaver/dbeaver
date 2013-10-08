@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.model.data.DBDComplexType;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
@@ -60,19 +60,19 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected Object fetchColumnValue(
-        DBCExecutionContext context,
+        DBCSession session,
         JDBCResultSet resultSet,
         DBSTypedObject type,
         int index)
         throws DBCException, SQLException
     {
         Object value = resultSet.getObject(index);
-        return getValueFromObject(context, type, value, false);
+        return getValueFromObject(session, type, value, false);
     }
 
     @Override
     protected void bindParameter(
-        JDBCExecutionContext context,
+        JDBCSession session,
         JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,

@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.admin.sessions;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 import java.util.Collection;
 import java.util.Map;
@@ -33,10 +33,10 @@ public interface DBAServerSessionManager<SESSION_TYPE extends DBAServerSession> 
 
     DBPDataSource getDataSource();
 
-    Collection<SESSION_TYPE> getSessions(DBCExecutionContext context, Map<String, Object> options)
+    Collection<SESSION_TYPE> getSessions(DBCSession session, Map<String, Object> options)
         throws DBException;
 
-    void alterSession(DBCExecutionContext context, SESSION_TYPE session, Map<String, Object> options)
+    void alterSession(DBCSession session, SESSION_TYPE sessionType, Map<String, Object> options)
         throws DBException;
 
 }

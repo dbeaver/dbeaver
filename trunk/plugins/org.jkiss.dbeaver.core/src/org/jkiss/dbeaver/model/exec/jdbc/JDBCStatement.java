@@ -31,7 +31,7 @@ import java.sql.Statement;
 public interface JDBCStatement extends Statement, DBCStatement, DBRBlockingObject {
 
     @Override
-    JDBCExecutionContext getConnection();
+    JDBCSession getConnection();
 
     @Override
     JDBCResultSet openResultSet() throws DBCException;

@@ -28,6 +28,6 @@ public interface DBCSavepoint {
 
     String getName();
 
-    DBCExecutionContext getContext();
+    DBCSession getContext();
 
 }

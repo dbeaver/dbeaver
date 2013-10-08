@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.io.InputStream;
@@ -37,7 +37,7 @@ import java.util.Map;
 public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl implements JDBCCallableStatement {
 
     public JDBCCallableStatementImpl(
-        JDBCExecutionContext connection,
+        JDBCSession connection,
         CallableStatement original,
         String query)
     {

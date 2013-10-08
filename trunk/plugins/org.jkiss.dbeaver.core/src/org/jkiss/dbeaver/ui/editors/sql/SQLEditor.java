@@ -53,7 +53,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -902,14 +902,14 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
+        public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
         {
             final SQLQueryJob job = curJob;
             if (job != null) {
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
                 job.setDataReceiver(dataReceiver);
-                job.extractData(context);
+                job.extractData(session);
                 return job.getStatistics();
             } else {
                 log.warn("No active query - can't read data");
@@ -920,7 +920,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public long countData(DBCExecutionContext context, DBDDataFilter dataFilter)
+        public long countData(DBCSession session, DBDDataFilter dataFilter)
         {
             return -1;
         }

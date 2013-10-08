@@ -23,17 +23,17 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
-import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
+import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Execution context
  */
-public class WMIExecutionContext extends AbstractExecutionContext {
+public class WMISession extends AbstractSession {
 
     private final WMIDataSource dataSource;
 
-    public WMIExecutionContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, WMIDataSource dataSource)
+    public WMISession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, WMIDataSource dataSource)
     {
         super(monitor, purpose, taskTitle);
         this.dataSource = dataSource;

@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.model.edit;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * DBEObjectManager
@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 public interface DBEObjectManager<OBJECT_TYPE extends DBPObject> {
 
     void executePersistAction(
-        DBCExecutionContext context,
+        DBCSession session,
         DBECommand<OBJECT_TYPE> command,
         IDatabasePersistAction action)
         throws DBException;

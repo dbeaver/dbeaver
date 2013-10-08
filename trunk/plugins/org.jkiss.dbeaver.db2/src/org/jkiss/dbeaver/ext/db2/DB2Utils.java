@@ -43,10 +43,7 @@ import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -122,10 +119,10 @@ public class DB2Utils {
     // ------------------------
     // Check for Authorisations
     // ------------------------
-    public static Boolean userIsAuthorisedForAPPLICATIONS(JDBCExecutionContext context, String authId) throws SQLException
+    public static Boolean userIsAuthorisedForAPPLICATIONS(JDBCSession session, String authId) throws SQLException
     {
         LOG.debug("Check if user '" + authId + "' is authorised for SYSIBMADM Views");
-        String res = JDBCUtils.queryString(context, AUT_APP, authId);
+        String res = JDBCUtils.queryString(session, AUT_APP, authId);
         if (res == null) {
             return false;
         }
@@ -157,10 +154,10 @@ public class DB2Utils {
         String errorSchemaName, String errorTableName) throws SQLException
     {
         LOG.debug("Call admin_drop_schema for " + schemaName);
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "ADMIN_DROP_SCHEMA");
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "ADMIN_DROP_SCHEMA");
         try {
 
-            JDBCCallableStatement stmtSP = context.prepareCall(CALL_ADS);
+            JDBCCallableStatement stmtSP = session.prepareCall(CALL_ADS);
             try {
                 stmtSP.setString(1, schemaName);
                 stmtSP.setString(2, errorSchemaName);
@@ -170,7 +167,7 @@ public class DB2Utils {
                 stmtSP.close();
             }
         } finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -196,11 +193,11 @@ public class DB2Utils {
         StringBuilder sb = new StringBuilder(2048);
         String command = String.format(DB2LK_COMMAND, statementDelimiter, db2Table.getFullQualifiedName());
 
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Generate DDL");
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Generate DDL");
         try {
             LOG.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
 
-            JDBCCallableStatement stmtSP = context.prepareCall(CALL_DB2LK_GEN);
+            JDBCCallableStatement stmtSP = session.prepareCall(CALL_DB2LK_GEN);
             try {
                 stmtSP.registerOutParameter(2, java.sql.Types.INTEGER);
                 stmtSP.setString(1, command);
@@ -213,7 +210,7 @@ public class DB2Utils {
             LOG.debug("Token = " + token);
 
             // Read result
-            JDBCPreparedStatement stmtSel = context.prepareStatement(SEL_DB2LK);
+            JDBCPreparedStatement stmtSel = session.prepareStatement(SEL_DB2LK);
             try {
                 stmtSel.setInt(1, token);
                 JDBCResultSet dbResult = stmtSel.executeQuery();
@@ -236,7 +233,7 @@ public class DB2Utils {
             }
 
             // Clean
-            JDBCCallableStatement stmtSPClean = context.prepareCall(CALL_DB2LK_CLEAN);
+            JDBCCallableStatement stmtSPClean = session.prepareCall(CALL_DB2LK_CLEAN);
             try {
                 stmtSPClean.setInt(1, token);
                 stmtSPClean.executeUpdate();
@@ -251,7 +248,7 @@ public class DB2Utils {
         } catch (SQLException e) {
             throw new DBException(e);
         } finally {
-            context.close();
+            session.close();
 
             monitor.done();
         }
@@ -261,13 +258,13 @@ public class DB2Utils {
     // EXPLAIN
     // ------------------------
 
-    public static List<String> getListOfUsableTsForExplain(DBRProgressMonitor monitor, JDBCExecutionContext context)
+    public static List<String> getListOfUsableTsForExplain(DBRProgressMonitor monitor, JDBCSession session)
         throws SQLException
     {
         LOG.debug("Get List Of Usable Tablespaces For Explain Tables");
 
         List<String> listTablespaces = new ArrayList<String>();
-        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_LIST_TS);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SEL_LIST_TS);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
@@ -291,11 +288,11 @@ public class DB2Utils {
 
         monitor.beginTask("Check EXPLAIN tables", 1);
 
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Verify EXPLAIN tables");
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Verify EXPLAIN tables");
 
         try {
             // First Check with given schema
-            JDBCCallableStatement stmtSP = context.prepareCall(CALL_INST_OBJ);
+            JDBCCallableStatement stmtSP = session.prepareCall(CALL_INST_OBJ);
             try {
                 stmtSP.setString(1, "EXPLAIN"); // EXPLAIN
                 stmtSP.setString(2, "V"); // Verify
@@ -318,7 +315,7 @@ public class DB2Utils {
         } catch (SQLException e1) {
             throw new DBCException(e1);
         } finally {
-            context.close();
+            session.close();
             monitor.done();
         }
     }
@@ -330,9 +327,9 @@ public class DB2Utils {
 
         monitor.beginTask("Create EXPLAIN Tables", 1);
 
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Create EXPLAIN tables");
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Create EXPLAIN tables");
         try {
-            JDBCCallableStatement stmtSP = context.prepareCall(CALL_INST_OBJ);
+            JDBCCallableStatement stmtSP = session.prepareCall(CALL_INST_OBJ);
             try {
                 stmtSP.setString(1, "EXPLAIN"); // EXPLAIN
                 stmtSP.setString(2, "C"); // Create
@@ -350,7 +347,7 @@ public class DB2Utils {
         } catch (SQLException e1) {
             throw new DBCException(e1);
         } finally {
-            context.close();
+            session.close();
             monitor.done();
         }
     }
@@ -363,26 +360,26 @@ public class DB2Utils {
     {
         LOG.debug("Force Application : " + agentId.toString());
 
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Force Application");
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Force Application");
         try {
-            JDBCCallableStatement stmtSP = context.prepareCall(String.format(FORCE_APP, agentId));
+            JDBCCallableStatement stmtSP = session.prepareCall(String.format(FORCE_APP, agentId));
             try {
                 return stmtSP.execute();
             } finally {
                 stmtSP.close();
             }
         } finally {
-            context.close();
+            session.close();
         }
     }
 
-    public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCExecutionContext context)
+    public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCSession session)
         throws SQLException
     {
         LOG.debug("readApplications");
 
         List<DB2ServerApplication> listApplications = new ArrayList<DB2ServerApplication>();
-        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_APP);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SEL_APP);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
@@ -398,17 +395,17 @@ public class DB2Utils {
         return listApplications;
     }
 
-    public static List<DB2Parameter> readDBCfg(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException
+    public static List<DB2Parameter> readDBCfg(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
         LOG.debug("readDBCfg");
 
         List<DB2Parameter> listDBParameters = new ArrayList<DB2Parameter>();
-        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DBCFG);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SEL_DBCFG);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
                 while (dbResult.next()) {
-                    listDBParameters.add(new DB2Parameter((DB2DataSource) context.getDataSource(), dbResult));
+                    listDBParameters.add(new DB2Parameter((DB2DataSource) session.getDataSource(), dbResult));
                 }
             } finally {
                 dbResult.close();
@@ -419,17 +416,17 @@ public class DB2Utils {
         return listDBParameters;
     }
 
-    public static List<DB2Parameter> readDBMCfg(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException
+    public static List<DB2Parameter> readDBMCfg(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
         LOG.debug("readDBMCfg");
 
         List<DB2Parameter> listDBMParameters = new ArrayList<DB2Parameter>();
-        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DBMCFG);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SEL_DBMCFG);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
                 while (dbResult.next()) {
-                    listDBMParameters.add(new DB2Parameter((DB2DataSource) context.getDataSource(), dbResult));
+                    listDBMParameters.add(new DB2Parameter((DB2DataSource) session.getDataSource(), dbResult));
                 }
             } finally {
                 dbResult.close();
@@ -440,17 +437,17 @@ public class DB2Utils {
         return listDBMParameters;
     }
 
-    public static List<DB2XMLString> readXMLStrings(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException
+    public static List<DB2XMLString> readXMLStrings(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
         LOG.debug("readXMLStrings");
 
         List<DB2XMLString> listXMLStrings = new ArrayList<DB2XMLString>();
-        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_XMLSTRINGS);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SEL_XMLSTRINGS);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
                 while (dbResult.next()) {
-                    listXMLStrings.add(new DB2XMLString((DB2DataSource) context.getDataSource(), dbResult));
+                    listXMLStrings.add(new DB2XMLString((DB2DataSource) session.getDataSource(), dbResult));
                 }
             } finally {
                 dbResult.close();

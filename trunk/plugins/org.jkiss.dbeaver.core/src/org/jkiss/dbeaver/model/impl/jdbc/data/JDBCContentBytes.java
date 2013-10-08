@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -160,7 +160,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
 
     @Override
     public void bindParameter(
-        JDBCExecutionContext context,
+        JDBCSession session,
         JDBCPreparedStatement preparedStatement,
         DBSTypedObject columnType,
         int paramIndex)

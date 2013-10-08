@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 import oracle.xdb.XMLType;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentXML;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -49,7 +49,7 @@ public class OracleContentXML extends JDBCContentXML {
 
     @Override
     public void bindParameter(
-        JDBCExecutionContext context,
+        JDBCSession session,
         JDBCPreparedStatement preparedStatement,
         DBSTypedObject columnType,
         int paramIndex)
@@ -59,7 +59,7 @@ public class OracleContentXML extends JDBCContentXML {
             if (storage != null) {
                 InputStream streamReader = storage.getContentStream();
                 try {
-                    final Object xmlObject = createXmlObject(context, streamReader);
+                    final Object xmlObject = createXmlObject(session, streamReader);
 
                     preparedStatement.setObject(
                         paramIndex,
@@ -79,10 +79,10 @@ public class OracleContentXML extends JDBCContentXML {
         }
     }
 
-    private Object createXmlObject(JDBCExecutionContext context, InputStream stream) throws DBCException
+    private Object createXmlObject(JDBCSession session, InputStream stream) throws DBCException
     {
         try {
-            return XMLType.createXML(context.getOriginal(), stream);
+            return XMLType.createXML(session.getOriginal(), stream);
         } catch (SQLException e) {
             throw new DBCException(e);
         }

@@ -23,8 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Array;
@@ -48,14 +48,14 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return JDBCArray.makeArray((JDBCExecutionContext) context, null);
+            return JDBCArray.makeArray((JDBCSession) session, null);
         } else if (object instanceof JDBCArray) {
-            return copy ? ((JDBCArray) object).cloneValue(context.getProgressMonitor()) : object;
+            return copy ? ((JDBCArray) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Array) {
-            return JDBCArray.makeArray((JDBCExecutionContext) context, (Array)object);
+            return JDBCArray.makeArray((JDBCSession) session, (Array)object);
         } else {
             throw new DBCException(CoreMessages.model_jdbc_exception_unsupported_array_type_ + object.getClass().getName());
         }

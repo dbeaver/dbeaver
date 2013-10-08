@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.ResultSet;
@@ -72,7 +72,7 @@ public class DB2PlanInstance {
     // ------------
 
     public DB2PlanInstance(DB2DataSource dataSource,
-                           JDBCExecutionContext context,
+                           JDBCSession session,
                            ResultSet dbResult,
                            DB2PlanStatement db2PlanStatement) throws SQLException
     {

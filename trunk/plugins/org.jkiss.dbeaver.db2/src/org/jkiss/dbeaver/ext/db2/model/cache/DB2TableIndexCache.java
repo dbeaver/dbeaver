@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -41,16 +41,16 @@ public class DB2TableIndexCache extends JDBCObjectCache<DB2Table, DB2Index> {
     private static final String SQL_INDS_TAB = "SELECT * FROM SYSCAT.INDEXES WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY INDNAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Table db2Table) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Table db2Table) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_INDS_TAB);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_INDS_TAB);
         dbStat.setString(1, db2Table.getSchema().getName());
         dbStat.setString(2, db2Table.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2Index fetchObject(JDBCExecutionContext context, DB2Table db2Table, ResultSet dbResult) throws SQLException,
+    protected DB2Index fetchObject(JDBCSession session, DB2Table db2Table, ResultSet dbResult) throws SQLException,
         DBException
     {
 
@@ -58,7 +58,7 @@ public class DB2TableIndexCache extends JDBCObjectCache<DB2Table, DB2Index> {
         String indexSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDSCHEMA");
         String indexName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME");
 
-        return DB2Utils.findIndexBySchemaNameAndName(context.getProgressMonitor(), db2Table.getDataSource(), indexSchemaName,
+        return DB2Utils.findIndexBySchemaNameAndName(session.getProgressMonitor(), db2Table.getDataSource(), indexSchemaName,
             indexName);
     }
 }

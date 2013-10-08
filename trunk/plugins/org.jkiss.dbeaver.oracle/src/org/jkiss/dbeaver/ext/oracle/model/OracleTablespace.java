@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -275,9 +275,9 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
 
     static class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleTablespace owner) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.DBA_" +
                     (owner.getContents() == Contents.TEMPORARY ? "TEMP" : "DATA") +
                     "_FILES WHERE TABLESPACE_NAME=? ORDER BY FILE_NAME");
@@ -286,7 +286,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         }
 
         @Override
-        protected OracleDataFile fetchObject(JDBCExecutionContext context, OracleTablespace owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataFile fetchObject(JDBCSession session, OracleTablespace owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataFile(owner, resultSet, owner.getContents() == Contents.TEMPORARY);
         }
@@ -294,9 +294,9 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
 
     static class SegmentCache extends JDBCObjectCache<OracleTablespace, OracleSegment<OracleTablespace>> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablespace owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleTablespace owner) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner.getDataSource()) +
                 "SEGMENTS WHERE TABLESPACE_NAME=? ORDER BY SEGMENT_NAME");
             dbStat.setString(1, owner.getName());
@@ -304,9 +304,9 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         }
 
         @Override
-        protected OracleSegment<OracleTablespace> fetchObject(JDBCExecutionContext context, OracleTablespace owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleSegment<OracleTablespace> fetchObject(JDBCSession session, OracleTablespace owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleSegment<OracleTablespace>(context.getProgressMonitor(), owner, resultSet);
+            return new OracleSegment<OracleTablespace>(session.getProgressMonitor(), owner, resultSet);
         }
     }
 

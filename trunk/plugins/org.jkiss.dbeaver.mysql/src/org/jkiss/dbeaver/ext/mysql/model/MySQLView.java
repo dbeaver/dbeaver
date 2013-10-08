@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -181,9 +181,9 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
             additionalInfo.loaded = true;
             return;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_VIEWS + " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=? AND " + MySQLConstants.COL_TABLE_NAME + "=?");
             try {
                 dbStat.setString(1, getContainer().getName());
@@ -215,7 +215,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
             throw new DBCException(e);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 

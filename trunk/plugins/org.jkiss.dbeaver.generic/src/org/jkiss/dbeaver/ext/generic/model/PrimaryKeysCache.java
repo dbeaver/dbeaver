@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
@@ -50,11 +50,11 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
     {
         try {
-            return context.getMetaData().getPrimaryKeys(
+            return session.getMetaData().getPrimaryKeys(
                     owner.getCatalog() == null ? null : owner.getCatalog().getName(),
                     owner.getSchema() == null ? null : owner.getSchema().getName(),
                     forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName())
@@ -71,7 +71,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     @Override
-    protected GenericPrimaryKey fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String pkName, ResultSet dbResult)
+    protected GenericPrimaryKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String pkName, ResultSet dbResult)
         throws SQLException, DBException
     {
         return new GenericPrimaryKey(
@@ -84,7 +84,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Override
     protected GenericTableConstraintColumn fetchObjectRow(
-        JDBCExecutionContext context,
+        JDBCSession session,
         GenericTable parent, GenericPrimaryKey object, ResultSet dbResult)
         throws SQLException, DBException
     {
@@ -94,7 +94,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
         int keySeq = GenericUtils.safeGetInt(pkObject, dbResult, JDBCConstants.KEY_SEQ);
 
-        GenericTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
+        GenericTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
         if (tableColumn == null) {
             log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "' for PK '" + object.getFullQualifiedName() + "'");
             return null;

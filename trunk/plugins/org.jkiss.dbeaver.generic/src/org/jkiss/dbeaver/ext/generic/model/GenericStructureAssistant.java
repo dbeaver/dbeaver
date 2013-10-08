@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
@@ -66,7 +66,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
@@ -76,18 +76,18 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         objectNameMask = convertCase.transform(objectNameMask);
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(context, catalog, schema, objectNameMask, maxResults, references);
+            findTablesByMask(session, catalog, schema, objectNameMask, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(context, catalog, schema, objectNameMask, maxResults, references);
+            findProceduresByMask(session, catalog, schema, objectNameMask, maxResults, references);
         }
     }
 
-    private void findTablesByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTablesByMask(JDBCSession session, GenericCatalog catalog, GenericSchema schema, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         final GenericMetaObject tableObject = getDataSource().getMetaObject(GenericConstants.OBJECT_TABLE);
-        final DBRProgressMonitor monitor = context.getProgressMonitor();
-        final JDBCResultSet dbResult = context.getMetaData().getTables(
+        final DBRProgressMonitor monitor = session.getProgressMonitor();
+        final JDBCResultSet dbResult = session.getMetaData().getTables(
             catalog == null ? null : catalog.getName(),
             schema == null ? null : schema.getName(),
             tableNameMask,
@@ -104,7 +104,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                     continue;
                 }
                 objects.add(new TableReference(
-                    findContainer(context.getProgressMonitor(), catalog, schema, catalogName, schemaName),
+                    findContainer(session.getProgressMonitor(), catalog, schema, catalogName, schemaName),
                     tableName,
                     GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.REMARKS)));
                 if (objects.size() >= maxResults) {
@@ -117,12 +117,12 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findProceduresByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String procNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findProceduresByMask(JDBCSession session, GenericCatalog catalog, GenericSchema schema, String procNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         final GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
-        DBRProgressMonitor monitor = context.getProgressMonitor();
-        JDBCResultSet dbResult = context.getMetaData().getProcedures(
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        JDBCResultSet dbResult = session.getMetaData().getProcedures(
             catalog == null ? null : catalog.getName(),
             schema == null ? null : schema.getName(),
             procNameMask);
@@ -142,7 +142,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                     uniqueName = procName;
                 }
                 objects.add(new ProcedureReference(
-                    findContainer(context.getProgressMonitor(), catalog, schema, catalogName, schemaName),
+                    findContainer(session.getProgressMonitor(), catalog, schema, catalogName, schemaName),
                     catalogName,
                     procName, uniqueName));
                 if (objects.size() >= maxResults) {

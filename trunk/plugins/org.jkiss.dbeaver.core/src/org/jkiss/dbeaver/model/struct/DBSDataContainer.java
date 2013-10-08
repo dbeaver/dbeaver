@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
 /**
@@ -44,7 +44,7 @@ public interface DBSDataContainer extends DBSObject {
 
     /**
      * Reads data from container and pushes it into receiver
-     * @param context execution context
+     * @param session execution context
      * @param dataReceiver data receiver. Works as a data pipe
      * @param dataFilter data filter. May be null
      * @param firstRow first row number (<= 0 means do not use it)
@@ -53,7 +53,7 @@ public interface DBSDataContainer extends DBSObject {
      * @throws DBCException on any error
      */
     DBCStatistics readData(
-        DBCExecutionContext context,
+        DBCSession session,
         DBDDataReceiver dataReceiver,
         DBDDataFilter dataFilter,
         long firstRow,
@@ -62,13 +62,13 @@ public interface DBSDataContainer extends DBSObject {
 
     /**
      * Counts data rows in container.
-     * @param context execution context
+     * @param session execution context
      * @param dataFilter data filter (may be null)
      * @return number of rows in container. May return negative values if count feature is not available
      * @throws DBCException on any error
      */
     long countData(
-        DBCExecutionContext context,
+        DBCSession session,
         DBDDataFilter dataFilter)
         throws DBCException;
 

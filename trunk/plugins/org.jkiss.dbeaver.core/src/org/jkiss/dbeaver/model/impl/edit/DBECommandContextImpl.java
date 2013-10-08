@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.*;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
@@ -121,7 +121,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                             }
                         //}
                         if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                            DBCExecutionContext context = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
+                            DBCSession session = openCommandPersistContext(monitor, dataSourceContainer.getDataSource(), cmd.command);
                             try {
                                 DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {
@@ -134,7 +134,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                                     }
                                     try {
                                         if (error == null || actionType == IDatabasePersistAction.ActionType.FINALIZER) {
-                                            queue.objectManager.executePersistAction(context, cmd.command, persistInfo.action);
+                                            queue.objectManager.executePersistAction(session, cmd.command, persistInfo.action);
                                         }
                                         persistInfo.executed = true;
                                     } catch (DBException e) {
@@ -149,7 +149,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                                     throw error;
                                 }
                             } finally {
-                                closePersistContext(context);
+                                closePersistContext(session);
                             }
                             cmd.executed = true;
                         }
@@ -640,21 +640,21 @@ public class DBECommandContextImpl implements DBECommandContext {
         commandQueues = null;
     }
 
-    protected DBCExecutionContext openCommandPersistContext(
+    protected DBCSession openCommandPersistContext(
         DBRProgressMonitor monitor,
         DBPDataSource dataSource,
         DBECommand<?> command)
         throws DBException
     {
-        return dataSource.openContext(
+        return dataSource.openSession(
             monitor,
             DBCExecutionPurpose.USER_SCRIPT,
             CoreMessages.model_edit_execute_ + command.getTitle());
     }
 
-    protected void closePersistContext(DBCExecutionContext context)
+    protected void closePersistContext(DBCSession session)
     {
-        context.close();
+        session.close();
     }
 
     private void refreshCommandState()

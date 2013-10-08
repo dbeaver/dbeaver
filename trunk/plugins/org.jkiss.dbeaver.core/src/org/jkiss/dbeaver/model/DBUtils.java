@@ -396,9 +396,9 @@ public final class DBUtils {
         return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));
     }
 
-    public static Object makeNullValue(DBCExecutionContext context, DBDValueHandler valueHandler, DBSTypedObject type) throws DBCException
+    public static Object makeNullValue(DBCSession session, DBDValueHandler valueHandler, DBSTypedObject type) throws DBCException
     {
-        return valueHandler.getValueFromObject(context, type, null, false);
+        return valueHandler.getValueFromObject(session, type, null, false);
     }
 
     public static Object makeNullValue(final DBDValueController valueController)
@@ -407,16 +407,16 @@ public final class DBUtils {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
-                DBCExecutionContext context = valueController.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Set NULL value");
+                DBCSession session = valueController.getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, "Set NULL value");
                 try {
                     result = DBUtils.makeNullValue(
-                        context,
+                        session,
                         valueController.getValueHandler(),
                         valueController.getValueType());
                 } catch (DBCException e) {
                     throw new InvocationTargetException(e);
                 } finally {
-                    context.close();
+                    session.close();
                 }
             }
         };
@@ -424,7 +424,7 @@ public final class DBUtils {
         return runnable.getResult();
     }
 
-    public static DBDAttributeBinding getColumnBinding(DBCExecutionContext context, DBCAttributeMetaData attributeMeta, int attributeIndex)
+    public static DBDAttributeBinding getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta, int attributeIndex)
     {
         DBSTypedObject columnMeta = attributeMeta;
         // We won't query for real column because we don't want make (possibly) another
@@ -442,13 +442,13 @@ public final class DBUtils {
 */
         return new DBDAttributeBinding(
             attributeMeta,
-            findValueHandler(context, columnMeta),
+            findValueHandler(session, columnMeta),
             attributeIndex);
     }
 
-    public static DBDValueHandler findValueHandler(DBCExecutionContext context, DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(DBCSession session, DBSTypedObject column)
     {
-        return findValueHandler(context.getDataSource(), context, column.getTypeName(), column.getTypeID());
+        return findValueHandler(session.getDataSource(), session, column.getTypeName(), column.getTypeID());
     }
 
     public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBSTypedObject column)
@@ -679,7 +679,7 @@ public final class DBUtils {
     }
 
     public static DBCStatement prepareStatement(
-        DBCExecutionContext context,
+        DBCSession session,
         DBCStatementType statementType,
         String query,
         long offset,
@@ -687,11 +687,11 @@ public final class DBUtils {
     {
         final boolean dataModifyQuery = SQLUtils.isDataModifyQuery(query);
         final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0 &&
-            context.getDataSource().getInfo().supportsResultSetLimit();
+            session.getDataSource().getInfo().supportsResultSetLimit();
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
         if (!dataModifyQuery) {
-            DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, context.getDataSource());
+            DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
                 if (hasLimits) {
                     limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
@@ -709,8 +709,8 @@ public final class DBUtils {
         }
 
         DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?
-            createStatement(context, query) :
-            prepareStatement(context, query);
+            createStatement(session, query) :
+            prepareStatement(session, query);
 
         if (hasLimits) {
             if (limitTransformer == null) {
@@ -726,15 +726,15 @@ public final class DBUtils {
     }
 
     public static DBCStatement createStatement(
-        DBCExecutionContext context,
+        DBCSession session,
         String query) throws DBCException
     {
         query = SQLUtils.makeUnifiedLineFeeds(query);
-        return context.prepareStatement(DBCStatementType.SCRIPT, query, false, false, false);
+        return session.prepareStatement(DBCStatementType.SCRIPT, query, false, false, false);
     }
 
     public static DBCStatement prepareStatement(
-        DBCExecutionContext context,
+        DBCSession session,
         String query) throws DBCException
     {
         DBCStatementType statementType = DBCStatementType.QUERY;
@@ -750,7 +750,7 @@ public final class DBUtils {
 */
 
             // Check for EXEC query
-            final Collection<String> executeKeywords = context.getDataSource().getInfo().getExecuteKeywords();
+            final Collection<String> executeKeywords = session.getDataSource().getInfo().getExecuteKeywords();
             if (!CommonUtils.isEmpty(executeKeywords)) {
                 final String queryStart = SQLUtils.getFirstKeyword(query);
                 for (String keyword : executeKeywords) {
@@ -778,7 +778,7 @@ public final class DBUtils {
         }
         return statement;
 */
-        return context.prepareStatement(statementType, query, false, false, false);
+        return session.prepareStatement(statementType, query, false, false, false);
     }
 
     public static void fireObjectUpdate(DBSObject object)

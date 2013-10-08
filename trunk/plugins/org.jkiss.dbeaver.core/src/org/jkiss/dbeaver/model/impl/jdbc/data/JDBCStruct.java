@@ -30,11 +30,14 @@ import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
@@ -65,12 +68,12 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     {
     }
 
-    public JDBCStruct(DBCExecutionContext context, DBSDataType type, Struct contents) throws DBCException
+    public JDBCStruct(DBCSession session, DBSDataType type, Struct contents) throws DBCException
     {
-        this(context, type, contents, null);
+        this(session, type, contents, null);
     }
 
-    public JDBCStruct(DBCExecutionContext context, DBSDataType type, Struct contents, ResultSetMetaData metaData) throws DBCException
+    public JDBCStruct(DBCSession session, DBSDataType type, Struct contents, ResultSetMetaData metaData) throws DBCException
     {
         this.type = type;
         this.contents = contents;
@@ -81,7 +84,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
             Object[] attrValues = contents == null ? null : contents.getAttributes();
             if (type instanceof DBSEntity) {
                 DBSEntity entity = (DBSEntity)type;
-                Collection<? extends DBSEntityAttribute> entityAttributes = entity.getAttributes(context.getProgressMonitor());
+                Collection<? extends DBSEntityAttribute> entityAttributes = entity.getAttributes(session.getProgressMonitor());
                 int valueCount = attrValues == null ? 0 : attrValues.length;
                 if (attrValues != null && entityAttributes.size() != valueCount) {
                     log.warn("Number of entity attributes (" + entityAttributes.size() + ") differs from real values (" + valueCount + ")");
@@ -93,8 +96,8 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                         continue;
                     }
                     Object value = attrValues != null ? attrValues[ordinalPosition] : null;
-                    DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attr);
-                    value = valueHandler.getValueFromObject(context, attr, value, false);
+                    DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attr);
+                    value = valueHandler.getValueFromObject(session, attr, value, false);
                     values.put(attr, value);
                 }
             } else if (attrValues != null) {
@@ -108,7 +111,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                     for (int i = 0; i < attrCount; i++) {
                         Object value = attrValues[i];
                         DBSAttributeBase attr = new StructAttribute(type.getDataSource(), metaData, i + 1);
-                        value = DBUtils.findValueHandler(context, attr).getValueFromObject(context, attr, value, false);
+                        value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false);
                         values.put(attr, value);
                     }
                 } else {
@@ -116,7 +119,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                     for (int i = 0, attrValuesLength = attrValues.length; i < attrValuesLength; i++) {
                         Object value = attrValues[i];
                         DBSAttributeBase attr = new StructAttribute(i, value);
-                        value = DBUtils.findValueHandler(context, attr).getValueFromObject(context, attr, value, false);
+                        value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false);
                         values.put(attr, value);
                     }
                 }

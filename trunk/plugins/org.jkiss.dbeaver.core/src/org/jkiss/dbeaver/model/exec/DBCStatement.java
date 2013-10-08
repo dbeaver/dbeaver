@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.sql.SQLException;
-
 /**
  * DBCStatement
  */
@@ -35,7 +33,7 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * Statement's context
      * @return context
      */
-    DBCExecutionContext getContext();
+    DBCSession getContext();
 
     /**
      * Statement's query string.

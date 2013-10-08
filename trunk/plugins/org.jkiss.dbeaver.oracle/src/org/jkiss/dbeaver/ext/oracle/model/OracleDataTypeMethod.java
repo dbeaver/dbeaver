@@ -20,7 +20,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -127,9 +127,9 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
 
     private class ParameterCache extends JDBCObjectCache<OracleDataTypeMethod, OracleDataTypeMethodParameter> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataTypeMethod owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataTypeMethod owner) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT PARAM_NAME,PARAM_NO,PARAM_MODE,PARAM_TYPE_OWNER,PARAM_TYPE_NAME,PARAM_TYPE_MOD " +
                 "FROM ALL_METHOD_PARAMS " +
                 "WHERE OWNER=? AND TYPE_NAME=? AND METHOD_NAME=? AND METHOD_NO=?");
@@ -141,10 +141,10 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
         }
 
         @Override
-        protected OracleDataTypeMethodParameter fetchObject(JDBCExecutionContext context, OracleDataTypeMethod owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeMethodParameter fetchObject(JDBCSession session, OracleDataTypeMethod owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeMethodParameter(
-                context.getProgressMonitor(),
+                session.getProgressMonitor(),
                 OracleDataTypeMethod.this,
                 resultSet);
         }

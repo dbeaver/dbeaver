@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServerOption;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -54,9 +54,9 @@ public class DB2RemoteServerOptionCache extends JDBCObjectCache<DB2RemoteServer,
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2RemoteServer remoteServer) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2RemoteServer remoteServer) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, remoteServer.getName());
         // dbStat.setString(2, remoteServer.getDb2Wrapper().getName());
         // dbStat.setString(3, remoteServer.getType());
@@ -65,7 +65,7 @@ public class DB2RemoteServerOptionCache extends JDBCObjectCache<DB2RemoteServer,
     }
 
     @Override
-    protected DB2RemoteServerOption fetchObject(JDBCExecutionContext context, DB2RemoteServer remoteServer, ResultSet resultSet)
+    protected DB2RemoteServerOption fetchObject(JDBCSession session, DB2RemoteServer remoteServer, ResultSet resultSet)
         throws SQLException, DBException
     {
         return new DB2RemoteServerOption(remoteServer, resultSet);

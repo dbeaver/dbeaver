@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2RoutineParm;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -51,19 +51,19 @@ public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2Routine
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Routine db2Routine) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Routine db2Routine) throws SQLException
     {
-        JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2Routine.getSchema().getName());
         dbStat.setString(2, db2Routine.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2RoutineParm fetchObject(JDBCExecutionContext context, DB2Routine db2Routine, ResultSet resultSet)
+    protected DB2RoutineParm fetchObject(JDBCSession session, DB2Routine db2Routine, ResultSet resultSet)
         throws SQLException, DBException
     {
-        return new DB2RoutineParm(context.getProgressMonitor(), db2Routine, resultSet);
+        return new DB2RoutineParm(session.getProgressMonitor(), db2Routine, resultSet);
     }
 
 }

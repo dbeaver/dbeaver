@@ -22,9 +22,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
@@ -43,27 +43,27 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     static final Log log = LogFactory.getLog(JDBCResultSetImpl.class);
 
-    private JDBCExecutionContext context;
+    private JDBCSession session;
     private JDBCStatementImpl statement;
     private ResultSet original;
     private long rowsFetched;
     private long maxRows = -1;
     private boolean fake;
 
-    public static JDBCResultSetImpl makeResultSet(JDBCExecutionContext context, ResultSet original, String description)
+    public static JDBCResultSetImpl makeResultSet(JDBCSession session, ResultSet original, String description)
     {
-        return new JDBCResultSetImpl(context, original, description);
+        return new JDBCResultSetImpl(session, original, description);
     }
 
-    protected JDBCResultSetImpl(JDBCExecutionContext context, ResultSet original, String description)
+    protected JDBCResultSetImpl(JDBCSession session, ResultSet original, String description)
     {
-        this.context = context;
+        this.session = session;
         this.original = original;
         if (this.original == null) {
             log.debug("Null result set passed. Possibly broken database metadata");
         }
         // Make fake statement
-        this.statement = new JDBCFakeStatementImpl(context, this, description);
+        this.statement = new JDBCFakeStatementImpl(session, this, description);
         this.fake = true;
 
         // Simulate statement execution
@@ -76,7 +76,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     protected JDBCResultSetImpl(JDBCStatementImpl statement, ResultSet original)
     {
-        this.context = statement.getContext();
+        this.session = statement.getContext();
         this.statement = statement;
         this.original = original;
         this.fake = false;
@@ -87,13 +87,13 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     protected void beforeFetch()
     {
-        //this.context.getProgressMonitor().startBlock(statement, null);
+        //this.session.getProgressMonitor().startBlock(statement, null);
         //QMUtils.getDefaultHandler().handleResultSetFetch(this);
     }
 
     protected void afterFetch()
     {
-        //this.context.getProgressMonitor().endBlock();
+        //this.session.getProgressMonitor().endBlock();
     }
 
     @Override
@@ -103,9 +103,9 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
-    public DBCExecutionContext getContext()
+    public DBCSession getSession()
     {
-        return context;
+        return session;
     }
 
     @Override
@@ -253,7 +253,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         if (original != null) {
             // Check for warnings
             try {
-                JDBCUtils.reportWarnings(context, getOriginal().getWarnings());
+                JDBCUtils.reportWarnings(session, getOriginal().getWarnings());
                 getOriginal().clearWarnings();
             } catch (Throwable e) {
                 log.debug("Could not check for resultset warnings", e);

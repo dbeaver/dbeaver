@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -74,13 +74,13 @@ public abstract class JDBCCompositeCache<
         this.objectColumnName = objectColumnName;
     }
 
-    abstract protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner, PARENT forParent)
+    abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner, PARENT forParent)
         throws SQLException;
 
-    abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, PARENT parent, String childName, ResultSet resultSet)
+    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, PARENT parent, String childName, ResultSet resultSet)
         throws SQLException, DBException;
 
-    abstract protected ROW_REF fetchObjectRow(JDBCExecutionContext context, PARENT parent, OBJECT forObject, ResultSet resultSet)
+    abstract protected ROW_REF fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, ResultSet resultSet)
         throws SQLException, DBException;
 
     protected PARENT getParent(OBJECT object)
@@ -204,10 +204,10 @@ public abstract class JDBCCompositeCache<
         List<OBJECT> precachedObjects = new ArrayList<OBJECT>();
 
         // Load index columns
-        JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load composite objects");
+        JDBCSession session = (JDBCSession) owner.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load composite objects");
         try {
 
-            JDBCStatement dbStat = prepareObjectsStatement(context, owner, forParent);
+            JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent);
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
             try {
                 dbStat.executeStatement();
@@ -254,7 +254,7 @@ public abstract class JDBCCompositeCache<
 
                         ObjectInfo objectInfo = objectMap.get(objectName);
                         if (objectInfo == null) {
-                            OBJECT object = fetchObject(context, owner, parent, objectName, dbResult);
+                            OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
                             if (object == null) {
                                 // Could not fetch object
                                 continue;
@@ -262,7 +262,7 @@ public abstract class JDBCCompositeCache<
                             objectInfo = new ObjectInfo(object);
                             objectMap.put(objectName, objectInfo);
                         }
-                        ROW_REF rowRef = fetchObjectRow(context, parent, objectInfo.object, dbResult);
+                        ROW_REF rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
                         if (rowRef == null) {
                             continue;
                         }
@@ -281,7 +281,7 @@ public abstract class JDBCCompositeCache<
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
 
         if (monitor.isCanceled()) {

@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -79,7 +79,7 @@ public class DB2PlanStatement {
     // ------------
     // Constructors
     // ------------
-    public DB2PlanStatement(JDBCExecutionContext context, JDBCResultSet dbResult, String planTableSchema) throws SQLException
+    public DB2PlanStatement(JDBCSession session, JDBCResultSet dbResult, String planTableSchema) throws SQLException
     {
 
         this.planTableSchema = planTableSchema;
@@ -97,7 +97,7 @@ public class DB2PlanStatement {
 
         this.statementText = JDBCUtils.safeGetString(dbResult, "STATEMENT_TEXT");
 
-        loadChildren(context);
+        loadChildren(session);
     }
 
     // ----------------
@@ -135,11 +135,11 @@ public class DB2PlanStatement {
     // -------------
     // Load children
     // -------------
-    private void loadChildren(JDBCExecutionContext context) throws SQLException
+    private void loadChildren(JDBCSession session) throws SQLException
     {
 
         listObjects = new ArrayList<DB2PlanObject>(32);
-        JDBCPreparedStatement sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT"));
+        JDBCPreparedStatement sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT"));
         try {
             setQueryParameters(sqlStmt);
             JDBCResultSet res = sqlStmt.executeQuery();
@@ -155,13 +155,13 @@ public class DB2PlanStatement {
         }
 
         listOperators = new ArrayList<DB2PlanOperator>(64);
-        sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR"));
+        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR"));
         try {
             setQueryParameters(sqlStmt);
             JDBCResultSet res = sqlStmt.executeQuery();
             try {
                 while (res.next()) {
-                    listOperators.add(new DB2PlanOperator(context, res, this, planTableSchema));
+                    listOperators.add(new DB2PlanOperator(session, res, this, planTableSchema));
                 }
             } finally {
                 res.close();
@@ -171,7 +171,7 @@ public class DB2PlanStatement {
         }
 
         listStreams = new ArrayList<DB2PlanStream>();
-        sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM"));
+        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM"));
         try {
             setQueryParameters(sqlStmt);
             JDBCResultSet res = sqlStmt.executeQuery();

@@ -23,8 +23,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -66,13 +66,13 @@ class ResultSetDataPumpJob extends DataSourceJob {
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
         error = null;
-        DBCExecutionContext context = getDataSource().openContext(
-                monitor,
-                DBCExecutionPurpose.USER,
-                NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
+        DBCSession session = getDataSource().openSession(
+            monitor,
+            DBCExecutionPurpose.USER,
+            NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
         try {
             statistics = resultSetViewer.getDataContainer().readData(
-                context,
+                session,
                 resultSetViewer.getDataReceiver(),
                 resultSetViewer.getModel().getDataFilter(),
                 offset,
@@ -82,7 +82,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
             error = e;
         }
         finally {
-            context.close();
+            session.close();
         }
 
         return Status.OK_STATUS;

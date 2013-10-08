@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -49,15 +49,15 @@ public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
     {
-        JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2Routine fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
+    protected DB2Routine fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
         DBException
     {
         return new DB2Routine(db2Schema, dbResult);

@@ -25,8 +25,8 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -55,13 +55,13 @@ public class DataSourceRollbackHandler extends DataSourceHandler
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Rollback '" + dataSourceContainer.getName() + "' transaction");
+                    DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback '" + dataSourceContainer.getName() + "' transaction");
                     try {
-                        context.getTransactionManager().rollback(null);
+                        session.getTransactionManager().rollback(null);
                     } catch (DBCException e) {
                         throw new InvocationTargetException(e);
                     } finally {
-                        context.close();
+                        session.close();
                     }
                 }
             });

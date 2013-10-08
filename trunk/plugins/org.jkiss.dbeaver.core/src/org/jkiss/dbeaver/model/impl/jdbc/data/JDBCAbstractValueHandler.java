@@ -34,12 +34,12 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -56,12 +56,12 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
 
     @Override
-    public final Object fetchValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject type, int index)
+    public final Object fetchValueObject(DBCSession session, DBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException
     {
         try {
             if (resultSet instanceof JDBCResultSet) {
-                return fetchColumnValue(context, (JDBCResultSet) resultSet, type, index + 1);
+                return fetchColumnValue(session, (JDBCResultSet) resultSet, type, index + 1);
             } else {
                 return resultSet.getColumnValue(index + 1);
             }
@@ -72,10 +72,10 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public final void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnMetaData,
+    public final void bindValueObject(DBCSession session, DBCStatement statement, DBSTypedObject columnMetaData,
                                       int index, Object value) throws DBCException {
         try {
-            this.bindParameter((JDBCExecutionContext) context, (JDBCPreparedStatement) statement, columnMetaData, index + 1, value);
+            this.bindParameter((JDBCSession) session, (JDBCPreparedStatement) statement, columnMetaData, index + 1, value);
         }
         catch (SQLException e) {
             throw new DBCException(CoreMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
@@ -83,13 +83,13 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public Object getValueFromClipboard(DBCExecutionContext context, DBSTypedObject column, Clipboard clipboard) throws DBCException
+    public Object getValueFromClipboard(DBCSession session, DBSTypedObject column, Clipboard clipboard) throws DBCException
     {
         String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
         if (CommonUtils.isEmpty(strValue)) {
             return null;
         }
-        return getValueFromObject(context, column, strValue, false);
+        return getValueFromObject(session, column, strValue, false);
     }
 
     @Override
@@ -117,11 +117,11 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     {
     }
 
-    protected abstract Object fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type, int index)
+    protected abstract Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException, SQLException;
 
     protected abstract void bindParameter(
-        JDBCExecutionContext context,
+        JDBCSession session,
         JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,

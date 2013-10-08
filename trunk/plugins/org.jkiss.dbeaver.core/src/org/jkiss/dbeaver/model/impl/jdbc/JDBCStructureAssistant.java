@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -74,10 +74,10 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         List<DBSObjectReference> references = new ArrayList<DBSObjectReference>();
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, CoreMessages.model_jdbc_find_objects_by_name);
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_jdbc_find_objects_by_name);
         try {
             for (DBSObjectType type : objectTypes) {
-                findObjectsByMask(context, type, parentObject, objectNameMask, caseSensitive, maxResults - references.size(), references);
+                findObjectsByMask(session, type, parentObject, objectNameMask, caseSensitive, maxResults - references.size(), references);
                 if (references.size() >= maxResults) {
                     break;
                 }
@@ -87,13 +87,13 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
         return references;
     }
 
     protected abstract void findObjectsByMask(
-        JDBCExecutionContext context,
+        JDBCSession session,
         DBSObjectType objectType,
         DBSObject parentObject,
         String objectNameMask,

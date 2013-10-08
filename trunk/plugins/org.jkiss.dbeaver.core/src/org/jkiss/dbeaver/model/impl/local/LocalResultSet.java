@@ -31,22 +31,22 @@ import java.util.List;
  */
 public class LocalResultSet implements DBCResultSet
 {
-    private final DBCExecutionContext context;
+    private final DBCSession session;
     private final DBCStatement statement;
     private final List<DBCAttributeMetaData> metaColumns = new ArrayList<DBCAttributeMetaData>();
     private final List<Object[]> rows = new ArrayList<Object[]>();
     private int curPosition = -1;
 
-    public LocalResultSet(DBCExecutionContext context, DBCStatement statement)
+    public LocalResultSet(DBCSession session, DBCStatement statement)
     {
-        this.context = context;
+        this.session = session;
         this.statement = statement;
     }
 
     @Override
-    public DBCExecutionContext getContext()
+    public DBCSession getSession()
     {
-        return context;
+        return session;
     }
 
     @Override

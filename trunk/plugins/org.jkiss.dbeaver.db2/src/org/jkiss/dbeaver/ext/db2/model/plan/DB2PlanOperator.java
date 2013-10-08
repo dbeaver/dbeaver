@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -73,7 +73,7 @@ public class DB2PlanOperator extends DB2PlanNode {
     // Constructors
     // ------------
 
-    public DB2PlanOperator(JDBCExecutionContext context, JDBCResultSet dbResult, DB2PlanStatement db2Statement,
+    public DB2PlanOperator(JDBCSession session, JDBCResultSet dbResult, DB2PlanStatement db2Statement,
         String planTableSchema) throws SQLException
     {
 
@@ -87,7 +87,7 @@ public class DB2PlanOperator extends DB2PlanNode {
         this.nodename = String.valueOf(operatorId);
         this.displayName = nodename + " - " + operatorType;
 
-        loadChildren(context);
+        loadChildren(session);
     }
 
     @Override
@@ -152,11 +152,11 @@ public class DB2PlanOperator extends DB2PlanNode {
     // -------------
     // Load children
     // -------------
-    private void loadChildren(JDBCExecutionContext context) throws SQLException
+    private void loadChildren(JDBCSession session) throws SQLException
     {
 
         listArguments = new ArrayList<DB2PlanOperatorArgument>();
-        JDBCPreparedStatement sqlStmt = context.prepareStatement(String
+        JDBCPreparedStatement sqlStmt = session.prepareStatement(String
             .format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT"));
         try {
             setQueryParameters(sqlStmt);
@@ -173,7 +173,7 @@ public class DB2PlanOperator extends DB2PlanNode {
         }
 
         listPredicates = new ArrayList<DB2PlanOperatorPredicate>();
-        sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE"));
+        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE"));
         try {
             setQueryParameters(sqlStmt);
             JDBCResultSet res = sqlStmt.executeQuery();

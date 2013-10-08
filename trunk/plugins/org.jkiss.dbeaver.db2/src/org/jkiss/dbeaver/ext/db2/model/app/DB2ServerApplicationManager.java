@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -51,22 +51,22 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
     }
 
     @Override
-    public Collection<DB2ServerApplication> getSessions(DBCExecutionContext context, Map<String, Object> options)
+    public Collection<DB2ServerApplication> getSessions(DBCSession session, Map<String, Object> options)
         throws DBException
     {
         try {
-            return DB2Utils.readApplications(context.getProgressMonitor(), (JDBCExecutionContext) context);
+            return DB2Utils.readApplications(session.getProgressMonitor(), (JDBCSession) session);
         } catch (SQLException e) {
             throw new DBException(e);
         }
     }
 
     @Override
-    public void alterSession(DBCExecutionContext context, DB2ServerApplication session, Map<String, Object> options)
+    public void alterSession(DBCSession session, DB2ServerApplication sessionType, Map<String, Object> options)
         throws DBException
     {
         try {
-            DB2Utils.forceApplication(context.getProgressMonitor(), dataSource, session.getAgentId());
+            DB2Utils.forceApplication(session.getProgressMonitor(), dataSource, sessionType.getAgentId());
         } catch (SQLException e) {
             throw new DBException(e);
         }

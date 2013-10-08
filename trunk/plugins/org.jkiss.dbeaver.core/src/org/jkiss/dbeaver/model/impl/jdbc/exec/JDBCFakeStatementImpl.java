@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 import java.sql.SQLException;
 
@@ -33,7 +33,7 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
     private JDBCResultSetImpl resultSet;
 
     JDBCFakeStatementImpl(
-        JDBCExecutionContext connection,
+        JDBCSession connection,
         JDBCResultSetImpl resultSet,
         String description)
     {

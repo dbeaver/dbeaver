@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.wmi.model.WMINamespace;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 
 /**
@@ -40,7 +40,7 @@ public class WMINamespaceManager extends AbstractObjectManager<WMINamespace> imp
     }
 
     @Override
-    public void executePersistAction(DBCExecutionContext context, DBECommand<WMINamespace> wmiNamespaceDBECommand, IDatabasePersistAction action) throws DBException
+    public void executePersistAction(DBCSession session, DBECommand<WMINamespace> wmiNamespaceDBECommand, IDatabasePersistAction action) throws DBException
     {
 
     }

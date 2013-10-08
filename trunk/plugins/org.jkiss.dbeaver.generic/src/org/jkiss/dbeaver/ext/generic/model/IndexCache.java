@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
@@ -51,11 +51,11 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
     {
         try {
-            return context.getMetaData().getIndexInfo(
+            return session.getMetaData().getIndexInfo(
                     owner.getCatalog() == null ? null : owner.getCatalog().getName(),
                     owner.getSchema() == null ? null : owner.getSchema().getName(),
                     // oracle fails if unquoted complex identifier specified
@@ -76,7 +76,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     }
 
     @Override
-    protected GenericTableIndex fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String indexName, ResultSet dbResult)
+    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String indexName, ResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = GenericUtils.safeGetBoolean(indexObject, dbResult, JDBCConstants.NON_UNIQUE);
@@ -105,7 +105,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
     @Override
     protected GenericTableIndexColumn fetchObjectRow(
-        JDBCExecutionContext context,
+        JDBCSession session,
         GenericTable parent, GenericTableIndex object, ResultSet dbResult)
         throws SQLException, DBException
     {
@@ -113,7 +113,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         String columnName = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.COLUMN_NAME);
         String ascOrDesc = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.ASC_OR_DESC);
 
-        GenericTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
+        GenericTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
         if (tableColumn == null) {
             log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
             return null;
