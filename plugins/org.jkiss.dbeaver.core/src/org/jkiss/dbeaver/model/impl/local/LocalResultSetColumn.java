@@ -69,18 +69,6 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     }
 
     @Override
-    public String getCatalogName()
-    {
-        return null;
-    }
-
-    @Override
-    public String getSchemaName()
-    {
-        return null;
-    }
-
-    @Override
     public boolean isReadOnly()
     {
         return true;

@@ -31,8 +31,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
@@ -57,8 +55,6 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private String name;
     private int precision;
     private int scale;
-    private String catalogName;
-    private String schemaName;
     private String tableName;
     private int typeID;
     private String typeName;
@@ -83,6 +79,8 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
         this.label = resultSetMeta.getColumnLabel(index);
         this.name = resultSetMeta.getColumnName(index);
+        this.readOnly = resultSetMeta.isReadOnly(index);
+        this.writable = resultSetMeta.isWritable(index);
 
         String fetchedTableName = null;
         try {
@@ -102,6 +100,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         } catch (SQLException e) {
             log.debug(e);
         }
+
         // Check for tables name
         // Sometimes [DBSPEC: Informix] it contains schema/catalog name inside
         if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(fetchedCatalogName) && CommonUtils.isEmpty(fetchedSchemaName)) {
@@ -126,6 +125,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
 
         if (ownerEntity != null) {
+            this.tableName = ownerEntity.getName();
             try {
                 this.tableColumn = ownerEntity.getAttribute(resultSetMeta.getResultSet().getSession().getProgressMonitor(), name);
             }
@@ -138,37 +138,19 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             catch (DBException e) {
                 log.warn(e);
             }
+        } else {
+            this.tableName = fetchedTableName;
         }
 
-        if (this.tableColumn != null) {
-            this.notNull = this.tableColumn.isRequired();
-            this.displaySize = this.tableColumn.getMaxLength();
-            DBSObject tableParent = ownerEntity.getParentObject();
-            DBSObject tableGrandParent = tableParent == null ? null : tableParent.getParentObject();
-            this.catalogName = tableParent instanceof DBSCatalog ? tableParent.getName() : tableGrandParent instanceof DBSCatalog ? tableGrandParent.getName() : null;
-            this.schemaName = tableParent instanceof DBSSchema ? tableParent.getName() : null;
-            this.tableName = fetchedTableName;
-            this.typeID = this.tableColumn.getTypeID();
-            this.typeName = this.tableColumn.getTypeName();
-            this.readOnly = false;
-            this.writable = true;
-            this.sequence = this.tableColumn.isSequence();
-            this.precision = this.tableColumn.getPrecision();
-            this.scale = this.tableColumn.getScale();
-        } else {
+        if (this.tableColumn == null) {
             this.notNull = resultSetMeta.isNullable(index) == ResultSetMetaData.columnNoNulls;
             try {
                 this.displaySize = resultSetMeta.getColumnDisplaySize(index);
             } catch (SQLException e) {
                 this.displaySize = 0;
             }
-            this.catalogName = fetchedCatalogName;
-            this.schemaName = fetchedSchemaName;
-            this.tableName = fetchedTableName;
             this.typeID = resultSetMeta.getColumnType(index);
             this.typeName = resultSetMeta.getColumnTypeName(index);
-            this.readOnly = resultSetMeta.isReadOnly(index);
-            this.writable = resultSetMeta.isWritable(index);
             this.sequence = resultSetMeta.isAutoIncrement(index);
 
             try {
@@ -187,7 +169,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         if (this.tableMetaData == null) {
             try {
                 if (!CommonUtils.isEmpty(this.tableName)) {
-                    this.tableMetaData = resultSetMeta.getTableMetaData(catalogName, schemaName, tableName);
+                    this.tableMetaData = resultSetMeta.getTableMetaData(fetchedCatalogName, fetchedSchemaName, tableName);
                 }
             }
             catch (DBException e) {
@@ -195,7 +177,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             }
         }
         if (this.tableMetaData != null) {
-            this.tableMetaData.addColumn(this);
+            this.tableMetaData.addAttribute(this);
         }
 
         dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSource().getContext().getDataSource(), typeName, typeID);
@@ -233,12 +215,12 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     @Override
     public boolean isRequired()
     {
-        return notNull;
+        return tableColumn == null ? notNull : tableColumn.isRequired();
     }
 
     @Override
     public boolean isSequence() {
-        return sequence;
+        return tableColumn == null ? sequence : tableColumn.isSequence();
     }
 
     @Override
@@ -250,52 +232,40 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     @Override
     public long getMaxLength()
     {
-        return displaySize;
+        return tableColumn == null ? displaySize : tableColumn.getMaxLength();
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 21)
     @Override
     public int getPrecision()
     {
-        return precision;
+        return tableColumn == null ? precision : tableColumn.getPrecision();
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 22)
     @Override
     public int getScale()
     {
-        return scale;
-    }
-
-    @Override
-    public String getCatalogName()
-    {
-        return catalogName;
-    }
-
-    @Override
-    public String getSchemaName()
-    {
-        return schemaName;
+        return tableColumn == null ? scale : tableColumn.getScale();
     }
 
     @Override
     public int getTypeID()
     {
-        return typeID;
+        return tableColumn == null ? typeID : tableColumn.getTypeID();
     }
 
     @Override
     public DBPDataKind getDataKind()
     {
-        return dataKind;
+        return tableColumn == null ? dataKind : tableColumn.getDataKind();
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 4)
     @Override
     public String getTypeName()
     {
-        return typeName;
+        return tableColumn == null ? typeName : tableColumn.getTypeName();
     }
 
     @Override
@@ -399,12 +369,6 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     public String toString()
     {
         StringBuilder db = new StringBuilder();
-        if (!CommonUtils.isEmpty(catalogName)) {
-            db.append(catalogName).append('.');
-        }
-        if (!CommonUtils.isEmpty(schemaName)) {
-            db.append(schemaName).append('.');
-        }
         if (!CommonUtils.isEmpty(tableName)) {
             db.append(tableName).append('.');
         }
@@ -426,18 +390,16 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
         JDBCColumnMetaData col = (JDBCColumnMetaData)obj;
         return
-            index == col.index &&
-            notNull == col.notNull &&
-            displaySize == col.displaySize &&
-            CommonUtils.equalObjects(label, col.label) &&
-            CommonUtils.equalObjects(name, col.name) &&
-            precision == col.precision &&
-            scale == col.scale &&
-            CommonUtils.equalObjects(catalogName, col.catalogName) &&
-            CommonUtils.equalObjects(schemaName, col.schemaName) &&
-            CommonUtils.equalObjects(tableName, col.tableName) &&
-            typeID == col.typeID &&
-            CommonUtils.equalObjects(typeName, col.typeName) &&
+            getIndex() == col.getIndex() &&
+            isRequired() == col.isRequired() &&
+            getMaxLength() == col.getMaxLength() &&
+            CommonUtils.equalObjects(getLabel(), col.getLabel()) &&
+            CommonUtils.equalObjects(getName(), col.getName()) &&
+            getPrecision() == col.getPrecision() &&
+            getScale() == col.getScale() &&
+            CommonUtils.equalObjects(getEntityName(), col.getEntityName()) &&
+            getTypeID() == col.getTypeID() &&
+            CommonUtils.equalObjects(getTypeName(), col.getTypeName()) &&
             readOnly == col.readOnly &&
             writable == col.writable;
     }

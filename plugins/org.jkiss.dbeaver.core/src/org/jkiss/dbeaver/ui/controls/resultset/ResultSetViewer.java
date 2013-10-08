@@ -2263,25 +2263,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Override
         public String getColumnId() {
-            String dsName = getDataSource().getContainer().getName();
-            String catalogName = getAttribute().getCatalogName();
-            String schemaName = getAttribute().getSchemaName();
-            String tableName = getAttribute().getEntityName();
-            String columnName = getAttribute().getName();
-            StringBuilder columnId = new StringBuilder(CommonUtils.escapeIdentifier(dsName));
-            if (!CommonUtils.isEmpty(catalogName)) {
-                columnId.append('.').append(CommonUtils.escapeIdentifier(catalogName));
-            }
-            if (!CommonUtils.isEmpty(schemaName)) {
-                columnId.append('.').append(CommonUtils.escapeIdentifier(schemaName));
-            }
-            if (!CommonUtils.isEmpty(tableName)) {
-                columnId.append('.').append(CommonUtils.escapeIdentifier(tableName));
-            }
-            if (!CommonUtils.isEmpty(columnName)) {
-                columnId.append('.').append(CommonUtils.escapeIdentifier(columnName));
-            }
-            return columnId.toString();
+            return DBUtils.getSimpleQualifiedName(
+                getDataSource().getContainer().getName(),
+                getAttribute().getEntityName(),
+                getAttribute().getName());
         }
 
         @Override

@@ -25,9 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
@@ -95,7 +93,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
 
         JDBCTableMetaData tableMetaData = tables.get(fullQualifiedName);
         if (tableMetaData == null) {
-            tableMetaData = new JDBCTableMetaData(this, null, catalogName, schemaName, tableName, null);
+            tableMetaData = new JDBCTableMetaData(this, null, catalogName, schemaName, tableName);
             tables.put(fullQualifiedName, tableMetaData);
         }
         return tableMetaData;
@@ -104,31 +102,15 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
     public JDBCTableMetaData getTableMetaData(DBSEntity table)
         throws DBException
     {
-        DBSObject schema = table.getParentObject();
-        if (schema instanceof DBSDataSourceContainer) {
-            // It's not a schema
-            schema = null;
-        }
-        DBSObject catalog = schema == null ? null : schema.getParentObject();
-        if (catalog instanceof DBSDataSourceContainer) {
-            // It's not a catalog
-            catalog = null;
-        }
-
-        StringBuilder fullName = new StringBuilder(64);
-        if (catalog != null) fullName.append(catalog.getName()).append("|");
-        if (schema != null) fullName.append(schema.getName()).append("|");
-        fullName.append(table.getName());
-        String fullQualifiedName = fullName.toString();
+        String fullQualifiedName = DBUtils.getFullQualifiedName(table.getDataSource(), table);
 
         JDBCTableMetaData tableMetaData = tables.get(fullQualifiedName);
         if (tableMetaData == null) {
             tableMetaData = new JDBCTableMetaData(
                 this,
                 table,
-                catalog == null ? null : catalog.getName(),
-                schema == null ? null : schema.getName(),
-                table.getName(),
+                null,
+                null,
                 null);
             tables.put(fullQualifiedName, tableMetaData);
         }
