@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -160,26 +162,31 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         + provider));
                 } else {
                     monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
-                    if (dataSource instanceof JDBCDataSource) {
-                        try {
-                            Connection connection = ((JDBCDataSource) dataSource).getConnection().getConnection();
-                            DatabaseMetaData metaData = connection.getMetaData();
-                            productName = metaData.getDatabaseProductName();
-                            productVersion = metaData.getDatabaseProductVersion();
-                            driverName = metaData.getDriverName();
-                            driverVersion = metaData.getDriverVersion();
-                        } catch (Exception e) {
-                            log.error("Can't obtain connection metadata", e);
-                        }
-                    }
+                    DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection");
                     try {
-                        monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
-                        container.disconnect(monitor, false);
-                    } catch (DBException e) {
-                        // ignore it
-                        log.error(e);
+                        if (session instanceof JDBCExecutionContext) {
+                            try {
+                                Connection connection = ((JDBCExecutionContext) session).getConnection().getConnection();
+                                DatabaseMetaData metaData = connection.getMetaData();
+                                productName = metaData.getDatabaseProductName();
+                                productVersion = metaData.getDatabaseProductVersion();
+                                driverName = metaData.getDriverName();
+                                driverVersion = metaData.getDriverVersion();
+                            } catch (Exception e) {
+                                log.error("Can't obtain connection metadata", e);
+                            }
+                        }
+                        try {
+                            monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
+                            container.disconnect(monitor, false);
+                        } catch (DBException e) {
+                            // ignore it
+                            log.error(e);
+                        } finally {
+                            monitor.done();
+                        }
                     } finally {
-                        monitor.done();
+                        session.close();
                     }
                 }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);

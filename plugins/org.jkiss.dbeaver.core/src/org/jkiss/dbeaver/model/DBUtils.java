@@ -167,7 +167,7 @@ public final class DBUtils {
 
     public static String getSimpleQualifiedName(Object... names)
     {
-        StringBuilder name = new StringBuilder();
+        StringBuilder name = new StringBuilder(names.length * 16);
         for (Object namePart : names) {
             if (namePart == null) {
                 continue;
