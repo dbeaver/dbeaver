@@ -205,9 +205,9 @@ public class MSSQLTable extends MSSQLTableBase
         if (!isPersisted()) {
             return "";
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
         try {
-            PreparedStatement dbStat = context.prepareStatement(
+            PreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
             try {
                 ResultSet dbResult = dbStat.executeQuery();
@@ -245,7 +245,7 @@ public class MSSQLTable extends MSSQLTableBase
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -269,9 +269,9 @@ public class MSSQLTable extends MSSQLTableBase
             additionalInfo.loaded = true;
             return;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'");
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
@@ -314,7 +314,7 @@ public class MSSQLTable extends MSSQLTableBase
         catch (SQLException e) {
             throw new DBCException(e);
         } finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -325,11 +325,11 @@ public class MSSQLTable extends MSSQLTableBase
         if (!isPersisted()) {
             return fkList;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
             Map<String, MSSQLTableForeignKey> fkMap = new HashMap<String, MSSQLTableForeignKey>();
             Map<String, MSSQLTableConstraint> pkMap = new HashMap<String, MSSQLTableConstraint>();
-            JDBCDatabaseMetaData metaData = context.getMetaData();
+            JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
             if (references) {
@@ -446,16 +446,16 @@ public class MSSQLTable extends MSSQLTableBase
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
     class PartitionCache extends JDBCObjectCache<MSSQLTable, MSSQLPartition> {
         Map<String, MSSQLPartition> partitionMap = new HashMap<String, MSSQLPartition>();
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MSSQLTable mySQLTable) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MSSQLTable mySQLTable) throws SQLException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MSSQLConstants.META_TABLE_PARTITIONS +
                 " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? " +
                 " ORDER BY PARTITION_ORDINAL_POSITION,SUBPARTITION_ORDINAL_POSITION");
@@ -465,7 +465,7 @@ public class MSSQLTable extends MSSQLTableBase
         }
 
         @Override
-        protected MSSQLPartition fetchObject(JDBCExecutionContext context, MSSQLTable table, ResultSet dbResult) throws SQLException, DBException
+        protected MSSQLPartition fetchObject(JDBCSession session, MSSQLTable table, ResultSet dbResult) throws SQLException, DBException
         {
             String partitionName = JDBCUtils.safeGetString(dbResult, MSSQLConstants.COL_PARTITION_NAME);
             String subPartitionName = JDBCUtils.safeGetString(dbResult, MSSQLConstants.COL_SUBPARTITION_NAME);
