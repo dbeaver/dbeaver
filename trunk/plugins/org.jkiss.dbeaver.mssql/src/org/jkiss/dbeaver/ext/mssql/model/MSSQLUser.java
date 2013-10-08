@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -166,9 +166,9 @@ public class MSSQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
             return this.grants;
         }
 
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read catalog privileges");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read catalog privileges");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("SHOW GRANTS FOR " + getFullName());
+            JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + getFullName());
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -228,7 +228,7 @@ public class MSSQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
             throw new DBException(e);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 

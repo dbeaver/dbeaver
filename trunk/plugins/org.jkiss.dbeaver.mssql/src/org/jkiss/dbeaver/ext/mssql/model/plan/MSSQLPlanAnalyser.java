@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.ext.mssql.model.plan;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLDataSource;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -60,14 +60,14 @@ public class MSSQLPlanAnalyser implements DBCPlan {
         return rootNodes;
     }
 
-    public void explain(DBCExecutionContext context)
+    public void explain(DBCSession session)
         throws DBCException
     {
-        String plainQuery = SQLUtils.stripComments(context.getDataSource(), query).toUpperCase();
+        String plainQuery = SQLUtils.stripComments(session.getDataSource(), query).toUpperCase();
         if (!plainQuery.startsWith("SELECT")) {
             throw new DBCException("Only SELECT statements could produce execution plan");
         }
-        JDBCExecutionContext connection = (JDBCExecutionContext)context;
+        JDBCSession connection = (JDBCSession)session;
         try {
             JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN EXTENDED " + query);
             try {
