@@ -44,8 +44,8 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -125,7 +125,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private List<DB2XMLString> listXMLStrings;
 
     private String activeSchemaName;
-    private Boolean isAuthorisedForAPPLICATIONS;
+    private Boolean isAuthorisedForApplications;
 
     private String schemaForExplainTables;
 
@@ -157,11 +157,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
                 this.activeSchemaName = this.activeSchemaName.trim();
             }
 
-            this.isAuthorisedForAPPLICATIONS = DB2Utils.userIsAuthorisedForAPPLICATIONS(session, activeSchemaName);
-
-            listDBMParameters = DB2Utils.readDBMCfg(monitor, session);
-            listDBParameters = DB2Utils.readDBCfg(monitor, session);
-            listXMLStrings = DB2Utils.readXMLStrings(monitor, session);
+            this.isAuthorisedForApplications = DB2Utils.userIsAuthorisedForAPPLICATIONS(session, activeSchemaName);
 
         } catch (SQLException e) {
             LOG.warn(e);
@@ -281,9 +277,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
     }
 
-    public boolean isAuthorisedForAPPLICATIONS()
+    public boolean isAuthorisedForApplications()
     {
-        return isAuthorisedForAPPLICATIONS;
+        return isAuthorisedForApplications;
     }
 
     // --------------------------
@@ -584,16 +580,46 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     public List<DB2Parameter> getDbParameters(DBRProgressMonitor monitor) throws DBException
     {
+        if (listDBParameters == null) {
+            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters");
+            try {
+                listDBParameters = DB2Utils.readDBCfg(monitor, session);
+            } catch (SQLException e) {
+                LOG.warn(e);
+            } finally {
+                session.close();
+            }
+        }
         return listDBParameters;
     }
 
     public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException
     {
+        if (listDBMParameters == null) {
+            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters");
+            try {
+                listDBMParameters = DB2Utils.readDBMCfg(monitor, session);
+            } catch (SQLException e) {
+                LOG.warn(e);
+            } finally {
+                session.close();
+            }
+        }
         return listDBMParameters;
     }
 
     public List<DB2XMLString> getXmlStrings(DBRProgressMonitor monitor) throws DBException
     {
+        if (listXMLStrings == null) {
+            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters");
+            try {
+                listXMLStrings = DB2Utils.readXMLStrings(monitor, session);
+            } catch (SQLException e) {
+                LOG.warn(e);
+            } finally {
+                session.close();
+            }
+        }
         return listXMLStrings;
     }
 

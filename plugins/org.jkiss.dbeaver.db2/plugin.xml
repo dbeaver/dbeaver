@@ -276,7 +276,7 @@
                             icon="#admin" 
                             description="Server application manager" 
                             editor="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
-                            visibleIf="object.dataSource.authorisedForAPPLICATIONS"/>
+                            visibleIf="object.dataSource.authorisedForApplications"/>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" label="%tree.dbparameters.node.name" icon="#info" description="Database Configuration">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="#info" navigable="false" virtual="true"/>
                     </folder>

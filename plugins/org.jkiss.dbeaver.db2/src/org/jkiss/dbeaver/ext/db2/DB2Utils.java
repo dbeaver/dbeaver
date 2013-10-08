@@ -43,7 +43,10 @@ import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -60,6 +63,8 @@ import java.util.List;
 public class DB2Utils {
 
     private static final Log LOG = LogFactory.getLog(DB2Utils.class);
+
+    private static final String LINE_SEP = "\n";
 
     // TODO DF: many things in this class could probably be factorized or genreric-ified
 
@@ -100,12 +105,9 @@ public class DB2Utils {
     private static final String SEL_XMLSTRINGS = "SELECT * FROM SYSCAT.XMLSTRINGS ORDER BY STRINGID WITH UR";
 
     // APPLICATIONS
-    private static final String AUT_APP;
     private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
     private static final String FORCE_APP = "CALL SYSPROC.ADMIN_CMD( 'force application (%d)')";
-
-    private static final String LINE_SEP = "\n";
-
+    private static final String AUT_APP;
     static {
         StringBuilder sb = new StringBuilder(512);
         sb.append("SELECT 1");
@@ -258,8 +260,7 @@ public class DB2Utils {
     // EXPLAIN
     // ------------------------
 
-    public static List<String> getListOfUsableTsForExplain(DBRProgressMonitor monitor, JDBCSession session)
-        throws SQLException
+    public static List<String> getListOfUsableTsForExplain(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
         LOG.debug("Get List Of Usable Tablespaces For Explain Tables");
 
@@ -373,8 +374,7 @@ public class DB2Utils {
         }
     }
 
-    public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCSession session)
-        throws SQLException
+    public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
         LOG.debug("readApplications");
 
