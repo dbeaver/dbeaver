@@ -46,6 +46,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     private JDBCSession session;
     private JDBCStatementImpl statement;
     private ResultSet original;
+    private JDBCResultSetMetaData metaData;
     private long rowsFetched;
     private long maxRows = -1;
     private boolean fake;
@@ -199,7 +200,10 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public JDBCResultSetMetaData getResultSetMetaData()
         throws DBCException
     {
-        return createMetaDataImpl();
+        if (metaData == null) {
+            metaData = createMetaDataImpl();
+        }
+        return metaData;
     }
 
     @Override

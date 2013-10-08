@@ -52,7 +52,8 @@ public class GenericProcedureParameter extends JDBCColumn implements DBSProcedur
             columnSize,
             scale,
             precision,
-            notNull);
+            notNull,
+            false);
         this.remarks = remarks;
         this.procedure = procedure;
         this.parameterType = parameterType;

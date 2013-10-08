@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 import java.util.List;
@@ -27,15 +28,15 @@ import java.util.List;
  */
 public class DBDAttributeValue {
 
-    private final DBSEntityAttribute attribute;
+    private final DBSAttributeBase attribute;
     private final Object value;
 
-    public DBDAttributeValue(DBSEntityAttribute attribute, Object value) {
+    public DBDAttributeValue(DBSAttributeBase attribute, Object value) {
         this.attribute = attribute;
         this.value = value;
     }
 
-    public DBSEntityAttribute getAttribute() {
+    public DBSAttributeBase getAttribute() {
         return attribute;
     }
 
@@ -49,9 +50,9 @@ public class DBDAttributeValue {
         return attribute.getName() + "=" + value;
     }
 
-    public static DBSEntityAttribute[] getAttributes(List<DBDAttributeValue> attrValues)
+    public static DBSAttributeBase[] getAttributes(List<DBDAttributeValue> attrValues)
     {
-        DBSEntityAttribute[] attributes = new DBSEntityAttribute[attrValues.size()];
+        DBSAttributeBase[] attributes = new DBSAttributeBase[attrValues.size()];
         for (int i = 0; i < attributes.length; i++) {
             attributes[i] = attrValues.get(i).attribute;
         }
