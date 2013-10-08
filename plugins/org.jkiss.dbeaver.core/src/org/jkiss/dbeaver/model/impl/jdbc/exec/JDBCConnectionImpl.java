@@ -49,15 +49,11 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     static final Log log = LogFactory.getLog(JDBCConnectionImpl.class);
 
     private final JDBCConnector connector;
-    private boolean isolated;
-    private JDBCConnectionHolder isolatedConnection;
 
-    public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
+    public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         super(monitor, purpose, taskTitle);
         this.connector = connector;
-        this.isolated = isolated;
-        this.isolatedConnection = null;
     }
 
     @Override
@@ -69,11 +65,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @Override
     public Connection getOriginal() throws SQLException
     {
-        if (isolatedConnection != null) {
-            return isolatedConnection.getConnection();
-        } else {
-            return connector.getConnection().getConnection();
-        }
+        return connector.getConnection().getConnection();
     }
 
     private Connection getConnection()
@@ -89,14 +81,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     private JDBCConnectionHolder getConnectionHolder()
         throws SQLException
     {
-        if (isolated) {
-            if (isolatedConnection == null) {
-                isolatedConnection = connector.openIsolatedConnection(getProgressMonitor());
-            }
-            return isolatedConnection;
-        } else {
-            return connector.getConnection();
-        }
+        return connector.getConnection();
     }
 
     @Override
@@ -279,17 +264,6 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
             } catch (Throwable e) {
                 log.debug("Could not check for connection warnings", e);
             }
-        }
-        if (isolatedConnection != null) {
-            try {
-                isolatedConnection.getConnection().close();
-            } catch (SQLException e) {
-                log.error("Error closing isolated connection", e);
-            }
-            isolatedConnection = null;
-        } else {
-            // do nothing
-            // closing of context doesn't close real connection
         }
 
         super.close();

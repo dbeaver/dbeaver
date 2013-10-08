@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
@@ -90,11 +91,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
             // some constant instead of table name
             return null;
         }
-        StringBuilder fullName = new StringBuilder(tableName.length() + 32);
-        if (!CommonUtils.isEmpty(catalogName)) fullName.append(catalogName).append("|");
-        if (!CommonUtils.isEmpty(schemaName)) fullName.append(schemaName).append("|");
-        fullName.append(tableName);
-        String fullQualifiedName = fullName.toString();
+        String fullQualifiedName = DBUtils.getSimpleQualifiedName(catalogName, schemaName, tableName);
 
         JDBCTableMetaData tableMetaData = tables.get(fullQualifiedName);
         if (tableMetaData == null) {

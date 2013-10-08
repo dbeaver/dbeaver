@@ -64,9 +64,9 @@ public class CassandraDataSource extends JDBCDataSource
     }
 
     @Override
-    protected JDBCConnectionImpl createConnection(DBRProgressMonitor monitor, JDBCExecutionContext context, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
+    protected JDBCConnectionImpl createConnection(DBRProgressMonitor monitor, JDBCExecutionContext context, DBCExecutionPurpose purpose, String taskTitle)
     {
-        return new CasConnection(this, monitor, purpose, taskTitle, isolated);
+        return new CasConnection(context, monitor, purpose, taskTitle);
     }
 
     public Collection<CassandraKeyspace> getKeyspaces()

@@ -163,6 +163,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                                     if (index.isUnique()) {
                                         identifiers.add(
                                             new JDBCTableIdentifier(monitor, index, this));
+                                        break;
                                     }
                                 }
                             }

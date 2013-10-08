@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
@@ -49,7 +49,6 @@ public abstract class JDBCDataSource
         DBPDataSource,
         DBPDataTypeProvider,
         DBPRefreshableObject,
-        JDBCConnector,
         DBSObject,
         DBSObjectContainer,
         DBCQueryTransformProvider
@@ -57,14 +56,19 @@ public abstract class JDBCDataSource
     private final DBSDataSourceContainer container;
 
     private final JDBCExecutionContext executionContext;
+    private final JDBCExecutionContext metaContext;
     protected volatile DBPDataSourceInfo dataSourceInfo;
 
     public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
-        this.executionContext = new JDBCExecutionContext(this);
-        this.executionContext.connect(monitor);
+        this.executionContext = new JDBCExecutionContext(this, monitor);
+        if (container.getPreferenceStore().getBoolean(PrefConstants.META_SEPARATE_CONNECTION)) {
+            this.metaContext = new JDBCExecutionContext(this, monitor);
+        } else {
+            this.metaContext = null;
+        }
     }
 
     protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor)
@@ -172,46 +176,24 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public JDBCConnectionHolder getConnection()
-    {
-        return executionContext.getConnection();
-    }
-
-    @Override
-    public JDBCConnectionHolder openIsolatedConnection(DBRProgressMonitor monitor) throws SQLException {
-        try {
-            return openConnection(monitor);
-        } catch (DBException e) {
-            if (e.getCause() instanceof SQLException) {
-                throw (SQLException)e.getCause();
-            } else {
-                throw new SQLException("Could not open isolated connection", e);
-            }
-        }
-    }
-
-    @Override
     public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
-        return createConnection(monitor, executionContext, purpose, taskTitle, false);
+        return createConnection(monitor, executionContext, purpose, taskTitle);
     }
 
     @Override
     public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor) throws DBCException
     {
-        JDBCExecutionContext context = new JDBCExecutionContext(this);
-        context.connect(monitor);
-        return context;
+        return new JDBCExecutionContext(this, monitor);
     }
 
     protected JDBCConnectionImpl createConnection(
         DBRProgressMonitor monitor,
         JDBCExecutionContext context,
         DBCExecutionPurpose purpose,
-        String taskTitle,
-        boolean isolated)
+        String taskTitle)
     {
-        return new JDBCConnectionImpl(context, monitor, purpose, taskTitle, isolated);
+        return new JDBCConnectionImpl(context, monitor, purpose, taskTitle);
     }
 
     @Override
@@ -229,7 +211,7 @@ public abstract class JDBCDataSource
     @Override
     public boolean isConnected()
     {
-        return executionContext != null;
+        return executionContext.isConnected();
     }
 
     @Override
@@ -237,6 +219,9 @@ public abstract class JDBCDataSource
         throws DBException
     {
         this.executionContext.invalidateContext(monitor);
+        if (metaContext != null) {
+            metaContext.invalidateContext(monitor);
+        }
     }
 
     @Override
@@ -261,6 +246,9 @@ public abstract class JDBCDataSource
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
             executionContext.close();
+            if (metaContext != null) {
+                metaContext.close();
+            }
         }
     }
 
