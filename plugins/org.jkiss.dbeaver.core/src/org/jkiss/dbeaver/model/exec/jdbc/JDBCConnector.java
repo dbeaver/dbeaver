@@ -31,7 +31,7 @@ public interface JDBCConnector
 {
     DBPDataSource getDataSource();
 
-    JDBCConnectionHolder getConnection();
+    JDBCConnectionHolder getConnection() throws SQLException;
 
     JDBCConnectionHolder openIsolatedConnection(DBRProgressMonitor monitor) throws SQLException;
 
