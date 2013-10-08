@@ -43,7 +43,7 @@ public class InvalidateJob extends DataSourceJob
         try {
             // Close datasource
             monitor.subTask("Invalidate datasource");
-            getDataSource().invalidateConnection(monitor);
+            getDataSource().invalidateContext(monitor);
 
             return Status.OK_STATUS;
         }

@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime.qm.meta;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -32,7 +32,7 @@ import java.lang.ref.SoftReference;
 public class QMMSessionInfo extends QMMObject {
 
     private final String containerId;
-    private SoftReference<DBPDataSource> reference;
+    private SoftReference<DBCExecutionContext> reference;
     private SoftReference<DBSDataSourceContainer> container;
     private boolean transactional;
 
@@ -41,11 +41,11 @@ public class QMMSessionInfo extends QMMObject {
     private QMMStatementExecuteInfo executionStack;
     private QMMTransactionInfo transaction;
 
-    QMMSessionInfo(DBPDataSource reference, boolean transactional, QMMSessionInfo previous)
+    QMMSessionInfo(DBCExecutionContext context, boolean transactional, QMMSessionInfo previous)
     {
-        this.containerId = reference.getContainer().getId();
-        this.reference = new SoftReference<DBPDataSource>(reference);
-        this.container = new SoftReference<DBSDataSourceContainer>(reference.getContainer());
+        this.containerId = context.getDataSource().getContainer().getId();
+        this.reference = new SoftReference<DBCExecutionContext>(context);
+        this.container = new SoftReference<DBSDataSourceContainer>(context.getDataSource().getContainer());
         this.previous = previous;
         this.transactional = transactional;
     }
@@ -210,7 +210,7 @@ public class QMMSessionInfo extends QMMObject {
         return container.get();
     }
 
-    public DBPDataSource getReference()
+    public DBCExecutionContext getReference()
     {
         return reference == null ? null : reference.get();
     }

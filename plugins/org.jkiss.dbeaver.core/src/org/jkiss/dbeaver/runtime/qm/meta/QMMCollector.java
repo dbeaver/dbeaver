@@ -22,11 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
@@ -121,11 +117,11 @@ public class QMMCollector extends DefaultExecutionHandler {
         return events;
     }
 
-    public QMMSessionInfo getSessionInfo(DBPDataSource dataSource)
+    public QMMSessionInfo getSessionInfo(DBCExecutionContext context)
     {
-        QMMSessionInfo sessionInfo = sessionMap.get(dataSource.getContainer().getId());
+        QMMSessionInfo sessionInfo = sessionMap.get(context.getDataSource().getContainer().getId());
         if (sessionInfo == null) {
-            log.warn("Could not find sessionInfo meta information: " + dataSource.getContainer().getId());
+            log.warn("Could not find sessionInfo meta information: " + context.getDataSource().getContainer().getId());
         }
         return sessionInfo;
     }
@@ -138,11 +134,11 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public synchronized void handleSessionStart(DBPDataSource dataSource, boolean transactional)
+    public synchronized void handleContextOpen(DBCExecutionContext context, boolean transactional)
     {
-        String containerId = dataSource.getContainer().getId();
+        String containerId = context.getDataSource().getContainer().getId();
         QMMSessionInfo session = new QMMSessionInfo(
-            dataSource,
+            context,
             transactional,
             sessionMap.get(containerId));
         sessionMap.put(containerId, session);
@@ -155,9 +151,9 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public synchronized void handleSessionEnd(DBPDataSource dataSource)
+    public synchronized void handleContextClose(DBCExecutionContext context)
     {
-        QMMSessionInfo session = getSessionInfo(dataSource);
+        QMMSessionInfo session = getSessionInfo(context);
         if (session != null) {
             session.close();
             fireMetaEvent(session, QMMetaEvent.Action.END);

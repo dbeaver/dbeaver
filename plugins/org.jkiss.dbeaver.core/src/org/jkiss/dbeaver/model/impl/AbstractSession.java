@@ -47,7 +47,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
             monitor.startBlock(this, taskTitle);
         }
 
-        QMUtils.getDefaultHandler().handleContextOpen(this);
+        QMUtils.getDefaultHandler().handleSessionOpen(this);
     }
 
     @Override
@@ -104,7 +104,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     @Override
     public void close()
     {
-        QMUtils.getDefaultHandler().handleContextClose(this);
+        QMUtils.getDefaultHandler().handleSessionClose(this);
     }
 
     protected class AbstractTransactionManager implements DBCTransactionManager {

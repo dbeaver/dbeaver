@@ -18,12 +18,8 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 
 /**
@@ -33,25 +29,25 @@ import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
     @Override
-    public void handleSessionStart(DBPDataSource dataSource, boolean transactional)
+    public void handleContextOpen(DBCExecutionContext context, boolean transactional)
     {
 
     }
 
     @Override
-    public void handleSessionEnd(DBPDataSource dataSource)
+    public void handleContextClose(DBCExecutionContext context)
     {
 
     }
 
     @Override
-    public void handleContextOpen(DBCSession session)
+    public void handleSessionOpen(DBCSession session)
     {
 
     }
 
     @Override
-    public void handleContextClose(DBCSession session)
+    public void handleSessionClose(DBCSession session)
     {
 
     }
