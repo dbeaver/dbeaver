@@ -19,9 +19,12 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+
+import java.util.List;
 
 /**
  * Result set table metadata
@@ -42,20 +45,9 @@ public interface DBCEntityMetaData {
      */
     String getEntityName();
 
-    /**
-     * Table alias
-     * @return table alias in query
-     */
-    String getEntityAlias();
+    List<? extends DBCAttributeMetaData> getAttributes();
 
-    /**
-     * Checks table is identified.
-     * Table is identified if resultset contains at least one set of this table columns which will unique
-     * identify table row
-     * @return true if this table has at least one unique identifier in the whole resultset.
-     * @param monitor progress monitor
-     */
-    boolean isIdentified(DBRProgressMonitor monitor)
+    DBCAttributeMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
         throws DBException;
 
     /**
@@ -68,6 +60,4 @@ public interface DBCEntityMetaData {
     DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException;
 
-    DBCAttributeMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
-        throws DBException;
 }

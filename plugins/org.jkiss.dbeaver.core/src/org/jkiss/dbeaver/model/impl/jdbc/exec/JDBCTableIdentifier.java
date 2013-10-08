@@ -53,7 +53,7 @@ public class JDBCTableIdentifier implements DBCEntityIdentifier {
         this.columns = new ArrayList<DBCAttributeMetaData>();
         this.tableColumns = new ArrayList<DBSEntityAttribute>();
         for (DBSEntityAttributeRef cColumn : referrer.getAttributeReferences(monitor)) {
-            DBCAttributeMetaData rsColumn = metaData.getColumnMetaData(monitor, cColumn.getAttribute());
+            DBCAttributeMetaData rsColumn = metaData.getAttributeMetaData(monitor, cColumn.getAttribute());
             if (rsColumn != null) {
                 columns.add(rsColumn);
                 tableColumns.add(cColumn.getAttribute());

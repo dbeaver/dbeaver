@@ -426,23 +426,9 @@ public final class DBUtils {
 
     public static DBDAttributeBinding getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta, int attributeIndex)
     {
-        DBSTypedObject columnMeta = attributeMeta;
-        // We won't query for real column because we don't want make (possibly) another
-        // query in the the middle of currently fetching one.
-        // Maybe sometimes its possible so leave this code commented
-/*
-        try {
-            DBSEntityAttribute entityAttribute = attributeMeta.getAttribute(context.getProgressMonitor());
-            if (entityAttribute != null) {
-                columnMeta = entityAttribute;
-            }
-        } catch (DBException e) {
-            log.warn("Can't obtain entity attribute", e);
-        }
-*/
         return new DBDAttributeBinding(
             attributeMeta,
-            findValueHandler(session, columnMeta),
+            findValueHandler(session, attributeMeta),
             attributeIndex);
     }
 
@@ -482,13 +468,10 @@ public final class DBUtils {
         try {
             for (DBDAttributeBinding column : bindings) {
                 DBCAttributeMetaData meta = column.getMetaAttribute();
-                if (meta.getEntity() == null || !meta.getEntity().isIdentified(monitor)) {
+                if (meta.getEntity() == null) {
                     continue;
                 }
                 DBSEntityAttribute tableColumn = meta.getAttribute(monitor);
-                if (tableColumn == null) {
-                    continue;
-                }
                 // We got table name and column name
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
