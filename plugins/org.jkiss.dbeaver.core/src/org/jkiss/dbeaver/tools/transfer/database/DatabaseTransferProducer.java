@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -71,9 +68,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         String contextTask = CoreMessages.data_transfer_wizard_job_task_export;
         DBPDataSource dataSource = getSourceObject().getDataSource();
         boolean newConnection = settings.isOpenNewConnections();
-        DBCSession session = newConnection ?
-            dataSource.openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
-            dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask);
+        DBCExecutionContext context = newConnection ? dataSource.openIsolatedContext(monitor) : dataSource;
+        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask);
         try {
             if (newConnection) {
                 // Turn off auto-commit in source DB
@@ -128,6 +124,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 }
             }
             session.close();
+            if (newConnection) {
+                context.close();
+            }
         }
     }
 

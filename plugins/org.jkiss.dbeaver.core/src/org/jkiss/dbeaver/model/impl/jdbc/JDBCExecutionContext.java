@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
@@ -46,12 +47,12 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     private volatile JDBCConnectionHolder connectionHolder;
 
     public JDBCExecutionContext(JDBCDataSource dataSource)
-        throws DBException
     {
         this.dataSource = dataSource;
     }
 
-    public void connect(DBRProgressMonitor monitor) throws DBException {
+    public void connect(DBRProgressMonitor monitor) throws DBCException
+    {
         this.connectionHolder = dataSource.openConnection(monitor);
         {
             // Notify QM
@@ -79,7 +80,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     @Override
     public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
-        return dataSource.createConnection(monitor, purpose, taskTitle, false);
+        return dataSource.createConnection(monitor, this, purpose, taskTitle, false);
     }
 
     @Override

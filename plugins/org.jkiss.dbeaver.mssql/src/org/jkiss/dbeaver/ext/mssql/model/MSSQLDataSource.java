@@ -21,10 +21,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProduct;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
 import org.jkiss.dbeaver.ext.mssql.MSSQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mssql.model.plan.MSSQLPlanAnalyser;
@@ -32,7 +29,10 @@ import org.jkiss.dbeaver.ext.mssql.model.session.MSSQLSessionManager;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -204,47 +204,6 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
         finally {
             session.close();
         }
-
-/*
-        // Construct information folders
-        informationFolders = new ArrayList<MSSQLInformationFolder>();
-        informationFolders.add(new MSSQLInformationFolder(this, "Session Status") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getSessionStatus(monitor);
-            }
-        });
-        informationFolders.add(new MSSQLInformationFolder(this, "Global Status") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getGlobalStatus(monitor);
-            }
-        });
-        informationFolders.add(new MSSQLInformationFolder(this, "Session Variables") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getSessionVariables(monitor);
-            }
-        });
-        informationFolders.add(new MSSQLInformationFolder(this, "Global Variables") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getGlobalVariables(monitor);
-            }
-        });
-        informationFolders.add(new MSSQLInformationFolder(this, "Engines") {
-            public Collection getObjects(DBRProgressMonitor monitor)
-            {
-                return getEngines();
-            }
-        });
-        informationFolders.add(new MSSQLInformationFolder(this, "User Privileges") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getPrivileges(monitor);
-            }
-        });
-*/
     }
 
     @Override
@@ -349,28 +308,6 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             DBUtils.fireObjectSelect(object, true);
         }
     }
-
-    @Override
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBException {
-        JDBCConnectionHolder mssqlConnection = super.openConnection(monitor);
-
-        {
-            // Provide client info
-            IProduct product = Platform.getProduct();
-            if (product != null) {
-                String appName = DBeaverCore.getProductTitle();
-                try {
-                    mssqlConnection.getConnection().setClientInfo("ApplicationName", appName);
-                } catch (Throwable e) {
-                    // just ignore
-                    log.debug(e);
-                }
-            }
-        }
-
-        return mssqlConnection;
-    }
-
 
     public List<MSSQLUser> getUsers(DBRProgressMonitor monitor)
         throws DBException
