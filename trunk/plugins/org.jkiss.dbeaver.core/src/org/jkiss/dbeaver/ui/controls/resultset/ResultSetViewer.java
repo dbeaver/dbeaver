@@ -72,10 +72,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
@@ -2031,16 +2028,17 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             Object[] origRow = model.getRowData(currentRowNumber);
                             for (int i = 0; i < columns.length; i++) {
                                 DBDAttributeBinding metaColumn = columns[i];
-                                if (metaColumn.getEntityAttribute().isSequence()) {
-                                    // set autoincrement columns to null
+                                DBSAttributeBase attribute = metaColumn.getAttribute();
+                                if (attribute.isSequence() || attribute.isPseudoAttribute()) {
+                                    // set pseudo and autoincrement columns to null
                                     cells[i] = null;
                                 } else {
                                     try {
-                                        cells[i] = metaColumn.getValueHandler().getValueFromObject(session, metaColumn.getEntityAttribute(), origRow[i], true);
+                                        cells[i] = metaColumn.getValueHandler().getValueFromObject(session, attribute, origRow[i], true);
                                     } catch (DBCException e) {
                                         log.warn(e);
                                         try {
-                                            cells[i] = DBUtils.makeNullValue(session, metaColumn.getValueHandler(), metaColumn.getMetaAttribute());
+                                            cells[i] = DBUtils.makeNullValue(session, metaColumn.getValueHandler(), attribute);
                                         } catch (DBCException e1) {
                                             log.warn(e1);
                                         }

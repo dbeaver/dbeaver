@@ -64,6 +64,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private String typeName;
     private boolean readOnly;
     private boolean writable;
+    private boolean sequence;
     private JDBCTableMetaData tableMetaData;
     private DBSEntityAttribute tableColumn;
     private final DBPDataKind dataKind;
@@ -144,6 +145,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
                 this.typeName = this.tableColumn.getTypeName();
                 this.readOnly = false;
                 this.writable = true;
+                this.sequence = this.tableColumn.isSequence();
                 this.precision = this.tableColumn.getPrecision();
                 this.scale = this.tableColumn.getScale();
 
@@ -175,6 +177,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             this.typeName = resultSetMeta.getColumnTypeName(index);
             this.readOnly = resultSetMeta.isReadOnly(index);
             this.writable = resultSetMeta.isWritable(index);
+            this.sequence = resultSetMeta.isAutoIncrement(index);
 
             try {
                 this.precision = resultSetMeta.getPrecision(index);
@@ -236,6 +239,16 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     public boolean isRequired()
     {
         return notNull;
+    }
+
+    @Override
+    public boolean isSequence() {
+        return sequence;
+    }
+
+    @Override
+    public boolean isPseudoAttribute() {
+        return pseudoAttribute != null;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 20)

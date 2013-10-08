@@ -45,9 +45,9 @@ public abstract class JDBCColumn extends AbstractAttribute implements DBSObject,
     }
 
     protected JDBCColumn(String name, String typeName, int valueType, int ordinalPosition, long maxLength, int scale,
-                         int precision, boolean nullable)
+                         int precision, boolean required, boolean sequence)
     {
-        super(name, typeName, valueType, ordinalPosition, maxLength, scale, precision, nullable);
+        super(name, typeName, valueType, ordinalPosition, maxLength, scale, precision, required, sequence);
     }
 
     @Override

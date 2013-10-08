@@ -23,8 +23,6 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSEntityAttribute extends DBSEntityElement, DBSAttributeBase {
 
-    boolean isSequence();
-
     int getOrdinalPosition();
 
     String getDefaultValue();

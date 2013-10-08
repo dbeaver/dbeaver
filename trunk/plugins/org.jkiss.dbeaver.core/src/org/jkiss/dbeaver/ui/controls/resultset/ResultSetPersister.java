@@ -133,7 +133,7 @@ class ResultSetPersister {
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
             for (int i = 0; i < columns.length; i++) {
                 DBDAttributeBinding column = columns[i];
-                statement.keyAttributes.add(new DBDAttributeValue(column.getEntityAttribute(), cellValues[i]));
+                statement.keyAttributes.add(new DBDAttributeValue(column.getAttribute(), cellValues[i]));
             }
             insertStatements.add(statement);
         }
@@ -158,7 +158,7 @@ class ResultSetPersister {
                 for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                     GridPos cell = rowInfo.tableCells.get(i);
                     DBDAttributeBinding metaColumn = columns[cell.col];
-                    statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), model.getRowData(rowNum)[cell.col]));
+                    statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getAttribute(), model.getRowData(rowNum)[cell.col]));
                 }
                 // Key columns
                 Collection<? extends DBCAttributeMetaData> idColumns = rowInfo.id.getResultSetColumns();
@@ -175,7 +175,7 @@ class ResultSetPersister {
                             keyValue = cell.getValue();
                         }
                     }
-                    statement.keyAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), keyValue));
+                    statement.keyAttributes.add(new DBDAttributeValue(metaColumn.getAttribute(), keyValue));
                 }
                 updateStatements.add(statement);
             }
@@ -539,7 +539,7 @@ class ResultSetPersister {
                     // Try to find and update auto-increment column
                     for (int k = 0; k < columns.length; k++) {
                         DBDAttributeBinding column = columns[k];
-                        if (column.getEntityAttribute().isSequence()) {
+                        if (column.getAttribute().isSequence()) {
                             // Got it
                             statement.updatedCells.put(k, keyValue);
                             //curRows.get(statement.row.row)[k] = keyValue;
@@ -600,7 +600,7 @@ class ResultSetPersister {
         boolean hasUpdateColumn(DBDAttributeBinding column)
         {
             for (DBDAttributeValue col : updateAttributes) {
-                if (col.getAttribute() == column.getEntityAttribute()) {
+                if (col.getAttribute() == column.getMetaAttribute() || col.getAttribute() == column.getEntityAttribute()) {
                     return true;
                 }
             }

@@ -129,6 +129,16 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     }
 
     @Override
+    public boolean isSequence() {
+        return false;
+    }
+
+    @Override
+    public boolean isPseudoAttribute() {
+        return false;
+    }
+
+    @Override
     public String getName()
     {
         return label;

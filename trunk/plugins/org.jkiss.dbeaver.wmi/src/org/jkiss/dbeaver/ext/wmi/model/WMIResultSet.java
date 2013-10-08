@@ -358,6 +358,16 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         {
             return false;
         }
+
+        @Override
+        public boolean isSequence() {
+            return false;
+        }
+
+        @Override
+        public boolean isPseudoAttribute() {
+            return false;
+        }
     }
 
 }

@@ -50,7 +50,8 @@ public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureP
             columnSize,
             scale,
             precision,
-            notNull);
+            notNull,
+            false);
         this.procedure = procedure;
         this.parameterType = parameterType;
     }
