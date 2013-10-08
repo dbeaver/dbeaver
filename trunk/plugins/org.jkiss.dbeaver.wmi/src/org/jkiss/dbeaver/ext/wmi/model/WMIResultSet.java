@@ -191,25 +191,13 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public String getEntityAlias()
-    {
-        return null;
-    }
-
-    @Override
-    public boolean isIdentified(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
-    }
-
-    @Override
     public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public DBCAttributeMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column) throws DBException
+    public DBCAttributeMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column) throws DBException
     {
         for (DBCAttributeMetaData cmd : properties) {
             if (cmd.getAttribute(monitor) == column) {
@@ -291,18 +279,6 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         public String getEntityName()
         {
             return classObject == null ? null : classObject.getName();
-        }
-
-        @Override
-        public String getCatalogName()
-        {
-            return null;
-        }
-
-        @Override
-        public String getSchemaName()
-        {
-            return classObject == null ? null : classObject.getNamespace().getName();
         }
 
         @Override

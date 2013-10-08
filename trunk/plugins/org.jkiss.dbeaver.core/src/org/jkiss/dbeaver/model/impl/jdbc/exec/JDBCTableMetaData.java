@@ -52,19 +52,17 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     private String catalogName;
     private String schemaName;
     private String tableName;
-    private String alias;
     private List<JDBCColumnMetaData> columns = new ArrayList<JDBCColumnMetaData>();
     private List<JDBCTableIdentifier> identifiers;
     private DBSEntity entity;
 
-    JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSEntity entity, String catalogName, String schemaName, String tableName, String alias)
+    JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSEntity entity, String catalogName, String schemaName, String tableName)
     {
         this.resultSetMetaData = resultSetMetaData;
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.tableName = tableName;
         this.entity = entity;
-        this.alias = alias;
     }
 
     public JDBCResultSetMetaData getResultSetMetaData()
@@ -108,25 +106,12 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     }
 
     @Override
-    public String getEntityAlias()
-    {
-        return alias;
-    }
-
-    @Override
-    public boolean isIdentified(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return getBestIdentifier(monitor) != null;
-    }
-
-    @Override
     public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {
         if (identifiers == null) {
             // Load identifiers
-            identifiers = new ArrayList<JDBCTableIdentifier>();
+            identifiers = new ArrayList<JDBCTableIdentifier>(2);
 
             DBSEntity table = getEntity(monitor);
             if (table != null) {
@@ -145,9 +130,9 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                 } else if (identifiers.isEmpty()) {
 
                     // Check constraints
-                    Collection<? extends DBSEntityConstraint> uniqueKeys = table.getConstraints(monitor);
-                    if (!CommonUtils.isEmpty(uniqueKeys)) {
-                        for (DBSEntityConstraint constraint : uniqueKeys) {
+                    Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
+                    if (!CommonUtils.isEmpty(constraints)) {
+                        for (DBSEntityConstraint constraint : constraints) {
                             if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
                                 identifiers.add(
                                     new JDBCTableIdentifier(monitor, (DBSEntityReferrer)constraint, this));
@@ -209,14 +194,20 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
             return referrer instanceof DBVEntityConstraint;
         }
         for (DBSEntityAttributeRef ref : references) {
-            if (getColumnMetaData(monitor, ref.getAttribute()) == null) {
+            if (getAttributeMetaData(monitor, ref.getAttribute()) == null) {
                 return false;
             }
         }
         return true;
     }
 
-    public JDBCColumnMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
+    @Override
+    public List<JDBCColumnMetaData> getAttributes()
+    {
+        return columns;
+    }
+
+    public JDBCColumnMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
         throws DBException
     {
         for (JDBCColumnMetaData meta : columns) {
@@ -227,12 +218,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         return null;
     }
 
-    public List<JDBCColumnMetaData> getColumns()
-    {
-        return columns;
-    }
-
-    void addColumn(JDBCColumnMetaData columnMetaData)
+    void addAttribute(JDBCColumnMetaData columnMetaData)
     {
         columns.add(columnMetaData);
     }

@@ -51,18 +51,6 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
     String getEntityName();
 
     /**
-     * Owner catalog name
-     * @return catalog name (may be null)
-     */
-    String getCatalogName();
-
-    /**
-     * Owner schema name
-     * @return schema name  (may be null)
-     */
-    String getSchemaName();
-
-    /**
      * Read-only flag
      * @return read-only attribute state
      */
