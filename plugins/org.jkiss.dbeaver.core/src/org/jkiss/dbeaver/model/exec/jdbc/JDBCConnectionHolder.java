@@ -69,4 +69,11 @@ public class JDBCConnectionHolder {
         }
         return transactionIsolationLevel;
     }
+
+    public void close() throws SQLException
+    {
+        if (!connection.isClosed()) {
+            connection.close();
+        }
+    }
 }

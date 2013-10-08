@@ -67,7 +67,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     }
 
     @Override
-    public Connection getOriginal()
+    public Connection getOriginal() throws SQLException
     {
         if (isolatedConnection != null) {
             return isolatedConnection.getConnection();

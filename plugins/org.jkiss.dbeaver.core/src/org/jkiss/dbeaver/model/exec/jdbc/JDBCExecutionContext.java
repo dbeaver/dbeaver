@@ -31,7 +31,8 @@ import java.util.concurrent.Executor;
  */
 public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
 
-    Connection getOriginal();
+    Connection getOriginal()
+        throws SQLException;
 
     @Override
     JDBCStatement prepareStatement(
