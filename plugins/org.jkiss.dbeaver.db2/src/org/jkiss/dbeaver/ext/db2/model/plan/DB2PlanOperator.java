@@ -18,11 +18,12 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ import java.util.List;
  */
 public class DB2PlanOperator extends DB2PlanNode {
 
-    private static String SEL_BASE_SELECT;
+    private static final String SEL_BASE_SELECT;
 
     static {
         StringBuilder sb = new StringBuilder(1024);
@@ -64,7 +65,7 @@ public class DB2PlanOperator extends DB2PlanNode {
     private String nodename;
 
     private Integer operatorId;
-    private String operatorType;
+    private DB2PlanOperatorType operatorType;
     private Double totalCost;
 
     private Double estimatedCardinality = -1d;
@@ -73,15 +74,15 @@ public class DB2PlanOperator extends DB2PlanNode {
     // Constructors
     // ------------
 
-    public DB2PlanOperator(JDBCSession session, JDBCResultSet dbResult, DB2PlanStatement db2Statement,
-        String planTableSchema) throws SQLException
+    public DB2PlanOperator(JDBCSession session, JDBCResultSet dbResult, DB2PlanStatement db2Statement, String planTableSchema)
+        throws SQLException
     {
 
         this.db2Statement = db2Statement;
         this.planTableSchema = planTableSchema;
 
         this.operatorId = JDBCUtils.safeGetInteger(dbResult, "OPERATOR_ID");
-        this.operatorType = JDBCUtils.safeGetString(dbResult, "OPERATOR_TYPE");
+        this.operatorType = CommonUtils.valueOf(DB2PlanOperatorType.class, JDBCUtils.safeGetString(dbResult, "OPERATOR_TYPE"));
         this.totalCost = JDBCUtils.safeGetDouble(dbResult, "TOTAL_COST");
 
         this.nodename = String.valueOf(operatorId);
@@ -114,36 +115,42 @@ public class DB2PlanOperator extends DB2PlanNode {
     // ----------------
 
     @Property(viewable = true, order = 1)
-    public String getOperatorType()
+    public DB2PlanOperatorType getOperatorType()
     {
         return operatorType;
     }
 
     @Property(viewable = true, order = 2)
+    public Integer getOperatorId()
+    {
+        return operatorId;
+    }
+
+    @Property(viewable = true, order = 3)
     public String getDisplayName()
     {
         return ""; // Looks better without a name...
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, order = 4)
     public Double getTotalCost()
     {
         return totalCost;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, order = 5)
     public Double getEstimatedCardinality()
     {
         return estimatedCardinality;
     }
 
-    @Property(viewable = false, order = 5)
+    @Property(viewable = false, order = 6)
     public List<DB2PlanOperatorArgument> getArguments()
     {
         return listArguments;
     }
 
-    @Property(viewable = false, order = 6)
+    @Property(viewable = false, order = 7)
     public List<DB2PlanOperatorPredicate> getPredicates()
     {
         return listPredicates;

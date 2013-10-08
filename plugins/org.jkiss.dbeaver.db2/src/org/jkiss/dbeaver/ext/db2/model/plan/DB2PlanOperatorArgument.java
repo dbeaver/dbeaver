@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * DB2 EXPLAIN_ARGUMENT table
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2PlanOperatorArgument implements DBPNamedObject {
@@ -154,6 +154,7 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
         ARGUMENT_TYPES.put("STMTHEAP", "Stmt Heap");
         ARGUMENT_TYPES.put("STREAM", "Remote source is streaming?");
         ARGUMENT_TYPES.put("TABLOCK", "Table Lock Intent");
+        ARGUMENT_TYPES.put("TBISOLVL", "Table access Isolation Level)");
         ARGUMENT_TYPES.put("TEMPSIZE", "Temporary table page size");
         ARGUMENT_TYPES.put("THROTTLE", "Throttle?");
         ARGUMENT_TYPES.put("TQDEGREE", "Intrapartition parallelism, number of subagents accessing Table Queue");
