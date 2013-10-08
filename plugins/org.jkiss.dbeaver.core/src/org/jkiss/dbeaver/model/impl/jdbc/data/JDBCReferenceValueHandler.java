@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -60,7 +60,7 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
 
     @Override
     protected void bindParameter(
-        JDBCExecutionContext context,
+        JDBCSession session,
         JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
@@ -78,7 +78,7 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public JDBCReference getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public JDBCReference getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         String typeName;
         try {
@@ -92,13 +92,13 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
         }
         DBSDataType dataType = null;
         try {
-            dataType = DBUtils.resolveDataType(context.getProgressMonitor(), context.getDataSource(), typeName);
+            dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), typeName);
         } catch (DBException e) {
             log.error("Error resolving data type '" + typeName + "'", e);
         }
         if (dataType == null) {
             dataType = new JDBCDataType(
-                context.getDataSource().getContainer(),
+                session.getDataSource().getContainer(),
                 Types.REF,
                 typeName,
                 "Synthetic struct type for reference '" + typeName + "'",

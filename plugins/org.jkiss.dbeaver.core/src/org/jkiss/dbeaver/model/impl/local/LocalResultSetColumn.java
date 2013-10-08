@@ -137,7 +137,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     @Override
     public String getTypeName()
     {
-        return DBUtils.getDefaultDataType(resultSet.getContext().getDataSource(), dataKind);
+        return DBUtils.getDefaultDataType(resultSet.getSession().getDataSource(), dataKind);
     }
 
     @Override

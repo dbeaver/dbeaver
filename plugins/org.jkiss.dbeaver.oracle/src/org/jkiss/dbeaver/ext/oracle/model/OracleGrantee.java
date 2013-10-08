@@ -24,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -71,16 +71,16 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class RolePrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivRole> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleGrantee owner) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM DBA_ROLE_PRIVS WHERE GRANTEE=? ORDER BY GRANTED_ROLE");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
         @Override
-        protected OraclePrivRole fetchObject(JDBCExecutionContext context, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivRole fetchObject(JDBCSession session, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivRole(owner, resultSet);
         }
@@ -88,16 +88,16 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class SystemPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivSystem> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleGrantee owner) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM DBA_SYS_PRIVS WHERE GRANTEE=? ORDER BY PRIVILEGE");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
         @Override
-        protected OraclePrivSystem fetchObject(JDBCExecutionContext context, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivSystem fetchObject(JDBCSession session, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivSystem(owner, resultSet);
         }
@@ -105,9 +105,9 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class ObjectPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivObject> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleGrantee owner) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p.*,o.OBJECT_TYPE\n" +
                 "FROM DBA_TAB_PRIVS p, DBA_OBJECTS o\n" +
                 "WHERE p.GRANTEE=? " +
@@ -117,7 +117,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         }
 
         @Override
-        protected OraclePrivObject fetchObject(JDBCExecutionContext context, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivObject fetchObject(JDBCSession session, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivObject(owner, resultSet);
         }

@@ -28,10 +28,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.CursorViewDialog;
 import org.jkiss.utils.CommonUtils;
@@ -54,7 +54,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected Object fetchColumnValue(
-        DBCExecutionContext context,
+        DBCSession session,
         JDBCResultSet resultSet,
         DBSTypedObject type,
         int index)
@@ -63,7 +63,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         Object value = resultSet.getObject(index);
         if (value instanceof ResultSet) {
             value = new JDBCCursor(
-                (JDBCExecutionContext) context,
+                (JDBCSession) session,
                 (ResultSet) value,
                 type.getTypeName());
         } else if (value instanceof RowId) {
@@ -74,7 +74,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected void bindParameter(
-        JDBCExecutionContext context,
+        JDBCSession session,
         JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
@@ -97,11 +97,11 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (copy && object != null) {
             if (object instanceof DBDValueCloneable) {
-                return ((DBDValueCloneable) object).cloneValue(context.getProgressMonitor());
+                return ((DBDValueCloneable) object).cloneValue(session.getProgressMonitor());
             }
             throw new DBCException("Can't copy object value " + object);
         }

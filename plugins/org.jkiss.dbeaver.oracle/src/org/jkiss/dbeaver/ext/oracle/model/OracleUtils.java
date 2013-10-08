@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -68,21 +68,21 @@ public class OracleUtils {
         }
         final OracleDataSource dataSource = (OracleDataSource) object.getDataSource();
         monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
-        final JDBCExecutionContext context = dataSource.openContext(
+        final JDBCSession session = dataSource.openSession(
             monitor,
             DBCExecutionPurpose.META,
             "Load source code for " + objectType + " '" + objectFullName + "'");
         try {
             JDBCUtils.executeProcedure(
-                context,
+                session,
                 "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
             JDBCUtils.executeProcedure(
-                context,
+                session,
                 "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");  end;");
             JDBCUtils.executeProcedure(
-                context,
+                session,
                 "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DBMS_METADATA.GET_DDL(?,?" +
                 (schema == null ? "": ",?") +
                 ") TXT " +
@@ -112,7 +112,7 @@ public class OracleUtils {
         } catch (SQLException e) {
             throw new DBCException(e);
         } finally {
-            context.close();
+            session.close();
             monitor.done();
         }
     }
@@ -173,12 +173,12 @@ public class OracleUtils {
             return null;
         }
         monitor.beginTask("Load sources for '" + sourceObject.getName() + "'...", 1);
-        final JDBCExecutionContext context = sourceOwner.getDataSource().openContext(
+        final JDBCSession session = sourceOwner.getDataSource().openSession(
             monitor,
             DBCExecutionPurpose.META,
             "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
         try {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT FROM SYS.ALL_SOURCE " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
                     "ORDER BY LINE");
@@ -215,7 +215,7 @@ public class OracleUtils {
         } catch (SQLException e) {
             throw new DBCException(e);
         } finally {
-            context.close();
+            session.close();
             monitor.done();
         }
     }
@@ -261,12 +261,12 @@ public class OracleUtils {
         OracleObjectType objectType)
         throws DBCException
     {
-        final JDBCExecutionContext context = object.getDataSource().openContext(
+        final JDBCSession session = object.getDataSource().openSession(
             monitor,
             DBCExecutionPurpose.META,
             "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'");
         try {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?");
             try {
                 dbStat.setString(1, objectType.getTypeName());
@@ -291,7 +291,7 @@ public class OracleUtils {
         } catch (SQLException e) {
             throw new DBCException(e);
         } finally {
-            context.close();
+            session.close();
         }
     }
 

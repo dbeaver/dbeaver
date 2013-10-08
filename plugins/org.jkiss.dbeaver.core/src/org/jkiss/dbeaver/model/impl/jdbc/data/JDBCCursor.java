@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.model.data.DBDCursor;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 
 import java.sql.ResultSet;
@@ -29,9 +29,9 @@ import java.sql.ResultSet;
  */
 public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
 
-    public JDBCCursor(JDBCExecutionContext context, ResultSet original, String description)
+    public JDBCCursor(JDBCSession session, ResultSet original, String description)
     {
-        super(context, original, description);
+        super(session, original, description);
     }
 
     @Override

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -305,9 +305,9 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         throws DBException
     {
         GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load procedures");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load procedures");
         try {
-            JDBCResultSet dbResult = context.getMetaData().getProcedures(
+            JDBCResultSet dbResult = session.getMetaData().getProcedures(
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
                 getDataSource().getAllObjectsPattern());
@@ -375,7 +375,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         } catch (SQLException e) {
             throw new DBException(e);
         } finally {
-            context.close();
+            session.close();
         }
     }
 

@@ -24,26 +24,16 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.SQLUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.List;
 
 /**
@@ -458,14 +448,14 @@ public class JDBCUtils {
         }
     }
 
-    public static void reportWarnings(JDBCExecutionContext context, SQLWarning rootWarning)
+    public static void reportWarnings(JDBCSession session, SQLWarning rootWarning)
     {
         for (SQLWarning warning = rootWarning; warning != null; warning = warning.getNextWarning()) {
             if (warning.getMessage() == null && warning.getErrorCode() == 0) {
                 // Skip trash [Excel driver]
                 continue;
             }
-            log.warn("SQL Warning (DataSource: " + context.getDataSource().getContainer().getName() + "; Code: "
+            log.warn("SQL Warning (DataSource: " + session.getDataSource().getContainer().getName() + "; Code: "
                 + warning.getErrorCode() + "; State: " + warning.getSQLState() + "): " + warning.getLocalizedMessage());
         }
     }
@@ -474,11 +464,6 @@ public class JDBCUtils {
     {
         return query == null || query.length() <= maxLength ? query : query.substring(0, maxLength);
     }
-
-    /*
-     * public static boolean isDriverODBC(DBCExecutionContext context) { return
-     * context.getDataSource().getContainer().getDriver().getDriverClassName().contains("Odbc"); }
-     */
 
     public static DBSForeignKeyModifyRule getCascadeFromNum(int num)
     {
@@ -498,9 +483,9 @@ public class JDBCUtils {
         }
     }
 
-    public static void executeSQL(JDBCExecutionContext context, String sql) throws SQLException
+    public static void executeSQL(JDBCSession session, String sql) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         try {
             dbStat.execute();
         } finally {
@@ -508,9 +493,9 @@ public class JDBCUtils {
         }
     }
 
-    public static void executeProcedure(JDBCExecutionContext context, String sql) throws SQLException
+    public static void executeProcedure(JDBCSession session, String sql) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareCall(sql);
+        final JDBCPreparedStatement dbStat = session.prepareCall(sql);
         try {
             dbStat.execute();
         } finally {
@@ -518,9 +503,9 @@ public class JDBCUtils {
         }
     }
 
-    public static String queryString(JDBCExecutionContext context, String sql, Object... args) throws SQLException
+    public static String queryString(JDBCSession session, String sql, Object... args) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         try {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {

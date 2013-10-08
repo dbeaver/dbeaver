@@ -92,13 +92,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows)
+    public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows)
         throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
         try {
             readRequiredMeta(monitor);
         } catch (DBException e) {
@@ -131,7 +131,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         monitor.subTask(CoreMessages.model_jdbc_fetch_table_data);
         DBCStatement dbStat = DBUtils.prepareStatement(
-            context,
+            session,
             DBCStatementType.SCRIPT,
             query.toString(),
             firstRow,
@@ -156,7 +156,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                                 }
                             }
                         }
-                        dataReceiver.fetchStart(context, dbResult);
+                        dataReceiver.fetchStart(session, dbResult);
 
                         try {
                             startTime = System.currentTimeMillis();
@@ -166,7 +166,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                                     // Fetch not more than max rows
                                     break;
                                 }
-                                dataReceiver.fetchRow(context, dbResult);
+                                dataReceiver.fetchRow(session, dbResult);
                                 rowCount++;
                                 if (rowCount % 100 == 0) {
                                     monitor.subTask(rowCount + CoreMessages.model_jdbc__rows_fetched);
@@ -178,7 +178,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                             statistics.setRowsFetched(rowCount);
                         } finally {
                             try {
-                                dataReceiver.fetchEnd(context);
+                                dataReceiver.fetchEnd(session);
                             } catch (DBCException e) {
                                 log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                             }
@@ -198,15 +198,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long countData(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBCException
+    public long countData(DBCSession session, DBDDataFilter dataFilter) throws DBCException
     {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
 
         StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM "); //$NON-NLS-1$
         query.append(getFullQualifiedName());
         appendQueryConditions(query, null, dataFilter);
         monitor.subTask(CoreMessages.model_jdbc_fetch_table_row_count);
-        DBCStatement dbStat = context.prepareStatement(
+        DBCStatement dbStat = session.prepareStatement(
             DBCStatementType.QUERY,
             query.toString(),
             false, false, false);
@@ -243,10 +243,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public ExecuteBatch insertData(DBCExecutionContext context, DBSEntityAttribute[] attributes, DBDDataReceiver keysReceiver)
+    public ExecuteBatch insertData(DBCSession session, DBSEntityAttribute[] attributes, DBDDataReceiver keysReceiver)
         throws DBCException
     {
-        readRequiredMeta(context.getProgressMonitor());
+        readRequiredMeta(session.getProgressMonitor());
 
         // Make query
         StringBuilder query = new StringBuilder(200);
@@ -275,7 +275,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append(")"); //$NON-NLS-1$
 
         // Execute
-        DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
+        DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
         dbStat.setDataContainer(this);
 
         return new BatchImpl(dbStat, attributes, keysReceiver, true);
@@ -283,13 +283,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @Override
     public ExecuteBatch updateData(
-        DBCExecutionContext context,
+        DBCSession session,
         DBSEntityAttribute[] updateAttributes,
         DBSEntityAttribute[] keyAttributes,
         DBDDataReceiver keysReceiver)
         throws DBCException
     {
-        readRequiredMeta(context.getProgressMonitor());
+        readRequiredMeta(session.getProgressMonitor());
 
         // Make query
         StringBuilder query = new StringBuilder();
@@ -310,7 +310,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         // Execute
-        DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
+        DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
 
         dbStat.setDataContainer(this);
 
@@ -320,10 +320,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public ExecuteBatch deleteData(DBCExecutionContext context, DBSEntityAttribute[] keyAttributes)
+    public ExecuteBatch deleteData(DBCSession session, DBSEntityAttribute[] keyAttributes)
         throws DBCException
     {
-        readRequiredMeta(context.getProgressMonitor());
+        readRequiredMeta(session.getProgressMonitor());
 
         // Make query
         StringBuilder query = new StringBuilder();
@@ -337,7 +337,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         // Execute
-        DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
+        DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
         dbStat.setDataContainer(this);
         return new BatchImpl(dbStat, keyAttributes, null, false);
     }
@@ -361,7 +361,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
-    private void readKeys(DBCExecutionContext context, DBCStatement dbStat, DBDDataReceiver keysReceiver)
+    private void readKeys(DBCSession session, DBCStatement dbStat, DBDDataReceiver keysReceiver)
         throws DBCException
     {
         DBCResultSet dbResult;
@@ -376,14 +376,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return;
         }
         try {
-            keysReceiver.fetchStart(context, dbResult);
+            keysReceiver.fetchStart(session, dbResult);
             try {
                 while (dbResult.nextRow()) {
-                    keysReceiver.fetchRow(context, dbResult);
+                    keysReceiver.fetchRow(session, dbResult);
                 }
             }
             finally {
-                keysReceiver.fetchEnd(context);
+                keysReceiver.fetchEnd(session);
             }
         }
         finally {

@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Reference to another object (usually DBDStructure).
@@ -32,7 +32,7 @@ public interface DBDReference extends DBDComplexType {
      * @return referenced object
      * @throws DBCException
      */
-    Object getReferencedObject(DBCExecutionContext context)
+    Object getReferencedObject(DBCSession session)
         throws DBCException;
 
 }

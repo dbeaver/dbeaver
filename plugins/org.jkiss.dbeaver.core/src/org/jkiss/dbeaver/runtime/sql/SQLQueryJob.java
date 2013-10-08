@@ -151,12 +151,12 @@ public class SQLQueryJob extends DataSourceJob
     {
         statistics = new DBCStatistics();
         try {
-            DBCExecutionContext context = getDataSource().openContext(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
+            DBCSession session = getDataSource().openSession(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
             try {
 // Set transaction settings (only if autocommit is off)
-                QMUtils.getDefaultHandler().handleScriptBegin(context);
+                QMUtils.getDefaultHandler().handleScriptBegin(session);
 
-                DBCTransactionManager txnManager = context.getTransactionManager();
+                DBCTransactionManager txnManager = session.getTransactionManager();
                 boolean oldAutoCommit = txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
                 if (!oldAutoCommit && newAutoCommit != oldAutoCommit) {
@@ -174,7 +174,7 @@ public class SQLQueryJob extends DataSourceJob
                     // Execute query
                     SQLStatementInfo query = queries.get(queryNum);
 
-                    boolean runNext = executeSingleQuery(context, query, true);
+                    boolean runNext = executeSingleQuery(session, query, true);
                     if (!runNext) {
                         // Ask to continue
                         if (lastError != null) {
@@ -225,7 +225,7 @@ public class SQLQueryJob extends DataSourceJob
                 monitor.done();
 
                 // Fetch script execution results
-                fetchExecutionResult(context);
+                fetchExecutionResult(session);
 
                 // Commit data
                 if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
@@ -265,7 +265,7 @@ public class SQLQueryJob extends DataSourceJob
                     "SQL job completed");
             }
 */
-                QMUtils.getDefaultHandler().handleScriptEnd(context);
+                QMUtils.getDefaultHandler().handleScriptEnd(session);
 
                 // Return success
                 return new Status(
@@ -274,7 +274,7 @@ public class SQLQueryJob extends DataSourceJob
                     "SQL job completed");
             }
             finally {
-                context.close();
+                session.close();
             }
         }
         catch (Throwable ex) {
@@ -291,7 +291,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(DBCExecutionContext context, SQLStatementInfo sqlStatement, boolean fireEvents)
+    private boolean executeSingleQuery(DBCSession session, SQLStatementInfo sqlStatement, boolean fireEvents)
     {
         lastError = null;
 
@@ -334,7 +334,7 @@ public class SQLQueryJob extends DataSourceJob
 
             // Check and invalidate connection
             if (!connectionInvalidated && getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
-                getDataSource().invalidateConnection(context.getProgressMonitor());
+                getDataSource().invalidateConnection(session.getProgressMonitor());
                 connectionInvalidated = true;
             }
 
@@ -357,7 +357,7 @@ public class SQLQueryJob extends DataSourceJob
             }
 
             curStatement = DBUtils.prepareStatement(
-                context,
+                session,
                 hasParameters ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,
                 sqlQuery,
                 rsOffset,
@@ -369,7 +369,7 @@ public class SQLQueryJob extends DataSourceJob
                 for (SQLStatementParameter param : sqlStatement.getParameters()) {
                     if (param.isResolved()) {
                         param.getValueHandler().bindValueObject(
-                            context,
+                            session,
                             curStatement,
                             param,
                             param.getIndex(),
@@ -392,7 +392,7 @@ public class SQLQueryJob extends DataSourceJob
                         for (SQLStatementParameter param : sqlStatement.getParameters()) {
                             if (param.isResolved()) {
                                 param.getValueHandler().bindValueObject(
-                                    context,
+                                    session,
                                     curStatement,
                                     param,
                                     param.getIndex(),
@@ -414,7 +414,7 @@ public class SQLQueryJob extends DataSourceJob
                 // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
                 // return messy results here
                 if (hasResultSet && fetchResultSets) {
-                    fetchQueryData(context, curStatement.openResultSet(), true);
+                    fetchQueryData(session, curStatement.openResultSet(), true);
                 }
                 if (!hasResultSet) {
                     long updateCount = -1;
@@ -431,7 +431,7 @@ public class SQLQueryJob extends DataSourceJob
                         log.warn("Can't obtain update count", e);
                     }
                     if (fetchResultSets) {
-                        fetchExecutionResult(context);
+                        fetchExecutionResult(session);
                     }
                 }
             }
@@ -471,10 +471,10 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    private void fetchExecutionResult(DBCExecutionContext context) throws DBCException
+    private void fetchExecutionResult(DBCSession session) throws DBCException
     {
         // Fetch fake result set
-        LocalResultSet fakeResultSet = new LocalResultSet(context, curStatement);
+        LocalResultSet fakeResultSet = new LocalResultSet(session, curStatement);
         if (statistics.getStatementsCount() > 1) {
             // Multiple statements - show script statistics
             fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
@@ -498,7 +498,7 @@ public class SQLQueryJob extends DataSourceJob
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
         }
-        fetchQueryData(context, fakeResultSet, false);
+        fetchQueryData(session, fakeResultSet, false);
     }
 
     private boolean bindStatementParameters(final List<SQLStatementParameter> parameters)
@@ -519,7 +519,7 @@ public class SQLQueryJob extends DataSourceJob
         return binder.getResult();
     }
 
-    private void fetchQueryData(DBCExecutionContext context, DBCResultSet resultSet, boolean updateStatistics)
+    private void fetchQueryData(DBCSession session, DBCResultSet resultSet, boolean updateStatistics)
         throws DBCException
     {
         if (dataReceiver == null) {
@@ -531,11 +531,11 @@ public class SQLQueryJob extends DataSourceJob
         if (curResultSet == null) {
             return;
         }
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.subTask("Fetch result set");
         rowCount = 0;
 
-        dataReceiver.fetchStart(context, curResultSet);
+        dataReceiver.fetchStart(session, curResultSet);
 
         try {
             // Retrieve source entity
@@ -572,7 +572,7 @@ public class SQLQueryJob extends DataSourceJob
                     monitor.worked(100);
                 }
 
-                dataReceiver.fetchRow(context, curResultSet);
+                dataReceiver.fetchRow(session, curResultSet);
             }
             if (updateStatistics) {
                 statistics.setFetchTime(System.currentTimeMillis() - fetchStartTime);
@@ -584,7 +584,7 @@ public class SQLQueryJob extends DataSourceJob
             }
 
             try {
-                dataReceiver.fetchEnd(context);
+                dataReceiver.fetchEnd(session);
             } catch (DBCException e) {
                 log.error("Error while handling end of result set fetch", e);
             }
@@ -644,14 +644,14 @@ public class SQLQueryJob extends DataSourceJob
     }
 */
 
-    public void extractData(DBCExecutionContext context)
+    public void extractData(DBCSession session)
         throws DBCException
     {
         statistics = new DBCStatistics();
         if (queries.size() != 1) {
             throw new DBCException("Invalid state of SQL Query job");
         }
-        boolean result = executeSingleQuery(context, queries.get(0), true);
+        boolean result = executeSingleQuery(session, queries.get(0), true);
         if (!result && lastError != null) {
             if (lastError instanceof DBCException) {
                 throw (DBCException) lastError;

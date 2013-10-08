@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 import java.sql.SQLException;
 import java.sql.Savepoint;
@@ -67,7 +67,7 @@ public class JDBCSavepointImpl implements DBCSavepoint, Savepoint {
     }
 
     @Override
-    public JDBCExecutionContext getContext()
+    public JDBCSession getContext()
     {
         return connection;
     }

@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -425,13 +425,13 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
+    public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
         try {
             long startTime = System.currentTimeMillis();
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(
-                context.getProgressMonitor(),
+                session.getProgressMonitor(),
                 getNamespace().getService(),
                 firstRow, maxRows);
             getNamespace().getService().enumInstances(
@@ -441,17 +441,17 @@ public class WMIClass extends WMIContainer
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
             startTime = System.currentTimeMillis();
             sink.waitForFinish();
-            WMIResultSet resultSet = new WMIResultSet(context, this, sink.getObjectList());
+            WMIResultSet resultSet = new WMIResultSet(session, this, sink.getObjectList());
             long resultCount = 0;
             try {
-                dataReceiver.fetchStart(context, resultSet);
+                dataReceiver.fetchStart(session, resultSet);
                 while (resultSet.nextRow()) {
                     resultCount++;
-                    dataReceiver.fetchRow(context, resultSet);
+                    dataReceiver.fetchRow(session, resultSet);
                 }
             } finally {
                 try {
-                    dataReceiver.fetchEnd(context);
+                    dataReceiver.fetchEnd(session);
                 } catch (DBCException e) {
                     log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                 }
@@ -467,7 +467,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public long countData(DBCExecutionContext context, DBDDataFilter dataFilter)
+    public long countData(DBCSession session, DBDDataFilter dataFilter)
     {
         return -1;
     }

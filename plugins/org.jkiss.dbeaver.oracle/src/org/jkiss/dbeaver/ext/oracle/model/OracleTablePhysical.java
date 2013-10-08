@@ -22,12 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
@@ -89,15 +86,15 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
         if (realRowCount == null) {
             // Query row count
-            DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
+            DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read row count");
             try {
-                realRowCount = countData(context, null);
+                realRowCount = countData(session, null);
             }
             catch (DBException e) {
                 log.debug("Can't fetch row count", e);
             }
             finally {
-                context.close();
+                session.close();
             }
         }
         if (realRowCount == null) {
@@ -140,9 +137,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public PartitionInfo getPartitionInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (partitionInfo == null && partitioned) {
-            final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load partitioning info");
+            final JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load partitioning info");
             try {
-                final JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM ALL_PART_TABLES WHERE OWNER=? AND TABLE_NAME=?");
+                final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM ALL_PART_TABLES WHERE OWNER=? AND TABLE_NAME=?");
                 try {
                     dbStat.setString(1, getContainer().getName());
                     dbStat.setString(2, getName());
@@ -160,7 +157,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
             } catch (SQLException e) {
                 throw new DBException(e);
             } finally {
-                context.close();
+                session.close();
             }
         }
         return partitionInfo;
@@ -215,9 +212,9 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleTablePhysical table) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleTablePhysical table) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_TAB_PARTITIONS " +
                 "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
                 "ORDER BY PARTITION_POSITION");
@@ -227,15 +224,15 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected OracleTablePartition fetchObject(JDBCExecutionContext context, OracleTablePhysical table, ResultSet resultSet) throws SQLException, DBException
+        protected OracleTablePartition fetchObject(JDBCSession session, OracleTablePhysical table, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleTablePartition(table, false, resultSet);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition forObject) throws SQLException
+        protected JDBCStatement prepareChildrenStatement(JDBCSession session, OracleTablePhysical table, OracleTablePartition forObject) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_TAB_SUBPARTITIONS " +
                 "WHERE TABLE_OWNER=? AND TABLE_NAME=? " +
                 (forObject == null ? "" : "AND PARTITION_NAME=?") +
@@ -249,7 +246,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected OracleTablePartition fetchChild(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition parent, ResultSet dbResult) throws SQLException, DBException
+        protected OracleTablePartition fetchChild(JDBCSession session, OracleTablePhysical table, OracleTablePartition parent, ResultSet dbResult) throws SQLException, DBException
         {
             return new OracleTablePartition(table, true, dbResult);
         }

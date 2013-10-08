@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ext.nosql.cassandra.model.jdbc.CasConnection;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -93,29 +93,29 @@ public class CassandraDataSource extends JDBCDataSource
         } catch (DBException e) {
             log.warn("Can't fetch data types", e);
         }
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read cassandra metadata");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Read cassandra metadata");
         try {
             // Read metadata
-            JDBCDatabaseMetaData metaData = context.getMetaData();
+            JDBCDatabaseMetaData metaData = session.getMetaData();
             // Catalogs not supported - try to read root keyspaces
             monitor.subTask("Extract keyspaces");
             monitor.worked(1);
-            List<CassandraKeyspace> tmpSchemas = loadKeyspaces(context);
+            List<CassandraKeyspace> tmpSchemas = loadKeyspaces(session);
             if (tmpSchemas != null) {
                 this.keyspaces = tmpSchemas;
             }
             // Get selected entity (catalog or schema)
-            selectedKeyspace = context.getSchema();
+            selectedKeyspace = session.getSchema();
 
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
-    List<CassandraKeyspace> loadKeyspaces(JDBCExecutionContext context)
+    List<CassandraKeyspace> loadKeyspaces(JDBCSession session)
         throws DBException
     {
         try {
@@ -124,18 +124,18 @@ public class CassandraDataSource extends JDBCDataSource
             List<CassandraKeyspace> tmpKeyspaces = new ArrayList<CassandraKeyspace>();
             JDBCResultSet dbResult;
             try {
-                dbResult = context.getMetaData().getSchemas(
+                dbResult = session.getMetaData().getSchemas(
                     null,
                     ksFilters != null && ksFilters.hasSingleMask() ? ksFilters.getSingleMask() : null);
             } catch (Throwable e) {
                 // This method not supported (may be old driver version)
                 // Use general schema reading method
-                dbResult = context.getMetaData().getSchemas();
+                dbResult = session.getMetaData().getSchemas();
             }
 
             try {
                 while (dbResult.next()) {
-                    if (context.getProgressMonitor().isCanceled()) {
+                    if (session.getProgressMonitor().isCanceled()) {
                         break;
                     }
                     String ksName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
@@ -146,7 +146,7 @@ public class CassandraDataSource extends JDBCDataSource
                         // Doesn't match filter
                         continue;
                     }
-                    context.getProgressMonitor().subTask("Keyspace " + ksName);
+                    session.getProgressMonitor().subTask("Keyspace " + ksName);
 
                     CassandraKeyspace keyspace = new CassandraKeyspace(this, ksName, dbResult);
                     tmpKeyspaces.add(keyspace);
@@ -256,15 +256,15 @@ public class CassandraDataSource extends JDBCDataSource
     void setActiveEntityName(DBRProgressMonitor monitor, DBSObject entity) throws DBException
     {
         if (entity instanceof CassandraKeyspace) {
-            JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
+            JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
             try {
-                context.setSchema(entity.getName());
+                session.setSchema(entity.getName());
                 selectedKeyspace = entity.getName();
             } catch (SQLException e) {
                 throw new DBException(e);
             }
             finally {
-                context.close();
+                session.close();
             }
         }
     }

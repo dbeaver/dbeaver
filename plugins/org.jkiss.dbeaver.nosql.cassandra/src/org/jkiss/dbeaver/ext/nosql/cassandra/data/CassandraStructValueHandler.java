@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.nosql.cassandra.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStruct;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
@@ -38,12 +38,12 @@ public class CassandraStructValueHandler extends JDBCStructValueHandler {
     public static final CassandraStructValueHandler INSTANCE = new CassandraStructValueHandler();
 
     @Override
-    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return new JDBCStruct(context, makeEmptyType(context), null);
+            return new JDBCStruct(session, makeEmptyType(session), null);
         } else if (object instanceof JDBCStruct) {
-            return copy ? ((JDBCStruct) object).cloneValue(context.getProgressMonitor()) : object;
+            return copy ? ((JDBCStruct) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Struct) {
             // Obtain metadata information from struct
             ResultSetMetaData metaData = null;
@@ -52,16 +52,16 @@ public class CassandraStructValueHandler extends JDBCStructValueHandler {
             } catch (Throwable e) {
                 // No metadata, use as plain value
             }
-            return new JDBCStruct(context, makeEmptyType(context), (Struct) object, metaData);
+            return new JDBCStruct(session, makeEmptyType(session), (Struct) object, metaData);
         } else {
             throw new DBCException("Unsupported struct type: " + object.getClass().getName());
         }
     }
 
-    private DBSDataType makeEmptyType(DBCExecutionContext context)
+    private DBSDataType makeEmptyType(DBCSession session)
     {
         return new JDBCDataType(
-            context.getDataSource().getContainer(),
+            session.getDataSource().getContainer(),
             Types.STRUCT,
             "ROW",
             "Cassandra struct type",

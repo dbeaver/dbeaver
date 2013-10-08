@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -77,10 +77,10 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner)
         throws SQLException
     {
-        return context.getMetaData().getTables(
+        return session.getMetaData().getTables(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : owner.getSchema().getName(),
             owner.getDataSource().getAllObjectsPattern(),
@@ -88,7 +88,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected GenericTable fetchObject(JDBCExecutionContext context, GenericStructContainer owner, ResultSet dbResult)
+    protected GenericTable fetchObject(JDBCSession session, GenericStructContainer owner, ResultSet dbResult)
         throws SQLException, DBException
     {
         String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
@@ -139,10 +139,10 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forTable)
+    protected JDBCStatement prepareChildrenStatement(JDBCSession session, GenericStructContainer owner, GenericTable forTable)
         throws SQLException
     {
-        return context.getMetaData().getColumns(
+        return session.getMetaData().getColumns(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : owner.getSchema().getName(),
             forTable == null ? owner.getDataSource().getAllObjectsPattern() : forTable.getName(),
@@ -150,7 +150,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericStructContainer owner, GenericTable table, ResultSet dbResult)
+    protected GenericTableColumn fetchChild(JDBCSession session, GenericStructContainer owner, GenericTable table, ResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.COLUMN_NAME);

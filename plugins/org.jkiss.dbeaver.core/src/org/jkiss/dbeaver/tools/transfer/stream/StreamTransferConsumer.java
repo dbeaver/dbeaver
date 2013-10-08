@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -77,22 +77,22 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
+    public void fetchStart(DBCSession session, DBCResultSet resultSet) throws DBCException
     {
-        initExporter(context);
+        initExporter(session);
 
         // Prepare columns
         metaColumns = new ArrayList<DBDAttributeBinding>();
         List<DBCAttributeMetaData> attributes = resultSet.getResultSetMetaData().getAttributes();
         for (int i = 0, attributesSize = attributes.size(); i < attributesSize; i++) {
             DBCAttributeMetaData attribute = attributes.get(i);
-            DBDAttributeBinding columnBinding = DBUtils.getColumnBinding(context, attribute, i);
+            DBDAttributeBinding columnBinding = DBUtils.getColumnBinding(session, attribute, i);
             metaColumns.add(columnBinding);
         }
         row = new Object[metaColumns.size()];
 
         try {
-            processor.exportHeader(context.getProgressMonitor());
+            processor.exportHeader(session.getProgressMonitor());
         } catch (DBException e) {
             log.warn("Error while exporting table header", e);
         } catch (IOException e) {
@@ -101,13 +101,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
+    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException
     {
         try {
             // Get values
             for (int i = 0; i < metaColumns.size(); i++) {
                 DBDAttributeBinding column = metaColumns.get(i);
-                Object value = column.getValueHandler().fetchValueObject(context, resultSet, column.getMetaAttribute(), column.getAttributeIndex());
+                Object value = column.getValueHandler().fetchValueObject(session, resultSet, column.getMetaAttribute(), column.getAttributeIndex());
                 if (value instanceof DBDContent) {
                     // Check for binary type export
                     if (!ContentUtils.isTextContent((DBDContent)value)) {
@@ -121,7 +121,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 break;
                             case FILES:
                                 // Save content to file and pass file reference to exporter
-                                value = saveContentToFile(context.getProgressMonitor(), (DBDContent)value);
+                                value = saveContentToFile(session.getProgressMonitor(), (DBDContent)value);
                                 break;
                         }
                     }
@@ -129,7 +129,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 row[i] = value;
             }
             // Export row
-            processor.exportRow(context.getProgressMonitor(), row);
+            processor.exportRow(session.getProgressMonitor(), row);
         } catch (DBException e) {
             throw new DBCException("Error while exporting table row", e);
         } catch (IOException e) {
@@ -138,10 +138,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchEnd(DBCExecutionContext context) throws DBCException
+    public void fetchEnd(DBCSession session) throws DBCException
     {
         try {
-            processor.exportFooter(context.getProgressMonitor());
+            processor.exportFooter(session.getProgressMonitor());
         } catch (DBException e) {
             log.warn("Error while exporting table footer", e);
         } catch (IOException e) {
@@ -182,10 +182,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return lobFile;
     }
 
-    private void initExporter(DBCExecutionContext context) throws DBCException
+    private void initExporter(DBCSession session) throws DBCException
     {
         if (settings.getFormatterProfile() != null) {
-            context.setDataFormatterProfile(settings.getFormatterProfile());
+            session.setDataFormatterProfile(settings.getFormatterProfile());
         }
 
         exportSite = new StreamExportSite();

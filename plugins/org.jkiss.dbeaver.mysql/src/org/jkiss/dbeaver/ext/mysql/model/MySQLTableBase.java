@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -99,9 +99,9 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         if (!isPersisted()) {
             return "";
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
         try {
-            PreparedStatement dbStat = context.prepareStatement(
+            PreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
             try {
                 ResultSet dbResult = dbStat.executeQuery();
@@ -139,7 +139,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 

@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -532,9 +532,9 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataType owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataType owner) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
                 "WHERE OWNER=? AND TYPE_NAME=? ORDER BY ATTR_NO");
             dbStat.setString(1, OracleDataType.this.parent.getName());
@@ -542,17 +542,17 @@ public class OracleDataType extends OracleObject<DBSObject>
             return dbStat;
         }
         @Override
-        protected OracleDataTypeAttribute fetchObject(JDBCExecutionContext context, OracleDataType owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeAttribute fetchObject(JDBCSession session, OracleDataType owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleDataTypeAttribute(context.getProgressMonitor(), OracleDataType.this, resultSet);
+            return new OracleDataTypeAttribute(session.getProgressMonitor(), OracleDataType.this, resultSet);
         }
     }
 
     private class MethodCache extends JDBCObjectCache<OracleDataType, OracleDataTypeMethod> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataType owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataType owner) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT m.*,r.RESULT_TYPE_OWNER,RESULT_TYPE_NAME,RESULT_TYPE_MOD\n" +
                 "FROM SYS.ALL_TYPE_METHODS m\n" +
                 "LEFT OUTER JOIN SYS.ALL_METHOD_RESULTS r ON r.OWNER=m.OWNER AND r.TYPE_NAME=m.TYPE_NAME AND r.METHOD_NAME=m.METHOD_NAME AND r.METHOD_NO=m.METHOD_NO\n" +
@@ -564,9 +564,9 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
 
         @Override
-        protected OracleDataTypeMethod fetchObject(JDBCExecutionContext context, OracleDataType owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeMethod fetchObject(JDBCSession session, OracleDataType owner, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleDataTypeMethod(context.getProgressMonitor(), OracleDataType.this, resultSet);
+            return new OracleDataTypeMethod(session.getProgressMonitor(), OracleDataType.this, resultSet);
         }
     }
 

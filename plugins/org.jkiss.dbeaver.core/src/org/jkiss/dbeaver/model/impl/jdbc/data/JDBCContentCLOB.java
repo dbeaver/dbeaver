@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -138,7 +138,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     }
 
     @Override
-    public void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement preparedStatement,
+    public void bindParameter(JDBCSession session, JDBCPreparedStatement preparedStatement,
                               DBSTypedObject columnType, int paramIndex)
         throws DBCException
     {

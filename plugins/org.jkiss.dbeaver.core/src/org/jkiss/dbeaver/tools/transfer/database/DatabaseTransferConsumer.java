@@ -53,7 +53,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
-    private DBCExecutionContext targetContext;
+    private DBCSession targetSession;
     private DBSDataManipulator.ExecuteBatch executeBatch;
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
@@ -79,9 +79,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
+    public void fetchStart(DBCSession session, DBCResultSet resultSet) throws DBCException
     {
-        initExporter(context);
+        initExporter(session);
         DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
         List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
         columnMappings = new ColumnMapping[rsAttributes.size()];
@@ -92,20 +92,20 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (columnMappings[i].targetAttr == null) {
                 throw new DBCException("Can't find target attribute [" + columnMappings[i].rsAttr.getName() + "]");
             }
-            columnMappings[i].valueHandler = DBUtils.findValueHandler(context, columnMappings[i].rsAttr);
+            columnMappings[i].valueHandler = DBUtils.findValueHandler(session, columnMappings[i].rsAttr);
             attributes[i] = columnMappings[i].targetAttr.getTarget();
         }
 
-        executeBatch = containerMapping.getTarget().insertData(targetContext, attributes, null);
+        executeBatch = containerMapping.getTarget().insertData(targetSession, attributes, null);
     }
 
     @Override
-    public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
+    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException
     {
         Object[] rowValues = new Object[columnMappings.length];
         for (int i = 0; i < columnMappings.length; i++) {
             ColumnMapping column = columnMappings[i];
-            rowValues[i] = column.valueHandler.fetchValueObject(context, resultSet, column.rsAttr, i);
+            rowValues[i] = column.valueHandler.fetchValueObject(session, resultSet, column.rsAttr, i);
         }
         executeBatch.add(rowValues);
 
@@ -159,12 +159,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             } while (retryInsert);
         }
         if (settings.isUseTransactions() && needCommit) {
-            targetContext.getTransactionManager().commit();
+            targetSession.getTransactionManager().commit();
         }
     }
 
     @Override
-    public void fetchEnd(DBCExecutionContext context) throws DBCException
+    public void fetchEnd(DBCSession session) throws DBCException
     {
         if (rowsExported > 0) {
             insertBatch(true);
@@ -181,7 +181,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
     }
 
-    private void initExporter(DBCExecutionContext context) throws DBCException
+    private void initExporter(DBCSession session) throws DBCException
     {
         containerMapping = settings.getDataMapping(sourceObject);
         if (containerMapping == null) {
@@ -189,20 +189,20 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         DBPDataSource dataSource = containerMapping.getTarget().getDataSource();
         if (settings.isOpenNewConnections()) {
-            targetContext = dataSource.openIsolatedContext(context.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
+            targetSession = dataSource.openIsolatedContext(session.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
         } else {
-            targetContext = dataSource.openContext(context.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
+            targetSession = dataSource.openSession(session.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
         }
         if (settings.isUseTransactions()) {
-            targetContext.getTransactionManager().setAutoCommit(false);
+            targetSession.getTransactionManager().setAutoCommit(false);
         }
     }
 
     private void closeExporter()
     {
-        if (targetContext != null) {
-            targetContext.close();
-            targetContext = null;
+        if (targetSession != null) {
+            targetSession.close();
+            targetSession = null;
         }
     }
 
@@ -345,9 +345,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void executeSQL(DBRProgressMonitor monitor, DBPDataSource dataSource, String sql)
         throws DBCException
     {
-        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Create target metadata");
+        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Create target metadata");
         try {
-            DBCStatement dbStat = DBUtils.prepareStatement(context, sql);
+            DBCStatement dbStat = DBUtils.prepareStatement(session, sql);
             try {
                 dbStat.executeStatement();
             } finally {
@@ -357,7 +357,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBCException("Can't alter target schema:\n" + sql, e);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 

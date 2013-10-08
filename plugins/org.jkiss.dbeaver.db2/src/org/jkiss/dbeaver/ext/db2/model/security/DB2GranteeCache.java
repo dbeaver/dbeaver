@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -128,9 +128,9 @@ public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Gra
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2DataSource db2DataSource) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2DataSource db2DataSource) throws SQLException
     {
-        JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, authIdTypeName);
         dbStat.setString(2, authIdTypeName);
         dbStat.setString(3, authIdTypeName);
@@ -147,10 +147,10 @@ public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Gra
     }
 
     @Override
-    protected DB2Grantee fetchObject(JDBCExecutionContext context, DB2DataSource db2DataSource, ResultSet resultSet)
+    protected DB2Grantee fetchObject(JDBCSession session, DB2DataSource db2DataSource, ResultSet resultSet)
         throws SQLException, DBException
     {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
         switch (authIdType) {
         case G:
             return new DB2Group(monitor, db2DataSource, resultSet);

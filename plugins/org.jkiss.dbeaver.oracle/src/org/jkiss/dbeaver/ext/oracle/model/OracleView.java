@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -179,9 +179,9 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             additionalInfo.loaded = true;
             return;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME\n" +
                 "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?");
             try {
@@ -213,7 +213,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             throw new DBCException(e);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 

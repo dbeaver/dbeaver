@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -83,7 +83,7 @@ public class DB2PlanAnalyser implements DBCPlan {
     // Business Methods
     // ----------------
 
-    public void explain(JDBCExecutionContext context) throws DBCException
+    public void explain(JDBCSession session) throws DBCException
     {
         Integer stmtNo = STMT_NO_GEN.incrementAndGet();
 
@@ -93,10 +93,10 @@ public class DB2PlanAnalyser implements DBCPlan {
         try {
 
             // Start by cleaning old rows for safety
-            cleanExplainTables(context, stmtNo, planTableSchema);
+            cleanExplainTables(session, stmtNo, planTableSchema);
 
             // Explain
-            JDBCPreparedStatement dbStat = context.prepareStatement(String.format(PT_EXPLAIN, stmtNo, query));
+            JDBCPreparedStatement dbStat = session.prepareStatement(String.format(PT_EXPLAIN, stmtNo, query));
             try {
                 dbStat.execute();
             } finally {
@@ -104,13 +104,13 @@ public class DB2PlanAnalyser implements DBCPlan {
             }
 
             // Build Node Structure
-            dbStat = context.prepareStatement(String.format(SEL_STMT, planTableSchema));
+            dbStat = session.prepareStatement(String.format(SEL_STMT, planTableSchema));
             try {
                 dbStat.setInt(1, stmtNo);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     dbResult.next();
-                    db2PlanStatement = new DB2PlanStatement(context, dbResult, planTableSchema);
+                    db2PlanStatement = new DB2PlanStatement(session, dbResult, planTableSchema);
                 } finally {
                     dbResult.close();
                 }
@@ -121,7 +121,7 @@ public class DB2PlanAnalyser implements DBCPlan {
             listNodes = db2PlanStatement.buildNodes();
 
             // Clean afterward
-            cleanExplainTables(context, stmtNo, planTableSchema);
+            cleanExplainTables(session, stmtNo, planTableSchema);
 
         } catch (SQLException e) {
             throw new DBCException(e);
@@ -131,10 +131,10 @@ public class DB2PlanAnalyser implements DBCPlan {
     // ----------------
     // Helpers
     // ----------------
-    private void cleanExplainTables(JDBCExecutionContext context, Integer stmtNo, String planTableSchema) throws SQLException
+    private void cleanExplainTables(JDBCSession session, Integer stmtNo, String planTableSchema) throws SQLException
     {
         // Delete previous statement rows
-        JDBCPreparedStatement dbStat = context.prepareStatement(String.format(PT_DELETE, planTableSchema, planTableSchema));
+        JDBCPreparedStatement dbStat = session.prepareStatement(String.format(PT_DELETE, planTableSchema, planTableSchema));
         try {
             dbStat.setInt(1, stmtNo);
             dbStat.execute();

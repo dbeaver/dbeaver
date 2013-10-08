@@ -105,7 +105,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         // Check for tables name
         // Sometimes [DBSPEC: Informix] it contains schema/catalog name inside
         if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(fetchedCatalogName) && CommonUtils.isEmpty(fetchedSchemaName)) {
-            final DBPDataSource dataSource = resultSetMeta.getResultSet().getContext().getDataSource();
+            final DBPDataSource dataSource = resultSetMeta.getResultSet().getSession().getDataSource();
             final DBPDataSourceInfo dsInfo = dataSource.getInfo();
             if (!DBUtils.isQuotedIdentifier(dataSource, fetchedTableName)) {
                 final String catalogSeparator = dsInfo.getCatalogSeparator();
@@ -127,7 +127,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
         if (ownerEntity != null) {
             try {
-                this.tableColumn = ownerEntity.getAttribute(resultSetMeta.getResultSet().getContext().getProgressMonitor(), name);
+                this.tableColumn = ownerEntity.getAttribute(resultSetMeta.getResultSet().getSession().getProgressMonitor(), name);
             }
             catch (DBException e) {
                 log.warn(e);

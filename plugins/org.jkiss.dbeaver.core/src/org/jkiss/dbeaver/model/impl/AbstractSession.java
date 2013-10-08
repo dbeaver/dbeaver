@@ -30,14 +30,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Abstract execution context
  */
-public abstract class AbstractExecutionContext implements DBCExecutionContext, DBRBlockingObject {
+public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
 
     private DBRProgressMonitor monitor;
     private DBCExecutionPurpose purpose;
     private String taskTitle;
     private DBDDataFormatterProfile dataFormatterProfile;
 
-    public AbstractExecutionContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
+    public AbstractSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         this.monitor = monitor;
         this.purpose = purpose;
@@ -112,7 +112,7 @@ public abstract class AbstractExecutionContext implements DBCExecutionContext, D
         @Override
         public DBPDataSource getDataSource()
         {
-            return AbstractExecutionContext.this.getDataSource();
+            return AbstractSession.this.getDataSource();
         }
 
         @Override

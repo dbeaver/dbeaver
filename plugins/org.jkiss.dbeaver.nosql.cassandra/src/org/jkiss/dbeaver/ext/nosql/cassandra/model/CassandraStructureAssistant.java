@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
@@ -64,15 +64,15 @@ public class CassandraStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         CassandraKeyspace parentKeyspace = parentObject instanceof CassandraKeyspace ? (CassandraKeyspace)parentObject : null;
         final CassandraDataSource dataSource = getDataSource();
         DBPIdentifierCase convertCase = caseSensitive ? dataSource.getInfo().storesQuotedCase() : dataSource.getInfo().storesUnquotedCase();
         objectNameMask = convertCase.transform(objectNameMask);
 
-        DBRProgressMonitor monitor = context.getProgressMonitor();
-        JDBCResultSet dbResult = context.getMetaData().getTables(
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        JDBCResultSet dbResult = session.getMetaData().getTables(
             null,
             parentKeyspace == null ? null : parentKeyspace.getName(),
             objectNameMask,

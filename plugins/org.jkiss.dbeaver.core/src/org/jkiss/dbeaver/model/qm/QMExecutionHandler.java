@@ -21,9 +21,9 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
 /**
@@ -39,19 +39,19 @@ public interface QMExecutionHandler {
 
     void handleSessionEnd(DBPDataSource dataSource);
 
-    void handleContextOpen(DBCExecutionContext context);
+    void handleContextOpen(DBCSession session);
 
-    void handleContextClose(DBCExecutionContext context);
+    void handleContextClose(DBCSession session);
 
-    void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit);
+    void handleTransactionAutocommit(DBCSession session, boolean autoCommit);
 
-    void handleTransactionIsolation(DBCExecutionContext context, DBPTransactionIsolation level);
+    void handleTransactionIsolation(DBCSession session, DBPTransactionIsolation level);
 
-    void handleTransactionCommit(DBCExecutionContext context);
+    void handleTransactionCommit(DBCSession session);
 
     void handleTransactionSavepoint(DBCSavepoint savepoint);
 
-    void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint);
+    void handleTransactionRollback(DBCSession session, DBCSavepoint savepoint);
 
     void handleStatementOpen(DBCStatement statement);
 
@@ -67,8 +67,8 @@ public interface QMExecutionHandler {
 
     void handleResultSetClose(DBCResultSet resultSet, long rowCount);
 
-    void handleScriptBegin(DBCExecutionContext context);
+    void handleScriptBegin(DBCSession session);
     
-    void handleScriptEnd(DBCExecutionContext context);
+    void handleScriptEnd(DBCSession session);
 
 }

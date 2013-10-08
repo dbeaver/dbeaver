@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraintColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCheckConstraintColUsage;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -85,7 +85,7 @@ public final class DB2TableCheckConstraintCache extends
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema, DB2Table forTable)
         throws SQLException
     {
         String sql;
@@ -94,7 +94,7 @@ public final class DB2TableCheckConstraintCache extends
         } else {
             sql = SQL_CK_ALL;
         }
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
         if (forTable != null) {
             dbStat.setString(2, forTable.getName());
@@ -103,20 +103,20 @@ public final class DB2TableCheckConstraintCache extends
     }
 
     @Override
-    protected DB2TableCheckConstraint fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table db2Table,
+    protected DB2TableCheckConstraint fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table,
         String indexName, ResultSet dbResult) throws SQLException, DBException
     {
 
-        return new DB2TableCheckConstraint(context.getProgressMonitor(), db2Table, dbResult);
+        return new DB2TableCheckConstraint(session.getProgressMonitor(), db2Table, dbResult);
     }
 
     @Override
-    protected DB2TableCheckConstraintColumn fetchObjectRow(JDBCExecutionContext context, DB2Table db2Table,
+    protected DB2TableCheckConstraintColumn fetchObjectRow(JDBCSession session, DB2Table db2Table,
         DB2TableCheckConstraint object, ResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
-        DB2TableColumn tableColumn = db2Table.getAttribute(context.getProgressMonitor(), colName);
+        DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
         DB2TableCheckConstraintColUsage usage = CommonUtils.valueOf(DB2TableCheckConstraintColUsage.class,
             JDBCUtils.safeGetString(dbResult, "USAGE"));
         if (tableColumn == null) {

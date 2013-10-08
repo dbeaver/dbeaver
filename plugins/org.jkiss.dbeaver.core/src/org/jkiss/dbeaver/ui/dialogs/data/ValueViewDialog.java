@@ -47,8 +47,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -574,15 +574,15 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                         }
                     }
                 }
-                final DBCExecutionContext context = getDataSource().openContext(
-                        monitor,
-                        DBCExecutionPurpose.UTIL,
-                        NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getAttribute().getName()));
+                final DBCSession session = getDataSource().openSession(
+                    monitor,
+                    DBCExecutionPurpose.UTIL,
+                    NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getAttribute().getName()));
                 try {
                     final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
                     DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
                     Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
-                        context,
+                        session,
                         refColumn,
                         pattern,
                         precedingKeys,
@@ -597,7 +597,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                         @Override
                         public void run()
                         {
-                            DBDValueHandler colHandler = DBUtils.findValueHandler(context, fkColumn.getAttribute());
+                            DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkColumn.getAttribute());
 
                             if (editorSelector != null && !editorSelector.isDisposed()) {
                                 editorSelector.setRedraw(false);
@@ -643,7 +643,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                     });
                 }
                 finally {
-                    context.close();
+                    session.close();
                 }
 
             } catch (DBException e) {

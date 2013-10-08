@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -66,22 +66,22 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_VIEWS);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_VIEWS);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2View fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
+    protected DB2View fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
         DBException
     {
-        return new DB2View(context.getProgressMonitor(), db2Schema, dbResult);
+        return new DB2View(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2View forView)
+    protected JDBCStatement prepareChildrenStatement(JDBCSession session, DB2Schema db2Schema, DB2View forView)
         throws SQLException
     {
 
@@ -91,7 +91,7 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
         } else {
             sql = SQL_COLS_ALL;
         }
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
         if (forView != null) {
             dbStat.setString(2, forView.getName());
@@ -100,10 +100,10 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2View db2View, ResultSet dbResult)
+    protected DB2TableColumn fetchChild(JDBCSession session, DB2Schema db2Schema, DB2View db2View, ResultSet dbResult)
         throws SQLException, DBException
     {
-        return new DB2TableColumn(context.getProgressMonitor(), db2View, dbResult);
+        return new DB2TableColumn(session.getProgressMonitor(), db2View, dbResult);
     }
 
 }

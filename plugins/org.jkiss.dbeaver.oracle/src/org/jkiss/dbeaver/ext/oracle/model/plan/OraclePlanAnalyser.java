@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model.plan;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -59,13 +59,13 @@ public class OraclePlanAnalyser implements DBCPlan {
         return rootNodes;
     }
 
-    public void explain(JDBCExecutionContext context)
+    public void explain(JDBCSession session)
         throws DBCException
     {
         String planStmtId = SecurityUtils.generateUniqueId();
         try {
             // Detect plan table
-            String planTableName = dataSource.getPlanTableName(context);
+            String planTableName = dataSource.getPlanTableName(session);
             if (planTableName == null) {
                 throw new DBCException("Plan table not found - query can't be explained");
             }
@@ -73,7 +73,7 @@ public class OraclePlanAnalyser implements DBCPlan {
             // Delete previous statement rows
             // (actually there should be no statement with this id -
             // but let's do it, just in case)
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "DELETE FROM " + planTableName +
                 " WHERE STATEMENT_ID=? ");
             try {
@@ -90,7 +90,7 @@ public class OraclePlanAnalyser implements DBCPlan {
                 .append("SET STATEMENT_ID = '").append(planStmtId).append("'\n")
                 .append("INTO ").append(planTableName).append("\n")
                 .append("FOR ").append(query);
-            dbStat = context.prepareStatement(explainSQL.toString());
+            dbStat = session.prepareStatement(explainSQL.toString());
             try {
                 dbStat.execute();
             } finally {
@@ -98,7 +98,7 @@ public class OraclePlanAnalyser implements DBCPlan {
             }
 
             // Read explained plan
-            dbStat = context.prepareStatement(
+            dbStat = session.prepareStatement(
                 "SELECT * FROM " + planTableName +
                 " WHERE STATEMENT_ID=? ORDER BY ID");
             try {

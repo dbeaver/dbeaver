@@ -205,9 +205,9 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return "";
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
         try {
-            PreparedStatement dbStat = context.prepareStatement(
+            PreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
             try {
                 ResultSet dbResult = dbStat.executeQuery();
@@ -245,7 +245,7 @@ public class MySQLTable extends MySQLTableBase
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -269,9 +269,9 @@ public class MySQLTable extends MySQLTableBase
             additionalInfo.loaded = true;
             return;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table status");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'");
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
@@ -314,7 +314,7 @@ public class MySQLTable extends MySQLTableBase
         catch (SQLException e) {
             throw new DBCException(e);
         } finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -325,11 +325,11 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return fkList;
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<String, MySQLTableForeignKey>();
             Map<String, MySQLTableConstraint> pkMap = new HashMap<String, MySQLTableConstraint>();
-            JDBCDatabaseMetaData metaData = context.getMetaData();
+            JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
             if (references) {
@@ -446,16 +446,16 @@ public class MySQLTable extends MySQLTableBase
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
     class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
         Map<String, MySQLPartition> partitionMap = new HashMap<String, MySQLPartition>();
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLTable mySQLTable) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLTable mySQLTable) throws SQLException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_PARTITIONS +
                 " WHERE TABLE_SCHEMA=? AND TABLE_NAME=? " +
                 " ORDER BY PARTITION_ORDINAL_POSITION,SUBPARTITION_ORDINAL_POSITION");
@@ -465,7 +465,7 @@ public class MySQLTable extends MySQLTableBase
         }
 
         @Override
-        protected MySQLPartition fetchObject(JDBCExecutionContext context, MySQLTable table, ResultSet dbResult) throws SQLException, DBException
+        protected MySQLPartition fetchObject(JDBCSession session, MySQLTable table, ResultSet dbResult) throws SQLException, DBException
         {
             String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
             String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);

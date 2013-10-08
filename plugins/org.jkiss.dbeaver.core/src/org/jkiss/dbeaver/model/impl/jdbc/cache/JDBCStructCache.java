@@ -23,8 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.DBSStructCache;
@@ -35,12 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * JDBC structured objects cache. Stores objects themselves and their child objects.
@@ -53,10 +48,10 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     private volatile boolean childrenCached = false;
     private final Map<OBJECT, SimpleObjectCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<OBJECT, SimpleObjectCache<OBJECT, CHILD>>();
 
-    abstract protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OWNER owner, OBJECT forObject)
+    abstract protected JDBCStatement prepareChildrenStatement(JDBCSession session, OWNER owner, OBJECT forObject)
         throws SQLException;
 
-    abstract protected CHILD fetchChild(JDBCExecutionContext context, OWNER owner, OBJECT parent, ResultSet dbResult)
+    abstract protected CHILD fetchChild(JDBCSession session, OWNER owner, OBJECT parent, ResultSet dbResult)
         throws SQLException, DBException;
 
     protected JDBCStructCache(Object objectNameColumn)
@@ -84,13 +79,13 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             super.loadObjects(monitor, owner);
         }
 
-        JDBCExecutionContext context = (JDBCExecutionContext) owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META,
+        JDBCSession session = (JDBCSession) owner.getDataSource().openSession(monitor, DBCExecutionPurpose.META,
             "Load child objects");
         try {
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<OBJECT, List<CHILD>>();
 
             // Load columns
-            JDBCStatement dbStat = prepareChildrenStatement(context, owner, forObject);
+            JDBCStatement dbStat = prepareChildrenStatement(session, owner, forObject);
             try {
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 dbStat.executeStatement();
@@ -119,7 +114,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                             // Already read
                             continue;
                         }
-                        CHILD child = fetchChild(context, owner, object, dbResult);
+                        CHILD child = fetchChild(session, owner, object, dbResult);
                         if (child == null) {
                             continue;
                         }
@@ -166,7 +161,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         } catch (SQLException ex) {
             throw new DBException(ex);
         } finally {
-            context.close();
+            session.close();
         }
     }
 

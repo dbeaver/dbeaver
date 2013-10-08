@@ -20,14 +20,14 @@
 package org.jkiss.dbeaver.model.exec.plan;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Query validator
  */
 public interface DBCQueryValidator {
 
-    void validateQuery(DBCExecutionContext context, String query)
+    void validateQuery(DBCSession session, String query)
         throws DBCException;
 
 }

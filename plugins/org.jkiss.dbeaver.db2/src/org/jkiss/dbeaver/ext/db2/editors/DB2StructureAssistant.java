@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -115,13 +115,13 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
 
-        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Find objects by name");
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Find objects by name");
         try {
-            return searchAllObjects(context, schema, objectNameMask, db2ObjectTypes, caseSensitive, maxResults);
+            return searchAllObjects(session, schema, objectNameMask, db2ObjectTypes, caseSensitive, maxResults);
         } catch (SQLException ex) {
             throw new DBException(ex);
         } finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -129,7 +129,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     // Helpers
     // -----------------
 
-    private List<DBSObjectReference> searchAllObjects(final JDBCExecutionContext context, final DB2Schema schema,
+    private List<DBSObjectReference> searchAllObjects(final JDBCSession session, final DB2Schema schema,
         String objectNameMask, List<DB2ObjectType> db2ObjectTypes, boolean caseSensitive, int maxResults) throws SQLException,
         DBException
     {
@@ -148,7 +148,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
             || (db2ObjectTypes.contains(DB2ObjectType.NICKNAME)) || (db2ObjectTypes.contains(DB2ObjectType.VIEW))
             || (db2ObjectTypes.contains(DB2ObjectType.MQT))) {
 
-            searchTables(context, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
+            searchTables(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
 
             if (nbResults >= maxResults) {
                 return objects;
@@ -157,7 +157,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         // Columns
         if (db2ObjectTypes.contains(DB2ObjectType.COLUMN)) {
-            searchColumns(context, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
+            searchColumns(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
         }
 
         return objects;
@@ -167,7 +167,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     // Helper Classes
     // --------------
 
-    private void searchTables(JDBCExecutionContext context, DB2Schema schema, String searchObjectNameMask,
+    private void searchTables(JDBCSession session, DB2Schema schema, String searchObjectNameMask,
         List<DB2ObjectType> db2ObjectTypes, int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException,
         DBException
     {
@@ -181,7 +181,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         String sql = buildTableSQL(baseSQL, db2ObjectTypes);
 
         int n = 1;
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         try {
             if (schema != null) {
                 dbStat.setString(n++, schema.getName());
@@ -199,7 +199,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
                 while (dbResult.next()) {
-                    if (context.getProgressMonitor().isCanceled()) {
+                    if (session.getProgressMonitor().isCanceled()) {
                         break;
                     }
 
@@ -211,7 +211,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                     objectName = JDBCUtils.safeGetString(dbResult, "TABNAME");
                     tableType = CommonUtils.valueOf(DB2TableType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
 
-                    db2Schema = dataSource.getSchema(context.getProgressMonitor(), schemaName);
+                    db2Schema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
                     if (db2Schema == null) {
                         LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
                         continue;
@@ -228,7 +228,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         }
     }
 
-    private void searchColumns(JDBCExecutionContext context, DB2Schema schema, String searchObjectNameMask,
+    private void searchColumns(JDBCSession session, DB2Schema schema, String searchObjectNameMask,
         List<DB2ObjectType> objectTypes, int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException,
         DBException
     {
@@ -240,7 +240,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         }
 
         int n = 1;
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         try {
             if (schema != null) {
                 dbStat.setString(n++, schema.getName());
@@ -259,7 +259,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
             JDBCResultSet dbResult = dbStat.executeQuery();
             try {
                 while (dbResult.next()) {
-                    if (context.getProgressMonitor().isCanceled()) {
+                    if (session.getProgressMonitor().isCanceled()) {
                         break;
                     }
 
@@ -271,17 +271,17 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                     tableOrViewName = JDBCUtils.safeGetString(dbResult, "TABNAME");
                     columnName = JDBCUtils.safeGetString(dbResult, "COLNAME");
 
-                    db2Schema = dataSource.getSchema(context.getProgressMonitor(), tableSchemaName);
+                    db2Schema = dataSource.getSchema(session.getProgressMonitor(), tableSchemaName);
                     if (db2Schema == null) {
                         LOG.debug("Schema '" + tableSchemaName + "' not found. Probably was filtered");
                         continue;
                     }
                     // Try with table, then view
-                    db2Table = db2Schema.getTable(context.getProgressMonitor(), tableOrViewName);
+                    db2Table = db2Schema.getTable(session.getProgressMonitor(), tableOrViewName);
                     if (db2Table != null) {
                         objects.add(new DB2ObjectReference(columnName, db2Table, DB2ObjectType.COLUMN));
                     } else {
-                        db2View = db2Schema.getView(context.getProgressMonitor(), tableOrViewName);
+                        db2View = db2Schema.getView(session.getProgressMonitor(), tableOrViewName);
                         if (db2View != null) {
                             objects.add(new DB2ObjectReference(columnName, db2View, DB2ObjectType.COLUMN));
                         }

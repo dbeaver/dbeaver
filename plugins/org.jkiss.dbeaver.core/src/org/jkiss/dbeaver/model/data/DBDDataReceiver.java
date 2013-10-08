@@ -20,8 +20,8 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Data receiver.
@@ -30,18 +30,18 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
  */
 public interface DBDDataReceiver {
 
-    void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
+    void fetchStart(DBCSession session, DBCResultSet resultSet)
         throws DBCException;
 
-    void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
+    void fetchRow(DBCSession session, DBCResultSet resultSet)
         throws DBCException;
 
     /**
      * Called after entire result set if fetched.
      * @throws DBCException on error
-     * @param context execution context
+     * @param session execution context
      */
-    void fetchEnd(DBCExecutionContext context)
+    void fetchEnd(DBCSession session)
         throws DBCException;
 
     /**

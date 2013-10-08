@@ -204,15 +204,15 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         } else {
             // Seems to be a dynamic query. Execute it to get metadata
-            DBCExecutionContext context = source.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Read query meta data");
+            DBCSession session = source.getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, "Read query meta data");
             try {
                 MetadataReceiver receiver = new MetadataReceiver();
-                source.readData(context, receiver, null, 0, 1);
+                source.readData(session, receiver, null, 0, 1);
                 for (DBCAttributeMetaData attr : receiver.attributes) {
                     addAttributeMapping(monitor, attr);
                 }
             } finally {
-                context.close();
+                session.close();
             }
         }
     }
@@ -229,18 +229,18 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         private List<DBCAttributeMetaData> attributes;
 
         @Override
-        public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
+        public void fetchStart(DBCSession session, DBCResultSet resultSet) throws DBCException
         {
             attributes = resultSet.getResultSetMetaData().getAttributes();
         }
 
         @Override
-        public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
+        public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException
         {
         }
 
         @Override
-        public void fetchEnd(DBCExecutionContext context) throws DBCException
+        public void fetchEnd(DBCSession session) throws DBCException
         {
         }
 

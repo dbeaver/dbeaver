@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -185,10 +185,10 @@ public class OraclePackage extends OracleSchemaObject
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OraclePackage owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OraclePackage owner)
             throws SQLException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT P.*,CASE WHEN A.DATA_TYPE IS NULL THEN 'PROCEDURE' ELSE 'FUNCTION' END as PROCEDURE_TYPE FROM ALL_PROCEDURES P\n" +
                 "LEFT OUTER JOIN ALL_ARGUMENTS A ON A.OWNER=P.OWNER AND A.PACKAGE_NAME=P.OBJECT_NAME AND A.OBJECT_NAME=P.PROCEDURE_NAME AND A.ARGUMENT_NAME IS NULL AND A.DATA_LEVEL=0\n" +
                 "WHERE P.OWNER=? AND P.OBJECT_NAME=?\n" +
@@ -199,7 +199,7 @@ public class OraclePackage extends OracleSchemaObject
         }
 
         @Override
-        protected OracleProcedurePackaged fetchObject(JDBCExecutionContext context, OraclePackage owner, ResultSet dbResult)
+        protected OracleProcedurePackaged fetchObject(JDBCSession session, OraclePackage owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleProcedurePackaged(owner, dbResult);

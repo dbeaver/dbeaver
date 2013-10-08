@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
@@ -119,9 +119,9 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         GenericProcedure procedure = null;
 
         final GenericMetaObject pcObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE_COLUMN);
-        final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load procedure columns");
+        final JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load procedure columns");
         try {
-            final JDBCResultSet dbResult = context.getMetaData().getProcedureColumns(
+            final JDBCResultSet dbResult = session.getMetaData().getProcedureColumns(
                 getCatalog() == null ?
                     this.getPackage() == null || !this.getPackage().isNameFromCatalog() ?
                         null :
@@ -191,7 +191,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         } catch (SQLException e) {
             throw new DBException(e);
         } finally {
-            context.close();
+            session.close();
         }
 
     }

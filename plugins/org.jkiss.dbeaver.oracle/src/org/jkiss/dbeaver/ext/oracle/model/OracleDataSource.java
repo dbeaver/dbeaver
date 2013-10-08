@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -243,27 +243,27 @@ public class OracleDataSource extends JDBCDataSource
 
         this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
-            final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+            final JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
             try {
                 // Set session settings
                 DBPConnectionInfo connectionInfo = getContainer().getConnectionInfo();
                 Object sessionLanguage = connectionInfo.getProperties().get(OracleConstants.PROP_SESSION_LANGUAGE);
                 if (sessionLanguage != null) {
                     JDBCUtils.executeSQL(
-                        context,
+                        session,
                         "ALTER SESSION SET NLS_LANGUAGE='" + sessionLanguage + "'");
                 }
                 Object sessionTerritory = connectionInfo.getProperties().get(OracleConstants.PROP_SESSION_TERRITORY);
                 if (sessionLanguage != null) {
                     JDBCUtils.executeSQL(
-                        context,
+                        session,
                         "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
                 }
 
                 // Check DBA role
                 this.isAdmin = "YES".equals(
                     JDBCUtils.queryString(
-                    context,
+                    session,
                     "SELECT 'YES' FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'"));
                 this.isAdminVisible = isAdmin;
                 if (!isAdminVisible) {
@@ -275,14 +275,14 @@ public class OracleDataSource extends JDBCDataSource
 
                 // Get active schema
                 this.activeSchemaName = JDBCUtils.queryString(
-                    context,
+                    session,
                     "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
             } catch (SQLException e) {
                 //throw new DBException(e);
                 log.warn(e);
             }
             finally {
-                context.close();
+                session.close();
             }
         }
         this.dataTypeCache.getObjects(monitor, this);
@@ -355,14 +355,14 @@ public class OracleDataSource extends JDBCDataSource
         if (!(object instanceof OracleSchema)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
         try {
-            JDBCUtils.executeSQL(context, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
+            JDBCUtils.executeSQL(session, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
         } catch (SQLException e) {
             throw new DBException(e);
         }
         finally {
-            context.close();
+            session.close();
         }
         activeSchemaName = object.getName();
 
@@ -376,10 +376,10 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
+    public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException
     {
         OraclePlanAnalyser plan = new OraclePlanAnalyser(this, query);
-        plan.explain((JDBCExecutionContext) context);
+        plan.explain((JDBCSession) session);
         return plan;
     }
 
@@ -442,7 +442,7 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
-    public String getPlanTableName(JDBCExecutionContext context)
+    public String getPlanTableName(JDBCSession session)
         throws SQLException
     {
         String tableName = getContainer().getPreferenceStore().getString(OracleConstants.PREF_EXPLAIN_TABLE_NAME);
@@ -453,7 +453,7 @@ public class OracleDataSource extends JDBCDataSource
             String[] candidateNames = new String[] {"PLAN_TABLE", "TOAD_PLAN_TABLE"};
             for (String candidate : candidateNames) {
                 try {
-                    JDBCUtils.executeSQL(context, "SELECT 1 FROM " + candidate);
+                    JDBCUtils.executeSQL(session, "SELECT 1 FROM " + candidate);
                 } catch (SQLException e) {
                     // No such table
                     continue;
@@ -466,20 +466,20 @@ public class OracleDataSource extends JDBCDataSource
                 if (!UIUtils.confirmAction(
                     DBeaverUI.getActiveWorkbenchShell(),
                     "Oracle PLAN_TABLE missing",
-                    "PLAN_TABLE not found in current user's context. " +
+                    "PLAN_TABLE not found in current user's session. " +
                         "Do you want DBeaver to create new PLAN_TABLE?"))
                 {
                     return null;
                 }
-                planTableName = createPlanTable(context);
+                planTableName = createPlanTable(session);
             }
         }
         return planTableName;
     }
 
-    private String createPlanTable(JDBCExecutionContext context) throws SQLException
+    private String createPlanTable(JDBCSession session) throws SQLException
     {
-        JDBCUtils.executeSQL(context, OracleConstants.PLAN_TABLE_DEFINITION);
+        JDBCUtils.executeSQL(session, OracleConstants.PLAN_TABLE_DEFINITION);
         return "PLAN_TABLE";
     }
 
@@ -490,7 +490,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
         {
             StringBuilder schemasQuery = new StringBuilder();
             boolean manyObjects = "false".equals(owner.getContainer().getConnectionInfo().getProperties().get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
@@ -519,7 +519,7 @@ public class OracleDataSource extends JDBCDataSource
             //}
             //schemasQuery.append("\nORDER BY USERNAME");
 
-            JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(schemasQuery.toString());
 
             if (schemaFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, schemaFilters);
@@ -528,7 +528,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleSchema fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleSchema fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSchema(owner, resultSet);
         }
@@ -547,13 +547,13 @@ public class OracleDataSource extends JDBCDataSource
 
     static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
         {
-            return context.prepareStatement(
+            return session.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
         }
         @Override
-        protected OracleDataType fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataType fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataType(owner, resultSet);
         }
@@ -573,14 +573,14 @@ public class OracleDataSource extends JDBCDataSource
 
     static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
         {
-            return context.prepareStatement(
+            return session.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner) + "TABLESPACES ORDER BY TABLESPACE_NAME");
         }
 
         @Override
-        protected OracleTablespace fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleTablespace fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleTablespace(owner, resultSet);
         }
@@ -588,14 +588,14 @@ public class OracleDataSource extends JDBCDataSource
 
     static class UserCache extends JDBCObjectCache<OracleDataSource, OracleUser> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
         {
-            return context.prepareStatement(
+            return session.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(owner) + "USERS ORDER BY USERNAME");
         }
 
         @Override
-        protected OracleUser fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleUser fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleUser(owner, resultSet);
         }
@@ -603,14 +603,14 @@ public class OracleDataSource extends JDBCDataSource
 
     static class RoleCache extends JDBCObjectCache<OracleDataSource, OracleRole> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
         {
-            return context.prepareStatement(
+            return session.prepareStatement(
                 "SELECT * FROM DBA_ROLES ORDER BY ROLE");
         }
 
         @Override
-        protected OracleRole fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleRole fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleRole(owner, resultSet);
         }
@@ -623,22 +623,22 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
         {
-            return context.prepareStatement(
+            return session.prepareStatement(
                 "SELECT DISTINCT PROFILE FROM DBA_PROFILES ORDER BY PROFILE");
         }
 
         @Override
-        protected OracleUserProfile fetchObject(JDBCExecutionContext context, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleUserProfile fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleUserProfile(owner, resultSet);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OracleDataSource dataSource, OracleUserProfile forObject) throws SQLException
+        protected JDBCStatement prepareChildrenStatement(JDBCSession session, OracleDataSource dataSource, OracleUserProfile forObject) throws SQLException
         {
-            final JDBCPreparedStatement dbStat = context.prepareStatement(
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT RESOURCE_NAME,RESOURCE_TYPE,LIMIT FROM DBA_PROFILES " +
                 (forObject == null ? "" : "WHERE PROFILE=? ") +
                 "ORDER BY RESOURCE_NAME");
@@ -649,7 +649,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleUserProfile.ProfileResource fetchChild(JDBCExecutionContext context, OracleDataSource dataSource, OracleUserProfile parent, ResultSet dbResult) throws SQLException, DBException
+        protected OracleUserProfile.ProfileResource fetchChild(JDBCSession session, OracleDataSource dataSource, OracleUserProfile parent, ResultSet dbResult) throws SQLException, DBException
         {
             return new OracleUserProfile.ProfileResource(parent, dbResult);
         }

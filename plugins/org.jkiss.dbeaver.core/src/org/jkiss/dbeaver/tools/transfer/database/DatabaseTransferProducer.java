@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -71,21 +71,21 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         String contextTask = CoreMessages.data_transfer_wizard_job_task_export;
         DBPDataSource dataSource = getSourceObject().getDataSource();
         boolean newConnection = settings.isOpenNewConnections();
-        DBCExecutionContext context = newConnection ?
+        DBCSession session = newConnection ?
             dataSource.openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
-            dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
+            dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask);
         try {
             if (newConnection) {
                 // Turn off auto-commit in source DB
                 // Auto-commit has to be turned off because some drivers allows to read LOBs and
                 // other complex structures only in transactional mode
-                context.getTransactionManager().setAutoCommit(false);
+                session.getTransactionManager().setAutoCommit(false);
             }
             long totalRows = 0;
             if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                 monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_retrieve, 1);
                 try {
-                    totalRows = dataContainer.countData(context, dataFilter);
+                    totalRows = dataContainer.countData(session, dataFilter);
                 } catch (Throwable e) {
                     log.warn("Can't retrieve row count from '" + dataContainer.getName() + "'", e);
                 } finally {
@@ -99,14 +99,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 // Perform export
                 if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
                     // Just do it in single query
-                    dataContainer.readData(context, consumer, dataFilter, -1, -1);
+                    dataContainer.readData(session, consumer, dataFilter, -1, -1);
                 } else {
                     // Read all data by segments
                     long offset = 0;
                     int segmentSize = settings.getSegmentSize();
                     for (;;) {
                         DBCStatistics statistics = dataContainer.readData(
-                            context, consumer, dataFilter, offset, segmentSize);
+                            session, consumer, dataFilter, offset, segmentSize);
                         if (statistics == null || statistics.getRowsFetched() < segmentSize) {
                             // Done
                             break;
@@ -122,12 +122,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         } finally {
             if (newConnection) {
                 try {
-                    context.getTransactionManager().commit();
+                    session.getTransactionManager().commit();
                 } catch (DBCException e) {
                     log.error("Can't finish transaction in data producer connection", e);
                 }
             }
-            context.close();
+            session.close();
         }
     }
 

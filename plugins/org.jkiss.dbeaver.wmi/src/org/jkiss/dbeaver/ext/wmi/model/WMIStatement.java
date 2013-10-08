@@ -32,7 +32,7 @@ import java.util.List;
  * WMI statement
  */
 public class WMIStatement implements DBCStatement {
-    private WMIExecutionContext context;
+    private WMISession context;
     private DBCStatementType type;
     private String query;
     private Object userData;
@@ -40,7 +40,7 @@ public class WMIStatement implements DBCStatement {
     private long firstRow;
     private long maxRows;
 
-    public WMIStatement(WMIExecutionContext context, DBCStatementType type, String query)
+    public WMIStatement(WMISession context, DBCStatementType type, String query)
     {
         this.context = context;
         this.type = type;
@@ -53,7 +53,7 @@ public class WMIStatement implements DBCStatement {
     }
 
     @Override
-    public DBCExecutionContext getContext()
+    public DBCSession getContext()
     {
         return context;
     }

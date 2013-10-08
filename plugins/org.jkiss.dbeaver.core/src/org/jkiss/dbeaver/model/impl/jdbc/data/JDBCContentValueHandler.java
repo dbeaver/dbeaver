@@ -35,10 +35,10 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
@@ -89,7 +89,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected DBDContent fetchColumnValue(
-        DBCExecutionContext context,
+        DBCSession session,
         JDBCResultSet resultSet,
         DBSTypedObject type,
         int index)
@@ -122,12 +122,12 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     break;
             }
         }
-        return getValueFromObject(context, type, value, false);
+        return getValueFromObject(session, type, value, false);
     }
 
     @Override
     protected void bindParameter(
-        JDBCExecutionContext context,
+        JDBCSession session,
         JDBCPreparedStatement statement,
         DBSTypedObject paramType,
         int paramIndex,
@@ -135,7 +135,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         throws DBCException, SQLException
     {
         if (value instanceof JDBCContentAbstract) {
-            ((JDBCContentAbstract)value).bindParameter(context, statement, paramType, paramIndex);
+            ((JDBCContentAbstract)value).bindParameter(session, statement, paramType, paramIndex);
         } else {
             throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + value);
         }
@@ -154,7 +154,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDContent getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDContent getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             // Create wrapper using column type
@@ -164,24 +164,24 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 case java.sql.Types.NVARCHAR:
                 case java.sql.Types.LONGVARCHAR:
                 case java.sql.Types.LONGNVARCHAR:
-                    return new JDBCContentChars(context.getDataSource(), null);
+                    return new JDBCContentChars(session.getDataSource(), null);
                 case java.sql.Types.CLOB:
                 case java.sql.Types.NCLOB:
-                    return new JDBCContentCLOB(context.getDataSource(), null);
+                    return new JDBCContentCLOB(session.getDataSource(), null);
                 case java.sql.Types.BINARY:
                 case java.sql.Types.VARBINARY:
                 case java.sql.Types.LONGVARBINARY:
-                    return new JDBCContentBytes(context.getDataSource());
+                    return new JDBCContentBytes(session.getDataSource());
                 case java.sql.Types.BLOB:
-                    return new JDBCContentBLOB(context.getDataSource(), null);
+                    return new JDBCContentBLOB(session.getDataSource(), null);
                 case java.sql.Types.SQLXML:
-                    return new JDBCContentXML(context.getDataSource(), null);
+                    return new JDBCContentXML(session.getDataSource(), null);
                 default:
                     log.error(CoreMessages.model_jdbc_unsupported_column_type_ + type.getTypeName());
-                    return new JDBCContentBytes(context.getDataSource());
+                    return new JDBCContentBytes(session.getDataSource());
             }
         } else if (object instanceof byte[]) {
-            return new JDBCContentBytes(context.getDataSource(), (byte[]) object);
+            return new JDBCContentBytes(session.getDataSource(), (byte[]) object);
         } else if (object instanceof String) {
             // String is a default format in many cases (like clipboard transfer)
             // So it is possible that real object type isn't string
@@ -189,19 +189,19 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 case java.sql.Types.BINARY:
                 case java.sql.Types.VARBINARY:
                 case java.sql.Types.LONGVARBINARY:
-                    return new JDBCContentBytes(context.getDataSource(), (String) object);
+                    return new JDBCContentBytes(session.getDataSource(), (String) object);
                 default:
                     // String by default
-                    return new JDBCContentChars(context.getDataSource(), (String) object);
+                    return new JDBCContentChars(session.getDataSource(), (String) object);
             }
         } else if (object instanceof Blob) {
-            return new JDBCContentBLOB(context.getDataSource(), (Blob) object);
+            return new JDBCContentBLOB(session.getDataSource(), (Blob) object);
         } else if (object instanceof Clob) {
-            return new JDBCContentCLOB(context.getDataSource(), (Clob) object);
+            return new JDBCContentCLOB(session.getDataSource(), (Clob) object);
         } else if (object instanceof SQLXML) {
-            return new JDBCContentXML(context.getDataSource(), (SQLXML) object);
+            return new JDBCContentXML(session.getDataSource(), (SQLXML) object);
         } else if (object instanceof DBDContent && object instanceof DBDValueCloneable) {
-            return (DBDContent) ((DBDValueCloneable)object).cloneValue(context.getProgressMonitor());
+            return (DBDContent) ((DBDValueCloneable)object).cloneValue(session.getProgressMonitor());
         } else {
             throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + object.getClass().getName());
         }

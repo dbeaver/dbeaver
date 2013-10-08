@@ -26,10 +26,10 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -237,9 +237,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
         if (rowCount == null) {
             // Query row count
-            DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
+            DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read row count");
             try {
-                rowCount = countData(context, null);
+                rowCount = countData(session, null);
             }
             catch (DBException e) {
                 //throw new DBCException(e);
@@ -250,7 +250,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 //                }
             }
             finally {
-                context.close();
+                session.close();
             }
         }
         if (rowCount == null) {
@@ -302,14 +302,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
             return new ArrayList<GenericTableForeignKey>();
         }
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table relations");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
             // Read foreign keys in two passes
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it
             final GenericMetaObject fkObject = getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
             final List<ForeignKeyInfo> fkInfos = new ArrayList<ForeignKeyInfo>();
-            JDBCDatabaseMetaData metaData = context.getMetaData();
+            JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             JDBCResultSet dbResult = metaData.getExportedKeys(
                     getCatalog() == null ? null : getCatalog().getName(),
@@ -427,7 +427,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 

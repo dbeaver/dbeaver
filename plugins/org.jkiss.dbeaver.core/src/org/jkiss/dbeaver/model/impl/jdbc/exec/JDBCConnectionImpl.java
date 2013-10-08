@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
-import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
+import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -44,7 +44,7 @@ import java.util.concurrent.Executor;
 /**
  * Managable connection
  */
-public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBCExecutionContext, DBRBlockingObject {
+public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, DBRBlockingObject {
 
     static final Log log = LogFactory.getLog(JDBCConnectionImpl.class);
 

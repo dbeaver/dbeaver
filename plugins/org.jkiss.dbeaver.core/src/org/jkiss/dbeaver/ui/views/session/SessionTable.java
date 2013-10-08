@@ -23,8 +23,8 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -102,12 +102,12 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCExecutionContext context = sessionManager.getDataSource().openContext(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve server sessions");
+                DBCSession session = sessionManager.getDataSource().openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve server sessions");
                 try {
-                    return sessionManager.getSessions(context, null);
+                    return sessionManager.getSessions(session, null);
                 }
                 finally {
-                    context.close();
+                    session.close();
                 }
             } catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {
@@ -135,13 +135,13 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCExecutionContext context = sessionManager.getDataSource().openContext(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Kill server session");
+                DBCSession session = sessionManager.getDataSource().openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Kill server session");
                 try {
-                    sessionManager.alterSession(context, session, options);
+                    sessionManager.alterSession(session, this.session, options);
                     return null;
                 }
                 finally {
-                    context.close();
+                    session.close();
                 }
             } catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {

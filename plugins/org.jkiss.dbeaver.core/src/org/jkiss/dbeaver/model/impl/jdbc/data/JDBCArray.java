@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -52,16 +52,16 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
     private Object[] contents;
     private DBSDataType type;
 
-    public static Object makeArray(JDBCExecutionContext context, Array array)
+    public static Object makeArray(JDBCSession session, Array array)
     {
         if (array == null) {
             return null;
         }
         DBSDataType type;
-        if (context.getDataSource() instanceof DBPDataTypeProvider) {
+        if (session.getDataSource() instanceof DBPDataTypeProvider) {
             try {
                 String baseTypeName = array.getBaseTypeName();
-                type = ((DBPDataTypeProvider) context.getDataSource()).resolveDataType(context.getProgressMonitor(), baseTypeName);
+                type = ((DBPDataTypeProvider) session.getDataSource()).resolveDataType(session.getProgressMonitor(), baseTypeName);
                 if (type == null) {
                     log.error("Can't resolve SQL array data type '" + baseTypeName + "'");
                     return null;
@@ -73,15 +73,15 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         } else {
             return null;
         }
-        DBDValueHandler valueHandler = DBUtils.findValueHandler(context, type);
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, type);
 
         Object[] contents = null;
         try {
             try {
-                contents = extractDataFromArray(context, array, type, valueHandler);
+                contents = extractDataFromArray(session, array, type, valueHandler);
             } catch (SQLException e) {
                 try {
-                    contents = extractDataFromResultSet(context, array, type, valueHandler);
+                    contents = extractDataFromResultSet(session, array, type, valueHandler);
                 } catch (SQLException e1) {
                     throw new DBCException("Error reading from array result set", e1); //$NON-NLS-1$
                 }
@@ -92,19 +92,19 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         return new JDBCArray(type, contents);
     }
 
-    private static Object[] extractDataFromResultSet(JDBCExecutionContext context, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
+    private static Object[] extractDataFromResultSet(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
     {
         ResultSet dbResult = array.getResultSet();
         if (dbResult == null) {
             return null;
         }
         try {
-            DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(context, dbResult, CoreMessages.model_jdbc_array_result_set);
+            DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(session, dbResult, CoreMessages.model_jdbc_array_result_set);
             try {
                 List<Object> data = new ArrayList<Object>();
                 while (dbResult.next()) {
                     // Fetch second column - it contains value
-                    data.add(valueHandler.fetchValueObject(context, resultSet, type, 1));
+                    data.add(valueHandler.fetchValueObject(session, resultSet, type, 1));
                 }
                 return data.toArray();
             } finally {
@@ -120,7 +120,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
     }
 
-    private static Object[] extractDataFromArray(JDBCExecutionContext context, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
+    private static Object[] extractDataFromArray(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
     {
         Object arrObject = array.getArray();
         if (arrObject == null) {
@@ -130,7 +130,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         Object[] contents = new Object[arrLength];
         for (int i = 0; i < arrLength; i++) {
             Object item = java.lang.reflect.Array.get(arrObject, i);
-            item = valueHandler.getValueFromObject(context, type, item, false);
+            item = valueHandler.getValueFromObject(session, type, item, false);
             contents[i] = item;
         }
         return contents;

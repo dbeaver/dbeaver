@@ -23,8 +23,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.dnd.Clipboard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
@@ -65,26 +65,26 @@ public interface DBDValueHandler
     /**
      * Extracts object from result set
      *
-     * @param context
+     * @param session
      * @param resultSet result set
      * @param type
      *@param index @return value or null
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    Object fetchValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject type, int index)
+    Object fetchValueObject(DBCSession session, DBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException;
 
     /**
      * Binds specified parameter to statement
      *
-     * @param context execution context
+     * @param session execution context
      * @param statement statement
      * @param type attribute type
      * @param index parameter index
      * @param value parameter value (can be null). Value is get from fetchValueObject function or from
      * object set by editor (editValue function).  @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject type, int index, Object value)
+    void bindValueObject(DBCSession session, DBCStatement statement, DBSTypedObject type, int index, Object value)
         throws DBCException;
 
     /**
@@ -93,14 +93,14 @@ public interface DBDValueHandler
      * For null objects returns null of DBDValue marked as null
      *
      *
-     * @param context execution context
+     * @param session execution context
      * @param type attribute type
      * @param object source object
      * @param copy
      * @return initial object value
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy)
+    Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy)
         throws DBCException;
 
     /**
@@ -109,13 +109,13 @@ public interface DBDValueHandler
      *
      *
      *
-     * @param context
+     * @param session
      * @param column column descriptor
      * @param clipboard clipboard
      * @return value (return null only in case of NULL value in clipboard)
      * @throws org.jkiss.dbeaver.DBException on unexpected error (IO, etc)
      */
-    Object getValueFromClipboard(DBCExecutionContext context, DBSTypedObject column, Clipboard clipboard) throws DBCException;
+    Object getValueFromClipboard(DBCSession session, DBSTypedObject column, Clipboard clipboard) throws DBCException;
 
     /**
      * Release any internal resources associated with this value.
