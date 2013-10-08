@@ -30,9 +30,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,24 +60,15 @@ public abstract class JDBCDataSource
 
     private final DBSDataSourceContainer container;
 
-    private volatile JDBCConnectionHolder connection;
+    private final JDBCExecutionContext executionContext;
     protected volatile DBPDataSourceInfo dataSourceInfo;
 
     public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
-        this.connection = openConnection(monitor);
-        {
-            // Notify QM
-            boolean autoCommit = false;
-            try {
-                autoCommit = connection.getAutoCommit();
-            } catch (Throwable e) {
-                log.warn("Could not check auto-commit state", e); //$NON-NLS-1$
-            }
-            QMUtils.getDefaultHandler().handleSessionStart(this, !autoCommit);
-        }
+        this.executionContext = new JDBCExecutionContext(this);
+        this.executionContext.connect(monitor);
     }
 
     protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor)
@@ -180,7 +173,7 @@ public abstract class JDBCDataSource
     @Override
     public JDBCConnectionHolder getConnection()
     {
-        return connection;
+        return executionContext.getConnection();
     }
 
     @Override
@@ -227,38 +220,14 @@ public abstract class JDBCDataSource
     @Override
     public boolean isConnected()
     {
-        return connection != null;
+        return executionContext != null;
     }
 
     @Override
-    public void invalidateConnection(DBRProgressMonitor monitor)
+    public void invalidateContext(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (this.connection == null) {
-            this.connection = openConnection(monitor);
-            return;
-        }
-
-        if (!JDBCUtils.isConnectionAlive(this.connection.getConnection())) {
-            close();
-            this.connection = openConnection(monitor);
-            invalidateState(monitor);
-        }
-    }
-
-    protected void invalidateState(DBRProgressMonitor monitor)
-    {
-        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, this);
-        if (objectSelector != null && objectSelector.supportsObjectSelect()) {
-            DBSObject selectedObject = objectSelector.getSelectedObject();
-            if (selectedObject != null) {
-                try {
-                    objectSelector.selectObject(monitor, selectedObject);
-                } catch (DBException e) {
-                    log.warn("Can't select object '" + selectedObject.getName() + "'", e);
-                }
-            }
-        }
+        this.executionContext.invalidateContext(monitor);
     }
 
     @Override
@@ -282,22 +251,8 @@ public abstract class JDBCDataSource
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
-//            try {
-//                Thread.sleep(10000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                }
-                catch (SQLException ex) {
-                    log.error(ex);
-                }
-            }
-            connection = null;
+            executionContext.close();
         }
-        QMUtils.getDefaultHandler().handleSessionEnd(this);
     }
 
     @Override

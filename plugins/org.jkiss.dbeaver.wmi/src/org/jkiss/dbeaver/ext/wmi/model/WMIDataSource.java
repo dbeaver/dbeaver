@@ -86,7 +86,7 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
     }
 
     @Override
-    public void invalidateConnection(DBRProgressMonitor monitor) throws DBException
+    public void invalidateContext(DBRProgressMonitor monitor) throws DBException
     {
     }
 
