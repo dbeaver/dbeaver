@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -54,7 +53,7 @@ import java.util.List;
  * GenericDataSource
  */
 public class GenericDataSource extends JDBCDataSource
-    implements DBPDataSource, JDBCConnector, DBSObjectSelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
+    implements DBSObjectSelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
 {
     static final Log log = LogFactory.getLog(GenericDataSource.class);
 

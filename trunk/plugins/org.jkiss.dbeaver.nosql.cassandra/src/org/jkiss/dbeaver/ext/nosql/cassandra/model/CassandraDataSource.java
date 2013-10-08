@@ -24,10 +24,8 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.nosql.cassandra.model.jdbc.CasConnection;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -49,7 +47,7 @@ import java.util.List;
  * CassandraDataSource
  */
 public class CassandraDataSource extends JDBCDataSource
-    implements DBPDataSource, JDBCConnector, DBSObjectSelector, IDatabaseTermProvider, IAdaptable
+    implements DBSObjectSelector, IDatabaseTermProvider, IAdaptable
 {
     static final Log log = LogFactory.getLog(CassandraDataSource.class);
 

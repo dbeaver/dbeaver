@@ -390,7 +390,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLUser> loadUsers(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load users");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load users");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mysql.user ORDER BY user");
             try {
@@ -487,7 +487,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load privileges");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load privileges");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("SHOW PRIVILEGES");
             try {
@@ -545,7 +545,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private List<MySQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load status");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load status");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SHOW " + 
