@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
  * datasource instance could be refreshed at any time. Obtain references on datasource only
  * from DBSObject or IDataSourceProvider interfaces.
  */
-public interface DBPDataSource extends DBPObject,DBPCloseableObject
+public interface DBPDataSource extends DBCExecutionContext
 {
     /**
      * Datasource container
@@ -48,23 +49,6 @@ public interface DBPDataSource extends DBPObject,DBPCloseableObject
     DBPDataSourceInfo getInfo();
 
     /**
-     * Checks this datasource is really connected to remote database.
-     * Usually DBSDataSourceContainer.getDataSource() returns datasource only if datasource is connected.
-     * But in some cases (e.g. connection invalidation) datasource remains disconnected for some period of time.
-     * @return true if underlying connection is alive.
-     */
-    boolean isConnected();
-
-    /**
-     * Opens new execution context
-     * @param monitor progress monitor
-     * @param purpose context purpose
-     * @param task task description
-     * @return execution context
-     */
-    DBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task);
-
-    /**
      * Opens new isolated execution context.
      * @param monitor progress monitor
      * @param purpose context purpose
@@ -72,14 +56,6 @@ public interface DBPDataSource extends DBPObject,DBPCloseableObject
      * @return execution context
      */
     DBCSession openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task);
-
-    /**
-     * checks connection is alive and reconnects if needed.
-     *
-     * @throws org.jkiss.dbeaver.DBException on any error
-     * @param monitor progress monitor
-     */
-    void invalidateConnection(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Reads base metadata from remote database or do any necessarily initialization routines.
