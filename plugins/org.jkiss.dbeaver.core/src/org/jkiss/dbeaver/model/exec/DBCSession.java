@@ -24,14 +24,14 @@ import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * Execution context
+ * Execution session
  */
 public interface DBCSession extends DBPCloseableObject, DBDPreferences {
 
     String getTaskTitle();
 
     /**
-     * Data source of this context
+     * Data source of this session
      * @return data source
      */
     DBPDataSource getDataSource();
