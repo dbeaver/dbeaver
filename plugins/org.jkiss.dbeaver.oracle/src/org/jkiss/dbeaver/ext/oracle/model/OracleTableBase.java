@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -134,10 +134,10 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         throws DBException
     {
         if (comment == null) {
-            final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table comments");
+            final JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table comments");
             try {
                 comment = JDBCUtils.queryString(
-                    context,
+                    session,
                     "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND TABLE_NAME=? AND TABLE_TYPE=?",
                     getSchema().getName(),
                     getName(),
@@ -148,7 +148,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             } catch (SQLException e) {
                 log.warn("Can't fetch table '" + getName() + "' comment", e);
             } finally {
-                context.close();
+                session.close();
             }
         }
         return comment;

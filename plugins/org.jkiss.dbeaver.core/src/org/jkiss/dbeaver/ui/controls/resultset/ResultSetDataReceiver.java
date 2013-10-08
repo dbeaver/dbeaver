@@ -66,7 +66,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
+    public void fetchStart(DBCSession session, DBCResultSet resultSet)
         throws DBCException
     {
         rows.clear();
@@ -84,7 +84,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             // Extract column info
             metaColumns = new DBDAttributeBinding[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
-                metaColumns[i] = DBUtils.getColumnBinding(context, rsAttributes.get(i), i);
+                metaColumns[i] = DBUtils.getColumnBinding(session, rsAttributes.get(i), i);
             }
 
             updateMetaData = resultSetViewer.setMetaData(metaColumns);
@@ -94,14 +94,14 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
+    public void fetchRow(DBCSession session, DBCResultSet resultSet)
         throws DBCException
     {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             try {
                 row[i] = metaColumns[i].getValueHandler().fetchValueObject(
-                    context,
+                    session,
                     resultSet,
                     metaColumns[i].getMetaAttribute(),
                     metaColumns[i].getAttributeIndex());
@@ -125,12 +125,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchEnd(DBCExecutionContext context)
+    public void fetchEnd(DBCSession session)
         throws DBCException
     {
         if (updateMetaData) {
             // Read locators' metadata
-            DBUtils.findValueLocators(context.getProgressMonitor(), metaColumns);
+            DBUtils.findValueLocators(session.getProgressMonitor(), metaColumns);
         }
 
         UIUtils.runInUI(null, new Runnable() {

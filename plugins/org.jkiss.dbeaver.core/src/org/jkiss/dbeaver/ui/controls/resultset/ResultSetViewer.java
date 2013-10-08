@@ -63,8 +63,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -72,7 +72,10 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
@@ -1985,14 +1988,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private Object getColumnValueFromClipboard(DBDAttributeBinding metaColumn) throws DBCException
     {
-        DBCExecutionContext context = getDataSource().openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
+        DBCSession session = getDataSource().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
         Object newValue;
         try {
             newValue = metaColumn.getValueHandler().getValueFromClipboard(
-                context, metaColumn.getMetaAttribute(),
+                session, metaColumn.getMetaAttribute(),
                 getSpreadsheet().getClipboard());
         } finally {
-            context.close();
+            session.close();
         }
         return newValue;
     }
@@ -2022,7 +2025,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     throws InvocationTargetException, InterruptedException
                 {
                     // Copy cell values in new context
-                    DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
+                    DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
                     try {
                         if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < model.getRowCount()) {
                             Object[] origRow = model.getRowData(currentRowNumber);
@@ -2033,11 +2036,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                     cells[i] = null;
                                 } else {
                                     try {
-                                        cells[i] = metaColumn.getValueHandler().getValueFromObject(context, metaColumn.getEntityAttribute(), origRow[i], true);
+                                        cells[i] = metaColumn.getValueHandler().getValueFromObject(session, metaColumn.getEntityAttribute(), origRow[i], true);
                                     } catch (DBCException e) {
                                         log.warn(e);
                                         try {
-                                            cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getMetaAttribute());
+                                            cells[i] = DBUtils.makeNullValue(session, metaColumn.getValueHandler(), metaColumn.getMetaAttribute());
                                         } catch (DBCException e1) {
                                             log.warn(e1);
                                         }
@@ -2049,14 +2052,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             for (int i = 0; i < columns.length; i++) {
                                 DBDAttributeBinding metaColumn = columns[i];
                                 try {
-                                    cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getAttribute());
+                                    cells[i] = DBUtils.makeNullValue(session, metaColumn.getValueHandler(), metaColumn.getAttribute());
                                 } catch (DBCException e) {
                                     log.warn(e);
                                 }
                             }
                         }
                     } finally {
-                        context.close();
+                        session.close();
                     }
                 }
             });

@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -38,21 +38,21 @@ public class DB2GranteeRoleCache extends JDBCObjectCache<DB2Grantee, DB2RoleAuth
     private static final String SQL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE GRANTEETYPE = ? AND GRANTEE = ? ORDER BY ROLENAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Grantee db2Grantee) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Grantee db2Grantee) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2Grantee.getType().name());
         dbStat.setString(2, db2Grantee.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2RoleAuth fetchObject(JDBCExecutionContext context, DB2Grantee db2Grantee, ResultSet dbResult) throws SQLException,
+    protected DB2RoleAuth fetchObject(JDBCSession session, DB2Grantee db2Grantee, ResultSet dbResult) throws SQLException,
         DBException
     {
         // Lookup for the role in DS Cache
         String db2RoleName = JDBCUtils.safeGetStringTrimmed(dbResult, "ROLENAME");
-        DB2Role db2Role = db2Grantee.getDataSource().getRole(context.getProgressMonitor(), db2RoleName);
+        DB2Role db2Role = db2Grantee.getDataSource().getRole(session.getProgressMonitor(), db2RoleName);
 
         return new DB2RoleAuth(db2Role, dbResult);
     }

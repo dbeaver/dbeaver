@@ -20,14 +20,14 @@
 package org.jkiss.dbeaver.model.exec.plan;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 /**
  * Query analyser
  */
 public interface DBCQueryAnalyser {
 
-    DBCPlan analyseQueryExecution(DBCExecutionContext context, String query)
+    DBCPlan analyseQueryExecution(DBCSession session, String query)
         throws DBCException;
 
 }

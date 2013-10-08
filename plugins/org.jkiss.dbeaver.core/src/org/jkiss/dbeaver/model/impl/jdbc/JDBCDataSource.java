@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -197,13 +197,13 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public JDBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
+    public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         return createConnection(monitor, purpose, taskTitle, false);
     }
 
     @Override
-    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
+    public DBCSession openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
         return createConnection(monitor, purpose, taskTitle, true);
     }
 
@@ -265,14 +265,14 @@ public abstract class JDBCDataSource
     public synchronized void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {
-            dataSourceInfo = makeInfo(context.getMetaData());
+            dataSourceInfo = makeInfo(session.getMetaData());
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC meta data", ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 

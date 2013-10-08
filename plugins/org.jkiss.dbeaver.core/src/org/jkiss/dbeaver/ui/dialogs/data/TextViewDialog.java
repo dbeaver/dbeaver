@@ -36,8 +36,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -234,19 +234,19 @@ public class TextViewDialog extends ValueViewDialog {
     {
         Object prevValue = getValueController().getValue();
         if (prevValue instanceof DBDContent) {
-            DBCExecutionContext context = getValueController().getDataSource().openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor");
+            DBCSession session = getValueController().getDataSource().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor");
             try {
                 if (ContentUtils.isTextContent((DBDContent) prevValue)) {
                     String strValue = isTextEditorActive() ? textEdit.getText() : getBinaryString();
                     return getValueController().getValueHandler().getValueFromObject(
-                        context,
+                        session,
                         getValueController().getValueType(),
                         strValue,
                         false);
                 } else {
                     byte[] bytesValue = isTextEditorActive() ? ContentUtils.convertToBytes(textEdit.getText()) : getBinaryContent();
                     return getValueController().getValueHandler().getValueFromObject(
-                        context,
+                        session,
                         getValueController().getValueType(),
                         bytesValue,
                         false);
@@ -255,7 +255,7 @@ public class TextViewDialog extends ValueViewDialog {
                 UIUtils.showErrorDialog(getShell(), "Extract editor value", "Can't extract editor value", e);
                 return null;
             } finally {
-                context.close();
+                session.close();
             }
         } else if (isTextEditorActive()) {
             return textEdit.getText();

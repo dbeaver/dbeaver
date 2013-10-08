@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.runtime.qm;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 
@@ -45,31 +45,31 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
     }
 
     @Override
-    public void handleContextOpen(DBCExecutionContext context)
+    public void handleContextOpen(DBCSession session)
     {
 
     }
 
     @Override
-    public void handleContextClose(DBCExecutionContext context)
+    public void handleContextClose(DBCSession session)
     {
 
     }
 
     @Override
-    public void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
+    public void handleTransactionAutocommit(DBCSession session, boolean autoCommit)
     {
 
     }
 
     @Override
-    public void handleTransactionIsolation(DBCExecutionContext context, DBPTransactionIsolation level)
+    public void handleTransactionIsolation(DBCSession session, DBPTransactionIsolation level)
     {
 
     }
 
     @Override
-    public void handleTransactionCommit(DBCExecutionContext context)
+    public void handleTransactionCommit(DBCSession session)
     {
 
     }
@@ -81,7 +81,7 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
     }
 
     @Override
-    public void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
+    public void handleTransactionRollback(DBCSession session, DBCSavepoint savepoint)
     {
 
     }
@@ -129,13 +129,13 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
     }
 
     @Override
-    public void handleScriptBegin(DBCExecutionContext context)
+    public void handleScriptBegin(DBCSession session)
     {
 
     }
 
     @Override
-    public void handleScriptEnd(DBCExecutionContext context)
+    public void handleScriptEnd(DBCSession session)
     {
 
     }

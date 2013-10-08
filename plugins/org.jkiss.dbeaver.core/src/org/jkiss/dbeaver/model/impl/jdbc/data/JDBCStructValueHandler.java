@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -63,7 +63,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         String typeName;
         try {
@@ -77,24 +77,24 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
         }
         DBSDataType dataType = null;
         try {
-            dataType = DBUtils.resolveDataType(context.getProgressMonitor(), context.getDataSource(), typeName);
+            dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), typeName);
         } catch (DBException e) {
             log.error("Error resolving data type '" + typeName + "'", e);
         }
         if (dataType == null) {
             dataType = new JDBCDataType(
-                context.getDataSource().getContainer(),
+                session.getDataSource().getContainer(),
                 Types.STRUCT,
                 typeName,
                 "Synthetic struct type for '" + typeName + "'",
                 false, false, 0, 0, 0);
         }
         if (object == null) {
-            return new JDBCStruct(context, dataType, null);
+            return new JDBCStruct(session, dataType, null);
         } else if (object instanceof JDBCStruct) {
-            return copy ? ((JDBCStruct) object).cloneValue(context.getProgressMonitor()) : object;
+            return copy ? ((JDBCStruct) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Struct) {
-            return new JDBCStruct(context, dataType, (Struct) object);
+            return new JDBCStruct(session, dataType, (Struct) object);
         } else {
             throw new DBCException("Unsupported struct type: " + object.getClass().getName());
         }

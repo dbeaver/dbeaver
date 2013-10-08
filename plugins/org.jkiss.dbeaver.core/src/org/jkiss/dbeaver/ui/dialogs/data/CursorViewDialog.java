@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -146,14 +146,14 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         }
 
         @Override
-        public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
+        public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
         {
             DBCStatistics statistics = new DBCStatistics();
-            DBRProgressMonitor monitor = context.getProgressMonitor();
+            DBRProgressMonitor monitor = session.getProgressMonitor();
             DBCResultSet dbResult = value;
             try {
                 long startTime = System.currentTimeMillis();
-                dataReceiver.fetchStart(context, dbResult);
+                dataReceiver.fetchStart(session, dbResult);
                 long rowCount;
                 try {
                     rowCount = 0;
@@ -162,7 +162,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
                             // Fetch not more than max rows
                             break;
                         }
-                        dataReceiver.fetchRow(context, dbResult);
+                        dataReceiver.fetchRow(session, dbResult);
                         rowCount++;
                         if (rowCount >= maxRows) {
                             break;
@@ -175,7 +175,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
                     }
                 } finally {
                     try {
-                        dataReceiver.fetchEnd(context);
+                        dataReceiver.fetchEnd(session);
                     } catch (DBCException e) {
                         log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                     }
@@ -190,7 +190,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         }
 
         @Override
-        public long countData(DBCExecutionContext context, DBDDataFilter dataFilter)
+        public long countData(DBCSession session, DBDDataFilter dataFilter)
         {
             return -1;
         }

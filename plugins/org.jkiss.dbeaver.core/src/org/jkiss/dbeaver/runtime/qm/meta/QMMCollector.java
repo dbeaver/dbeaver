@@ -23,9 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -121,13 +121,13 @@ public class QMMCollector extends DefaultExecutionHandler {
         return events;
     }
 
-    public QMMSessionInfo getSession(DBPDataSource dataSource)
+    public QMMSessionInfo getSessionInfo(DBPDataSource dataSource)
     {
-        QMMSessionInfo session = sessionMap.get(dataSource.getContainer().getId());
-        if (session == null) {
-            log.warn("Could not find session meta information: " + dataSource.getContainer().getId());
+        QMMSessionInfo sessionInfo = sessionMap.get(dataSource.getContainer().getId());
+        if (sessionInfo == null) {
+            log.warn("Could not find sessionInfo meta information: " + dataSource.getContainer().getId());
         }
-        return session;
+        return sessionInfo;
     }
 
     public List<QMMetaEvent> getPastEvents()
@@ -157,7 +157,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleSessionEnd(DBPDataSource dataSource)
     {
-        QMMSessionInfo session = getSession(dataSource);
+        QMMSessionInfo session = getSessionInfo(dataSource);
         if (session != null) {
             session.close();
             fireMetaEvent(session, QMMetaEvent.Action.END);
@@ -165,15 +165,15 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public synchronized void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
+    public synchronized void handleTransactionAutocommit(DBCSession session, boolean autoCommit)
     {
-        QMMSessionInfo session = getSession(context.getDataSource());
-        if (session != null) {
-            QMMTransactionInfo oldTxn = session.changeTransactional(!autoCommit);
+        QMMSessionInfo sessionInfo = getSessionInfo(session.getDataSource());
+        if (sessionInfo != null) {
+            QMMTransactionInfo oldTxn = sessionInfo.changeTransactional(!autoCommit);
             if (oldTxn != null) {
                 fireMetaEvent(oldTxn, QMMetaEvent.Action.END);
             }
-            fireMetaEvent(session, QMMetaEvent.Action.UPDATE);
+            fireMetaEvent(sessionInfo, QMMetaEvent.Action.UPDATE);
         }
         // Fire transactional mode change
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
@@ -182,11 +182,11 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public synchronized void handleTransactionCommit(DBCExecutionContext context)
+    public synchronized void handleTransactionCommit(DBCSession session)
     {
-        QMMSessionInfo session = getSession(context.getDataSource());
-        if (session != null) {
-            QMMTransactionInfo oldTxn = session.commit();
+        QMMSessionInfo sessionInfo = getSessionInfo(session.getDataSource());
+        if (sessionInfo != null) {
+            QMMTransactionInfo oldTxn = sessionInfo.commit();
             if (oldTxn != null) {
                 fireMetaEvent(oldTxn, QMMetaEvent.Action.END);
             }
@@ -195,11 +195,11 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public synchronized void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
+    public synchronized void handleTransactionRollback(DBCSession session, DBCSavepoint savepoint)
     {
-        QMMSessionInfo session = getSession(context.getDataSource());
-        if (session != null) {
-            QMMObject oldTxn = session.rollback(savepoint);
+        QMMSessionInfo sessionInfo = getSessionInfo(session.getDataSource());
+        if (sessionInfo != null) {
+            QMMObject oldTxn = sessionInfo.rollback(savepoint);
             if (oldTxn != null) {
                 fireMetaEvent(oldTxn, QMMetaEvent.Action.END);
             }
@@ -210,7 +210,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementOpen(DBCStatement statement)
     {
-        QMMSessionInfo session = getSession(statement.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getContext().getDataSource());
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
             fireMetaEvent(stat, QMMetaEvent.Action.BEGIN);
@@ -220,7 +220,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementClose(DBCStatement statement)
     {
-        QMMSessionInfo session = getSession(statement.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getContext().getDataSource());
         if (session != null) {
             QMMStatementInfo stat = session.closeStatement(statement);
             if (stat == null) {
@@ -234,7 +234,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementExecuteBegin(DBCStatement statement)
     {
-        QMMSessionInfo session = getSession(statement.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getContext().getDataSource());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginExecution(statement);
             if (exec != null) {
@@ -247,7 +247,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
     {
-        QMMSessionInfo session = getSession(statement.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getContext().getDataSource());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
             if (exec != null) {
@@ -259,7 +259,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleResultSetOpen(DBCResultSet resultSet)
     {
-        QMMSessionInfo session = getSession(resultSet.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(resultSet.getSession().getDataSource());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
             if (exec != null) {
@@ -271,7 +271,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleResultSetClose(DBCResultSet resultSet, long rowCount)
     {
-        QMMSessionInfo session = getSession(resultSet.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(resultSet.getSession().getDataSource());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
             if (exec != null) {

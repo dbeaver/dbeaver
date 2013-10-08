@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -308,14 +308,14 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner)
             throws SQLException
         {
-            return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this));
+            return session.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this));
         }
 
         @Override
-        protected MySQLTableBase fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
+        protected MySQLTableBase fetchObject(JDBCSession session, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
@@ -327,7 +327,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase forTable)
+        protected JDBCStatement prepareChildrenStatement(JDBCSession session, MySQLCatalog owner, MySQLTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -339,7 +339,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             sql.append(" ORDER BY ").append(MySQLConstants.COL_ORDINAL_POSITION);
 
-            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, MySQLCatalog.this.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
@@ -348,7 +348,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLTableColumn fetchChild(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase table, ResultSet dbResult)
+        protected MySQLTableColumn fetchChild(JDBCSession session, MySQLCatalog owner, MySQLTableBase table, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLTableColumn(table, dbResult);
@@ -365,7 +365,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -377,7 +377,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             sql.append(" ORDER BY ").append(MySQLConstants.COL_INDEX_NAME).append(",").append(MySQLConstants.COL_SEQ_IN_INDEX);
 
-            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, MySQLCatalog.this.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
@@ -386,7 +386,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLTableIndex fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
+        protected MySQLTableIndex fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;
@@ -415,7 +415,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Override
         protected MySQLTableIndexColumn fetchObjectRow(
-            JDBCExecutionContext context,
+            JDBCSession session,
             MySQLTable parent, MySQLTableIndex object, ResultSet dbResult)
             throws SQLException, DBException
         {
@@ -424,7 +424,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_COLLATION);
             boolean nullable = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_NULLABLE));
 
-            MySQLTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
+            MySQLTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
             if (tableColumn == null) {
                 log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
                 return null;
@@ -455,7 +455,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -467,7 +467,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             sql.append("\nORDER BY kc.CONSTRAINT_NAME,kc.ORDINAL_POSITION");
 
-            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, MySQLCatalog.this.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
@@ -476,7 +476,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLTableConstraint fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
+        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
             throws SQLException, DBException
         {
             if (constraintName.equals("PRIMARY")) {
@@ -490,12 +490,12 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Override
         protected MySQLTableConstraintColumn fetchObjectRow(
-            JDBCExecutionContext context,
+            JDBCSession session,
             MySQLTable parent, MySQLTableConstraint object, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
-            MySQLTableColumn column = parent.getAttribute(context.getProgressMonitor(), columnName);
+            MySQLTableColumn column = parent.getAttribute(session.getProgressMonitor(), columnName);
             if (column == null) {
                 log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "'");
                 return null;
@@ -526,10 +526,10 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner)
             throws SQLException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
                 " WHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
                 " ORDER BY " + MySQLConstants.COL_ROUTINE_NAME
@@ -539,21 +539,21 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLProcedure fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
+        protected MySQLProcedure fetchObject(JDBCSession session, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLProcedure(MySQLCatalog.this, dbResult);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure procedure)
+        protected JDBCStatement prepareChildrenStatement(JDBCSession session, MySQLCatalog owner, MySQLProcedure procedure)
             throws SQLException
         {
             // Load procedure columns through MySQL metadata
             // There is no metadata table about proc/func columns -
             // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
             // Lets driver do it instead of me
-            return context.getMetaData().getProcedureColumns(
+            return session.getMetaData().getProcedureColumns(
                 getName(),
                 null,
                 procedure.getName(),
@@ -561,7 +561,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLProcedureParameter fetchChild(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure parent, ResultSet dbResult)
+        protected MySQLProcedureParameter fetchChild(JDBCSession session, MySQLCatalog owner, MySQLProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
@@ -601,19 +601,19 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
     class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner)
             throws SQLException
         {
-            return context.prepareStatement(
+            return session.prepareStatement(
                 "SHOW FULL TRIGGERS FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this));
         }
 
         @Override
-        protected MySQLTrigger fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
+        protected MySQLTrigger fetchObject(JDBCSession session, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");
-            MySQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(context.getProgressMonitor(), tableName);
+            MySQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(session.getProgressMonitor(), tableName);
             return new MySQLTrigger(MySQLCatalog.this, triggerTable, dbResult);
         }
 

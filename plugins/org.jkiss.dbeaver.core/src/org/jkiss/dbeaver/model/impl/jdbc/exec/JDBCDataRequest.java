@@ -4,7 +4,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCDataRequest;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 import java.util.List;
 
@@ -59,7 +59,7 @@ public abstract class JDBCDataRequest implements DBCDataRequest {
     }
 
     @Override
-    public String generateScript(DBCExecutionContext context)
+    public String generateScript(DBCSession session)
     {
         return this.script.toString();
     }

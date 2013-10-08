@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -84,7 +84,7 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable)
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema, DB2Table forTable)
         throws SQLException
     {
         String sql;
@@ -93,7 +93,7 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
         } else {
             sql = SQL_REF_ALL;
         }
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
         if (forTable != null) {
             dbStat.setString(2, forTable.getName());
@@ -102,19 +102,19 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
     }
 
     @Override
-    protected DB2TableReference fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table db2Table, String constName,
+    protected DB2TableReference fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table, String constName,
         ResultSet dbResult) throws SQLException, DBException
     {
-        return new DB2TableReference(context.getProgressMonitor(), db2Table, dbResult);
+        return new DB2TableReference(session.getProgressMonitor(), db2Table, dbResult);
     }
 
     @Override
-    protected DB2TableKeyColumn fetchObjectRow(JDBCExecutionContext context, DB2Table db2Table,
+    protected DB2TableKeyColumn fetchObjectRow(JDBCSession session, DB2Table db2Table,
         DB2TableReference db2TableReference, ResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
-        DB2TableColumn tableColumn = db2Table.getAttribute(context.getProgressMonitor(), colName);
+        DB2TableColumn tableColumn = db2Table.getAttribute(session.getProgressMonitor(), colName);
         if (tableColumn == null) {
             log.debug("DB2TableReferenceCache : Column '" + colName + "' not found in table '" + db2Table.getName() + "' ??");
             return null;

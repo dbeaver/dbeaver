@@ -44,10 +44,10 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -149,24 +149,24 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     {
         super.initialize(monitor);
 
-        final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+        final JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
         try {
             // Get active schema
-            this.activeSchemaName = JDBCUtils.queryString(context, GET_CURRENT_SCHEMA);
+            this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
             if (this.activeSchemaName != null) {
                 this.activeSchemaName = this.activeSchemaName.trim();
             }
 
-            this.isAuthorisedForAPPLICATIONS = DB2Utils.userIsAuthorisedForAPPLICATIONS(context, activeSchemaName);
+            this.isAuthorisedForAPPLICATIONS = DB2Utils.userIsAuthorisedForAPPLICATIONS(session, activeSchemaName);
 
-            listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
-            listDBParameters = DB2Utils.readDBCfg(monitor, context);
-            listXMLStrings = DB2Utils.readXMLStrings(monitor, context);
+            listDBMParameters = DB2Utils.readDBMCfg(monitor, session);
+            listDBParameters = DB2Utils.readDBCfg(monitor, session);
+            listXMLStrings = DB2Utils.readXMLStrings(monitor, session);
 
         } catch (SQLException e) {
             LOG.warn(e);
         } finally {
-            context.close();
+            session.close();
         }
 
         this.dataTypeCache.getObjects(monitor, this);
@@ -331,13 +331,13 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         activeSchemaName = object.getName();
 
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
         try {
-            JDBCUtils.executeSQL(context, String.format(SET_CURRENT_SCHEMA, activeSchemaName));
+            JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, activeSchemaName));
         } catch (SQLException e) {
             throw new DBException(e);
         } finally {
-            context.close();
+            session.close();
         }
 
         // Send notifications
@@ -354,30 +354,30 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // --------------
 
     @Override
-    public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
+    public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException
     {
-        String ptSchemaname = getExplainTablesSchemaName(context);
+        String ptSchemaname = getExplainTablesSchemaName(session);
         if (ptSchemaname == null) {
             throw new DBCException(DB2Messages.dialog_explain_no_tables_found_ex);
         }
         DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
-        plan.explain((JDBCExecutionContext) context);
+        plan.explain((JDBCSession) session);
         return plan;
     }
 
-    private String getExplainTablesSchemaName(DBCExecutionContext context) throws DBCException
+    private String getExplainTablesSchemaName(DBCSession session) throws DBCException
     {
         // // Schema for explain tables has already been verified. Use it as-is
         // if (CommonUtils.isNotEmpty(schemaForExplainTables)) {
         // return schemaForExplainTables;
         // }
 
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Verify explain table from current authorization id
         String sessionUserSchema;
         try {
-            sessionUserSchema = JDBCUtils.queryString((JDBCExecutionContext) context, GET_SESSION_USER).trim();
+            sessionUserSchema = JDBCUtils.queryString((JDBCSession) session, GET_SESSION_USER).trim();
         } catch (SQLException e) {
             throw new DBCException(e);
         }
@@ -404,7 +404,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         // Ask the user in what tablespace to create the Explain tables
         try {
-            List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, (JDBCExecutionContext) context);
+            List<String> listTablespaces = DB2Utils.getListOfUsableTsForExplain(monitor, (JDBCSession) session);
 
             // NO Usable Tablespace found: End of the game..
             if (listTablespaces.isEmpty()) {
@@ -431,7 +431,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             String tablespaceName = tsChooserDialog.getSelectedTablespace();
 
             // Try to create explain tables within current authorizartionID in given tablespace
-            DB2Utils.createExplainTables(context.getProgressMonitor(), this, sessionUserSchema, tablespaceName);
+            DB2Utils.createExplainTables(session.getProgressMonitor(), this, sessionUserSchema, tablespaceName);
 
             // Hourra!
             schemaForExplainTables = sessionUserSchema;

@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 import oracle.xdb.XMLType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -37,7 +37,7 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
     public static final OracleXMLValueHandler INSTANCE = new OracleXMLValueHandler();
 
     @Override
-    protected DBDContent fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException
+    protected DBDContent fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException
     {
         Object object;
 
@@ -69,23 +69,23 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
         }
 
         if (object == null) {
-            return new OracleContentXML(context.getDataSource(), null);
+            return new OracleContentXML(session.getDataSource(), null);
         } else if (object instanceof XMLType) {
-            return new OracleContentXML(context.getDataSource(), new OracleXMLWrapper((XMLType) object));
+            return new OracleContentXML(session.getDataSource(), new OracleXMLWrapper((XMLType) object));
         } else if (object instanceof SQLXML) {
-            return new OracleContentXML(context.getDataSource(), (SQLXML) object);
+            return new OracleContentXML(session.getDataSource(), (SQLXML) object);
         } else {
             throw new DBCException("Unsupported object type: " + object.getClass().getName());
         }
     }
 
     @Override
-    public DBDContent getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDContent getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return new OracleContentXML(context.getDataSource(), null);
+            return new OracleContentXML(session.getDataSource(), null);
         }
-        return super.getValueFromObject(context, type, object, copy);
+        return super.getValueFromObject(session, type, object, copy);
     }
 
 }

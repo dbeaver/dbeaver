@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -57,9 +57,9 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         }
         final DBPDataSourceInfo dsInfo = dataSource.getInfo();
 
-        DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check connection's auto-commit state");
+        DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check connection's auto-commit state");
         try {
-            final DBCTransactionManager txnManager = context.getTransactionManager();
+            final DBCTransactionManager txnManager = session.getTransactionManager();
             menuItems.add(ActionUtils.makeCommandContribution(
                 DBeaverUI.getActiveWorkbenchWindow(),
                 ICommandIds.CMD_TOGGLE_AUTOCOMMIT,
@@ -84,7 +84,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             }
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 

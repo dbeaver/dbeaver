@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -42,7 +42,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     static final Log log = LogFactory.getLog(JDBCStatementImpl.class);
 
-    private JDBCExecutionContext connection;
+    private JDBCSession connection;
     protected final STATEMENT original;
 
     private String query;
@@ -56,7 +56,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     private Throwable executeError;
     private Object userData;
 
-    public JDBCStatementImpl(JDBCExecutionContext connection, STATEMENT original)
+    public JDBCStatementImpl(JDBCSession connection, STATEMENT original)
     {
         this.connection = connection;
         this.original = original;
@@ -96,7 +96,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Override
-    public JDBCExecutionContext getConnection()
+    public JDBCSession getConnection()
     {
         return connection;
     }
@@ -106,7 +106,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     ////////////////////////////////////////////////////////////////////
 
     @Override
-    public JDBCExecutionContext getContext()
+    public JDBCSession getContext()
     {
         return connection;
     }

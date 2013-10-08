@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 import java.util.Collection;
 import java.util.List;
@@ -41,14 +41,14 @@ public interface DBSConstraintEnumerable extends DBSEntityConstraint
 
     /**
      * Gets enumeration values
-     * @param context
+     * @param session
      * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
      * @param maxResults maximum enumeration values in result set     @return statement with result set which contains valid enumeration values.
      * */
     Collection<DBDLabelValuePair> getKeyEnumeration(
-        DBCExecutionContext context,
+        DBCSession session,
         DBSEntityAttribute keyColumn,
         Object keyPattern,
         List<DBDAttributeValue> preceedingKeys,

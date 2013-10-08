@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
@@ -52,7 +52,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     @Override
     public Object fetchValueObject(
-        DBCExecutionContext context,
+        DBCSession session,
         DBCResultSet resultSet,
         DBSTypedObject type,
         int index) throws DBCException
@@ -62,7 +62,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     @Override
     public void bindValueObject(
-        DBCExecutionContext context,
+        DBCSession session,
         DBCStatement statement,
         DBSTypedObject type,
         int index,
@@ -72,13 +72,13 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         return object;
     }
 
     @Override
-    public Object getValueFromClipboard(DBCExecutionContext context, DBSTypedObject column, Clipboard clipboard) throws DBCException
+    public Object getValueFromClipboard(DBCSession session, DBSTypedObject column, Clipboard clipboard) throws DBCException
     {
         return null;
     }

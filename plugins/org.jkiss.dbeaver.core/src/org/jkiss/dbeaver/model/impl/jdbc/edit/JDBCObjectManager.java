@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -38,11 +38,11 @@ public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> extends A
     protected static final Log log = LogFactory.getLog(JDBCObjectManager.class);
 
     @Override
-    public void executePersistAction(DBCExecutionContext context, DBECommand<OBJECT_TYPE> command, IDatabasePersistAction action) throws DBException
+    public void executePersistAction(DBCSession session, DBECommand<OBJECT_TYPE> command, IDatabasePersistAction action) throws DBException
     {
         String script = action.getScript();
 
-        DBCStatement dbStat = DBUtils.createStatement(context, script);
+        DBCStatement dbStat = DBUtils.createStatement(session, script);
         try {
             dbStat.executeStatement();
             action.handleExecute(null);

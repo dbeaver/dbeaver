@@ -26,7 +26,9 @@ package org.jkiss.dbeaver.ui.editors.sql.format.simple;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.StringTokenizer;
 
 /**
  * Performs simple formatting of basic SQL statements (DML + query).

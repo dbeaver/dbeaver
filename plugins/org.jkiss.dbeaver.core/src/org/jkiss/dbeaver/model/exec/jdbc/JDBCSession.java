@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
 
 import java.sql.Connection;
@@ -29,7 +29,7 @@ import java.util.concurrent.Executor;
 /**
  * JDBC connection
  */
-public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
+public interface JDBCSession extends DBCSession, Connection {
 
     Connection getOriginal()
         throws SQLException;

@@ -276,10 +276,10 @@ public class GenericDataSource extends JDBCDataSource
             // Use basic data types
             dataTypeCache.fillStandardTypes(this);
         }
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read generic metadata");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Read generic metadata");
         try {
             // Read metadata
-            JDBCDatabaseMetaData metaData = context.getMetaData();
+            JDBCDatabaseMetaData metaData = session.getMetaData();
             boolean catalogsFiltered = false;
             if (omitCatalog == null || !CommonUtils.toBoolean(omitCatalog)) {
                 // Read catalogs
@@ -334,7 +334,7 @@ public class GenericDataSource extends JDBCDataSource
                 // Catalogs not supported - try to read root schemas
                 monitor.subTask("Extract schemas");
                 monitor.worked(1);
-                List<GenericSchema> tmpSchemas = loadSchemas(context, null);
+                List<GenericSchema> tmpSchemas = loadSchemas(session, null);
                 if (tmpSchemas != null) {
                     this.schemas = tmpSchemas;
                 }
@@ -343,18 +343,18 @@ public class GenericDataSource extends JDBCDataSource
                     this.structureContainer = new DataSourceObjectContainer();
                 }
             }
-            determineSelectedEntity(context);
+            determineSelectedEntity(session);
 
 
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
-    List<GenericSchema> loadSchemas(JDBCExecutionContext context, GenericCatalog catalog)
+    List<GenericSchema> loadSchemas(JDBCSession session, GenericCatalog catalog)
         throws DBException
     {
         try {
@@ -365,20 +365,20 @@ public class GenericDataSource extends JDBCDataSource
             JDBCResultSet dbResult;
             boolean catalogSchemas;
             try {
-                dbResult = context.getMetaData().getSchemas(
+                dbResult = session.getMetaData().getSchemas(
                     catalog == null ? null : catalog.getName(),
                     schemaFilters != null && schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : getAllObjectsPattern());
                 catalogSchemas = true;
             } catch (Throwable e) {
                 // This method not supported (may be old driver version)
                 // Use general schema reading method
-                dbResult = context.getMetaData().getSchemas();
+                dbResult = session.getMetaData().getSchemas();
                 catalogSchemas = false;
             }
 
             try {
                 while (dbResult.next()) {
-                    if (context.getProgressMonitor().isCanceled()) {
+                    if (session.getProgressMonitor().isCanceled()) {
                         break;
                     }
                     String schemaName = GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.TABLE_SCHEM);
@@ -408,7 +408,7 @@ public class GenericDataSource extends JDBCDataSource
                         }
                     }
 
-                    context.getProgressMonitor().subTask("Schema " + schemaName);
+                    session.getProgressMonitor().subTask("Schema " + schemaName);
 
                     GenericSchema schema;
                     if (catalog == null) {
@@ -620,13 +620,13 @@ public class GenericDataSource extends JDBCDataSource
         return selectedEntityName;
     }
 
-    void determineSelectedEntity(JDBCExecutionContext context)
+    void determineSelectedEntity(JDBCSession session)
     {
         // Get selected entity (catalog or schema)
         selectedEntityName = null;
         if (CommonUtils.isEmpty(queryGetActiveDB)) {
             try {
-                selectedEntityName = context.getCatalog();
+                selectedEntityName = session.getCatalog();
                 if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
                     selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
                     selectedEntityFromAPI = true;
@@ -639,7 +639,7 @@ public class GenericDataSource extends JDBCDataSource
             if (CommonUtils.isEmpty(selectedEntityName)) {
                 // Try to use current schema
                 try {
-                    selectedEntityName = context.getSchema();
+                    selectedEntityName = session.getSchema();
                     if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
                         selectedEntityType = GenericConstants.ENTITY_TYPE_SCHEMA;
                         selectedEntityFromAPI = true;
@@ -661,7 +661,7 @@ public class GenericDataSource extends JDBCDataSource
             }
         } else {
             try {
-                JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
+                JDBCPreparedStatement dbStat = session.prepareStatement(queryGetActiveDB);
                 try {
                     JDBCResultSet resultSet = dbStat.executeQuery();
                     try {
@@ -682,14 +682,14 @@ public class GenericDataSource extends JDBCDataSource
 
     void setActiveEntityName(DBRProgressMonitor monitor, DBSObject entity) throws DBException
     {
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
         try {
             if (selectedEntityFromAPI) {
                 // Use JDBC API to change entity
                 if (selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
-                    context.setCatalog(entity.getName());
+                    session.setCatalog(entity.getName());
                 } else if (selectedEntityType.equals(GenericConstants.ENTITY_TYPE_SCHEMA)) {
-                    context.setSchema(entity.getName());
+                    session.setSchema(entity.getName());
                 } else {
                     throw new DBException("No API to change active entity if type '" + selectedEntityType + "'");
                 }
@@ -698,7 +698,7 @@ public class GenericDataSource extends JDBCDataSource
                     throw new DBException("Active database can't be changed for this kind of datasource!");
                 }
                 String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
-                JDBCPreparedStatement dbStat = context.prepareStatement(changeQuery);
+                JDBCPreparedStatement dbStat = session.prepareStatement(changeQuery);
                 try {
                     dbStat.execute();
                 } finally {
@@ -709,7 +709,7 @@ public class GenericDataSource extends JDBCDataSource
             throw new DBException(e);
         }
         finally {
-            context.close();
+            session.close();
         }
         selectedEntityName = entity.getName();
     }
@@ -755,12 +755,12 @@ public class GenericDataSource extends JDBCDataSource
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericDataSource owner) throws SQLException
         {
-            return context.getMetaData().getTableTypes().getSource();
+            return session.getMetaData().getTableTypes().getSource();
         }
         @Override
-        protected GenericTableType fetchObject(JDBCExecutionContext context, GenericDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected GenericTableType fetchObject(JDBCSession session, GenericDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new GenericTableType(
                 GenericDataSource.this,

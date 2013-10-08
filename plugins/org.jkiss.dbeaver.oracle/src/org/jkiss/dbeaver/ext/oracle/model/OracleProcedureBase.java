@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -81,9 +81,9 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleProcedureBase procedure) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleProcedureBase procedure) throws SQLException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +
                 "WHERE " +
                 (procedure.getObjectId() <= 0  ? "OWNER=? AND OBJECT_NAME=? AND PACKAGE_NAME=? " : "OBJECT_ID=? ") +
@@ -104,9 +104,9 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
         }
 
         @Override
-        protected OracleProcedureArgument fetchObject(JDBCExecutionContext context, OracleProcedureBase procedure, ResultSet resultSet) throws SQLException, DBException
+        protected OracleProcedureArgument fetchObject(JDBCSession session, OracleProcedureBase procedure, ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleProcedureArgument(context.getProgressMonitor(), procedure, resultSet);
+            return new OracleProcedureArgument(session.getProgressMonitor(), procedure, resultSet);
         }
 
         @Override

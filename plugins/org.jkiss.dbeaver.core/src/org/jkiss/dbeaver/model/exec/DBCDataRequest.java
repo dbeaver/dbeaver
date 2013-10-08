@@ -39,10 +39,10 @@ public interface DBCDataRequest {
 
     void setData(List<DBDAttributeValue> attributes);
 
-    long execute(DBCExecutionContext context);
+    long execute(DBCSession session);
 
     long getResult();
 
-    String generateScript(DBCExecutionContext context);
+    String generateScript(DBCSession session);
 
 }

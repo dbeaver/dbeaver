@@ -20,7 +20,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -43,13 +43,13 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, JDBCDataSource owner) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, JDBCDataSource owner) throws SQLException
     {
-        return context.getMetaData().getTypeInfo().getSource();
+        return session.getMetaData().getTypeInfo().getSource();
     }
 
     @Override
-    protected JDBCDataType fetchObject(JDBCExecutionContext context, JDBCDataSource owner, ResultSet dbResult) throws SQLException, DBException
+    protected JDBCDataType fetchObject(JDBCSession session, JDBCDataSource owner, ResultSet dbResult) throws SQLException, DBException
     {
         return new JDBCDataType(
             this.owner,

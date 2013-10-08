@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
@@ -52,7 +52,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public static final MySQLEnumValueHandler INSTANCE = new MySQLEnumValueHandler();
 
     @Override
-    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             return new MySQLTypeEnum((MySQLTableColumn) type, null);
@@ -77,7 +77,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected Object fetchColumnValue(
-        DBCExecutionContext context,
+        DBCSession session,
         JDBCResultSet resultSet,
         DBSTypedObject type,
         int index)
@@ -88,7 +88,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             attribute = (DBSTableColumn) type;
         } else if (type instanceof DBCAttributeMetaData) {
             try {
-                attribute = ((DBCAttributeMetaData) type).getAttribute(context.getProgressMonitor());
+                attribute = ((DBCAttributeMetaData) type).getAttribute(session.getProgressMonitor());
             } catch (DBException e) {
                 throw new SQLException(e);
             }
@@ -106,7 +106,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
+    public void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
         throws SQLException
     {
         // Sometimes we have String in value instead of MySQLTypeEnum

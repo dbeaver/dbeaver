@@ -39,16 +39,16 @@ import java.util.*;
  */
 public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEntityMetaData
 {
-    private DBCExecutionContext context;
+    private DBCSession session;
     private WMIClass classObject;
     private Collection<WMIObject> rows;
     private Iterator<WMIObject> iterator;
     private WMIObject row;
     private List<DBCAttributeMetaData> properties;
 
-    public WMIResultSet(DBCExecutionContext context, WMIClass classObject, Collection<WMIObject> rows) throws WMIException
+    public WMIResultSet(DBCSession session, WMIClass classObject, Collection<WMIObject> rows) throws WMIException
     {
-        this.context = context;
+        this.session = session;
         this.classObject = classObject;
         this.rows = rows;
         this.iterator = rows.iterator();
@@ -80,9 +80,9 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public DBCExecutionContext getContext()
+    public DBCSession getSession()
     {
-        return context;
+        return session;
     }
 
     @Override

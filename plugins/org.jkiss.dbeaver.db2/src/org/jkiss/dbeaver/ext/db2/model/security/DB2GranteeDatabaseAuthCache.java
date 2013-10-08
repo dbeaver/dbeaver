@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -37,9 +37,9 @@ public class DB2GranteeDatabaseAuthCache extends JDBCObjectCache<DB2Grantee, DB2
     private static final String SQL = "SELECT * FROM SYSCAT.DBAUTH WHERE GRANTEETYPE = ? AND GRANTEE = ? WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Grantee db2Grantee) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Grantee db2Grantee) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2Grantee.getType().name());
         dbStat.setString(2, db2Grantee.getName());
         // dbStat.setMaxRows(1);
@@ -48,9 +48,9 @@ public class DB2GranteeDatabaseAuthCache extends JDBCObjectCache<DB2Grantee, DB2
     }
 
     @Override
-    protected DB2DatabaseAuth fetchObject(JDBCExecutionContext context, DB2Grantee db2Grantee, ResultSet dbResult)
+    protected DB2DatabaseAuth fetchObject(JDBCSession session, DB2Grantee db2Grantee, ResultSet dbResult)
         throws SQLException, DBException
     {
-        return new DB2DatabaseAuth(context.getProgressMonitor(), db2Grantee.getDataSource(), dbResult);
+        return new DB2DatabaseAuth(session.getProgressMonitor(), db2Grantee.getDataSource(), dbResult);
     }
 }

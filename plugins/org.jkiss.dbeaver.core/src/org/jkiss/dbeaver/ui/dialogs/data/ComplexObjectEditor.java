@@ -35,8 +35,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -418,13 +418,13 @@ public class ComplexObjectEditor extends TreeViewer {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
-                        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Read reference value");
+                        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Read reference value");
                         try {
-                            result = reference.getReferencedObject(context);
+                            result = reference.getReferencedObject(session);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
                         } finally {
-                            context.close();
+                            session.close();
                         }
                     }
                 };

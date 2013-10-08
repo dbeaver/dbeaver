@@ -27,8 +27,8 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -69,12 +69,12 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(activeEditor);
         if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
             final DBPDataSource dataSource = dataSourceContainer.getDataSource();
-            DBCExecutionContext context = dataSource.openContext(
+            DBCSession session = dataSource.openSession(
                 VoidProgressMonitor.INSTANCE,
                 DBCExecutionPurpose.UTIL,
                 "Get autocommit mode");
             try {
-                DBCTransactionManager txnManager = context.getTransactionManager();
+                DBCTransactionManager txnManager = session.getTransactionManager();
                 // Change auto-commit mode
                 boolean autoCommit = txnManager.isAutoCommit();
                 element.setChecked(autoCommit);
@@ -87,7 +87,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
             } catch (DBCException e) {
                 log.warn(e);
             } finally {
-                context.close();
+                session.close();
             }
         }
     }

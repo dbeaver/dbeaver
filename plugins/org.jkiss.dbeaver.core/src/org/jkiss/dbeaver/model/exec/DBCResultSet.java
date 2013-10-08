@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDValueMeta;
  */
 public interface DBCResultSet extends DBPObject
 {
-    DBCExecutionContext getContext();
+    DBCSession getSession();
 
     DBCStatement getSource();
 

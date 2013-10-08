@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,10 +43,10 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     protected JDBCObjectCache() {
     }
 
-    abstract protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OWNER owner)
+    abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner)
         throws SQLException;
 
-    abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, ResultSet resultSet)
+    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, ResultSet resultSet)
         throws SQLException, DBException;
 
     @Override
@@ -78,9 +78,9 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
         List<OBJECT> tmpObjectList = new ArrayList<OBJECT>();
 
-        JDBCExecutionContext context = (JDBCExecutionContext)owner.getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load objects");
+        JDBCSession session = (JDBCSession)owner.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load objects");
         try {
-            JDBCStatement dbStat = prepareObjectsStatement(context, owner);
+            JDBCStatement dbStat = prepareObjectsStatement(session, owner);
             try {
                 monitor.subTask("Execute query");
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
@@ -92,7 +92,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                             break;
                         }
 
-                        OBJECT object = fetchObject(context, owner, dbResult);
+                        OBJECT object = fetchObject(session, owner, dbResult);
                         if (object == null) {
                             continue;
                         }
@@ -113,7 +113,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
 
         Comparator<OBJECT> comparator = getListOrderComparator();

@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
@@ -55,10 +55,10 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     }
 
     @Override
-    public Collection<OracleServerSession> getSessions(DBCExecutionContext context, Map<String, Object> options) throws DBException
+    public Collection<OracleServerSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
-            JDBCPreparedStatement dbStat = ((JDBCExecutionContext)context).prepareStatement(
+            JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
                 "SELECT s.*,sq.SQL_TEXT FROM V$SESSION s\n" +
                 "LEFT OUTER JOIN V$SQL sq ON sq.SQL_ID=s.SQL_ID\n" +
                 "WHERE s.TYPE='USER'");
@@ -82,7 +82,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     }
 
     @Override
-    public void alterSession(DBCExecutionContext context, OracleServerSession session, Map<String, Object> options) throws DBException
+    public void alterSession(DBCSession session, OracleServerSession sessionType, Map<String, Object> options) throws DBException
     {
         final boolean toKill = Boolean.TRUE.equals(options.get(PROP_KILL_SESSION));
         final boolean immediate = Boolean.TRUE.equals(options.get(PROP_IMMEDIATE));
@@ -94,13 +94,13 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
             } else {
                 sql.append("DISCONNECT SESSION ");
             }
-            sql.append("'").append(session.getSid()).append(',').append(session.getSerial()).append("'");
+            sql.append("'").append(sessionType.getSid()).append(',').append(sessionType.getSerial()).append("'");
             if (immediate) {
                 sql.append(" IMMEDIATE");
             } else if (!toKill) {
                 sql.append(" POST_TRANSACTION");
             }
-            JDBCPreparedStatement dbStat = ((JDBCExecutionContext)context).prepareStatement(sql.toString());
+            JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql.toString());
             try {
                 dbStat.execute();
             } finally {

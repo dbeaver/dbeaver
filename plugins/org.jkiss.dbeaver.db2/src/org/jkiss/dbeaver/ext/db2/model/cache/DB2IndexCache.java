@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -49,46 +49,46 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
     {
-        JDBCPreparedStatement dbStat = context.prepareStatement(SQL_INDS_ALL);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SQL_INDS_ALL);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2Index fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
+    protected DB2Index fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
         DBException
     {
 
         // Look for related table...or nickname
         String tableOrNicknameSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String tableOrNicknameName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
-        DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(context.getProgressMonitor(), db2Schema.getDataSource(),
+        DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
             tableOrNicknameSchemaName, tableOrNicknameName);
         if (db2Table == null) {
-            db2Table = DB2Utils.findNicknameBySchemaNameAndName(context.getProgressMonitor(), db2Schema.getDataSource(),
+            db2Table = DB2Utils.findNicknameBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
                 tableOrNicknameSchemaName, tableOrNicknameName);
         }
 
-        return new DB2Index(context.getProgressMonitor(), db2Schema, db2Table, dbResult);
+        return new DB2Index(session.getProgressMonitor(), db2Schema, db2Table, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Index forIndex)
+    protected JDBCStatement prepareChildrenStatement(JDBCSession session, DB2Schema db2Schema, DB2Index forIndex)
         throws SQLException
     {
-        JDBCPreparedStatement dbStat = context.prepareStatement(SQL_COLS_IND);
+        JDBCPreparedStatement dbStat = session.prepareStatement(SQL_COLS_IND);
         dbStat.setString(1, forIndex.getContainer().getName());
         dbStat.setString(2, forIndex.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2IndexColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2Index db2Index, ResultSet dbResult)
+    protected DB2IndexColumn fetchChild(JDBCSession session, DB2Schema db2Schema, DB2Index db2Index, ResultSet dbResult)
         throws SQLException, DBException
     {
-        return new DB2IndexColumn(context.getProgressMonitor(), db2Index, dbResult);
+        return new DB2IndexColumn(session.getProgressMonitor(), db2Index, dbResult);
     }
 
 }
