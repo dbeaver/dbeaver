@@ -61,6 +61,11 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
     }
 
     @Override
+    public WMIDataSource getDataSource() {
+        return this;
+    }
+
+    @Override
     public boolean isConnected()
     {
         return true;

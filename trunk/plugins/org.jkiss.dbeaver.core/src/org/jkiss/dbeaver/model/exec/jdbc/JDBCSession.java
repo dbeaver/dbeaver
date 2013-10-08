@@ -27,7 +27,7 @@ import java.sql.SQLException;
 import java.util.concurrent.Executor;
 
 /**
- * JDBC connection
+ * JDBC session
  */
 public interface JDBCSession extends DBCSession, Connection {
 
