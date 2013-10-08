@@ -43,16 +43,18 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
 
     private final JDBCDataSource dataSource;
     private volatile JDBCConnectionHolder connectionHolder;
+    private final String purpose;
 
-    public JDBCExecutionContext(JDBCDataSource dataSource, DBRProgressMonitor monitor) throws DBCException
+    public JDBCExecutionContext(JDBCDataSource dataSource, DBRProgressMonitor monitor, String purpose) throws DBCException
     {
         this.dataSource = dataSource;
+        this.purpose = purpose;
         connect(monitor);
     }
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
     {
-        this.connectionHolder = dataSource.openConnection(monitor);
+        this.connectionHolder = dataSource.openConnection(monitor, purpose);
         {
             // Notify QM
             boolean autoCommit = false;

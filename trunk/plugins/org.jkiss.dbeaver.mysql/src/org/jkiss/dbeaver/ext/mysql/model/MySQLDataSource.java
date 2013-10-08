@@ -351,8 +351,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBCException {
-        JDBCConnectionHolder mysqlConnection = super.openConnection(monitor);
+    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor, String purpose) throws DBCException {
+        JDBCConnectionHolder mysqlConnection = super.openConnection(monitor, purpose);
 
         {
             // Provide client info
@@ -360,7 +360,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             if (product != null) {
                 String appName = DBeaverCore.getProductTitle();
                 try {
-                    mysqlConnection.getConnection().setClientInfo("ApplicationName", appName);
+                    mysqlConnection.getConnection().setClientInfo("ApplicationName", appName + " - " + purpose);
                 } catch (Throwable e) {
                     // just ignore
                     log.debug(e);

@@ -68,7 +68,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         String contextTask = CoreMessages.data_transfer_wizard_job_task_export;
         DBPDataSource dataSource = getSourceObject().getDataSource();
         boolean newConnection = settings.isOpenNewConnections();
-        DBCExecutionContext context = newConnection ? dataSource.openIsolatedContext(monitor) : dataSource;
+        DBCExecutionContext context = newConnection ?
+            dataSource.openIsolatedContext(monitor, "Data transfer producer") : dataSource;
         DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask);
         try {
             if (newConnection) {

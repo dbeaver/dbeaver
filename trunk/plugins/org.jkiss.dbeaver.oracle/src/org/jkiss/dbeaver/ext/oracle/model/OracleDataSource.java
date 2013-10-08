@@ -83,7 +83,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBCException
+    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor, String purpose) throws DBCException
     {
         // Set tns admin directory
         DBPClientHome clientHome = getContainer().getClientHome();
@@ -91,7 +91,19 @@ public class OracleDataSource extends JDBCDataSource
             System.setProperty("oracle.net.tns_admin", new File(clientHome.getHomePath(), OCIUtils.TNSNAMES_FILE_PATH).getAbsolutePath());
         }
 
-        return super.openConnection(monitor);
+        JDBCConnectionHolder connectionHolder = super.openConnection(monitor, purpose);
+/*
+        OracleConnection oracleConnection = (OracleConnection)connectionHolder.getConnection();
+
+        try {
+            oracleConnection.setClientInfo("ApplicationName", DBeaverCore.getProductTitle() + " - " + purpose);
+        } catch (Throwable e) {
+            // just ignore
+            log.debug(e);
+        }
+*/
+
+        return connectionHolder;
     }
 
     @Override

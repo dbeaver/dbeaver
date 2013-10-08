@@ -78,7 +78,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
         List<OBJECT> tmpObjectList = new ArrayList<OBJECT>();
 
-        JDBCSession session = (JDBCSession)owner.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load objects");
+        JDBCSession session = (JDBCSession)owner.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load objects from " + owner.getName());
         try {
             JDBCStatement dbStat = prepareObjectsStatement(session, owner);
             try {
