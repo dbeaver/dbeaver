@@ -47,7 +47,7 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
     boolean isConnected();
 
     /**
-     * Opens new execution context
+     * Opens new session
      * @param monitor progress monitor
      * @param purpose context purpose
      * @param task task description
@@ -56,11 +56,11 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
     DBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task);
 
     /**
-     * checks connection is alive and reconnects if needed.
+     * Checks context is alive and reconnects if needed.
      *
      * @throws org.jkiss.dbeaver.DBException on any error
      * @param monitor progress monitor
      */
-    void invalidateConnection(DBRProgressMonitor monitor) throws DBException;
+    void invalidateContext(DBRProgressMonitor monitor) throws DBException;
 
 }

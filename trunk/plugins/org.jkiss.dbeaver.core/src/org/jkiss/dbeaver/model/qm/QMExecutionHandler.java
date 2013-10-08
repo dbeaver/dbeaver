@@ -21,10 +21,7 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 
 /**
  * Query manager execution handler.
@@ -35,13 +32,13 @@ public interface QMExecutionHandler {
 
     String getHandlerName();
 
-    void handleSessionStart(DBPDataSource dataSource, boolean transactional);
+    void handleContextOpen(DBCExecutionContext context, boolean transactional);
 
-    void handleSessionEnd(DBPDataSource dataSource);
+    void handleContextClose(DBCExecutionContext context);
 
-    void handleContextOpen(DBCSession session);
+    void handleSessionOpen(DBCSession session);
 
-    void handleContextClose(DBCSession session);
+    void handleSessionClose(DBCSession session);
 
     void handleTransactionAutocommit(DBCSession session, boolean autoCommit);
 
