@@ -49,10 +49,12 @@ public interface DBPDataSource extends DBCExecutionContext
 
     /**
      * Opens new isolated execution context.
+     *
      * @param monitor progress monitor
+     * @param purpose
      * @return execution context
      */
-    DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor) throws DBCException;
+    DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBCException;
 
     /**
      * Reads base metadata from remote database or do any necessarily initialization routines.

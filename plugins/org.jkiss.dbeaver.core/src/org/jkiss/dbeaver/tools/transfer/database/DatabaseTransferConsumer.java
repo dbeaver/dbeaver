@@ -190,7 +190,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         DBPDataSource dataSource = containerMapping.getTarget().getDataSource();
         targetContext = settings.isOpenNewConnections() ?
-            dataSource.openIsolatedContext(monitor) : dataSource;
+            dataSource.openIsolatedContext(monitor, "Data transfer consumer") : dataSource;
         targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
         if (settings.isUseTransactions()) {
             targetSession.getTransactionManager().setAutoCommit(false);
