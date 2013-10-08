@@ -289,9 +289,7 @@ public abstract class JDBCDataSource
 //            }
             if (connection != null) {
                 try {
-                    if (!connection.getConnection().isClosed()) {
-                        connection.getConnection().close();
-                    }
+                    connection.close();
                 }
                 catch (SQLException ex) {
                     log.error(ex);
