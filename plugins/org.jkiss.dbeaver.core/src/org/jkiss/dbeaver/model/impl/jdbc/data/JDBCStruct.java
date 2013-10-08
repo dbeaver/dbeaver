@@ -275,7 +275,8 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                 metaData.getColumnDisplaySize(index),
                 metaData.getScale(index),
                 metaData.getPrecision(index),
-                false);
+                metaData.isNullable(index) == ResultSetMetaData.columnNoNulls,
+                metaData.isAutoIncrement(index));
             dataKind = JDBCUtils.resolveDataKind(dataSource, getTypeName(), getTypeID());
         }
 

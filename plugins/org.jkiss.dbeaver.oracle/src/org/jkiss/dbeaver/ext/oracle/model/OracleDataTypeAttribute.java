@@ -129,6 +129,11 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     }
 
     @Override
+    public boolean isPseudoAttribute() {
+        return false;
+    }
+
+    @Override
     public int getOrdinalPosition()
     {
         return number;

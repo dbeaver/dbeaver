@@ -30,6 +30,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     protected int valueType;
     protected long maxLength;
     protected boolean required;
+    protected boolean sequence;
     protected int scale;
     protected int precision;
     protected String typeName;
@@ -47,7 +48,8 @@ public abstract class AbstractAttribute implements DBSAttributeBase
             long maxLength,
             int scale,
             int precision,
-            boolean required)
+            boolean required,
+            boolean sequence)
     {
         this.name = name;
         this.valueType = valueType;
@@ -55,6 +57,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
         this.scale = scale;
         this.precision = precision;
         this.required = required;
+        this.sequence = sequence;
         this.typeName = typeName;
         this.ordinalPosition = ordinalPosition;
     }
@@ -126,6 +129,20 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     public void setRequired(boolean required)
     {
         this.required = required;
+    }
+
+    @Property(viewable = true, order = 55)
+    public boolean isSequence() {
+        return sequence;
+    }
+
+    @Override
+    public boolean isPseudoAttribute() {
+        return false;
+    }
+
+    public void setSequence(boolean sequence) {
+        this.sequence = sequence;
     }
 
     @Override

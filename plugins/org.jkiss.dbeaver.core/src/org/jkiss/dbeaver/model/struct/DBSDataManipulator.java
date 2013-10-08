@@ -44,20 +44,20 @@ public interface DBSDataManipulator extends DBSDataContainer {
 
     ExecuteBatch insertData(
         DBCSession session,
-        DBSEntityAttribute[] attributes,
+        DBSAttributeBase[] attributes,
         DBDDataReceiver keysReceiver)
         throws DBCException;
 
     ExecuteBatch updateData(
         DBCSession session,
-        DBSEntityAttribute[] updateAttributes,
-        DBSEntityAttribute[] keyAttributes,
+        DBSAttributeBase[] updateAttributes,
+        DBSAttributeBase[] keyAttributes,
         DBDDataReceiver keysReceiver)
         throws DBCException;
 
     ExecuteBatch deleteData(
         DBCSession session,
-        DBSEntityAttribute[] keyAttributes)
+        DBSAttributeBase[] keyAttributes)
         throws DBCException;
 
 }

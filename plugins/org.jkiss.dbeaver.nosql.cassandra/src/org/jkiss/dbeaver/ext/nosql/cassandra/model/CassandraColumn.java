@@ -72,6 +72,7 @@ public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> impl
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS),
             0,
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls,
+            JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.AUTO_INCREMENT),
             null);
 
         if (getName().equals(table.getKeyAlias())) {

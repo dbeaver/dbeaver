@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 
@@ -243,7 +243,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public ExecuteBatch insertData(DBCSession session, DBSEntityAttribute[] attributes, DBDDataReceiver keysReceiver)
+    public ExecuteBatch insertData(DBCSession session, DBSAttributeBase[] attributes, DBDDataReceiver keysReceiver)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -254,8 +254,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         boolean hasKey = false;
         for (int i = 0; i < attributes.length; i++) {
-            DBSEntityAttribute attribute = attributes[i];
-            if (attribute.isSequence()) {
+            DBSAttributeBase attribute = attributes[i];
+            if (attribute.isPseudoAttribute() || attribute.isSequence()) {
                 continue;
             }
             if (hasKey) query.append(","); //$NON-NLS-1$
@@ -265,7 +265,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append(") VALUES ("); //$NON-NLS-1$
         hasKey = false;
         for (int i = 0; i < attributes.length; i++) {
-            if (attributes[i].isSequence()) {
+            if (attributes[i].isPseudoAttribute() || attributes[i].isSequence()) {
                 continue;
             }
             if (hasKey) query.append(","); //$NON-NLS-1$
@@ -284,8 +284,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @Override
     public ExecuteBatch updateData(
         DBCSession session,
-        DBSEntityAttribute[] updateAttributes,
-        DBSEntityAttribute[] keyAttributes,
+        DBSAttributeBase[] updateAttributes,
+        DBSAttributeBase[] keyAttributes,
         DBDDataReceiver keysReceiver)
         throws DBCException
     {
@@ -296,14 +296,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append("UPDATE ").append(getFullQualifiedName()).append(" SET "); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
-        for (DBSEntityAttribute attribute : updateAttributes) {
+        for (DBSAttributeBase attribute : updateAttributes) {
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
             query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
         }
         query.append(" WHERE "); //$NON-NLS-1$
         hasKey = false;
-        for (DBSEntityAttribute attribute : keyAttributes) {
+        for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
             query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
@@ -314,13 +314,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         dbStat.setDataContainer(this);
 
-        DBSEntityAttribute[] attributes = CommonUtils.concatArrays(updateAttributes, keyAttributes);
+        DBSAttributeBase[] attributes = CommonUtils.concatArrays(updateAttributes, keyAttributes);
 
         return new BatchImpl(dbStat, attributes, keysReceiver, false);
     }
 
     @Override
-    public ExecuteBatch deleteData(DBCSession session, DBSEntityAttribute[] keyAttributes)
+    public ExecuteBatch deleteData(DBCSession session, DBSAttributeBase[] keyAttributes)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -330,7 +330,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append("DELETE FROM ").append(getFullQualifiedName()).append(" WHERE "); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
-        for (DBSEntityAttribute attribute : keyAttributes) {
+        for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
             query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
@@ -411,12 +411,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private class BatchImpl implements ExecuteBatch {
 
         private DBCStatement statement;
-        private final DBSEntityAttribute[] attributes;
+        private final DBSAttributeBase[] attributes;
         private final List<Object[]> values = new ArrayList<Object[]>();
         private final DBDDataReceiver keysReceiver;
         private final boolean skipSequences;
 
-        private BatchImpl(DBCStatement statement, DBSEntityAttribute[] attributes, DBDDataReceiver keysReceiver, boolean skipSequences)
+        private BatchImpl(DBCStatement statement, DBSAttributeBase[] attributes, DBDDataReceiver keysReceiver, boolean skipSequences)
         {
             this.statement = statement;
             this.attributes = attributes;
@@ -454,7 +454,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 int paramIndex = 0;
                 for (int k = 0; k < handlers.length; k++) {
                     DBDValueHandler handler = handlers[k];
-                    if (skipSequences && attributes[k].isSequence()) {
+                    if (attributes[k].isPseudoAttribute() || (skipSequences && attributes[k].isSequence())) {
                         continue;
                     }
                     handler.bindValueObject(statement.getContext(), statement, attributes[k], paramIndex++, rowValues[k]);

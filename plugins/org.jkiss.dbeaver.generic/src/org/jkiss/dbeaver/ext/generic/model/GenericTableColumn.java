@@ -35,7 +35,6 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     private String remarks;
     private int sourceType;
     private long charLength;
-    private boolean autoIncrement;
 
     public GenericTableColumn(GenericTable table)
     {
@@ -69,10 +68,10 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
             scale,
             precision,
             notNull,
+            autoIncrement,
             defaultValue);
         this.sourceType = sourceType;
         this.charLength = charLength;
-        this.autoIncrement = autoIncrement;
         this.remarks = remarks;
         this.radix = radix;
     }
@@ -97,7 +96,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     @Property(viewable = true, order = 51)
     public boolean isSequence()
     {
-        return autoIncrement;
+        return sequence;
     }
 
     @Override

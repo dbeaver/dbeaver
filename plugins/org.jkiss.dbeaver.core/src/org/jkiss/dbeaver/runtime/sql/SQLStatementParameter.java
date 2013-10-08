@@ -155,4 +155,14 @@ public class SQLStatementParameter implements DBSAttributeBase {
     {
         return false;
     }
+
+    @Override
+    public boolean isSequence() {
+        return false;
+    }
+
+    @Override
+    public boolean isPseudoAttribute() {
+        return false;
+    }
 }

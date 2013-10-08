@@ -26,4 +26,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 public interface DBSAttributeBase extends DBSTypedObject, DBPNamedObject
 {
     boolean isRequired();
+
+    boolean isSequence();
+
+    boolean isPseudoAttribute();
+
 }

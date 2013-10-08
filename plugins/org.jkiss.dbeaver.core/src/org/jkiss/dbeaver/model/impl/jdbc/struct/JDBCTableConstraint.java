@@ -165,7 +165,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         }
         if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
             for (DBDAttributeValue precAttribute : preceedingKeys) {
-                conditions.add(DBUtils.getQuotedIdentifier(precAttribute.getAttribute()) + " = ?");
+                conditions.add(DBUtils.getQuotedIdentifier(getDataSource(), precAttribute.getAttribute().getName()) + " = ?");
             }
         }
         if (!conditions.isEmpty()) {

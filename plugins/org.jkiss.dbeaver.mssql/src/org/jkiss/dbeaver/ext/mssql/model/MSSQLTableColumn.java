@@ -67,7 +67,6 @@ public class MSSQLTableColumn extends JDBCTableColumn<MSSQLTableBase> implements
 
     private String comment;
     private long charLength;
-    private boolean autoIncrement;
     private MSSQLCollation collation;
     private KeyType keyType;
 
@@ -120,7 +119,7 @@ public class MSSQLTableColumn extends JDBCTableColumn<MSSQLTableBase> implements
         this.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, MSSQLConstants.COL_COLLATION_NAME));
 
         String extra = JDBCUtils.safeGetString(dbResult, MSSQLConstants.COL_COLUMN_EXTRA);
-        this.autoIncrement = extra != null && extra.contains(MSSQLConstants.EXTRA_AUTO_INCREMENT);
+        this.sequence = extra != null && extra.contains(MSSQLConstants.EXTRA_AUTO_INCREMENT);
 
         String typeDesc = JDBCUtils.safeGetString(dbResult, MSSQLConstants.COL_COLUMN_TYPE);
         if (!CommonUtils.isEmpty(typeDesc) &&
@@ -171,12 +170,7 @@ public class MSSQLTableColumn extends JDBCTableColumn<MSSQLTableBase> implements
     @Property(viewable = true, editable = true, updatable = true, order = 51)
     public boolean isSequence()
     {
-        return autoIncrement;
-    }
-
-    public void setSequence(boolean autoIncrement)
-    {
-        this.autoIncrement = autoIncrement;
+        return sequence;
     }
 
     @Override

@@ -67,7 +67,6 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     private String comment;
     private long charLength;
-    private boolean autoIncrement;
     private MySQLCollation collation;
     private KeyType keyType;
 
@@ -120,7 +119,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION_NAME));
 
         String extra = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_EXTRA);
-        this.autoIncrement = extra != null && extra.contains(MySQLConstants.EXTRA_AUTO_INCREMENT);
+        this.sequence = extra != null && extra.contains(MySQLConstants.EXTRA_AUTO_INCREMENT);
 
         String typeDesc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_TYPE);
         if (!CommonUtils.isEmpty(typeDesc) &&
@@ -171,12 +170,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     @Property(viewable = true, editable = true, updatable = true, order = 51)
     public boolean isSequence()
     {
-        return autoIncrement;
-    }
-
-    public void setSequence(boolean autoIncrement)
-    {
-        this.autoIncrement = autoIncrement;
+        return sequence;
     }
 
     @Override
