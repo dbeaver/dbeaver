@@ -53,6 +53,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
+    private DBCExecutionContext targetContext;
     private DBCSession targetSession;
     private DBSDataManipulator.ExecuteBatch executeBatch;
     private long rowsExported = 0;
@@ -81,7 +82,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public void fetchStart(DBCSession session, DBCResultSet resultSet) throws DBCException
     {
-        initExporter(session);
+        initExporter(session.getProgressMonitor());
         DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
         List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
         columnMappings = new ColumnMapping[rsAttributes.size()];
@@ -181,18 +182,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
     }
 
-    private void initExporter(DBCSession session) throws DBCException
+    private void initExporter(DBRProgressMonitor monitor) throws DBCException
     {
         containerMapping = settings.getDataMapping(sourceObject);
         if (containerMapping == null) {
             throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject));
         }
         DBPDataSource dataSource = containerMapping.getTarget().getDataSource();
-        if (settings.isOpenNewConnections()) {
-            targetSession = dataSource.openIsolatedContext(session.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
-        } else {
-            targetSession = dataSource.openSession(session.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
-        }
+        targetContext = settings.isOpenNewConnections() ?
+            dataSource.openIsolatedContext(monitor) : dataSource;
+        targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
         if (settings.isUseTransactions()) {
             targetSession.getTransactionManager().setAutoCommit(false);
         }
@@ -203,6 +202,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (targetSession != null) {
             targetSession.close();
             targetSession = null;
+        }
+        if (targetContext != null && settings.isOpenNewConnections()) {
+            targetContext.close();
+            targetContext = null;
         }
     }
 

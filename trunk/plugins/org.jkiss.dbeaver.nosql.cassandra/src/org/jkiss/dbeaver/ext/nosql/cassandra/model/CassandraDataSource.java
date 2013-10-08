@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
@@ -63,7 +64,7 @@ public class CassandraDataSource extends JDBCDataSource
     }
 
     @Override
-    protected JDBCConnectionImpl createConnection(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
+    protected JDBCConnectionImpl createConnection(DBRProgressMonitor monitor, JDBCExecutionContext context, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
     {
         return new CasConnection(this, monitor, purpose, taskTitle, isolated);
     }

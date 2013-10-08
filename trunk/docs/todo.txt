@@ -3,6 +3,7 @@ Major:
 Use separate connection for metadata and editors (configurable + on request)
 Async autocomplete
 ROWID support
+Server-side/client-side orderings switch
 
 Minor:
 

@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
@@ -56,8 +54,6 @@ public abstract class JDBCDataSource
         DBSObjectContainer,
         DBCQueryTransformProvider
 {
-    static final Log log = LogFactory.getLog(JDBCDataSource.class);
-
     private final DBSDataSourceContainer container;
 
     private final JDBCExecutionContext executionContext;
@@ -72,10 +68,15 @@ public abstract class JDBCDataSource
     }
 
     protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor)
-        throws DBException
+        throws DBCException
     {
         // It MUST be a JDBC driver
-        Driver driverInstance = getDriverInstance(monitor);
+        Driver driverInstance;
+        try {
+            driverInstance = getDriverInstance(monitor);
+        } catch (DBException e) {
+            throw new DBCException("Can't create driver instance", e);
+        }
 
         // Set properties
         Properties connectProps = new Properties();
@@ -134,10 +135,10 @@ public abstract class JDBCDataSource
             return new JDBCConnectionHolder(connection);
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBCException(ex);
         }
         catch (Throwable e) {
-            throw new DBException("Unexpected driver error occurred while connecting to database", e);
+            throw new DBCException("Unexpected driver error occurred while connecting to database", e);
         }
     }
 
@@ -192,17 +193,25 @@ public abstract class JDBCDataSource
     @Override
     public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
-        return createConnection(monitor, purpose, taskTitle, false);
+        return createConnection(monitor, executionContext, purpose, taskTitle, false);
     }
 
     @Override
-    public DBCSession openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
-        return createConnection(monitor, purpose, taskTitle, true);
+    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor) throws DBCException
+    {
+        JDBCExecutionContext context = new JDBCExecutionContext(this);
+        context.connect(monitor);
+        return context;
     }
 
-    protected JDBCConnectionImpl createConnection(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
+    protected JDBCConnectionImpl createConnection(
+        DBRProgressMonitor monitor,
+        JDBCExecutionContext context,
+        DBCExecutionPurpose purpose,
+        String taskTitle,
+        boolean isolated)
     {
-        return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, isolated);
+        return new JDBCConnectionImpl(context, monitor, purpose, taskTitle, isolated);
     }
 
     @Override
