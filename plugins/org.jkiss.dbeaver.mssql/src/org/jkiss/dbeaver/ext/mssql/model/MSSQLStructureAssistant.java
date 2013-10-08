@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -66,27 +66,27 @@ public class MSSQLStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         MSSQLCatalog catalog = parentObject instanceof MSSQLCatalog ? (MSSQLCatalog) parentObject : null;
         if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(context, catalog, objectNameMask, maxResults, references);
+            findTablesByMask(session, catalog, objectNameMask, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_CONSTRAINT) {
-            findConstraintsByMask(context, catalog, objectNameMask, maxResults, references);
+            findConstraintsByMask(session, catalog, objectNameMask, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(context, catalog, objectNameMask, maxResults, references);
+            findProceduresByMask(session, catalog, objectNameMask, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_TABLE_COLUMN) {
-            findTableColumnsByMask(context, catalog, objectNameMask, maxResults, references);
+            findTableColumnsByMask(session, catalog, objectNameMask, maxResults, references);
         }
     }
 
-    private void findTablesByMask(JDBCExecutionContext context, final MSSQLCatalog catalog, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTablesByMask(JDBCSession session, final MSSQLCatalog catalog, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Load tables
-        JDBCPreparedStatement dbStat = context.prepareStatement(
+        JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + MSSQLConstants.COL_TABLE_SCHEMA + "," + MSSQLConstants.COL_TABLE_NAME +
             " FROM " + MSSQLConstants.META_TABLE_TABLES + " WHERE " + MSSQLConstants.COL_TABLE_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MSSQLConstants.COL_TABLE_SCHEMA + "=?") +
@@ -130,13 +130,13 @@ public class MSSQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findProceduresByMask(JDBCExecutionContext context, final MSSQLCatalog catalog, String procNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findProceduresByMask(JDBCSession session, final MSSQLCatalog catalog, String procNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Load procedures
-        JDBCPreparedStatement dbStat = context.prepareStatement(
+        JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + MSSQLConstants.COL_ROUTINE_SCHEMA + "," + MSSQLConstants.COL_ROUTINE_NAME +
             " FROM " + MSSQLConstants.META_TABLE_ROUTINES + " WHERE " + MSSQLConstants.COL_ROUTINE_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MSSQLConstants.COL_ROUTINE_SCHEMA + "=?") +
@@ -180,13 +180,13 @@ public class MSSQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findConstraintsByMask(JDBCExecutionContext context, final MSSQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findConstraintsByMask(JDBCSession session, final MSSQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Load constraints
-        JDBCPreparedStatement dbStat = context.prepareStatement(
+        JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + MSSQLConstants.COL_TABLE_SCHEMA + "," + MSSQLConstants.COL_TABLE_NAME + "," + MSSQLConstants.COL_CONSTRAINT_NAME + "," + MSSQLConstants.COL_CONSTRAINT_TYPE +
             " FROM " + MSSQLConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + MSSQLConstants.COL_CONSTRAINT_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MSSQLConstants.COL_TABLE_SCHEMA + "=?") +
@@ -241,13 +241,13 @@ public class MSSQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findTableColumnsByMask(JDBCExecutionContext context, final MSSQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTableColumnsByMask(JDBCSession session, final MSSQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Load columns
-        JDBCPreparedStatement dbStat = context.prepareStatement(
+        JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + MSSQLConstants.COL_TABLE_SCHEMA + "," + MSSQLConstants.COL_TABLE_NAME + "," + MSSQLConstants.COL_COLUMN_NAME +
             " FROM " + MSSQLConstants.META_TABLE_COLUMNS + " WHERE " + MSSQLConstants.COL_COLUMN_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MSSQLConstants.COL_TABLE_SCHEMA + "=?") +

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -308,14 +308,14 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MSSQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MSSQLCatalog owner)
             throws SQLException
         {
-            return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MSSQLCatalog.this));
+            return session.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MSSQLCatalog.this));
         }
 
         @Override
-        protected MSSQLTableBase fetchObject(JDBCExecutionContext context, MSSQLCatalog owner, ResultSet dbResult)
+        protected MSSQLTableBase fetchObject(JDBCSession session, MSSQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, MSSQLConstants.COL_TABLE_TYPE);
@@ -327,7 +327,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, MSSQLCatalog owner, MSSQLTableBase forTable)
+        protected JDBCStatement prepareChildrenStatement(JDBCSession session, MSSQLCatalog owner, MSSQLTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -339,7 +339,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             sql.append(" ORDER BY ").append(MSSQLConstants.COL_ORDINAL_POSITION);
 
-            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, MSSQLCatalog.this.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
@@ -348,7 +348,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MSSQLTableColumn fetchChild(JDBCExecutionContext context, MSSQLCatalog owner, MSSQLTableBase table, ResultSet dbResult)
+        protected MSSQLTableColumn fetchChild(JDBCSession session, MSSQLCatalog owner, MSSQLTableBase table, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MSSQLTableColumn(table, dbResult);
@@ -365,7 +365,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MSSQLCatalog owner, MSSQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MSSQLCatalog owner, MSSQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -377,7 +377,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             sql.append(" ORDER BY ").append(MSSQLConstants.COL_INDEX_NAME).append(",").append(MSSQLConstants.COL_SEQ_IN_INDEX);
 
-            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, MSSQLCatalog.this.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
@@ -386,7 +386,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MSSQLTableIndex fetchObject(JDBCExecutionContext context, MSSQLCatalog owner, MSSQLTable parent, String indexName, ResultSet dbResult)
+        protected MSSQLTableIndex fetchObject(JDBCSession session, MSSQLCatalog owner, MSSQLTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, MSSQLConstants.COL_NON_UNIQUE) != 0;
@@ -415,7 +415,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Override
         protected MSSQLTableIndexColumn fetchObjectRow(
-            JDBCExecutionContext context,
+            JDBCSession session,
             MSSQLTable parent, MSSQLTableIndex object, ResultSet dbResult)
             throws SQLException, DBException
         {
@@ -424,7 +424,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, MSSQLConstants.COL_COLLATION);
             boolean nullable = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, MSSQLConstants.COL_NULLABLE));
 
-            MSSQLTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
+            MSSQLTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
             if (tableColumn == null) {
                 log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
                 return null;
@@ -455,7 +455,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MSSQLCatalog owner, MSSQLTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MSSQLCatalog owner, MSSQLTable forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder(500);
@@ -467,7 +467,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             sql.append("\nORDER BY kc.CONSTRAINT_NAME,kc.ORDINAL_POSITION");
 
-            JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, MSSQLCatalog.this.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
@@ -476,7 +476,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MSSQLTableConstraint fetchObject(JDBCExecutionContext context, MSSQLCatalog owner, MSSQLTable parent, String constraintName, ResultSet dbResult)
+        protected MSSQLTableConstraint fetchObject(JDBCSession session, MSSQLCatalog owner, MSSQLTable parent, String constraintName, ResultSet dbResult)
             throws SQLException, DBException
         {
             if (constraintName.equals("PRIMARY")) {
@@ -490,12 +490,12 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Override
         protected MSSQLTableConstraintColumn fetchObjectRow(
-            JDBCExecutionContext context,
+            JDBCSession session,
             MSSQLTable parent, MSSQLTableConstraint object, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, MSSQLConstants.COL_COLUMN_NAME);
-            MSSQLTableColumn column = parent.getAttribute(context.getProgressMonitor(), columnName);
+            MSSQLTableColumn column = parent.getAttribute(session.getProgressMonitor(), columnName);
             if (column == null) {
                 log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "'");
                 return null;
@@ -526,10 +526,10 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MSSQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MSSQLCatalog owner)
             throws SQLException
         {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MSSQLConstants.META_TABLE_ROUTINES +
                 " WHERE " + MSSQLConstants.COL_ROUTINE_SCHEMA + "=?" +
                 " ORDER BY " + MSSQLConstants.COL_ROUTINE_NAME
@@ -539,21 +539,21 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MSSQLProcedure fetchObject(JDBCExecutionContext context, MSSQLCatalog owner, ResultSet dbResult)
+        protected MSSQLProcedure fetchObject(JDBCSession session, MSSQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MSSQLProcedure(MSSQLCatalog.this, dbResult);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, MSSQLCatalog owner, MSSQLProcedure procedure)
+        protected JDBCStatement prepareChildrenStatement(JDBCSession session, MSSQLCatalog owner, MSSQLProcedure procedure)
             throws SQLException
         {
             // Load procedure columns through MSSQL metadata
             // There is no metadata table about proc/func columns -
             // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
             // Lets driver do it instead of me
-            return context.getMetaData().getProcedureColumns(
+            return session.getMetaData().getProcedureColumns(
                 getName(),
                 null,
                 procedure.getName(),
@@ -561,7 +561,7 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MSSQLProcedureParameter fetchChild(JDBCExecutionContext context, MSSQLCatalog owner, MSSQLProcedure parent, ResultSet dbResult)
+        protected MSSQLProcedureParameter fetchChild(JDBCSession session, MSSQLCatalog owner, MSSQLProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
@@ -601,19 +601,19 @@ public class MSSQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
     class TriggerCache extends JDBCObjectCache<MSSQLCatalog, MSSQLTrigger> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MSSQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MSSQLCatalog owner)
             throws SQLException
         {
-            return context.prepareStatement(
+            return session.prepareStatement(
                 "SHOW FULL TRIGGERS FROM " + DBUtils.getQuotedIdentifier(MSSQLCatalog.this));
         }
 
         @Override
-        protected MSSQLTrigger fetchObject(JDBCExecutionContext context, MSSQLCatalog owner, ResultSet dbResult)
+        protected MSSQLTrigger fetchObject(JDBCSession session, MSSQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");
-            MSSQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(context.getProgressMonitor(), tableName);
+            MSSQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(session.getProgressMonitor(), tableName);
             return new MSSQLTrigger(MSSQLCatalog.this, triggerTable, dbResult);
         }
 

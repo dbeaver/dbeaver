@@ -104,12 +104,12 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
         super.initialize(monitor);
 
         dataTypeCache.getObjects(monitor, this);
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
         try {
             // Read engines
             {
                 engines = new ArrayList<MSSQLEngine>();
-                JDBCPreparedStatement dbStat = context.prepareStatement("SHOW ENGINES");
+                JDBCPreparedStatement dbStat = session.prepareStatement("SHOW ENGINES");
                 try {
                     JDBCResultSet dbResult = dbStat.executeQuery();
                     try {
@@ -130,7 +130,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             // Read charsets and collations
             {
                 charsets = new ArrayList<MSSQLCharset>();
-                JDBCPreparedStatement dbStat = context.prepareStatement("SHOW CHARSET");
+                JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CHARSET");
                 try {
                     JDBCResultSet dbResult = dbStat.executeQuery();
                     try {
@@ -150,7 +150,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
 
                 collations = new LinkedHashMap<String, MSSQLCollation>();
-                dbStat = context.prepareStatement("SHOW COLLATION");
+                dbStat = session.prepareStatement("SHOW COLLATION");
                 try {
                     JDBCResultSet dbResult = dbStat.executeQuery();
                     try {
@@ -181,7 +181,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             {
                 // Get active schema
                 try {
-                    JDBCPreparedStatement dbStat = context.prepareStatement("SELECT DATABASE()");
+                    JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DATABASE()");
                     try {
                         JDBCResultSet resultSet = dbStat.executeQuery();
                         try {
@@ -202,7 +202,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             throw new DBException("Error reading metadata", ex);
         }
         finally {
-            context.close();
+            session.close();
         }
 
 /*
@@ -325,9 +325,9 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
         if (!(object instanceof MSSQLCatalog)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("use " + DBUtils.getQuotedIdentifier(object));
+            JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(object));
             try {
                 dbStat.execute();
             } finally {
@@ -337,7 +337,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             throw new DBException(e);
         }
         finally {
-            context.close();
+            session.close();
         }
         activeCatalogName = object.getName();
 
@@ -390,9 +390,9 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MSSQLUser> loadUsers(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load users");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load users");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("SELECT * FROM mssql.user ORDER BY user");
+            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM mssql.user ORDER BY user");
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -413,7 +413,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -487,9 +487,9 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MSSQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load privileges");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load privileges");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("SHOW PRIVILEGES");
+            JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PRIVILEGES");
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -510,7 +510,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -545,9 +545,9 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private List<MSSQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
     {
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load status");
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load status");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(
+            JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW " + 
                 (global ? "GLOBAL " : "") + 
                 (status ? "STATUS" : "VARIABLES"));
@@ -574,7 +574,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             throw new DBException(ex);
         }
         finally {
-            context.close();
+            session.close();
         }
     }
 
@@ -589,10 +589,10 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
+    public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException
     {
         MSSQLPlanAnalyser plan = new MSSQLPlanAnalyser(this, query);
-        plan.explain(context);
+        plan.explain(session);
         return plan;
     }
 
@@ -627,14 +627,14 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
     static class CatalogCache extends JDBCObjectCache<MSSQLDataSource, MSSQLCatalog>
     {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MSSQLDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MSSQLDataSource owner) throws SQLException
         {
             StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MSSQLConstants.META_TABLE_SCHEMATA);
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MSSQLCatalog.class, null);
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MSSQLConstants.COL_SCHEMA_NAME, true);
             }
-            JDBCPreparedStatement dbStat = context.prepareStatement(catalogQuery.toString());
+            JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
             }
@@ -642,7 +642,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
 
         @Override
-        protected MSSQLCatalog fetchObject(JDBCExecutionContext context, MSSQLDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected MSSQLCatalog fetchObject(JDBCSession session, MSSQLDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
             return new MSSQLCatalog(owner, resultSet);
         }

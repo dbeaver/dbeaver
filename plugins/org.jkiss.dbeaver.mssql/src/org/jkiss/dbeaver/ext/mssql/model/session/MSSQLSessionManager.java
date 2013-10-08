@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
@@ -54,10 +54,10 @@ public class MSSQLSessionManager implements DBAServerSessionManager<MSSQLSession
     }
 
     @Override
-    public Collection<MSSQLSession> getSessions(DBCExecutionContext context, Map<String, Object> options) throws DBException
+    public Collection<MSSQLSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
-            JDBCPreparedStatement dbStat = ((JDBCExecutionContext)context).prepareStatement("SHOW FULL PROCESSLIST");
+            JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement("SHOW FULL PROCESSLIST");
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
@@ -78,13 +78,13 @@ public class MSSQLSessionManager implements DBAServerSessionManager<MSSQLSession
     }
 
     @Override
-    public void alterSession(DBCExecutionContext context, MSSQLSession session, Map<String, Object> options) throws DBException
+    public void alterSession(DBCSession session, MSSQLSession serverSession, Map<String, Object> options) throws DBException
     {
         try {
-            JDBCPreparedStatement dbStat = ((JDBCExecutionContext)context).prepareStatement(
-                Boolean.TRUE.equals(options.get(PROP_KILL_QUERY)) ?
-                    "KILL QUERY " + session.getPid() :
-                    "KILL CONNECTION " + session.getPid());
+            JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement(
+                    Boolean.TRUE.equals(options.get(PROP_KILL_QUERY)) ?
+                            "KILL QUERY " + serverSession.getPid() :
+                            "KILL CONNECTION " + serverSession.getPid());
             try {
                 dbStat.execute();
             } finally {
