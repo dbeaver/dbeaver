@@ -56,22 +56,17 @@ public abstract class JDBCDataSource
     private final DBSDataSourceContainer container;
 
     private final JDBCExecutionContext executionContext;
-    private final JDBCExecutionContext metaContext;
+    private volatile JDBCExecutionContext metaContext;
     protected volatile DBPDataSourceInfo dataSourceInfo;
 
     public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
-        this.executionContext = new JDBCExecutionContext(this, monitor);
-        if (container.getPreferenceStore().getBoolean(PrefConstants.META_SEPARATE_CONNECTION)) {
-            this.metaContext = new JDBCExecutionContext(this, monitor);
-        } else {
-            this.metaContext = null;
-        }
+        this.executionContext = new JDBCExecutionContext(this, monitor, "Main connection");
     }
 
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor)
+    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor, String purpose)
         throws DBCException
     {
         // It MUST be a JDBC driver
@@ -178,13 +173,16 @@ public abstract class JDBCDataSource
     @Override
     public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
+        if (purpose == DBCExecutionPurpose.META && metaContext != null) {
+            return createConnection(monitor, this.metaContext, purpose, taskTitle);
+        }
         return createConnection(monitor, executionContext, purpose, taskTitle);
     }
 
     @Override
-    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor) throws DBCException
+    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBCException
     {
-        return new JDBCExecutionContext(this, monitor);
+        return new JDBCExecutionContext(this, monitor, purpose);
     }
 
     protected JDBCConnectionImpl createConnection(
@@ -228,6 +226,9 @@ public abstract class JDBCDataSource
     public synchronized void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
+        if (container.getPreferenceStore().getBoolean(PrefConstants.META_SEPARATE_CONNECTION)) {
+            this.metaContext = new JDBCExecutionContext(this, monitor, "Metadata reader");
+        }
         JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {
             dataSourceInfo = makeInfo(session.getMetaData());
