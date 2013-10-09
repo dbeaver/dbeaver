@@ -65,7 +65,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @Override
     public Connection getOriginal() throws SQLException
     {
-        return connector.getConnection().getConnection();
+        return connector.getConnection(getProgressMonitor()).getConnection();
     }
 
     private Connection getConnection()
@@ -81,7 +81,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     private JDBCConnectionHolder getConnectionHolder()
         throws SQLException
     {
-        return connector.getConnection();
+        return connector.getConnection(getProgressMonitor());
     }
 
     @Override
@@ -352,8 +352,8 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLException
     {
         return createPreparedStatementImpl(
-                getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency),
-                sql);
+            getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency),
+            sql);
     }
 
     @Override
@@ -451,8 +451,8 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLException
     {
         return createPreparedStatementImpl(
-                getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
-                sql);
+            getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
+            sql);
     }
 
     @Override
@@ -460,8 +460,8 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLException
     {
         return createCallableStatementImpl(
-                getConnection().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
-                sql);
+            getConnection().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
+            sql);
     }
 
     @Override

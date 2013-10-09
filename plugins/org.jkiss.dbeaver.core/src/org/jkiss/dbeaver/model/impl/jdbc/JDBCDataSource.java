@@ -63,7 +63,8 @@ public abstract class JDBCDataSource
         throws DBException
     {
         this.container = container;
-        this.executionContext = new JDBCExecutionContext(this, monitor, "Main connection");
+        this.executionContext = new JDBCExecutionContext(this, "Main connection");
+        this.executionContext.connect(monitor);
     }
 
     protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor, String purpose)
@@ -182,7 +183,7 @@ public abstract class JDBCDataSource
     @Override
     public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBCException
     {
-        return new JDBCExecutionContext(this, monitor, purpose);
+        return new JDBCExecutionContext(this, purpose);
     }
 
     protected JDBCConnectionImpl createConnection(
@@ -232,7 +233,7 @@ public abstract class JDBCDataSource
         throws DBException
     {
         if (container.getPreferenceStore().getBoolean(PrefConstants.META_SEPARATE_CONNECTION)) {
-            this.metaContext = new JDBCExecutionContext(this, monitor, "Metadata reader");
+            this.metaContext = new JDBCExecutionContext(this, "Metadata reader");
         }
         JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {
