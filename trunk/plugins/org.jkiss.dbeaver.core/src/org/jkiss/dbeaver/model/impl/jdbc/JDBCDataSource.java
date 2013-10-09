@@ -234,7 +234,7 @@ public abstract class JDBCDataSource
     {
         if (container.getPreferenceStore().getBoolean(PrefConstants.META_SEPARATE_CONNECTION)) {
             this.metaContext = new JDBCExecutionContext(this, "Metadata reader");
-            this.metaContext.connect(monitor, true);
+            this.metaContext.connect(monitor, true, null);
         }
         JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {

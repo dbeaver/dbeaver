@@ -55,10 +55,10 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
     {
-        connect(monitor, null);
+        connect(monitor, null, null);
     }
 
-    public void connect(DBRProgressMonitor monitor, Boolean autoCommit) throws DBCException
+    public void connect(DBRProgressMonitor monitor, Boolean autoCommit, Integer txnLevel) throws DBCException
     {
         if (connectionHolder != null) {
             log.error("Reopening not-closed connection");
@@ -70,6 +70,13 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
                 connectionHolder.setAutoCommit(autoCommit);
             } catch (Throwable e) {
                 log.warn("Could not set auto-commit state", e); //$NON-NLS-1$
+            }
+        }
+        if (txnLevel != null) {
+            try {
+                connectionHolder.setTransactionIsolation(txnLevel);
+            } catch (Throwable e) {
+                log.warn("Could not set transaction isolation level", e); //$NON-NLS-1$
             }
         }
         {
@@ -133,8 +140,10 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
         }
 
         if (!JDBCUtils.isConnectionAlive(this.connectionHolder.getConnection())) {
+            Boolean prevAutocommit = connectionHolder.getAutoCommitCache();
+            Integer txnLevel = connectionHolder.getTransactionIsolationCache();
             close();
-            connect(monitor);
+            connect(monitor, prevAutocommit, txnLevel);
             invalidateState(monitor);
         }
     }
