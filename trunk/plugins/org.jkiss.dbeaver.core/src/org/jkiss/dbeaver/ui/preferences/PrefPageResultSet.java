@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -43,17 +42,18 @@ public class PrefPageResultSet extends TargetPrefPage
     //private Button binaryShowStrings;
     private Combo binaryPresentationCombo;
     private Combo binaryEditorType;
-    private Spinner binaryStringMaxLength;
 
     private Button keepStatementOpenCheck;
     private Button rollbackOnErrorCheck;
+    private Spinner binaryStringMaxLength;
     private Spinner memoryContentSize;
-    private Button readExpensiveCheck;
+
+    private Button serverSideOrderingCheck;
 
     public PrefPageResultSet()
     {
         super();
-        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
+//        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
     }
 
     @Override
@@ -65,11 +65,11 @@ public class PrefPageResultSet extends TargetPrefPage
             store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(PrefConstants.KEEP_STATEMENT_OPEN) ||
             store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
-            store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES) ||
             store.contains(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS) ||
             store.contains(PrefConstants.RESULT_SET_BINARY_PRESENTATION) ||
             store.contains(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE) ||
-            store.contains(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN)
+            store.contains(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN) ||
+            store.contains(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE)
             ;
     }
 
@@ -107,21 +107,6 @@ public class PrefPageResultSet extends TargetPrefPage
         }
 
         {
-            Group performanceGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_performance, 2, SWT.NONE, 0);
-
-            readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, false);
-
-            UIUtils.createControlLabel(performanceGroup, CoreMessages.pref_page_database_general_label_max_lob_length);
-
-            memoryContentSize = new Spinner(performanceGroup, SWT.BORDER);
-            memoryContentSize.setSelection(0);
-            memoryContentSize.setDigits(0);
-            memoryContentSize.setIncrement(1);
-            memoryContentSize.setMinimum(0);
-            memoryContentSize.setMaximum(1024 * 1024 * 1024);
-        }
-
-        {
             Group binaryGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
 
             //binaryShowStrings = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_use_strings, false);
@@ -131,8 +116,12 @@ public class PrefPageResultSet extends TargetPrefPage
                 binaryPresentationCombo.add(formatter.getTitle());
             }
 
-            UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_strings_max_length);
 
+            binaryEditorType = UIUtils.createLabelCombo(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_editor_type, SWT.DROP_DOWN | SWT.READ_ONLY);
+            binaryEditorType.add("Editor");
+            binaryEditorType.add("Dialog");
+
+            UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_strings_max_length);
             binaryStringMaxLength = new Spinner(binaryGroup, SWT.BORDER);
             binaryStringMaxLength.setSelection(0);
             binaryStringMaxLength.setDigits(0);
@@ -140,9 +129,19 @@ public class PrefPageResultSet extends TargetPrefPage
             binaryStringMaxLength.setMinimum(0);
             binaryStringMaxLength.setMaximum(10000);
 
-            binaryEditorType = UIUtils.createLabelCombo(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_editor_type, SWT.DROP_DOWN | SWT.READ_ONLY);
-            binaryEditorType.add("Editor");
-            binaryEditorType.add("Dialog");
+            UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_database_general_label_max_lob_length);
+            memoryContentSize = new Spinner(binaryGroup, SWT.BORDER);
+            memoryContentSize.setSelection(0);
+            memoryContentSize.setDigits(0);
+            memoryContentSize.setIncrement(1);
+            memoryContentSize.setMinimum(0);
+            memoryContentSize.setMaximum(1024 * 1024 * 1024);
+        }
+
+        {
+            Group orderingGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_ordering, 2, SWT.NONE, 0);
+
+            serverSideOrderingCheck = UIUtils.createLabelCheckbox(orderingGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false);
         }
 
         return composite;
@@ -156,7 +155,6 @@ public class PrefPageResultSet extends TargetPrefPage
             keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
             rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
             memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
-            readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
             binaryStringMaxLength.setSelection(store.getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN));
 
             DBDBinaryFormatter formatter = DBUtils.getBinaryPresentation(store.getString(PrefConstants.RESULT_SET_BINARY_PRESENTATION));
@@ -173,6 +171,8 @@ public class PrefPageResultSet extends TargetPrefPage
             } else {
                 binaryEditorType.select(1);
             }
+
+            serverSideOrderingCheck.setSelection(store.getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -186,7 +186,6 @@ public class PrefPageResultSet extends TargetPrefPage
             store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
-            store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
 
             String presentationTitle = binaryPresentationCombo.getItem(binaryPresentationCombo.getSelectionIndex());
             for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
@@ -200,6 +199,8 @@ public class PrefPageResultSet extends TargetPrefPage
                 binaryEditorType.getSelectionIndex() == 0 ?
                     DBDValueController.EditType.EDITOR.name() :
                     DBDValueController.EditType.PANEL.name());
+
+            store.setValue(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -213,11 +214,11 @@ public class PrefPageResultSet extends TargetPrefPage
         store.setToDefault(PrefConstants.KEEP_STATEMENT_OPEN);
         store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
-        store.setToDefault(PrefConstants.READ_EXPENSIVE_PROPERTIES);
         store.setToDefault(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
         store.setToDefault(PrefConstants.RESULT_SET_BINARY_PRESENTATION);
         store.setToDefault(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
         store.setToDefault(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE);
+        store.setToDefault(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE);
     }
 
     @Override
