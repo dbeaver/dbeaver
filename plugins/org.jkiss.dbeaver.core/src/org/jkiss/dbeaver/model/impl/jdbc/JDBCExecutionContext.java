@@ -55,20 +55,32 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
     {
+        connect(monitor, null);
+    }
+
+    public void connect(DBRProgressMonitor monitor, Boolean autoCommit) throws DBCException
+    {
         if (connectionHolder != null) {
             log.error("Reopening not-closed connection");
             close();
         }
         this.connectionHolder = dataSource.openConnection(monitor, purpose);
+        if (autoCommit != null) {
+            try {
+                connectionHolder.setAutoCommit(autoCommit);
+            } catch (Throwable e) {
+                log.warn("Could not set auto-commit state", e); //$NON-NLS-1$
+            }
+        }
         {
             // Notify QM
-            boolean autoCommit = false;
+            boolean autoCommitState = false;
             try {
-                autoCommit = connectionHolder.getAutoCommit();
+                autoCommitState = connectionHolder.getAutoCommit();
             } catch (Throwable e) {
                 log.warn("Could not check auto-commit state", e); //$NON-NLS-1$
             }
-            QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommit);
+            QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommitState);
         }
     }
 

@@ -1699,12 +1699,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private boolean isServerSideFiltering()
     {
-        return dataReceiver.isHasMoreData() || model.getDataFilter().hasFilters();
+        return dataReceiver.isHasMoreData() || !CommonUtils.isEmpty(model.getDataFilter().getOrder());
     }
 
     private void reorderResultSet(boolean force, Runnable onSuccess)
     {
-        if ((force || isServerSideFiltering()) && supportsDataFilter()) {
+        if (isServerSideFiltering() && supportsDataFilter()) {
             if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
                 int segmentSize = getSegmentMaxRows();
                 if (curRowNum >= segmentSize && segmentSize > 0) {

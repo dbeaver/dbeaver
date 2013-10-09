@@ -516,12 +516,13 @@ public class ResultSetModel {
         if (!dataFilter.hasOrdering()) {
             return;
         }
+        final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
         Collections.sort(curRows, new Comparator<Object[]>() {
             @Override
             public int compare(Object[] row1, Object[] row2)
             {
                 int result = 0;
-                for (DBDAttributeConstraint co : dataFilter.getConstraints()) {
+                for (DBDAttributeConstraint co : orderConstraints) {
                     final DBDAttributeBinding binding = co.getAttribute();
                     if (binding == null) {
                         continue;
