@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 
+import java.sql.SQLException;
+
 /**
  * JDBCExecutionContext
  */
@@ -45,15 +47,18 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     private volatile JDBCConnectionHolder connectionHolder;
     private final String purpose;
 
-    public JDBCExecutionContext(JDBCDataSource dataSource, DBRProgressMonitor monitor, String purpose) throws DBCException
+    public JDBCExecutionContext(JDBCDataSource dataSource, String purpose)
     {
         this.dataSource = dataSource;
         this.purpose = purpose;
-        connect(monitor);
     }
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
     {
+        if (connectionHolder != null) {
+            log.error("Reopening not-closed connection");
+            close();
+        }
         this.connectionHolder = dataSource.openConnection(monitor, purpose);
         {
             // Notify QM
@@ -68,8 +73,19 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     }
 
     @Override
-    public JDBCConnectionHolder getConnection()
+    public JDBCConnectionHolder getConnection(DBRProgressMonitor monitor) throws SQLException
     {
+        if (connectionHolder == null) {
+            try {
+                connect(monitor);
+            } catch (DBCException e) {
+                if (e.getCause() instanceof SQLException) {
+                    throw (SQLException) e.getCause();
+                } else {
+                    throw new SQLException(e);
+                }
+            }
+        }
         return connectionHolder;
     }
 
@@ -145,8 +161,8 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
                     log.error(ex);
                 }
                 QMUtils.getDefaultHandler().handleContextClose(this);
+                connectionHolder = null;
             }
-            connectionHolder = null;
         }
     }
 
