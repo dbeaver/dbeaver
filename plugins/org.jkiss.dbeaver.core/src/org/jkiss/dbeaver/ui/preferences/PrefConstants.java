@@ -102,5 +102,6 @@ public final class PrefConstants
     public static final String RESULT_SET_BINARY_SHOW_STRINGS = "resultset.binary.showStrings"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_PRESENTATION = "resultset.binary.representation"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_STRING_MAX_LEN = "resultset.binary.stringMaxLength"; //$NON-NLS-1$
+    public static final String RESULT_SET_ORDER_SERVER_SIDE = "resultset.order.serverSide"; //$NON-NLS-1$
 
 }
