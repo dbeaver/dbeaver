@@ -215,7 +215,14 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    TABLESPACE(DBIcon.TREE_TABLESPACE.getImage(), DB2Tablespace.class, null),
+    TABLESPACE(DBIcon.TREE_TABLESPACE.getImage(), DB2Tablespace.class, new ObjectFinder() {
+        @Override
+        public DB2Tablespace findObject(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String objectName)
+            throws DBException
+        {
+            return db2DataSource.getTablespace(monitor, objectName);
+        }
+    }),
 
     TRIGGER(DBIcon.TREE_TABLE.getImage(), DB2Trigger.class, new ObjectFinder() {
         @Override
@@ -327,6 +334,15 @@ public enum DB2ObjectType implements DBSObjectType {
         return finder != null;
     }
 
+    public DBSObject findObject(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String objectName) throws DBException
+    {
+        if (finder != null) {
+            return finder.findObject(monitor, db2DataSource, objectName);
+        } else {
+            return null;
+        }
+    }
+
     public DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
     {
         if (finder != null) {
@@ -381,6 +397,11 @@ public enum DB2ObjectType implements DBSObjectType {
     // ----------------
 
     private static class ObjectFinder {
+        DBSObject findObject(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String objectName) throws DBException
+        {
+            return null;
+        }
+
         DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
             return null;
