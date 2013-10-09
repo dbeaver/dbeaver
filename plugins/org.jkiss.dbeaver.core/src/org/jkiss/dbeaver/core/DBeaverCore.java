@@ -508,6 +508,7 @@ public class DBeaverCore implements DBPApplication {
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, true);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE, DBDValueController.EditType.EDITOR);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, 32);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_ORDER_SERVER_SIDE, true);
 
         // QM
         queryManager.initDefaultPreferences(store);

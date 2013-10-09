@@ -1189,7 +1189,7 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_database_general_group_metadata;
 
-	public static String pref_page_database_general_group_performance;
+	public static String pref_page_database_general_group_ordering;
 
 	public static String pref_page_database_general_group_queries;
 
@@ -1204,6 +1204,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_database_resultsets_label_binary_presentation;
     public static String pref_page_database_resultsets_label_binary_editor_type;
     public static String pref_page_database_resultsets_label_binary_strings_max_length;
+    public static String pref_page_database_resultsets_label_server_side_order;
 
     public static String pref_page_query_manager_checkbox_ddl_executions;
 

@@ -1528,6 +1528,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 });
             }
         }
+        filtersMenu.add(new Separator());
         filtersMenu.add(new ShowFiltersAction());
     }
 
@@ -1549,7 +1550,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
         //int newSort;
         if (constraint.getOrderPosition() == 0) {
-            if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
+            if (isServerSideFiltering() && supportsDataFilter()) {
                 if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
                     PrefConstants.CONFIRM_ORDER_RESULTSET,
@@ -1699,7 +1700,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private boolean isServerSideFiltering()
     {
-        return dataReceiver.isHasMoreData() || !CommonUtils.isEmpty(model.getDataFilter().getOrder());
+        return
+            getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE) &&
+            (dataReceiver.isHasMoreData() || !CommonUtils.isEmpty(model.getDataFilter().getOrder()));
     }
 
     private void reorderResultSet(boolean force, Runnable onSuccess)
