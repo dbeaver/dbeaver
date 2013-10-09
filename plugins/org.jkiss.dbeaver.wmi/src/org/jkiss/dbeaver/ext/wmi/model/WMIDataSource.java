@@ -63,6 +63,11 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
     }
 
     @Override
+    public String getContextName() {
+        return "WMI Data Source";
+    }
+
+    @Override
     public WMIDataSource getDataSource() {
         return this;
     }

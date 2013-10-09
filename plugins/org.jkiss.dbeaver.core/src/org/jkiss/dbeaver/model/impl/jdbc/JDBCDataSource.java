@@ -207,6 +207,11 @@ public abstract class JDBCDataSource
     }
 
     @Override
+    public String getContextName() {
+        return executionContext.getContextName();
+    }
+
+    @Override
     public boolean isConnected()
     {
         return executionContext.isConnected();
