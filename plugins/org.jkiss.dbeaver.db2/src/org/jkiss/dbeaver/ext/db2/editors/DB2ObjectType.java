@@ -424,6 +424,7 @@ public enum DB2ObjectType implements DBSObjectType {
         return typeMap.get(typeName);
     }
 
+    // TODO DF: to be factorised
     public static Object resolveObject(DBRProgressMonitor monitor, DB2DataSource dataSource, String objectTypeName,
         String objectOwner, String objectName) throws DBException
     {
