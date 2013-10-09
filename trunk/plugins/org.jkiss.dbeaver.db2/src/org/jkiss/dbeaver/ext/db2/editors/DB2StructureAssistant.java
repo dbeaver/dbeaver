@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -64,10 +64,10 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
         DB2ObjectType.MQT, DB2ObjectType.NICKNAME, };
 
-    private static String SQL_TABLES_ALL;
-    private static String SQL_TABLES_SCHEMA;
-    private static String SQL_COLS_ALL;
-    private static String SQL_COLS_SCHEMA;
+    private static final String SQL_TABLES_ALL;
+    private static final String SQL_TABLES_SCHEMA;
+    private static final String SQL_COLS_ALL;
+    private static final String SQL_COLS_SCHEMA;
 
     private final DB2DataSource dataSource;
 
@@ -129,9 +129,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     // Helpers
     // -----------------
 
-    private List<DBSObjectReference> searchAllObjects(final JDBCSession session, final DB2Schema schema,
-        String objectNameMask, List<DB2ObjectType> db2ObjectTypes, boolean caseSensitive, int maxResults) throws SQLException,
-        DBException
+    private List<DBSObjectReference> searchAllObjects(final JDBCSession session, final DB2Schema schema, String objectNameMask,
+        List<DB2ObjectType> db2ObjectTypes, boolean caseSensitive, int maxResults) throws SQLException, DBException
     {
 
         List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
@@ -228,9 +227,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         }
     }
 
-    private void searchColumns(JDBCSession session, DB2Schema schema, String searchObjectNameMask,
-        List<DB2ObjectType> objectTypes, int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException,
-        DBException
+    private void searchColumns(JDBCSession session, DB2Schema schema, String searchObjectNameMask, List<DB2ObjectType> objectTypes,
+        int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException, DBException
     {
         String sql;
         if (schema != null) {
@@ -418,7 +416,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         sb.append(" WHERE TABSCHEMA = ?");
         sb.append("   AND COLNAME LIKE ?");
         sb.append(" WITH UR");
-        SQL_COLS_ALL = sb.toString();
+        SQL_COLS_SCHEMA = sb.toString();
 
         sb.setLength(0);
 
