@@ -203,7 +203,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                     }
 
                     if (nbResults++ >= maxResults) {
-                        return;
+                        break;
                     }
 
                     schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
