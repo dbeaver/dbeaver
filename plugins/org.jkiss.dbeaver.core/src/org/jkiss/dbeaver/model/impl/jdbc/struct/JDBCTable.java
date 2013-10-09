@@ -454,7 +454,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 int paramIndex = 0;
                 for (int k = 0; k < handlers.length; k++) {
                     DBDValueHandler handler = handlers[k];
-                    if (attributes[k].isPseudoAttribute() || (skipSequences && attributes[k].isSequence())) {
+                    if (skipSequences && attributes[k].isSequence()) {
                         continue;
                     }
                     handler.bindValueObject(statement.getContext(), statement, attributes[k], paramIndex++, rowValues[k]);

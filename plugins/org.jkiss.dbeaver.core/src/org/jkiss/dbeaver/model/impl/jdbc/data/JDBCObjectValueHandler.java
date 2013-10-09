@@ -81,7 +81,13 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         Object value)
         throws DBCException, SQLException
     {
-        throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + value);
+        if (value == null) {
+            statement.setNull(paramIndex, paramType.getTypeID());
+        } else if (value instanceof JDBCRowId) {
+            statement.setRowId(paramIndex, ((JDBCRowId) value).getValue());
+        } else {
+            statement.setObject(paramIndex, value);
+        }
     }
 
     @Override

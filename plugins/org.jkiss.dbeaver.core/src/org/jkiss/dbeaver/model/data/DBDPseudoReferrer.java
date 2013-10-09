@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -36,10 +37,10 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
     private final DBSEntity entity;
     private final DBSEntityAttribute entityAttribute;
 
-    public DBDPseudoReferrer(DBSEntity entity, DBCAttributeMetaData attributeMetaData)
+    public DBDPseudoReferrer(DBSEntity entity, DBSEntityAttribute attribute)
     {
         this.entity = entity;
-        this.entityAttribute = attributeMetaData.getPseudoAttribute().createFakeAttribute(entity, attributeMetaData);
+        this.entityAttribute = attribute;
     }
 
     @Override
