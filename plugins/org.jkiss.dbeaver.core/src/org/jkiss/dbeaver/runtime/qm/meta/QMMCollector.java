@@ -119,9 +119,10 @@ public class QMMCollector extends DefaultExecutionHandler {
 
     public QMMSessionInfo getSessionInfo(DBCExecutionContext context)
     {
-        QMMSessionInfo sessionInfo = sessionMap.get(context.getDataSource().getContainer().getId());
+        String contextId = context.getDataSource().getContainer().getId() + ":" + context.getContextName();
+        QMMSessionInfo sessionInfo = sessionMap.get(contextId);
         if (sessionInfo == null) {
-            log.warn("Could not find sessionInfo meta information: " + context.getDataSource().getContainer().getId());
+            log.warn("Could not find sessionInfo meta information: " + contextId);
         }
         return sessionInfo;
     }
@@ -136,15 +137,15 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleContextOpen(DBCExecutionContext context, boolean transactional)
     {
-        String containerId = context.getDataSource().getContainer().getId();
+        String contextId = context.getDataSource().getContainer().getId() + ":" + context.getContextName();
         QMMSessionInfo session = new QMMSessionInfo(
             context,
             transactional,
-            sessionMap.get(containerId));
-        sessionMap.put(containerId, session);
+            sessionMap.get(contextId));
+        sessionMap.put(contextId, session);
 
         if (session.getPrevious() != null && !session.getPrevious().isClosed()) {
-            log.warn("Previous '" + containerId + "' session wasn't closed");
+            log.warn("Previous '" + contextId + "' session wasn't closed");
             session.getPrevious().close();
         }
         fireMetaEvent(session, QMMetaEvent.Action.BEGIN);

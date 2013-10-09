@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
  */
 public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
 {
+    String getContextName();
     /**
      * Owner datasource
      */
