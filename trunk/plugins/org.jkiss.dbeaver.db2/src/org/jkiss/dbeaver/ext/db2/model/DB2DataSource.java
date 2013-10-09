@@ -596,7 +596,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException
     {
         if (listDBMParameters == null) {
-            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters");
+            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Instance Parameters");
             try {
                 listDBMParameters = DB2Utils.readDBMCfg(monitor, session);
             } catch (SQLException e) {
@@ -611,7 +611,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2XMLString> getXmlStrings(DBRProgressMonitor monitor) throws DBException
     {
         if (listXMLStrings == null) {
-            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters");
+            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Global XMLStrings");
             try {
                 listXMLStrings = DB2Utils.readXMLStrings(monitor, session);
             } catch (SQLException e) {
