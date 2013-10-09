@@ -215,12 +215,12 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     @Override
     public boolean isRequired()
     {
-        return tableColumn == null ? notNull : tableColumn.isRequired();
+        return tableColumn == null || pseudoAttribute != null ? notNull : tableColumn.isRequired();
     }
 
     @Override
     public boolean isSequence() {
-        return tableColumn == null ? sequence : tableColumn.isSequence();
+        return tableColumn == null || pseudoAttribute != null ? sequence : tableColumn.isSequence();
     }
 
     @Override
@@ -232,40 +232,40 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     @Override
     public long getMaxLength()
     {
-        return tableColumn == null ? displaySize : tableColumn.getMaxLength();
+        return tableColumn == null || pseudoAttribute != null ? displaySize : tableColumn.getMaxLength();
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 21)
     @Override
     public int getPrecision()
     {
-        return tableColumn == null ? precision : tableColumn.getPrecision();
+        return tableColumn == null || pseudoAttribute != null ? precision : tableColumn.getPrecision();
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 22)
     @Override
     public int getScale()
     {
-        return tableColumn == null ? scale : tableColumn.getScale();
+        return tableColumn == null || pseudoAttribute != null ? scale : tableColumn.getScale();
     }
 
     @Override
     public int getTypeID()
     {
-        return tableColumn == null ? typeID : tableColumn.getTypeID();
+        return tableColumn == null || pseudoAttribute != null ? typeID : tableColumn.getTypeID();
     }
 
     @Override
     public DBPDataKind getDataKind()
     {
-        return tableColumn == null ? dataKind : tableColumn.getDataKind();
+        return tableColumn == null || pseudoAttribute != null ? dataKind : tableColumn.getDataKind();
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 4)
     @Override
     public String getTypeName()
     {
-        return tableColumn == null ? typeName : tableColumn.getTypeName();
+        return tableColumn == null || pseudoAttribute != null ? typeName : tableColumn.getTypeName();
     }
 
     @Override
@@ -305,7 +305,11 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         if (entity == null) {
             return null;
         }
-        tableColumn = entity.getAttribute(monitor, name);
+        if (pseudoAttribute != null) {
+            tableColumn = pseudoAttribute.createFakeAttribute(entity, this);
+        } else {
+            tableColumn = entity.getAttribute(monitor, name);
+        }
         return tableColumn;
     }
 
