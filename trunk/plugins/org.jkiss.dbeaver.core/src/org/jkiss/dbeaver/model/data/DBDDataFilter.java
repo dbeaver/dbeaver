@@ -199,7 +199,7 @@ public class DBDDataFilter {
         }
     }
 
-    private List<DBDAttributeConstraint> getOrderConstraints()
+    public List<DBDAttributeConstraint> getOrderConstraints()
     {
         List<DBDAttributeConstraint> result = null;
         for (DBDAttributeConstraint constraint : constraints) {
