@@ -42,6 +42,11 @@ public class JDBCConnectionHolder {
         return connection;
     }
 
+    public Boolean getAutoCommitCache()
+    {
+        return autoCommit;
+    }
+
     public boolean getAutoCommit() throws SQLException
     {
         if (autoCommit == null) {
@@ -60,6 +65,11 @@ public class JDBCConnectionHolder {
     {
         connection.setTransactionIsolation(level);
         transactionIsolationLevel = null;
+    }
+
+    public Integer getTransactionIsolationCache()
+    {
+        return transactionIsolationLevel;
     }
 
     public int getTransactionIsolation() throws SQLException
