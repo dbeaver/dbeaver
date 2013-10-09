@@ -119,7 +119,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                 for (JDBCColumnMetaData column : columns) {
                     DBDPseudoAttribute pseudoAttribute = column.getPseudoAttribute();
                     if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
-                        identifiers.add(new JDBCTableIdentifier(monitor, new DBDPseudoReferrer(table, column), this));
+                        identifiers.add(new JDBCTableIdentifier(monitor, new DBDPseudoReferrer(table, column.getAttribute(monitor)), this));
                         break;
                     }
                 }
@@ -189,6 +189,9 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
 
     private boolean isGoodReferrer(DBRProgressMonitor monitor, DBSEntityReferrer referrer) throws DBException
     {
+    	if (referrer instanceof DBDPseudoReferrer) {
+    		return true;
+    	}
         Collection<? extends DBSEntityAttributeRef> references = referrer.getAttributeReferences(monitor);
         if (CommonUtils.isEmpty(references)) {
             return referrer instanceof DBVEntityConstraint;
@@ -213,6 +216,9 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         for (JDBCColumnMetaData meta : columns) {
             if (meta.getAttribute(monitor) == column) {
                 return meta;
+            }
+            if (column.isPseudoAttribute() && meta.isPseudoAttribute() && column.getName().equals(meta.getName())) {
+            	return meta;
             }
         }
         return null;
