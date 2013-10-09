@@ -80,6 +80,11 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     }
 
     @Override
+    public String getContextName() {
+        return purpose;
+    }
+
+    @Override
     public DBPDataSource getDataSource() {
         return dataSource;
     }
