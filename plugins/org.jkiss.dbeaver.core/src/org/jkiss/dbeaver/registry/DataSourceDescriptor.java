@@ -611,7 +611,7 @@ public class DataSourceDescriptor
                 dataSource.initialize(monitor);
                 // Change connection properties
 
-                DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Set session defaults ...");
+                DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Set session defaults ...");
                 try {
                     DBCTransactionManager txnManager = session.getTransactionManager();
                     boolean autoCommit = txnManager.isAutoCommit();

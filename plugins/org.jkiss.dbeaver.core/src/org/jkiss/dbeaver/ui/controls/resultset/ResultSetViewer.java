@@ -1529,6 +1529,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
         filtersMenu.add(new Separator());
+        filtersMenu.add(new ToggleServerSideOrderingAction());
         filtersMenu.add(new ShowFiltersAction());
     }
 
@@ -1701,7 +1702,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private boolean isServerSideFiltering()
     {
         return
-            getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE) &&
+            getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE) &&
             (dataReceiver.isHasMoreData() || !CommonUtils.isEmpty(model.getDataFilter().getOrder()));
     }
 
@@ -1750,8 +1751,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (getDataContainer() == null) {
             return 0;
         }
-        IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
-        return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+        return getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+    }
+
+    private IPreferenceStore getPreferenceStore()
+    {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            DBSDataSourceContainer container = dataSource.getContainer();
+            if (container != null) {
+                return container.getPreferenceStore();
+            }
+        }
+        return DBeaverCore.getGlobalPreferenceStore();
     }
 
     private synchronized void runDataPump(
@@ -2782,6 +2794,34 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public void run()
         {
             new ResultSetFilterDialog(ResultSetViewer.this).open();
+        }
+    }
+
+    private class ToggleServerSideOrderingAction extends Action {
+        public ToggleServerSideOrderingAction()
+        {
+            super(CoreMessages.pref_page_database_resultsets_label_server_side_order);
+        }
+
+        @Override
+        public int getStyle()
+        {
+            return AS_RADIO_BUTTON;
+        }
+
+        @Override
+        public boolean isChecked()
+        {
+            return getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE);
+        }
+
+        @Override
+        public void run()
+        {
+            IPreferenceStore preferenceStore = getPreferenceStore();
+            preferenceStore.setValue(
+                PrefConstants.RESULT_SET_ORDER_SERVER_SIDE,
+                !preferenceStore.getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE));
         }
     }
 
