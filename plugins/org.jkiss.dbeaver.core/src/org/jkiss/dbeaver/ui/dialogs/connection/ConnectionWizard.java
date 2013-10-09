@@ -164,9 +164,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                     monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
                     DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection");
                     try {
-                        if (session instanceof JDBCExecutionContext) {
+                        if (session instanceof Connection) {
                             try {
-                                Connection connection = ((JDBCExecutionContext) session).getConnection().getConnection();
+                                Connection connection = (Connection) session;
                                 DatabaseMetaData metaData = connection.getMetaData();
                                 productName = metaData.getDatabaseProductName();
                                 productVersion = metaData.getDatabaseProductVersion();
