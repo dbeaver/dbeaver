@@ -157,7 +157,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
                 this.activeSchemaName = this.activeSchemaName.trim();
             }
 
-            this.isAuthorisedForApplications = DB2Utils.userIsAuthorisedForAPPLICATIONS(session, activeSchemaName);
+            this.isAuthorisedForApplications = DB2Utils.userIsAuthorisedForApplications(session, activeSchemaName);
 
         } catch (SQLException e) {
             LOG.warn(e);
