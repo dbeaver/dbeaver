@@ -20,178 +20,293 @@ package org.jkiss.dbeaver.ext.db2.actions;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.actions.CompoundContributionItem;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
 
 /**
- * Add Menu with command on DB2Tables
+ * TODO DF: Work In Progress !!!!
+ * 
+ * Actions on Tables
  * 
  * @author Denis Forveille
  * 
  */
-public class DB2TableToolsHandler extends CompoundContributionItem {
+public class DB2TableToolsHandler extends AbstractHandler {
 
     private static final Log LOG = LogFactory.getLog(DB2TableToolsHandler.class);
 
-    private static final String SQL_REORG = "CALL SYSPROC.ADMIN_CMD('REORG TABLE %s');\n";
-    private static final String SQL_RUNSTATS = "CALL SYSPROC.ADMIN_CMD('RUNSTATS ON TABLE %s WITH DISTRIBUTION AND DETAILED INDEXES ALL');\n";
-    private static final String SQL_DESCRIBE = "CALL SYSPROC.ADMIN_CMD('DESCRIBE TABLE %s SHOW DETAIL');\n";
-    private static final String SQL_INTEGRITY = " SET INTEGRITY FOR %s IMMEDIATE CHECKED;')\n";
+    private static final String CMD_REORG_ID = "org.jkiss.dbeaver.ext.db2.table.reorg";
+    private static final String CMD_REORGIX_ID = "org.jkiss.dbeaver.ext.db2.table.reorgix";
+    private static final String CMD_RUNSTATS_ID = "org.jkiss.dbeaver.ext.db2.table.runstats";
+    private static final String CMD_SETINTEGRITY_ID = "org.jkiss.dbeaver.ext.db2.table.setintegrity";
+
+    private static final String DB2_REORG = "REORG TABLE %s";
+    private static final String DB2_REORGIX = "REORG INDEXES ALL FOR TABLE %s";
+    private static final String DB2_RUNSTATS = "RUNSTATS ON TABLE %s WITH DISTRIBUTION AND DETAILED INDEXES ALL";
+    private static final String SQL_SETINTEGRITY = "SET INTEGRITY FOR %s ALLOW NO ACCESS IMMEDIATE CHECKED;";
 
     @Override
-    protected IContributionItem[] getContributionItems()
+    public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        IWorkbenchPart part = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
-        IStructuredSelection structuredSelection = DB2TableToolsHandler.getSelectionFromPart(part);
-        if (structuredSelection == null || structuredSelection.isEmpty()) {
-            return new IContributionItem[0];
+
+        // TODO DF: check everything
+        IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
+
+        DBNDatabaseItem node = (DBNDatabaseItem) selection.getFirstElement();
+        final DB2Table db2Table = (DB2Table) node.getObject();
+
+        if (db2Table != null) {
+
+            Shell activeShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            //
+            // DB2ReorgInfoDialog dialog = new DB2ReorgInfoDialog(activeShell);
+            // if (dialog.open() != IDialogConstants.OK_ID) {
+            // return null;
+            // }
+
+            try {
+                if (event.getCommand().getId().equals(CMD_REORG_ID)) {
+                    performReorg(activeShell, db2Table);
+                }
+                if (event.getCommand().getId().equals(CMD_REORGIX_ID)) {
+                    performReorgIx(activeShell, db2Table);
+                }
+                if (event.getCommand().getId().equals(CMD_RUNSTATS_ID)) {
+                    performRunstats(activeShell, db2Table);
+                }
+                if (event.getCommand().getId().equals(CMD_SETINTEGRITY_ID)) {
+                    performSetIntegrity(activeShell, db2Table);
+                }
+
+                // TOOD DF: refresh DB2Table
+                // db2Table.refreshObject(VoidProgressMonitor.INSTANCE);
+                // DBNModel.getInstance().refreshNodeContent(sourceSchema, this, DBNEvent.NodeChange.REFRESH);
+                // node.refreshNode(monitor, source);
+            } catch (InvocationTargetException e) {
+                LOG.debug("InvocationTargetException : " + e.getTargetException().getMessage());
+                UIUtils.showErrorDialog(activeShell, "Error", e.getTargetException().getMessage());
+            } catch (InterruptedException e) {
+                LOG.debug("InvocationTargetException : " + e.getMessage());
+                UIUtils.showErrorDialog(activeShell, "Error", e.getMessage());
+            }
         }
 
-        final DBSTable table = (DBSTable) ((DBNDatabaseNode) RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(),
-            DBNNode.class)).getObject();
-
-        List<IContributionItem> menu = new ArrayList<IContributionItem>();
-        makeTableContributions(menu, table);
-
-        return menu.toArray(new IContributionItem[menu.size()]);
+        return null;
     }
 
     // -------
     // Helpers
     // -------
-    private void makeTableContributions(List<IContributionItem> menu, final DBSTable table)
+    private void performReorg(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
     {
-        menu.add(makeAction("Describe", new TableAnalysisRunner(table) {
+        final String sql = String.format(DB2_REORG, db2Table.getFullQualifiedName());
+
+        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
             @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
-                sql.append(String.format(SQL_DESCRIBE, DBUtils.getObjectFullName(table)));
+                try {
+                    DB2Utils.callAdminCmd(monitor, db2Table.getDataSource(), sql);
+                } catch (SQLException e) {
+                    throw new InvocationTargetException(e);
+                }
             }
-        }));
-
-        if (table instanceof DB2Table) {
-            menu.add(makeAction("Reorg", new TableAnalysisRunner(table) {
-                @Override
-                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                {
-                    sql.append(String.format(SQL_REORG, DBUtils.getObjectFullName(table)));
-                }
-            }));
-
-            menu.add(makeAction("Runstats", new TableAnalysisRunner(table) {
-                @Override
-                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                {
-                    sql.append(String.format(SQL_RUNSTATS, DBUtils.getObjectFullName(table)));
-                }
-            }));
-
-            menu.add(makeAction("Set Integrity", new TableAnalysisRunner(table) {
-                @Override
-                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                {
-                    sql.append(String.format(SQL_INTEGRITY, DBUtils.getObjectFullName(table)));
-                }
-            }));
-        }
-
+        });
+        UIUtils.showMessageBox(shell, "OK", "REORG OK..", SWT.ICON_INFORMATION);
     }
 
-    private abstract static class TableAnalysisRunner extends DBRRunnableWithResult<String> {
-        final DBSEntity table;
+    private void performReorgIx(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
+    {
+        final String sql = String.format(DB2_REORG, db2Table.getFullQualifiedName());
 
-        protected TableAnalysisRunner(DBSEntity table)
+        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                try {
+                    DB2Utils.callAdminCmd(monitor, db2Table.getDataSource(), sql);
+                } catch (SQLException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        });
+        UIUtils.showMessageBox(shell, "OK", "REORG OK..", SWT.ICON_INFORMATION);
+    }
+
+    private void performRunstats(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
+    {
+        final String sql = String.format(DB2_RUNSTATS, db2Table.getFullQualifiedName());
+
+        // TODO DF: how to get a nice waiting clock?
+        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                try {
+                    DB2Utils.callAdminCmd(monitor, db2Table.getDataSource(), sql);
+                } catch (SQLException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        });
+        UIUtils.showMessageBox(shell, "OK", "Runstats OK..", SWT.ICON_INFORMATION);
+    }
+
+    private void performSetIntegrity(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
+    {
+        final String sql = String.format(DB2_RUNSTATS, db2Table.getFullQualifiedName());
+
+        // TODO DF: how to get a nice waiting clock?
+        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                try {
+                    // JDBCUtils.executeSQL(session, sql);
+                    DB2Utils.callAdminCmd(monitor, db2Table.getDataSource(), sql);
+                } catch (SQLException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        });
+        UIUtils.showMessageBox(shell, "OK", "Runstats OK..", SWT.ICON_INFORMATION);
+    }
+
+    // -------
+    // Dialogs
+    // -------
+
+    private class DB2ReorgInfoDialog extends Dialog {
+
+        private String errorSchemaName;
+        private String errorTableName;
+
+        public String getErrorSchemaName()
         {
-            this.table = table;
+            return errorSchemaName;
+        }
+
+        public String getErrorTableName()
+        {
+            return errorTableName;
+        }
+
+        // Dialog managment
+        private Text errorSchmaNameText;
+        private Text errorTableNameText;
+
+        public DB2ReorgInfoDialog(Shell parentShell)
+        {
+            super(parentShell);
         }
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        protected boolean isResizable()
         {
-            StringBuilder sql = new StringBuilder(100);
-            try {
-                generateSQL(monitor, sql);
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
-            }
-            result = sql.toString();
+            return true;
         }
 
-        protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException;
+        @Override
+        protected Control createDialogArea(Composite parent)
+        {
+            getShell().setText("Name for Error Table?");
+            Control container = super.createDialogArea(parent);
+            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+            errorSchmaNameText = UIUtils.createLabelText(composite, "Schema", null);
+            errorSchmaNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            errorTableNameText = UIUtils.createLabelText(composite, "Name", null);
+            errorTableNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            return parent;
+        }
+
+        @Override
+        protected void okPressed()
+        {
+            this.errorSchemaName = errorSchmaNameText.getText().trim().toUpperCase();
+            this.errorTableName = errorTableNameText.getText().trim().toUpperCase();
+            super.okPressed();
+        }
     }
 
-    private static ContributionItem makeAction(String text, final DBRRunnableWithResult<String> runnable)
-    {
-        return new ActionContributionItem(new Action(text, DBIcon.SQL_TEXT.getImageDescriptor()) {
-            @Override
-            public void run()
-            {
-                DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), runnable);
-                String sql = runnable.getResult();
-                IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-                if (activeEditor instanceof AbstractTextEditor) {
-                    AbstractTextEditor textEditor = (AbstractTextEditor) activeEditor;
-                    ITextSelection selection = (ITextSelection) textEditor.getSelectionProvider().getSelection();
-                    IDocumentProvider provider = textEditor.getDocumentProvider();
-                    IDocument doc = provider.getDocument(activeEditor.getEditorInput());
-                    try {
-                        doc.replace(selection.getOffset(), selection.getLength(), sql);
-                    } catch (BadLocationException e) {
-                        LOG.warn(e);
-                    }
-                    activeEditor.setFocus();
-                }
-                UIUtils.setClipboardContents(DBeaverUI.getActiveWorkbenchShell().getDisplay(), TextTransfer.getInstance(), sql);
-            }
-        });
-    }
+    private class DB2RunstatsInfoDialog extends Dialog {
 
-    static IStructuredSelection getSelectionFromPart(IWorkbenchPart part)
-    {
-        if (part == null) {
-            return null;
+        private String errorSchemaName;
+        private String errorTableName;
+
+        public String getErrorSchemaName()
+        {
+            return errorSchemaName;
         }
-        ISelectionProvider selectionProvider = part.getSite().getSelectionProvider();
-        if (selectionProvider == null) {
-            return null;
+
+        public String getErrorTableName()
+        {
+            return errorTableName;
         }
-        ISelection selection = selectionProvider.getSelection();
-        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
-            return null;
+
+        // Dialog managment
+        private Text errorSchmaNameText;
+        private Text errorTableNameText;
+
+        public DB2RunstatsInfoDialog(Shell parentShell)
+        {
+            super(parentShell);
         }
-        return (IStructuredSelection) selection;
+
+        @Override
+        protected boolean isResizable()
+        {
+            return true;
+        }
+
+        @Override
+        protected Control createDialogArea(Composite parent)
+        {
+            getShell().setText("Name for Error Table?");
+            Control container = super.createDialogArea(parent);
+            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            errorSchmaNameText = UIUtils.createLabelText(composite, "Schema", null);
+            errorSchmaNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            errorTableNameText = UIUtils.createLabelText(composite, "Name", null);
+            errorTableNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            return parent;
+        }
+
+        @Override
+        protected void okPressed()
+        {
+            this.errorSchemaName = errorSchmaNameText.getText().trim().toUpperCase();
+            this.errorTableName = errorTableNameText.getText().trim().toUpperCase();
+            super.okPressed();
+        }
     }
 
 }

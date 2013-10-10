@@ -97,7 +97,7 @@ public class DB2Utils {
     }
 
     // ADMIN ACTIONS
-    private static final String CALL_ADS = "CALL SYSPROC.ADMIN_DROP_SCHEMA(?,NULL,?,?)";
+    private static final String CALL_ADMIN_CMD = "CALL SYSPROC.ADMIN_CMD('%s')";
 
     // DBCFG/DBMCFG/XMLStrings
     private static final String SEL_DBCFG = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
@@ -121,7 +121,7 @@ public class DB2Utils {
     // ------------------------
     // Check for Authorisations
     // ------------------------
-    public static Boolean userIsAuthorisedForAPPLICATIONS(JDBCSession session, String authId) throws SQLException
+    public static Boolean userIsAuthorisedForApplications(JDBCSession session, String authId) throws SQLException
     {
         LOG.debug("Check if user '" + authId + "' is authorised for SYSIBMADM Views");
         String res = JDBCUtils.queryString(session, AUT_APP, authId);
@@ -152,24 +152,22 @@ public class DB2Utils {
         return true;
     }
 
-    public static Boolean callAdminDropSchema(DBRProgressMonitor monitor, DB2DataSource dataSource, String schemaName,
-        String errorSchemaName, String errorTableName) throws SQLException
+    // ------------------------
+    // Admin Command
+    // ------------------------
+    public static void callAdminCmd(DBRProgressMonitor monitor, DB2DataSource dataSource, String command) throws SQLException
     {
-        LOG.debug("Call admin_drop_schema for " + schemaName);
-        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "ADMIN_DROP_SCHEMA");
-        try {
+        LOG.debug("Call admin_cmd with '" + command + "'");
+        String sql = String.format(CALL_ADMIN_CMD, command);
 
-            JDBCCallableStatement stmtSP = session.prepareCall(CALL_ADS);
-            try {
-                stmtSP.setString(1, schemaName);
-                stmtSP.setString(2, errorSchemaName);
-                stmtSP.setString(3, errorTableName);
-                return stmtSP.execute();
-            } finally {
-                stmtSP.close();
-            }
+        monitor.beginTask("Executing command " + command, 1);
+
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "ADMIN_CMD");
+        try {
+            JDBCUtils.executeProcedure(session, sql);
         } finally {
             session.close();
+            monitor.done();
         }
     }
 
