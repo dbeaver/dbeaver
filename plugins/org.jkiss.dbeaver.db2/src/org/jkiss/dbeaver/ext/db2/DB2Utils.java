@@ -78,6 +78,7 @@ public class DB2Utils {
     private static final String CALL_INST_OBJ = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
     private static final int CALL_INST_OBJ_BAD_RC = -438;
     private static final String SEL_LIST_TS;
+    private static final String SEL_LIST_TS_TEMP;
 
     static {
         StringBuilder sb = new StringBuilder(512);
@@ -94,6 +95,22 @@ public class DB2Utils {
         sb.append(" ORDER BY TA.TBSPACE");
         sb.append(" WITH UR");
         SEL_LIST_TS = sb.toString();
+
+        sb.setLength(0);
+
+        sb.append("SELECT TA.TBSPACE");
+        sb.append("  FROM SYSCAT.TBSPACEAUTH TA");
+        sb.append("     , SYSCAT.TABLESPACES T");
+        sb.append(" WHERE TA.GRANTEE IN ('PUBLIC',SESSION_USER)");
+        sb.append("   AND TA.USEAUTH In ('Y','G')");
+        sb.append("   AND T.TBSPACE = TA.TBSPACE");
+        sb.append("   AND T.DATATYPE IN (");
+        sb.append("                     '").append(DB2TablespaceDataType.T.name()).append("'");
+        sb.append("                    ,'").append(DB2TablespaceDataType.U.name()).append("'");
+        sb.append("                     )");
+        sb.append(" ORDER BY TA.TBSPACE");
+        sb.append(" WITH UR");
+        SEL_LIST_TS_TEMP = sb.toString();
     }
 
     // ADMIN ACTIONS
@@ -168,6 +185,34 @@ public class DB2Utils {
             session.close();
             monitor.done();
         }
+    }
+
+    public static List<String> getListOfUsableTempTsNames(DBRProgressMonitor monitor, DB2DataSource dataSource) throws SQLException
+    {
+        LOG.debug("Get the list Of Usable Temporary Tablespaces");
+
+        List<String> listTablespaces = new ArrayList<String>();
+
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "SEL_TEMP_TS");
+        try {
+            JDBCPreparedStatement dbStat = session.prepareStatement(SEL_LIST_TS_TEMP);
+            try {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    while (dbResult.next()) {
+                        listTablespaces.add(dbResult.getString(1));
+                    }
+                } finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        } finally {
+            session.close();
+        }
+
+        return listTablespaces;
     }
 
     // ------------------------
