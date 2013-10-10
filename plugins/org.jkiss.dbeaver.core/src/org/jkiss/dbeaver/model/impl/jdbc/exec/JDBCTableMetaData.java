@@ -217,9 +217,6 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
             if (meta.getAttribute(monitor) == column) {
                 return meta;
             }
-            if (column.isPseudoAttribute() && meta.isPseudoAttribute() && column.getName().equals(meta.getName())) {
-            	return meta;
-            }
         }
         return null;
     }
