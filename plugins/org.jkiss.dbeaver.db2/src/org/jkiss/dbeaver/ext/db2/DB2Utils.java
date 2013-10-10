@@ -106,7 +106,6 @@ public class DB2Utils {
 
     // APPLICATIONS
     private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
-    private static final String FORCE_APP = "CALL SYSPROC.ADMIN_CMD( 'force application (%d)')";
     private static final String AUT_APP;
     static {
         StringBuilder sb = new StringBuilder(512);
@@ -354,23 +353,6 @@ public class DB2Utils {
     // ---------------------
     // DBA Data and Actions
     // ---------------------
-
-    public static Boolean forceApplication(DBRProgressMonitor monitor, DB2DataSource dataSource, Long agentId) throws SQLException
-    {
-        LOG.debug("Force Application : " + agentId.toString());
-
-        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Force Application");
-        try {
-            JDBCCallableStatement stmtSP = session.prepareCall(String.format(FORCE_APP, agentId));
-            try {
-                return stmtSP.execute();
-            } finally {
-                stmtSP.close();
-            }
-        } finally {
-            session.close();
-        }
-    }
 
     public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCSession session) throws SQLException
     {
