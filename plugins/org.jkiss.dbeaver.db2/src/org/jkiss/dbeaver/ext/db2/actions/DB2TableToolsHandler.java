@@ -24,6 +24,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -79,11 +80,6 @@ public class DB2TableToolsHandler extends AbstractHandler {
         if (db2Table != null) {
 
             Shell activeShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-            //
-            // DB2ReorgInfoDialog dialog = new DB2ReorgInfoDialog(activeShell);
-            // if (dialog.open() != IDialogConstants.OK_ID) {
-            // return null;
-            // }
 
             try {
                 if (event.getCommand().getId().equals(CMD_REORG_ID)) {
@@ -120,6 +116,12 @@ public class DB2TableToolsHandler extends AbstractHandler {
     // -------
     private void performReorg(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
     {
+
+        DB2ReorgInfoDialog dialog = new DB2ReorgInfoDialog(shell);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+
         final String sql = String.format(DB2_REORG, db2Table.getFullQualifiedName());
 
         DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
@@ -138,7 +140,7 @@ public class DB2TableToolsHandler extends AbstractHandler {
 
     private void performReorgIx(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
     {
-        final String sql = String.format(DB2_REORG, db2Table.getFullQualifiedName());
+        final String sql = String.format(DB2_REORGIX, db2Table.getFullQualifiedName());
 
         DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
             @Override
@@ -175,7 +177,7 @@ public class DB2TableToolsHandler extends AbstractHandler {
 
     private void performSetIntegrity(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
     {
-        final String sql = String.format(DB2_RUNSTATS, db2Table.getFullQualifiedName());
+        final String sql = String.format(SQL_SETINTEGRITY, db2Table.getFullQualifiedName());
 
         // TODO DF: how to get a nice waiting clock?
         DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
