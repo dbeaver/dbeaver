@@ -23,27 +23,27 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * TODO DF: Work In Progress !!!!
@@ -103,7 +103,12 @@ public class DB2TableToolsHandler extends AbstractHandler {
                 LOG.debug("InvocationTargetException : " + e.getTargetException().getMessage());
                 UIUtils.showErrorDialog(activeShell, "Error", e.getTargetException().getMessage());
             } catch (InterruptedException e) {
-                LOG.debug("InvocationTargetException : " + e.getMessage());
+                // NOP
+            } catch (SQLException e) {
+                LOG.debug("SQLException : " + e.getMessage());
+                UIUtils.showErrorDialog(activeShell, "Error", e.getMessage());
+            } catch (DBException e) {
+                LOG.debug("DBException : " + e.getMessage());
                 UIUtils.showErrorDialog(activeShell, "Error", e.getMessage());
             }
         }
@@ -114,10 +119,18 @@ public class DB2TableToolsHandler extends AbstractHandler {
     // -------
     // Helpers
     // -------
-    private void performReorg(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
+    private void performReorg(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException,
+        SQLException, DBException
     {
 
-        DB2ReorgInfoDialog dialog = new DB2ReorgInfoDialog(shell);
+        List<String> listTempTsNames = DB2Utils.getListOfUsableTempTsNames(VoidProgressMonitor.INSTANCE, db2Table.getDataSource());
+
+        List<String> listIndexNames = new ArrayList<String>();
+        for (DB2Index db2Index : db2Table.getIndexes(VoidProgressMonitor.INSTANCE)) {
+            listIndexNames.add(db2Index.getName());
+        }
+
+        DB2TableReorgDialog dialog = new DB2TableReorgDialog(shell, listTempTsNames, listIndexNames);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return;
         }
@@ -194,121 +207,4 @@ public class DB2TableToolsHandler extends AbstractHandler {
         });
         UIUtils.showMessageBox(shell, "OK", "Runstats OK..", SWT.ICON_INFORMATION);
     }
-
-    // -------
-    // Dialogs
-    // -------
-
-    private class DB2ReorgInfoDialog extends Dialog {
-
-        private String errorSchemaName;
-        private String errorTableName;
-
-        public String getErrorSchemaName()
-        {
-            return errorSchemaName;
-        }
-
-        public String getErrorTableName()
-        {
-            return errorTableName;
-        }
-
-        // Dialog managment
-        private Text errorSchmaNameText;
-        private Text errorTableNameText;
-
-        public DB2ReorgInfoDialog(Shell parentShell)
-        {
-            super(parentShell);
-        }
-
-        @Override
-        protected boolean isResizable()
-        {
-            return true;
-        }
-
-        @Override
-        protected Control createDialogArea(Composite parent)
-        {
-            getShell().setText("Name for Error Table?");
-            Control container = super.createDialogArea(parent);
-            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
-            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            errorSchmaNameText = UIUtils.createLabelText(composite, "Schema", null);
-            errorSchmaNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            errorTableNameText = UIUtils.createLabelText(composite, "Name", null);
-            errorTableNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            return parent;
-        }
-
-        @Override
-        protected void okPressed()
-        {
-            this.errorSchemaName = errorSchmaNameText.getText().trim().toUpperCase();
-            this.errorTableName = errorTableNameText.getText().trim().toUpperCase();
-            super.okPressed();
-        }
-    }
-
-    private class DB2RunstatsInfoDialog extends Dialog {
-
-        private String errorSchemaName;
-        private String errorTableName;
-
-        public String getErrorSchemaName()
-        {
-            return errorSchemaName;
-        }
-
-        public String getErrorTableName()
-        {
-            return errorTableName;
-        }
-
-        // Dialog managment
-        private Text errorSchmaNameText;
-        private Text errorTableNameText;
-
-        public DB2RunstatsInfoDialog(Shell parentShell)
-        {
-            super(parentShell);
-        }
-
-        @Override
-        protected boolean isResizable()
-        {
-            return true;
-        }
-
-        @Override
-        protected Control createDialogArea(Composite parent)
-        {
-            getShell().setText("Name for Error Table?");
-            Control container = super.createDialogArea(parent);
-            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
-            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            errorSchmaNameText = UIUtils.createLabelText(composite, "Schema", null);
-            errorSchmaNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            errorTableNameText = UIUtils.createLabelText(composite, "Name", null);
-            errorTableNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            return parent;
-        }
-
-        @Override
-        protected void okPressed()
-        {
-            this.errorSchemaName = errorSchmaNameText.getText().trim().toUpperCase();
-            this.errorTableName = errorTableNameText.getText().trim().toUpperCase();
-            super.okPressed();
-        }
-    }
-
 }
