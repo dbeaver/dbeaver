@@ -1,11 +1,8 @@
 Major:
 
-1. Use separate connection for metadata and editors (configurable + on request).
-DONE. Move objectselector & txn management to execution context. + Database editors owns execution context, not DS
-
+1. Move objectselector & txn management to execution context. + Database editors owns execution context, not DS
 2. Async autocomplete
 3. ROWID support
-4. Server-side/client-side orderings switch
 
 Minor:
 

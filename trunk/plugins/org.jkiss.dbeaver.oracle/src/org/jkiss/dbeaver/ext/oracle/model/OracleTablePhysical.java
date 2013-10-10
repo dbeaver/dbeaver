@@ -38,7 +38,7 @@ import java.util.Collection;
 /**
  * Oracle physical table
  */
-public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>, DBDPseudoAttributeContainer
+public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>
 {
 
     //private boolean valid;
@@ -194,14 +194,6 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TABLE);
-    }
-
-    @Override
-    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
-    {
-        return new DBDPseudoAttribute[] {
-            OracleConstants.PSEUDO_ATTR_ROWID
-        };
     }
 
     private static class PartitionCache extends JDBCStructCache<OracleTablePhysical, OracleTablePartition, OracleTablePartition> {

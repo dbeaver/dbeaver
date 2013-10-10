@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -33,7 +35,7 @@ import java.util.List;
 /**
  * OracleTable
  */
-public class OracleTable extends OracleTablePhysical
+public class OracleTable extends OracleTablePhysical implements DBDPseudoAttributeContainer
 {
     private OracleDataType tableType;
     private String iotType;
@@ -159,6 +161,19 @@ public class OracleTable extends OracleTablePhysical
         getContainer().foreignKeyCache.clearObjectCache(this);
 
         return true;
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
+    {
+        if (CommonUtils.isEmpty(this.iotType)) {
+            // IOT tables have index id instead of ROWID
+            return new DBDPseudoAttribute[] {
+                OracleConstants.PSEUDO_ATTR_ROWID
+            };
+        } else {
+            return null;
+        }
     }
 
 }
