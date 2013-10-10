@@ -37,6 +37,8 @@ import java.util.Map;
  */
 public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2ServerApplication> {
 
+    private static final String FORCE_APP_CMD = "FORCE APPLICATION (%d)";
+
     private final DB2DataSource dataSource;
 
     public DB2ServerApplicationManager(DB2DataSource dataSource)
@@ -51,8 +53,7 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
     }
 
     @Override
-    public Collection<DB2ServerApplication> getSessions(DBCSession session, Map<String, Object> options)
-        throws DBException
+    public Collection<DB2ServerApplication> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
             return DB2Utils.readApplications(session.getProgressMonitor(), (JDBCSession) session);
@@ -62,11 +63,11 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
     }
 
     @Override
-    public void alterSession(DBCSession session, DB2ServerApplication sessionType, Map<String, Object> options)
-        throws DBException
+    public void alterSession(DBCSession session, DB2ServerApplication sessionType, Map<String, Object> options) throws DBException
     {
         try {
-            DB2Utils.forceApplication(session.getProgressMonitor(), dataSource, sessionType.getAgentId());
+            String cmd = String.format(FORCE_APP_CMD, sessionType.getAgentId());
+            DB2Utils.callAdminCmd(session.getProgressMonitor(), dataSource, cmd);
         } catch (SQLException e) {
             throw new DBException(e);
         }
