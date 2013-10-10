@@ -82,7 +82,7 @@
 
     <extension point="org.eclipse.ui.menus">
        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
-          <menu label="%menu.schema.tools" icon="icons/tools.png">
+          <menu label="%menu.tables.manage" icon="icons/tools.png">
              <command commandId="org.jkiss.dbeaver.ext.db2.table.reorg">
                 <visibleWhen checkEnabled="true"/>
              </command>
