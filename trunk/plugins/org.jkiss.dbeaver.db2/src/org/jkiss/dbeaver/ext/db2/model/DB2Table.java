@@ -125,14 +125,21 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         }
 
         String tablespaceName = JDBCUtils.safeGetString(dbResult, "TBSPACE");
-        this.tablespace = getDataSource().getTablespace(monitor, tablespaceName);
+        // this.tablespace = getDataSource().getTablespace(monitor, tablespaceName);
+        // DF : Lazy loading
+        this.tablespace = new DB2Tablespace(schema.getDataSource(), tablespaceName);
+
         String indexTablespaceName = JDBCUtils.safeGetString(dbResult, "INDEX_TBSPACE");
         if (indexTablespaceName != null) {
-            this.indexTablespace = getDataSource().getTablespace(monitor, indexTablespaceName);
+            // this.indexTablespace = getDataSource().getTablespace(monitor, indexTablespaceName);
+            // DF : Lazy loading
+            this.indexTablespace = new DB2Tablespace(schema.getDataSource(), indexTablespaceName);
         }
         String longTablespaceName = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
         if (longTablespaceName != null) {
-            this.longTablespace = getDataSource().getTablespace(monitor, longTablespaceName);
+            // this.longTablespace = getDataSource().getTablespace(monitor, longTablespaceName);
+            // DF : Lazy loading
+            this.longTablespace = new DB2Tablespace(schema.getDataSource(), longTablespaceName);
         }
 
         this.partitionCache = new JDBCObjectSimpleCache<DB2Table, DB2TablePartition>(DB2TablePartition.class, C_PT,
