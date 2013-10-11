@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.actions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -34,9 +32,9 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -55,8 +53,6 @@ import java.util.List;
  */
 public class DB2TableToolsHandler extends AbstractHandler {
 
-    private static final Log LOG = LogFactory.getLog(DB2TableToolsHandler.class);
-
     private static final String CMD_REORG_ID = "org.jkiss.dbeaver.ext.db2.table.reorg";
     private static final String CMD_REORGIX_ID = "org.jkiss.dbeaver.ext.db2.table.reorgix";
     private static final String CMD_RUNSTATS_ID = "org.jkiss.dbeaver.ext.db2.table.runstats";
@@ -64,25 +60,18 @@ public class DB2TableToolsHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-
-        // TODO DF: check everything
         IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
-
-        DBNDatabaseItem node = (DBNDatabaseItem) selection.getFirstElement();
-        final DB2Table db2Table = (DB2Table) node.getObject();
+        final DB2Table db2Table = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DB2Table.class);
 
         if (db2Table != null) {
-
-            Shell activeShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            Shell activeShell = HandlerUtil.getActiveShell(event);
 
             try {
                 if (event.getCommand().getId().equals(CMD_REORG_ID)) {
                     performReorg(activeShell, db2Table);
-                }
-                if (event.getCommand().getId().equals(CMD_REORGIX_ID)) {
+                } else if (event.getCommand().getId().equals(CMD_REORGIX_ID)) {
                     performReorgIx(activeShell, db2Table);
-                }
-                if (event.getCommand().getId().equals(CMD_RUNSTATS_ID)) {
+                } else if (event.getCommand().getId().equals(CMD_RUNSTATS_ID)) {
                     performRunstats(activeShell, db2Table);
                 }
                 // TOOD DF: refresh DB2Table
@@ -90,15 +79,12 @@ public class DB2TableToolsHandler extends AbstractHandler {
                 // DBNModel.getInstance().refreshNodeContent(sourceSchema, this, DBNEvent.NodeChange.REFRESH);
                 // node.refreshNode(monitor, source);
             } catch (InvocationTargetException e) {
-                LOG.debug("InvocationTargetException : " + e.getTargetException().getMessage());
                 UIUtils.showErrorDialog(activeShell, "Error", e.getTargetException().getMessage());
             } catch (InterruptedException e) {
                 // NOP
             } catch (SQLException e) {
-                LOG.debug("SQLException : " + e.getMessage());
                 UIUtils.showErrorDialog(activeShell, "Error", e.getMessage());
             } catch (DBException e) {
-                LOG.debug("DBException : " + e.getMessage());
                 UIUtils.showErrorDialog(activeShell, "Error", e.getMessage());
             }
         }
