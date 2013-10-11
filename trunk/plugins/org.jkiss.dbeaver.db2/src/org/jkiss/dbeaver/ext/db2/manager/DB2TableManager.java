@@ -142,14 +142,16 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
 
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
 
-        StringBuilder sb = new StringBuilder(128);
-        sb.append(SQL_ALTER);
-        sb.append(db2Table.getFullQualifiedName());
-        sb.append(" ");
+        if (command.getProperties().size() > 1) {
+            StringBuilder sb = new StringBuilder(128);
+            sb.append(SQL_ALTER);
+            sb.append(db2Table.getFullQualifiedName());
+            sb.append(" ");
 
-        appendTableModifiers(command.getObject(), command, sb);
+            appendTableModifiers(command.getObject(), command, sb);
 
-        actions.add(new AbstractDatabasePersistAction(CMD_ALTER, sb.toString()));
+            actions.add(new AbstractDatabasePersistAction(CMD_ALTER, sb.toString()));
+        }
 
         IDatabasePersistAction commentAction = buildCommentAction(db2Table);
         if (commentAction != null) {
