@@ -74,6 +74,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     // Constructors
     // -----------------------
 
+    // Constructeur for lazy loading, acts as a placeholder.
     public DB2Tablespace(DB2DataSource db2DataSource, String db2TablespaceName) throws DBException
     {
         super(db2DataSource, false);
@@ -82,7 +83,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
 
     public DB2Tablespace(DB2DataSource db2DataSource, ResultSet dbResult) throws DBException
     {
-        super(db2DataSource, dbResult != null);
+        super(db2DataSource, true);
         this.name = JDBCUtils.safeGetString(dbResult, "TBSPACE");
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = DB2OwnerType.valueOf(JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
