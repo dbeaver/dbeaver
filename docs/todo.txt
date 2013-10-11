@@ -1,8 +1,10 @@
 Major:
 
-1. Move objectselector & txn management to execution context. + Database editors owns execution context, not DS
-2. Async autocomplete
-3. ROWID support
+1. Lazy loading check
+2. DB2 property checker
+3. SQL preview dialog
+4. Async autocomplete
+5. ROWID support in DB2
 
 Minor:
 
@@ -23,3 +25,5 @@ Generic driver config for additional metadata reading (stored procedures, ete).
 Columns ordering/search (record mode)
 DB toolbar visibility config in Eclipse mode
 Outline for data editor (RSV) - columns' filters, search, hide/show
+
+Host ExecutionContext in editors instead of DataSource.
