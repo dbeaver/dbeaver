@@ -60,11 +60,6 @@ public class DB2TableToolsHandler extends AbstractHandler {
     private static final String CMD_REORG_ID = "org.jkiss.dbeaver.ext.db2.table.reorg";
     private static final String CMD_REORGIX_ID = "org.jkiss.dbeaver.ext.db2.table.reorgix";
     private static final String CMD_RUNSTATS_ID = "org.jkiss.dbeaver.ext.db2.table.runstats";
-    private static final String CMD_SETINTEGRITY_ID = "org.jkiss.dbeaver.ext.db2.table.setintegrity";
-
-    private static final String DB2_REORGIX = "REORG INDEXES ALL FOR TABLE %s";
-    private static final String DB2_RUNSTATS = "RUNSTATS ON TABLE %s WITH DISTRIBUTION AND DETAILED INDEXES ALL";
-    private static final String SQL_SETINTEGRITY = "SET INTEGRITY FOR %s ALLOW NO ACCESS IMMEDIATE CHECKED;";
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
@@ -90,10 +85,6 @@ public class DB2TableToolsHandler extends AbstractHandler {
                 if (event.getCommand().getId().equals(CMD_RUNSTATS_ID)) {
                     performRunstats(activeShell, db2Table);
                 }
-                if (event.getCommand().getId().equals(CMD_SETINTEGRITY_ID)) {
-                    performSetIntegrity(activeShell, db2Table);
-                }
-
                 // TOOD DF: refresh DB2Table
                 // db2Table.refreshObject(VoidProgressMonitor.INSTANCE);
                 // DBNModel.getInstance().refreshNodeContent(sourceSchema, this, DBNEvent.NodeChange.REFRESH);
@@ -152,7 +143,12 @@ public class DB2TableToolsHandler extends AbstractHandler {
 
     private void performReorgIx(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
     {
-        final String sql = String.format(DB2_REORGIX, db2Table.getFullQualifiedName());
+        DB2TableReorgIndexDialog dialog = new DB2TableReorgIndexDialog(shell, db2Table);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+
+        final String sql = dialog.getCmdText();
 
         DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
             @Override
@@ -170,7 +166,13 @@ public class DB2TableToolsHandler extends AbstractHandler {
 
     private void performRunstats(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
     {
-        final String sql = String.format(DB2_RUNSTATS, db2Table.getFullQualifiedName());
+
+        DB2TableRunstatsDialog dialog = new DB2TableRunstatsDialog(shell, db2Table);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
+
+        final String sql = dialog.getCmdText();
 
         // TODO DF: how to get a nice waiting clock?
         DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
@@ -187,23 +189,4 @@ public class DB2TableToolsHandler extends AbstractHandler {
         UIUtils.showMessageBox(shell, "OK", "Runstats OK..", SWT.ICON_INFORMATION);
     }
 
-    private void performSetIntegrity(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
-    {
-        final String sql = String.format(SQL_SETINTEGRITY, db2Table.getFullQualifiedName());
-
-        // TODO DF: how to get a nice waiting clock?
-        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                try {
-                    // JDBCUtils.executeSQL(session, sql);
-                    DB2Utils.callAdminCmd(monitor, db2Table.getDataSource(), sql);
-                } catch (SQLException e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-        });
-        UIUtils.showMessageBox(shell, "OK", "Runstats OK..", SWT.ICON_INFORMATION);
-    }
 }

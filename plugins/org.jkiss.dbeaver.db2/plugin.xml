@@ -26,7 +26,6 @@
         <command id="org.jkiss.dbeaver.ext.db2.table.reorg" name="%command.org.jkiss.dbeaver.ext.db2.table.reorg.name" description="%command.org.jkiss.dbeaver.ext.db2.table.reorg.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
         <command id="org.jkiss.dbeaver.ext.db2.table.reorgix" name="%command.org.jkiss.dbeaver.ext.db2.table.reorgix.name" description="%command.org.jkiss.dbeaver.ext.db2.table.reorgix.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
         <command id="org.jkiss.dbeaver.ext.db2.table.runstats" name="%command.org.jkiss.dbeaver.ext.db2.table.runstats.name" description="%command.org.jkiss.dbeaver.ext.db2.table.runstats.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
-        <command id="org.jkiss.dbeaver.ext.db2.table.setintegrity" name="%command.org.jkiss.dbeaver.ext.db2.table.setintegrity.name" description="%command.org.jkiss.dbeaver.ext.db2.table.setintegrity.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -66,33 +65,18 @@
             </enabledWhen>
 -->            
         </handler>
-       <handler commandId="org.jkiss.dbeaver.ext.db2.table.setintegrity" class="org.jkiss.dbeaver.ext.db2.actions.DB2TableToolsHandler">
-<!-- TODO DF: what to put here to enabled only on tables?       
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                     <instanceof value="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-                    </iterate>
-                </with>
-            </enabledWhen>
--->            
-        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
           <menu label="%menu.tables.manage" icon="icons/tools.png">
+             <command commandId="org.jkiss.dbeaver.ext.db2.table.runstats">
+                <visibleWhen checkEnabled="true"/>
+             </command>
              <command commandId="org.jkiss.dbeaver.ext.db2.table.reorg">
                 <visibleWhen checkEnabled="true"/>
              </command>
              <command commandId="org.jkiss.dbeaver.ext.db2.table.reorgix">
-                <visibleWhen checkEnabled="true"/>
-             </command>
-             <command commandId="org.jkiss.dbeaver.ext.db2.table.runstats">
-                <visibleWhen checkEnabled="true"/>
-             </command>
-             <command commandId="org.jkiss.dbeaver.ext.db2.table.setintegrity">
                 <visibleWhen checkEnabled="true"/>
              </command>
           </menu>
