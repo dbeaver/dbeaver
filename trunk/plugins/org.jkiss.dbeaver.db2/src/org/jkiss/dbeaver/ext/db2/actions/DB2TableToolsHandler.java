@@ -62,7 +62,6 @@ public class DB2TableToolsHandler extends AbstractHandler {
     private static final String CMD_RUNSTATS_ID = "org.jkiss.dbeaver.ext.db2.table.runstats";
     private static final String CMD_SETINTEGRITY_ID = "org.jkiss.dbeaver.ext.db2.table.setintegrity";
 
-    private static final String DB2_REORG = "REORG TABLE %s";
     private static final String DB2_REORGIX = "REORG INDEXES ALL FOR TABLE %s";
     private static final String DB2_RUNSTATS = "RUNSTATS ON TABLE %s WITH DISTRIBUTION AND DETAILED INDEXES ALL";
     private static final String SQL_SETINTEGRITY = "SET INTEGRITY FOR %s ALLOW NO ACCESS IMMEDIATE CHECKED;";
@@ -127,15 +126,15 @@ public class DB2TableToolsHandler extends AbstractHandler {
 
         List<String> listIndexNames = new ArrayList<String>();
         for (DB2Index db2Index : db2Table.getIndexes(VoidProgressMonitor.INSTANCE)) {
-            listIndexNames.add(db2Index.getName());
+            listIndexNames.add(db2Index.getFullQualifiedName());
         }
 
-        DB2TableReorgDialog dialog = new DB2TableReorgDialog(shell, listTempTsNames, listIndexNames);
+        DB2TableReorgDialog dialog = new DB2TableReorgDialog(shell, db2Table, listTempTsNames, listIndexNames);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return;
         }
 
-        final String sql = String.format(DB2_REORG, db2Table.getFullQualifiedName());
+        final String sql = dialog.getCmdText();
 
         DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
             @Override
