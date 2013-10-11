@@ -59,7 +59,7 @@ public class DB2TableReorgDialog extends Dialog {
     private String tempTablespace; // From a list of temp tablespaces
     private String lobsTablespace; // From a list of temp tablespaces
 
-    // Dialog managment
+    // Dialog artefacts
     private Button dlgInplace;
     private Button dlgUseIndex;
     private Combo indexesCombo;
@@ -104,6 +104,7 @@ public class DB2TableReorgDialog extends Dialog {
         Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        // INPLACE
         dlgInplace = UIUtils.createCheckbox(composite, "Inplace Reorg? ", false);
         dlgInplace.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -137,6 +138,7 @@ public class DB2TableReorgDialog extends Dialog {
         });
         UIUtils.createPlaceholder(composite, 1);
 
+        // USE INDEX
         dlgUseIndex = UIUtils.createCheckbox(composite, "Reorg Using Index", false);
         dlgUseIndex.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -154,6 +156,7 @@ public class DB2TableReorgDialog extends Dialog {
         });
         indexesCombo = createIndexesCombo(composite);
 
+        // INDEXSCAN
         dlgIndexScan = UIUtils.createCheckbox(composite, "Use Index Scan?", false);
         dlgIndexScan.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -164,6 +167,7 @@ public class DB2TableReorgDialog extends Dialog {
         });
         UIUtils.createPlaceholder(composite, 1);
 
+        // TRUNCATE
         dlgTruncate = UIUtils.createCheckbox(composite, "Truncate after Reorg?", false);
         dlgTruncate.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -174,6 +178,7 @@ public class DB2TableReorgDialog extends Dialog {
         });
         UIUtils.createPlaceholder(composite, 1);
 
+        // USE TEMP TS
         dlgUseTempTS = UIUtils.createCheckbox(composite, "Use Temporary Tablespace", false);
         dlgUseTempTS.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -189,6 +194,7 @@ public class DB2TableReorgDialog extends Dialog {
         });
         tempTSCombo = createTempTablespaceCombo(composite);
 
+        // REORG LONG AND LOBS
         dlgReorgLobsTS = UIUtils.createCheckbox(composite, "Reorg LOBs using Temp TS ", false);
         dlgReorgLobsTS.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -206,6 +212,7 @@ public class DB2TableReorgDialog extends Dialog {
         });
         UIUtils.createPlaceholder(composite, 1);
 
+        // REORG LONG AND LOBS TEMP TS
         dlgUseLobsTemp = UIUtils.createCheckbox(composite, "LOBs Reorg Temporary Tablespace ", false);
         dlgUseLobsTemp.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -221,6 +228,7 @@ public class DB2TableReorgDialog extends Dialog {
         });
         tempLobsTSCombo = createLobsTempTablespaceCombo(composite);
 
+        // RESET DICTIONARY
         dlgResetDictionary = UIUtils.createCheckbox(composite, "Reset Dictionary?", false);
         dlgResetDictionary.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -231,16 +239,51 @@ public class DB2TableReorgDialog extends Dialog {
         });
         UIUtils.createPlaceholder(composite, 1);
 
-        // Table Access
+        // TABLE ACCESS
         UIUtils.createTextLabel(composite, "Table Access");
         Composite groupRB = new Composite(composite, SWT.NULL);
         groupRB.setLayout(new RowLayout());
         dlgAccesNo = new Button(groupRB, SWT.RADIO);
         dlgAccesNo.setText(TableAccess.NO_ACCESS.name());
+        dlgAccesNo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                computeCmd();
+            }
+        });
         dlgAccesReadOnly = new Button(groupRB, SWT.RADIO);
         dlgAccesReadOnly.setText(TableAccess.READ_ONLY.name());
+        dlgAccesReadOnly.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                computeCmd();
+            }
+        });
         dlgAccesReadWrite = new Button(groupRB, SWT.RADIO);
         dlgAccesReadWrite.setText(TableAccess.READ_WRITE.name());
+        dlgAccesReadWrite.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                computeCmd();
+            }
+        });
+
+        // Read only Resulting REORG Command
+        GridData gd = new GridData();
+        gd.verticalAlignment = GridData.FILL;
+        gd.verticalSpan = 2;
+        gd.horizontalAlignment = GridData.FILL;
+        gd.horizontalSpan = 2;
+        gd.grabExcessHorizontalSpace = true;
+
+        UIUtils.createTextLabel(composite, "Command:");
+
+        dlgCmdText = new Text(composite, SWT.BORDER | SWT.WRAP);
+        dlgCmdText.setEditable(false);
+        dlgCmdText.setLayoutData(gd);
 
         // Initial setup
         dlgTruncate.setEnabled(false);
@@ -253,13 +296,7 @@ public class DB2TableReorgDialog extends Dialog {
         tempTablespace = listTempTsNames.get(0);
         lobsTablespace = listTempTsNames.get(0);
 
-        // Read only Resulting REORG Command
-        dlgCmdText = new Text(composite, SWT.BORDER);
-        dlgCmdText.setEditable(false);
-
         computeCmd();
-
-        // Behavior
 
         return parent;
     }
