@@ -1,10 +1,9 @@
 Major:
 
 1. Lazy loading check
-2. DB2 property checker
-3. SQL preview dialog
-4. Async autocomplete
-5. ROWID support in DB2
+2. SQL preview dialog
+3. Async autocomplete
+4. ROWID support in DB2
 
 Minor:
 
