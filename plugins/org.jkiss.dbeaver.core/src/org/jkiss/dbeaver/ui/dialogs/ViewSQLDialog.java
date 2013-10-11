@@ -110,10 +110,7 @@ public class ViewSQLDialog extends Dialog {
             @Override
             public void widgetDisposed(DisposeEvent e)
             {
-                if (sqlViewer != null) {
-                    sqlViewer.dispose();
-                    sqlViewer = null;
-                }
+                sqlViewer.dispose();
             }
         });
         return parent;
