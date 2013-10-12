@@ -27,14 +27,7 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TableTablespaceListProvider;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableAccessMode;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCompressionMode;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableDropRule;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableLockSize;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionMode;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.ext.db2.model.dict.*;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -44,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -72,9 +66,9 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     private DB2TableStatus status;
     private DB2TableType type;
 
-    private DB2Tablespace tablespace;
-    private DB2Tablespace indexTablespace;
-    private DB2Tablespace longTablespace;
+    private Object tablespace;
+    private Object indexTablespace;
+    private Object longTablespace;
 
     private String dataCapture;
     private String constChecked;
@@ -124,23 +118,9 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
             this.lockSize = CommonUtils.valueOf(DB2TableLockSize.class, lockSizeString);
         }
 
-        String tablespaceName = JDBCUtils.safeGetString(dbResult, "TBSPACE");
-        // this.tablespace = getDataSource().getTablespace(monitor, tablespaceName);
-        // DF : Lazy loading
-        this.tablespace = new DB2Tablespace(schema.getDataSource(), tablespaceName);
-
-        String indexTablespaceName = JDBCUtils.safeGetString(dbResult, "INDEX_TBSPACE");
-        if (indexTablespaceName != null) {
-            // this.indexTablespace = getDataSource().getTablespace(monitor, indexTablespaceName);
-            // DF : Lazy loading
-            this.indexTablespace = new DB2Tablespace(schema.getDataSource(), indexTablespaceName);
-        }
-        String longTablespaceName = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
-        if (longTablespaceName != null) {
-            // this.longTablespace = getDataSource().getTablespace(monitor, longTablespaceName);
-            // DF : Lazy loading
-            this.longTablespace = new DB2Tablespace(schema.getDataSource(), longTablespaceName);
-        }
+        this.tablespace = JDBCUtils.safeGetString(dbResult, "TBSPACE");
+        this.indexTablespace = JDBCUtils.safeGetString(dbResult, "INDEX_TBSPACE");
+        this.longTablespace = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
 
         this.partitionCache = new JDBCObjectSimpleCache<DB2Table, DB2TablePartition>(DB2TablePartition.class, C_PT,
             schema.getName(), getName());
@@ -328,9 +308,9 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     }
 
     @Property(viewable = true, editable = true, order = 10, category = DB2Constants.CAT_TABLESPACE, listProvider = DB2TableTablespaceListProvider.class)
-    public DB2Tablespace getTablespace()
+    public DB2Tablespace getTablespace(DBRProgressMonitor monitor) throws DBException
     {
-        return tablespace;
+        return DB2Tablespace.resolveTablespaceReference(monitor, getDataSource(), tablespace);
     }
 
     public void setTablespace(DB2Tablespace tablespace)
@@ -339,9 +319,9 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     }
 
     @Property(viewable = false, editable = true, order = 11, category = DB2Constants.CAT_TABLESPACE, listProvider = DB2TableTablespaceListProvider.class)
-    public DB2Tablespace getIndexTablespace()
+    public DB2Tablespace getIndexTablespace(DBRProgressMonitor monitor) throws DBException
     {
-        return indexTablespace;
+        return DB2Tablespace.resolveTablespaceReference(monitor, getDataSource(), indexTablespace);
     }
 
     public void setIndexTablespace(DB2Tablespace indexTablespace)
@@ -350,9 +330,9 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     }
 
     @Property(viewable = false, editable = true, order = 12, category = DB2Constants.CAT_TABLESPACE, listProvider = DB2TableTablespaceListProvider.class)
-    public DB2Tablespace getLongTablespace()
+    public DB2Tablespace getLongTablespace(DBRProgressMonitor monitor) throws DBException
     {
-        return longTablespace;
+        return DB2Tablespace.resolveTablespaceReference(monitor, getDataSource(), longTablespace);
     }
 
     public void setLongTablespace(DB2Tablespace longTablespace)
