@@ -40,6 +40,8 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
 
     OBJECT getCachedObject(String name);
 
+    boolean isCached();
+
     /**
      * Adds specified object to cache
      * @param object object to cache

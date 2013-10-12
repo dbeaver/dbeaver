@@ -21,12 +21,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -98,21 +93,37 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     public void appendTableModifiers(DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl)
     {
 
-        // Add Tablespaces infos
-        if (db2Table.getTablespace() != null) {
-            ddl.append(LINE_SEPARATOR);
-            ddl.append(CLAUSE_IN_TS);
-            ddl.append(db2Table.getTablespace().getName());
+        try {
+            // Add Tablespaces infos
+            if (db2Table.getTablespace(null) != null) {
+                ddl.append(LINE_SEPARATOR);
+                ddl.append(CLAUSE_IN_TS);
+                ddl.append(getTablespaceName(db2Table.getTablespace(null)));
+            }
+            if (db2Table.getIndexTablespace(null) != null) {
+                ddl.append(LINE_SEPARATOR);
+                ddl.append(CLAUSE_IN_TS_IX);
+                ddl.append(getTablespaceName(db2Table.getIndexTablespace(null)));
+            }
+            if (db2Table.getLongTablespace(null) != null) {
+                ddl.append(LINE_SEPARATOR);
+                ddl.append(CLAUSE_IN_TS_LONG);
+                ddl.append(getTablespaceName(db2Table.getLongTablespace(null)));
+            }
+        } catch (DBException e) {
+            // Never be here
+            log.warn(e);
         }
-        if (db2Table.getIndexTablespace() != null) {
-            ddl.append(LINE_SEPARATOR);
-            ddl.append(CLAUSE_IN_TS_IX);
-            ddl.append(db2Table.getIndexTablespace().getName());
-        }
-        if (db2Table.getLongTablespace() != null) {
-            ddl.append(LINE_SEPARATOR);
-            ddl.append(CLAUSE_IN_TS_LONG);
-            ddl.append(db2Table.getLongTablespace().getName());
+    }
+
+    private static String getTablespaceName(Object tablespace)
+    {
+        if (tablespace instanceof DB2Tablespace) {
+            return ((DB2Tablespace) tablespace).getName();
+        } else if (tablespace != null) {
+            return String.valueOf(tablespace);
+        } else {
+            return null;
         }
     }
 
@@ -120,7 +131,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     public IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
     {
         // Eventually add Comment
-        IDatabasePersistAction commentAction = buildCommentAction((DB2Table) command.getObject());
+        IDatabasePersistAction commentAction = buildCommentAction(command.getObject());
         if (commentAction == null) {
             return super.makeStructObjectCreateActions(command);
         } else {

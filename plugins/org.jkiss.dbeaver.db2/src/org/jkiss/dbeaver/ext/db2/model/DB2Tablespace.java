@@ -30,8 +30,10 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.ResultSet;
@@ -276,37 +278,17 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         return null;
     }
 
-    // ---------------
-    // hashCode/equals
-    // DF: This is required for "lazy" tablespace loading
-    // It is used to match the "fake" tablespace with the "real one"
-    // ---------------
-
-    @Override
-    public int hashCode()
+    static DB2Tablespace resolveTablespaceReference(DBRProgressMonitor monitor, DB2DataSource dataSource, Object reference) throws DBException
     {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        DB2Tablespace other = (DB2Tablespace) obj;
-        if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        return true;
+        if (reference instanceof String) {
+            return monitor != null ?
+                dataSource.getTablespaceCache().getObject(
+                    monitor,
+                    dataSource,
+                    (String) reference) :
+                dataSource.getTablespaceCache().getCachedObject((String)reference);
+        }
+        return (DB2Tablespace) reference;
     }
 
 }
