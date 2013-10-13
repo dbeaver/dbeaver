@@ -123,50 +123,6 @@ public class DB2Utils {
 
     // APPLICATIONS
     private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
-    private static final String AUT_APP;
-    static {
-        StringBuilder sb = new StringBuilder(512);
-        sb.append("SELECT 1");
-        sb.append("  FROM TABLE (SYSPROC.AUTH_LIST_AUTHORITIES_FOR_AUTHID (?, 'U')) AS T ");
-        sb.append(" WHERE AUTHORITY IN ('SYSMON','SYSMAINT','SYSADM','SYSCTRL')");
-        sb.append("   AND 'Y' in (D_USER,D_GROUP,D_PUBLIC,ROLE_USER,ROLE_GROUP,ROLE_PUBLIC,D_ROLE)");
-        sb.append(" WITH UR");
-        AUT_APP = sb.toString();
-    }
-
-    // ------------------------
-    // Check for Authorisations
-    // ------------------------
-    public static Boolean userIsAuthorisedForApplications(JDBCSession session, String authId) throws SQLException
-    {
-        LOG.debug("Check if user '" + authId + "' is authorised for SYSIBMADM Views");
-        String res = JDBCUtils.queryString(session, AUT_APP, authId);
-        if (res == null) {
-            return false;
-        }
-
-        // TODO DF: Incomplete need to check thistoo:
-
-        // For all administrative views in the SYSIBMADM schema, you need SELECT privilege on the view. This can be validated
-        // with the following query to check that your authorization ID, or a group or a role to which you belong, has SELECT
-        // privilege (that is, it meets the search criteria and is listed in the GRANTEE column):
-        //
-        // SELECT GRANTEE, GRANTEETYPE
-        // FROM SYSCAT.TABAUTH
-        // WHERE TABSCHEMA = 'SYSIBMADM' AND TABNAME = '<view_name>' AND
-        // SELECTAUTH <> 'N'
-        //
-        // where <view_name> is the name of the administrative view.
-        // With the exception of SYSIBMADM.AUTHORIZATIONIDS, SYSIBMADM.OBJECTOWNERS, and SYSIBMADM.PRIVILEGES, you also need
-        // EXECUTE privilege on the underlying administrative table function. The underlying administrative table function is
-        // listed in the authorization section of the administrative view. This can be validated with the following query:
-        //
-        // SELECT GRANTEE, GRANTEETYPE
-        // FROM SYSCAT.ROUTINEAUTH
-        // WHERE SCHEMA = 'SYSPROC' AND SPECIFICNAME = '<routine_name>' AND
-        // EXECUTEAUTH <> 'N'
-        return true;
-    }
 
     // ------------------------
     // Admin Command

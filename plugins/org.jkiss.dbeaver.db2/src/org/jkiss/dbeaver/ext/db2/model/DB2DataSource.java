@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
+import org.jkiss.dbeaver.ext.db2.model.security.DB2CurrentUserPrivileges;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
@@ -125,7 +126,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private List<DB2XMLString> listXMLStrings;
 
     private String activeSchemaName;
-    private Boolean isAuthorisedForApplications;
+    private DB2CurrentUserPrivileges db2CurrentUserPrivileges;
 
     private String schemaForExplainTables;
 
@@ -157,7 +158,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
                 this.activeSchemaName = this.activeSchemaName.trim();
             }
 
-            this.isAuthorisedForApplications = DB2Utils.userIsAuthorisedForApplications(session, activeSchemaName);
+            db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, activeSchemaName);
 
         } catch (SQLException e) {
             LOG.warn(e);
@@ -275,11 +276,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             LOG.error("DBException occurred when reading system dataTYpe : " + typeName, e);
             return null;
         }
-    }
-
-    public boolean isAuthorisedForApplications()
-    {
-        return isAuthorisedForApplications;
     }
 
     // --------------------------
@@ -621,6 +617,20 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             }
         }
         return listXMLStrings;
+    }
+
+    // --------------------------
+    // Authorities
+    // --------------------------
+
+    public boolean isAuthorisedForApplications()
+    {
+        return db2CurrentUserPrivileges.userIsAuthorisedForApplications();
+    }
+
+    public boolean isAuthorisedForContainers()
+    {
+        return db2CurrentUserPrivileges.userIsAuthorisedForContainers();
     }
 
     // -------------------------
