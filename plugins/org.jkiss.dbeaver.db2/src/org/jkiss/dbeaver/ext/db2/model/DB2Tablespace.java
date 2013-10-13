@@ -30,10 +30,8 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.ResultSet;
@@ -281,12 +279,10 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     static DB2Tablespace resolveTablespaceReference(DBRProgressMonitor monitor, DB2DataSource dataSource, Object reference) throws DBException
     {
         if (reference instanceof String) {
-            return monitor != null ?
-                dataSource.getTablespaceCache().getObject(
+            return dataSource.getTablespaceCache().getObject(
                     monitor,
                     dataSource,
-                    (String) reference) :
-                dataSource.getTablespaceCache().getCachedObject((String)reference);
+                    (String) reference);
         }
         return (DB2Tablespace) reference;
     }
