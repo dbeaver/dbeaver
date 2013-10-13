@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -95,20 +96,20 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
 
         try {
             // Add Tablespaces infos
-            if (db2Table.getTablespace(null) != null) {
+            if (db2Table.getTablespace(VoidProgressMonitor.INSTANCE) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS);
-                ddl.append(getTablespaceName(db2Table.getTablespace(null)));
+                ddl.append(getTablespaceName(db2Table.getTablespace(VoidProgressMonitor.INSTANCE)));
             }
-            if (db2Table.getIndexTablespace(null) != null) {
+            if (db2Table.getIndexTablespace(VoidProgressMonitor.INSTANCE) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS_IX);
-                ddl.append(getTablespaceName(db2Table.getIndexTablespace(null)));
+                ddl.append(getTablespaceName(db2Table.getIndexTablespace(VoidProgressMonitor.INSTANCE)));
             }
-            if (db2Table.getLongTablespace(null) != null) {
+            if (db2Table.getLongTablespace(VoidProgressMonitor.INSTANCE) != null) {
                 ddl.append(LINE_SEPARATOR);
                 ddl.append(CLAUSE_IN_TS_LONG);
-                ddl.append(getTablespaceName(db2Table.getLongTablespace(null)));
+                ddl.append(getTablespaceName(db2Table.getLongTablespace(VoidProgressMonitor.INSTANCE)));
             }
         } catch (DBException e) {
             // Never be here
