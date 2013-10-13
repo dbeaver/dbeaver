@@ -259,7 +259,7 @@
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace" label="%tree.tablespaces.node.name" icon="#folder_tablespace" description="Tablespaces">
                         <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
                             <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablespaceContainer" label="%tree.containers.node.name" icon="#containers" description="Containers">
-                                <items label="%tree.container.node.name" path="container" property="containers" icon="#container"/>
+                                <items label="%tree.container.node.name" path="container" property="containers" icon="#container" visibleIf="object.dataSource.authorisedForContainers"/>
                             </folder>
                         </items>
                     </folder>
@@ -269,7 +269,7 @@
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings" >
                     
-                    <object type="org.jkiss.dbeaver.ext.db2.model.app.DB2ApplicationEditor" 
+                    <object type="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication" 
                             label="%tree.applications.node.name" 
                             icon="#admin" 
                             description="Server application manager" 
