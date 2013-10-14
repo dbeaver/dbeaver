@@ -61,7 +61,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
@@ -838,11 +838,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 getEditorSite(),
-                getDataSource().getContainer(),
-                allowSave ? CoreMessages.editors_entity_dialog_persist_title : CoreMessages.editors_entity_dialog_preview_title, 
+                getDataSource(),
+                allowSave ? CoreMessages.editors_entity_dialog_persist_title : CoreMessages.editors_entity_dialog_preview_title,
+                DBIcon.SQL_PREVIEW.getImage(),
                 script.toString());
             dialog.setShowSaveButton(allowSave);
-            dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
             result = dialog.open();
         }
 
