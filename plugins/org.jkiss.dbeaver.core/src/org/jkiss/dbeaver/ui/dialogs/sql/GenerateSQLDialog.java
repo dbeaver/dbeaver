@@ -27,6 +27,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 public abstract class GenerateSQLDialog extends BaseSQLDialog {
@@ -59,14 +61,23 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     }
 
     @Override
+    protected boolean isWordWrap()
+    {
+        return true;
+    }
+
+    @Override
     protected Control createDialogArea(Composite parent)
     {
-        SashForm sashForm = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
+        Composite composite = (Composite) super.createDialogArea(parent);
+        SashForm sashForm = new SashForm(composite, SWT.VERTICAL | SWT.SMOOTH);
         sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
         sashForm.setSashWidth(5);
+        Composite controlsPanel = UIUtils.createPlaceholder(sashForm, 1);
+        controlsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        createControls(controlsPanel);
         createSQLPanel(sashForm);
-        createControls(sashForm);
-        sashForm.setWeights(new int[] {80, 20});
+        //sashForm.setWeights(new int[] {800, 200});
 
         return sashForm;
     }
@@ -93,12 +104,13 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
 
     private void executeSQL()
     {
+        final String jobName = getShell().getText();
         final String[] scriptLines = generateSQLScript();
         DataSourceJob job = new DataSourceJob(getShell().getText(), null, dataSource) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {
-                DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, getShell().getText());
+                DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
                 try {
                     for (String line : scriptLines) {
                         DBCStatement statement = DBUtils.prepareStatement(session, line);
