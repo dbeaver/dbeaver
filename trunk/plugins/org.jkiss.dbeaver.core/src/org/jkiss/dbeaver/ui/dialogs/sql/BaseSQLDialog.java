@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.dialogs.sql;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -28,6 +29,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
@@ -60,6 +62,10 @@ public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvide
     	return true;
     }
 
+    protected boolean isWordWrap() {
+        return false;
+    }
+
     @Override
     public void create()
     {
@@ -72,11 +78,10 @@ public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvide
 
     protected Composite createSQLPanel(Composite parent)
     {
-        Composite composite = (Composite) super.createDialogArea(parent);
-        Composite editorPH = new Composite(composite, SWT.BORDER);
+        Composite editorPH = new Composite(parent, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 500;
-        gd.heightHint = 400;
+        gd.minimumHeight = 100;
+        gd.minimumWidth = 100;
         editorPH.setLayoutData(gd);
         editorPH.setLayout(new FillLayout());
 
@@ -89,16 +94,22 @@ public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvide
         };
         updateSQL();
         sqlViewer.createPartControl(editorPH);
+        if (isWordWrap()) {
+            Object text = sqlViewer.getAdapter(Control.class);
+            if (text instanceof StyledText) {
+                ((StyledText) text).setWordWrap(true);
+            }
+        }
         sqlViewer.reloadSyntaxRules();
 
-        composite.addDisposeListener(new DisposeListener() {
+        parent.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 sqlViewer.dispose();
             }
         });
-        return parent;
+        return editorPH;
     }
 
     protected abstract String getSQLText();

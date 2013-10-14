@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs.sql;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -47,7 +48,12 @@ public class ViewSQLDialog extends BaseSQLDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        return createSQLPanel(parent);
+        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite sqlPanel = createSQLPanel(composite);
+        GridData gd = (GridData) sqlPanel.getLayoutData();
+        gd.widthHint = 500;
+        gd.heightHint = 400;
+        return sqlPanel;
     }
 
     @Override
