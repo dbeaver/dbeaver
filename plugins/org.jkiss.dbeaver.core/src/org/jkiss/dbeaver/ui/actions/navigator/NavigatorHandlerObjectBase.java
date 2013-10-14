@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
@@ -170,10 +170,10 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (view != null) {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 view.getSite(),
-                commandContext.getDataSourceContainer(),
+                commandContext.getDataSourceContainer().getDataSource(),
                 dialogTitle,
+                DBIcon.SQL_PREVIEW.getImage(),
                 script.toString());
-            dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
             dialog.setShowSaveButton(true);
             return dialog.open() == IDialogConstants.PROCEED_ID;
         } else {
