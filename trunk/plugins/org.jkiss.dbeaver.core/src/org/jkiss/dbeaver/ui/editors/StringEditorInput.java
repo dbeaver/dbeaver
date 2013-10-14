@@ -125,7 +125,12 @@ public class StringEditorInput implements IEditorInput {
 		return name;
 	}
 
-	public String toString() {
+    public StringBuilder getBuffer()
+    {
+        return buffer;
+    }
+
+    public String toString() {
 		return buffer.toString(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 

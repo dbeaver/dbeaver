@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.dialogs;
+package org.jkiss.dbeaver.ui.dialogs.sql;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -28,46 +28,31 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
-public class ViewSQLDialog extends Dialog {
+public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvider {
 
     private IEditorSite subSite;
-    private DBSDataSourceContainer dataSource;
-    private String title;
-    private String text;
     private SQLEditorBase sqlViewer;
+    private String title;
     private Image image;
-    private boolean showSaveButton = false;
+    private StringEditorInput sqlInput;
 
-    public ViewSQLDialog(final IWorkbenchPartSite parentSite, DBSDataSourceContainer dataSource, String title, String text)
+    public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, Image image)
     {
         super(parentSite.getShell());
-        this.dataSource = dataSource;
         this.title = title;
-        this.text = text;
-
-        this.subSite = new SubEditorSite(parentSite);
-    }
-
-    public void setImage(Image image)
-    {
         this.image = image;
-    }
-
-    public void setShowSaveButton(boolean showSaveButton)
-    {
-        this.showSaveButton = showSaveButton;
+        this.subSite = new SubEditorSite(parentSite);
     }
 
     @Override
@@ -76,13 +61,17 @@ public class ViewSQLDialog extends Dialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    public void create()
     {
+        super.create();
         getShell().setText(title);
         if (image != null) {
             getShell().setImage(image);
         }
+    }
 
+    protected Composite createSQLPanel(Composite parent)
+    {
         Composite composite = (Composite) super.createDialogArea(parent);
         Composite editorPH = new Composite(composite, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -95,14 +84,10 @@ public class ViewSQLDialog extends Dialog {
             @Override
             public DBPDataSource getDataSource()
             {
-                return dataSource.getDataSource();
+                return BaseSQLDialog.this.getDataSource();
             }
         };
-        try {
-            sqlViewer.init(subSite, new StringEditorInput(title, text, true));
-        } catch (PartInitException e) {
-            UIUtils.showErrorDialog(getShell(), title, null, e);
-        }
+        updateSQL();
         sqlViewer.createPartControl(editorPH);
         sqlViewer.reloadSyntaxRules();
 
@@ -116,29 +101,36 @@ public class ViewSQLDialog extends Dialog {
         return parent;
     }
 
-    @Override
-    protected void createButtonsForButtonBar(Composite parent)
+    protected abstract String getSQLText();
+
+    protected void createCopyButton(Composite parent)
     {
-        if (showSaveButton) {
-            createButton(parent, IDialogConstants.PROCEED_ID, CoreMessages.dialog_view_sql_button_persist, true);
-            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.dialog_view_sql_button_copy, false);
-            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-        } else {
-            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.dialog_view_sql_button_copy, false);
-            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
-        }
+        createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.dialog_view_sql_button_copy, false);
+    }
+
+    protected void saveToClipboard()
+    {
+        CharSequence text = getSQLText();
+        UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), text);
     }
 
     @Override
     protected void buttonPressed(int buttonId)
     {
         if (buttonId == IDialogConstants.DETAILS_ID) {
-            UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), text);
-        } else if (buttonId == IDialogConstants.PROCEED_ID) {
-            setReturnCode(IDialogConstants.PROCEED_ID);
-            close();
+            saveToClipboard();
         } else {
             super.buttonPressed(buttonId);
+        }
+    }
+
+    protected void updateSQL()
+    {
+        try {
+            sqlInput = new StringEditorInput(getShell().getText(), getSQLText(), true);
+            sqlViewer.init(subSite, sqlInput);
+        } catch (PartInitException e) {
+            UIUtils.showErrorDialog(getShell(), getShell().getText(), null, e);
         }
     }
 }
