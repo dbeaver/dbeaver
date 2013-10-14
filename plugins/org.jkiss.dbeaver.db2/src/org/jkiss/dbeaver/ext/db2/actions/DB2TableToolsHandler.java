@@ -25,11 +25,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -41,6 +44,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -61,18 +66,27 @@ public class DB2TableToolsHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
-        final DB2Table db2Table = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DB2Table.class);
+        List<DB2Table> tables = new ArrayList<DB2Table>();
+        DB2DataSource dataSource = null;
+        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+            final DB2Table db2Table = RuntimeUtils.getObjectAdapter(iter.next(), DB2Table.class);
+            if (db2Table != null) {
+                tables.add(db2Table);
+                dataSource = db2Table.getDataSource();
+            }
+        }
 
-        if (db2Table != null) {
+        if (!tables.isEmpty()) {
+            IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
             Shell activeShell = HandlerUtil.getActiveShell(event);
 
             try {
                 if (event.getCommand().getId().equals(CMD_REORG_ID)) {
-                    performReorg(activeShell, db2Table);
+                    performReorg(activeShell, tables.get(0));
                 } else if (event.getCommand().getId().equals(CMD_REORGIX_ID)) {
-                    performReorgIx(activeShell, db2Table);
+                    performReorgIx(activeShell, tables.get(0));
                 } else if (event.getCommand().getId().equals(CMD_RUNSTATS_ID)) {
-                    performRunstats(activeShell, db2Table);
+                    performRunstats(activePart.getSite(), dataSource, tables);
                 }
                 // TOOD DF: refresh DB2Table
                 // db2Table.refreshObject(VoidProgressMonitor.INSTANCE);
@@ -150,29 +164,18 @@ public class DB2TableToolsHandler extends AbstractHandler {
         UIUtils.showMessageBox(shell, "OK", "REORG OK..", SWT.ICON_INFORMATION);
     }
 
-    private void performRunstats(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
+    private void performRunstats(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables) throws InvocationTargetException, InterruptedException
     {
 
-        DB2TableRunstatsDialog dialog = new DB2TableRunstatsDialog(shell, db2Table);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return;
-        }
-
-        final String sql = dialog.getCmdText();
-
-        // TODO DF: how to get a nice waiting clock?
-        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+        DB2TableRunstatsDialog2 dialog = new DB2TableRunstatsDialog2(partSite, dataSource, tables);
+        dialog.setOnSuccess(new Runnable() {
             @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            public void run()
             {
-                try {
-                    DB2Utils.callAdminCmd(monitor, db2Table.getDataSource(), sql);
-                } catch (SQLException e) {
-                    throw new InvocationTargetException(e);
-                }
+                UIUtils.showMessageBox(partSite.getShell(), "OK", "Runstats OK..", SWT.ICON_INFORMATION);
             }
         });
-        UIUtils.showMessageBox(shell, "OK", "Runstats OK..", SWT.ICON_INFORMATION);
+        dialog.open();
     }
 
 }
