@@ -123,6 +123,15 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_reorg_success;
 
     public static String dialog_table_tools_reorgix_title;
+    public static String dialog_table_tools_reorgix_access_title;
+    public static String dialog_table_tools_reorgix_access_default;
+    public static String dialog_table_tools_reorgix_access_no;
+    public static String dialog_table_tools_reorgix_access_read;
+    public static String dialog_table_tools_reorgix_access_readwrite;
+    public static String dialog_table_tools_reorgix_options_title;
+    public static String dialog_table_tools_reorgix_options_full;
+    public static String dialog_table_tools_reorgix_options_cleanup_keys;
+    public static String dialog_table_tools_reorgix_options_cleanu_pages;
     public static String dialog_table_tools_reorgix_success;
 
 }

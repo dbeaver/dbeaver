@@ -76,9 +76,9 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
     private final List<String> listTempTsNames = new ArrayList<String>();
     private final List<String> listIndexNames = new ArrayList<String>();
 
-    public DB2TableReorgDialog(IWorkbenchPartSite partSite, final DB2DataSource dataSource, final DB2Table table)
+    public DB2TableReorgDialog(IWorkbenchPartSite partSite, final DB2DataSource dataSource, final DB2Table selectedDB2Table)
     {
-        super(partSite, DB2Messages.dialog_table_tools_reorg_title, dataSource, Collections.singleton(table));
+        super(partSite, DB2Messages.dialog_table_tools_reorg_title, dataSource, Collections.singleton(selectedDB2Table));
 
         // Read TS and indexes
         try {
@@ -97,7 +97,7 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
 
                         monitor.worked(1);
 
-                        for (DB2Index db2Index : table.getIndexes(monitor)) {
+                        for (DB2Index db2Index : selectedDB2Table.getIndexes(monitor)) {
                             listIndexNames.add(db2Index.getFullQualifiedName());
                         }
 
