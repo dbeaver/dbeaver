@@ -132,7 +132,7 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
     }
 
     @Override
-    protected String generateTableCommand(DB2Table db2Table)
+    protected StringBuilder generateTableCommand(DB2Table db2Table)
     {
         StringBuilder sb = new StringBuilder(256);
         sb.append("RUNSTATS ON TABLE ").append(db2Table.getFullQualifiedName());
@@ -153,7 +153,7 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
             sb.append(" TABLESAMPLE SYSTEM(").append(dlgSampleValue.getSelection()).append(")");
         }
 
-        return sb.toString();
+        return sb;
     }
 
 }

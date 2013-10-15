@@ -67,8 +67,7 @@ public class DB2TableReorgIndexDialog2 extends DB2TableToolDialog {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // REORG ACCESS
-        UIUtils.createTextLabel(composite, "Table Access:")
-            .setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        UIUtils.createTextLabel(composite, "Table Access:").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupAccess = new Composite(composite, SWT.NULL);
         groupAccess.setLayout(new RowLayout(SWT.VERTICAL));
         Button dlgAccessDefault = new Button(groupAccess, SWT.RADIO);
@@ -85,8 +84,7 @@ public class DB2TableReorgIndexDialog2 extends DB2TableToolDialog {
         dlgAccessReadWrite.addSelectionListener(changeListener);
 
         // PAGE CLEANUP
-        UIUtils.createTextLabel(composite, "Stats on Indexes:")
-            .setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        UIUtils.createTextLabel(composite, "Stats on Indexes:").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupCleanup = new Composite(composite, SWT.NULL);
         groupCleanup.setLayout(new RowLayout(SWT.VERTICAL));
         Button dlgFullIndex = new Button(groupCleanup, SWT.RADIO);
@@ -102,9 +100,9 @@ public class DB2TableReorgIndexDialog2 extends DB2TableToolDialog {
     }
 
     @Override
-    protected String generateTableCommand(DB2Table db2Table)
+    protected StringBuilder generateTableCommand(DB2Table db2Table)
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(256);
         sb.append("REORG INDEXES ALL FOR TABLE ").append(db2Table.getFullQualifiedName());
 
         if (dlgAccessNo.getSelection()) {
@@ -122,7 +120,7 @@ public class DB2TableReorgIndexDialog2 extends DB2TableToolDialog {
         if (dlgCleanupPagesOnly.getSelection()) {
             sb.append(" CLEANUP PAGES");
         }
-        return sb.toString();
+        return sb;
     }
 
 }

@@ -69,6 +69,6 @@ public abstract class DB2TableToolDialog extends GenerateSQLDialog {
         return lines;
     }
 
-    protected abstract String generateTableCommand(DB2Table db2Table);
+    protected abstract StringBuilder generateTableCommand(DB2Table db2Table);
 
 }

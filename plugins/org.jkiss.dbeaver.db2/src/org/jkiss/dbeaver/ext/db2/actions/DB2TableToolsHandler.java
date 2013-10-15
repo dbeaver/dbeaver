@@ -94,14 +94,14 @@ public class DB2TableToolsHandler extends AbstractHandler {
     private void performReorg(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables)
     {
 
-        DB2TableReorgDialog2 dialog = new DB2TableReorgDialog2(partSite, dataSource, tables.iterator().next());
+        DB2TableReorgDialog dialog = new DB2TableReorgDialog(partSite, dataSource, tables.iterator().next());
         dialog.open();
         dialog.setOnSuccess(new Runnable() {
             @Override
             public void run()
             {
-                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title, "Reorg finished",
-                    SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title,
+                    DB2Messages.dialog_table_tools_reorg_success, SWT.ICON_INFORMATION);
             }
         });
     }
@@ -114,8 +114,8 @@ public class DB2TableToolsHandler extends AbstractHandler {
             @Override
             public void run()
             {
-                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title, "ReorgIx finished",
-                    SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title,
+                    DB2Messages.dialog_table_tools_reorgix_success, SWT.ICON_INFORMATION);
             }
         });
     }
@@ -146,6 +146,10 @@ public class DB2TableToolsHandler extends AbstractHandler {
         RUNSTATS("org.jkiss.dbeaver.ext.db2.table.runstats");
 
         private String commandId;
+
+        // -----------
+        // Constructor
+        // -----------
 
         private Command(String commandId)
         {

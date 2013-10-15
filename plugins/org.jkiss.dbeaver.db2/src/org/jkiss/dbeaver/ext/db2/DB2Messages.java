@@ -89,6 +89,10 @@ public class DB2Messages extends NLS {
     public static String dialog_explain_no_tables_found_ex;
     public static String dialog_explain_ask_to_create;
 
+    public static String editors_db2_application_editor_title_force_application;
+    public static String editors_db2_application_editor_action_force;
+    public static String editors_db2_application_editor_confirm_action;
+
     public static String dialog_table_tools_success_title;
 
     public static String dialog_table_tools_runstats_title;
@@ -103,8 +107,22 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_runstats_stats_title;
     public static String dialog_table_tools_runstats_success;
 
-    public static String editors_db2_application_editor_title_force_application;
-    public static String editors_db2_application_editor_action_force;
-    public static String editors_db2_application_editor_confirm_action;
+    public static String dialog_table_tools_reorg_title;
+    public static String dialog_table_tools_reorg_inplace;
+    public static String dialog_table_tools_reorg_useindex;
+    public static String dialog_table_tools_reorg_useindexscan;
+    public static String dialog_table_tools_reorg_truncate;
+    public static String dialog_table_tools_reorg_usetempts;
+    public static String dialog_table_tools_reorg_reorglobs;
+    public static String dialog_table_tools_reorg_reorglobsts;
+    public static String dialog_table_tools_reorg_resetdict;
+    public static String dialog_table_tools_reorg_access_title;
+    public static String dialog_table_tools_reorg_access_no;
+    public static String dialog_table_tools_reorg_access_read;
+    public static String dialog_table_tools_reorg_access_readwrite;
+    public static String dialog_table_tools_reorg_success;
+
+    public static String dialog_table_tools_reorgix_title;
+    public static String dialog_table_tools_reorgix_success;
 
 }
