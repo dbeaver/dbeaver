@@ -38,6 +38,14 @@
     <extension point="org.eclipse.core.expressions.definitions">
         <definition id="org.jkiss.dbeaver.db2.tableSelected">
             <with variable="selection">
+                <count value="1"/>
+                <iterate operator="and">
+                    <adapt type="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+                </iterate>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.db2.tableMultipleSelected">
+            <with variable="selection">
                 <count value="+"/>
                 <iterate operator="and">
                     <adapt type="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
@@ -54,7 +62,7 @@
            <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
        </handler>
        <handler commandId="org.jkiss.dbeaver.ext.db2.table.runstats" class="org.jkiss.dbeaver.ext.db2.actions.DB2TableToolsHandler">
-           <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
+           <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableMultipleSelected"/></enabledWhen>
         </handler>
     </extension>
 
