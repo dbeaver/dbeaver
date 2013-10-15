@@ -31,6 +31,7 @@ public class DB2Messages extends NLS {
 
     private DB2Messages()
     {
+        // Pure Utility Class
     }
 
     public static String dialog_connection_browse_button;
@@ -87,6 +88,20 @@ public class DB2Messages extends NLS {
     public static String dialog_explain_no_tablespace_found_title;
     public static String dialog_explain_no_tables_found_ex;
     public static String dialog_explain_ask_to_create;
+
+    public static String dialog_table_tools_success_title;
+
+    public static String dialog_table_tools_runstats_title;
+    public static String dialog_table_tools_runstats_cols_title;
+    public static String dialog_table_tools_runstats_cols_all;
+    public static String dialog_table_tools_runstats_cols_all_and_distribution;
+    public static String dialog_table_tools_runstats_cols_no;
+    public static String dialog_table_tools_runstats_indexes_title;
+    public static String dialog_table_tools_runstats_indexes_detailed;
+    public static String dialog_table_tools_runstats_indexes_all;
+    public static String dialog_table_tools_runstats_indexes_no;
+    public static String dialog_table_tools_runstats_stats_title;
+    public static String dialog_table_tools_runstats_success;
 
     public static String editors_db2_application_editor_title_force_application;
     public static String editors_db2_application_editor_action_force;

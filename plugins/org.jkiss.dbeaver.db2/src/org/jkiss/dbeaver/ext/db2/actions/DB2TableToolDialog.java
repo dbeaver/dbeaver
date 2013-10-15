@@ -18,36 +18,31 @@
  */
 package org.jkiss.dbeaver.ext.db2.actions;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateSQLDialog;
 
 import java.util.Collection;
 
 /**
- * Manage the Dialog to enter Reorg Table Index option
+ * Super class for handling dialogs related to table tools
  * 
  * @author Denis Forveille
+ * @author Serge Rieder
  * 
  */
 public abstract class DB2TableToolDialog extends GenerateSQLDialog {
 
-    protected final Collection<DB2Table> tables;
+    protected final Collection<DB2Table> selectedDB2Tables;
 
-    public DB2TableToolDialog(IWorkbenchPartSite partSite, String title, DB2DataSource dataSource, Collection<DB2Table> tables)
+    public DB2TableToolDialog(IWorkbenchPartSite partSite, String title, DB2DataSource db2DataSource,
+        Collection<DB2Table> selectedDB2Tables)
     {
-        super(partSite, dataSource, title, null);
-        this.tables = tables;
+        super(partSite, db2DataSource, title, null);
+        this.selectedDB2Tables = selectedDB2Tables;
     }
 
     protected class SQLChangeListener extends SelectionAdapter {
@@ -60,16 +55,15 @@ public abstract class DB2TableToolDialog extends GenerateSQLDialog {
 
     protected String[] generateSQLScript()
     {
-        String[] lines = new String[tables.size()];
+        String[] lines = new String[selectedDB2Tables.size()];
         int index = 0;
-        for (DB2Table db2Table : tables) {
-            StringBuilder sb = new StringBuilder(512);
+        StringBuilder sb = new StringBuilder(512);
+        for (DB2Table db2Table : selectedDB2Tables) {
             sb.append("CALL SYSPROC.ADMIN_CMD('");
-
             sb.append(generateTableCommand(db2Table));
-
             sb.append("')");
             lines[index++] = sb.toString();
+            sb.setLength(0);
         }
 
         return lines;
