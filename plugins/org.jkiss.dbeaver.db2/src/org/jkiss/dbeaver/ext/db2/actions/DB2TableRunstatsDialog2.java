@@ -32,52 +32,41 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.sql.GenerateSQLDialog;
 
 import java.util.Collection;
 
 /**
  * DB2TableRunstatsDialog2
  */
-public class DB2TableRunstatsDialog2 extends GenerateSQLDialog {
+public class DB2TableRunstatsDialog2 extends DB2TableToolDialog {
 
-    private static final String RUNSTATS = "RUNSTATS ON TABLE ";
-    private static final String COLS_ALL_DIST = " ON ALL COLUMNS WITH DISTRIBUTION ON ALL COLUMNS";
-    private static final String COLS_ALL = " ON ALL COLUMNS";
-    private static final String INDEXES_DETAILED = " AND SAMPLED DETAILED INDEXES ALL";
-    private static final String INDEXES_ALL = " AND INDEXES ALL";
-    private static final String SAMPLING = " TABLESAMPLE SYSTEM(%d)";
+    private enum ColStats {
+        COLS_ALL_AND_DISTRIBUTION, COLS_ALL, COLS_NO
+    }
 
-    // Dialog artefacts
+    private enum IndexStats {
+        INDEXES_DETAILED, INDEX_ALL, INDEXES_NO
+    }
+
     private Button dlgColsAllAndDistribution;
     private Button dlgColsAll;
-    private Button dlgColsNo;
 
     private Button dlgSample;
     private Spinner dlgSampleValue;
 
     private Button dlgIndexesDetailed;
     private Button dlgIndexesAll;
-    private Button dlgIndexesNo;
-
-    private Collection<DB2Table> tables;
 
     public DB2TableRunstatsDialog2(IWorkbenchPartSite partSite, DB2DataSource dataSource, Collection<DB2Table> tables)
     {
-        super(partSite, dataSource, "Runstats Table options", null);
-        this.tables = tables;
+        super(partSite, "Runstats Table options", dataSource, tables);
     }
 
     @Override
     protected void createControls(Composite parent)
     {
-        SelectionAdapter changeListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                updateSQL();
-            }
-        };
+        SelectionAdapter changeListener = new SQLChangeListener();
+
         Composite composite = new Composite(parent, 2);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -93,7 +82,7 @@ public class DB2TableRunstatsDialog2 extends GenerateSQLDialog {
         dlgColsAll = new Button(groupCols, SWT.RADIO);
         dlgColsAll.setText(ColStats.COLS_ALL.name());
         dlgColsAll.addSelectionListener(changeListener);
-        dlgColsNo = new Button(groupCols, SWT.RADIO);
+        Button dlgColsNo = new Button(groupCols, SWT.RADIO);
         dlgColsNo.setText(ColStats.COLS_NO.name());
         dlgColsNo.addSelectionListener(changeListener);
 
@@ -108,7 +97,7 @@ public class DB2TableRunstatsDialog2 extends GenerateSQLDialog {
         dlgIndexesAll = new Button(groupIx, SWT.RADIO);
         dlgIndexesAll.setText(IndexStats.INDEX_ALL.name());
         dlgIndexesAll.addSelectionListener(changeListener);
-        dlgIndexesNo = new Button(groupIx, SWT.RADIO);
+        Button dlgIndexesNo = new Button(groupIx, SWT.RADIO);
         dlgIndexesNo.setText(IndexStats.INDEXES_NO.name());
         dlgIndexesNo.addSelectionListener(changeListener);
 
@@ -118,11 +107,7 @@ public class DB2TableRunstatsDialog2 extends GenerateSQLDialog {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                if (dlgSample.getSelection()) {
-                    dlgSampleValue.setEnabled(true);
-                } else {
-                    dlgSampleValue.setEnabled(false);
-                }
+                dlgSampleValue.setEnabled(dlgSample.getSelection());
                 updateSQL();
             }
         });
@@ -150,43 +135,29 @@ public class DB2TableRunstatsDialog2 extends GenerateSQLDialog {
         dlgSampleValue.setEnabled(false);
     }
 
-    protected String[] generateSQLScript()
+    @Override
+    protected String generateTableCommand(DB2Table db2Table)
     {
-        String[] lines = new String[tables.size()];
-        int index = 0;
-        for (DB2Table db2Table : tables) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("CALL SYSPROC.ADMIN_CMD('");
-            sb.append(RUNSTATS).append(db2Table.getFullQualifiedName());
+        StringBuilder sb = new StringBuilder();
+        sb.append("RUNSTATS ON TABLE ").append(db2Table.getFullQualifiedName());
 
-            if (dlgColsAllAndDistribution.getSelection()) {
-                sb.append(COLS_ALL_DIST);
-            }
-            if (dlgColsAll.getSelection()) {
-                sb.append(COLS_ALL);
-            }
-            if (dlgIndexesDetailed.getSelection()) {
-                sb.append(INDEXES_DETAILED);
-            }
-            if (dlgIndexesAll.getSelection()) {
-                sb.append(INDEXES_ALL);
-            }
-            if (dlgSample.getSelection()) {
-                sb.append(String.format(SAMPLING, dlgSampleValue.getSelection()));
-            }
-            sb.append("')");
-            lines[index++] = sb.toString();
+        if (dlgColsAllAndDistribution.getSelection()) {
+            sb.append(" ON ALL COLUMNS WITH DISTRIBUTION ON ALL COLUMNS");
+        }
+        if (dlgColsAll.getSelection()) {
+            sb.append(" ON ALL COLUMNS");
+        }
+        if (dlgIndexesDetailed.getSelection()) {
+            sb.append(" AND SAMPLED DETAILED INDEXES ALL");
+        }
+        if (dlgIndexesAll.getSelection()) {
+            sb.append(" AND INDEXES ALL");
+        }
+        if (dlgSample.getSelection()) {
+            sb.append(" TABLESAMPLE SYSTEM(").append(dlgSampleValue.getSelection()).append(")");
         }
 
-        return lines;
-    }
-
-    private enum ColStats {
-        COLS_ALL_AND_DISTRIBUTION, COLS_ALL, COLS_NO;
-    }
-
-    private enum IndexStats {
-        INDEXES_DETAILED, INDEX_ALL, INDEXES_NO;
+        return sb.toString();
     }
 
 }
