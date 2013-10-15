@@ -18,215 +18,106 @@
  */
 package org.jkiss.dbeaver.ext.db2.actions;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Collection;
+
 /**
- * Manage the Dialog to enter Reorg Table Index option
+ * Manage the Dialog to enter Reorg Table's Index Options
  * 
  * @author Denis Forveille
- * 
  */
-public class DB2TableReorgIndexDialog extends Dialog {
+public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
 
-    private static final String REORG = "REORG INDEXES ALL FOR TABLE %s";
-    private static final String ACCESS_NO = " ALLOW NO ACCESS";
-    private static final String ACCESS_READ = " ALLOW READ ACCESS";
-    private static final String ACCESS_WRITE = " ALLOW WRITE ACCESS";
-    private static final String CLEANUP_ALL = "  CLEANUP ALL";
-    private static final String CLEANUP_PAGES = " CLEANUP PAGES";
-
-    // Dialog artefacts
-    private Button dlgAccessDefault;
     private Button dlgAccessNo;
     private Button dlgAccessReadOnly;
     private Button dlgAccessReadWrite;
 
-    private Button dlgFullIndex;
     private Button dlgCleanupKeysAndpages;
     private Button dlgCleanupPagesOnly;
 
-    private Text dlgCmdText;
-
-    private DB2Table db2Table;
-
-    private String cmdText;
-
-    public DB2TableReorgIndexDialog(Shell parentShell, DB2Table db2Table)
+    public DB2TableReorgIndexDialog(IWorkbenchPartSite partSite, DB2DataSource dataSource, Collection<DB2Table> selectedDB2Tables)
     {
-        super(parentShell);
-        this.db2Table = db2Table;
+        super(partSite, DB2Messages.dialog_table_tools_reorgix_title, dataSource, selectedDB2Tables);
     }
 
     @Override
-    protected boolean isResizable()
+    protected void createControls(Composite parent)
     {
-        return true;
-    }
+        SelectionAdapter changeListener = new SQLChangeListener();
 
-    @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        getShell().setText("Reorg Index options");
-        Control container = super.createDialogArea(parent);
-        Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
-        composite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        Composite composite = new Composite(parent, 2);
+        composite.setLayout(new GridLayout(2, false));
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // REORG ACCESS
-        UIUtils.createTextLabel(composite, "Table Access:");
+        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_reorgix_access_title).setLayoutData(
+            new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupAccess = new Composite(composite, SWT.NULL);
-        groupAccess.setLayout(new RowLayout());
-        dlgAccessDefault = new Button(groupAccess, SWT.RADIO);
-        dlgAccessDefault.setText(Access.DEFAULT.name());
-        dlgAccessDefault.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        groupAccess.setLayout(new RowLayout(SWT.VERTICAL));
+        Button dlgAccessDefault = new Button(groupAccess, SWT.RADIO);
+        dlgAccessDefault.setText(DB2Messages.dialog_table_tools_reorgix_access_default);
+        dlgAccessDefault.addSelectionListener(changeListener);
         dlgAccessNo = new Button(groupAccess, SWT.RADIO);
-        dlgAccessNo.setText(Access.ACCESS_NO.name());
-        dlgAccessNo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        dlgAccessNo.setText(DB2Messages.dialog_table_tools_reorgix_access_no);
+        dlgAccessNo.addSelectionListener(changeListener);
         dlgAccessReadOnly = new Button(groupAccess, SWT.RADIO);
-        dlgAccessReadOnly.setText(Access.ACCESS_READ_ONLY.name());
-        dlgAccessReadOnly.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        dlgAccessReadOnly.setText(DB2Messages.dialog_table_tools_reorgix_access_read);
+        dlgAccessReadOnly.addSelectionListener(changeListener);
         dlgAccessReadWrite = new Button(groupAccess, SWT.RADIO);
-        dlgAccessReadWrite.setText(Access.ACCESS_READ_WRITE.name());
-        dlgAccessReadWrite.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        dlgAccessReadWrite.setText(DB2Messages.dialog_table_tools_reorgix_access_readwrite);
+        dlgAccessReadWrite.addSelectionListener(changeListener);
 
         // PAGE CLEANUP
-        UIUtils.createTextLabel(composite, "Stats on Indexes:");
+        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_reorgix_options_title).setLayoutData(
+            new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupCleanup = new Composite(composite, SWT.NULL);
-        groupCleanup.setLayout(new RowLayout());
-        dlgFullIndex = new Button(groupCleanup, SWT.RADIO);
-        dlgFullIndex.setText(Cleanup.FULL_INDEX.name());
-        dlgFullIndex.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
-        dlgCleanupKeysAndpages = new Button(groupCleanup, SWT.RADIO);
-        dlgCleanupKeysAndpages.setText(Cleanup.PSEUDO_DELETED_KEYS_PAGES.name());
-        dlgCleanupKeysAndpages.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
-        dlgCleanupPagesOnly = new Button(groupCleanup, SWT.RADIO);
-        dlgCleanupPagesOnly.setText(Cleanup.PSEUDO_DELETED_PAGES_ONLY.name());
-        dlgCleanupPagesOnly.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
-
-        // Read only Resulting REORG Command
-        GridData gd = new GridData();
-        gd.verticalAlignment = GridData.FILL;
-        gd.horizontalAlignment = GridData.FILL;
-        gd.horizontalSpan = 2;
-        gd.grabExcessHorizontalSpace = true;
-
-        UIUtils.createTextLabel(composite, "Command:");
-
-        dlgCmdText = new Text(composite, SWT.BORDER | SWT.WRAP);
-        dlgCmdText.setEditable(false);
-        dlgCmdText.setLayoutData(gd);
-
-        // Initial setup
-        dlgAccessDefault.setSelection(true);
+        groupCleanup.setLayout(new RowLayout(SWT.VERTICAL));
+        Button dlgFullIndex = new Button(groupCleanup, SWT.RADIO);
+        dlgFullIndex.setText(DB2Messages.dialog_table_tools_reorgix_options_full);
+        dlgFullIndex.addSelectionListener(changeListener);
         dlgFullIndex.setSelection(true);
-
-        computeCmd();
-
-        return parent;
+        dlgCleanupKeysAndpages = new Button(groupCleanup, SWT.RADIO);
+        dlgCleanupKeysAndpages.setText(DB2Messages.dialog_table_tools_reorgix_options_cleanup_keys);
+        dlgCleanupKeysAndpages.addSelectionListener(changeListener);
+        dlgCleanupPagesOnly = new Button(groupCleanup, SWT.RADIO);
+        dlgCleanupPagesOnly.setText(DB2Messages.dialog_table_tools_reorgix_options_cleanu_pages);
+        dlgCleanupPagesOnly.addSelectionListener(changeListener);
     }
 
     @Override
-    protected void okPressed()
+    protected StringBuilder generateTableCommand(DB2Table db2Table)
     {
-        super.okPressed();
-    }
-
-    // ----------------
-    // Getters
-    // ----------------
-    public String getCmdText()
-    {
-        return cmdText;
-    }
-
-    // -------
-    // Helpers
-    // -------
-
-    private void computeCmd()
-    {
-        StringBuilder sb = new StringBuilder(512);
-        sb.append(String.format(REORG, db2Table.getFullQualifiedName()));
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("REORG INDEXES ALL FOR TABLE ").append(db2Table.getFullQualifiedName());
 
         if (dlgAccessNo.getSelection()) {
-            sb.append(ACCESS_NO);
+            sb.append(" ALLOW NO ACCESS");
         }
         if (dlgAccessReadOnly.getSelection()) {
-            sb.append(ACCESS_READ);
+            sb.append(" ALLOW READ ACCESS");
         }
         if (dlgAccessReadWrite.getSelection()) {
-            sb.append(ACCESS_WRITE);
+            sb.append(" ALLOW WRITE ACCESS");
         }
         if (dlgCleanupKeysAndpages.getSelection()) {
-            sb.append(CLEANUP_ALL);
+            sb.append("  CLEANUP ALL");
         }
         if (dlgCleanupPagesOnly.getSelection()) {
-            sb.append(CLEANUP_PAGES);
+            sb.append(" CLEANUP PAGES");
         }
-
-        cmdText = sb.toString();
-        dlgCmdText.setText(cmdText);
-    }
-
-    private enum Access {
-        DEFAULT, ACCESS_NO, ACCESS_READ_ONLY, ACCESS_READ_WRITE;
-    }
-
-    private enum Cleanup {
-        FULL_INDEX, PSEUDO_DELETED_KEYS_PAGES, PSEUDO_DELETED_PAGES_ONLY;
+        return sb;
     }
 
 }

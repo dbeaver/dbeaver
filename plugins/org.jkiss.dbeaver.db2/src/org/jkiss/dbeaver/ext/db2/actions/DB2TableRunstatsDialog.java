@@ -53,9 +53,9 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
     private Button dlgIndexesDetailed;
     private Button dlgIndexesAll;
 
-    public DB2TableRunstatsDialog(IWorkbenchPartSite partSite, DB2DataSource dataSource, Collection<DB2Table> tables)
+    public DB2TableRunstatsDialog(IWorkbenchPartSite partSite, DB2DataSource dataSource, Collection<DB2Table> selectedDB2Tables)
     {
-        super(partSite, DB2Messages.dialog_table_tools_runstats_title, dataSource, tables);
+        super(partSite, DB2Messages.dialog_table_tools_runstats_title, dataSource, selectedDB2Tables);
     }
 
     @Override
