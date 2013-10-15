@@ -50,20 +50,20 @@ public class DB2TableToolsHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         // Build the list of selected tables
-        List<DB2Table> db2Tables = new ArrayList<DB2Table>();
+        List<DB2Table> selectedDB2Tables = new ArrayList<DB2Table>();
         IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
         DB2Table db2Table;
         for (Iterator iter = selection.iterator(); iter.hasNext();) {
             db2Table = RuntimeUtils.getObjectAdapter(iter.next(), DB2Table.class);
             if (db2Table != null) {
-                db2Tables.add(db2Table);
+                selectedDB2Tables.add(db2Table);
             }
         }
 
-        if (!db2Tables.isEmpty()) {
+        if (!selectedDB2Tables.isEmpty()) {
 
             // Pick the datasource from one of the tables, let's hope they are all coming from the same DS..
-            DB2DataSource dataSource = db2Tables.get(0).getDataSource();
+            DB2DataSource dataSource = selectedDB2Tables.get(0).getDataSource();
             IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 
             Command command = null;
@@ -74,13 +74,13 @@ public class DB2TableToolsHandler extends AbstractHandler {
             }
             switch (command) {
             case REORG:
-                performReorg(activePart.getSite(), dataSource, db2Tables);
+                performReorg(activePart.getSite(), dataSource, selectedDB2Tables);
                 break;
             case REORGIX:
-                performReorgIx(activePart.getSite(), dataSource, db2Tables);
+                performReorgIx(activePart.getSite(), dataSource, selectedDB2Tables);
                 break;
             case RUNSTATS:
-                performRunstats(activePart.getSite(), dataSource, db2Tables);
+                performRunstats(activePart.getSite(), dataSource, selectedDB2Tables);
                 break;
             }
         }
@@ -91,24 +91,29 @@ public class DB2TableToolsHandler extends AbstractHandler {
     // -------
     // Helpers
     // -------
-    private void performReorg(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables)
+    private void performReorg(final IWorkbenchPartSite partSite, DB2DataSource dataSource,
+        final Collection<DB2Table> selectedDB2Tables)
     {
 
-        DB2TableReorgDialog dialog = new DB2TableReorgDialog(partSite, dataSource, tables.iterator().next());
-        dialog.open();
-        dialog.setOnSuccess(new Runnable() {
-            @Override
-            public void run()
-            {
-                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title,
-                    DB2Messages.dialog_table_tools_reorg_success, SWT.ICON_INFORMATION);
-            }
-        });
+        // Reorg Options can not be set for all tables at once due to index selection
+        for (DB2Table db2Table : selectedDB2Tables) {
+            DB2TableReorgDialog dialog = new DB2TableReorgDialog(partSite, dataSource, db2Table);
+            dialog.open();
+            dialog.setOnSuccess(new Runnable() {
+                @Override
+                public void run()
+                {
+                    UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title,
+                        DB2Messages.dialog_table_tools_reorg_success, SWT.ICON_INFORMATION);
+                }
+            });
+        }
     }
 
-    private void performReorgIx(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables)
+    private void performReorgIx(final IWorkbenchPartSite partSite, DB2DataSource dataSource,
+        final Collection<DB2Table> selectedDB2Tables)
     {
-        DB2TableReorgIndexDialog2 dialog = new DB2TableReorgIndexDialog2(partSite, dataSource, tables);
+        DB2TableReorgIndexDialog dialog = new DB2TableReorgIndexDialog(partSite, dataSource, selectedDB2Tables);
         dialog.open();
         dialog.setOnSuccess(new Runnable() {
             @Override
@@ -120,9 +125,10 @@ public class DB2TableToolsHandler extends AbstractHandler {
         });
     }
 
-    private void performRunstats(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables)
+    private void performRunstats(final IWorkbenchPartSite partSite, DB2DataSource dataSource,
+        final Collection<DB2Table> selectedDB2Tables)
     {
-        DB2TableRunstatsDialog dialog = new DB2TableRunstatsDialog(partSite, dataSource, tables);
+        DB2TableRunstatsDialog dialog = new DB2TableRunstatsDialog(partSite, dataSource, selectedDB2Tables);
         dialog.setOnSuccess(new Runnable() {
             @Override
             public void run()
