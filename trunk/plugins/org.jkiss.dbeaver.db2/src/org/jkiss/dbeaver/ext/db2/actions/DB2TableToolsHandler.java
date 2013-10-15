@@ -26,6 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -37,8 +38,6 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * TODO DF: Work In Progress !!!!
- * 
  * Actions on Tables
  * 
  * @author Denis Forveille
@@ -46,33 +45,43 @@ import java.util.List;
  */
 public class DB2TableToolsHandler extends AbstractHandler {
 
-    private static final String CMD_REORG_ID = "org.jkiss.dbeaver.ext.db2.table.reorg";
-    private static final String CMD_REORGIX_ID = "org.jkiss.dbeaver.ext.db2.table.reorgix";
-    private static final String CMD_RUNSTATS_ID = "org.jkiss.dbeaver.ext.db2.table.runstats";
-
     @Override
+    @SuppressWarnings("rawtypes")
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        // Build the list of selected tables
+        List<DB2Table> db2Tables = new ArrayList<DB2Table>();
         IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
-        List<DB2Table> tables = new ArrayList<DB2Table>();
-        DB2DataSource dataSource = null;
-        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-            final DB2Table db2Table = RuntimeUtils.getObjectAdapter(iter.next(), DB2Table.class);
+        DB2Table db2Table;
+        for (Iterator iter = selection.iterator(); iter.hasNext();) {
+            db2Table = RuntimeUtils.getObjectAdapter(iter.next(), DB2Table.class);
             if (db2Table != null) {
-                tables.add(db2Table);
-                dataSource = db2Table.getDataSource();
+                db2Tables.add(db2Table);
             }
         }
 
-        if (!tables.isEmpty()) {
+        if (!db2Tables.isEmpty()) {
+
+            // Pick the datasource from one of the tables, let's hope they are all coming from the same DS..
+            DB2DataSource dataSource = db2Tables.get(0).getDataSource();
             IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 
-            if (event.getCommand().getId().equals(CMD_REORG_ID)) {
-                performReorg(activePart.getSite(), dataSource, tables);
-            } else if (event.getCommand().getId().equals(CMD_REORGIX_ID)) {
-                performReorgIx(activePart.getSite(), dataSource, tables);
-            } else if (event.getCommand().getId().equals(CMD_RUNSTATS_ID)) {
-                performRunstats(activePart.getSite(), dataSource, tables);
+            Command command = null;
+            try {
+                command = Command.getCommandFromId(event.getCommand().getId());
+            } catch (IllegalAccessException e) {
+                throw new ExecutionException(e.getMessage());
+            }
+            switch (command) {
+            case REORG:
+                performReorg(activePart.getSite(), dataSource, db2Tables);
+                break;
+            case REORGIX:
+                performReorgIx(activePart.getSite(), dataSource, db2Tables);
+                break;
+            case RUNSTATS:
+                performRunstats(activePart.getSite(), dataSource, db2Tables);
+                break;
             }
         }
 
@@ -91,7 +100,8 @@ public class DB2TableToolsHandler extends AbstractHandler {
             @Override
             public void run()
             {
-                UIUtils.showMessageBox(partSite.getShell(), "OK", "Reorg finished", SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title, "Reorg finished",
+                    SWT.ICON_INFORMATION);
             }
         });
     }
@@ -104,22 +114,56 @@ public class DB2TableToolsHandler extends AbstractHandler {
             @Override
             public void run()
             {
-                UIUtils.showMessageBox(partSite.getShell(), "OK", "ReorgIx finished", SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title, "ReorgIx finished",
+                    SWT.ICON_INFORMATION);
             }
         });
     }
 
     private void performRunstats(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables)
     {
-        DB2TableRunstatsDialog2 dialog = new DB2TableRunstatsDialog2(partSite, dataSource, tables);
+        DB2TableRunstatsDialog dialog = new DB2TableRunstatsDialog(partSite, dataSource, tables);
         dialog.setOnSuccess(new Runnable() {
             @Override
             public void run()
             {
-                UIUtils.showMessageBox(partSite.getShell(), "OK", "Runstats finished", SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title,
+                    DB2Messages.dialog_table_tools_runstats_success, SWT.ICON_INFORMATION);
             }
         });
         dialog.open();
+    }
+
+    // -------
+    // Helpers
+    // -------
+
+    private enum Command {
+        REORG("org.jkiss.dbeaver.ext.db2.table.reorg"),
+
+        REORGIX("org.jkiss.dbeaver.ext.db2.table.reorgix"),
+
+        RUNSTATS("org.jkiss.dbeaver.ext.db2.table.runstats");
+
+        private String commandId;
+
+        private Command(String commandId)
+        {
+            this.commandId = commandId;
+        }
+
+        // -------
+        // Helpers
+        // -------
+        public static Command getCommandFromId(String commandId) throws IllegalAccessException
+        {
+            for (Command command : Command.values()) {
+                if (command.commandId.equals(commandId)) {
+                    return command;
+                }
+            }
+            throw new IllegalAccessException(commandId + " is not a valid command Id");
+        }
     }
 
 }
