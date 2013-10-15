@@ -30,7 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -84,7 +83,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        createButton(parent, IDialogConstants.PROCEED_ID, CoreMessages.dialog_view_sql_button_persist, true);
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createCopyButton(parent);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
@@ -92,8 +91,8 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     @Override
     protected void buttonPressed(int buttonId)
     {
-        if (buttonId == IDialogConstants.PROCEED_ID) {
-            setReturnCode(IDialogConstants.PROCEED_ID);
+        if (buttonId == IDialogConstants.OK_ID) {
+            setReturnCode(IDialogConstants.OK_ID);
             executeSQL();
             close();
         } else {
