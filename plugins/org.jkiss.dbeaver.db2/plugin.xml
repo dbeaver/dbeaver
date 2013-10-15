@@ -38,7 +38,7 @@
     <extension point="org.eclipse.core.expressions.definitions">
         <definition id="org.jkiss.dbeaver.db2.tableSelected">
             <with variable="selection">
-                <count value="1"/>
+                <count value="+"/>
                 <iterate operator="and">
                     <adapt type="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
                 </iterate>
