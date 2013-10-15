@@ -45,6 +45,7 @@ public class DB2CurrentUserPrivileges {
     private static final String DATAACCESS = "DATAACCESS";
     private static final String DBADM = "DBADM";
     private static final String SQLADM = "SQLADM";
+
     private static final String AUTH_APP = "T:SYSIBMADM.APPLICATIONS";
     private static final String AUTH_DBCFG = "T:SYSIBMADM.DBCFG";
     private static final String AUTH_CONTAINER = "R:SYSPROC.SNAP_GET_CONTAINER";
@@ -69,14 +70,13 @@ public class DB2CurrentUserPrivileges {
 
         sb.append(" UNION ALL ");
 
-        sb.append("SELECT 'T:' || TRIM(TABSCHEMA) || '.' ||TABNAME");
+        sb.append("SELECT DISTINCT 'T:' || TRIM(TABSCHEMA) || '.' ||TABNAME");
         sb.append("  FROM SYSCAT.TABAUTH");
         sb.append(" WHERE ((GRANTEETYPE = 'G' AND GRANTEE = 'PUBLIC') OR (GRANTEETYPE = 'U' AND GRANTEE = ?))");
         sb.append("   AND (");
         sb.append("        (TABSCHEMA = 'SYSIBMADM' AND TABNAME = 'APPLICATIONS' AND 'Y' IN (CONTROLAUTH,SELECTAUTH))");
         sb.append("     OR (TABSCHEMA = 'SYSIBMADM' AND TABNAME = 'DBCFG' AND 'Y' IN (CONTROLAUTH,SELECTAUTH))");
         sb.append("       )");
-
         sb.append(" WITH UR");
         SEL_OBJECTS = sb.toString();
     }
