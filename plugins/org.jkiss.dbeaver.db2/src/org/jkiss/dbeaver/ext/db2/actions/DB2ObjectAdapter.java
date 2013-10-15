@@ -32,21 +32,26 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
  */
 public class DB2ObjectAdapter implements IAdapterFactory {
 
-    public DB2ObjectAdapter() {
-    }
-
     @Override
-    public Object getAdapter(Object adaptableObject, Class adapterType) {
+    @SuppressWarnings("rawtypes")
+    public Object getAdapter(Object adaptableObject, Class adapterType)
+    {
         if (DB2TableBase.class.isAssignableFrom(adapterType)) {
             DBSObject dbObject = null;
             if (adaptableObject instanceof DBNDatabaseNode) {
                 dbObject = ((DBNDatabaseNode) adaptableObject).getObject();
-            } else if (adaptableObject instanceof IDatabaseEditor) {
-                dbObject = ((IDatabaseEditor) adaptableObject).getEditorInput().getDatabaseObject();
-            } else if (adaptableObject instanceof DatabaseEditorInput) {
-                dbObject = ((DatabaseEditorInput) adaptableObject).getDatabaseObject();
+            } else {
+                if (adaptableObject instanceof IDatabaseEditor) {
+                    dbObject = ((IDatabaseEditor) adaptableObject).getEditorInput().getDatabaseObject();
+                } else {
+                    if (adaptableObject instanceof DatabaseEditorInput) {
+                        dbObject = ((DatabaseEditorInput) adaptableObject).getDatabaseObject();
+                    }
+                }
             }
-            if (dbObject != null && adapterType.isAssignableFrom(dbObject.getClass())) {
+
+            // DF: Check for exact Match
+            if (dbObject != null && adapterType.equals(dbObject.getClass())) {
                 return dbObject;
             }
         }
@@ -54,7 +59,9 @@ public class DB2ObjectAdapter implements IAdapterFactory {
     }
 
     @Override
-    public Class[] getAdapterList() {
+    @SuppressWarnings("rawtypes")
+    public Class[] getAdapterList()
+    {
         return new Class[] { DB2Table.class, DB2View.class };
     }
 }
