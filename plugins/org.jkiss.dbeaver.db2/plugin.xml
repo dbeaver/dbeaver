@@ -258,8 +258,12 @@
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace" label="%tree.tablespaces.node.name" icon="#folder_tablespace" description="Tablespaces">
                         <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
-                            <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablespaceContainer" label="%tree.containers.node.name" icon="#containers" description="Containers">
-                                <items label="%tree.container.node.name" path="container" property="containers" icon="#container" visibleIf="object.dataSource.authorisedForContainers"/>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablespaceContainer" 
+                                    label="%tree.containers.node.name" 
+                                    icon="#containers" 
+                                    description="Containers" 
+                                    visibleIf="object.dataSource.authorisedForContainers">
+                                <items label="%tree.container.node.name" path="container" property="containers" icon="#container" />
                             </folder>
                         </items>
                     </folder>
@@ -267,18 +271,29 @@
                         <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="#storagegroup"/>
                     </folder>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings" >
-                    
+                <folder type="" 
+                       label="%tree.administer.node.name" 
+                       icon="#folder_admin" 
+                       description="Maintenance/Settings"
+                       visibleIf="object.dataSource.authorisedForAdminister">
                     <object type="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication" 
                             label="%tree.applications.node.name" 
                             icon="#admin" 
                             description="Server application manager" 
                             editor="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
                             visibleIf="object.dataSource.authorisedForApplications"/>
-                    <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" label="%tree.dbparameters.node.name" icon="#info" description="Database Configuration">
+                    <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
+                            label="%tree.dbparameters.node.name" 
+                            icon="#info" 
+                            description="Database Configuration"
+                            visibleIf="object.dataSource.authorisedForDBCFG">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" label="%tree.dbmparameters.node.name" icon="#info" description="Database Manager Configuration">
+                    <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
+                            label="%tree.dbmparameters.node.name" 
+                            icon="#info" 
+                            description="Database Manager Configuration"
+                            visibleIf="object.dataSource.authorisedForDBCFG">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbmParameters" icon="#info" navigable="false" virtual="true"/>
                     </folder>
                 </folder>

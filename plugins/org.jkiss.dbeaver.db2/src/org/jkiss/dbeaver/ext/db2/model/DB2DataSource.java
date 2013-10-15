@@ -633,6 +633,16 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         return db2CurrentUserPrivileges.userIsAuthorisedForContainers();
     }
 
+    public boolean isAuthorisedForDBCFG()
+    {
+        return db2CurrentUserPrivileges.userIsAuthorisedForDBCFG();
+    }
+
+    public boolean isAuthorisedForAdminister()
+    {
+        return db2CurrentUserPrivileges.userIsAuthorisedForAdminister();
+    }
+
     // -------------------------
     // Version Testing
     // -------------------------
