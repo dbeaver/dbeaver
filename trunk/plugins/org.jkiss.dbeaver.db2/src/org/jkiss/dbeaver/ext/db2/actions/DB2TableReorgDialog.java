@@ -18,42 +18,40 @@
  */
 package org.jkiss.dbeaver.ext.db2.actions;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Manage the Dialog to enter Reorg option
  * 
  * @author Denis Forveille
+ * @author Serge Rieder
  * 
  */
-public class DB2TableReorgDialog extends Dialog {
-
-    private static final String REORG = "REORG TABLE %s";
-    private static final String ACCESS_READ = " ALLOW READ ACCESS";
-    private static final String ACCESS_NO = " ALLOW NO ACCESS";
-    private static final String INDEXSCAN = " INDEXSCAN";
-    private static final String INDEX = " INDEX %s";
-    private static final String NO_TRUNCATE = " NO TRUNCATE TABLE";
-    private static final String RESET_DICTIONARY = " RESETDICTIONARY";
-    private static final String TEMP_TS = " USE %s";
-    private static final String INPLACE = " INPLACE";
-    private static final String LONGLOB = " LONGLOBDATA";
-    private static final String START = " START";
+public class DB2TableReorgDialog extends DB2TableToolDialog {
 
     private String indexName; // From a list of table indexes
     private String tempTablespace; // From a list of temp tablespaces
@@ -74,38 +72,59 @@ public class DB2TableReorgDialog extends Dialog {
     private Button dlgAccesNo;
     private Button dlgAccesReadOnly;
     private Button dlgAccesReadWrite;
-    private Text dlgCmdText;
 
-    private List<String> listTempTsNames;
-    private List<String> listIndexNames;
-    private DB2Table db2Table;
+    private final List<String> listTempTsNames = new ArrayList<String>();
+    private final List<String> listIndexNames = new ArrayList<String>();
 
-    private String cmdText;
-
-    public DB2TableReorgDialog(Shell parentShell, DB2Table db2Table, List<String> listTempTsNames, List<String> listIndexNames)
+    public DB2TableReorgDialog(IWorkbenchPartSite partSite, final DB2DataSource dataSource, final DB2Table table)
     {
-        super(parentShell);
-        this.db2Table = db2Table;
-        this.listTempTsNames = listTempTsNames;
-        this.listIndexNames = listIndexNames;
+        super(partSite, DB2Messages.dialog_table_tools_reorg_title, dataSource, Collections.singleton(table));
+
+        // Read TS and indexes
+        try {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        monitor.beginTask("Read system info", 2);
+
+                        for (DB2Tablespace db2Tablespace : dataSource.getTablespaces(monitor)) {
+                            if (db2Tablespace.getDataType().equals(DB2TablespaceDataType.T)) {
+                                listTempTsNames.add(db2Tablespace.getName());
+                            }
+                        }
+
+                        monitor.worked(1);
+
+                        for (DB2Index db2Index : table.getIndexes(monitor)) {
+                            listIndexNames.add(db2Index.getFullQualifiedName());
+                        }
+
+                        monitor.worked(1);
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(partSite.getShell(), "Error", "Can't read system info", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
     }
 
     @Override
-    protected boolean isResizable()
+    protected void createControls(Composite parent)
     {
-        return true;
-    }
+        SelectionAdapter changeListener = new SQLChangeListener();
 
-    @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        getShell().setText("Reorg Table options");
-        Control container = super.createDialogArea(parent);
-        Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
+        Composite composite = new Composite(parent, 2);
+        composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // INPLACE
-        dlgInplace = UIUtils.createCheckbox(composite, "Inplace Reorg? ", false);
+        dlgInplace = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_inplace, false);
         dlgInplace.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -119,8 +138,12 @@ public class DB2TableReorgDialog extends Dialog {
                     dlgUseLobsTemp.setEnabled(false);
                     dlgResetDictionary.setEnabled(false);
                     dlgAccesReadWrite.setEnabled(true);
-                    dlgAccesReadOnly.setSelection(true);
                     dlgAccesNo.setEnabled(false);
+
+                    dlgAccesNo.setSelection(false);
+                    dlgAccesReadWrite.setSelection(false);
+                    dlgAccesReadOnly.setSelection(true);
+
                 } else {
                     dlgTruncate.setEnabled(false);
                     dlgTruncate.setSelection(false);
@@ -130,16 +153,19 @@ public class DB2TableReorgDialog extends Dialog {
                     dlgUseLobsTemp.setEnabled(true);
                     dlgResetDictionary.setEnabled(true);
                     dlgAccesNo.setEnabled(true);
-                    dlgAccesNo.setSelection(true);
                     dlgAccesReadWrite.setEnabled(false);
+
+                    dlgAccesReadWrite.setSelection(false);
+                    dlgAccesReadOnly.setSelection(false);
+                    dlgAccesNo.setSelection(true);
                 }
-                computeCmd();
+                updateSQL();
             }
         });
         UIUtils.createPlaceholder(composite, 1);
 
         // USE INDEX
-        dlgUseIndex = UIUtils.createCheckbox(composite, "Reorg Using Index", false);
+        dlgUseIndex = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_useindex, false);
         dlgUseIndex.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -151,35 +177,23 @@ public class DB2TableReorgDialog extends Dialog {
                     indexesCombo.setEnabled(false);
                     dlgIndexScan.setEnabled(false);
                 }
-                computeCmd();
+                updateSQL();
             }
         });
         indexesCombo = createIndexesCombo(composite);
 
         // INDEXSCAN
-        dlgIndexScan = UIUtils.createCheckbox(composite, "Use Index Scan?", false);
-        dlgIndexScan.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        dlgIndexScan = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_useindexscan, false);
+        dlgIndexScan.addSelectionListener(changeListener);
         UIUtils.createPlaceholder(composite, 1);
 
         // TRUNCATE
-        dlgTruncate = UIUtils.createCheckbox(composite, "Truncate after Reorg?", false);
-        dlgTruncate.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        dlgTruncate = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_truncate, false);
+        dlgTruncate.addSelectionListener(changeListener);
         UIUtils.createPlaceholder(composite, 1);
 
         // USE TEMP TS
-        dlgUseTempTS = UIUtils.createCheckbox(composite, "Use Temporary Tablespace", false);
+        dlgUseTempTS = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_usetempts, false);
         dlgUseTempTS.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -189,31 +203,31 @@ public class DB2TableReorgDialog extends Dialog {
                 } else {
                     tempTSCombo.setEnabled(false);
                 }
-                computeCmd();
+                updateSQL();
             }
         });
         tempTSCombo = createTempTablespaceCombo(composite);
 
         // REORG LONG AND LOBS
-        dlgReorgLobsTS = UIUtils.createCheckbox(composite, "Reorg LOBs using Temp TS ", false);
+        dlgReorgLobsTS = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_reorglobs, false);
         dlgReorgLobsTS.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
                 if (dlgReorgLobsTS.getSelection()) {
                     dlgUseLobsTemp.setEnabled(true);
-                    tempLobsTSCombo.setEnabled(true);
+                    tempLobsTSCombo.setEnabled(false);
                 } else {
                     dlgUseLobsTemp.setEnabled(false);
                     tempLobsTSCombo.setEnabled(false);
                 }
-                computeCmd();
+                updateSQL();
             }
         });
         UIUtils.createPlaceholder(composite, 1);
 
         // REORG LONG AND LOBS TEMP TS
-        dlgUseLobsTemp = UIUtils.createCheckbox(composite, "LOBs Reorg Temporary Tablespace ", false);
+        dlgUseLobsTemp = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_reorglobsts, false);
         dlgUseLobsTemp.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -223,67 +237,29 @@ public class DB2TableReorgDialog extends Dialog {
                 } else {
                     tempLobsTSCombo.setEnabled(false);
                 }
-                computeCmd();
+                updateSQL();
             }
         });
         tempLobsTSCombo = createLobsTempTablespaceCombo(composite);
 
         // RESET DICTIONARY
-        dlgResetDictionary = UIUtils.createCheckbox(composite, "Reset Dictionary?", false);
-        dlgResetDictionary.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        dlgResetDictionary = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_resetdict, false);
+        dlgResetDictionary.addSelectionListener(changeListener);
         UIUtils.createPlaceholder(composite, 1);
 
         // TABLE ACCESS
-        UIUtils.createTextLabel(composite, "Table Access");
+        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_reorg_access_title);
         Composite groupRB = new Composite(composite, SWT.NULL);
         groupRB.setLayout(new RowLayout());
         dlgAccesNo = new Button(groupRB, SWT.RADIO);
-        dlgAccesNo.setText(TableAccess.NO_ACCESS.name());
-        dlgAccesNo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        dlgAccesNo.setText(DB2Messages.dialog_table_tools_reorg_access_no);
+        dlgAccesNo.addSelectionListener(changeListener);
         dlgAccesReadOnly = new Button(groupRB, SWT.RADIO);
-        dlgAccesReadOnly.setText(TableAccess.READ_ONLY.name());
-        dlgAccesReadOnly.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
+        dlgAccesReadOnly.setText(DB2Messages.dialog_table_tools_reorg_access_read);
+        dlgAccesReadOnly.addSelectionListener(changeListener);
         dlgAccesReadWrite = new Button(groupRB, SWT.RADIO);
-        dlgAccesReadWrite.setText(TableAccess.READ_WRITE.name());
-        dlgAccesReadWrite.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                computeCmd();
-            }
-        });
-
-        // Read only Resulting REORG Command
-        GridData gd = new GridData();
-        gd.verticalAlignment = GridData.FILL;
-        gd.verticalSpan = 2;
-        gd.horizontalAlignment = GridData.FILL;
-        gd.horizontalSpan = 2;
-        gd.grabExcessHorizontalSpace = true;
-
-        UIUtils.createTextLabel(composite, "Command:");
-
-        dlgCmdText = new Text(composite, SWT.BORDER | SWT.WRAP);
-        dlgCmdText.setEditable(false);
-        dlgCmdText.setLayoutData(gd);
+        dlgAccesReadWrite.setText(DB2Messages.dialog_table_tools_reorg_access_readwrite);
+        dlgAccesReadWrite.addSelectionListener(changeListener);
 
         // Initial setup
         dlgTruncate.setEnabled(false);
@@ -292,81 +268,9 @@ public class DB2TableReorgDialog extends Dialog {
         tempLobsTSCombo.setEnabled(false);
         dlgAccesReadWrite.setEnabled(false);
         dlgAccesReadOnly.setSelection(true);
-        indexName = listIndexNames.get(0);
-        tempTablespace = listTempTsNames.get(0);
-        lobsTablespace = listTempTsNames.get(0);
-
-        computeCmd();
-
-        return parent;
-    }
-
-    @Override
-    protected void okPressed()
-    {
-        super.okPressed();
-    }
-
-    // ----------------
-    // Getters
-    // ----------------
-    public String getCmdText()
-    {
-        return cmdText;
-    }
-
-    // -------
-    // Helpers
-    // -------
-
-    private enum TableAccess {
-        NO_ACCESS, READ_ONLY, READ_WRITE;
-    }
-
-    private void computeCmd()
-    {
-        StringBuilder sb = new StringBuilder(512);
-        sb.append(String.format(REORG, db2Table.getFullQualifiedName()));
-
-        if (dlgUseIndex.getSelection()) {
-            sb.append(String.format(INDEX, indexName));
-        }
-
-        if (dlgInplace.getSelection()) {
-            sb.append(INPLACE);
-            if (dlgAccesReadOnly.getSelection()) {
-                sb.append(ACCESS_READ);
-            }
-            sb.append(START);
-            if (!(dlgTruncate.getSelection())) {
-                sb.append(NO_TRUNCATE);
-            }
-        } else {
-            if (dlgAccesNo.getSelection()) {
-                sb.append(ACCESS_NO);
-            }
-            if (dlgUseTempTS.getSelection()) {
-                sb.append(String.format(TEMP_TS, tempTablespace));
-            }
-            if (dlgIndexScan.getSelection()) {
-                sb.append(INDEXSCAN);
-            }
-            if (dlgReorgLobsTS.getSelection()) {
-                sb.append(LONGLOB);
-            }
-            if (dlgReorgLobsTS.getSelection()) {
-                sb.append(LONGLOB);
-            }
-            if (dlgUseLobsTemp.getSelection()) {
-                sb.append(String.format(TEMP_TS, lobsTablespace));
-            }
-            if (dlgResetDictionary.getSelection()) {
-                sb.append(RESET_DICTIONARY);
-            }
-        }
-
-        cmdText = sb.toString();
-        dlgCmdText.setText(cmdText);
+        indexName = listIndexNames.isEmpty() ? null : listIndexNames.get(0);
+        tempTablespace = listTempTsNames.isEmpty() ? null : listTempTsNames.get(0);
+        lobsTablespace = listTempTsNames.isEmpty() ? null : listTempTsNames.get(0);
     }
 
     private Combo createIndexesCombo(Composite parent)
@@ -384,7 +288,7 @@ public class DB2TableReorgDialog extends Dialog {
             public void widgetSelected(SelectionEvent e)
             {
                 indexName = listIndexNames.get(combo.getSelectionIndex());
-                computeCmd();
+                updateSQL();
             }
         });
         return combo;
@@ -405,7 +309,7 @@ public class DB2TableReorgDialog extends Dialog {
             public void widgetSelected(SelectionEvent e)
             {
                 tempTablespace = listTempTsNames.get(combo.getSelectionIndex());
-                computeCmd();
+                updateSQL();
             }
         });
 
@@ -416,21 +320,64 @@ public class DB2TableReorgDialog extends Dialog {
     {
         final Combo combo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
         for (String tablespaceName : listTempTsNames) {
             combo.add(tablespaceName);
         }
-        combo.select(0);
+        if (!listTempTsNames.isEmpty()) {
+            combo.select(0);
+        }
         combo.setEnabled(false);
         combo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
                 lobsTablespace = listTempTsNames.get(combo.getSelectionIndex());
-                computeCmd();
+                updateSQL();
             }
         });
         return combo;
+    }
+
+    @Override
+    protected StringBuilder generateTableCommand(DB2Table db2Table)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("REORG TABLE ").append(db2Table.getFullQualifiedName());
+
+        if (dlgUseIndex.getSelection() && indexName != null) {
+            sb.append(" INDEX ").append(indexName);
+        }
+
+        if (dlgInplace.getSelection()) {
+            sb.append(" INPLACE");
+            if (dlgAccesReadOnly.getSelection()) {
+                sb.append(" ALLOW READ ACCESS");
+            }
+            sb.append(" START");
+            if (!(dlgTruncate.getSelection())) {
+                sb.append(" NO TRUNCATE TABLE");
+            }
+        } else {
+            if (dlgAccesNo.getSelection()) {
+                sb.append(" ALLOW NO ACCESS");
+            }
+            if (dlgUseTempTS.getSelection() && tempTablespace != null) {
+                sb.append(" USE ").append(tempTablespace);
+            }
+            if (dlgIndexScan.getSelection()) {
+                sb.append(" INDEXSCAN");
+            }
+            if (dlgReorgLobsTS.getSelection()) {
+                sb.append(" LONGLOBDATA");
+            }
+            if (dlgUseLobsTemp.getSelection() && lobsTablespace != null) {
+                sb.append(" USE ").append(lobsTablespace);
+            }
+            if (dlgResetDictionary.getSelection()) {
+                sb.append(" RESETDICTIONARY");
+            }
+        }
+        return sb;
     }
 
 }
