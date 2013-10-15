@@ -27,7 +27,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -84,7 +83,7 @@ public class DB2TableToolsHandler extends AbstractHandler {
                 if (event.getCommand().getId().equals(CMD_REORG_ID)) {
                     performReorg(activeShell, tables.get(0));
                 } else if (event.getCommand().getId().equals(CMD_REORGIX_ID)) {
-                    performReorgIx(activeShell, tables.get(0));
+                    performReorgIx(activePart.getSite(), dataSource, tables);
                 } else if (event.getCommand().getId().equals(CMD_RUNSTATS_ID)) {
                     performRunstats(activePart.getSite(), dataSource, tables);
                 }
@@ -141,38 +140,27 @@ public class DB2TableToolsHandler extends AbstractHandler {
         UIUtils.showMessageBox(shell, "OK", "REORG OK..", SWT.ICON_INFORMATION);
     }
 
-    private void performReorgIx(Shell shell, final DB2Table db2Table) throws InvocationTargetException, InterruptedException
+    private void performReorgIx(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables)
     {
-        DB2TableReorgIndexDialog dialog = new DB2TableReorgIndexDialog(shell, db2Table);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return;
-        }
-
-        final String sql = dialog.getCmdText();
-
-        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+        DB2TableReorgIndexDialog2 dialog = new DB2TableReorgIndexDialog2(partSite, dataSource, tables);
+        dialog.open();
+        dialog.setOnSuccess(new Runnable() {
             @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            public void run()
             {
-                try {
-                    DB2Utils.callAdminCmd(monitor, db2Table.getDataSource(), sql);
-                } catch (SQLException e) {
-                    throw new InvocationTargetException(e);
-                }
+                UIUtils.showMessageBox(partSite.getShell(), "OK", "ReorgIx finished", SWT.ICON_INFORMATION);
             }
         });
-        UIUtils.showMessageBox(shell, "OK", "REORG OK..", SWT.ICON_INFORMATION);
     }
 
-    private void performRunstats(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables) throws InvocationTargetException, InterruptedException
+    private void performRunstats(final IWorkbenchPartSite partSite, DB2DataSource dataSource, final Collection<DB2Table> tables)
     {
-
         DB2TableRunstatsDialog2 dialog = new DB2TableRunstatsDialog2(partSite, dataSource, tables);
         dialog.setOnSuccess(new Runnable() {
             @Override
             public void run()
             {
-                UIUtils.showMessageBox(partSite.getShell(), "OK", "Runstats OK..", SWT.ICON_INFORMATION);
+                UIUtils.showMessageBox(partSite.getShell(), "OK", "Runstats finished", SWT.ICON_INFORMATION);
             }
         });
         dialog.open();
