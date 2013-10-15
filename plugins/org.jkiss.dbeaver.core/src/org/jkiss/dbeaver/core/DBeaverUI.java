@@ -6,6 +6,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.source.ISharedTextColors;
@@ -180,6 +181,30 @@ public class DBeaverUI {
                     runnable.run(RuntimeUtils.makeMonitor(monitor));
                 }
             });
+    }
+
+    public static void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InvocationTargetException
+    {
+        try {
+            IRunnableContext runnableContext;
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
+            if (workbenchWindow != null) {
+                runnableContext = new ProgressMonitorDialog(workbench.getActiveWorkbenchWindow().getShell());
+            } else {
+                runnableContext = workbench.getProgressService();
+            }
+            runnableContext.run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    runnable.run(RuntimeUtils.makeMonitor(monitor));
+                }
+            });
+        } catch (InterruptedException e) {
+            // do nothing
+        }
     }
 
     public static void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable)
