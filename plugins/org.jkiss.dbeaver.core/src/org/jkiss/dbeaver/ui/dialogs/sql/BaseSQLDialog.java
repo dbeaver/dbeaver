@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
@@ -78,8 +79,16 @@ public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvide
 
     protected Composite createSQLPanel(Composite parent)
     {
-        Composite editorPH = new Composite(parent, SWT.BORDER);
+        Composite panel = UIUtils.createPlaceholder(parent, 1);
+        panel.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        UIUtils.createControlLabel(panel, "SQL Preview");
+//        new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        Composite editorPH = new Composite(panel, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.verticalIndent = 3;
+        gd.horizontalSpan = 1;
         gd.minimumHeight = 100;
         gd.minimumWidth = 100;
         editorPH.setLayoutData(gd);
@@ -109,7 +118,8 @@ public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvide
                 sqlViewer.dispose();
             }
         });
-        return editorPH;
+
+        return panel;
     }
 
     protected abstract String getSQLText();
