@@ -144,7 +144,7 @@
                                     <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column"/>
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ViewBaseDep" label="%tree.mqtdeps.node.name" icon="#dependencies" description="MQT Dependencies" navigable="false">
-                                   <items label="%tree.mqtdep.node.name" path="MQTdep" property="MQTDeps" icon="#mqtdep"/>
+                                   <items label="%tree.mqtdep.node.name" path="viewdep" property="viewDeps" icon="#mqtdep"/>
                                 </folder>
                             </items>
                         </folder>
