@@ -193,36 +193,57 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.dataType = dataType;
     }
 
-    @Property(viewable = true, order = 40)
-    public Boolean getIdentity()
+    @Override
+    @Property(viewable = true, order = 38)
+    public long getMaxLength()
     {
-        return identity;
-    }
-
-    @Property(viewable = true, order = 41)
-    public Boolean getGenerated()
-    {
-        return generated;
-    }
-
-    @Property(viewable = false, order = 42)
-    public String getGeneratedText()
-    {
-        return generatedText;
+        return super.getMaxLength();
     }
 
     @Override
-    @Property(viewable = true, order = 43, editable = true, updatable = true)
+    @Property(viewable = true, order = 39)
+    public int getScale()
+    {
+        return super.getScale();
+    }
+
+    @Override
+    @Property(viewable = false, order = 40)
+    public int getPrecision()
+    {
+        return super.getPrecision();
+    }
+
+    @Override
+    @Property(viewable = true, order = 41, editable = true, updatable = true)
     public boolean isRequired()
     {
         return super.isRequired();
     }
 
     @Override
-    @Property(viewable = true, order = 44)
-    public int getPrecision()
+    @Property(viewable = true, order = 42, editable = true)
+    public String getDefaultValue()
     {
-        return super.getPrecision();
+        return super.getDefaultValue();
+    }
+
+    @Property(viewable = true, order = 43)
+    public Boolean getGenerated()
+    {
+        return generated;
+    }
+
+    @Property(viewable = false, order = 44)
+    public String getGeneratedText()
+    {
+        return generatedText;
+    }
+
+    @Property(viewable = true, order = 45)
+    public Boolean getIdentity()
+    {
+        return identity;
     }
 
     @Override
