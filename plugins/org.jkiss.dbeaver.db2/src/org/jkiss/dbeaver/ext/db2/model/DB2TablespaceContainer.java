@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -34,6 +35,8 @@ public class DB2TablespaceContainer extends DB2Object<DB2Tablespace> {
 
     private Long containerId;
     private String containerType;
+    private Long totalPages;
+    private Long usablePages;
 
     // -----------------------
     // Constructors
@@ -47,6 +50,8 @@ public class DB2TablespaceContainer extends DB2Object<DB2Tablespace> {
 
         this.containerId = JDBCUtils.safeGetLong(dbResult, "CONTAINER_ID");
         this.containerType = JDBCUtils.safeGetString(dbResult, "CONTAINER_TYPE");
+        this.totalPages = JDBCUtils.safeGetLong(dbResult, "TOTAL_PAGES");
+        this.usablePages = JDBCUtils.safeGetLong(dbResult, "USABLE_PAGES");
     }
 
     public DB2Tablespace getTablespace()
@@ -71,20 +76,22 @@ public class DB2TablespaceContainer extends DB2Object<DB2Tablespace> {
         return containerId;
     }
 
-    public void setContainerId(Long containerId)
-    {
-        this.containerId = containerId;
-    }
-
     @Property(viewable = true, editable = false, order = 3)
     public String getContainerType()
     {
         return containerType;
     }
 
-    public void setContainerType(String containerType)
+    @Property(viewable = true, editable = false, order = 4, category = DB2Constants.CAT_STATS)
+    public Long getTotalPages()
     {
-        this.containerType = containerType;
+        return totalPages;
+    }
+
+    @Property(viewable = true, editable = false, order = 5, category = DB2Constants.CAT_STATS)
+    public Long getUsablePages()
+    {
+        return usablePages;
     }
 
 }
