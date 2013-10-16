@@ -267,7 +267,11 @@
                             </folder>
                         </items>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2StorageGroup" label="%tree.storagegroups.node.name" icon="#folder_storagegroup" description="Storage Groups">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2StorageGroup" 
+                            label="%tree.storagegroups.node.name" 
+                            icon="#folder_storagegroup" 
+                            description="Storage Groups"
+                            visibleIf="object.dataSource.atLeastV10_1">
                         <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="#storagegroup"/>
                     </folder>
                 </folder>
