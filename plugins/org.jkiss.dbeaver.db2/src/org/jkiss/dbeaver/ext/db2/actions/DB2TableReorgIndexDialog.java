@@ -92,7 +92,7 @@ public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
         dlgCleanupKeysAndpages.setText(DB2Messages.dialog_table_tools_reorgix_options_cleanup_keys);
         dlgCleanupKeysAndpages.addSelectionListener(changeListener);
         dlgCleanupPagesOnly = new Button(groupCleanup, SWT.RADIO);
-        dlgCleanupPagesOnly.setText(DB2Messages.dialog_table_tools_reorgix_options_cleanu_pages);
+        dlgCleanupPagesOnly.setText(DB2Messages.dialog_table_tools_reorgix_options_cleanup_pages);
         dlgCleanupPagesOnly.addSelectionListener(changeListener);
     }
 
