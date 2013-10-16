@@ -21,7 +21,13 @@ package org.jkiss.dbeaver.ext.db2.manager;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.db2.model.*;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -179,7 +185,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     @Override
     public IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
-        String sql = String.format(SQL_RENAME_TABLE, command.getObject().getName(), command.getNewName());
+        String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullQualifiedName(), command.getNewName());
         IDatabasePersistAction[] actions = new IDatabasePersistAction[1];
         actions[0] = new AbstractDatabasePersistAction(CMD_RENAME, sql);
         return actions;
