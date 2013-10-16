@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
-import org.jkiss.dbeaver.ext.db2.model.security.DB2CurrentUserPrivileges;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
