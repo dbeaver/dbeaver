@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import com.ibm.db2.jcc.DB2Types;
+
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -360,10 +362,10 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, null, null, null));
         PREDEFINED_TYPES.put("CHARACTER", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 254, null, null));
         PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.LOB, Types.CLOB, 2147483647, null, null));
-        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, null, null, null));
+        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, DB2Types.CURSOR, null, null, null));
         PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.DATE, 10, null, null));
         PREDEFINED_TYPES.put("DBCLOB", new TypeDesc(DBPDataKind.LOB, Types.CLOB, 1073741823, null, null));
-        PREDEFINED_TYPES.put("DECFLOAT", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 34, 0, 0));
+        PREDEFINED_TYPES.put("DECFLOAT", new TypeDesc(DBPDataKind.NUMERIC, DB2Types.DECFLOAT, 34, 0, 0));
         PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 31, 0, 31));
         PREDEFINED_TYPES.put("DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 53, 0, 0));
         PREDEFINED_TYPES.put("GRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 127, null, null));
