@@ -98,6 +98,7 @@ public class OracleConstants {
         "Unique row identifier");
 
     public static final String PREF_EXPLAIN_TABLE_NAME = "oracle.explain.table";
+    public static final String PREF_SUPPORT_ROWID = "oracle.support.rowid";
 
     public static final String[] ADVANCED_KEYWORDS = {
         "PACKAGE",
