@@ -16,8 +16,6 @@ Improvements:
   - Optionnaly seperate some kinds of DB2Tables into distinct sub types:
     - Temporary Tables
     - Hierachies..
-  - DB2DataType
-    - handle super types correctly
   
 Serge to check?
   - looked for icon sessions.png used by myslq and oracle, didn't find it
@@ -33,6 +31,8 @@ Missing Menu Actions
     - call sysproc.admin_cmd("backup...");
     - display current locks
     - display Server OS INFO
+  - DB2Table
+    - set Integrity
 
 Missing metadata:
 - DB2TablePartition
@@ -51,4 +51,7 @@ Missing relationships (All nice to have):
    - Tables     -> referenced by aliases (that could be in a different schema...)
    - Tables     -> referenced by indexes  (that could be in a different schema...)
    - Sequences  -> referenced by aliases (that could be in a different schema...)
+   
+All Objects:
+- privileges   
       

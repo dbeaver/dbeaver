@@ -133,6 +133,11 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
         return typeCache.getObjects(monitor, this);
     }
 
+    public DB2DataType getType(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return typeCache.getObject(monitor, this, name);
+    }
+
     @Association
     public Collection<DB2Variable> getVariables(DBRProgressMonitor monitor) throws DBException
     {
