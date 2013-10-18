@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.File;
 import java.net.URL;
@@ -102,9 +103,11 @@ public class DBeaverApplication implements IApplication
             e.printStackTrace();
         }
 */
-        System.out.println("DBeaver is starting"); //$NON-NLS-1$
+        System.out.println(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
         System.out.println("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-        System.out.println("Workspace path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+        System.out.println("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+        System.out.println("Workspace path: '" + DBeaverCore.getInstance().getWorkspace().getRoot().getLocation() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+
         PlatformUI.getPreferenceStore().setDefault(
             IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,
             ApplicationWorkbenchAdvisor.DBEAVER_SCHEME_NAME);

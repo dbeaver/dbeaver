@@ -175,6 +175,11 @@
         </colorDefinition-->
     </extension>
 
+
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.erd.ERDPreferencesInitializer"/>
+    </extension>
+
     <extension point="org.eclipse.ui.preferencePages">
         <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="%pref.page.name.erd.editor"/>
     </extension>
