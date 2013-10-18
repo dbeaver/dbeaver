@@ -423,6 +423,10 @@
         </editor>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.ext.oracle.OraclePreferencesInitializer"/>
+    </extension>
+
     <extension point="org.eclipse.ui.propertyPages">
         <page category="org.jkiss.dbeaver.preferences.main.common" id="org.jkiss.dbeaver.preferences.oracle.general" class="org.jkiss.dbeaver.ext.oracle.views.PrefPageOracle" name="Oracle">
             <enabledWhen>
