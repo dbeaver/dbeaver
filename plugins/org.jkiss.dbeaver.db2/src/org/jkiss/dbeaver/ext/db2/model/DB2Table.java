@@ -27,7 +27,14 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TableTablespaceListProvider;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
-import org.jkiss.dbeaver.ext.db2.model.dict.*;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableAccessMode;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCompressionMode;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableDropRule;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableLockSize;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionMode;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -37,11 +44,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -56,6 +63,8 @@ import java.util.Collection;
 public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject {
 
     private static final Log log = LogFactory.getLog(DB2Table.class);
+
+    private static final String LINE_SEPARATOR = ContentUtils.getDefaultLineSeparator();
 
     private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS  WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
 
@@ -183,8 +192,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     @Override
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
-        // TODO DF: How to get line separator ?
-        return DB2Utils.generateDDLforTable(monitor, ";", getDataSource(), this);
+        return DB2Utils.generateDDLforTable(monitor, LINE_SEPARATOR, getDataSource(), this);
     }
 
     // -----------------
