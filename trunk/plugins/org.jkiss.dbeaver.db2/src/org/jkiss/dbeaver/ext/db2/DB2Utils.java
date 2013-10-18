@@ -130,19 +130,25 @@ public class DB2Utils {
     // Generate DDL
     // ------------------------
 
+    // DF: Use "Undocumented" SYSPROC.DB2LK_GENERATE_DDL stored proc
+    // Ref to db2look :
+    // http://pic.dhe.ibm.com/infocenter/db2luw/v10r5/topic/com.ibm.db2.luw.admin.cmd.doc/doc/r0002051.html
+    //
+    // Options of db2look that do not seem to work: -dp . "-a" seems to work on v10.1+, "-l" seems OK in all versions
+    //
     // TODO DF: Tables in SYSTOOLS tables must exist first
     public static String generateDDLforTable(DBRProgressMonitor monitor, String statementDelimiter, DB2DataSource dataSource,
         DB2Table db2Table) throws DBException
     {
         LOG.debug("Generate DDL for " + db2Table.getFullQualifiedName());
 
-        monitor.beginTask("Generating DDL", 1);
+        // The DB2LK_GENERATE_DDL SP does not generate DDL for System Tables for some reason...
+        // As a workaround, dipslay a message to the end-user
+        if (db2Table.getSchema().isSystem()) {
+            return DB2Messages.no_ddl_for_system_tables;
+        }
 
-        // DF: Use "Undocumented" SYSPROC.DB2LK_GENERATE_DDL stored proc
-        // Ref to db2look :
-        // http://pic.dhe.ibm.com/infocenter/db2luw/v10r5/topic/com.ibm.db2.luw.admin.cmd.doc/doc/r0002051.html
-        //
-        // Option that do not seem to work: -dp -a ...
+        monitor.beginTask("Generating DDL", 3);
 
         Integer token = 0;
         StringBuilder sb = new StringBuilder(2048);
@@ -163,6 +169,7 @@ public class DB2Utils {
             }
 
             LOG.debug("Token = " + token);
+            monitor.worked(1);
 
             // Read result
             JDBCPreparedStatement stmtSel = session.prepareStatement(SEL_DB2LK);
@@ -187,6 +194,8 @@ public class DB2Utils {
                 stmtSel.close();
             }
 
+            monitor.worked(2);
+
             // Clean
             JDBCCallableStatement stmtSPClean = session.prepareCall(CALL_DB2LK_CLEAN);
             try {
@@ -196,6 +205,7 @@ public class DB2Utils {
                 stmtSPClean.close();
             }
 
+            monitor.worked(3);
             LOG.debug("Terminated OK");
 
             return sb.toString();

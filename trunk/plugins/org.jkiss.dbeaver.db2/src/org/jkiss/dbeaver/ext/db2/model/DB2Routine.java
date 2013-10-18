@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineParmsCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
@@ -192,7 +193,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
         if ((language != null) && (language.equals(DB2RoutineLanguage.SQL))) {
             return SQLUtils.formatSQL(getDataSource(), text);
         } else {
-            return "N/A";
+            return DB2Messages.no_ddl_for_nonsql_routines;
         }
     }
 
