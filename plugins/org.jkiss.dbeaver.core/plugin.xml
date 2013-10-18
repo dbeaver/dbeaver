@@ -1679,6 +1679,9 @@
 
 
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.core.DBeaverPreferencesInitializer"/>
+    </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
         <page id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral" name="Common Settings">
