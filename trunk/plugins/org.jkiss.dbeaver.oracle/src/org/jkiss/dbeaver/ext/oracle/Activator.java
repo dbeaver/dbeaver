@@ -20,6 +20,9 @@ package org.jkiss.dbeaver.ext.oracle;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -47,7 +50,9 @@ public class Activator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-	}
+        RuntimeUtils.setDefaultPreferenceValue(
+            DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
+    }
 
 	/*
 	 * (non-Javadoc)

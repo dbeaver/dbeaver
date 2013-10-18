@@ -166,7 +166,7 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
     {
-        if (CommonUtils.isEmpty(this.iotType)) {
+        if (CommonUtils.isEmpty(this.iotType) && getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_SUPPORT_ROWID)) {
             // IOT tables have index id instead of ROWID
             return new DBDPseudoAttribute[] {
                 OracleConstants.PSEUDO_ATTR_ROWID

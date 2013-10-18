@@ -19,20 +19,13 @@
 package org.jkiss.dbeaver.ext.oracle.views;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
@@ -44,6 +37,7 @@ public class PrefPageOracle extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.oracle.general"; //$NON-NLS-1$
 
     private Text explainTableText;
+    private Button rowidSupportCheck;
 
     public PrefPageOracle()
     {
@@ -56,7 +50,9 @@ public class PrefPageOracle extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(OracleConstants.PREF_EXPLAIN_TABLE_NAME)
+            store.contains(OracleConstants.PREF_EXPLAIN_TABLE_NAME) ||
+            store.contains(OracleConstants.PREF_SUPPORT_ROWID)
+
             ;
     }
 
@@ -76,6 +72,11 @@ public class PrefPageOracle extends TargetPrefPage
             explainTableText = UIUtils.createLabelText(planGroup, "Plan table", "");
         }
 
+        {
+            Group planGroup = UIUtils.createControlGroup(composite, "Misc", 2, GridData.FILL_HORIZONTAL, 0);
+            rowidSupportCheck = UIUtils.createLabelCheckbox(planGroup, "Use ROWID to identify rows", true);
+        }
+
         return composite;
     }
 
@@ -83,12 +84,14 @@ public class PrefPageOracle extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         explainTableText.setText(store.getString(OracleConstants.PREF_EXPLAIN_TABLE_NAME));
+        rowidSupportCheck.setSelection(store.getBoolean(OracleConstants.PREF_SUPPORT_ROWID));
     }
 
     @Override
     protected void savePreferences(IPreferenceStore store)
     {
         store.setValue(OracleConstants.PREF_EXPLAIN_TABLE_NAME, explainTableText.getText());
+        store.setValue(OracleConstants.PREF_SUPPORT_ROWID, rowidSupportCheck.getSelection());
         RuntimeUtils.savePreferenceStore(store);
     }
 
@@ -96,6 +99,7 @@ public class PrefPageOracle extends TargetPrefPage
     protected void clearPreferences(IPreferenceStore store)
     {
         store.setToDefault(OracleConstants.PREF_EXPLAIN_TABLE_NAME);
+        store.setToDefault(OracleConstants.PREF_SUPPORT_ROWID);
     }
 
     @Override
