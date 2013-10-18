@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -503,6 +503,9 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     private static String normalizeTypeName(String typeName) {
+        if (CommonUtils.isEmpty(typeName)) {
+            return "";
+        }
         for (;;) {
             int modIndex = typeName.indexOf('(');
             if (modIndex == -1) {

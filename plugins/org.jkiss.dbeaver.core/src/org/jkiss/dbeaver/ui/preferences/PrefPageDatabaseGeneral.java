@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -37,6 +38,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
+
+    private Button automaticUpdateCheck;
 
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
@@ -61,6 +64,11 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     protected Control createContents(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+
+        {
+            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+            automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, false);
+        }
 
         // Agent settings
         {
@@ -88,6 +96,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
+        automaticUpdateCheck.setSelection(store.getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK));
         longOperationsCheck.setSelection(store.getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(store.getInt(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT));
         expandOnConnectCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT));
@@ -100,6 +109,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
+        store.setValue(PrefConstants.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
         //store.setValue(PrefConstants.AGENT_ENABLED, agentEnabledCheck.getSelection());
         store.setValue(PrefConstants.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
         store.setValue(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
