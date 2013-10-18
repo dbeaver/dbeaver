@@ -436,7 +436,7 @@ public class DB2Utils {
         return null;
     }
 
-    public static DB2TableColumn findColumnxBySchemaNameAndTableNameAndname(DBRProgressMonitor monitor,
+    public static DB2TableColumn findColumnxBySchemaNameAndTableNameAndName(DBRProgressMonitor monitor,
         DB2DataSource db2DataSource, String db2SchemaName, String db2TableName, String db2ColumnName) throws DBException
     {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);

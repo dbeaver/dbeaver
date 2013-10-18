@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
 import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -222,8 +222,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
     }
 
     @Override
-    protected DB2AuthBase fetchObject(JDBCSession session, DB2Grantee db2Grantee, ResultSet resultSet)
-        throws SQLException, DBException
+    protected DB2AuthBase fetchObject(JDBCSession session, DB2Grantee db2Grantee, ResultSet resultSet) throws SQLException,
+        DBException
     {
         DB2DataSource db2DataSource = db2Grantee.getDataSource();
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -236,7 +236,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         switch (objectType) {
         case COLUMN:
             String columnName = JDBCUtils.safeGetStringTrimmed(resultSet, "USAGEAUTH");
-            DB2TableColumn db2TableColumn = DB2Utils.findColumnxBySchemaNameAndTableNameAndname(monitor, db2DataSource,
+            DB2TableColumn db2TableColumn = DB2Utils.findColumnxBySchemaNameAndTableNameAndName(monitor, db2DataSource,
                 objectSchemaName, objectName, columnName);
             return new DB2AuthColumn(monitor, db2Grantee, db2TableColumn, resultSet);
 
