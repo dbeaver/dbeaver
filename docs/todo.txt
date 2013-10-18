@@ -1,9 +1,9 @@
 Major:
 
-1. Lazy loading check
-2. SQL preview dialog
-3. Async autocomplete
-4. ROWID support in DB2
+1. Async autocomplete
+2. ROWID support in DB2
+3. WMI install problem
+4. Disable editors (create/delete too) for child objects which do not have parent editor (like view columns)
 
 Minor:
 
