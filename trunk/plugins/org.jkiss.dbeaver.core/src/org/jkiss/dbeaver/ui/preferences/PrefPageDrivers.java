@@ -50,7 +50,6 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers"; //$NON-NLS-1$
 
-    private Button automaticUpdateCheck;
     private Text proxyHostText;
     private Spinner proxyPortSpinner;
     private Text proxyUserText;
@@ -75,9 +74,6 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     protected Control createContents(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
-
-        Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
-        automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, false);
 
         Group proxyObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_http_proxy, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
         proxyHostText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_host, null); //$NON-NLS-2$
@@ -169,7 +165,6 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        automaticUpdateCheck.setSelection(store.getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK));
         proxyHostText.setText(store.getString(PrefConstants.UI_PROXY_HOST));
         proxyPortSpinner.setSelection(store.getInt(PrefConstants.UI_PROXY_PORT));
         proxyUserText.setText(store.getString(PrefConstants.UI_PROXY_USER));
@@ -195,7 +190,6 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     public boolean performOk()
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        store.setValue(PrefConstants.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
         store.setValue(PrefConstants.UI_PROXY_HOST, proxyHostText.getText());
         store.setValue(PrefConstants.UI_PROXY_PORT, proxyPortSpinner.getSelection());
         store.setValue(PrefConstants.UI_PROXY_USER, proxyUserText.getText());
