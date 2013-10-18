@@ -67,7 +67,9 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     private String owner;
     private DB2OwnerType ownerType;
 
-    private String sourceSchema;
+    // private String moduleName;
+
+    private String sourceSchemaName;
     private String sourceModuleName;
     private String sourceName;
 
@@ -86,15 +88,18 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     // Constructors
     // -----------------------
 
-    public DB2DataType(DBSObject owner, ResultSet dbResult)
+    public DB2DataType(DBSObject owner, ResultSet dbResult) throws DBException
     {
         super(owner, JDBCUtils.safeGetStringTrimmed(dbResult, "TYPENAME"), true);
+
+        DB2DataSource db2DataSource = (DB2DataSource) owner.getDataSource();
 
         this.db2TypeId = JDBCUtils.safeGetInteger(dbResult, "TYPEID");
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
-        this.sourceSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCESCHEMA");
+        // this.moduleName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPEMODULENAME");
+        this.sourceSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCESCHEMA");
         this.sourceModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCEMODULENAME");
         this.sourceName = JDBCUtils.safeGetString(dbResult, "SOURCENAME");
         this.metaType = CommonUtils.valueOf(DB2DataTypeMetaType.class, JDBCUtils.safeGetString(dbResult, "METATYPE"));
@@ -104,7 +109,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        if (((DB2DataSource) owner.getDataSource()).isAtLeastV10_5()) {
+        if (db2DataSource.isAtLeastV10_5()) {
             this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
             this.constraintText = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TEXT");
         }
@@ -118,7 +123,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
             } else {
                 String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
                 try {
-                    this.db2Schema = ((DB2DataSource) owner).getSchema(VoidProgressMonitor.INSTANCE, schemaName);
+                    this.db2Schema = db2DataSource.getSchema(VoidProgressMonitor.INSTANCE, schemaName);
                 } catch (DBException e) {
                     LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??");
                 }
@@ -133,16 +138,25 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         }
 
         // Determine DBSKind and javax.sql.Types
-        // TODO DF: not 100% accurate...
         TypeDesc tempTypeDesc;
-        tempTypeDesc = PREDEFINED_TYPES.get(name);
-        if (tempTypeDesc == null) {
-            LOG.debug(name + " is not a predefined type. Trying with source type.");
-            tempTypeDesc = PREDEFINED_TYPES.get(sourceName);
-            if (tempTypeDesc != null) {
-                LOG.debug(name + " DBPDataKind set to source type : " + tempTypeDesc.dataKind);
+
+        // If the dataType is a SYSIBM dataType, get it
+        if (db2Schema.getName().equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA)) {
+            tempTypeDesc = PREDEFINED_TYPES.get(name);
+        } else {
+
+            // This is a UDT
+            // If the UDT is based on a SYSIBM dataType, get it
+            if ((sourceSchemaName != null) && (sourceSchemaName.equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA))) {
+                LOG.debug(name + " is a User Defined Type base on a System Data Type.");
+                tempTypeDesc = PREDEFINED_TYPES.get(sourceName);
             } else {
-                LOG.warn("No predefined type found neither from source. Set its DBPDataKind to UNKNOWN/OTHER");
+                // This UDT is based on another UDT, set it's TypeDesc to unkknown as looking for the base type recursively
+                // could lead to infinite loops:
+                // load corresponding module ->module load sits UDT->come back here to instanciate the UDT -> look for type in
+                // module etc.
+                // It would have to be done recursively with a direct SQL. No real benefit here..
+                LOG.debug(name + " is a User Defined Type base on another UDT. Set its DBPDataKind to UNKNOWN/OTHER");
                 tempTypeDesc = new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, null, null, null);
             }
         }
@@ -274,9 +288,9 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     }
 
     @Property(viewable = false, editable = false)
-    public String getSourceSchema()
+    public String getSourceSchemaName()
     {
-        return sourceSchema;
+        return sourceSchemaName;
     }
 
     @Property(viewable = false, editable = false)
