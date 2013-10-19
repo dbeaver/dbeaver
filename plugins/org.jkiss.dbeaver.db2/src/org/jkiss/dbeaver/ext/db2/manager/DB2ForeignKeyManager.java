@@ -67,6 +67,12 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
     // -----------------
 
     @Override
+    public boolean canEditObject(DB2TableForeignKey object)
+    {
+        return false;
+    }
+
+    @Override
     public DBSObjectCache<? extends DBSObject, DB2TableForeignKey> getObjectsCache(DB2TableForeignKey object)
     {
         return object.getParentObject().getSchema().getAssociationCache();

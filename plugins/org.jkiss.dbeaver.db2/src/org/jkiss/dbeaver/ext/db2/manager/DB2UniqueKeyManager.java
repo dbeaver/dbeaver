@@ -59,6 +59,12 @@ public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey
     // -----------------
 
     @Override
+    public boolean canEditObject(DB2TableUniqueKey object)
+    {
+        return false;
+    }
+
+    @Override
     public DBSObjectCache<? extends DBSObject, DB2TableUniqueKey> getObjectsCache(DB2TableUniqueKey object)
     {
         return object.getParentObject().getSchema().getConstraintCache();
@@ -72,9 +78,8 @@ public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey
     public DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table db2Table,
         Object from)
     {
-        EditConstraintDialog editDialog =
-            new EditConstraintDialog(workbenchWindow.getShell(), DB2Messages.edit_db2_constraint_manager_dialog_title, db2Table,
-                CONS_TYPES);
+        EditConstraintDialog editDialog = new EditConstraintDialog(workbenchWindow.getShell(),
+            DB2Messages.edit_db2_constraint_manager_dialog_title, db2Table, CONS_TYPES);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -89,8 +94,8 @@ public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey
 
         DB2TableUniqueKey constraint = new DB2TableUniqueKey(db2Table, editDialog.getConstraintType());
 
-        String constraintName =
-            DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(db2Table.getName()) + suffix);
+        String constraintName = DBObjectNameCaseTransformer.transformName(constraint,
+            CommonUtils.escapeIdentifier(db2Table.getName()) + suffix);
         constraint.setName(constraintName);
 
         List<DB2TableKeyColumn> columns = new ArrayList<DB2TableKeyColumn>(editDialog.getSelectedColumns().size());
