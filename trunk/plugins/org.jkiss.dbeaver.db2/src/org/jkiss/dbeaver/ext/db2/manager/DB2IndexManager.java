@@ -62,6 +62,12 @@ public class DB2IndexManager extends JDBCIndexManager<DB2Index, DB2Table> {
     }
 
     @Override
+    public boolean canEditObject(DB2Index object)
+    {
+        return false;
+    }
+
+    @Override
     public DBSObjectCache<? extends DBSObject, DB2Index> getObjectsCache(DB2Index object)
     {
         return object.getParentObject().getSchema().getIndexCache();

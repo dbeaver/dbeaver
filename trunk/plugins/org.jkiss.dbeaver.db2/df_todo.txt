@@ -3,11 +3,10 @@ TODO:
 - Go through all "TODO" markers
 
 Current problems:
-- Columns are editable for non editable objects (Views, NickName, MQT..)
 - For table actions, in some case the confirmation dialog is not shown.
   -> seems to happen when the execution time is very short (<10ms?)
 - If the user create an object in lower case, many funtion do not work
-- In some cases DDL for table does not work 
+- In some cases, for some unknown reason DDL for table does not work 
 
 Improvements:
   - Enhance Search
