@@ -77,12 +77,15 @@ public class ObjectPropertyTester extends PropertyTester
                     node = node.getParentNode();
                 }
             }
+            DBNContainer container = null;
             if (node instanceof DBNContainer) {
                 // Try to detect child type
                 objectType = ((DBNContainer)node).getChildrenClass();
-            }/* else if (node.isManagable() && node instanceof DBSWrapper) {
-                objectType = ((DBSWrapper)node).getObject() == null ? null : ((DBSWrapper)node).getObject().getClass();
-            }*/
+                container = (DBNContainer) node;
+            } else {
+                return false;
+            }
+
             if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
                 return false;
             }
@@ -93,7 +96,7 @@ public class ObjectPropertyTester extends PropertyTester
             if (objectMaker == null) {
                 return false;
             }
-            if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_CREATE_UNSUPPORTED) != 0) {
+            if (!objectMaker.canCreateObject(container.getValueObject())) {
                 return false;
             }
             if (property.equals(PROP_CAN_CREATE)) {
@@ -125,8 +128,7 @@ public class ObjectPropertyTester extends PropertyTester
                     return false;
                 }
                 DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
-                return objectMaker != null &&
-                    (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_DELETE_UNSUPPORTED) == 0;
+                return objectMaker != null && objectMaker.canDeleteObject(object);
             } else if (node instanceof DBNResource) {
                 if ((((DBNResource)node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
                     return true;

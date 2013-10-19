@@ -67,6 +67,18 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     }
 
     @Override
+    public boolean canCreateObject(CONTAINER_TYPE parent)
+    {
+        return true;
+    }
+
+    @Override
+    public boolean canDeleteObject(OBJECT_TYPE object)
+    {
+        return true;
+    }
+
+    @Override
     public final OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
         OBJECT_TYPE newObject = createDatabaseObject(workbenchWindow, commandContext, parent, copyFrom);
