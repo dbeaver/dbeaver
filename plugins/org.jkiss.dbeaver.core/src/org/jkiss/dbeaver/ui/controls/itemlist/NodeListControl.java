@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -354,9 +355,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             if (valueObject == null) {
                 return false;
             }
-            return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(curClass, DBEObjectEditor.class) != null;
-//            DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(valueObject.getClass(), DBEStructEditor.class);
-//            return structEditor != null && RuntimeUtils.isTypeSupported(curClass, structEditor.getChildTypes());
+            DBEObjectEditor objectEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(curClass, DBEObjectEditor.class);
+            return objectEditor != null && editableValue instanceof DBPObject && objectEditor.canEditObject((DBPObject) editableValue);
         }
 
         @Override

@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
  */
 public interface DBEObjectEditor <OBJECT_TYPE extends DBPObject> extends DBEObjectManager<OBJECT_TYPE> {
 
+    boolean canEditObject(OBJECT_TYPE object);
+
     DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property);
 
 }

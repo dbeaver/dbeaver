@@ -52,7 +52,9 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     @Override
     public boolean isEditable(Object object)
     {
-        return commandContext != null && getObjectEditor() != null;
+        DBEObjectEditor objectEditor = getObjectEditor();
+        return commandContext != null && objectEditor != null &&
+            object instanceof DBPObject && objectEditor.canEditObject((DBPObject) object);
     }
 
     private DBEObjectEditor getObjectEditor()
