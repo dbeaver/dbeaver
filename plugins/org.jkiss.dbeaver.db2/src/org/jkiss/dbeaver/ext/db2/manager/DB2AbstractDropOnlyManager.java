@@ -46,6 +46,12 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
         return false;
     }
 
+    @Override
+    public boolean canEditObject(OBJECT_TYPE object)
+    {
+        return false;
+    }
+
     protected abstract String buildDropStatement(OBJECT_TYPE object);
 
     @Override
