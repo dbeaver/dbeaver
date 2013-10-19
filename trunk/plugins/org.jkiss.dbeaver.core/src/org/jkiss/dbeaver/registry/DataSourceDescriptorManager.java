@@ -50,6 +50,18 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
     }
 
     @Override
+    public boolean canCreateObject(DataSourceRegistry parent)
+    {
+        return true;
+    }
+
+    @Override
+    public boolean canDeleteObject(DataSourceDescriptor object)
+    {
+        return true;
+    }
+
+    @Override
     public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
     {
         if (copyFrom != null) {

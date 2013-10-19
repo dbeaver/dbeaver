@@ -43,7 +43,20 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     @Override
     public boolean canEditObject(OBJECT_TYPE object)
     {
-        return !object.getParentObject().isView();
+        TABLE_TYPE table = object.getParentObject();
+        return table != null && !table.isView();
+    }
+
+    @Override
+    public boolean canCreateObject(TABLE_TYPE parent)
+    {
+        return parent != null && !parent.isView();
+    }
+
+    @Override
+    public boolean canDeleteObject(OBJECT_TYPE object)
+    {
+        return canEditObject(object);
     }
 
     @Override

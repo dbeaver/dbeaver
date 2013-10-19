@@ -55,6 +55,18 @@ public class MSSQLUserManager extends JDBCObjectManager<MSSQLUser> implements DB
     }
 
     @Override
+    public boolean canCreateObject(MSSQLDataSource parent)
+    {
+        return true;
+    }
+
+    @Override
+    public boolean canDeleteObject(MSSQLUser object)
+    {
+        return true;
+    }
+
+    @Override
     public MSSQLUser createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MSSQLDataSource parent, Object copyFrom)
     {
         MSSQLUser newUser = new MSSQLUser(parent, null);

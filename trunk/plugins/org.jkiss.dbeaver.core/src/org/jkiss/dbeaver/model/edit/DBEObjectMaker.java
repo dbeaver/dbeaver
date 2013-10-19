@@ -34,9 +34,6 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     public static final long FEATURE_CREATE_FROM_PASTE = 2;
     public static final long FEATURE_EDITOR_ON_CREATE = 4;
 
-    public static final long FEATURE_CREATE_UNSUPPORTED  = 8;
-    public static final long FEATURE_DELETE_UNSUPPORTED  = 16;
-
     long getMakerOptions();
 
     /**
@@ -47,14 +44,16 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      */
     DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object);
 
+    boolean canCreateObject(CONTAINER_TYPE parent);
+
+    boolean canDeleteObject(OBJECT_TYPE object);
+
     /**
      * Creates new object and sets it as manager's object.
      * New object shouldn't be persisted by this function - it just performs manager initialization.
      * Real object creation will be performed by saveChanges function.
      * Additionally implementation could add initial command(s) to this manager.
      * This function can be invoked only once per one manager.
-     *
-     *
      *
      * @param workbenchWindow workbench window
      * @param commandContext command context
