@@ -34,6 +34,12 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 public class WMINamespaceManager extends AbstractObjectManager<WMINamespace> implements DBEObjectEditor<WMINamespace> {
 
     @Override
+    public boolean canEditObject(WMINamespace object)
+    {
+        return false;
+    }
+
+    @Override
     public DBEPropertyHandler<WMINamespace> makePropertyHandler(WMINamespace object, IPropertyDescriptor property)
     {
         return null;
