@@ -46,7 +46,7 @@ public class DB2AliasManager extends DB2AbstractDropOnlyManager<DB2Alias, DB2Sch
         case TABLE:
             return String.format(SQL_DROP_TABLE, fullyQualifiedName);
         default:
-            throw new IllegalArgumentException(db2Alias.getType() + " as DB2AliasTYpe is not supported");
+            throw new IllegalArgumentException(db2Alias.getType() + " as DB2AliasType is not supported");
         }
     }
 
