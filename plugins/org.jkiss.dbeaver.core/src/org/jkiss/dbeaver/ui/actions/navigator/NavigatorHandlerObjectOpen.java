@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -187,8 +189,11 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             if (node != null) {
                 String actionName = CoreMessages.actions_navigator_open;
                 if (node instanceof DBNDatabaseNode) {
-                    DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) node).getObject().getClass());
-                    actionName = objectManager == null ? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
+                    DBSObject object = ((DBNDatabaseNode) node).getObject();
+                    DBEObjectEditor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(
+                        object.getClass(),
+                        DBEObjectEditor.class);
+                    actionName = objectManager == null || !objectManager.canEditObject(object)? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
                 }
                 String label;
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {

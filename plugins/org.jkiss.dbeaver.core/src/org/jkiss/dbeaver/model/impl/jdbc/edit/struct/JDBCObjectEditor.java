@@ -55,6 +55,12 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     public static final String PATTERN_ITEM_CONSTRAINT = "%CONSTRAINT%"; //$NON-NLS-1$
 
     @Override
+    public boolean canEditObject(OBJECT_TYPE object)
+    {
+        return true;
+    }
+
+    @Override
     public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
         return new PropertyHandler(property);

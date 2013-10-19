@@ -40,14 +40,11 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
     public static final String QUOTE = "'";
 
-/*
     @Override
-    protected DBSObjectCache<TABLE_TYPE, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object)
+    public boolean canEditObject(OBJECT_TYPE object)
     {
-        return object.getParentObject().getCache();
+        return !object.getParentObject().isView();
     }
-*/
-
 
     @Override
     public long getMakerOptions()
