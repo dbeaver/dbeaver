@@ -55,6 +55,18 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
     }
 
     @Override
+    public boolean canCreateObject(MySQLDataSource parent)
+    {
+        return true;
+    }
+
+    @Override
+    public boolean canDeleteObject(MySQLUser object)
+    {
+        return true;
+    }
+
+    @Override
     public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
         MySQLUser newUser = new MySQLUser(parent, null);

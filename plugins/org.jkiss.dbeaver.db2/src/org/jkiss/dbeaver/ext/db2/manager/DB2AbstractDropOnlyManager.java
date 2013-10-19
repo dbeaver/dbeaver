@@ -37,7 +37,13 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     @Override
     public long getMakerOptions()
     {
-        return FEATURE_CREATE_UNSUPPORTED;
+        return 0;
+    }
+
+    @Override
+    public boolean canCreateObject(CONTAINER_TYPE parent)
+    {
+        return false;
     }
 
     protected abstract String buildDropStatement(OBJECT_TYPE object);
