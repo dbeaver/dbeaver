@@ -2,8 +2,7 @@ Major:
 
 1. Async autocomplete
 2. ROWID support in DB2
-3. Disable editors (create/delete too) for child objects which do not have parent editor (like view columns)
-4. Check on MacOS and Ubuntu 13
+3. Check on MacOS and Ubuntu 13
 
 Minor:
 

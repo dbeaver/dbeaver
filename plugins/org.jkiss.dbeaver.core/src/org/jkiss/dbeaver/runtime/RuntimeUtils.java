@@ -37,6 +37,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -462,6 +463,18 @@ public class RuntimeUtils {
         } catch (InterruptedException e) {
             log.warn("Sleep interrupted", e);
         }
+    }
+
+    public static String formatExecutionTime(long ms)
+    {
+        if (ms < 60000) {
+            // Less than a minute, show just ms
+            return String.valueOf(ms) + CoreMessages.controls_time_ms;
+        }
+        long sec = ms / 1000;
+        long min = sec / 60;
+        sec -= min * 60;
+        return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
     }
 
     public static void launchProgram(String path)
