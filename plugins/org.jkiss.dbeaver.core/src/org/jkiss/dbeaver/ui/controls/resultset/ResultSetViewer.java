@@ -1028,13 +1028,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (statistics == null || statistics.isEmpty()) {
             return "";
         }
-        StringBuilder message = new StringBuilder(64);
-        message.append(" - ").append(statistics.getTotalTime());
-        if (statistics.getFetchTime() > 0) {
-            message.append(" (").append(statistics.getExecuteTime()).append(")");
-        }
-        message.append(CoreMessages.controls_resultset_viewer_ms);
-        return message.toString();
+        return " - " + RuntimeUtils.formatExecutionTime(statistics.getTotalTime());
     }
 
     /**
