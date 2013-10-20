@@ -109,7 +109,7 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
         if (packageDepType == null || packageDepType.getDb2ObjectType() == null) {
             return null;
         }
-        // Some dependncies are in Modules...Concatenate modulename and name
+        // Some dependencies are in Modules...Concatenate modulename and name
         String name = getName();
         if (depModuleName != null) {
             name = depModuleName + "." + name;
