@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.views;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -69,7 +70,14 @@ public class PrefPageOracle extends TargetPrefPage
 
         {
             Group planGroup = UIUtils.createControlGroup(composite, "Execution plan", 2, GridData.FILL_HORIZONTAL, 0);
-            explainTableText = UIUtils.createLabelText(planGroup, "Plan table", "");
+
+            Label descLabel = new Label(planGroup, SWT.WRAP);
+            descLabel.setText("By default plan table in current or SYS schema will be used.\nYou may set some particular fully qualified plan table name here.");
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            descLabel.setLayoutData(gd);
+
+            explainTableText = UIUtils.createLabelText(planGroup, "Plan table", "", SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
         {

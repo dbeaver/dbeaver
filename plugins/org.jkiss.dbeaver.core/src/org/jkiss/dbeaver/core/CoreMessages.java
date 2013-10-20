@@ -336,8 +336,6 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_viewer_monitor_aply_changes;
 
 	public static String controls_time_ms;
-    public static String controls_time_min;
-    public static String controls_time_hour;
 
 	public static String controls_resultset_viewer_status_inserted_;
     public static String controls_resultset_viewer_status_empty;
