@@ -192,7 +192,7 @@
                                 <items label="%tree.functions.node.name" path="function" property="functions" icon="#function" navigable="false"/>
                                 <items label="%tree.procedures.node.name" path="procedure" property="procedures" icon="#procedure" navigable="false"/>
                                 <items label="%tree.types.node.name" path="type" property="types" icon="#data_type" navigable="false"/>
-                                <items label="%tree.variables.node.name" path="variable" property="variables" icon="#variable" navigable="false"/>
+                                <items label="%tree.variables.node.name" path="variable" property="variables" icon="icons/variable.gif" navigable="false"/>
                              </items>
                           </folder>
                           <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Package" label="%tree.packages.node.name" icon="#packages" description="Packages">
@@ -245,7 +245,7 @@
                         <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Variable" label="%tree.variables.node.name" icon="#data_types" description="Global Variables">
-                        <items label="%tree.variable.node.name" path="variable" property="variables" icon="#variable"/>
+                        <items label="%tree.variable.node.name" path="variable" property="variables" icon="icons/variable.gif"/>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2XMLString" label="%tree.xmlstrings.node.name" icon="#parameters" description="XML Strings">
                         <items label="%tree.xmlstring.node.name" path="xmlstring" property="xmlStrings" icon="#parameter" navigable="false" />
@@ -253,7 +253,7 @@
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool" label="%tree.bufferpools.node.name" icon="#bufferpools" description="Bufferpools">
-                        <items label="%tree.bufferpool.node.name" path="bufferpool" property="bufferpools" icon="#bufferpool">
+                        <items label="%tree.bufferpool.node.name" path="bufferpool" property="bufferpools" icon="icons/bufferpool.gif">
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace" label="%tree.tablespaces.node.name" icon="#folder_tablespace" description="Tablespaces">
@@ -272,7 +272,7 @@
                             icon="#folder_storagegroup" 
                             description="Storage Groups"
                             visibleIf="object.dataSource.atLeastV10_1">
-                        <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="#storagegroup"/>
+                        <items label="%tree.storagegroup.node.name" path="storageGroup" property="storageGroups" icon="icons/storage_group.gif"/>
                     </folder>
                 </folder>
                 <folder type="" 
@@ -288,20 +288,20 @@
                             visibleIf="object.dataSource.authorisedForApplications"/>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
                             label="%tree.dbparameters.node.name" 
-                            icon="#info" 
+                            icon="icons/parameter_db.gif" 
                             description="Database Configuration"
                             visibleIf="object.dataSource.authorisedForDBCFG">
-                        <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="#info" navigable="false" virtual="true"/>
+                        <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="icons/configure.gif" navigable="false" virtual="true"/>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
                             label="%tree.dbmparameters.node.name" 
-                            icon="#info" 
+                            icon="icons/parameter_db.gif" 
                             description="Database Manager Configuration"
                             visibleIf="object.dataSource.authorisedForDBCFG">
-                        <items label="%tree.parameter.node.name" path="parameter" property="dbmParameters" icon="#info" navigable="false" virtual="true"/>
+                        <items label="%tree.parameter.node.name" path="parameter" property="dbmParameters" icon="icons/parameter_db.gif" navigable="false" virtual="true"/>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="#security" description="Security management" >
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="icons/folder_security.gif" description="Security management" >
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
                         <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif">
                            <items label="%tree.users.node.name" path="role" property="roleDeps" icon="#user" navigable="false"/>
@@ -321,7 +321,7 @@
                            <items label="%tree.xmlschemasauths.node.name" path="xmlschemaauth" property="xMLSchemasAuths" icon="#xmlschemasauth" navigable="false"/>
                         </items>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Group" label="%tree.groups.node.name" icon="#folder_role" description="Groups">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Group" label="%tree.groups.node.name" icon="icons/folder_group.gif" description="Groups">
                         <items label="%tree.group.node.name" path="group" property="groups" icon="icons/group.gif">
                            <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif" navigable="false"/>
                            <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth"  navigable="false"/>
