@@ -374,6 +374,7 @@
                     webURL="http://www-01.ibm.com/support/docview.wss?uid=swg27016878"
                     description="DB2 JCC driver">
 
+                    <property name="maxStatements" value="50"/>
                     <property name="progressiveStreaming" value="2"/>
                     <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
                     
