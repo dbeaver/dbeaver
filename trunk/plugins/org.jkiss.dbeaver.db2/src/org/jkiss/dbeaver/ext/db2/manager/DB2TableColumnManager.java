@@ -66,6 +66,18 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
         return object.getParentObject().getContainer().getTableCache().getChildrenCache((DB2Table) object.getParentObject());
     }
 
+    @Override
+    public boolean canEditObject(DB2TableColumn object)
+    {
+        // Edit is only availabe for DB2Table and not for other kinds of tables (View, MQTs, Nicknames..)
+        DB2TableBase db2TableBase = object.getParentObject();
+        if ((db2TableBase != null) & (db2TableBase.getClass().equals(DB2Table.class))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     // ------
     // Create
     // ------
