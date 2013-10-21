@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model.fed;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
@@ -60,6 +61,12 @@ public class DB2Nickname extends DB2Table {
             this.db2RemoteServer = getDataSource().getRemoteServer(monitor, serverName);
         }
 
+    }
+
+    @Override
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    {
+        return DB2Messages.no_ddl_for_nicknames;
     }
 
     // -----------------
