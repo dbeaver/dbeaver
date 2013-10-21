@@ -30,7 +30,6 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.osgi.framework.internal.core.BundleHost;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -247,7 +246,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             this,
             new URL[0],
             //getClass().getClassLoader());
-            ((BundleHost)providerDescriptor.getContributorBundle()).getClassLoader());
+            getClass().getClassLoader());
     }
 
     DriverDescriptor getReplacedBy()
@@ -846,6 +845,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     private void loadLibraries(IRunnableContext runnableContext)
+        throws DBException
     {
         this.classLoader = null;
 
@@ -870,7 +870,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.classLoader = new DriverClassLoader(
             this,
             libraryURLs.toArray(new URL[libraryURLs.size()]),
-            ((BundleHost)providerDescriptor.getContributorBundle()).getClassLoader());
+            getDataSourceProvider().getClass().getClassLoader());
     }
 
     @Override
