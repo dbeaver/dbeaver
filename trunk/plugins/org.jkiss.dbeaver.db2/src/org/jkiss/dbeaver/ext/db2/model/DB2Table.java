@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -60,7 +62,7 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject {
+public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
 
     private static final Log log = LogFactory.getLog(DB2Table.class);
 
@@ -432,4 +434,15 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         return constChecked;
     }
 
+    @Override
+    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
+    {
+        if (getDataSource().isAtLeastV9_5()) {
+            return new DBDPseudoAttribute[] {
+                DB2Constants.PSEUDO_ATTR_RID_BIT
+            };
+        } else {
+            return null;
+        }
+    }
 }

@@ -119,9 +119,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         StringBuilder query = new StringBuilder(100);
         if (rowIdAttribute != null) {
             // If we have pseudo attributes then query gonna be more complex
-            tableAlias = DBUtils.getQuotedIdentifier(this);
+            tableAlias = "x";
             query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
-            query.append(",").append(tableAlias).append(".").append(rowIdAttribute.getQueryExpression());
+            query.append(",").append(rowIdAttribute.getQueryExpression().replace("$alias", tableAlias)).append(" as ").append(rowIdAttribute.getAlias());
             query.append(" FROM ").append(getFullQualifiedName()).append(" ").append(tableAlias); //$NON-NLS-1$
         } else {
             query.append("SELECT * FROM ").append(getFullQualifiedName()); //$NON-NLS-1$
@@ -306,7 +306,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
+            // Do not quote pseudo attribute name
+            String attrName = attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName());
+            query.append(attrName).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
