@@ -190,10 +190,14 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 String actionName = CoreMessages.actions_navigator_open;
                 if (node instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
-                    DBEObjectEditor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(
-                        object.getClass(),
-                        DBEObjectEditor.class);
-                    actionName = objectManager == null || !objectManager.canEditObject(object)? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
+                    if (object instanceof DBEPrivateObjectEditor) {
+                        actionName = CoreMessages.actions_navigator_edit;
+                    } else {
+                        DBEObjectEditor objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(
+                            object.getClass(),
+                            DBEObjectEditor.class);
+                        actionName = objectManager == null || !objectManager.canEditObject(object)? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
+                    }
                 }
                 String label;
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
