@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.db2;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 
 /**
  * DB2 constants
@@ -82,5 +84,12 @@ public class DB2Constants {
         "SIGNAL", "SIMPLE", "SOURCE", "SPECIFIC", "SQLID", "STANDARD", "START", "STATIC", "STAY", "STOGROUP", "STORES", "STYLE",
         "SUBPAGES", "SYNONYM", "SYSTEM", "TABLESPACE", "TRIGGER", "TYPE", "UNDO", "UNTIL", "VALIDPROC", "VARIABLE", "VARIANT",
         "VCAT", "VOLUMES", "WHILE", "WLM", "YEARS", };
+
+    public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT = new DBDPseudoAttribute(
+        DBDPseudoAttributeType.ROWID,
+        "RID_BIT()",
+        "RID_BIT($alias)",
+        "rid_bit",
+        "Unique physical row identifier");
 
 }

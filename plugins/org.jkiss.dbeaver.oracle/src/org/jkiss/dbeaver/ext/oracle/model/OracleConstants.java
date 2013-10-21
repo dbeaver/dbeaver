@@ -93,7 +93,7 @@ public class OracleConstants {
     public static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
         DBDPseudoAttributeType.ROWID,
         "ROWID",
-        "ROWID",
+        "$alias.ROWID",
         "rowid",
         "Unique row identifier");
 
