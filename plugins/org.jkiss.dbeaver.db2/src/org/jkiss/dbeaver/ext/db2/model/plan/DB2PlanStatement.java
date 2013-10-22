@@ -57,12 +57,13 @@ public class DB2PlanStatement {
         sb.append("   AND EXPLAIN_LEVEL = ?");// 6
         sb.append("   AND STMTNO = ?");// 7
         sb.append("   AND SECTNO = ?");// 8
+        sb.append(" ORDER BY %s");
         sb.append(" WITH UR");
         SEL_BASE_SELECT = sb.toString();
     }
 
-    private List<DB2PlanOperator> listOperators;
-    private List<DB2PlanObject> listObjects;
+    private Map<String, DB2PlanOperator> mapOperators;
+    private Map<String, DB2PlanObject> mapDataObjects;
     private List<DB2PlanStream> listStreams;
 
     private DB2PlanInstance planInstance;
@@ -109,44 +110,49 @@ public class DB2PlanStatement {
     // ----------------
     public Collection<DB2PlanNode> buildNodes()
     {
-        Map<String, DB2PlanNode> mapNodes = new HashMap<String, DB2PlanNode>(32);
+        // Based on streams, establish relationships between nodes
+        // DF: VEry Important!: The Stream MUST be order by STREAM_ID DESC for the viewer to display things right (from the list
+        // order)
 
-        // First Put all current objects and operators in a map
-        for (DB2PlanNode planNode : listOperators) {
-            mapNodes.put(planNode.getNodeName(), planNode);
-        }
-        for (DB2PlanNode planNode : listObjects) {
-            mapNodes.put(planNode.getNodeName(), planNode);
-        }
-
-        // Then Based on streams, establish relationships between nodes
         DB2PlanNode sourceNode;
         DB2PlanNode targetNode;
         for (DB2PlanStream planStream : listStreams) {
 
             LOG.debug(planStream.getStreamId() + " src=" + planStream.getSourceName() + " tgt=" + planStream.getTargetName());
 
-            sourceNode = mapNodes.get(planStream.getSourceName());
-            targetNode = mapNodes.get(planStream.getTargetName());
+            // DF: "Data Objects" may be "target" of "Explain" Streams and have multiple parents..
+            // DBeaver Explain Plan Viewer shows nodes in parent-child hierarchy so a node can not have multiple "parents"
+            // It seems reasonable to reverse the stream after cloning the Object because the same Data Object has multiple
+            // parents
 
-            // TODO DF: not finished..
-
-            // DF: Objects may be "target" of Explain Streams
-            // DBeaver show nodes in parent-child hierarchy so a node can not have multiple "parents"
-            // It seems reasonable to reverse the stream and clone the Object
-            if (targetNode instanceof DB2PlanObject) {
-                DB2PlanObject tgtClone = ((DB2PlanObject) targetNode).clone();
-                targetNode = sourceNode;
-                sourceNode = tgtClone;
+            // Get Source Node
+            if (planStream.getSourceType().equals(DB2PlanNodeType.D)) {
+                sourceNode = mapDataObjects.get(planStream.getSourceName());
+                sourceNode = ((DB2PlanObject) sourceNode).clone();
+            } else {
+                sourceNode = mapOperators.get(planStream.getSourceName());
             }
 
-            targetNode.getNested().add(sourceNode);
-            targetNode.setEstimatedCardinality(planStream.getStreamCount());
-            sourceNode.setParent(targetNode);
+            // Get Target Node
+            if (planStream.getTargetType().equals(DB2PlanNodeType.D)) {
+                targetNode = mapDataObjects.get(planStream.getTargetName());
+                targetNode = ((DB2PlanObject) targetNode).clone();
+
+                // Inverse target <-> source
+                sourceNode.getNested().add(targetNode);
+                targetNode.setParent(sourceNode);
+            } else {
+                targetNode = mapOperators.get(planStream.getTargetName());
+
+                targetNode.getNested().add(sourceNode);
+                targetNode.setEstimatedCardinality(planStream.getStreamCount());
+                sourceNode.setParent(targetNode);
+            }
+
         }
 
-        // // Keep only the "root" node, the operator with id=1
-        return Collections.singletonList(mapNodes.get(String.valueOf("1")));
+        // Return "root" node, ie the operator with id=1
+        return Collections.singletonList((DB2PlanNode) mapOperators.get("1"));
     }
 
     // -------------
@@ -155,14 +161,17 @@ public class DB2PlanStatement {
     private void loadChildren(JDBCSession session) throws SQLException
     {
 
-        listObjects = new ArrayList<DB2PlanObject>(32);
-        JDBCPreparedStatement sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT"));
+        mapDataObjects = new HashMap<String, DB2PlanObject>(32);
+        JDBCPreparedStatement sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT",
+            "OBJECT_SCHEMA,OBJECT_NAME"));
         try {
             setQueryParameters(sqlStmt);
             JDBCResultSet res = sqlStmt.executeQuery();
             try {
+                DB2PlanObject db2PlanObject;
                 while (res.next()) {
-                    listObjects.add(new DB2PlanObject(res));
+                    db2PlanObject = new DB2PlanObject(res);
+                    mapDataObjects.put(db2PlanObject.getNodeName(), db2PlanObject);
                 }
             } finally {
                 res.close();
@@ -171,14 +180,16 @@ public class DB2PlanStatement {
             sqlStmt.close();
         }
 
-        listOperators = new ArrayList<DB2PlanOperator>(64);
-        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR"));
+        mapOperators = new HashMap<String, DB2PlanOperator>(64);
+        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID"));
         try {
             setQueryParameters(sqlStmt);
             JDBCResultSet res = sqlStmt.executeQuery();
             try {
+                DB2PlanOperator db2PlanOperator;
                 while (res.next()) {
-                    listOperators.add(new DB2PlanOperator(session, res, this, planTableSchema));
+                    db2PlanOperator = new DB2PlanOperator(session, res, this, planTableSchema);
+                    mapOperators.put(db2PlanOperator.getNodeName(), db2PlanOperator);
                 }
             } finally {
                 res.close();
@@ -188,7 +199,7 @@ public class DB2PlanStatement {
         }
 
         listStreams = new ArrayList<DB2PlanStream>();
-        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM"));
+        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC"));
         try {
             setQueryParameters(sqlStmt);
             JDBCResultSet res = sqlStmt.executeQuery();
