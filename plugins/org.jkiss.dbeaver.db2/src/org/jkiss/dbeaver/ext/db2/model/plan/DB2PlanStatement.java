@@ -18,9 +18,11 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.SQLException;
@@ -39,7 +41,9 @@ import java.util.Map;
  */
 public class DB2PlanStatement {
 
-    private static String SEL_BASE_SELECT;
+    private static final Log LOG = LogFactory.getLog(DB2PlanAnalyser.class);
+
+    private static final String SEL_BASE_SELECT;
 
     static {
         StringBuilder sb = new StringBuilder(1024);
@@ -119,17 +123,30 @@ public class DB2PlanStatement {
         DB2PlanNode sourceNode;
         DB2PlanNode targetNode;
         for (DB2PlanStream planStream : listStreams) {
+
+            LOG.debug(planStream.getStreamId() + " src=" + planStream.getSourceName() + " tgt=" + planStream.getTargetName());
+
             sourceNode = mapNodes.get(planStream.getSourceName());
             targetNode = mapNodes.get(planStream.getTargetName());
+
+            // TODO DF: not finished..
+
+            // DF: Objects may be "target" of Explain Streams
+            // DBeaver show nodes in parent-child hierarchy so a node can not have multiple "parents"
+            // It seems reasonable to reverse the stream and clone the Object
+            if (targetNode instanceof DB2PlanObject) {
+                DB2PlanObject tgtClone = ((DB2PlanObject) targetNode).clone();
+                targetNode = sourceNode;
+                sourceNode = tgtClone;
+            }
 
             targetNode.getNested().add(sourceNode);
             targetNode.setEstimatedCardinality(planStream.getStreamCount());
             sourceNode.setParent(targetNode);
         }
 
-        // // Keep only the "root" node
-        DB2PlanNode rootNode = mapNodes.get(String.valueOf("1"));
-        return Collections.singletonList(rootNode);
+        // // Keep only the "root" node, the operator with id=1
+        return Collections.singletonList(mapNodes.get(String.valueOf("1")));
     }
 
     // -------------

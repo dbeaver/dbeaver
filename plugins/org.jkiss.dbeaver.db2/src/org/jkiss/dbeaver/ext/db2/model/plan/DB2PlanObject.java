@@ -30,7 +30,7 @@ import java.sql.Timestamp;
  * 
  * @author Denis Forveille
  */
-public class DB2PlanObject extends DB2PlanNode {
+public class DB2PlanObject extends DB2PlanNode implements Cloneable {
 
     private String displayName;
     private String nodeName;
@@ -123,16 +123,12 @@ public class DB2PlanObject extends DB2PlanNode {
         this.numDataPart = JDBCUtils.safeGetInteger(dbResult, "NUM_DATA_PART");
         this.nullKeys = JDBCUtils.safeGetString(dbResult, "NULLKEYS");
 
-        StringBuilder sb1 = new StringBuilder(64);
-        sb1.append(objectSchema);
-        sb1.append(".");
-        sb1.append(objectName);
-        nodeName = sb1.toString();
+        nodeName = buildName(objectSchema, objectName);
 
         StringBuilder sb2 = new StringBuilder(64);
         sb2.append(objectType);
         sb2.append(": ");
-        sb2.append(sb1);
+        sb2.append(nodeName);
         displayName = sb2.toString();
     }
 
@@ -146,6 +142,25 @@ public class DB2PlanObject extends DB2PlanNode {
     public String getNodeName()
     {
         return nodeName;
+    }
+
+    // --------
+    // Helpers
+    // --------
+    public static String buildName(String objectSchema, String objectName)
+    {
+        return objectSchema + "." + objectName;
+    }
+
+    public DB2PlanObject clone()
+    {
+        try {
+            DB2PlanObject res = (DB2PlanObject) super.clone();
+            res.setParent(null);
+            return res;
+        } catch (CloneNotSupportedException e) {
+            return null;
+        }
     }
 
     // ----------------
