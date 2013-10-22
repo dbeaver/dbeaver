@@ -121,7 +121,7 @@ public class DB2PlanAnalyser implements DBCPlan {
             listNodes = db2PlanStatement.buildNodes();
 
             // Clean afterward
-            // cleanExplainTables(session, stmtNo, planTableSchema);
+            cleanExplainTables(session, stmtNo, planTableSchema);
 
         } catch (SQLException e) {
             throw new DBCException(e);
