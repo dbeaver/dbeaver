@@ -85,7 +85,7 @@ public class DB2PlanOperator extends DB2PlanNode {
         this.operatorType = CommonUtils.valueOf(DB2PlanOperatorType.class, JDBCUtils.safeGetString(dbResult, "OPERATOR_TYPE"));
         this.totalCost = JDBCUtils.safeGetDouble(dbResult, "TOTAL_COST");
 
-        this.nodename = String.valueOf(operatorId);
+        this.nodename = buildName(operatorId);
         this.displayName = nodename + " - " + operatorType;
 
         loadChildren(session);
@@ -108,6 +108,14 @@ public class DB2PlanOperator extends DB2PlanNode {
     public String getNodeName()
     {
         return nodename;
+    }
+
+    // --------
+    // Helpers
+    // --------
+    public static String buildName(Integer operatorId)
+    {
+        return String.valueOf(operatorId);
     }
 
     // ----------------

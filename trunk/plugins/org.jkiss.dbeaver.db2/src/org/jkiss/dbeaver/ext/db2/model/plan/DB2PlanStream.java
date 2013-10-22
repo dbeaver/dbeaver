@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DB2 EXPLAIN_STREAM table
@@ -32,10 +33,10 @@ public class DB2PlanStream {
 
     private Integer streamId;
 
-    private String sourceType;
+    private DB2PlanNodeType sourceType;
     private Integer sourceId;
 
-    private String targetType;
+    private DB2PlanNodeType targetType;
     private Integer targetId;
 
     private String objectSchema;
@@ -52,9 +53,9 @@ public class DB2PlanStream {
         this.db2Statement = db2Statement;
 
         this.streamId = JDBCUtils.safeGetInteger(dbResult, "STREAM_ID");
-        this.sourceType = JDBCUtils.safeGetString(dbResult, "SOURCE_TYPE");
+        this.sourceType = CommonUtils.valueOf(DB2PlanNodeType.class, JDBCUtils.safeGetString(dbResult, "SOURCE_TYPE"));
         this.sourceId = JDBCUtils.safeGetInteger(dbResult, "SOURCE_ID");
-        this.targetType = JDBCUtils.safeGetString(dbResult, "TARGET_TYPE");
+        this.targetType = CommonUtils.valueOf(DB2PlanNodeType.class, JDBCUtils.safeGetString(dbResult, "TARGET_TYPE"));
         this.targetId = JDBCUtils.safeGetInteger(dbResult, "TARGET_ID");
         this.objectSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "OBJECT_SCHEMA");
         this.objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
@@ -63,23 +64,23 @@ public class DB2PlanStream {
 
     public String getSourceName()
     {
-        if (sourceType.equals("O")) {
+        if (sourceType.equals(DB2PlanNodeType.O)) {
             // Operator
-            return String.valueOf(sourceId);
+            return DB2PlanOperator.buildName(sourceId);
         } else {
             // Data Object
-            return objectSchema + "." + objectName;
+            return DB2PlanObject.buildName(objectSchema, objectName);
         }
     }
 
     public String getTargetName()
     {
-        if (targetType.equals("O")) {
+        if (targetType.equals(DB2PlanNodeType.O)) {
             // Operator
-            return String.valueOf(targetId);
+            return DB2PlanOperator.buildName(targetId);
         } else {
             // D: Data Object
-            return objectSchema + "." + objectName;
+            return DB2PlanObject.buildName(objectSchema, objectName);
         }
     }
 
@@ -92,7 +93,7 @@ public class DB2PlanStream {
         return streamId;
     }
 
-    public String getSourceType()
+    public DB2PlanNodeType getSourceType()
     {
         return sourceType;
     }
@@ -102,7 +103,7 @@ public class DB2PlanStream {
         return sourceId;
     }
 
-    public String getTargetType()
+    public DB2PlanNodeType getTargetType()
     {
         return targetType;
     }
