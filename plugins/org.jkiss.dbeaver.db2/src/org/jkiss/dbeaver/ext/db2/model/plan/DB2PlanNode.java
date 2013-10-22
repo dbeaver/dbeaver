@@ -25,7 +25,7 @@ import java.util.Collection;
 
 /**
  * DB2 Plan Node
- *
+ * 
  * @author Denis Forveille
  */
 public abstract class DB2PlanNode implements DBCPlanNode {

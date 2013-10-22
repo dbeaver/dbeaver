@@ -21,9 +21,9 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 
@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * DB2 execution plan analyser
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2PlanAnalyser implements DBCPlan {
@@ -121,7 +121,7 @@ public class DB2PlanAnalyser implements DBCPlan {
             listNodes = db2PlanStatement.buildNodes();
 
             // Clean afterward
-            cleanExplainTables(session, stmtNo, planTableSchema);
+            // cleanExplainTables(session, stmtNo, planTableSchema);
 
         } catch (SQLException e) {
             throw new DBCException(e);
