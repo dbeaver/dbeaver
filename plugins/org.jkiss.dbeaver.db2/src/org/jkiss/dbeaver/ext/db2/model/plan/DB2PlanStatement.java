@@ -118,7 +118,7 @@ public class DB2PlanStatement {
         DB2PlanNode targetNode;
         for (DB2PlanStream planStream : listStreams) {
 
-            LOG.debug(planStream.getStreamId() + " src=" + planStream.getSourceName() + " tgt=" + planStream.getTargetName());
+            // LOG.debug(planStream.getStreamId() + " src=" + planStream.getSourceName() + " tgt=" + planStream.getTargetName());
 
             // DF: "Data Objects" may be "target" of "Explain" Streams and have multiple parents..
             // DBeaver Explain Plan Viewer shows nodes in parent-child hierarchy so a node can not have multiple "parents"
