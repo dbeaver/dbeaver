@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -53,7 +52,9 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         JDBCStruct struct = (JDBCStruct) value;
-        return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : struct.getStringRepresentation();
+        return DBUtils.isNullValue(struct) ?
+                DBUtils.getDefaultValueDisplayString(null, format) :
+                struct.getStringRepresentation();
     }
 
     @Override

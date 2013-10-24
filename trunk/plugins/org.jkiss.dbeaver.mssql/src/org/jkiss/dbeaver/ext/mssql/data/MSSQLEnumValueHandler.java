@@ -24,16 +24,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLTableColumn;
-import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -72,7 +72,7 @@ public class MSSQLEnumValueHandler extends JDBCAbstractValueHandler {
             return super.getValueDisplayString(column, value, format);
         }
         String strValue = ((MSSQLTypeEnum) value).getValue();
-        return strValue == null ? DBConstants.NULL_VALUE_LABEL : strValue;
+        return DBUtils.getDefaultValueDisplayString(strValue, format);
     }
 
     @Override

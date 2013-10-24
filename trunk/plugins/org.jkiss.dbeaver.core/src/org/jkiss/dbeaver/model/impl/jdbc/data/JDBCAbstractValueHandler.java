@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -102,7 +102,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
     @Override
     public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format) {
-        return value == null ? DBConstants.NULL_VALUE_LABEL : value.toString();
+        return DBUtils.getDefaultValueDisplayString(value, format);
     }
 
     @Override
