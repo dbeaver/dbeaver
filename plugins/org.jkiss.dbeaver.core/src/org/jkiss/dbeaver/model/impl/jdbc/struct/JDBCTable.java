@@ -306,8 +306,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            // Do not quote pseudo attribute name
-            String attrName = attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName());
+            String attrName = getAttributeName(attribute);
             query.append(attrName).append("=?"); //$NON-NLS-1$
         }
 
@@ -335,13 +334,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
+            query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
         DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
         dbStat.setDataContainer(this);
         return new BatchImpl(dbStat, keyAttributes, null, false);
+    }
+
+    private String getAttributeName(DBSAttributeBase attribute) {
+        // Do not quote pseudo attribute name
+        return attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName());
     }
 
     private void appendQueryConditions(StringBuilder query, String tableAlias, DBDDataFilter dataFilter)
