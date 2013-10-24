@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -306,7 +307,7 @@ public class TextViewDialog extends ValueViewDialog {
             if (value == null) {
                 value = "";
             } else {
-                value = DBUtils.getDefaultValueDisplayString(value);
+                value = DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.EDIT);
             }
             String strValue = CommonUtils.toString(value);
             textEdit.setText(strValue);

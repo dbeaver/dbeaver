@@ -24,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -120,7 +119,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         if (value instanceof DBDValue) {
             return value.toString();
         }
-        return DBUtils.getDefaultValueDisplayString(value);
+        return DBUtils.getDefaultValueDisplayString(value, format);
     }
 
     @Override

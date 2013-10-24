@@ -863,10 +863,17 @@ public final class DBUtils {
         });
     }
 
-    public static String getDefaultValueDisplayString(Object value)
+    public static String getDefaultValueDisplayString(Object value, DBDDisplayFormat format)
     {
-        if (value == null) {
-            return DBConstants.NULL_VALUE_LABEL;
+        if (isNullValue(value)) {
+            if (format == DBDDisplayFormat.UI) {
+                return DBConstants.NULL_VALUE_LABEL;
+            } else {
+                return "";
+            }
+        }
+        if (value instanceof CharSequence) {
+            return value.toString();
         }
         if (value.getClass().isArray()) {
             if (value.getClass().getComponentType() == Byte.TYPE) {
