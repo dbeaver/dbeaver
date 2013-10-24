@@ -92,7 +92,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     @Override
     public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format) {
-        return DBUtils.getDefaultValueDisplayString(value);
+        return DBUtils.getDefaultValueDisplayString(value, format);
     }
 
     @Override

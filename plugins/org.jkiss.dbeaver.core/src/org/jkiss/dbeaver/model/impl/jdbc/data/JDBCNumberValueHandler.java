@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -74,7 +74,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         if (value == null) {
-            return DBConstants.NULL_VALUE_LABEL;
+            return DBUtils.getDefaultValueDisplayString(null, format);
         }
         if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
             return value.toString();
