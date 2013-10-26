@@ -53,7 +53,7 @@ public class GenerateFeaturesTask extends Task
         "org.jkiss.dbeaver.ext.oracle",
         "org.jkiss.dbeaver.ext.db2",
         "org.jkiss.dbeaver.ext.cassandra",
-        "org.jkiss.dbeaver.ext.wmi",
+//        "org.jkiss.dbeaver.ext.wmi",
     };
 
     private String buildDirectory;

@@ -47,6 +47,17 @@
 
     <versions>
         <version>
+            <number>2.3.1</number>
+            <type>stable</type>
+            <date>28.10.2013</date>
+
+            <release-notes>
+                - DB2 extension (metadata browser, execution plan view, etc)
+                - Many minor fixes in UI and model
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.3.0</number>
             <type>stable</type>
             <date>23.09.2013</date>
