@@ -39,8 +39,8 @@
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>2.3.1</Program_Version>
-    <Program_Release_Month>09</Program_Release_Month>
-    <Program_Release_Day>23</Program_Release_Day>
+    <Program_Release_Month>10</Program_Release_Month>
+    <Program_Release_Day>28</Program_Release_Day>
     <Program_Release_Year>2013</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -49,7 +49,14 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - DB2 extension (metadata browser, execution plan view, etc)
+        - Metadata is now read in a separate database connection to avoid SQL editor blocks (configurable)
+        - DB2 extension 1.0 (replaces generic DB2 driver)
+        - Local/server-side result set ordering is now configurable
+        - Pseudo columns (ROWID) support added for Oracle and DB2
+        - SQL templates additions (schema and catalog variables added)
+        - NULL values copy fixed
+        - Metadata editor UI improved
+        - Minor UI bugfixes
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
