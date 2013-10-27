@@ -377,6 +377,7 @@
                     defaultPort="50000"
                     webURL="http://www-01.ibm.com/support/docview.wss?uid=swg27016878"
                     description="DB2 JCC driver">
+                    <replace provider="generic" driver="db2"/>
 
                     <property name="maxStatements" value="50"/>
                     <property name="progressiveStreaming" value="2"/>
