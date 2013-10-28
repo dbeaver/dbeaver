@@ -52,12 +52,11 @@
             <date>28.10.2013</date>
 
             <release-notes>
-                - Metadata is now read in a separate database connection to avoid SQL editor blocks (configurable)
-                - DB2 extension 1.0 (replaces generic DB2 driver)
-                - Local/server-side result set ordering is now configurable
+                - DB2 extension replaces generic DB2 driver
+                - Separate database connection used for metadata reading (configurable)
                 - Pseudo columns (ROWID) support added for Oracle and DB2
+                - Local/server-side result set ordering is now configurable
                 - SQL templates additions (schema and catalog variables added)
-                - NULL values copy fixed
                 - Metadata editor UI improved
                 - Minor UI bugfixes
             </release-notes>
