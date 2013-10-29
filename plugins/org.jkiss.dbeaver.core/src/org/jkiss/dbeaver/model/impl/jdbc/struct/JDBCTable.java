@@ -121,7 +121,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             // If we have pseudo attributes then query gonna be more complex
             tableAlias = "x";
             query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
-            query.append(",").append(rowIdAttribute.getQueryExpression().replace("$alias", tableAlias)).append(" as ").append(rowIdAttribute.getAlias());
+            query.append(",").append(rowIdAttribute.getQueryExpression().replace("$alias", tableAlias));
+            if (rowIdAttribute.getAlias() != null) {
+                query.append(" as ").append(rowIdAttribute.getAlias());
+            }
             query.append(" FROM ").append(getFullQualifiedName()).append(" ").append(tableAlias); //$NON-NLS-1$
         } else {
             query.append("SELECT * FROM ").append(getFullQualifiedName()); //$NON-NLS-1$
@@ -146,11 +149,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (dbResult != null) {
                     try {
                         if (rowIdAttribute != null) {
+                            String attrId = rowIdAttribute.getAlias();
+                            if (CommonUtils.isEmpty(attrId)) {
+                                attrId = rowIdAttribute.getName();
+                            }
                             // Annotate last attribute with row id
                             List<DBCAttributeMetaData> metaAttributes = dbResult.getResultSetMetaData().getAttributes();
                             for (int i = metaAttributes.size(); i > 0; i--) {
                                 DBCAttributeMetaData attr = metaAttributes.get(i - 1);
-                                if (rowIdAttribute.getAlias().equalsIgnoreCase(attr.getName())) {
+                                if (attrId.equalsIgnoreCase(attr.getName())) {
                                     attr.setPseudoAttribute(rowIdAttribute);
                                     break;
                                 }
