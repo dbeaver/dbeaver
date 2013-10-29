@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
@@ -62,13 +60,12 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
-
-    private static final Log log = LogFactory.getLog(DB2Table.class);
+public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject,
+    DBDPseudoAttributeContainer {
 
     private static final String LINE_SEPARATOR = ContentUtils.getDefaultLineSeparator();
 
-    private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS  WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
+    private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
 
     private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
     private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
@@ -166,7 +163,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     {
         getContainer().getTableCache().clearChildrenCache(this);
 
-        // DF: Refresh parent cache ie cache for schemaof indexes/triggers different from table schema?
         tableIndexCache.clearCache();
         tableTriggerCache.clearCache();
         if (partitionCache != null) {
@@ -176,6 +172,10 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         getContainer().getConstraintCache().clearObjectCache(this);
         getContainer().getAssociationCache().clearObjectCache(this);
         getContainer().getReferenceCache().clearObjectCache(this);
+
+        // DF: Clear base index/trigger cache. Not cheap but didn't found another way..
+        getContainer().getIndexCache().clearCache();
+        getContainer().getTriggerCache().clearCache();
 
         return true;
     }
@@ -438,9 +438,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
     {
         if (getDataSource().isAtLeastV9_5()) {
-            return new DBDPseudoAttribute[] {
-                DB2Constants.PSEUDO_ATTR_RID_BIT
-            };
+            return new DBDPseudoAttribute[] { DB2Constants.PSEUDO_ATTR_RID_BIT };
         } else {
             return null;
         }
