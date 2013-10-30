@@ -71,7 +71,4 @@ public interface DBCSession extends DBPCloseableObject, DBDPreferences {
         boolean updatable,
         boolean returnGeneratedKeys) throws DBCException;
 
-
-
-
 }
