@@ -516,16 +516,6 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
-        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerLimit();
-        } else if (type == DBCQueryTransformType.FETCH_ALL_TABLE) {
-            return new QueryTransformerFetchAll();
-        }
-        return super.createQueryTransformer(type);
-    }
-
-    @Override
     public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException
     {
         MSSQLPlanAnalyser plan = new MSSQLPlanAnalyser(this, query);

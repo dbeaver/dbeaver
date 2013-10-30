@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

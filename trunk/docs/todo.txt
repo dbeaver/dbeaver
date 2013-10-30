@@ -4,6 +4,7 @@ Major:
 2. Async autocomplete
 3. Check on MacOS
 4. Query manager fixes. + keep only primitive props + persistence
+5. Client-side filters
 
 Minor:
 

@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerTime;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerValid;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
