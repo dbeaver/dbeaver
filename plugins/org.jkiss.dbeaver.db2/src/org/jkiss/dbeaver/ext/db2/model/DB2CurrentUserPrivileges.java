@@ -94,8 +94,6 @@ public class DB2CurrentUserPrivileges {
     // ------------------------
     public DB2CurrentUserPrivileges(DBRProgressMonitor monitor, JDBCSession session, String currentAuthId) throws SQLException
     {
-        LOG.debug("Get All User Authorities");
-
         listAuthorities = new ArrayList<String>();
         JDBCPreparedStatement dbStat = session.prepareStatement(SEL_AUTHORITIES);
         try {
