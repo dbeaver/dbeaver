@@ -211,24 +211,6 @@
         </editor>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataTypeProvider">
-        <provider
-            class="org.jkiss.dbeaver.ext.mssql.data.MSSQLValueHandlerProvider"
-            description="MSSQL data types provider"
-            id="org.jkiss.dbeaver.ext.mssql.data.MSSQLValueHandlerProvider"
-            label="MSSQL data types provider">
-
-            <datasource id="mssql"/>
-
-            <type name="ENUM"/>
-            <type name="SET"/>
-            <type name="DATE"/>
-            <type name="DATETIME"/>
-            <type name="TIMESTAMP"/>
-
-        </provider>
-    </extension>
-
     <extension point="org.eclipse.ui.editors">
         <editor
             name="%editor.session_manager.name"

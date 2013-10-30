@@ -16,8 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPKeywordManager;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
@@ -120,7 +123,7 @@ public final class SQLUtils {
 
     public static String makeLikePattern(String like)
     {
-        return like.replace("%", ".*").replace("_", ".");
+        return like.replace("%", ".*").replace("_", ".?");
     }
 
     public static boolean matchesLike(String string, String like)
