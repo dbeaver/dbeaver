@@ -216,7 +216,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         } catch (SQLException e) {
             LOG.warn("SQLException when reading database version. Set it to " + DB2Constants.DB2v99_9 + " : " + e.getMessage());
         }
-        LOG.debug("Database version : " + version);
+        LOG.debug(getName() + " is version v" + +version);
 
         return info;
     }
