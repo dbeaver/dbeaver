@@ -92,7 +92,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows)
+    public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
         throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
@@ -106,7 +106,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         DBDPseudoAttribute rowIdAttribute = null;
-        if (this instanceof DBDPseudoAttributeContainer) {
+        if ((flags & FLAG_READ_PSEUDO) != 0 && this instanceof DBDPseudoAttributeContainer) {
             try {
                 rowIdAttribute = DBDPseudoAttribute.getAttribute(
                     ((DBDPseudoAttributeContainer) this).getPseudoAttributes(),

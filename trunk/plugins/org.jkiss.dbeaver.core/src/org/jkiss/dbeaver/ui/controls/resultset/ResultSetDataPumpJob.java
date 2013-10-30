@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -76,7 +77,8 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 resultSetViewer.getDataReceiver(),
                 resultSetViewer.getModel().getDataFilter(),
                 offset,
-                maxRows);
+                maxRows,
+                DBSDataContainer.FLAG_READ_PSEUDO);
         }
         catch (DBException e) {
             error = e;

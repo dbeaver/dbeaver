@@ -36,6 +36,9 @@ public interface DBSDataContainer extends DBSObject {
     public static final int DATA_COUNT          = 1;
     public static final int DATA_FILTER         = 2;
 
+    public static final long FLAG_NONE               = 0;
+    public static final long FLAG_READ_PSEUDO        = 1;
+
     /**
      * Features supported by implementation
      * @return features flags
@@ -44,11 +47,13 @@ public interface DBSDataContainer extends DBSObject {
 
     /**
      * Reads data from container and pushes it into receiver
+     *
      * @param session execution context
      * @param dataReceiver data receiver. Works as a data pipe
      * @param dataFilter data filter. May be null
      * @param firstRow first row number (<= 0 means do not use it)
      * @param maxRows total rows to fetch (<= 0 means fetch everything)
+     * @param flags read flags. See FLAG_ constants
      * @return number of fetched rows
      * @throws DBCException on any error
      */
@@ -57,7 +62,8 @@ public interface DBSDataContainer extends DBSObject {
         DBDDataReceiver dataReceiver,
         DBDDataFilter dataFilter,
         long firstRow,
-        long maxRows)
+        long maxRows,
+        long flags)
         throws DBCException;
 
     /**

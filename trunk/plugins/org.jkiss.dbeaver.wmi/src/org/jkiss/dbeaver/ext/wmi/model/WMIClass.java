@@ -425,7 +425,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
+    public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
         try {
