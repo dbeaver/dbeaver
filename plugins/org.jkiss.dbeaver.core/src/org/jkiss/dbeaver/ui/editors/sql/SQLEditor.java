@@ -902,7 +902,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
+        public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
         {
             final SQLQueryJob job = curJob;
             if (job != null) {
