@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Types;
@@ -76,7 +77,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         if (typeMod == OracleDataTypeModifier.REF) {
             this.valueType = Types.REF;
         }
-        setMaxLength(JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH"));
+        String charUsed = JDBCUtils.safeGetString(dbResult, "CHAR_USED");
+        setMaxLength(JDBCUtils.safeGetLong(dbResult, "C".equals(charUsed) ? "CHAR_LENGTH" : "DATA_LENGTH"));
         setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
         setScale(JDBCUtils.safeGetInt(dbResult, "DATA_SCALE"));
         setPrecision(JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION"));
@@ -92,7 +94,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnDataTypeListProvider.class)
-    public DBSDataType getType()
+    public OracleDataType getType()
     {
         return type;
     }
