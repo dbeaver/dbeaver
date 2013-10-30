@@ -103,6 +103,7 @@ public class DBeaverApplication implements IApplication
             e.printStackTrace();
         }
 */
+        DBeaverCore.setStandalone(true);
         System.out.println(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
         System.out.println("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         System.out.println("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
