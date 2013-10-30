@@ -1,8 +1,9 @@
 Major:
 
-1. Async autocomplete
-2. Check on MacOS
-3. Query manager fix (keep only primitive props) + persistence
+1. Dialect-dependent SQL generator
+2. Async autocomplete
+3. Check on MacOS
+4. Query manager fixes. + keep only primitive props + persistence
 
 Minor:
 
