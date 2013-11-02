@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPathEditorInput;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -397,7 +396,7 @@ public class ContentUtils {
     }
 
     public static void copyStreamToFile(DBRProgressMonitor monitor, InputStream inputStream, long contentLength, IFile localFile)
-        throws DBException, IOException
+        throws IOException
     {
         //localFile.appendContents(inputStream, true, false, monitor.getNestedMonitor());
         File file = localFile.getLocation().toFile();
@@ -418,7 +417,7 @@ public class ContentUtils {
     }
 
     public static void copyReaderToFile(DBRProgressMonitor monitor, Reader reader, long contentLength, String charset, IFile localFile)
-        throws DBException, IOException
+        throws IOException
     {
         try {
             if (charset == null) {

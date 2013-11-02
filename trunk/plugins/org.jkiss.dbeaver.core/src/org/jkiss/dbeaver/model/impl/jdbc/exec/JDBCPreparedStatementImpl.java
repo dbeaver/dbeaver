@@ -69,7 +69,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             return execute();
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, connection.getDataSource());
         }
     }
 
@@ -80,7 +80,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             addBatch();
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, connection.getDataSource());
         }
     }
 

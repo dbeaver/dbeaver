@@ -77,7 +77,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     protected JDBCResultSetImpl(JDBCStatementImpl statement, ResultSet original)
     {
-        this.session = statement.getContext();
+        this.session = statement.getSession();
         this.statement = statement;
         this.original = original;
         this.fake = false;
@@ -130,7 +130,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return original.getObject(index);
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 
@@ -142,7 +142,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return original.getObject(name);
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 
@@ -178,7 +178,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return this.next();
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 
@@ -192,7 +192,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return this.absolute(position);
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

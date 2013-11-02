@@ -97,7 +97,10 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                     }
                 });
             } catch (InvocationTargetException e) {
-                throw new DBCException(e.getTargetException());
+                if (e.getTargetException() instanceof DBException) {
+                    throw (DBException)e.getTargetException();
+                }
+                throw new DBCException("Error updating mappings", e.getTargetException());
             } catch (InterruptedException e) {
                 // skip
             }

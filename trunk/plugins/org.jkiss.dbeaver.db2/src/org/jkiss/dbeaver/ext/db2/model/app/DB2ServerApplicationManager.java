@@ -58,7 +58,7 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
         try {
             return DB2Utils.readApplications(session.getProgressMonitor(), (JDBCSession) session);
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
     }
 
@@ -69,7 +69,7 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
             String cmd = String.format(FORCE_APP_CMD, sessionType.getAgentId());
             DB2Utils.callAdminCmd(session.getProgressMonitor(), dataSource, cmd);
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
     }
 

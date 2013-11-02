@@ -199,7 +199,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
 
         } catch (SQLException ex) {
-            throw new DBException("Error reading metadata", ex);
+            throw new DBException("Error reading metadata", ex, this);
         }
         finally {
             session.close();
@@ -293,7 +293,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, this);
         }
         finally {
             session.close();
@@ -347,7 +347,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, this);
         }
         finally {
             session.close();
@@ -424,7 +424,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MSSQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load privileges");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load privileges");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PRIVILEGES");
             try {
@@ -444,7 +444,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, this);
         }
         finally {
             session.close();
@@ -482,7 +482,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private List<MSSQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
     {
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load status");
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load status");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW " + 
@@ -508,7 +508,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, this);
         }
         finally {
             session.close();

@@ -72,10 +72,10 @@ public class OracleContentXML extends JDBCContentXML {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
         catch (IOException e) {
-            throw new DBCException(e);
+            throw new DBCException("IO error while reading XML", e);
         }
     }
 
@@ -84,7 +84,7 @@ public class OracleContentXML extends JDBCContentXML {
         try {
             return XMLType.createXML(session.getOriginal(), stream);
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

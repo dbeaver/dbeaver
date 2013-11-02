@@ -135,7 +135,7 @@ public abstract class JDBCDataSource
             return new JDBCConnectionHolder(connection);
         }
         catch (SQLException ex) {
-            throw new DBCException(ex);
+            throw new DBCException(ex, this);
         }
         catch (Throwable e) {
             throw new DBCException("Unexpected driver error occurred while connecting to database", e);
@@ -240,7 +240,7 @@ public abstract class JDBCDataSource
         try {
             dataSourceInfo = makeInfo(session.getMetaData());
         } catch (SQLException ex) {
-            throw new DBException("Error getting JDBC meta data", ex);
+            throw new DBException("Error getting JDBC meta data", ex, this);
         }
         finally {
             session.close();

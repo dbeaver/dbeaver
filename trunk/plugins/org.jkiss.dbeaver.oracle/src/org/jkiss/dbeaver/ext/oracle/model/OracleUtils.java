@@ -110,7 +110,7 @@ public class OracleUtils {
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         } finally {
             session.close();
             monitor.done();
@@ -213,7 +213,7 @@ public class OracleUtils {
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         } finally {
             session.close();
             monitor.done();
@@ -289,7 +289,7 @@ public class OracleUtils {
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         } finally {
             session.close();
         }

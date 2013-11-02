@@ -37,7 +37,7 @@ public class QMMStatementInfo extends QMMObject {
     {
         this.session = session;
         this.reference = new SoftReference<DBCStatement>(reference);
-        this.purpose = reference.getContext().getPurpose();
+        this.purpose = reference.getSession().getPurpose();
         this.previous = previous;
     }
 

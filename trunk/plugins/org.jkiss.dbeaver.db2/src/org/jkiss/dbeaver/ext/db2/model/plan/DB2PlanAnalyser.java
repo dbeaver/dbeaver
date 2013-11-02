@@ -124,7 +124,7 @@ public class DB2PlanAnalyser implements DBCPlan {
             cleanExplainTables(session, stmtNo, planTableSchema);
 
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

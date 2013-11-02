@@ -32,7 +32,7 @@ import java.util.List;
  * WMI statement
  */
 public class WMIStatement implements DBCStatement {
-    private WMISession context;
+    private WMISession session;
     private DBCStatementType type;
     private String query;
     private Object userData;
@@ -40,22 +40,22 @@ public class WMIStatement implements DBCStatement {
     private long firstRow;
     private long maxRows;
 
-    public WMIStatement(WMISession context, DBCStatementType type, String query)
+    public WMIStatement(WMISession session, DBCStatementType type, String query)
     {
-        this.context = context;
+        this.session = session;
         this.type = type;
         this.query = query;
     }
 
     WMIService getService()
     {
-        return context.getDataSource().getService();
+        return session.getDataSource().getService();
     }
 
     @Override
-    public DBCSession getContext()
+    public DBCSession getSession()
     {
-        return context;
+        return session;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class WMIStatement implements DBCStatement {
     {
         try {
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(
-                context.getProgressMonitor(),
+                session.getProgressMonitor(),
                 getService(),
                 firstRow,
                 maxRows);
@@ -107,9 +107,9 @@ public class WMIStatement implements DBCStatement {
             return null;
         }
         try {
-            return new WMIResultSet(context, null, queryResult);
+            return new WMIResultSet(session, null, queryResult);
         } catch (WMIException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

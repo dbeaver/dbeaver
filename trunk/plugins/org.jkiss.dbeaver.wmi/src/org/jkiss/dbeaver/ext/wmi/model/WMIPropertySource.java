@@ -43,12 +43,12 @@ public abstract class WMIPropertySource implements IPropertySource
 
     protected boolean getFlagQualifier(String qName) throws DBException
     {
+        WMIQualifiedObject qualifiedObject = getQualifiedObject();
         try {
-            WMIQualifiedObject qualifiedObject = getQualifiedObject();
             return qualifiedObject != null && Boolean.TRUE.equals(
                 qualifiedObject.getQualifier(qName));
         } catch (WMIException e) {
-            throw new DBException(e);
+            throw new DBException("Can't extract object qualifiers", e);
         }
     }
 

@@ -211,7 +211,7 @@ public class DB2Utils {
             return sb.toString();
 
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, dataSource);
         } finally {
             session.close();
 
@@ -272,12 +272,12 @@ public class DB2Utils {
                     LOG.debug("No valid EXPLAIN tables found in schema '" + explainTableSchemaName + "'.");
                     return false;
                 }
-                throw new DBCException(e);
+                throw new DBCException(e, dataSource);
             } finally {
                 stmtSP.close();
             }
         } catch (SQLException e1) {
-            throw new DBCException(e1);
+            throw new DBCException(e1, dataSource);
         } finally {
             session.close();
             monitor.done();
@@ -304,12 +304,12 @@ public class DB2Utils {
                 LOG.debug("Creation EXPLAIN Tables : OK");
             } catch (SQLException e) {
                 LOG.error("SQLException occured during EXPLAIN tables creation in schema " + explainTableSchemaName, e);
-                throw new DBCException(e);
+                throw new DBCException(e, dataSource);
             } finally {
                 stmtSP.close();
             }
         } catch (SQLException e1) {
-            throw new DBCException(e1);
+            throw new DBCException(e1, dataSource);
         } finally {
             session.close();
             monitor.done();

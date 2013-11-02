@@ -212,7 +212,7 @@ public class MSSQLView extends MSSQLTableBase implements MSSQLSourceObject
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
         finally {
             session.close();

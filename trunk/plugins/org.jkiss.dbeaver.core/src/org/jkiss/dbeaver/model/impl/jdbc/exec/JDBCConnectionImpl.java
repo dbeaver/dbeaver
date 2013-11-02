@@ -165,7 +165,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
             }
         }
         catch (SQLException e) {
-            throw new JDBCException(e);
+            throw new JDBCException(e, getDataSource());
         }
     }
 
@@ -659,7 +659,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
             try {
                 return JDBCTransactionIsolation.getByCode(JDBCConnectionImpl.this.getTransactionIsolation());
             } catch (SQLException e) {
-                throw new JDBCException(e);
+                throw new JDBCException(e, getDataSource());
             }
         }
 
@@ -674,7 +674,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
             try {
                 JDBCConnectionImpl.this.setTransactionIsolation(jdbcTIL.getCode());
             } catch (SQLException e) {
-                throw new JDBCException(e);
+                throw new JDBCException(e, getDataSource());
             }
 
             QMUtils.getDefaultHandler().handleTransactionIsolation(JDBCConnectionImpl.this, jdbcTIL);
@@ -688,7 +688,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 return JDBCConnectionImpl.this.getAutoCommit();
             }
             catch (SQLException e) {
-                throw new JDBCException(e);
+                throw new JDBCException(e, getDataSource());
             }
         }
 
@@ -700,7 +700,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 JDBCConnectionImpl.this.setAutoCommit(autoCommit);
             }
             catch (SQLException e) {
-                throw new JDBCException(e);
+                throw new JDBCException(e, getDataSource());
             }
         }
 
@@ -717,7 +717,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 }
             }
             catch (SQLException e) {
-                throw new DBCException(e);
+                throw new DBCException(e, connector.getDataSource());
             }
             return new JDBCSavepointImpl(JDBCConnectionImpl.this, savepoint);
         }
@@ -734,7 +734,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 }
             }
             catch (SQLException e) {
-                throw new JDBCException(e);
+                throw new JDBCException(e, getDataSource());
             }
         }
 
@@ -746,7 +746,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 JDBCConnectionImpl.this.commit();
             }
             catch (SQLException e) {
-                throw new JDBCException(e);
+                throw new JDBCException(e, getDataSource());
             }
         }
 
@@ -765,7 +765,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 JDBCConnectionImpl.this.rollback();
             }
             catch (SQLException e) {
-                throw new JDBCException(e);
+                throw new JDBCException(e, getDataSource());
             }
         }
     }

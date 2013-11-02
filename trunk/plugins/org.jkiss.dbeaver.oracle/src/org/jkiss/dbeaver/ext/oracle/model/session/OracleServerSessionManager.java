@@ -77,7 +77,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
     }
 
@@ -108,7 +108,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
             }
         }
         catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
     }
 
