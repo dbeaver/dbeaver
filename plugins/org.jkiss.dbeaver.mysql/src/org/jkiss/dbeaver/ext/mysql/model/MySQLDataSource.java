@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
@@ -649,4 +650,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     }
 
+    @Override
+    public ErrorType discoverErrorType(DBException error)
+    {
+        String sqlState = error.getDatabaseState();
+        if ("08003".equals(sqlState) || "08S01".equals(sqlState)) {
+            return ErrorType.CONNECTION_LOST;
+        }
+        return super.discoverErrorType(error);
+    }
 }

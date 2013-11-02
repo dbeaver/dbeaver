@@ -800,12 +800,12 @@ public class UIUtils {
         String message,
         Throwable error)
     {
-        if (error != null) {
-            log.error(error);
-        }
         if (error instanceof DBException && DBUtils.showDatabaseError(shell, title, message, (DBException)error)) {
             // If this DB error was handled by some DB-specific way then just don't care about it
             return;
+        }
+        if (error != null) {
+            log.error(error);
         }
 
         showErrorDialog(

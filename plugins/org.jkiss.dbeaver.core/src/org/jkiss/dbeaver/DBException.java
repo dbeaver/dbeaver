@@ -61,7 +61,14 @@ public class DBException extends Exception
 
     public DBPDataSource getDataSource()
     {
-        return dataSource;
+        if (dataSource != null) {
+            return dataSource;
+        }
+        Throwable cause = getCause();
+        if (cause instanceof DBException) {
+            return ((DBException) cause).getDataSource();
+        }
+        return null;
     }
 
     public int getErrorCode()
@@ -73,6 +80,18 @@ public class DBException extends Exception
             return ((DBException) cause).getErrorCode();
         } else {
             return -1;
+        }
+    }
+
+    public String getDatabaseState()
+    {
+        Throwable cause = getCause();
+        if (cause instanceof SQLException) {
+            return ((SQLException) cause).getSQLState();
+        } else if (cause instanceof DBException) {
+            return ((DBException) cause).getDatabaseState();
+        } else {
+            return null;
         }
     }
 
