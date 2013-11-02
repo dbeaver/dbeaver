@@ -24,7 +24,6 @@ public class SearchPageAdapter implements ISearchPage {
         this.source = source;
     }
 
-
     @Override
     public boolean performAction()
     {

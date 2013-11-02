@@ -628,7 +628,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
             getConnection().close();
         }
         catch (SQLException e) {
-            throw new DBCException(CoreMessages.model_jdbc_exception_could_not_close_connection, e);
+            throw new DBCException(e, getDataSource());
         }
     }
 

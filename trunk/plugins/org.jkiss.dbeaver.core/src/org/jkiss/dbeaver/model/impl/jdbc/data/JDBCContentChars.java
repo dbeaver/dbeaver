@@ -156,7 +156,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
             }
         }
         catch (SQLException e) {
-            throw new DBCException(CoreMessages.model_jdbc_jdbc_error, e);
+            throw new DBCException(e, dataSource);
         }
     }
 

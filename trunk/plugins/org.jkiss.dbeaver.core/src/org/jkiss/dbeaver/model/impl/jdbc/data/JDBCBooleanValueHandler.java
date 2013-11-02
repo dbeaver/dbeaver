@@ -47,9 +47,8 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     static final Log log = LogFactory.getLog(JDBCBooleanValueHandler.class);
 
     @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type,
-                                      int index)
-        throws DBCException, SQLException
+    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
+        throws SQLException
     {
         boolean value = resultSet.getBoolean(index);
         return resultSet.wasNull() ? null : value;

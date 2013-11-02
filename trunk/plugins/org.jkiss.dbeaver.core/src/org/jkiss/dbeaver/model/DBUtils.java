@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -1018,6 +1019,18 @@ public final class DBUtils {
             }
         }
         return null;
+    }
+
+    public static boolean showDatabaseError(Shell shell, String title, String message, DBException error)
+    {
+        DBPDataSource dataSource = error.getDataSource();
+        if (dataSource instanceof DBPErrorAssistant) {
+            DBPErrorAssistant.ErrorType errorType = ((DBPErrorAssistant) dataSource).discoverErrorType(error);
+            if (errorType == DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {

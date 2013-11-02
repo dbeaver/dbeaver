@@ -127,7 +127,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         } catch (DBException e) {
             throw new DBCException("Can't obtain attributes meta information", e);
         } catch (SQLException e) {
-            throw new DBCException("Can't read structure data", e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 
