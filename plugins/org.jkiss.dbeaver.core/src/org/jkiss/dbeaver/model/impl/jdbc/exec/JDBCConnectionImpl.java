@@ -668,7 +668,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
             throws DBCException
         {
             if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
-                throw new JDBCException(CoreMessages.model_jdbc_exception_invalid_transaction_isolation_parameter);
+                throw new DBCException(CoreMessages.model_jdbc_exception_invalid_transaction_isolation_parameter);
             }
             JDBCTransactionIsolation jdbcTIL = (JDBCTransactionIsolation) transactionIsolation;
             try {
