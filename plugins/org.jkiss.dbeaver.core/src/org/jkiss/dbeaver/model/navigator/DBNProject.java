@@ -121,7 +121,7 @@ public class DBNProject extends DBNResource implements IAdaptable
             description.setName(newName);
             getProject().move(description, true, monitor.getNestedMonitor());
         } catch (CoreException e) {
-            throw new DBException(e);
+            throw new DBException("Can't rename project", e);
         }
     }
 

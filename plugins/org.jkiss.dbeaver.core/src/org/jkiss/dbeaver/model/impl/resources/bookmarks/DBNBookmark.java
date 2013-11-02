@@ -88,7 +88,7 @@ public class DBNBookmark extends DBNResource
             InputStream data = storage.serialize();
             ((IFile)getResource()).setContents(data, true, false, monitor.getNestedMonitor());
         } catch (Exception e) {
-            throw new DBException(e);
+            throw new DBException("Can't rename bookmark", e);
         }
     }
 

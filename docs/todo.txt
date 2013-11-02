@@ -1,17 +1,20 @@
 Major:
 
 1. Dialect-dependent SQL generator
-2. Async autocomplete
-3. Check on MacOS
-4. Query manager fixes. + keep only primitive props + persistence
-5. Client-side filters
+2. Client-side filters (maybe a bad idea)
+3. Reopen table (entity) editors after restart
+4. Disconnect detection (by error code)
+5. Outline for data editor (RSV) - columns' filters, search, hide/show
+6. Async autocomplete
+7. Check on MacOS
+8. Query manager fixes. + keep only primitive props + persistence
+9. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
 
 Minor:
 
 rename mysql (generic?) table,column
 comment mysql table, column
 
-Disconnect detection (by error code)
 
 Connection "dirty" flag handle
 Structs in record mode
@@ -24,6 +27,5 @@ Search results reflect on disconnect
 Generic driver config for additional metadata reading (stored procedures, ete).
 Columns ordering/search (record mode)
 DB toolbar visibility config in Eclipse mode
-Outline for data editor (RSV) - columns' filters, search, hide/show
 
-Host ExecutionContext in editors instead of DataSource.
+

@@ -158,7 +158,7 @@ public class DBNResource extends DBNNode
                 }
             }
         } catch (CoreException e) {
-            throw new DBException(e);
+            throw new DBException("Can't read container's members", e);
         }
         filterChildren(result);
         sortChildren(result);
@@ -217,7 +217,7 @@ public class DBNResource extends DBNNode
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
         } catch (CoreException e) {
-            throw new DBException(e);
+            throw new DBException("Can't refresh resource", e);
         }
         return this;
     }
@@ -242,7 +242,7 @@ public class DBNResource extends DBNNode
                 resource.move(resource.getParent().getFullPath().append(newName), true, monitor.getNestedMonitor());
             }
         } catch (CoreException e) {
-            throw new DBException(e);
+            throw new DBException("Can't rename resource", e);
         }
     }
 
@@ -276,7 +276,7 @@ public class DBNResource extends DBNNode
                 true,
                 new NullProgressMonitor());
         } catch (CoreException e) {
-            throw new DBException(e);
+            throw new DBException("Can't delete resource", e);
         }
     }
 
@@ -332,7 +332,7 @@ public class DBNResource extends DBNNode
             try {
                 newFolder.create(true, true, new NullProgressMonitor());
             } catch (CoreException e) {
-                throw new DBException(e);
+                throw new DBException("Can't create new folder", e);
             }
         }
     }

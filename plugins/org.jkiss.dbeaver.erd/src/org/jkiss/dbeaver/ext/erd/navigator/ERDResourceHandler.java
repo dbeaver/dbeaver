@@ -158,7 +158,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                 runnable.run(monitor);
             }
         } catch (InvocationTargetException e) {
-            throw new DBException(e.getTargetException());
+            throw new DBException("Error creating diagram", e.getTargetException());
         } catch (InterruptedException e) {
             // interrupted
         }

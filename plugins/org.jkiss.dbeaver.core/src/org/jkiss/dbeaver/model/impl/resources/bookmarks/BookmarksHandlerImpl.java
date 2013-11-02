@@ -236,7 +236,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             InputStream data = storage.serialize();
             file.create(data, true, new NullProgressMonitor());
         } catch (Exception e) {
-            throw new DBException(e);
+            throw new DBException("Error saving bookmark", e);
         }
     }
 
