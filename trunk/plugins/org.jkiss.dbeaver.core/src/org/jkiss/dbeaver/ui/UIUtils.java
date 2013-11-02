@@ -46,6 +46,7 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -800,6 +801,9 @@ public class UIUtils {
     {
         if (error != null) {
             log.error(error);
+        }
+        if (error instanceof DBException) {
+
         }
 
         showErrorDialog(

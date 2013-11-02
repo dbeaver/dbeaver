@@ -90,7 +90,7 @@ public class BookmarkStorage {
                 ContentUtils.close(contents);
             }
         } catch (XMLException e) {
-            throw new DBException(e);
+            throw new DBException("Error reading bookmarks storage", e);
         }
     }
 
