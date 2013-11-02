@@ -454,10 +454,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
             for (int i = 0; i < attributes.length; i++) {
-                handlers[i] = DBUtils.findValueHandler(statement.getContext(), attributes[i]);
+                handlers[i] = DBUtils.findValueHandler(statement.getSession(), attributes[i]);
             }
 
-            boolean useBatch = statement.getContext().getDataSource().getInfo().supportsBatchUpdates();
+            boolean useBatch = statement.getSession().getDataSource().getInfo().supportsBatchUpdates();
             if (values.size() <= 1) {
                 useBatch = false;
             }
@@ -470,7 +470,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     if (skipSequences && (attributes[k].isPseudoAttribute() || attributes[k].isSequence())) {
                         continue;
                     }
-                    handler.bindValueObject(statement.getContext(), statement, attributes[k], paramIndex++, rowValues[k]);
+                    handler.bindValueObject(statement.getSession(), statement, attributes[k], paramIndex++, rowValues[k]);
                 }
                 if (useBatch) {
                     statement.addToBatch();
@@ -487,7 +487,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
                     // Read keys
                     if (keysReceiver != null) {
-                        readKeys(statement.getContext(), statement, keysReceiver);
+                        readKeys(statement.getSession(), statement, keysReceiver);
                     }
                 }
             }

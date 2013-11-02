@@ -326,7 +326,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         try {
             JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, activeSchemaName));
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, this);
         } finally {
             session.close();
         }
@@ -370,7 +370,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         try {
             sessionUserSchema = JDBCUtils.queryString((JDBCSession) session, GET_SESSION_USER).trim();
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
         Boolean ok = DB2Utils.checkExplainTables(monitor, this, sessionUserSchema);
         if (ok) {
@@ -427,7 +427,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             // Hourra!
             schemaForExplainTables = sessionUserSchema;
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
 
         return sessionUserSchema;

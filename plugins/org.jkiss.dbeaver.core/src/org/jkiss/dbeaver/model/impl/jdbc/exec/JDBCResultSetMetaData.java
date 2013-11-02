@@ -57,7 +57,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, resultSet.getSession().getDataSource());
         }
     }
 

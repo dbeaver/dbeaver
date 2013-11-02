@@ -109,7 +109,7 @@ public class CassandraDataSource extends JDBCDataSource
             selectedKeyspace = session.getSchema();
 
         } catch (SQLException ex) {
-            throw new DBException("Error reading metadata", ex);
+            throw new DBException("Error reading metadata", ex, this);
         }
         finally {
             session.close();
@@ -262,7 +262,7 @@ public class CassandraDataSource extends JDBCDataSource
                 session.setSchema(entity.getName());
                 selectedKeyspace = entity.getName();
             } catch (SQLException e) {
-                throw new DBException(e);
+                throw new DBException(e, session.getDataSource());
             }
             finally {
                 session.close();

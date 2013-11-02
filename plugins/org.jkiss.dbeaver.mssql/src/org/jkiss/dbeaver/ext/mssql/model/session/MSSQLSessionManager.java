@@ -73,7 +73,7 @@ public class MSSQLSessionManager implements DBAServerSessionManager<MSSQLSession
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
     }
 
@@ -92,7 +92,7 @@ public class MSSQLSessionManager implements DBAServerSessionManager<MSSQLSession
             }
         }
         catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
     }
 

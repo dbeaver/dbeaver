@@ -18,13 +18,14 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.io.IOException;
 
 /**
  * JDBCContentLOB
@@ -55,7 +56,6 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
     public boolean updateContents(
         DBRProgressMonitor monitor,
         DBDContentStorage storage)
-        throws DBException
     {
         if (this.storage != null) {
             if (this.originalStorage != null) {
@@ -100,8 +100,8 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
         try {
             copy.updateContents(monitor, storage.cloneStorage(monitor));
         }
-        catch (Exception e) {
-            throw new DBCException(e);
+        catch (IOException e) {
+            throw new DBCException("IO error while clone content", e);
         }
         return copy;
     }

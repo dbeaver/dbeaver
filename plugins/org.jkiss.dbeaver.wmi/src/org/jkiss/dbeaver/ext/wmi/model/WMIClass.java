@@ -312,7 +312,7 @@ public class WMIClass extends WMIContainer
             }
 
         } catch (WMIException e) {
-            throw new DBException(e);
+            throw new DBException(e, getDataSource());
         }
     }
 
@@ -348,7 +348,7 @@ public class WMIClass extends WMIContainer
             }
 
         } catch (WMIException e) {
-            throw new DBException(e);
+            throw new DBException(e, getDataSource());
         }
     }
 

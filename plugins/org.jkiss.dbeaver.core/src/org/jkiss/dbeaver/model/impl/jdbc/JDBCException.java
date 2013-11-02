@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 
 import java.sql.SQLException;
@@ -27,28 +28,16 @@ import java.sql.SQLException;
  */
 public class JDBCException extends DBCException
 {
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 6456893563327791919L;
-
-	public JDBCException()
-    {
-    }
 
     public JDBCException(String message)
     {
         super(message);
     }
 
-    public JDBCException(String message, SQLException cause)
+    public JDBCException(SQLException cause, DBPDataSource dataSource)
     {
-        super(message, cause);
-    }
-
-    public JDBCException(SQLException cause)
-    {
-        super(cause);
+        super(cause, dataSource);
     }
 
     @Override

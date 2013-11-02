@@ -84,7 +84,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, session.getDataSource());
         }
         finally {
             session.close();

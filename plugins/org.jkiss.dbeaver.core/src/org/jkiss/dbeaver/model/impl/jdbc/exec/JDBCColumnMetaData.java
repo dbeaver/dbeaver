@@ -180,7 +180,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             this.tableMetaData.addAttribute(this);
         }
 
-        dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSource().getContext().getDataSource(), typeName, typeID);
+        dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSource().getSession().getDataSource(), typeName, typeID);
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 1)

@@ -199,7 +199,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
 
         } catch (SQLException ex) {
-            throw new DBException("Error reading metadata", ex);
+            throw new DBException("Error reading metadata", ex, this);
         }
         finally {
             session.close();
@@ -334,7 +334,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, this);
         }
         finally {
             session.close();
@@ -410,7 +410,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, this);
         }
         finally {
             session.close();
@@ -507,7 +507,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, this);
         }
         finally {
             session.close();
@@ -571,7 +571,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, this);
         }
         finally {
             session.close();

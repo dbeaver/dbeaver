@@ -64,7 +64,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
             try {
                 return blob.length();
             } catch (SQLException e) {
-                throw new DBCException(e);
+                throw new DBCException(e, dataSource);
             }
         }
         return 0;
@@ -89,8 +89,10 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                         contentLength,
                         DBeaverCore.getGlobalPreferenceStore().getString(PrefConstants.CONTENT_HEX_ENCODING));
                 }
-                catch (Exception e) {
-                    throw new DBCException(e);
+                catch (SQLException e) {
+                    throw new DBCException(e, dataSource);
+                } catch (IOException e) {
+                    throw new DBCException("IO error while reading content", e);
                 }
             } else {
                 // Create new local storage
@@ -99,13 +101,16 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     tempFile = ContentUtils.createTempContentFile(monitor, "blob" + blob.hashCode());
                 }
                 catch (IOException e) {
-                    throw new DBCException(e);
+                    throw new DBCException("Can't create temporary file", e);
                 }
                 try {
                     ContentUtils.copyStreamToFile(monitor, blob.getBinaryStream(), contentLength, tempFile);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     ContentUtils.deleteTempFile(monitor, tempFile);
-                    throw new DBCException(e);
+                    throw new DBCException("IO error whle copying stream", e);
+                } catch (SQLException e) {
+                    ContentUtils.deleteTempFile(monitor, tempFile);
+                    throw new DBCException(e, dataSource);
                 }
                 this.storage = new TemporaryContentStorage(tempFile);
             }
@@ -198,10 +203,10 @@ public class JDBCContentBLOB extends JDBCContentLOB {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
         catch (IOException e) {
-            throw new DBCException(e);
+            throw new DBCException("IO error while reading content", e);
         }
     }
 

@@ -119,7 +119,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         try {
             return searchAllObjects(session, schema, objectNameMask, db2ObjectTypes, caseSensitive, maxResults);
         } catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, dataSource);
         } finally {
             session.close();
         }

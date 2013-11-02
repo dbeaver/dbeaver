@@ -104,10 +104,10 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
             }
         }
         catch (IOException e) {
-            throw new DBCException(e);
+            throw new DBCException("IO error while reading content", e);
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

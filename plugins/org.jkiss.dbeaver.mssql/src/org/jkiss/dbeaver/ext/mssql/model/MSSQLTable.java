@@ -242,7 +242,7 @@ public class MSSQLTable extends MSSQLTableBase
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, session.getDataSource());
         }
         finally {
             session.close();
@@ -312,7 +312,7 @@ public class MSSQLTable extends MSSQLTableBase
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         } finally {
             session.close();
         }
@@ -443,7 +443,7 @@ public class MSSQLTable extends MSSQLTableBase
             }
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, session.getDataSource());
         }
         finally {
             session.close();

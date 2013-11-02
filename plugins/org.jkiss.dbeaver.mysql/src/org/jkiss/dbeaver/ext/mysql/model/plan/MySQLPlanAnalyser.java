@@ -85,7 +85,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 }

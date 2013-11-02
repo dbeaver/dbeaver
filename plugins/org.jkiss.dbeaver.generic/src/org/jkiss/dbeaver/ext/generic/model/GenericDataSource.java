@@ -347,7 +347,7 @@ public class GenericDataSource extends JDBCDataSource
 
 
         } catch (SQLException ex) {
-            throw new DBException("Error reading metadata", ex);
+            throw new DBException("Error reading metadata", ex, this);
         }
         finally {
             session.close();
@@ -706,7 +706,7 @@ public class GenericDataSource extends JDBCDataSource
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
         finally {
             session.close();

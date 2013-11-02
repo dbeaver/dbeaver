@@ -371,7 +371,7 @@ public class OracleDataSource extends JDBCDataSource
         try {
             JDBCUtils.executeSQL(session, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
         finally {
             session.close();

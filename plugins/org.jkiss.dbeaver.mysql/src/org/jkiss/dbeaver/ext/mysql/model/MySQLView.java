@@ -212,7 +212,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
         finally {
             session.close();

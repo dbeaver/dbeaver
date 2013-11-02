@@ -110,7 +110,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             return objects;
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, session.getDataSource());
         }
         finally {
             session.close();
