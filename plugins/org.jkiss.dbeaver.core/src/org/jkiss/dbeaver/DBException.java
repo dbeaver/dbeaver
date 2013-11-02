@@ -66,8 +66,11 @@ public class DBException extends Exception
 
     public int getErrorCode()
     {
-        if (getCause() instanceof SQLException) {
-            return ((SQLException)getCause()).getErrorCode();
+        Throwable cause = getCause();
+        if (cause instanceof SQLException) {
+            return ((SQLException) cause).getErrorCode();
+        } else if (cause instanceof DBException) {
+            return ((DBException) cause).getErrorCode();
         } else {
             return -1;
         }

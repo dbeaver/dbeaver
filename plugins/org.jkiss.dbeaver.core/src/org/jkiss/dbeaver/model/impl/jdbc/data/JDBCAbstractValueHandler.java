@@ -66,8 +66,8 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                 return resultSet.getColumnValue(index + 1);
             }
         }
-        catch (Throwable e) {
-            throw new DBCException(CoreMessages.model_jdbc_exception_could_not_get_result_set_value, e);
+        catch (SQLException e) {
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

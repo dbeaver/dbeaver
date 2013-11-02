@@ -462,7 +462,7 @@ public class WMIClass extends WMIContainer
             statistics.setRowsFetched(resultCount);
             return statistics;
         } catch (WMIException e) {
-            throw new DBCException("Can't enum instances", e);
+            throw new DBCException(e, getDataSource());
         }
     }
 
