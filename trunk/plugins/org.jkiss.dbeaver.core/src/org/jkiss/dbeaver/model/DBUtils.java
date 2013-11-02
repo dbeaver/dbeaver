@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -1027,6 +1028,7 @@ public final class DBUtils {
         if (dataSource instanceof DBPErrorAssistant) {
             DBPErrorAssistant.ErrorType errorType = ((DBPErrorAssistant) dataSource).discoverErrorType(error);
             if (errorType == DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
                 return true;
             }
         }
