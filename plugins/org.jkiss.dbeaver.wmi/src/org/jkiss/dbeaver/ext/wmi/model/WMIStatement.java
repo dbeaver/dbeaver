@@ -84,7 +84,7 @@ public class WMIStatement implements DBCStatement {
             queryResult = sink.getObjectList();
             return true;
         } catch (WMIException e) {
-            throw new DBCException("Can't execute query '" + query + "'", e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

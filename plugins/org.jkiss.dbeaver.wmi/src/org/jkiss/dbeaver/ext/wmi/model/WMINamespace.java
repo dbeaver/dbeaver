@@ -112,7 +112,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
             DBUtils.orderObjects(children);
             return children;
         } catch (WMIException e) {
-            throw new DBException("Can't enum namespaces", e);
+            throw new DBException(e, getDataSource());
         }
     }
 
@@ -220,7 +220,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
             this.allClasses = allClasses;
             this.associations = allAssociations;
         } catch (WMIException e) {
-            throw new DBException("Can't enum classes", e);
+            throw new DBException(e, getDataSource());
         }
     }
 

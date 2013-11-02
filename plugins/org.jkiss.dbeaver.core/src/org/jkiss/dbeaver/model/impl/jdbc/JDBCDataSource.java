@@ -48,6 +48,7 @@ public abstract class JDBCDataSource
     implements
         DBPDataSource,
         DBPDataTypeProvider,
+        DBPErrorAssistant,
         DBPRefreshableObject,
         DBSObject,
         DBSObjectContainer,
@@ -414,6 +415,15 @@ public abstract class JDBCDataSource
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
         return new JDBCDataSourceInfo(metaData);
+    }
+
+    /////////////////////////////////////////////////
+    // Error assistance
+
+    @Override
+    public ErrorType discoverErrorType(DBException error)
+    {
+        return ErrorType.NORMAL;
     }
 
 }

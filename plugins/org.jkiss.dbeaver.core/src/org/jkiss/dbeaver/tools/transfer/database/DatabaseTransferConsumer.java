@@ -356,8 +356,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             } finally {
                 dbStat.close();
             }
-        } catch (DBCException e) {
-            throw new DBCException("Can't alter target schema:\n" + sql, e);
         }
         finally {
             session.close();

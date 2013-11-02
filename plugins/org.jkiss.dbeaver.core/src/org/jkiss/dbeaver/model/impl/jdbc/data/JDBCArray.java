@@ -83,7 +83,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
                 try {
                     contents = extractDataFromResultSet(session, array, type, valueHandler);
                 } catch (SQLException e1) {
-                    throw new DBCException("Error reading from array result set", e1); //$NON-NLS-1$
+                    throw new DBCException(e1, session.getDataSource()); //$NON-NLS-1$
                 }
             }
         } catch (DBCException e) {

@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
@@ -802,8 +803,9 @@ public class UIUtils {
         if (error != null) {
             log.error(error);
         }
-        if (error instanceof DBException) {
-
+        if (error instanceof DBException && DBUtils.showDatabaseError(shell, title, message, (DBException)error)) {
+            // If this DB error was handled by some DB-specific way then just don't care about it
+            return;
         }
 
         showErrorDialog(
