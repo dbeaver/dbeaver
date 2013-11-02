@@ -30,11 +30,6 @@ public class JDBCException extends DBCException
 {
 	private static final long serialVersionUID = 6456893563327791919L;
 
-    public JDBCException(String message)
-    {
-        super(message);
-    }
-
     public JDBCException(SQLException cause, DBPDataSource dataSource)
     {
         super(cause, dataSource);

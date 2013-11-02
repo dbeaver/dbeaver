@@ -141,7 +141,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         if (value instanceof DBDContent) {
             return (DBDContent)value;
         } else {
-            throw new DBCException("Value do not support streaming");
+            throw new DBCException("Value doesn't support streaming");
         }
     }
 
