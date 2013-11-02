@@ -155,7 +155,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
                     dbStat.close();
                 }
             } catch (SQLException e) {
-                throw new DBException(e);
+                throw new DBException(e, session.getDataSource());
             } finally {
                 session.close();
             }

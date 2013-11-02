@@ -144,7 +144,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
                 }
             }
             catch (IOException e) {
-                throw new DBCException(e);
+                throw new DBCException("IO error while reading content", e);
             }
         }
         return false;

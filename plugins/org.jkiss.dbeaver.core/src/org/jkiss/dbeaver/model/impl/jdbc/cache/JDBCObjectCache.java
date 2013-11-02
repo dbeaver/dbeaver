@@ -110,7 +110,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, session.getDataSource());
         }
         finally {
             session.close();

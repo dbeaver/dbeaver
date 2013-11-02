@@ -136,7 +136,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, session.getDataSource());
         }
         finally {
             session.close();

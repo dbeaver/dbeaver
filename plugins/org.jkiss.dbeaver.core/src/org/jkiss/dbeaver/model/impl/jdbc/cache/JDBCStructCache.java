@@ -159,7 +159,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                 dbStat.close();
             }
         } catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, session.getDataSource());
         } finally {
             session.close();
         }

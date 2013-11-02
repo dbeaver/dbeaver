@@ -100,7 +100,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             }
             return row.getValue(properties.get(index - 1).getName());
         } catch (WMIException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 
@@ -110,7 +110,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         try {
             return row.getValue(name);
         } catch (WMIException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

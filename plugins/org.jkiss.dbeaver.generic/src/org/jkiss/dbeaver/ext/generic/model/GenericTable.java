@@ -242,7 +242,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 rowCount = countData(session, null);
             }
             catch (DBException e) {
-                //throw new DBCException(e);
                 // do not throw this error - row count is optional info and some providers may fail
                 log.debug("Can't fetch row count: " + e.getMessage());
 //                if (indexes != null) {
@@ -424,7 +423,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new DBException(ex, session.getDataSource());
         }
         finally {
             session.close();

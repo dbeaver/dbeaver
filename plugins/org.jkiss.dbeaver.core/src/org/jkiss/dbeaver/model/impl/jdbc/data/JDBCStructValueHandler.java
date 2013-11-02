@@ -74,7 +74,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
                 typeName = type.getTypeName();
             }
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
         DBSDataType dataType = null;
         try {

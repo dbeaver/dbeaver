@@ -67,7 +67,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         try {
             return clob.length();
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, dataSource);
         }
     }
 
@@ -87,8 +87,10 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 try {
                     storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
                 }
-                catch (Exception e) {
-                    throw new DBCException(e);
+                catch (IOException e) {
+                    throw new DBCException("IO error while reading content", e);
+                } catch (SQLException e) {
+                    throw new DBCException(e, dataSource);
                 }
             } else {
                 // Create new local storage
@@ -97,13 +99,16 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     tempFile = ContentUtils.createTempContentFile(monitor, "clob" + clob.hashCode());
                 }
                 catch (IOException e) {
-                    throw new DBCException(e);
+                    throw new DBCException("Can't create temp file", e);
                 }
                 try {
                     ContentUtils.copyReaderToFile(monitor, clob.getCharacterStream(), contentLength, ContentUtils.DEFAULT_FILE_CHARSET_NAME, tempFile);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     ContentUtils.deleteTempFile(monitor, tempFile);
-                    throw new DBCException(e);
+                    throw new DBCException("IO error while copying content", e);
+                } catch (SQLException e) {
+                    ContentUtils.deleteTempFile(monitor, tempFile);
+                    throw new DBCException(e, dataSource);
                 }
                 this.storage = new TemporaryContentStorage(tempFile);
             }
@@ -181,10 +186,10 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, dataSource);
         }
         catch (IOException e) {
-            throw new DBCException(e);
+            throw new DBCException("IO error while reading content", e);
         }
     }
 

@@ -34,33 +34,34 @@ public class DBException extends Exception
 {
     private final DBPDataSource dataSource;
 
-	public DBException()
-    {
-        dataSource = null;
-    }
-
     public DBException(String message)
     {
         super(message);
-        dataSource = null;
+        this.dataSource = null;
     }
 
     public DBException(String message, Throwable cause)
     {
         super(message, cause);
-        dataSource = null;
+        this.dataSource = null;
     }
 
-    public DBException(Throwable cause)
+    public DBException(Throwable cause, DBPDataSource dataSource)
     {
         super(cause instanceof SQLException ? makeMessage((SQLException) cause) : cause.getMessage(), cause);
-        dataSource = null;
+        this.dataSource = dataSource;
     }
 
-    public DBException(SQLException ex)
+
+    public DBException(String message, SQLException cause, DBPDataSource dataSource)
     {
-        super(makeMessage(ex), ex);
-        this.dataSource = null;
+        super(message, cause);
+        this.dataSource = dataSource;
+    }
+
+    public DBPDataSource getDataSource()
+    {
+        return dataSource;
     }
 
     public int getErrorCode()

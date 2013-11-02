@@ -73,7 +73,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
     }
 
@@ -92,7 +92,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
             }
         }
         catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
     }
 

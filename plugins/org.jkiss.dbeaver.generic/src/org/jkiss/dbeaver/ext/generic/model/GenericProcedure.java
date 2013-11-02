@@ -189,7 +189,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                 dbResult.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         } finally {
             session.close();
         }

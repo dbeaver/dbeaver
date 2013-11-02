@@ -42,7 +42,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     static final Log log = LogFactory.getLog(JDBCStatementImpl.class);
 
-    private JDBCSession connection;
+    protected final JDBCSession connection;
     protected final STATEMENT original;
 
     private String query;
@@ -91,7 +91,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             this.cancel();
         }
         catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, connection.getDataSource());
         }
     }
 
@@ -106,7 +106,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     ////////////////////////////////////////////////////////////////////
 
     @Override
-    public JDBCSession getContext()
+    public JDBCSession getSession()
     {
         return connection;
     }
@@ -136,7 +136,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             return execute(query);
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, connection.getDataSource());
         }
     }
 
@@ -147,7 +147,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             addBatch(query);
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, connection.getDataSource());
         }
     }
 
@@ -158,7 +158,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             return executeBatch();
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, connection.getDataSource());
         }
     }
 
@@ -174,7 +174,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             return getResultSet();
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, connection.getDataSource());
         }
     }
 
@@ -186,7 +186,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             return makeResultSet(getOriginal().getGeneratedKeys());
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, connection.getDataSource());
         }
     }
 
@@ -196,7 +196,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         try {
             return getUpdateCount();
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, connection.getDataSource());
         }
     }
 

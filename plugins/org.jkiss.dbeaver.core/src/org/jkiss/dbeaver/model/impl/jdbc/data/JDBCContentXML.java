@@ -73,8 +73,10 @@ public class JDBCContentXML extends JDBCContentLOB {
             try {
                 storage = StringContentStorage.createFromReader(xml.getCharacterStream());
             }
-            catch (Exception e) {
-                throw new DBCException(e);
+            catch (IOException e) {
+                throw new DBCException("IO error while reading content", e);
+            } catch (SQLException e) {
+                throw new DBCException(e, dataSource);
             }
             // Free blob - we don't need it anymore
             try {
@@ -153,10 +155,10 @@ public class JDBCContentXML extends JDBCContentLOB {
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, dataSource);
         }
         catch (IOException e) {
-            throw new DBCException(e);
+            throw new DBCException("IO error while reading content", e);
         }
     }
 

@@ -207,7 +207,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementOpen(DBCStatement statement)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getSession().getDataSource());
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
             fireMetaEvent(stat, QMMetaEvent.Action.BEGIN);
@@ -217,7 +217,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementClose(DBCStatement statement)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getSession().getDataSource());
         if (session != null) {
             QMMStatementInfo stat = session.closeStatement(statement);
             if (stat == null) {
@@ -231,7 +231,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementExecuteBegin(DBCStatement statement)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getSession().getDataSource());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginExecution(statement);
             if (exec != null) {
@@ -244,7 +244,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getContext().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getSession().getDataSource());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
             if (exec != null) {

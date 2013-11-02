@@ -33,7 +33,7 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * Statement's context
      * @return context
      */
-    DBCSession getContext();
+    DBCSession getSession();
 
     /**
      * Statement's query string.

@@ -656,7 +656,7 @@ public class SQLQueryJob extends DataSourceJob
             if (lastError instanceof DBCException) {
                 throw (DBCException) lastError;
             } else {
-                throw new DBCException(lastError);
+                throw new DBCException(lastError, getDataSource());
             }
         }
     }

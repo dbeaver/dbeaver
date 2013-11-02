@@ -122,7 +122,7 @@ public class OraclePlanAnalyser implements DBCPlan {
             }
 
         } catch (SQLException e) {
-            throw new DBCException(e);
+            throw new DBCException(e, session.getDataSource());
         }
     }
 

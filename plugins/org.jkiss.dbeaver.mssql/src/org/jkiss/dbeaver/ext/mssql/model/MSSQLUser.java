@@ -225,7 +225,7 @@ public class MSSQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
             }
         }
         catch (SQLException e) {
-            throw new DBException(e);
+            throw new DBException(e, session.getDataSource());
         }
         finally {
             session.close();
