@@ -67,6 +67,9 @@ public class LoadingUtils {
             return null;
         }
         catch (InvocationTargetException ex) {
+            if (ex.getTargetException() instanceof DBException) {
+                throw (DBException) ex.getTargetException();
+            }
             throw new DBException("Can't read " + propertyName, ex.getTargetException());
         }
     }

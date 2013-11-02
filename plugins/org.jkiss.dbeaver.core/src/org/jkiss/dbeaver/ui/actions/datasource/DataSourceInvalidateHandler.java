@@ -20,11 +20,21 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.utils.CommonUtils;
 
 public class DataSourceInvalidateHandler extends DataSourceHandler
@@ -48,6 +58,60 @@ public class DataSourceInvalidateHandler extends DataSourceHandler
             }
             InvalidateJob invalidateJob = new InvalidateJob(dataSourceContainer.getDataSource());
             invalidateJob.schedule();
+        }
+    }
+
+    public static void showConnectionLostDialog(final Shell shell, final String message, final DBException error)
+    {
+        //log.debug(message);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run()
+            {
+                // Display the dialog
+                DBPDataSource dataSource = error.getDataSource();
+                if (dataSource == null) {
+                    throw new IllegalStateException("No data source in error");
+                }
+                String title = "Connection with [" + dataSource.getContainer().getName() + "] lost";
+                ConnectionRecoverDialog dialog = new ConnectionRecoverDialog(shell, title, message == null ? title : message, error);
+                dialog.open();
+            }
+        };
+        UIUtils.runInUI(shell, runnable);
+    }
+
+    private static class ConnectionRecoverDialog extends StandardErrorDialog {
+
+        private final DBPDataSource dataSource;
+
+        public ConnectionRecoverDialog(Shell shell, String title, String message, DBException error)
+        {
+            super(
+                shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
+                title,
+                message,
+                RuntimeUtils.makeExceptionStatus(error),
+                IStatus.ERROR);
+            dataSource = error.getDataSource();
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent)
+        {
+            createButton(parent, IDialogConstants.RETRY_ID, "Reconnect", true);
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
+            createDetailsButton(parent);
+        }
+
+        @Override
+        protected void buttonPressed(int id)
+        {
+            if (id == IDialogConstants.RETRY_ID) {
+                execute(dataSource.getContainer());
+                super.buttonPressed(IDialogConstants.OK_ID);
+            }
+            super.buttonPressed(id);
         }
     }
 
