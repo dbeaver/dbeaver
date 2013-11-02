@@ -109,8 +109,6 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
             if (!nodes.isEmpty()) {
                 listener.objectsFound(monitor, nodes);
             }
-        } catch (Exception ex) {
-            throw new DBException(ex);
         } finally {
             listener.searchFinished();
         }

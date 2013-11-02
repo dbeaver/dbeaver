@@ -187,7 +187,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
                         log.warn("Could not delete temporary content file", e);
                     }
                 }
-                throw new DBException(e);
+                throw new DBException("Can't delete content file", e);
             }
         }
 
@@ -206,7 +206,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
                 contentFile.setResourceAttributes(attributes);
             }
             catch (CoreException e) {
-                throw new DBException(e);
+                throw new DBException("Can't set content read-only", e);
             }
         }
     }

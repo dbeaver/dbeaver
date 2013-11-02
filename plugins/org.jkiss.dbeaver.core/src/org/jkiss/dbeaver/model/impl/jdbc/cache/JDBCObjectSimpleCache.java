@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -88,10 +89,10 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
                 }
             }
             return objectConstructor.newInstance(owner, resultSet);
-        } catch (InvocationTargetException e) {
-            throw new DBException(e.getTargetException());
         } catch (Exception e) {
-            throw new DBException("Error creating cache object", e);
+            throw new DBException(
+                "Error creating cache object",
+                e instanceof InvocationTargetException ? ((InvocationTargetException)e).getTargetException() : e);
         }
     }
 

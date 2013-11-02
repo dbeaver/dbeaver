@@ -356,7 +356,7 @@ public class RuntimeUtils {
         try {
             return jexlEngine.createExpression(exprString);
         } catch (JexlException e) {
-            throw new DBException(e);
+            throw new DBException("Bad expression", e);
         }
     }
 
