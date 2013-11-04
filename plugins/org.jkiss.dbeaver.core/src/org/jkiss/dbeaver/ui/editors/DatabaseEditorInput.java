@@ -81,7 +81,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public IPersistableElement getPersistable()
     {
-        return this;
+        return getDataSource() == null ? null : this;
     }
 
     @Override
