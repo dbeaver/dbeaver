@@ -26,6 +26,7 @@ import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -127,9 +128,14 @@ public class DatabaseEditorInputFactory implements IElementFactory
 
     public static void saveState(IMemento memento, DatabaseEditorInput input)
     {
+        DBPDataSource dataSource = input.getDataSource();
+        if (dataSource == null) {
+            // Detached - nothing to save
+            return;
+        }
         DBNDatabaseNode node = input.getTreeNode();
         memento.putString(TAG_CLASS, input.getClass().getName());
-        memento.putString(TAG_DATA_SOURCE, input.getDataSource().getContainer().getId());
+        memento.putString(TAG_DATA_SOURCE, dataSource.getContainer().getId());
         memento.putString(TAG_NODE, node.getNodeItemPath());
         if (!CommonUtils.isEmpty(input.getDefaultPageId())) {
             memento.putString(TAG_ACTIVE_PAGE, input.getDefaultPageId());
