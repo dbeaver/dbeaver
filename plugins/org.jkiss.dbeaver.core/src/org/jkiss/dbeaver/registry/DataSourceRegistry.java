@@ -24,6 +24,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.StringConverter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -40,6 +43,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
+import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -86,8 +91,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
             this.dataSourceListeners.clear();
         }
-
-        closeConnections();
+        // Disconnect in 2 seconds or die
+        closeConnections(2000);
         // Do not save config on shutdown.
         // Some data source might be broken due to misconfiguration
         // and we don't want to loose their config just after restart
@@ -103,7 +108,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    public boolean closeConnections()
+    public void closeConnections(long waitTime)
     {
         boolean hasConnections = false;
         synchronized (dataSources) {
@@ -115,19 +120,39 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         }
         if (!hasConnections) {
-            return true;
+            return;
         }
-        try {
-            DisconnectTask disconnectTask = new DisconnectTask();
-            DBeaverUI.runInProgressService(disconnectTask);
-            return disconnectTask.disconnected;
-        } catch (InvocationTargetException e) {
-            log.error("Can't close opened connections", e.getTargetException());
-        } catch (InterruptedException e) {
-            // do nothing
-        }
+        final DisconnectTask disconnectTask = new DisconnectTask();
+        Job disconnectJob = new AbstractJob("Disconnect from data sources") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor)
+            {
+                try {
+                    disconnectTask.run(monitor);
+                } catch (InvocationTargetException e) {
+                    return RuntimeUtils.makeExceptionStatus(e.getTargetException());
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        disconnectJob.schedule();
 
-        return true;
+        // Wait for job to finish
+        long startTime = System.currentTimeMillis();
+        if (waitTime > 0) {
+            while (!disconnectTask.finished && System.currentTimeMillis() - startTime < waitTime) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+        if (!disconnectTask.finished) {
+            log.warn("Some data source connections wasn't closed on shutdown in " + waitTime + "ms. Probably network timeout occurred.");
+        }
     }
 
     ////////////////////////////////////////////////////
@@ -770,6 +795,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private class DisconnectTask implements DBRRunnableWithProgress {
         boolean disconnected;
+        volatile boolean finished;
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             List<DataSourceDescriptor> dsSnapshot;
@@ -795,6 +821,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
             } finally {
                 monitor.done();
+                finished = true;
             }
         }
     }

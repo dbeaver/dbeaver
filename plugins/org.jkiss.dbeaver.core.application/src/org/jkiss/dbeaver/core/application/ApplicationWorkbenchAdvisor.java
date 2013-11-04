@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.core.application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
@@ -31,18 +29,13 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.keys.IBindingService;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -133,46 +126,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     @Override
     public boolean preShutdown()
     {
-        final DBeaverCore core = DBeaverCore.getInstance();
-        if (core == null) {
-            return true;
-        }
-        try {
-            core.setClosing(true);
-            if (!saveAndCleanup()) {
-                return false;
-            }
-            // Disconnect all connections
-            // Try to close all connections
-            for (IProject project : core.getLiveProjects()) {
-                if (!project.isOpen()) {
-                    continue;
-                }
-                final DataSourceRegistry dataSourceRegistry = core.getProjectRegistry().getDataSourceRegistry(project);
-                if (dataSourceRegistry != null && !dataSourceRegistry.closeConnections()) {
-                    return false;
-                }
-            }
-/*
-            // Wait for all datasource jobs to finish
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    Job.getJobManager().join(DBPDataSource.class, monitor.getNestedMonitor());
-                }
-            });
-*/
-        }
-        catch (Throwable e) {
-            // do nothing
-            log.debug("Internal error during shutdown process", e); //$NON-NLS-1$
-        }
-        finally {
-            core.setClosing(false);
-        }
-        return super.preShutdown();
+        return saveAndCleanup() && super.preShutdown();
     }
 
     @Override
@@ -184,9 +138,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     private boolean saveAndCleanup()
     {
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        //IProgressMonitor nullMonitor = new NullProgressMonitor();
         DBRProgressMonitor nullMonitor = VoidProgressMonitor.INSTANCE;
-        //final List<File> openFiles = new ArrayList<File>();
         for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
             for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
                 try {
@@ -200,47 +152,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                             }
                         }
                     }
-
-/*
-                    if (editorInput instanceof ProjectFileEditorInput) {
-                        ProjectFileEditorInput sei = (ProjectFileEditorInput)editorInput;
-                        openFiles.add(sei.getPath().toFile());
-                    }
-*/
                 } catch (CoreException ex) {
                     log.error("Can't obtain editor storage", ex); //$NON-NLS-1$
                 }
             }
-            // Save all other editors
-            //if (!workbenchPage.saveAllEditors(true)) {
-            //    return false;
-            //}
         }
 
-/*
-        IFolder tempFolder = null;
-        try {
-            tempFolder = DBeaverCore.getInstance().getAutosaveFolder(VoidProgressMonitor.INSTANCE);
-        }
-        catch (IOException e) {
-            log.error(e);
-        }
-        if (tempFolder != null) {
-            try {
-                IResource[] tempResources = tempFolder.members();
-                for (IResource tempResource : tempResources) {
-                    if (tempResource instanceof IFile) {
-                        IFile tempFile = (IFile)tempResource;
-                        if (!openFiles.contains(tempFile.getLocation().toFile())) {
-                            tempFile.delete(true, false, nullMonitor);
-                        }
-                    }
-                }
-            } catch (CoreException ex) {
-                log.warn("Error deleting autosave files", ex);
-            }
-        }
-*/
         return true;
     }
 

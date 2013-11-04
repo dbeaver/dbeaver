@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 public class DatabaseEditorListener implements IDBNListener
 {
 
-    private IDatabaseEditor databaseEditor;
+    private final IDatabaseEditor databaseEditor;
     private DBSDataSourceContainer dataSourceContainer;
 
     DatabaseEditorListener(IDatabaseEditor databaseEditor) {
@@ -50,10 +50,11 @@ public class DatabaseEditorListener implements IDBNListener
 
     public void dispose()
     {
-        // Remove node listener
-        DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
         // Release datasource
         if (dataSourceContainer != null) {
+            // Remove node listener
+            DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
+
             dataSourceContainer.release(databaseEditor);
             dataSourceContainer = null;
         }
@@ -90,6 +91,11 @@ public class DatabaseEditorListener implements IDBNListener
                 }
             }
             if (closeEditor) {
+                if (DBeaverCore.isClosing()) {
+                    // Do not update editors during shutdown, just remove listeners
+                    dispose();
+                    return;
+                }
                 runner = new Runnable() { @Override
                                           public void run() {
                     IWorkbenchPage workbenchPage = databaseEditor.getSite().getWorkbenchWindow().getActivePage();
@@ -109,6 +115,5 @@ public class DatabaseEditorListener implements IDBNListener
         DBNNode editorNode = getTreeNode();
         return node == editorNode || editorNode.isChildOf(node);
     }
-
 
 }

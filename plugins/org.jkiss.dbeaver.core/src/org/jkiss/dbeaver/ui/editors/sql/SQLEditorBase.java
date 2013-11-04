@@ -37,6 +37,7 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -395,7 +396,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     public boolean hasActiveQuery()
     {
-        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+        ISelectionProvider selectionProvider = getSelectionProvider();
+        if (!(selectionProvider instanceof ITextSelection)) {
+            return false;
+        }
+        ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
         String selText = selection.getText();
         if (CommonUtils.isEmpty(selText)) {
             Document document = getDocument();
