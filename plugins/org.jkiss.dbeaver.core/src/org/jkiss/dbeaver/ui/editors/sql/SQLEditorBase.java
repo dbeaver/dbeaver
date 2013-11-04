@@ -397,7 +397,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     public boolean hasActiveQuery()
     {
         ISelectionProvider selectionProvider = getSelectionProvider();
-        if (!(selectionProvider instanceof ITextSelection)) {
+        if (selectionProvider == null) {
             return false;
         }
         ITextSelection selection = (ITextSelection) selectionProvider.getSelection();

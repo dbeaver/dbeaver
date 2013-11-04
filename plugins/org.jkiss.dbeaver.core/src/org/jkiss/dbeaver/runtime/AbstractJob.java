@@ -111,8 +111,8 @@ public abstract class AbstractJob extends Job
                         if (block != null) {
                             try {
                                 block.cancelBlock();
-                            } catch (DBException e) {
-                                log.error("Can't interrupt operation " + block, e); //$NON-NLS-1$
+                            } catch (Throwable e) {
+                                return RuntimeUtils.makeExceptionStatus("Can't interrupt operation " + block, e); //$NON-NLS-1$
                             }
                             blockCanceled = true;
                         }
