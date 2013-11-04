@@ -1758,6 +1758,7 @@
 
     <extension point="org.eclipse.ui.elementFactories">
         <factory id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
+        <factory id="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory"/>
     </extension>
 
     <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
