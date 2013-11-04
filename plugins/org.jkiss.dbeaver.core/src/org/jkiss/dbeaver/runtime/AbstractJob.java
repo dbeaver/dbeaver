@@ -120,8 +120,13 @@ public abstract class AbstractJob extends Job
                     return Status.OK_STATUS;
                 }
             };
-            // Cancel it in three seconds
-            cancelJob.schedule(cancelTimeout);
+            try {
+                // Cancel it in three seconds
+                cancelJob.schedule(cancelTimeout);
+            } catch (Exception e) {
+                // If this happens during shutdown and job manager is not active
+                log.debug(e);
+            }
         }
     }
 

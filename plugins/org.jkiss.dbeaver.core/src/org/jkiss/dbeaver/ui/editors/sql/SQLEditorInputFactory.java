@@ -39,8 +39,6 @@ public class SQLEditorInputFactory implements IElementFactory
     private static final String ID_FACTORY = SQLEditorInputFactory.class.getName(); //$NON-NLS-1$
 
     private static final String TAG_PATH = "path"; //$NON-NLS-1$
-    //private static final String TAG_NAME = "name"; //$NON-NLS-1$
-    //private static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
 
     public SQLEditorInputFactory()
     {
@@ -69,19 +67,6 @@ public class SQLEditorInputFactory implements IElementFactory
                     return null;
                 }
             }
-/*
-            DataSourceDescriptor dataSource = null;
-            DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject());
-            if (registry != null) {
-                String dataSourceId = memento.getString(TAG_DATA_SOURCE);
-                if (dataSourceId != null) {
-                    dataSource = registry.getDataSource(dataSourceId);
-                    if (dataSource == null) {
-                        log.warn("Can't find datasource '" + dataSourceId + "' for file '" + fileName + "'");
-                    }
-                }
-            }
-*/
             return new SQLEditorInput(file);
         }
         return null;

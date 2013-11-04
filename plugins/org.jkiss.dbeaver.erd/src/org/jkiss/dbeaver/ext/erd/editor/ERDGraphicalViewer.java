@@ -326,7 +326,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         if (usedDataSources.containsKey(container) &&
             event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
             Boolean.FALSE.equals(event.getEnabled()) &&
-            !DBeaverCore.getInstance().isClosing())
+            !DBeaverCore.isClosing())
         {
             // Close editor only if it is simple disconnect
             // Workbench shutdown doesn't close editor
