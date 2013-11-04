@@ -254,7 +254,7 @@ public class DBeaverCore implements DBPApplication {
         // It is a part of UI
         if (this.navigatorModel != null) {
             this.navigatorModel.dispose();
-            this.navigatorModel = null;
+            //this.navigatorModel = null;
         }
 
         // Dispose project registry

@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
@@ -36,7 +37,7 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 /**
  * DatabaseEditorInput
  */
-public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IDatabaseEditorInput, IDataSourceContainerProvider
+public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IPersistableElement, IDatabaseEditorInput, IDataSourceContainerProvider
 {
     private final NODE node;
     private final DBECommandContext commandContext;
@@ -80,7 +81,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public IPersistableElement getPersistable()
     {
-        return null;
+        return this;
     }
 
     @Override
@@ -185,4 +186,15 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
             (obj instanceof DatabaseEditorInput && ((DatabaseEditorInput<?>)obj).node.equals(node));
     }
 
+    @Override
+    public String getFactoryId()
+    {
+        return DatabaseEditorInputFactory.ID_FACTORY;
+    }
+
+    @Override
+    public void saveState(IMemento memento)
+    {
+        DatabaseEditorInputFactory.saveState(memento, this);
+    }
 }
