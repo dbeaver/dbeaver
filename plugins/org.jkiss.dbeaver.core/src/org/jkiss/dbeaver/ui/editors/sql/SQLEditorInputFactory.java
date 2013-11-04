@@ -81,10 +81,6 @@ public class SQLEditorInputFactory implements IElementFactory
     {
         IFile file = input.getFile();
         memento.putString(TAG_PATH, file.getFullPath().toString());
-        //memento.putString(TAG_NAME, input.getScriptName());
-        //if (input.getDataSourceContainer() != null) {
-        //    memento.putString(TAG_DATA_SOURCE, input.getDataSourceContainer().getId());
-        //}
     }
 
 }

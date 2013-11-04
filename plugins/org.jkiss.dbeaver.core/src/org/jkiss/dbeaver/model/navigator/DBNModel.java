@@ -106,13 +106,15 @@ public class DBNModel implements IResourceChangeListener {
         synchronized (nodeMap) {
             this.nodeMap.clear();
         }
-        if (!listeners.isEmpty()) {
-            for (IDBNListener listener : listeners) {
-                log.warn("Listener '" + listener + "' is not unregistered from DBM model");
+        synchronized (this.listeners) {
+            if (!listeners.isEmpty()) {
+                for (IDBNListener listener : listeners) {
+                    log.warn("Listener '" + listener + "' is not unregistered from DBM model");
+                }
             }
+            this.listeners.clear();
+            this.listenersCopy = null;
         }
-        this.listeners.clear();
-        this.listenersCopy = null;
         this.root = null;
 
         synchronized (DBNModel.class) {

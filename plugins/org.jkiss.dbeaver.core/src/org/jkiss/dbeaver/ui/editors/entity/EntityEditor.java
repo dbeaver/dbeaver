@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
 import org.jkiss.dbeaver.ext.ui.IFolderListener;
@@ -62,6 +63,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
@@ -537,7 +539,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private void updateEditorDefaults(String pageId, String folderId)
     {
-        DBSObject object = getEditorInput().getDatabaseObject();
+        IDatabaseEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof DatabaseEditorInput) {
+            ((DatabaseEditorInput) editorInput).setDefaultPageId(pageId);
+            ((DatabaseEditorInput) editorInput).setDefaultFolderId(folderId);
+        }
+        DBSObject object = editorInput.getDatabaseObject();
         if (object != null) {
             synchronized (defaultPageMap) {
                 EditorDefaults editorDefaults = defaultPageMap.get(object.getClass().getName());
