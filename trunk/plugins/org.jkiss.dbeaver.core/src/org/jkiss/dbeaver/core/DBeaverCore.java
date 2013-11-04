@@ -59,6 +59,7 @@ public class DBeaverCore implements DBPApplication {
 
     private static DBeaverCore instance;
     private static boolean standalone = false;
+    private static volatile boolean isClosing = false;
 
     private DatabaseEditorAdapterFactory editorsAdapter;
     //private DBeaverProgressProvider progressProvider;
@@ -77,7 +78,6 @@ public class DBeaverCore implements DBPApplication {
     private QMLogFileWriter qmLogWriter;
     private ProjectRegistry projectRegistry;
 
-    private boolean isClosing;
     private static boolean disposed = false;
 
     public static DBeaverCore getInstance()
@@ -126,6 +126,16 @@ public class DBeaverCore implements DBPApplication {
         standalone = flag;
     }
 
+    public static boolean isClosing()
+    {
+        return isClosing;
+    }
+
+    public static void setClosing(boolean closing)
+    {
+        isClosing = closing;
+    }
+
     public static Version getVersion()
     {
         return DBeaverActivator.getInstance().getBundle().getVersion();
@@ -143,16 +153,6 @@ public class DBeaverCore implements DBPApplication {
 
     DBeaverCore()
     {
-    }
-
-    public boolean isClosing()
-    {
-        return isClosing;
-    }
-
-    public void setClosing(boolean closing)
-    {
-        isClosing = closing;
     }
 
     private void initialize()
@@ -245,6 +245,26 @@ public class DBeaverCore implements DBPApplication {
 
     public synchronized void dispose()
     {
+        log.debug("Shutdown initiated");
+        long startTime = System.currentTimeMillis();
+
+        DBeaverCore.setClosing(true);
+
+        // Dispose navigator model first
+        // It is a part of UI
+        if (this.navigatorModel != null) {
+            this.navigatorModel.dispose();
+            this.navigatorModel = null;
+        }
+
+        // Dispose project registry
+        // It will close all open connections
+        if (this.projectRegistry != null) {
+            this.projectRegistry.dispose();
+            this.projectRegistry = null;
+        }
+
+        // Cleanup temp project
         IProgressMonitor monitor = new NullProgressMonitor();
         if (workspace != null) {
             if (tempProject != null && tempProject.exists()) {
@@ -265,10 +285,6 @@ public class DBeaverCore implements DBPApplication {
             this.queryManager.dispose();
             //queryManager = null;
         }
-        if (this.navigatorModel != null) {
-            this.navigatorModel.dispose();
-            //navigatorModel = null;
-        }
         if (this.networkHandlerRegistry != null) {
             this.networkHandlerRegistry.dispose();
             this.networkHandlerRegistry = null;
@@ -284,10 +300,6 @@ public class DBeaverCore implements DBPApplication {
         if (this.editorsRegistry != null) {
             this.editorsRegistry.dispose();
             this.editorsRegistry = null;
-        }
-        if (this.projectRegistry != null) {
-            this.projectRegistry.dispose();
-            this.projectRegistry = null;
         }
         if (this.dataSourceProviderRegistry != null) {
             this.dataSourceProviderRegistry.dispose();
@@ -312,6 +324,8 @@ public class DBeaverCore implements DBPApplication {
 
         DBeaverCore.instance = null;
         DBeaverCore.disposed = true;
+
+        log.debug("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
     public IWorkspace getWorkspace()
