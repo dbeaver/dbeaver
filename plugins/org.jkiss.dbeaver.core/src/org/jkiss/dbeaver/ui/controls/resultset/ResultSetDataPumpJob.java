@@ -72,7 +72,6 @@ class ResultSetDataPumpJob extends DataSourceJob {
             DBCExecutionPurpose.USER,
             NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
         try {
-            long start = System.currentTimeMillis();
             statistics = resultSetViewer.getDataContainer().readData(
                 session,
                 resultSetViewer.getDataReceiver(),
@@ -80,7 +79,6 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 offset,
                 maxRows,
                 DBSDataContainer.FLAG_READ_PSEUDO);
-            System.out.println(System.currentTimeMillis() - start);
         }
         catch (DBException e) {
             error = e;
