@@ -183,18 +183,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     private void initProviderBundle(DriverDescriptor driver)
     {
-/*
-        ClassLoader classLoader = implType.getObjectClass().getClassLoader();
-        if (classLoader instanceof BaseClassLoader) {
-            BaseClassLoader baseClassLoader = (BaseClassLoader)classLoader;
-            ClasspathManager classpathManager = baseClassLoader.getClasspathManager();
-            BundleData bundleData = classpathManager.getBaseData();
-            String externalJar = "D:\\java\\db-derby-10.9.1.0-bin\\lib\\derby.jar";
-            classpathManager.attachFragment(bundleData, baseClassLoader.getDomain(), new String[] {externalJar});
-            classpathManager.initialize();
-            System.out.println("YAHOO");
-        }
-*/
     }
 
     public DBXTreeNode getTreeDescriptor()

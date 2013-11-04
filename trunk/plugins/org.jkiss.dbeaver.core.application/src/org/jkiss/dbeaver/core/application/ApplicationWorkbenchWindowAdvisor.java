@@ -31,6 +31,7 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.internal.progress.ProgressManagerUtil;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -61,6 +62,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     @Override
     public void preWindowOpen()
     {
+        // Set timeout for short jobs (like SQL queries)
+        // Jobs longer than this will show progress dialog
+        ProgressManagerUtil.SHORT_OPERATION_TIME = 100;
+
+        // Configure window
         IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
         configurer.setInitialSize(new Point(600, 400));
         configurer.setShowCoolBar(true);
