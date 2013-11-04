@@ -1702,7 +1702,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void reorderResultSet(boolean force, Runnable onSuccess)
     {
-        if (isServerSideFiltering() && supportsDataFilter()) {
+        if (force || isServerSideFiltering() && supportsDataFilter()) {
             if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
                 int segmentSize = getSegmentMaxRows();
                 if (curRowNum >= segmentSize && segmentSize > 0) {

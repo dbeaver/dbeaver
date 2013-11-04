@@ -20,12 +20,16 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -133,18 +137,19 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             DBUtils.findValueLocators(session.getProgressMonitor(), metaColumns);
         }
 
-        UIUtils.runInUI(null, new Runnable() {
+        final List<Object[]> tmpRows = rows;
+        DBeaverUI.runUIJob("Set data in result set viewer", new DBRRunnableWithProgress() {
             @Override
-            public void run()
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
                 // Check for more data
                 int segmentSize = resultSetViewer.getSegmentMaxRows();
-                hasMoreData = segmentSize > 0 && rows.size() >= segmentSize;
+                hasMoreData = segmentSize > 0 && tmpRows.size() >= segmentSize;
                 // Push data into viewer
                 if (!nextSegmentRead) {
-                    resultSetViewer.setData(rows, updateMetaData);
+                    resultSetViewer.setData(tmpRows, updateMetaData);
                 } else {
-                    resultSetViewer.appendData(rows);
+                    resultSetViewer.appendData(tmpRows);
                 }
             }
         });
