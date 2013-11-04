@@ -22,6 +22,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -55,10 +56,13 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
@@ -84,6 +88,7 @@ import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -1034,9 +1039,9 @@ public class SQLEditor extends SQLEditorBase
                             selectStatementInEditor(result.getStatement());
                         }
                         if (isSingleQuery) {
-                            UIUtils.runInUI(null, new Runnable() {
+                            DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
                                 @Override
-                                public void run()
+                                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                                 {
                                     processQueryResult(result);
                                 }
@@ -1046,9 +1051,9 @@ public class SQLEditor extends SQLEditorBase
 
                     private void selectStatementInEditor(final SQLStatementInfo query)
                     {
-                        UIUtils.runInUI(null, new Runnable() {
+                        DBeaverUI.runUIJob("Select SQL query in editor", new DBRRunnableWithProgress() {
                             @Override
-                            public void run()
+                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 selectAndReveal(query.getOffset(), query.getLength());
                                 setStatus(query.getQuery(), false);
