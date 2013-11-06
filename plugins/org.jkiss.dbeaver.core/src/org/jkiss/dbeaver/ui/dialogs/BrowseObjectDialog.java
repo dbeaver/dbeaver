@@ -26,12 +26,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 
@@ -130,7 +132,8 @@ public class BrowseObjectDialog extends Dialog {
                 for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
                     DBNNode node = (DBNNode) iter.next();
                     if (node instanceof DBSWrapper) {
-                        if (matchesType(((DBSWrapper) node).getObject().getClass(), true)) {
+                        DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
+                        if (matchesType(object.getClass(), true)) {
                             selectedObjects.add(node);
                         }
                     }
@@ -163,7 +166,6 @@ public class BrowseObjectDialog extends Dialog {
     @Override
     protected void okPressed()
     {
-        IStructuredSelection selection = (IStructuredSelection) navigatorTree.getViewer().getSelection();
         super.okPressed();
     }
 

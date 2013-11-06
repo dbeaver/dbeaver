@@ -67,8 +67,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         if (containerNode == null) {
             return null;
         }
-        DBSObject object = containerNode.getObject();
-        return object instanceof DBSObjectContainer ? (DBSObjectContainer) object :  null;
+        return DBUtils.getAdapter(DBSObjectContainer.class, containerNode.getObject());
     }
 
     public DBNDatabaseNode getContainerNode()
@@ -214,8 +213,10 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     public String getContainerFullName()
     {
-        return DBUtils.getObjectFullName(getContainer()) +
-            " [" + getContainer().getDataSource().getContainer().getName() + "]";
+        DBSObjectContainer container = getContainer();
+        return container == null ? null :
+            container instanceof DBPDataSource ? DBUtils.getObjectFullName(container) :
+            DBUtils.getObjectFullName(container) + " [" + container.getDataSource().getContainer().getName() + "]";
     }
 
 }

@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -229,7 +231,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void startTransfer(DBRProgressMonitor monitor) throws DBException
     {
         // Create all necessary database objects
-        DBSObjectContainer container = settings.getContainer();
         monitor.beginTask("Create necessary database objects", 1);
         try {
             boolean hasNewObjects = false;
@@ -253,6 +254,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 // Refresh node
                 monitor.subTask("Refresh navigator model");
                 settings.getContainerNode().refreshNode(monitor, this);
+
+                DBSObjectContainer container = settings.getContainer();
 
                 // Reflect database changes in mappings
                 for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
@@ -296,11 +299,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
-        sql.append("CREATE TABLE ")
-            .append(DBUtils.getQuotedIdentifier(schema))
-            .append(targetDataSource.getInfo().getCatalogSeparator())
-            .append(DBUtils.getQuotedIdentifier(targetDataSource, tableName))
-            .append("(\n");
+        sql.append("CREATE TABLE ");
+        if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
+            sql.append(DBUtils.getQuotedIdentifier(schema));
+            sql.append(targetDataSource.getInfo().getCatalogSeparator());
+        }
+        sql.append(DBUtils.getQuotedIdentifier(targetDataSource, tableName)).append("(\n");
         Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<DBSAttributeBase, DatabaseMappingAttribute>();
         for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
             if (attr.getMappingType() != DatabaseMappingType.create) {
@@ -335,7 +339,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
         sql.append(")");
-        executeSQL(monitor, targetDataSource, sql.toString());
+        try {
+            executeSQL(monitor, targetDataSource, sql.toString());
+        } catch (DBCException e) {
+            throw new DBCException("Can't create target table:\n" + sql, e);
+        }
     }
 
     private void appendAttributeClause(StringBuilder sql, DatabaseMappingAttribute attr)
@@ -351,7 +359,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget()))
             .append(" ADD ");
         appendAttributeClause(sql, attribute);
-        executeSQL(monitor, attribute.getParent().getTarget().getDataSource(), sql.toString());
+        try {
+            executeSQL(monitor, attribute.getParent().getTarget().getDataSource(), sql.toString());
+        } catch (DBCException e) {
+            throw new DBCException("Can't create target column:\n" + sql, e);
+        }
     }
 
     private void executeSQL(DBRProgressMonitor monitor, DBPDataSource dataSource, String sql)
