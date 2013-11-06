@@ -186,20 +186,24 @@ public class ColumnsMappingDialog extends StatusDialog {
                     try {
                         String name = CommonUtils.toString(value);
                         DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
-                        if (attrMapping.getParent().getMappingType() == DatabaseMappingType.existing &&
-                            attrMapping.getParent().getTarget() instanceof DBSEntity)
-                        {
-                            DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
-                            for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
-                                if (name.equalsIgnoreCase(attr.getName())) {
-                                    attrMapping.setTarget(attr);
-                                    attrMapping.setMappingType(DatabaseMappingType.existing);
-                                    return;
+                        if (DatabaseConsumerPageMapping.TARGET_NAME_SKIP.equals(name)) {
+                            attrMapping.setMappingType(DatabaseMappingType.skip);
+                        } else {
+                            if (attrMapping.getParent().getMappingType() == DatabaseMappingType.existing &&
+                                attrMapping.getParent().getTarget() instanceof DBSEntity)
+                            {
+                                DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
+                                for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
+                                    if (name.equalsIgnoreCase(attr.getName())) {
+                                        attrMapping.setTarget(attr);
+                                        attrMapping.setMappingType(DatabaseMappingType.existing);
+                                        return;
+                                    }
                                 }
                             }
+                            attrMapping.setMappingType(DatabaseMappingType.create);
+                            attrMapping.setTargetName(name);
                         }
-                        attrMapping.setMappingType(DatabaseMappingType.create);
-                        attrMapping.setTargetName(name);
                         updateStatus(Status.OK_STATUS);
                     } catch (DBException e) {
                         updateStatus(RuntimeUtils.makeExceptionStatus(e));
