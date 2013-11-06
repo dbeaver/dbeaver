@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
 * Stream transfer consumer
@@ -58,15 +55,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DBSDataManipulator.ExecuteBatch executeBatch;
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
+    private List<DBSEntityAttribute> targetAttributes;
 
     private static class ColumnMapping {
-        DBCAttributeMetaData rsAttr;
+        DBCAttributeMetaData sourceAttr;
         DatabaseMappingAttribute targetAttr;
         DBDValueHandler valueHandler;
+        int targetIndex = -1;
 
-        private ColumnMapping(DBCAttributeMetaData rsAttr)
+        private ColumnMapping(DBCAttributeMetaData sourceAttr)
         {
-            this.rsAttr = rsAttr;
+            this.sourceAttr = sourceAttr;
         }
     }
 
@@ -86,27 +85,37 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
         List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
         columnMappings = new ColumnMapping[rsAttributes.size()];
-        DBSEntityAttribute[] attributes = new DBSEntityAttribute[columnMappings.length];
+        targetAttributes = new ArrayList<DBSEntityAttribute>(columnMappings.length);
         for (int i = 0; i < rsAttributes.size(); i++) {
-            columnMappings[i] = new ColumnMapping(rsAttributes.get(i));
-            columnMappings[i].targetAttr = containerMapping.getAttributeMapping(columnMappings[i].rsAttr);
-            if (columnMappings[i].targetAttr == null) {
-                throw new DBCException("Can't find target attribute [" + columnMappings[i].rsAttr.getName() + "]");
+            ColumnMapping columnMapping = new ColumnMapping(rsAttributes.get(i));
+            columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
+            if (columnMapping.targetAttr == null) {
+                throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
             }
-            columnMappings[i].valueHandler = DBUtils.findValueHandler(session, columnMappings[i].rsAttr);
-            attributes[i] = columnMappings[i].targetAttr.getTarget();
+            columnMapping.valueHandler = DBUtils.findValueHandler(session, columnMapping.sourceAttr);
+            columnMappings[i] = columnMapping;
+            if (columnMapping.targetAttr.getMappingType() == DatabaseMappingType.skip) {
+                continue;
+            }
+            columnMapping.targetIndex = targetAttributes.size();
+            targetAttributes.add(columnMappings[i].targetAttr.getTarget());
         }
-
-        executeBatch = containerMapping.getTarget().insertData(targetSession, attributes, null);
+        executeBatch = containerMapping.getTarget().insertData(
+            targetSession,
+            targetAttributes.toArray(new DBSAttributeBase[targetAttributes.size()]),
+            null);
     }
 
     @Override
     public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException
     {
-        Object[] rowValues = new Object[columnMappings.length];
+        Object[] rowValues = new Object[targetAttributes.size()];
         for (int i = 0; i < columnMappings.length; i++) {
             ColumnMapping column = columnMappings[i];
-            rowValues[i] = column.valueHandler.fetchValueObject(session, resultSet, column.rsAttr, i);
+            if (column.targetIndex < 0) {
+                continue;
+            }
+            rowValues[column.targetIndex] = column.valueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
         }
         executeBatch.add(rowValues);
 
