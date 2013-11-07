@@ -291,6 +291,7 @@ public class GenericDataSource extends JDBCDataSource
                 try {
                     JDBCResultSet dbResult = metaData.getCatalogs();
                     try {
+                        int totalCatalogs = 0;
                         while (dbResult.next()) {
                             String catalogName = GenericUtils.safeGetString(catalogObject, dbResult, JDBCConstants.TABLE_CAT);
                             if (CommonUtils.isEmpty(catalogName)) {
@@ -300,6 +301,7 @@ public class GenericDataSource extends JDBCDataSource
                                     continue;
                                 }
                             }
+                            totalCatalogs++;
                             if (catalogFilters == null || catalogFilters.matches(catalogName)) {
                                 catalogNames.add(catalogName);
                                 monitor.subTask("Extract catalogs - " + catalogName);
@@ -310,13 +312,21 @@ public class GenericDataSource extends JDBCDataSource
                                 break;
                             }
                         }
+                        if (totalCatalogs == 1) {
+                            // Just one catalog. Looks like DB2 or PostgreSQL
+                            // Let's just skip it and use only schemas
+                            // It's ok to use "%" instead of catalog name anyway
+                            catalogNames.clear();
+                        }
                     } finally {
                         dbResult.close();
                     }
                 } catch (UnsupportedOperationException e) {
                     // Just skip it
+                    log.debug(e);
                 } catch (SQLFeatureNotSupportedException e) {
                     // Just skip it
+                    log.debug(e);
                 } catch (SQLException e) {
                     // Error reading catalogs - just warn about it
                     log.warn(e);
@@ -363,17 +373,21 @@ public class GenericDataSource extends JDBCDataSource
 
             final List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
             JDBCResultSet dbResult;
-            boolean catalogSchemas;
-            try {
-                dbResult = session.getMetaData().getSchemas(
-                    catalog == null ? null : catalog.getName(),
-                    schemaFilters != null && schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : getAllObjectsPattern());
-                catalogSchemas = true;
-            } catch (Throwable e) {
-                // This method not supported (may be old driver version)
-                // Use general schema reading method
+            boolean catalogSchemas = false;
+            if (catalog != null) {
+                try {
+                    dbResult = session.getMetaData().getSchemas(
+                        catalog == null ? null : catalog.getName(),
+                        schemaFilters != null && schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : getAllObjectsPattern());
+                    catalogSchemas = true;
+                } catch (Throwable e) {
+                    // This method not supported (may be old driver version)
+                    // Use general schema reading method
+                    log.debug(e);
+                    dbResult = session.getMetaData().getSchemas();
+                }
+            } else {
                 dbResult = session.getMetaData().getSchemas();
-                catalogSchemas = false;
             }
 
             try {
@@ -398,13 +412,13 @@ public class GenericDataSource extends JDBCDataSource
                     if (!CommonUtils.isEmpty(catalogName)) {
                         if (catalog == null) {
                             // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
-                            log.warn("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while schema doesn't have parent catalog");
+                            log.debug("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while schema doesn't have parent catalog");
                         } else if (!catalog.getName().equals(catalogName)) {
                             if (!catalogSchemas) {
                                 // Just skip it - we have list of all existing schemas and this one belongs to another catalog
                                 continue;
                             }
-                            log.warn("Catalog name '" + catalogName + "' differs from schema's catalog '" + catalog.getName() + "'");
+                            log.debug("Catalog name '" + catalogName + "' differs from schema's catalog '" + catalog.getName() + "'");
                         }
                     }
 
@@ -421,6 +435,12 @@ public class GenericDataSource extends JDBCDataSource
             } finally {
                 dbResult.close();
             }
+            if (catalog == null && tmpSchemas.size() == 1) {
+                // Only one schema and no catalogs
+                // Most likely it is a fake one, let's skip it
+                // Anyway using "%" instead is ok
+                tmpSchemas.clear();
+            }
             return tmpSchemas;
         } catch (UnsupportedOperationException e) {
             // Schemas are not supported
@@ -431,7 +451,7 @@ public class GenericDataSource extends JDBCDataSource
             log.debug(e);
             return null;
         } catch (Exception ex) {
-            // Schemas do not supported - jsut ignore this error
+            // Schemas do not supported - just ignore this error
             log.warn("Could not read schema list", ex);
             return null;
         }
@@ -457,16 +477,12 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         GenericObjectContainer container = null;
-        if (!CommonUtils.isEmpty(catalogName)) {
+        if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(catalogs)) {
             container = getCatalog(catalogName);
             if (container == null) {
                 log.error("Catalog " + catalogName + " not found");
                 return null;
             }
-        } else if (catalogs != null && catalogs.size() == 1) {
-            // Catalog name is not specified but we have only one catalog - let's use it
-            // It can happen in some drivers (PostgreSQL at least)
-            container = catalogs.get(0);
         }
         if (!CommonUtils.isEmpty(schemaName)) {
             if (container instanceof GenericCatalog) {
@@ -576,9 +592,6 @@ public class GenericDataSource extends JDBCDataSource
             if (!CommonUtils.isEmpty(catalogs)) {
                 if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
                     return getCatalog(selectedEntityName);
-                } else if (catalogs.size() == 1) {
-                    // Return the only catalog as selected [DBSPEC: PostgreSQL]
-                    return catalogs.get(0);
                 }
             } else if (!CommonUtils.isEmpty(schemas)) {
                 if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_SCHEMA)) {
@@ -650,7 +663,6 @@ public class GenericDataSource extends JDBCDataSource
             }
             if (CommonUtils.isEmpty(selectedEntityName)) {
                 // If we have only one catalog then it is our selected entity
-                // [JDBC: PostgreSQL and Vertica]
                 if (!CommonUtils.isEmpty(catalogs) && catalogs.size() == 1) {
                     selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
                     selectedEntityName = catalogs.get(0).getName();
@@ -667,6 +679,13 @@ public class GenericDataSource extends JDBCDataSource
                     try {
                         resultSet.next();
                         selectedEntityName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
+                        if (!CommonUtils.isEmpty(selectedEntityName)) {
+                            // [PostgreSQL]
+                            int divPos = selectedEntityName.lastIndexOf(',');
+                            if (divPos != -1) {
+                                selectedEntityName = selectedEntityName.substring(divPos + 1);
+                            }
+                        }
                     } finally {
                         resultSet.close();
                     }
