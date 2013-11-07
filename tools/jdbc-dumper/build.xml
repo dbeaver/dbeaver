@@ -4,17 +4,20 @@
   ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
   -->
 
-<project name="VersionUpdater" default="build">
+<project name="JDBCDumper" default="build">
 
     <target name="build">
         <mkdir dir="build"/>
-        <javac srcdir="src" destdir="build" includeantruntime="true">
-		</javac>
+        <javac srcdir="src" destdir="build" includeantruntime="true"></javac>
     </target>
 
     <target name="jar" depends="build">
-        <jar destfile="jdbc-dumper-1.0.jar" manifest="${build.dir}/MANIFEST.MF">
-            <fileset dir="${build.main.classes}" />
+        <jar destfile="jdbc-dumper-1.0.jar">
+            <fileset dir="build" />
+
+            <manifest>
+               <attribute name="Main-Class" value="org.jkiss.tools.jdbc.dumper.JDBCDumper"/>
+            </manifest>
         </jar>
     </target>
 
