@@ -100,18 +100,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     @Override
     public String getFullQualifiedName()
     {
-/*
-        String ownerName = null, catalogName = null;
-        if (getSchema() != null) {
-            ownerName = getSchema().getName();
-        } else if (getCatalog() != null) {
-            ownerName = getCatalog().getName();
-        }
-        if (getSchema() != null && getCatalog() != null && getDataSource().getCatalogs().size() > 1) {
-            // Use catalog name only if there are multiple catalogs
-            catalogName = getCatalog().getName();
-        }
-*/
         return DBUtils.getFullQualifiedName(getDataSource(), getCatalog(), getSchema(), this);
     }
 
