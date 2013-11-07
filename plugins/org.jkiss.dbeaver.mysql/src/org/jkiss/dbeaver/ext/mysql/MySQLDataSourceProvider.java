@@ -54,6 +54,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         connectionsProps.put("zeroDateTimeBehavior", "convertToNull");
         // Set utf-8 as default charset
         connectionsProps.put("characterEncoding", "utf-8");
+        connectionsProps.put("tinyInt1isBit", "false");
         // Auth plugins
 //        connectionsProps.put("authenticationPlugins",
 //            "com.mysql.jdbc.authentication.MysqlClearPasswordPlugin," +
