@@ -9,6 +9,8 @@ Major:
 7. Query manager fixes. + keep only primitive props + persistence
 8. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
 
+Folder for connections
+
 Minor:
 
 rename mysql (generic?) table,column
