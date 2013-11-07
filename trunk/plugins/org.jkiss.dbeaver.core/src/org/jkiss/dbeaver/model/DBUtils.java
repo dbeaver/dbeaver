@@ -228,17 +228,6 @@ public final class DBUtils {
                 return null;
             }
             rootSC = (DBSObjectContainer) catalog;
-        } else {
-            // In some drivers only one catalog exists and it's not used in table names
-            // So we can use it as default
-            // Actually I saw it only in PostgreSQL
-            Collection<? extends DBSObject> children = rootSC.getChildren(monitor);
-            if (children != null && children.size() == 1) {
-                DBSObject child = children.iterator().next();
-                if (child instanceof DBSCatalog) {
-                    rootSC = (DBSCatalog)child;
-                }
-            }
         }
         if (!CommonUtils.isEmpty(schemaName)) {
             DBSObject schema = rootSC.getChild(monitor, schemaName);
