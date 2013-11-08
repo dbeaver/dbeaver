@@ -1,15 +1,16 @@
 Major:
 
-1. Dialect-dependent SQL generator
-2. Client-side filters (maybe a bad idea)
-3. Disconnect detection (by error code)
-4. Outline for data editor (RSV) - columns' filters, search, hide/show
-5. Async autocomplete
-6. Check on MacOS
-7. Query manager fixes. + keep only primitive props + persistence
-8. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
+1. Disconnect detection (by error code)
+2. Multiple result sets support (MS SQL)
+3. Dialect-dependent SQL generator
+4. Folder for connections
+5. Client-side filters (maybe a bad idea)
+6. Outline for data editor (RSV) - columns' filters, search, hide/show
+7. Check on MacOS
+8. Query manager fixes. + keep only primitive props + persistence
+9. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
+10. Async autocomplete
 
-Folder for connections
 
 Minor:
 
