@@ -141,6 +141,7 @@
                 <driver
                     id="db2"
                     label="DB2"
+                    category="DB2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     defaultPort="50000"
@@ -161,6 +162,7 @@
                 <driver
                     id="db2_zos"
                     label="DB2 z/OS"
+                    category="DB2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     defaultPort="50000"
@@ -175,6 +177,20 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="meta-model" value="indexed"/>
+                </driver>
+
+                <driver
+                    id="db2_iseries"
+                    label="DB2 iSeries/AS 400"
+                    category="DB2"
+                    class="com.ibm.as400.access.AS400JDBCDriver"
+                    sampleURL="jdbc:as400://{host};[libraries={database};]"
+                    defaultPort=""
+                    description="DB2 iSeries/AS 400 driver">
+                    <file type="jar" path="drivers/db2-jt400/jt400.jar" url="*"/>
+                    <file type="license" path="drivers/db2-jt400/LICENSE.txt" url="*"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                 </driver>
 
                 <driver

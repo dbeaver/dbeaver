@@ -36,6 +36,7 @@ public enum DBIcon
     TREE("tree", "icons/tree/tree.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_ADMIN("admin", "icons/tree/admin.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_DATABASE("database", "icons/tree/database.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_DATABASE_CATEGORY("database", "icons/tree/database_category.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_SCHEMA("schema", "icons/tree/schema.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_TABLES("tables", "icons/tree/tables.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_TABLE("table", "icons/tree/table.png"), //$NON-NLS-1$ //$NON-NLS-2$
