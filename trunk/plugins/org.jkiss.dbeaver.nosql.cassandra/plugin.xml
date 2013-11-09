@@ -52,6 +52,7 @@
                 <driver
                     id="apache_cassandra"
                     label="Cassandra"
+                    category="NoSQL"
                     class="org.jkiss.jdbc.cassandra.CassandraDriver"
                     sampleURL="jdbc:jkiss:cassandra://{host}[:{port}]/{database}"
                     defaultPort="9160"

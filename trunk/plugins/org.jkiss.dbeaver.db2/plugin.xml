@@ -371,12 +371,13 @@
             <drivers managable="false">
                 <driver
                     id="db2"
-                    label="DB2"
+                    label="DB2 LUW"
+                    category="DB2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     defaultPort="50000"
                     webURL="http://www-01.ibm.com/support/docview.wss?uid=swg27016878"
-                    description="DB2 JCC driver">
+                    description="DB2 for Linux/Unix/Windows driver">
                     <replace provider="generic" driver="db2"/>
 
                     <property name="maxStatements" value="50"/>

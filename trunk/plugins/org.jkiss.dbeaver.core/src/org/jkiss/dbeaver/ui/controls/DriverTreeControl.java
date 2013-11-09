@@ -48,19 +48,12 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     private Font boldFont;
 
     public static class DriverCategory {
-        final DataSourceProviderDescriptor provider;
         final String name;
         final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
 
-        public DriverCategory(DataSourceProviderDescriptor provider, String name)
+        public DriverCategory(String name)
         {
-            this.provider = provider;
             this.name = name;
-        }
-
-        public DataSourceProviderDescriptor getProvider()
-        {
-            return provider;
         }
 
         public String getName()
@@ -77,14 +70,13 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         public boolean equals(Object obj)
         {
             return obj instanceof DriverCategory &&
-                ((DriverCategory) obj).provider == provider &&
                 ((DriverCategory) obj).name.equals(name);
         }
 
         @Override
         public int hashCode()
         {
-            return provider.hashCode() + name.hashCode();
+            return name.hashCode();
         }
     }
 
@@ -120,7 +112,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
 
         this.setContentProvider(new ViewContentProvider());
         this.setLabelProvider(new ViewLabelProvider());
-        this.setInput(DataSourceProviderRegistry.getDefault());
+        this.setInput(collectDrivers());
 
         this.addSelectionChangedListener(this);
         this.addDoubleClickListener(this);
@@ -129,7 +121,55 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         this.expandAll();
         UIUtils.packColumns(getTree());
         this.collapseAll();
-        this.expandToLevel(2);
+        //this.expandToLevel(2);
+    }
+
+    @Override
+    public void refresh()
+    {
+        setInput(collectDrivers());
+    }
+
+    private Collection<Object> collectDrivers()
+    {
+        List<Object> result = new ArrayList<Object>();
+        Map<String, DriverCategory> categories = new HashMap<String, DriverCategory>();
+        for (DataSourceProviderDescriptor provider : providers) {
+            List<DriverDescriptor> drivers = provider.getEnabledDrivers();
+            for (DriverDescriptor driver : drivers) {
+                String category = driver.getCategory();
+                if (CommonUtils.isEmpty(category)) {
+                    result.add(driver);
+                } else {
+                    DriverCategory driverCategory = categories.get(category);
+                    if (driverCategory == null) {
+                        driverCategory = new DriverCategory(category);
+                        categories.put(category, driverCategory);
+                        result.add(driverCategory);
+                    }
+                    driverCategory.drivers.add(driver);
+                }
+            }
+        }
+        Collections.sort(result, new Comparator<Object>() {
+            @Override
+            public int compare(Object o1, Object o2)
+            {
+                String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory)o1).getName();
+                String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory)o2).getName();
+                return name1.compareTo(name2);
+            }
+        });
+        for (DriverCategory category : categories.values()) {
+            Collections.sort(category.drivers, new Comparator<DriverDescriptor>() {
+                @Override
+                public int compare(DriverDescriptor o1, DriverDescriptor o2)
+                {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
+        }
+        return result;
     }
 
     class ViewContentProvider implements ITreeContentProvider
@@ -153,62 +193,16 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         @Override
         public Object getParent(Object child)
         {
-            if (child instanceof DriverDescriptor) {
-                return ((DriverDescriptor) child).getProviderDescriptor();
-            } else if (child instanceof DataSourceProviderDescriptor) {
-                return ((DataSourceProviderDescriptor) child).getRegistry();
-            } else {
-                return null;
-            }
+            return null;
         }
 
         @Override
         public Object[] getChildren(Object parent)
         {
-            if (parent instanceof DataSourceProviderRegistry) {
-                List<Object> children = new ArrayList<Object>();
-                for (DataSourceProviderDescriptor provider : providers) {
-                    List<DriverDescriptor> drivers = provider.getEnabledDrivers();
-                    if (drivers.isEmpty()) {
-                        // skip
-                    } else if (drivers.size() == 1) {
-                        children.add(drivers.get(0));
-                    } else {
-                        children.add(provider);
-                    }
-                }
-                return children.toArray();
-            } else if (parent instanceof DataSourceProviderDescriptor) {
-                final List<DriverDescriptor> drivers = ((DataSourceProviderDescriptor) parent).getEnabledDrivers();
-                final Map<String, DriverCategory> categoryMap = new HashMap<String, DriverCategory>();
-                final List<Object> children = new ArrayList<Object>();
-                for (DriverDescriptor driver : drivers) {
-                    String categoryName = driver.getCategory();
-                    if (CommonUtils.isEmpty(categoryName)) {
-                        children.add(driver);
-                    } else {
-                        categoryName = categoryName.trim().toLowerCase();
-                        DriverCategory category = categoryMap.get(categoryName);
-                        if (category == null) {
-                            category = new DriverCategory((DataSourceProviderDescriptor) parent, driver.getCategory());
-                            categoryMap.put(categoryName, category);
-                            children.add(category);
-                        }
-                        category.drivers.add(driver);
-                    }
-                }
-                Collections.sort(children, new Comparator<Object>() {
-                    @Override
-                    public int compare(Object o1, Object o2)
-                    {
-                        String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory) o1).getName();
-                        String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory) o2).getName();
-                        return name1.compareTo(name2);
-                    }
-                });
-                return children.toArray();
+            if (parent instanceof Collection) {
+                return ((Collection) parent).toArray();
             } else if (parent instanceof DriverCategory) {
-                return ((DriverCategory) parent).drivers.toArray();
+                return ((DriverCategory) parent).getDrivers().toArray();
             } else {
                 return new Object[0];
             }
@@ -217,11 +211,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         @Override
         public boolean hasChildren(Object parent)
         {
-            if (parent instanceof DataSourceProviderRegistry) {
-                return !providers.isEmpty();
-            } else if (parent instanceof DataSourceProviderDescriptor) {
-                return !((DataSourceProviderDescriptor) parent).getEnabledDrivers().isEmpty();
-            } else if (parent instanceof DriverCategory) {
+            if (parent instanceof DriverCategory) {
                 return !((DriverCategory) parent).drivers.isEmpty();
             }
             return false;
@@ -311,10 +301,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 }
 			    defImage = DBIcon.TREE_FOLDER.getImage();
             } else if (obj instanceof DriverCategory) {
-                Image icon = ((DriverCategory) obj).drivers.get(0).getIcon();
-                if (icon != null) {
-                    return icon;
-                }
+                return DBIcon.TREE_DATABASE_CATEGORY.getImage();
             } else if (obj instanceof DriverDescriptor) {
                 Image icon = ((DriverDescriptor) obj).getIcon();
                 if (icon != null) {
