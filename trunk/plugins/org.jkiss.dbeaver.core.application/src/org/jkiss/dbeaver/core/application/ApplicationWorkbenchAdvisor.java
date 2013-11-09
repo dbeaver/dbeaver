@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.core.application;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.ui.*;
@@ -29,13 +30,18 @@ import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.keys.IBindingService;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -137,6 +143,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     private boolean saveAndCleanup()
     {
+        if (!closeActiveTransactions()) {
+            return false;
+        }
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         DBRProgressMonitor nullMonitor = VoidProgressMonitor.INSTANCE;
         for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
@@ -161,4 +170,38 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         return true;
     }
 
+    private boolean closeActiveTransactions()
+    {
+        TransactionCloser closer = new TransactionCloser();
+        try {
+            DBeaverUI.runInProgressService(closer);
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
+        }
+        return closer.getResult();
+    }
+
+    private static class TransactionCloser extends DBRRunnableWithResult<Boolean> {
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        {
+            result = true;
+            DBeaverCore core = DBeaverCore.getInstance();
+            for (IProject project : core.getLiveProjects()) {
+                if (project.isOpen()) {
+                    DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
+                    if (registry != null) {
+                        for (DataSourceDescriptor dataSourceDescriptor : registry.getDataSources()) {
+                            if (!dataSourceDescriptor.closeActiveTransaction(monitor)) {
+                                result = false;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
