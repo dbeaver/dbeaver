@@ -44,11 +44,11 @@ public class DisconnectJob extends EventProcessorJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
-            processEvents(DBPConnectionEventType.BEFORE_DISCONNECT);
-
-            container.disconnect(monitor);
-
-            processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
+            if (container.closeActiveTransaction(monitor)) {
+                processEvents(DBPConnectionEventType.BEFORE_DISCONNECT);
+                container.disconnect(monitor);
+                processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
+            }
 
             return Status.OK_STATUS;
         }

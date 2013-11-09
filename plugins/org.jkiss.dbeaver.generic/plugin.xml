@@ -191,6 +191,7 @@
                     <file type="license" path="drivers/db2-jt400/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
 
                 <driver

@@ -736,6 +736,61 @@ public class DataSourceDescriptor
 
         monitor.beginTask("Disconnect from '" + getName() + "'", 4);
 
+        // Close datasource
+        monitor.subTask("Close connection");
+        if (dataSource != null) {
+            dataSource.close();
+        }
+        monitor.worked(1);
+
+        // Close tunnel
+        if (tunnel != null) {
+            monitor.subTask("Close tunnel");
+            try {
+                tunnel.closeTunnel(monitor, connectionInfo);
+            } catch (Exception e) {
+                log.warn("Error closing tunnel", e);
+            } finally {
+                this.tunnel = null;
+            }
+        }
+        monitor.worked(1);
+
+        monitor.done();
+
+        // Terminate child processes
+        synchronized (childProcesses) {
+            for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
+                DBRProcessDescriptor process = iter.next();
+                if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
+                    process.terminate();
+                }
+                iter.remove();
+            }
+        }
+
+        dataSource = null;
+        connectTime = null;
+        keywordManager = null;
+
+        if (reflect) {
+            // Reflect UI
+            getRegistry().fireDataSourceEvent(
+                DBPEvent.Action.OBJECT_UPDATE,
+                this,
+                false);
+            firePropertyChange();
+        }
+
+        return true;
+    }
+
+    public boolean closeActiveTransaction(final DBRProgressMonitor monitor)
+    {
+        if (dataSource == null) {
+            return true;
+        }
+
         // First rollback active transaction
         monitor.subTask("Rollback active transaction");
         DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
@@ -786,55 +841,8 @@ public class DataSourceDescriptor
         }
         finally {
             session.close();
+            monitor.worked(1);
         }
-        monitor.worked(1);
-
-        // Close datasource
-        monitor.subTask("Close connection");
-        if (dataSource != null) {
-            dataSource.close();
-        }
-        monitor.worked(1);
-
-        // Close tunnel
-        if (tunnel != null) {
-            monitor.subTask("Close tunnel");
-            try {
-                tunnel.closeTunnel(monitor, connectionInfo);
-            } catch (Exception e) {
-                log.warn("Error closing tunnel", e);
-            } finally {
-                this.tunnel = null;
-            }
-        }
-        monitor.worked(1);
-
-        monitor.done();
-
-        // Terminate child processes
-        synchronized (childProcesses) {
-            for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
-                DBRProcessDescriptor process = iter.next();
-                if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
-                    process.terminate();
-                }
-                iter.remove();
-            }
-        }
-
-        dataSource = null;
-        connectTime = null;
-        keywordManager = null;
-
-        if (reflect) {
-            // Reflect UI
-            getRegistry().fireDataSourceEvent(
-                DBPEvent.Action.OBJECT_UPDATE,
-                this,
-                false);
-            firePropertyChange();
-        }
-
         return true;
     }
 
