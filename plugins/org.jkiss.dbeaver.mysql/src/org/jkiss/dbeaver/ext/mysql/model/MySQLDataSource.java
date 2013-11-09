@@ -653,10 +653,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     @Override
     public ErrorType discoverErrorType(DBException error)
     {
-        String sqlState = error.getDatabaseState();
-        if ("08003".equals(sqlState) || "08S01".equals(sqlState)) {
-            return ErrorType.CONNECTION_LOST;
-        }
         return super.discoverErrorType(error);
     }
 }
