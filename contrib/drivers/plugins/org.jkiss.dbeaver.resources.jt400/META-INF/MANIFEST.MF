@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DB2 iSeries/AS 400 driver
+Bundle-SymbolicName: org.jkiss.dbeaver.resources.jt400;singleton:=true
+Bundle-Version: 0.0.0
+Bundle-Vendor: IBM
+Bundle-ActivationPolicy: lazy

@@ -254,7 +254,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             } else if (selectedObject instanceof DataSourceProviderDescriptor) {
                 this.selectedProvider = (DataSourceProviderDescriptor)selectedObject;
             } else if (selectedObject instanceof DriverTreeControl.DriverCategory) {
-                this.selectedProvider = ((DriverTreeControl.DriverCategory) selectedObject).getProvider();
+                this.selectedProvider = null;
                 this.selectedCategory = ((DriverTreeControl.DriverCategory) selectedObject).getName();
             }
         }
@@ -279,7 +279,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         if (selectedDriver != null) {
             monitorPart.setTaskName(CommonUtils.toString(selectedDriver.getDescription()));
         } else if (selectedCategory != null) {
-            monitorPart.setTaskName(selectedProvider.getName() + " " + selectedCategory + " drivers");
+            monitorPart.setTaskName(selectedCategory + " drivers");
         } else if (selectedProvider != null) {
             monitorPart.setTaskName(selectedProvider.getName() + " provider");
         } else {
