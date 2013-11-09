@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -423,6 +424,13 @@ public abstract class JDBCDataSource
     @Override
     public ErrorType discoverErrorType(DBException error)
     {
+        String sqlState = error.getDatabaseState();
+        if (SQLState.SQL_08000.getCode().equals(sqlState) ||
+            SQLState.SQL_08003.getCode().equals(sqlState) ||
+            SQLState.SQL_08S01.getCode().equals(sqlState))
+        {
+            return ErrorType.CONNECTION_LOST;
+        }
         return ErrorType.NORMAL;
     }
 
