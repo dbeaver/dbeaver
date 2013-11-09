@@ -92,7 +92,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             this.dataSourceListeners.clear();
         }
         // Disconnect in 2 seconds or die
-        closeConnections(2000);
+        closeConnections(DBConstants.DISCONNECT_TIMEOUT);
         // Do not save config on shutdown.
         // Some data source might be broken due to misconfiguration
         // and we don't want to loose their config just after restart
