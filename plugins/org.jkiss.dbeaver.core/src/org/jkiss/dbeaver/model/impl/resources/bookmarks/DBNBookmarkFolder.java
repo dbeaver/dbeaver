@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.ui.DBIcon;
 
+import java.util.Collection;
+
 /**
  * DBNBookmarkFolder
  */
@@ -60,12 +62,12 @@ public class DBNBookmarkFolder extends DBNResource
     }
 
     @Override
-    public void dropNode(DBNNode otherNode) throws DBException
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException
     {
-        if (otherNode instanceof DBNDatabaseNode) {
-            BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) otherNode, otherNode.getNodeName(), (IFolder) getResource());
-        } else {
-            super.dropNode(otherNode);
+        for (DBNNode node : nodes) {
+            if (node instanceof DBNDatabaseNode) {
+                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());
+            }
         }
     }
 }

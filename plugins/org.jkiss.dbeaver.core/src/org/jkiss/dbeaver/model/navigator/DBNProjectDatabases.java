@@ -42,6 +42,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
     private DataSourceRegistry dataSourceRegistry;
     private volatile List<DBNNode> children;
+    private final List<DBNLocalFolder> folders = new ArrayList<DBNLocalFolder>();
 
     public DBNProjectDatabases(DBNProject parentNode, DataSourceRegistry dataSourceRegistry)
     {
@@ -62,6 +63,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             dataSource.dispose(reflect);
         }
         dataSources.clear();
+        folders.clear();
         children = null;
         if (dataSourceRegistry != null) {
             dataSourceRegistry.removeDataSourceListener(this);
@@ -134,16 +136,17 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     {
         if (children == null) {
             children = new ArrayList<DBNNode>();
-            Map<String, DBNLocalFolder> folders = new HashMap<String, DBNLocalFolder>();
             for (DBNDataSource dataSource : dataSources) {
                 String folderPath = dataSource.getDataSourceContainer().getFolderPath();
                 if (CommonUtils.isEmpty(folderPath)) {
                     children.add(dataSource);
                 } else {
-                    DBNLocalFolder folder = folders.get(folderPath);
+                    DBNLocalFolder folder = getLocalFolder(folderPath);
                     if (folder == null) {
                         folder = new DBNLocalFolder(this, folderPath);
-                        folders.put(folderPath, folder);
+                        folders.add(folder);
+                    }
+                    if (!children.contains(folder)) {
                         children.add(folder);
                     }
                 }
@@ -169,6 +172,18 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     public boolean allowsOpen()
     {
         return false;
+    }
+
+    public DBNLocalFolder getLocalFolder(String name)
+    {
+        synchronized (folders) {
+            for (DBNLocalFolder folder : folders) {
+                if (folder.getName().equals(name)) {
+                    return folder;
+                }
+            }
+        }
+        return null;
     }
 
     public List<DBNDataSource> getDataSources()

@@ -472,7 +472,7 @@
         <handler commandId="org.jkiss.dbeaver.core.new.folder" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLocalFolderCreate">
             <enabledWhen>
                 <with variable="selection">
-                    <count value="1"/>
+                    <count value="+"/>
                     <iterate operator="and">
                         <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                     </iterate>

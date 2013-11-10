@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -28,7 +29,11 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
 
 /**
  * DBNDataSource
@@ -47,13 +52,22 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     }
 
     @Override
+    public DBNNode getParentNode()
+    {
+        String folderPath = dataSource.getFolderPath();
+        if (!CommonUtils.isEmpty(folderPath)) {
+            DBNLocalFolder localFolder = ((DBNProjectDatabases) super.getParentNode()).getLocalFolder(folderPath);
+            if (localFolder != null) {
+                return localFolder;
+            }
+        }
+        return super.getParentNode();
+    }
+
+    @Override
     protected void dispose(boolean reflect)
     {
         DBNModel.getInstance().removeNode(this, reflect);
-
-//        if (this.dataSource.isConnected()) {
-//            DataSourceDisconnectHandler.execute(this.dataSource, null);
-//        }
 
         this.dataSource = null;
         super.dispose(reflect);
@@ -170,5 +184,28 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
             DBPEvent.Action.OBJECT_UPDATE,
             dataSource,
             true);
+    }
+
+    @Override
+    public boolean supportsDrop(DBNNode otherNode)
+    {
+        return otherNode == null || otherNode instanceof DBNDataSource;
+    }
+
+    @Override
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException
+    {
+        String folderPath = getDataSourceContainer().getFolderPath();
+        for (DBNNode node : nodes) {
+            if (node instanceof DBNDataSource) {
+                ((DBNDataSource) node).setFolderPath(folderPath);
+            }
+        }
+        NavigatorUtils.updateConfigAndRefreshDatabases(this);
+    }
+
+    public void setFolderPath(String folder)
+    {
+        getDataSourceContainer().setFolderPath(folder);
     }
 }

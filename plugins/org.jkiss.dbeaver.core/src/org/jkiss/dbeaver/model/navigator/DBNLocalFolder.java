@@ -24,8 +24,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -33,7 +36,7 @@ import java.util.List;
  */
 public class DBNLocalFolder extends DBNNode implements DBNContainer
 {
-    private final String name;
+    private String name;
 
     public DBNLocalFolder(DBNProjectDatabases parentNode, String name)
     {
@@ -119,4 +122,40 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
         return DataSourceDescriptor.class;
     }
 
+    @Override
+    public boolean supportsDrop(DBNNode otherNode)
+    {
+        return otherNode == null || otherNode instanceof DBNDataSource;
+    }
+
+    @Override
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException
+    {
+        for (DBNNode node : nodes) {
+            if (node instanceof DBNDataSource) {
+                ((DBNDataSource) node).setFolderPath(getName());
+            }
+        }
+        NavigatorUtils.updateConfigAndRefreshDatabases(this);
+    }
+
+    @Override
+    public boolean supportsRename()
+    {
+        return true;
+    }
+
+    @Override
+    public void rename(DBRProgressMonitor monitor, String newName) throws DBException
+    {
+        if (CommonUtils.isEmpty(newName)) {
+            return;
+        }
+        List<DBNDataSource> dataSources = getDataSources();
+        for (DBNDataSource dataSource : dataSources) {
+            dataSource.setFolderPath(newName);
+        }
+        name = newName;
+        NavigatorUtils.updateConfigAndRefreshDatabases(this);
+    }
 }
