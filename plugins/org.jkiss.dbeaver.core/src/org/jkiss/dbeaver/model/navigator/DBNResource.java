@@ -266,17 +266,19 @@ public class DBNResource extends DBNNode
     }
 
     @Override
-    public void dropNode(DBNNode otherNode) throws DBException
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException
     {
-        DBNResource resourceNode = (DBNResource)otherNode;
-        try {
-            IResource otherResource = resourceNode.getResource();
-            otherResource.move(
-                resource.getFullPath().append(otherResource.getName()),
-                true,
-                new NullProgressMonitor());
-        } catch (CoreException e) {
-            throw new DBException("Can't delete resource", e);
+        for (DBNNode node : nodes) {
+            DBNResource resourceNode = (DBNResource) node;
+            try {
+                IResource otherResource = resourceNode.getResource();
+                otherResource.move(
+                    resource.getFullPath().append(otherResource.getName()),
+                    true,
+                    new NullProgressMonitor());
+            } catch (CoreException e) {
+                throw new DBException("Can't delete resource", e);
+            }
         }
     }
 

@@ -25,14 +25,15 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 public class NavigatorHandlerLocalFolderCreate extends AbstractHandler {
 
@@ -43,28 +44,34 @@ public class NavigatorHandlerLocalFolderCreate extends AbstractHandler {
 
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSelection = (IStructuredSelection) selection;
-            Object element = structSelection.getFirstElement();
-            if (element instanceof DBNDataSource) {
-                createFolder(HandlerUtil.getActiveWorkbenchWindow(event), (DBNDataSource) element, null);
+            List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
+            for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
+                Object element = iter.next();
+                if (element instanceof DBNDataSource) {
+                    dataSources.add((DBNDataSource) element);
+                }
+            }
+            if (!dataSources.isEmpty()) {
+                createFolder(HandlerUtil.getActiveWorkbenchWindow(event), dataSources, null);
             }
         }
         return null;
     }
 
-    public static boolean createFolder(IWorkbenchWindow workbenchWindow, final DBNDataSource node, String newName)
+    public static boolean createFolder(IWorkbenchWindow workbenchWindow, final Collection<DBNDataSource> nodes, String newName)
     {
         if (newName == null) {
             newName = EnterNameDialog.chooseName(workbenchWindow.getShell(), "Folder name");
         }
-        if (CommonUtils.isEmpty(newName) || newName.equals(node.getNodeName())) {
+        if (CommonUtils.isEmpty(newName)) {
             return false;
         }
-        node.getDataSourceContainer().setFolderPath(newName);
-
-        DBNNode parentNode = node.getParentNode();
-        if (parentNode instanceof DBNProjectDatabases) {
-            ((DBNProjectDatabases)parentNode).refreshChildren();
+        // Just set folder path and refresh databases root
+        // DS container will reload folders on refresh
+        for (DBNDataSource node : nodes) {
+            node.setFolderPath(newName);
         }
+        NavigatorUtils.updateConfigAndRefreshDatabases(nodes.iterator().next());
 
         return true;
     }
