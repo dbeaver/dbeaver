@@ -56,9 +56,6 @@ public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
 
-    private static final int SUBTASK_COUNT = 5;
-    //private static final int DEFAULT_MAX_ROWS = 500;
-
     private SQLEditorBase editor;
     private List<SQLStatementInfo> queries;
     private DBDDataFilter dataFilter;
@@ -70,7 +67,6 @@ public class SQLQueryJob extends DataSourceJob
     private boolean fetchResultSets;
     private long rsOffset;
     private long rsMaxRows;
-    private long rowCount;
 
     private DBCStatement curStatement;
     private DBCResultSet curResultSet;
@@ -405,33 +401,46 @@ public class SQLQueryJob extends DataSourceJob
 
             // Execute statement
             try {
-                //monitor.subTask("Execute query");
                 boolean hasResultSet = curStatement.executeStatement();
                 curResult.setHasResultSet(hasResultSet);
                 statistics.addExecuteTime(System.currentTimeMillis() - startTime);
                 statistics.addStatementsCount();
-                // Show results only if we are not in the script execution
-                // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
-                // return messy results here
-                if (hasResultSet && fetchResultSets) {
-                    fetchQueryData(session, curStatement.openResultSet(), true);
-                }
-                if (!hasResultSet) {
-                    long updateCount = -1;
-                    try {
-                        updateCount = curStatement.getUpdateRowCount();
-                        if (updateCount >= 0) {
-                            curResult.setUpdateCount(updateCount);
-                            statistics.addRowsUpdated(updateCount);
-                        }
-                    } catch (DBCException e) {
-                        // In some cases we can't read update count
-                        // This is bad but we can live with it
-                        // Just print a warning
-                        log.warn("Can't obtain update count", e);
-                    }
+
+                boolean hasMoreResults = true;
+                while (hasMoreResults) {
+                    // Show results only if we are not in the script execution
+                    // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
+                    // return messy results here
                     if (fetchResultSets) {
-                        fetchExecutionResult(session);
+                        hasResultSet = fetchQueryData(session, curStatement.openResultSet(), true);
+                    }
+                    long updateCount = -1;
+                    if (!hasResultSet) {
+                        try {
+                            updateCount = curStatement.getUpdateRowCount();
+                            if (updateCount >= 0) {
+                                curResult.setUpdateCount(updateCount);
+                                statistics.addRowsUpdated(updateCount);
+                            }
+                        } catch (DBCException e) {
+                            // In some cases we can't read update count
+                            // This is bad but we can live with it
+                            // Just print a warning
+                            log.warn("Can't obtain update count", e);
+                        }
+                        if (fetchResultSets) {
+                            fetchExecutionResult(session);
+                        }
+                    }
+                    if (!hasResultSet && updateCount < 0) {
+                        // Something is wrong
+                        // Possibly driver is broken and we are in infinite loop
+                        break;
+                    }
+                    hasMoreResults = curStatement.hasMoreResults();
+                    if (hasMoreResults) {
+                        // TODO: make real processing
+                        break;
                     }
                 }
             }
@@ -491,7 +500,7 @@ public class SQLQueryJob extends DataSourceJob
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
-            if (updateCount > 0) {
+            if (updateCount >= 0) {
                 fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
                 fakeResultSet.addRow(updateCount);
             } else {
@@ -519,21 +528,21 @@ public class SQLQueryJob extends DataSourceJob
         return binder.getResult();
     }
 
-    private void fetchQueryData(DBCSession session, DBCResultSet resultSet, boolean updateStatistics)
+    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, boolean updateStatistics)
         throws DBCException
     {
         if (dataReceiver == null) {
             // No data pump - skip fetching stage
-            return;
+            return false;
         }
         closeResultSet();
         curResultSet = resultSet;
         if (curResultSet == null) {
-            return;
+            return false;
         }
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.subTask("Fetch result set");
-        rowCount = 0;
+        long rowCount = 0;
 
         dataReceiver.fetchStart(session, curResultSet);
 
@@ -596,6 +605,8 @@ public class SQLQueryJob extends DataSourceJob
             statistics.setRowsFetched(rowCount);
         }
         monitor.subTask(rowCount + " rows fetched");
+
+        return true;
     }
 
     private boolean keepStatementOpen()
