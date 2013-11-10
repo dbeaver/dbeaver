@@ -34,6 +34,7 @@ public class DBNEvent {
         LOAD,
         UNLOAD,
         REFRESH,
+        STRUCT_REFRESH,
         LOCK,
         UNLOCK,
     }

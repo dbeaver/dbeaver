@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
@@ -28,11 +29,10 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNProjectDatabases
@@ -41,6 +41,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 {
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
     private DataSourceRegistry dataSourceRegistry;
+    private volatile List<DBNNode> children;
 
     public DBNProjectDatabases(DBNProject parentNode, DataSourceRegistry dataSourceRegistry)
     {
@@ -61,6 +62,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             dataSource.dispose(reflect);
         }
         dataSources.clear();
+        children = null;
         if (dataSourceRegistry != null) {
             dataSourceRegistry.removeDataSourceListener(this);
             dataSourceRegistry = null;
@@ -130,13 +132,48 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
     {
-        return dataSources;
+        if (children == null) {
+            children = new ArrayList<DBNNode>();
+            Map<String, DBNLocalFolder> folders = new HashMap<String, DBNLocalFolder>();
+            for (DBNDataSource dataSource : dataSources) {
+                String folderPath = dataSource.getDataSourceContainer().getFolderPath();
+                if (CommonUtils.isEmpty(folderPath)) {
+                    children.add(dataSource);
+                } else {
+                    DBNLocalFolder folder = folders.get(folderPath);
+                    if (folder == null) {
+                        folder = new DBNLocalFolder(this, folderPath);
+                        folders.put(folderPath, folder);
+                        children.add(folder);
+                    }
+                }
+            }
+        }
+        Collections.sort(children, new Comparator<DBNNode>() {
+            @Override
+            public int compare(DBNNode o1, DBNNode o2)
+            {
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            }
+        });
+        return children;
+    }
+
+    public void refreshChildren()
+    {
+        this.children = null;
+        DBeaverCore.getInstance().getNavigatorModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.STRUCT_REFRESH);
     }
 
     @Override
     public boolean allowsOpen()
     {
         return false;
+    }
+
+    public List<DBNDataSource> getDataSources()
+    {
+        return dataSources;
     }
 
     public DBNDataSource getDataSource(String id)
@@ -156,6 +193,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         if (reflect) {
             DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, newNode));
         }
+        children = null;
         return newNode;
     }
 
@@ -169,6 +207,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 break;
             }
         }
+        children = null;
     }
 
     @Override
