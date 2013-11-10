@@ -61,7 +61,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
 
         if (!loaded) {
             if (getDatabaseObject() != null && getDatabaseObject().isPersisted()) {
-                resultSetView.setStatus("Query data from '" + getDataContainer().getName() + "'...");
+                resultSetView.setStatus("Query data from '" + getEditorInput().getDatabaseObject().getName() + "'...");
                 resultSetView.refresh();
                 loaded = true;
             }
