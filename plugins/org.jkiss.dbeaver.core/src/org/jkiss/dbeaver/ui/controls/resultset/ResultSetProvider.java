@@ -31,4 +31,6 @@ public interface ResultSetProvider {
     DBSDataContainer getDataContainer();
 
     boolean isReadyToRun();
+
+    // void
 }
