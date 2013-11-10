@@ -237,13 +237,13 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Override
-    public Object getUserData()
+    public Object getSource()
     {
         return userData;
     }
 
     @Override
-    public void setUserData(Object userData)
+    public void setSource(Object userData)
     {
         this.userData = userData;
     }

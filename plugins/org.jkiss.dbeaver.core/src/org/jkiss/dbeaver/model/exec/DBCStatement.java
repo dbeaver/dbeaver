@@ -119,12 +119,12 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * Gets any user object associated with this statement
      * @return user data object or null
      */
-    Object getUserData();
+    Object getSource();
 
     /**
      * Sets user data
      */
-    void setUserData(Object userData);
+    void setSource(Object userData);
 
     //long getExecutionTimeout() throws DBCException;
 

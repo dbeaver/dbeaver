@@ -150,13 +150,13 @@ public class WMIStatement implements DBCStatement {
     }
 
     @Override
-    public Object getUserData()
+    public Object getSource()
     {
         return userData;
     }
 
     @Override
-    public void setUserData(Object userData)
+    public void setSource(Object userData)
     {
         this.userData = userData;
     }
