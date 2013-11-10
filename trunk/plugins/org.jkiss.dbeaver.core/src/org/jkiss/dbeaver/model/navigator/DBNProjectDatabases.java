@@ -205,10 +205,10 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         dataSources.add(newNode);
+        children = null;
         if (reflect) {
             DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, newNode));
         }
-        children = null;
         return newNode;
     }
 
