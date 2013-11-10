@@ -54,7 +54,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     @Override
     public DBNNode getParentNode()
     {
-        String folderPath = dataSource.getFolderPath();
+        String folderPath = dataSource == null ? null : dataSource.getFolderPath();
         if (!CommonUtils.isEmpty(folderPath)) {
             DBNLocalFolder localFolder = ((DBNProjectDatabases) super.getParentNode()).getLocalFolder(folderPath);
             if (localFolder != null) {
@@ -129,6 +129,9 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     @Override
     public boolean initializeNode(DBRProgressMonitor monitor, DBRProcessListener onFinish)
     {
+        if (dataSource == null) {
+            return false;
+        }
         if (!dataSource.isConnected()) {
             DataSourceConnectHandler.execute(monitor, dataSource, onFinish);
             //dataSource.connect(monitor);
@@ -165,6 +168,10 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     @Override
     public void rename(DBRProgressMonitor monitor, String newName)
     {
+        if (dataSource == null) {
+            log.warn("Try to rename data source after dispose");
+            return;
+        }
         dataSource.setName(newName);
         dataSource.getRegistry().updateDataSource(dataSource);
     }
@@ -172,6 +179,10 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     @Override
     protected void afterChildRead()
     {
+        if (dataSource == null) {
+            log.warn("Try to update data source after dispose");
+            return;
+        }
         // Notify datasource listeners about state change.
         // We make this action here because we can't update state in
         // initializeNode if this action caused by readChildren.
