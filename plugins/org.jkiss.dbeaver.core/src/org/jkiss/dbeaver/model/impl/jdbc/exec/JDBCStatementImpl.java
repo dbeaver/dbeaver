@@ -201,6 +201,17 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Override
+    public boolean hasMoreResults()
+        throws DBCException
+    {
+        try {
+            return getOriginal().getMoreResults();
+        } catch (SQLException e) {
+            throw new DBCException(e, connection.getDataSource());
+        }
+    }
+
+    @Override
     public void setLimit(long offset, long limit) throws DBCException
     {
         int totalRows;

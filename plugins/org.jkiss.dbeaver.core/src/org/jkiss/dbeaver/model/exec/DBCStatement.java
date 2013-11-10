@@ -88,6 +88,11 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
     int getUpdateRowCount() throws DBCException;
 
     /**
+     * Checks whether there are additional results (result set or update count).
+     */
+    boolean hasMoreResults() throws DBCException;
+
+    /**
      * Close statement.
      * No exceptions could be thrown from this method. If any error will occur then it'll be logged.
      */
