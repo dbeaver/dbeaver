@@ -347,7 +347,7 @@ public class NavigatorUtils {
             private void handleDragEvent(DropTargetEvent event)
             {
                 event.detail = isDropSupported(event) ? DND.DROP_MOVE : DND.DROP_NONE;
-                event.feedback = DND.FEEDBACK_NONE;
+                event.feedback = DND.FEEDBACK_SELECT;
             }
 
             private boolean isDropSupported(DropTargetEvent event)

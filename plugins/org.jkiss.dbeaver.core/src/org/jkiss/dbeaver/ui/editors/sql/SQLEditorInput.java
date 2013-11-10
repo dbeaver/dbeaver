@@ -118,6 +118,9 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public static DBSDataSourceContainer getScriptDataSource(IFile file)
     {
         try {
+            if (!file.exists()) {
+                return null;
+            }
             String dataSourceId = file.getPersistentProperty(PROP_DATA_SOURCE_ID);
             if (dataSourceId != null) {
                 DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject());
