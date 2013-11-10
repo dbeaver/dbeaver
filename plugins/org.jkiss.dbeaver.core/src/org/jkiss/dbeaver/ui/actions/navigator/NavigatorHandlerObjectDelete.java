@@ -45,10 +45,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
@@ -58,6 +55,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -81,6 +79,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                     deleteObject(activeWorkbenchWindow, (DBNDatabaseNode)element);
                 } else if (element instanceof DBNResource) {
                     deleteResource(activeWorkbenchWindow, (DBNResource)element);
+                } else if (element instanceof DBNLocalFolder) {
+                    deleteLocalFolder(activeWorkbenchWindow, (DBNLocalFolder) element);
                 } else {
                     log.warn("Don't know how to delete element '" + element + "'"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
@@ -90,6 +90,23 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             }
         }
         return null;
+    }
+
+    private void deleteLocalFolder(IWorkbenchWindow workbenchWindow, DBNLocalFolder localFolder)
+    {
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, localFolder, false);
+        if (confirmResult == ConfirmResult.NO) {
+            return;
+        }
+        List<DBNDataSource> dataSources = localFolder.getDataSources();
+        for (DBNDataSource dataSource : dataSources) {
+            dataSource.getDataSourceContainer().setFolderPath(null);
+        }
+
+        DBNNode parentNode = localFolder.getParentNode();
+        if (parentNode instanceof DBNProjectDatabases) {
+            ((DBNProjectDatabases)parentNode).refreshChildren();
+        }
     }
 
     private boolean deleteResource(IWorkbenchWindow workbenchWindow, final DBNResource resourceNode)

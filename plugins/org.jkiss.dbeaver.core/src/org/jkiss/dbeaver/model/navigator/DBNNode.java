@@ -59,9 +59,14 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         this.parentNode = null;
     }
 
-    public final DBNNode getParentNode()
+    public DBNNode getParentNode()
     {
         return parentNode;
+    }
+
+    protected void setParentNode(DBNNode parentNode)
+    {
+        this.parentNode = parentNode;
     }
 
     public boolean isLocked()
@@ -94,7 +99,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
 
     public abstract Image getNodeIcon();
 
-    public final Image getNodeIconDefault()
+    public Image getNodeIconDefault()
     {
         Image image = getNodeIcon();
         if (image == null) {
@@ -183,7 +188,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         return true;
     }
 
-    public final boolean isChildOf(DBNNode node)
+    public boolean isChildOf(DBNNode node)
     {
         for (DBNNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {
             if (parent == node) {
