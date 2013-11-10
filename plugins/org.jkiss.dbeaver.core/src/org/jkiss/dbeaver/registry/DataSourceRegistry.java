@@ -406,6 +406,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
         xml.addAttribute(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
         xml.addAttribute(RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
+        if (!CommonUtils.isEmpty(dataSource.getFolderPath())) {
+            xml.addAttribute(RegistryConstants.ATTR_FOLDER, dataSource.getFolderPath());
+        }
 
         {
             // Connection info
@@ -637,6 +640,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                 curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
                 curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
+                curDataSource.setFolderPath(atts.getValue(RegistryConstants.ATTR_FOLDER));
                 {
                     // Legacy filter settings
                     String legacyCatalogFilter = atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG);

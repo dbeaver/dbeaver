@@ -78,7 +78,7 @@ public class DataSourceDescriptor
         IAdaptable,
         DBEPrivateObjectEditor,
         DBSObjectStateful,
-    DBPGuardedObject,
+        DBPGuardedObject,
         DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
@@ -148,6 +148,7 @@ public class DataSourceDescriptor
     private volatile Date connectTime = null;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<DBRProcessDescriptor>();
     private DBWTunnel tunnel;
+    private String folderPath;
 
     private DBVModel virtualModel;
 
@@ -557,6 +558,16 @@ public class DataSourceDescriptor
             keywordManager = new DataSourceKeywordManager(dataSource);
         }
         return keywordManager;
+    }
+
+    public String getFolderPath()
+    {
+        return folderPath;
+    }
+
+    public void setFolderPath(String folderPath)
+    {
+        this.folderPath = folderPath;
     }
 
     @Override

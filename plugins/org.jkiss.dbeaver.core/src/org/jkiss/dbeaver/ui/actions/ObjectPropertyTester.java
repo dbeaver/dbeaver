@@ -119,7 +119,7 @@ public class ObjectPropertyTester extends PropertyTester
             }
             return true;
         } else if (property.equals(PROP_CAN_DELETE)) {
-            if (node instanceof DBNDataSource) {
+            if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
                 return true;
             }
             if (node instanceof DBSWrapper) {

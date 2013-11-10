@@ -22,34 +22,28 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.DBIcon;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DBNProjectFolder
+ * DBNLocalFolder
  */
-public class DBNProjectFolder extends DBNNode implements DBNContainer
+public class DBNLocalFolder extends DBNNode implements DBNContainer
 {
     private final String name;
-    private final String description;
-    private final Image icon;
-    private final List<? extends DBNNode> children;
 
-    public DBNProjectFolder(DBNNode parentNode, String name, String description, Image icon, List<? extends DBNNode> children)
+    public DBNLocalFolder(DBNProjectDatabases parentNode, String name)
     {
         super(parentNode);
         this.name = name;
-        this.description = description;
-        this.icon = icon;
-        this.children = children;
     }
 
     @Override
     void dispose(boolean reflect)
     {
-        for (DBNNode child : children) {
-            child.dispose(reflect);
-        }
         super.dispose(reflect);
     }
 
@@ -80,13 +74,13 @@ public class DBNProjectFolder extends DBNNode implements DBNContainer
     @Override
     public String getNodeDescription()
     {
-        return description;
+        return null;
     }
 
     @Override
     public Image getNodeIcon()
     {
-        return icon;
+        return DBIcon.TREE_DATABASE_CATEGORY.getImage();
     }
 
     @Override
@@ -102,15 +96,27 @@ public class DBNProjectFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor) throws DBException
+    public List<DBNDataSource> getChildren(DBRProgressMonitor monitor) throws DBException
     {
+        return getDataSources();
+    }
+
+    public List<DBNDataSource> getDataSources()
+    {
+        List<DBNDataSource> children = new ArrayList<DBNDataSource>();
+        DBNProjectDatabases parent = (DBNProjectDatabases) getParentNode();
+        for (DBNDataSource dataSource : parent.getDataSources()) {
+            if (getName().equals(dataSource.getDataSourceContainer().getFolderPath())) {
+                children.add(dataSource);
+            }
+        }
         return children;
     }
 
     @Override
     public Class<? extends DBSObject> getChildrenClass()
     {
-        return DBSObject.class;
+        return DataSourceDescriptor.class;
     }
 
 }

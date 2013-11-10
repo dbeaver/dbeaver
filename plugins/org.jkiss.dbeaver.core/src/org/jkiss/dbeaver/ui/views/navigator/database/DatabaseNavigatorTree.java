@@ -185,6 +185,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                                         break;
                                     case LOCK:
                                     case UNLOCK:
+                                    case STRUCT_REFRESH:
                                         viewer.refresh(getViewerObject(event.getNode()));
                                         break;
                                 }

@@ -83,6 +83,10 @@ public class DBException extends Exception
         }
     }
 
+    /**
+     * SQL state or other standard error code.
+     * For JDBC/SQL drivers it refers to SQL99 state or XOpen state
+     */
     public String getDatabaseState()
     {
         Throwable cause = getCause();
