@@ -22,7 +22,6 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -62,8 +61,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
-import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
@@ -996,10 +993,8 @@ public class SQLEditor extends SQLEditorBase
                 final SQLQueryJob job = new SQLQueryJob(
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
                     SQLEditor.this,
-                    queries);
-                job.setDataReceiver(viewer.getDataReceiver());
-                job.addQueryListener(new ISQLQueryListener() {
-
+                    queries)
+                {
                     private long lastUIUpdateTime = -1l;
 
                     @Override
@@ -1103,12 +1098,13 @@ public class SQLEditor extends SQLEditorBase
                                 if (!isSingleQuery) {
                                     sashForm.setMaximizedControl(null);
                                 }
-                                viewer.getModel().setStatistics(job.getStatistics());
+                                viewer.getModel().setStatistics(getStatistics());
                                 viewer.updateStatusMessage();
                             }
                         });
                     }
-                });
+                };
+                job.setDataReceiver(viewer.getDataReceiver());
 
                 if (export) {
                     // Assign current job from active query and open wizard
@@ -1117,7 +1113,7 @@ public class SQLEditor extends SQLEditorBase
                         getSite().getWorkbenchWindow(),
                         new DataTransferWizard(
                             new IDataTransferProducer[] {
-                                new DatabaseTransferProducer(getDataContainer(), null)},
+                                new DatabaseTransferProducer(this, null)},
                             null),
                         new StructuredSelection(this));
                     dialog.open();

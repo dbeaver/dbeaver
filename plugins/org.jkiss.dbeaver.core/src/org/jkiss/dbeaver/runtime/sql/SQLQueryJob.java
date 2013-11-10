@@ -76,7 +76,6 @@ public class SQLQueryJob extends DataSourceJob
 
     private SQLQueryResult curResult;
 
-    private List<ISQLQueryListener> queryListeners = new ArrayList<ISQLQueryListener>();
     private static final String NESTED_QUERY_AlIAS = "origdbvr";
     private DBCStatistics statistics;
 
@@ -132,16 +131,6 @@ public class SQLQueryJob extends DataSourceJob
         this.rsMaxRows = maxRows;
     }
 
-    public void addQueryListener(ISQLQueryListener listener)
-    {
-        this.queryListeners.add(listener);
-    }
-
-    public void removeQueryListener(ISQLQueryListener listener)
-    {
-        this.queryListeners.remove(listener);
-    }
-
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
@@ -162,9 +151,7 @@ public class SQLQueryJob extends DataSourceJob
                 monitor.beginTask(this.getName(), queries.size());
 
                 // Notify job start
-                for (ISQLQueryListener listener : queryListeners) {
-                    listener.onStartJob();
-                }
+                onStartJob();
 
                 for (int queryNum = 0; queryNum < queries.size(); ) {
                     // Execute query
@@ -281,9 +268,7 @@ public class SQLQueryJob extends DataSourceJob
         }
         finally {
             // Notify job end
-            for (ISQLQueryListener listener : queryListeners) {
-                listener.onEndJob(lastError != null);
-            }
+            onEndJob(lastError != null);
         }
     }
 
@@ -293,9 +278,7 @@ public class SQLQueryJob extends DataSourceJob
 
         if (fireEvents) {
             // Notify query start
-            for (ISQLQueryListener listener : queryListeners) {
-                listener.onStartQuery(sqlStatement);
-            }
+            onStartQuery(sqlStatement);
         }
 
         long startTime = System.currentTimeMillis();
@@ -468,9 +451,7 @@ public class SQLQueryJob extends DataSourceJob
 
         if (fireEvents) {
             // Notify query end
-            for (ISQLQueryListener listener : queryListeners) {
-                listener.onEndQuery(curResult);
-            }
+            onEndQuery(curResult);
         }
 
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
@@ -686,4 +667,25 @@ public class SQLQueryJob extends DataSourceJob
     {
         return statistics;
     }
+
+    protected void onStartJob()
+    {
+
+    }
+
+    protected void onStartQuery(SQLStatementInfo query)
+    {
+
+    }
+
+    protected void onEndQuery(SQLQueryResult result)
+    {
+
+    }
+
+    protected void onEndJob(boolean hasErrors)
+    {
+
+    }
+
 }
