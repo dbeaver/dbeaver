@@ -100,13 +100,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
         List<DBNDataSource> dataSources = localFolder.getDataSources();
         for (DBNDataSource dataSource : dataSources) {
-            dataSource.getDataSourceContainer().setFolderPath(null);
+            dataSource.setFolderPath(null);
         }
-
-        DBNNode parentNode = localFolder.getParentNode();
-        if (parentNode instanceof DBNProjectDatabases) {
-            ((DBNProjectDatabases)parentNode).refreshChildren();
-        }
+        NavigatorUtils.updateConfigAndRefreshDatabases(localFolder);
     }
 
     private boolean deleteResource(IWorkbenchWindow workbenchWindow, final DBNResource resourceNode)

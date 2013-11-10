@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -157,7 +158,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         return false;
     }
 
-    public void dropNode(DBNNode otherNode) throws DBException
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException
     {
         throw new DBException("Drop is not supported");
     }

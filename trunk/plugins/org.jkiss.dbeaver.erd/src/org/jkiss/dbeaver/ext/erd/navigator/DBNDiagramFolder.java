@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.Collection;
+
 /**
  * DBNDiagramFolder
  */
@@ -68,16 +70,16 @@ public class DBNDiagramFolder extends DBNResource
     }
 
     @Override
-    public void dropNode(DBNNode otherNode) throws DBException
+    public void dropNodes(Collection<DBNNode> nodes) throws DBException
     {
-        if (otherNode instanceof DBNDiagram) {
-            ERDResourceHandler.createDiagram(
-                ((DBNDiagram) otherNode).getDiagram(),
-                otherNode.getNodeName(),
-                (IFolder) getResource(),
-                null);
-        } else {
-            super.dropNode(otherNode);
+        for (DBNNode node : nodes) {
+            if (node instanceof DBNDiagram) {
+                ERDResourceHandler.createDiagram(
+                    ((DBNDiagram) node).getDiagram(),
+                    node.getNodeName(),
+                    (IFolder) getResource(),
+                    null);
+            }
         }
     }
 }

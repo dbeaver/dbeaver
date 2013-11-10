@@ -43,10 +43,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
@@ -382,12 +379,10 @@ public class NavigatorUtils {
                     Object curObject = treeItem.getData();
                     if (curObject instanceof DBNNode) {
                         Collection<DBNNode> nodesToDrop = TreeNodeTransfer.getInstance().getObject();
-                        for (DBNNode node : nodesToDrop) {
-                            try {
-                                ((DBNNode)curObject).dropNode(node);
-                            } catch (DBException e) {
-                                UIUtils.showErrorDialog(viewer.getControl().getShell(), "Drop error", "Can't drop node", e);
-                            }
+                        try {
+                            ((DBNNode)curObject).dropNodes(nodesToDrop);
+                        } catch (DBException e) {
+                            UIUtils.showErrorDialog(viewer.getControl().getShell(), "Drop error", "Can't drop node", e);
                         }
                     }
                 }
@@ -410,5 +405,17 @@ public class NavigatorUtils {
             }
         }
         return false;
+    }
+
+    public static void updateConfigAndRefreshDatabases(DBNNode node)
+    {
+        for (DBNNode parentNode = node.getParentNode(); parentNode != null; parentNode = parentNode.getParentNode()) {
+            if (parentNode instanceof DBNProjectDatabases) {
+                DBNProjectDatabases projectDatabases = (DBNProjectDatabases) parentNode;
+                projectDatabases.getDataSourceRegistry().flushConfig();
+                projectDatabases.refreshChildren();
+                break;
+            }
+        }
     }
 }
