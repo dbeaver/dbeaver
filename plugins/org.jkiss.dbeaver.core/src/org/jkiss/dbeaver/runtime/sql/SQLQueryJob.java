@@ -362,7 +362,7 @@ public class SQLQueryJob extends DataSourceJob
                 sqlQuery,
                 rsOffset,
                 rsMaxRows);
-            curStatement.setUserData(editor);
+            curStatement.setSource(editor);
 
             if (hasParameters) {
                 // Bind them
