@@ -21,12 +21,15 @@ package org.jkiss.dbeaver.ui.editors.sql.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -42,9 +45,10 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     static final Log log = LogFactory.getLog(SQLAnnotationHover.class);
 
     private List<Annotation> annotations = new ArrayList<Annotation>();
-    private IEditorPart editor;
+    private SQLEditorBase editor;
+    private IHyperlinkDetector[] hyperlinkDetectors;
 
-    public SQLAnnotationHover(IEditorPart editor)
+    public SQLAnnotationHover(SQLEditorBase editor)
     {
         setEditor(editor);
     }
@@ -69,14 +73,25 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     @Override
     public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion)
     {
-        IAnnotationModel model;
-        model = textViewer instanceof ISourceViewer ? ((ISourceViewer) textViewer).getAnnotationModel() : null;
+        if (hyperlinkDetectors == null) {
+            hyperlinkDetectors = editor.getViewerConfiguration().getHyperlinkDetectors(editor.getViewer());
+        }
+/*
+        IAnnotationModel model = textViewer instanceof ISourceViewer ? ((ISourceViewer) textViewer).getAnnotationModel() : null;
         //avoids finding annotations again
         if (annotations.size() == 0) {
             findAnnotations(hoverRegion.getOffset(), model, null, 0);
         }
-
-        return null;//getHoverInfo();
+*/
+/*
+        for (IHyperlinkDetector hyperlinkDetector : hyperlinkDetectors) {
+            IHyperlink[] hyperlinks = hyperlinkDetector.detectHyperlinks(textViewer, hoverRegion, false);
+            if (!CommonUtils.isEmpty(hyperlinks)) {
+                return hyperlinks[0];
+            }
+        }
+*/
+        return null;
     }
 
     /**
@@ -93,38 +108,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset)
     {
-        IDocument document = textViewer.getDocument();
-        int start;
-        int end;
-        int lineNumber = 0;
-        try {
-            lineNumber = document.getLineOfOffset(offset);
-        }
-        catch (BadLocationException e) {
-            log.error(e); //$NON-NLS-1$
-        }
-
-        findAnnotations(offset, textViewer instanceof ISourceViewer ? ((ISourceViewer) textViewer).getAnnotationModel()
-            : null, textViewer.getDocument(), lineNumber);
-        for (Annotation annotation : annotations) {
-/*
-            if (annotation instanceof MarkerAnnotation) {
-                MarkerAnnotation markerAnnotation = (MarkerAnnotation) annotation;
-                try {
-                    start = ((Integer) markerAnnotation.getMarker().getAttribute(IMarker.CHAR_START));
-                    end = ((Integer) markerAnnotation.getMarker().getAttribute(IMarker.CHAR_END));
-                    if (start <= offset && end >= offset) {
-                        return new Region(offset, 0);
-                    }
-                }
-                catch (CoreException e1) {
-                    log.error(e1);
-                }
-            }
-*/
-        }
-
-        return null;
+        return SQLWordFinder.findWord(textViewer.getDocument(), offset);
     }
 
     /**
@@ -152,8 +136,8 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     {
         annotations.clear();
         if (model == null) {
-            if (editor instanceof ITextEditor) {
-                ITextEditor editor = (ITextEditor) this.editor;
+            if (editor != null) {
+                ITextEditor editor = this.editor;
                 model = editor.getDocumentProvider().getAnnotationModel(editor.getEditorInput());
             }
         }
@@ -214,7 +198,20 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     @Override
     public void setEditor(IEditorPart editor)
     {
-        this.editor = editor;
+        this.editor = (SQLEditorBase) editor;
+    }
+
+    public IInformationControlCreator getHoverControlCreator()
+    {
+        return new IInformationControlCreator() {
+            @Override
+            public IInformationControl createInformationControl(Shell parent)
+            {
+                DefaultInformationControl control = new DefaultInformationControl(parent, true);
+                control.setSizeConstraints(60, 10);
+                return control;
+            }
+        };
     }
 
 }

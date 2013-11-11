@@ -41,8 +41,6 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
 
 
 /**
@@ -163,9 +161,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
         SQLEditorSourceViewer viewer = new SQLEditorSourceViewer(parent, null, null, false, SWT.V_SCROLL | SWT.H_SCROLL);
         SQLEditorSourceViewerConfiguration configuration = new SQLEditorSourceViewerConfiguration(
             sqlEditor,
-            sqlEditor.getSyntaxManager(),
-            new SQLCompletionProcessor(sqlEditor),
-            new SQLHyperlinkDetector(sqlEditor, sqlEditor.getSyntaxManager()));
+            sqlEditor.getSyntaxManager());
         viewer.configure(configuration);
         viewer.setEditable(false);
         viewer.setDocument(document);
