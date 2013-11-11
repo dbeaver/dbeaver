@@ -645,13 +645,19 @@ public class SQLQueryJob extends DataSourceJob
         if (queries.size() != 1) {
             throw new DBCException("Invalid state of SQL Query job");
         }
-        boolean result = executeSingleQuery(session, queries.get(0), true);
-        if (!result && lastError != null) {
-            if (lastError instanceof DBCException) {
-                throw (DBCException) lastError;
-            } else {
-                throw new DBCException(lastError, getDataSource());
+        SQLStatementInfo query = queries.get(0);
+        session.getProgressMonitor().beginTask(query.getQuery(), 1);
+        try {
+            boolean result = executeSingleQuery(session, query, true);
+            if (!result && lastError != null) {
+                if (lastError instanceof DBCException) {
+                    throw (DBCException) lastError;
+                } else {
+                    throw new DBCException(lastError, getDataSource());
+                }
             }
+        } finally {
+            session.getProgressMonitor().done();
         }
     }
 

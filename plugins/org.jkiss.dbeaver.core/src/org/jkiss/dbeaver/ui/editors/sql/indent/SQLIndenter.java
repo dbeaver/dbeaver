@@ -244,7 +244,7 @@ public class SQLIndenter {
             }
 
             switch (token) {
-                case Symbols.TokenEOF:
+                case SQLIndentSymbols.TokenEOF:
                     return 0;
 
             }
