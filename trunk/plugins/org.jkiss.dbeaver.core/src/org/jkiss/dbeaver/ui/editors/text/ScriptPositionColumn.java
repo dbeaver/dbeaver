@@ -85,6 +85,9 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
     {
         visible = true;
         new UIJob("Update script ruler") {
+            {
+                setSystem(true);
+            }
             @Override
             public IStatus runInUIThread(IProgressMonitor monitor)
             {
