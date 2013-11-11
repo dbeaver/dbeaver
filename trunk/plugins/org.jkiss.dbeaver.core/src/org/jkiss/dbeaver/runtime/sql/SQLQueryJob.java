@@ -365,6 +365,7 @@ public class SQLQueryJob extends DataSourceJob
                         unresolvedParams.add(param);
                     }
                 }
+/*
                 if (!CommonUtils.isEmpty(unresolvedParams)) {
                     if (bindStatementParameters(unresolvedParams)) {
                         // Bind them
@@ -380,6 +381,7 @@ public class SQLQueryJob extends DataSourceJob
                         }
                     }
                 }
+*/
             }
 
             // Execute statement

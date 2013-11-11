@@ -1058,11 +1058,12 @@ public class SQLEditor extends SQLEditorBase
                     SQLEditor.this,
                     queries)
                 {
-                    private long lastUIUpdateTime = -1l;
+                    private long lastUIUpdateTime;
 
                     @Override
                     public void onStartJob()
                     {
+                        lastUIUpdateTime = -1;
                         if (!isSingleQuery) {
                             UIUtils.runInUI(null, new Runnable() {
                                 @Override
@@ -1081,7 +1082,7 @@ public class SQLEditor extends SQLEditorBase
                         synchronized (runningQueries) {
                             runningQueries.add(query);
                         }
-                        if (System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
+                        if (lastUIUpdateTime < 0 || System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
                             showStatementInEditor(query, false);
                             lastUIUpdateTime = System.currentTimeMillis();
                         }
