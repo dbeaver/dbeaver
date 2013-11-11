@@ -24,6 +24,7 @@ import org.eclipse.jface.text.information.IInformationProviderExtension;
 import org.eclipse.jface.text.information.IInformationProviderExtension2;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 public class SQLInformationProvider implements IInformationProvider, IInformationProviderExtension, IInformationProviderExtension2 {
 
@@ -77,13 +78,13 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     protected IPartListener partListener;
 
     protected String currentPerspective;
-    protected BestMatchHover implementation = new BestMatchHover(null);
+    protected SQLAnnotationHover implementation;
     protected IInformationControlCreator informationControlCreator;
 
-    public SQLInformationProvider(IEditorPart editor)
+    public SQLInformationProvider(SQLEditorBase editor)
     {
-
         this.editor = editor;
+        implementation = new SQLAnnotationHover(editor);
 
         if (this.editor != null) {
 
@@ -156,6 +157,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     @Override
     public IInformationControlCreator getInformationPresenterControlCreator()
     {
+/*
         IInformationControlCreator controlCreator = null;
         if (implementation != null) {
             controlCreator = implementation.getInformationPresenterControlCreator();
@@ -164,6 +166,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
             return controlCreator;
         }
 
+*/
         if (informationControlCreator == null) {
             informationControlCreator = new IInformationControlCreator() {
                 @Override

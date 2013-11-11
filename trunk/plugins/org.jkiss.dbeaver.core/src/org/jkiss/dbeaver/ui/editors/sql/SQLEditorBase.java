@@ -27,7 +27,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.source.*;
@@ -58,8 +57,6 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TextUtils;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
@@ -108,15 +105,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         setDocumentProvider(new SQLDocumentProvider());
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
             this,
-            syntaxManager,
-            getCompletionProcessor(),
-            new SQLHyperlinkDetector(this, syntaxManager)));
+            syntaxManager));
         setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
-    }
-
-    protected IContentAssistProcessor getCompletionProcessor()
-    {
-        return new SQLCompletionProcessor(this);
     }
 
     public SQLSyntaxManager getSyntaxManager()
@@ -127,6 +117,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     public ProjectionAnnotationModel getAnnotationModel()
     {
         return annotationModel;
+    }
+
+    public SQLEditorSourceViewerConfiguration getViewerConfiguration()
+    {
+        return (SQLEditorSourceViewerConfiguration) super.getSourceViewerConfiguration();
     }
 
     @Override

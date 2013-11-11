@@ -45,7 +45,6 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
@@ -54,11 +53,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLDoubleClickStrategy;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLFormattingStrategy;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.util.BestMatchHover;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.*;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLInformationProvider;
 
@@ -95,14 +90,12 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      */
     public SQLEditorSourceViewerConfiguration(
         SQLEditorBase editor,
-        SQLSyntaxManager syntaxManager,
-        IContentAssistProcessor completionProcessor,
-        IHyperlinkDetector hyperlinkDetector)
+        SQLSyntaxManager syntaxManager)
     {
         this.editor = editor;
         this.syntaxManager = syntaxManager;
-        this.completionProcessor = completionProcessor;
-        this.hyperlinkDetector = hyperlinkDetector;
+        this.completionProcessor = new SQLCompletionProcessor(editor);
+        this.hyperlinkDetector = new SQLHyperlinkDetector(editor, syntaxManager);
     }
 
     @Override
@@ -334,7 +327,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @return the SQLEditor that this object configures
      */
-    public IEditorPart getSQLEditor()
+    public SQLEditorBase getSQLEditor()
     {
         return editor;
     }
@@ -349,7 +342,8 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType)
     {
-        return new BestMatchHover(this.getSQLEditor());
+        //return new BestMatchHover(this.getSQLEditor());
+        return new SQLAnnotationHover(this.getSQLEditor());
     }
 
     /**
