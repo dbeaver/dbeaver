@@ -30,6 +30,7 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -905,8 +906,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 if (libNames.length() > 0) libNames.append(", ");
                 libNames.append(lib.getPath());
             }
-            DownloadConfirm confirm = new DownloadConfirm(libNames);
-            UIUtils.runInUI(null, confirm);
+            Shell parentShell = null;
+            if (runnableContext instanceof IShellProvider) {
+                parentShell = ((IShellProvider) runnableContext).getShell();
+            }
+            DownloadConfirm confirm = new DownloadConfirm(parentShell, libNames);
+            UIUtils.runInUI(parentShell, confirm);
             if (confirm.proceed) {
                 // Download drivers
                 downloadLibraryFiles(runnableContext, downloadCandidates);
@@ -1516,11 +1521,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     private class DownloadConfirm implements Runnable {
+        private final Shell shell;
         private final StringBuilder libNames;
         private boolean proceed;
 
-        public DownloadConfirm(StringBuilder libNames)
+        public DownloadConfirm(Shell shell, StringBuilder libNames)
         {
+            this.shell = shell;
             this.libNames = libNames;
         }
 
@@ -1528,7 +1535,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         public void run()
         {
             proceed = ConfirmationDialog.showConfirmDialog(
-                null,
+                shell,
                 PrefConstants.CONFIRM_DRIVER_DOWNLOAD,
                 ConfirmationDialog.QUESTION,
                 getName(),
