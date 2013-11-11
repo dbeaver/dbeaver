@@ -81,10 +81,10 @@ public class DBeaverUI {
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
     {
-        return runUIJob(jobName, runnableWithProgress, 0);
+        return runUIJob(jobName, 0, runnableWithProgress);
     }
 
-    public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress, int timeout)
+    public static AbstractUIJob runUIJob(String jobName, int timeout, final DBRRunnableWithProgress runnableWithProgress)
     {
         AbstractUIJob job = new AbstractUIJob(jobName) {
             @Override

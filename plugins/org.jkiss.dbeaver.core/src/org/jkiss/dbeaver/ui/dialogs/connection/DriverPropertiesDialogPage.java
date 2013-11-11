@@ -18,11 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -63,13 +60,13 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         // Set props model
         if (propsControl != null) {
             // Load properties in job
-            DBeaverUI.runUIJob("Refresh driver properties", new DBRRunnableWithProgress() {
+            DBeaverUI.runUIJob("Refresh driver properties", 250, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     refreshDriverProperties();
                 }
-            }, 250);
+            });
         }
     }
 
@@ -84,7 +81,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         propertySource = propsControl.makeProperties(
             site.getRunnableContext(),
             site.getDriver(),
-            tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
+            tmpConnectionInfo);
         propsControl.loadProperties(propertySource);
         prevConnectionInfo = site.getConnectionInfo();
     }
