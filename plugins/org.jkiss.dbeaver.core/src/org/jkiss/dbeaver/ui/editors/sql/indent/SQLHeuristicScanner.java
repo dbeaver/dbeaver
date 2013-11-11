@@ -36,7 +36,7 @@ import java.util.Arrays;
  * 
  * @author Li Huang
  */
-public class SQLHeuristicScanner implements Symbols
+public class SQLHeuristicScanner implements SQLIndentSymbols
 {
     /**
      * Returned by all methods when the requested position could not be found, or if a {@link BadLocationException}was
@@ -261,13 +261,13 @@ public class SQLHeuristicScanner implements Symbols
 
     /**
      * Returns the next token in forward direction, starting at <code>start</code>, and not extending further than
-     * <code>bound</code>. The return value is one of the constants defined in {@link Symbols}. After a call,
+     * <code>bound</code>. The return value is one of the constants defined in {@link SQLIndentSymbols}. After a call,
      * {@link #getPosition()}will return the position just after the scanned token (i.e. the next position that will be
      * scanned).
      * 
      * @param start the first character position in the document to consider
      * @param bound the first position not to consider any more
-     * @return a constant from {@link Symbols}describing the next token
+     * @return a constant from {@link SQLIndentSymbols}describing the next token
      */
     public int nextToken(int start, int bound)
     {
@@ -316,13 +316,13 @@ public class SQLHeuristicScanner implements Symbols
 
     /**
      * Returns the next token in backward direction, starting at <code>start</code>, and not extending further than
-     * <code>bound</code>. The return value is one of the constants defined in {@link Symbols}. After a call,
+     * <code>bound</code>. The return value is one of the constants defined in {@link SQLIndentSymbols}. After a call,
      * {@link #getPosition()}will return the position just before the scanned token starts (i.e. the next position that
      * will be scanned).
      * 
      * @param start the first character position in the document to consider
      * @param bound the first position not to consider any more
-     * @return a constant from {@link Symbols}describing the previous token
+     * @return a constant from {@link SQLIndentSymbols}describing the previous token
      */
     public int previousToken(int start, int bound)
     {
@@ -374,7 +374,7 @@ public class SQLHeuristicScanner implements Symbols
      * Returns one of the keyword constants or <code>TokenIDENT</code> for a scanned identifier.
      * 
      * @param s a scanned identifier
-     * @return one of the constants defined in {@link Symbols}
+     * @return one of the constants defined in {@link SQLIndentSymbols}
      */
     private int getToken(String s)
     {
@@ -665,7 +665,7 @@ public class SQLHeuristicScanner implements Symbols
         {
             token = previousToken(offset, UNBOUND);
             offset = getPosition();
-            if (token == Symbols.TokenEOF)
+            if (token == SQLIndentSymbols.TokenEOF)
             {
                 return NOT_FOUND;
             }
@@ -716,7 +716,7 @@ public class SQLHeuristicScanner implements Symbols
             token = nextToken(offset, _document.getLength());
             offset = getPosition();
 
-            if (token == Symbols.TokenEOF)
+            if (token == SQLIndentSymbols.TokenEOF)
             {
                 return NOT_FOUND;
             }

@@ -19,7 +19,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-public interface Symbols
+public interface SQLIndentSymbols
 {
     int TokenEOF   = -1;
     int TokenOTHER = 0;

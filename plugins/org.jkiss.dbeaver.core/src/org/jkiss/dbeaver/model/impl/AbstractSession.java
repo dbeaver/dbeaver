@@ -36,6 +36,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     private DBCExecutionPurpose purpose;
     private String taskTitle;
     private DBDDataFormatterProfile dataFormatterProfile;
+    private boolean holdsBlock = false;
 
     public AbstractSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
@@ -45,6 +46,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
 
         if (taskTitle != null) {
             monitor.startBlock(this, taskTitle);
+            holdsBlock = true;
         }
 
         QMUtils.getDefaultHandler().handleSessionOpen(this);
@@ -104,6 +106,10 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     @Override
     public void close()
     {
+        if (holdsBlock) {
+            monitor.endBlock();
+            holdsBlock = false;
+        }
         QMUtils.getDefaultHandler().handleSessionClose(this);
     }
 

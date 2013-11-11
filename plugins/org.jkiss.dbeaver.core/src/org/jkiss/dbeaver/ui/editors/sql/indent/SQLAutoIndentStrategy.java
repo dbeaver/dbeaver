@@ -156,8 +156,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         IPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
         boolean closeBeginEnd = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END);
         if (closeBeginEnd) {
-            autoCompletionMap.put(Symbols.Tokenbegin, Symbols.beginTrail);
-            autoCompletionMap.put(Symbols.TokenBEGIN, Symbols.BEGINTrail);
+            autoCompletionMap.put(SQLIndentSymbols.Tokenbegin, SQLIndentSymbols.beginTrail);
+            autoCompletionMap.put(SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.BEGINTrail);
         }
 
     }
@@ -184,7 +184,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         while (startOffset < endOffset) {
             int nextToken = scanner.nextToken(startOffset, endOffset);
             int position = scanner.getPosition();
-            if (nextToken != Symbols.TokenEOF && scanner.isSameToken(nextToken, token)) {
+            if (nextToken != SQLIndentSymbols.TokenEOF && scanner.isSameToken(nextToken, token)) {
                 tokenCount++;
             }
             startOffset = position;
@@ -195,7 +195,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private boolean isClosed(IDocument document, int offset, int token)
     {
         //currently only BEGIN/END is supported. Later more typing aids will be added here.
-        if (token == Symbols.TokenBEGIN || token == Symbols.Tokenbegin) {
+        if (token == SQLIndentSymbols.TokenBEGIN || token == SQLIndentSymbols.Tokenbegin) {
             return getBlockBalance(document, offset) <= 0;
         }
         return false;
@@ -221,8 +221,8 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         while (true) {
 
-            begin = scanner.findOpeningPeer(begin, Symbols.TokenBEGIN, Symbols.TokenEND);
-            end = scanner.findClosingPeer(end, Symbols.TokenBEGIN, Symbols.TokenEND);
+            begin = scanner.findOpeningPeer(begin, SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
+            end = scanner.findClosingPeer(end, SQLIndentSymbols.TokenBEGIN, SQLIndentSymbols.TokenEND);
             if (begin == -1 && end == -1) {
                 return 0;
             }
