@@ -26,8 +26,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
-import org.eclipse.jface.text.revisions.IRevisionRulerColumn;
-import org.eclipse.jface.text.source.*;
+import org.eclipse.jface.text.source.CompositeRuler;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -61,8 +62,8 @@ public abstract class BaseTextEditor extends StatusTextEditor {
 
     private final static String LINE_NUMBER_RULER = "lineNumberRule";
 
-    private LineNumberRulerColumn fLineNumberRulerColumn;
     private LineNumberColumn fLineColumn;
+    private ScriptPositionColumn fScriptColumn;
 
     private static Map<String, Integer> ACTION_TRANSLATE_MAP = new HashMap<String, Integer>();
 
@@ -77,22 +78,16 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         return ACTION_TRANSLATE_MAP;
     }
 
-    @Override
-    public void dispose()
+    protected ScriptPositionColumn getScriptColumn()
     {
-        fLineNumberRulerColumn = null;
-        fLineColumn = null;
-        super.dispose();
+        return fScriptColumn;
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public void dispose()
     {
-        if (IRevisionRulerColumn.class.equals(adapter)) {
-            if (fLineNumberRulerColumn instanceof IRevisionRulerColumn)
-                return fLineNumberRulerColumn;
-        }
-        return super.getAdapter(adapter);
+        fLineColumn = null;
+        super.dispose();
     }
 
     public Document getDocument()
@@ -191,18 +186,6 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         }
     }
 
-    /**
-     * Toggles the line number global preference and shows the line number ruler
-     * accordingly.
-     *
-     * @since 3.1
-     */
-    private void toggleLineNumberRuler() {
-        // globally
-        IPreferenceStore store= getPreferenceStore();
-        store.setValue(LINE_NUMBER_RULER, !isLineNumberRulerVisible());
-    }
-
     @Override
     public void showChangeInformation(boolean show)
     {
@@ -216,9 +199,6 @@ public abstract class BaseTextEditor extends StatusTextEditor {
             RulerColumnDescriptor lineNumberColumnDescriptor = RulerColumnRegistry.getDefault().getColumnDescriptor(LineNumberColumn.ID);
             if (lineNumberColumnDescriptor != null)
                 columnSupport.setColumnVisible(lineNumberColumnDescriptor, true);
-        } else if (!show && fLineColumn != null && !isLineNumberRulerVisible()) {
-            columnSupport.setColumnVisible(fLineColumn.getDescriptor(), false);
-            fLineColumn = null;
         }
     }
 
@@ -226,42 +206,6 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     public boolean isChangeInformationShowing()
     {
         return fLineColumn != null && fLineColumn.isShowingChangeInformation();
-    }
-
-    /**
-     * Returns whether the line number ruler column should be
-     * visible according to the preference store settings. Subclasses may override this
-     * method to provide a custom preference setting.
-     *
-     * @return <code>true</code> if the line numbers should be visible
-     */
-    protected boolean isLineNumberRulerVisible()
-    {
-        return true;
-//        IPreferenceStore store = getPreferenceStore();
-//        return store != null && store.getBoolean(LINE_NUMBER_RULER);
-    }
-
-    protected void initializeLineNumberRulerColumn(LineNumberRulerColumn rulerColumn)
-    {
-        /*
-         * Left for compatibility. See LineNumberColumn.
-         */
-        if (fLineColumn != null)
-            fLineColumn.initializeLineNumberRulerColumn(rulerColumn);
-    }
-
-    /**
-     * Creates a new line number ruler column that is appropriately initialized.
-     *
-     * @return the created line number column
-     */
-    protected IVerticalRulerColumn createLineNumberRulerColumn()
-    {
-        fLineNumberRulerColumn = new LineNumberChangeRulerColumn(DBeaverUI.getSharedTextColors());
-        ((IChangeRulerColumn) fLineNumberRulerColumn).setHover(new TextChangeHover());
-        initializeLineNumberRulerColumn(fLineNumberRulerColumn);
-        return fLineNumberRulerColumn;
     }
 
     @Override
@@ -275,21 +219,10 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                 if (ruler instanceof CompositeRuler) {
                     if (LineNumberColumn.ID.equals(descriptor.getId())) {
                         fLineColumn= ((LineNumberColumn) column);
-                        fLineColumn.setForwarder(new LineNumberColumn.ICompatibilityForwarder() {
-                            @Override
-                            public IVerticalRulerColumn createLineNumberRulerColumn() {
-                                return BaseTextEditor.this.createLineNumberRulerColumn();
-                            }
-                            @Override
-                            public boolean isQuickDiffEnabled() {
-                                return false;
-                            }
-                            @Override
-                            public boolean isLineNumberRulerVisible() {
-                                return BaseTextEditor.this.isLineNumberRulerVisible();
-                            }
-                        });
                     }
+                }
+                if (column instanceof ScriptPositionColumn) {
+                    fScriptColumn = (ScriptPositionColumn)column;
                 }
             }
             @Override
@@ -314,13 +247,10 @@ public abstract class BaseTextEditor extends StatusTextEditor {
             if (LINE_NUMBER_RULER.equals(property)) {
                 // only handle visibility of the combined column, but not the number/change only state
                 IColumnSupport columnSupport= (IColumnSupport)getAdapter(IColumnSupport.class);
-                if (isLineNumberRulerVisible() && fLineColumn == null) {
+                if (fLineColumn == null) {
                     RulerColumnDescriptor lineNumberColumnDescriptor= RulerColumnRegistry.getDefault().getColumnDescriptor(LineNumberColumn.ID);
                     if (lineNumberColumnDescriptor != null)
                         columnSupport.setColumnVisible(lineNumberColumnDescriptor, true);
-                } else if (!isLineNumberRulerVisible() && fLineColumn != null && !fLineColumn.isShowingChangeInformation()) {
-                    columnSupport.setColumnVisible(fLineColumn.getDescriptor(), false);
-                    fLineColumn= null;
                 }
             }
         } finally {
@@ -333,30 +263,6 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     {
         return new CompositeRuler();
     }
-
-    /*
-    private void showChangeRulerInformation() {
-        IVerticalRuler ruler= getVerticalRuler();
-        if (!(ruler instanceof CompositeRuler) || fLineColumn == null)
-            return;
-
-        CompositeRuler compositeRuler= (CompositeRuler)ruler;
-
-        // fake a mouse move (some hovers rely on this to determine the hovered line):
-        int x= fLineColumn.getControl().getLocation().x;
-
-        ISourceViewer sourceViewer= getSourceViewer();
-        StyledText textWidget= sourceViewer.getTextWidget();
-        int caretOffset= textWidget.getCaretOffset();
-        int caretLine= textWidget.getLineAtOffset(caretOffset);
-        int y= textWidget.getLinePixel(caretLine);
-
-        compositeRuler.setLocationOfLastMouseButtonActivity(x, y);
-
-        IAnnotationHover hover= fLineColumn.getHover();
-        showFocusedRulerHover(hover, sourceViewer, caretOffset);
-    }
-*/
 
     public DBPCommentsManager getCommentsSupport()
     {
@@ -438,4 +344,8 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         }
     }
 
+    public int[] getCurrentLines()
+    {
+        return null;
+    }
 }

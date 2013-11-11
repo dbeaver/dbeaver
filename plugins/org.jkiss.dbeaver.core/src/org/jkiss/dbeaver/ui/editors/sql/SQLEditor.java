@@ -43,6 +43,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
+import org.eclipse.ui.texteditor.rulers.IColumnSupport;
+import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
+import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -80,6 +83,7 @@ import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
+import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -113,6 +117,7 @@ public class SQLEditor extends SQLEditorBase
 
     private DBSDataSourceContainer dataSourceContainer;
     private final DynamicFindReplaceTarget findReplaceTarget = new DynamicFindReplaceTarget();
+    private final List<SQLStatementInfo> runningQueries = new ArrayList<SQLStatementInfo>();
 
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
@@ -142,6 +147,25 @@ public class SQLEditor extends SQLEditorBase
     {
         IFile file = ContentUtils.convertPathToWorkspaceFile(getEditorInput().getPath());
         return file == null ? null : file.getProject();
+    }
+
+    @Override
+    public int[] getCurrentLines()
+    {
+        synchronized (runningQueries) {
+            if (runningQueries.isEmpty()) {
+                return null;
+            }
+            int[] lines = new int[runningQueries.size()];
+            for (int i = 0; i <lines.length; i++) {
+                try {
+                    lines[i] = getDocument().getLineOfOffset(runningQueries.get(i).getOffset());
+                } catch (BadLocationException e) {
+                    log.debug(e);
+                }
+            }
+            return lines;
+        }
     }
 
     @Override
@@ -876,6 +900,31 @@ public class SQLEditor extends SQLEditorBase
         return curDataContainer != null && curDataContainer.isReadyToRun();
     }
 
+    private void showScriptPositionRuler(boolean show)
+    {
+        IColumnSupport columnSupport = (IColumnSupport) getAdapter(IColumnSupport.class);
+        if (columnSupport != null) {
+            RulerColumnDescriptor positionColumn = RulerColumnRegistry.getDefault().getColumnDescriptor(ScriptPositionColumn.ID);
+            columnSupport.setColumnVisible(positionColumn, show);
+        }
+    }
+
+    private void showStatementInEditor(final SQLStatementInfo query, final boolean select)
+    {
+        DBeaverUI.runUIJob("Select SQL query in editor", new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                if (select) {
+                    selectAndReveal(query.getOffset(), query.getLength());
+                    setStatus(query.getQuery(), false);
+                } else {
+                    getSourceViewer().revealRange(query.getOffset(), query.getLength());
+                }
+            }
+        });
+    }
+
     private class DataContainer implements DBSDataContainer, ResultSetProvider {
 
         CTabItem tabItem;
@@ -990,6 +1039,9 @@ public class SQLEditor extends SQLEditorBase
             // Prepare execution job
             {
                 final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
+
+                showScriptPositionRuler(true);
+
                 final SQLQueryJob job = new SQLQueryJob(
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
                     SQLEditor.this,
@@ -1015,9 +1067,11 @@ public class SQLEditor extends SQLEditorBase
                     public void onStartQuery(final SQLStatementInfo query)
                     {
                         curJobRunning.incrementAndGet();
-                        final long curTime = System.currentTimeMillis();
-                        if (lastUIUpdateTime <= 0 || (curTime - lastUIUpdateTime >= SCRIPT_UI_UPDATE_PERIOD)) {
-                            selectStatementInEditor(query);
+                        synchronized (runningQueries) {
+                            runningQueries.add(query);
+                        }
+                        if (System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
+                            showStatementInEditor(query, false);
                             lastUIUpdateTime = System.currentTimeMillis();
                         }
                     }
@@ -1025,13 +1079,16 @@ public class SQLEditor extends SQLEditorBase
                     @Override
                     public void onEndQuery(final SQLQueryResult result)
                     {
+                        synchronized (runningQueries) {
+                            runningQueries.remove(result.getStatement());
+                        }
                         curJobRunning.decrementAndGet();
 
                         if (isDisposed()) {
                             return;
                         }
                         if (result.hasError()) {
-                            selectStatementInEditor(result.getStatement());
+                            showStatementInEditor(result.getStatement(), true);
                         }
                         if (isSingleQuery) {
                             DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
@@ -1042,18 +1099,6 @@ public class SQLEditor extends SQLEditorBase
                                 }
                             });
                         }
-                    }
-
-                    private void selectStatementInEditor(final SQLStatementInfo query)
-                    {
-                        DBeaverUI.runUIJob("Select SQL query in editor", new DBRRunnableWithProgress() {
-                            @Override
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                            {
-                                selectAndReveal(query.getOffset(), query.getLength());
-                                setStatus(query.getQuery(), false);
-                            }
-                        });
                     }
 
                     private void processQueryResult(SQLQueryResult result)

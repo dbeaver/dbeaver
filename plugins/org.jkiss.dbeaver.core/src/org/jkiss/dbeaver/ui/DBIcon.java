@@ -119,6 +119,7 @@ public enum DBIcon
     TXN_COMMIT_AUTO("txn_commit_auto", "icons/sql/txn_auto.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TXN_COMMIT_MANUAL("txn_commit_manual", "icons/sql/txn_manual.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
+    RULER_POSITION("ruler_position", "/icons/misc/ruler_position.png"), //$NON-NLS-1$ //$NON-NLS-2$
     FILTER_VALUE("filter_value", "/icons/misc/filter_value.png"), //$NON-NLS-1$ //$NON-NLS-2$
     FILTER_INPUT("filter_input", "/icons/misc/filter_input.png"), //$NON-NLS-1$ //$NON-NLS-2$
     FILTER_CLIPBOARD("filter_clipboard", "/icons/misc/filter_clipboard.png"), //$NON-NLS-1$ //$NON-NLS-2$
