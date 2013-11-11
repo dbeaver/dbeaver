@@ -33,6 +33,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -52,6 +53,7 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
 
     public ScriptPositionColumn()
     {
+//        setHover(new SQLAnnotationHover());
     }
 
     @Override
