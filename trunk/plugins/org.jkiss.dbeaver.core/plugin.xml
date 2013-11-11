@@ -1687,6 +1687,15 @@
             <placement gravity="0.9"/>
             <targetClass class="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor"/>
         </column>
+        <column class="org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn"
+            enabled="false"
+            global="false"
+            id="org.jkiss.dbeaver.ui.editors.columns.script.position"
+            includeInMenu="true"
+            name="Script position">
+            <placement gravity="0.9"/>
+            <targetClass class="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor"/>
+        </column>
     </extension>
 
 
