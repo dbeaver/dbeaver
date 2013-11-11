@@ -89,7 +89,7 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
                 BaseTextEditor editor = (BaseTextEditor)getEditor();
                 if (editor == null || editor.getTextViewer() == null) return Status.CANCEL_STATUS;
                 StyledText textWidget = editor.getTextViewer().getTextWidget();
-                if (textWidget.isDisposed()) return Status.CANCEL_STATUS;
+                if (textWidget == null || textWidget.isDisposed()) return Status.CANCEL_STATUS;
                 int[] newCurrentLines = editor.getCurrentLines();
                 if (!CommonUtils.equalObjects(newCurrentLines, currentLines) && textWidget.isVisible()) {
                     currentLines = newCurrentLines;

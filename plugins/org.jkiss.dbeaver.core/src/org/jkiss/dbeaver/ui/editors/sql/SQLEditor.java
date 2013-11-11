@@ -156,15 +156,26 @@ public class SQLEditor extends SQLEditorBase
             if (runningQueries.isEmpty()) {
                 return null;
             }
-            int[] lines = new int[runningQueries.size()];
-            for (int i = 0; i <lines.length; i++) {
+            List<Integer> lines = new ArrayList<Integer>(runningQueries.size() * 2);
+            for (SQLStatementInfo statementInfo : runningQueries) {
                 try {
-                    lines[i] = getDocument().getLineOfOffset(runningQueries.get(i).getOffset());
+                    int firstLine = getDocument().getLineOfOffset(statementInfo.getOffset());
+                    int lastLine = getDocument().getLineOfOffset(statementInfo.getOffset() + statementInfo.getLength());
+                    for (int k = firstLine; k <= lastLine; k++) {
+                        lines.add(k);
+                    }
                 } catch (BadLocationException e) {
                     log.debug(e);
                 }
             }
-            return lines;
+            if (lines.isEmpty()) {
+                return null;
+            }
+            int[] results = new int[lines.size()];
+            for (int i = 0; i < lines.size(); i++) {
+                results[i] = lines.get(i);
+            }
+            return results;
         }
     }
 
