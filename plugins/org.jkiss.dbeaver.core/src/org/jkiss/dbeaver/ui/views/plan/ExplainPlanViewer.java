@@ -76,7 +76,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        this.planPanel = UIUtils.createPartDivider(workbenchPart, composite, SWT.HORIZONTAL | SWT.SMOOTH);
+        this.planPanel = UIUtils.createPartDivider(workbenchPart, composite, SWT.HORIZONTAL);
         this.planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.planPanel.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         final GridLayout gl = new GridLayout(1, false);
@@ -84,7 +84,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         gl.marginHeight = 0;
         this.planPanel.setLayout(gl);
         {
-            leftPanel = UIUtils.createPartDivider(workbenchPart, planPanel, SWT.VERTICAL | SWT.SMOOTH);
+            leftPanel = UIUtils.createPartDivider(workbenchPart, planPanel, SWT.VERTICAL);
             leftPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET) {
