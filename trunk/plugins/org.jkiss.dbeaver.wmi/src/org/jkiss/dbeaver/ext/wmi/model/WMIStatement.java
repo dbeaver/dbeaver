@@ -126,6 +126,11 @@ public class WMIStatement implements DBCStatement {
     }
 
     @Override
+    public boolean hasMoreResults() throws DBCException {
+        return false;
+    }
+
+    @Override
     public void close()
     {
 
