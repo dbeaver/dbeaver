@@ -138,13 +138,16 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         }
 
         final List<Object[]> tmpRows = rows;
+        int segmentSize = resultSetViewer.getSegmentMaxRows();
+        hasMoreData = segmentSize > 0 && tmpRows.size() >= segmentSize;
+
+        final boolean nextSegmentRead = this.nextSegmentRead;
+        final boolean updateMetaData = this.updateMetaData;
         DBeaverUI.runUIJob("Set data in result set viewer", new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
                 // Check for more data
-                int segmentSize = resultSetViewer.getSegmentMaxRows();
-                hasMoreData = segmentSize > 0 && tmpRows.size() >= segmentSize;
                 // Push data into viewer
                 if (!nextSegmentRead) {
                     resultSetViewer.setData(tmpRows, updateMetaData);

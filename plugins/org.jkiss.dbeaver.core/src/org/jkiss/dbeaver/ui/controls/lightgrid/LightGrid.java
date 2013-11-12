@@ -1289,19 +1289,22 @@ public abstract class LightGrid extends Canvas {
             if (!inverse) {
                 // search frist visible item
                 startIndex = 0;
-                if (startIndex >= getItemCount()) return null;
             } else {
                 // search last visible item
                 startIndex = getItemCount() - 1;
-                if (startIndex == -1) return null;
             }
         }
 
-        // fail fast
-        if (startIndex < 0 || startIndex >= getItemCount())
-            SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-
         RowRange range = new RowRange();
+
+        if (startIndex < 0 || startIndex >= getItemCount()) {
+            // something is broken
+            range.startIndex = 0;
+            range.endIndex = 0;
+            range.height = 0;
+            range.rows = 0;
+            return range;
+        }
 
         if (availableHeight <= 0) {
             // special case: empty range
