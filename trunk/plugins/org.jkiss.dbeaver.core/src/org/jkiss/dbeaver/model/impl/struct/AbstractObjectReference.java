@@ -1,5 +1,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -45,4 +47,18 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
         return type;
     }
 
+    @Override
+    public String getFullQualifiedName()
+    {
+        DBPDataSource dataSource = container.getDataSource();
+        if (container == dataSource) {
+            // In case if there are no schemas/catalogs supported
+            // and data source is a root container
+            return DBUtils.getQuotedIdentifier(dataSource, name);
+        }
+        return DBUtils.getFullQualifiedName(dataSource, container) +
+            dataSource.getInfo().getStructSeparator() +
+            DBUtils.getQuotedIdentifier(dataSource, name);
+
+    }
 }

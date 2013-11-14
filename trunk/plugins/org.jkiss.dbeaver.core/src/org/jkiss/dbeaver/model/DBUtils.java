@@ -919,17 +919,6 @@ public final class DBUtils {
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullQualifiedName();
-        } else if (object instanceof DBSObjectReference) {
-            DBSObjectReference reference = (DBSObjectReference)object;
-            DBPDataSource dataSource = reference.getContainer().getDataSource();
-            if (reference.getContainer() == dataSource) {
-                // In case if there are no schemas/catalogs supported
-                // and data source is a root container
-                return getQuotedIdentifier(dataSource, reference.getName());
-            }
-            return getFullQualifiedName(dataSource, reference.getContainer()) +
-                dataSource.getInfo().getStructSeparator() +
-                getQuotedIdentifier(dataSource, reference.getName());
         } else {
             return object.getName();
         }
