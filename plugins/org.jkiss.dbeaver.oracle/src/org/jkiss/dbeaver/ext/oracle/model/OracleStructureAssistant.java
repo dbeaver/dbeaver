@@ -57,6 +57,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     {
         return new DBSObjectType[] {
             OracleObjectType.TABLE,
+            OracleObjectType.PACKAGE,
             OracleObjectType.CONSTRAINT,
             OracleObjectType.FOREIGN_KEY,
             OracleObjectType.INDEX,
@@ -70,8 +71,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     {
         return new DBSObjectType[] {
             OracleObjectType.TABLE,
-            OracleObjectType.VIEW,
-            };
+            OracleObjectType.PACKAGE,
+            OracleObjectType.PROCEDURE,
+        };
     }
 
     @Override
@@ -79,7 +81,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     {
         return new DBSObjectType[] {
             OracleObjectType.TABLE,
-            OracleObjectType.VIEW,
+            OracleObjectType.PACKAGE,
+            OracleObjectType.PROCEDURE,
             };
     }
 

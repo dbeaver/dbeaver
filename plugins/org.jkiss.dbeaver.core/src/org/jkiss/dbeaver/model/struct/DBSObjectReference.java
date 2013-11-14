@@ -21,12 +21,13 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Object reference
  */
-public interface DBSObjectReference extends DBPNamedObject
+public interface DBSObjectReference extends DBPNamedObject, DBPQualifiedObject
 {
     DBSObject getContainer();
 
