@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -63,6 +65,24 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
             RelationalObjectType.TYPE_PROCEDURE,
             RelationalObjectType.TYPE_TABLE_COLUMN,
             };
+    }
+
+    @Override
+    public DBSObjectType[] getHyperlinkObjectTypes()
+    {
+        return new DBSObjectType[] {
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_PROCEDURE
+        };
+    }
+
+    @Override
+    public DBSObjectType[] getAutoCompleteObjectTypes()
+    {
+        return new DBSObjectType[] {
+            RelationalObjectType.TYPE_TABLE,
+            RelationalObjectType.TYPE_PROCEDURE,
+        };
     }
 
     @Override
@@ -268,6 +288,16 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     final String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
                     objects.add(new AbstractObjectReference(columnName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                        @Override
+                        public String getFullQualifiedName()
+                        {
+                            return DBUtils.getQuotedIdentifier(dataSource, catalogName) +
+                                dataSource.getInfo().getStructSeparator() +
+                                DBUtils.getQuotedIdentifier(dataSource, tableName) +
+                                dataSource.getInfo().getStructSeparator() +
+                                DBUtils.getQuotedIdentifier(dataSource, columnName);
+
+                        }
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
                         {

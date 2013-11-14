@@ -445,15 +445,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         List<ICompletionProposal> proposals)
     {
         try {
-            Collection<DBSObjectReference> tables = assistant.findObjectsByMask(
+            Collection<DBSObjectReference> references = assistant.findObjectsByMask(
                 monitor,
                 rootSC,
                 assistant.getAutoCompleteObjectTypes(),
                 wordDetector.removeQuotes(objectName) + "%",
                 wordDetector.isQuoted(objectName),
                 100);
-            for (DBSObjectReference table : tables) {
-                proposals.add(makeProposalsFromObject(table, table.getObjectType().getImage()));
+            for (DBSObjectReference reference : references) {
+                proposals.add(makeProposalsFromObject(reference, reference.getObjectType().getImage()));
             }
         } catch (DBException e) {
             log.error(e);
@@ -549,7 +549,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 replaceString = replaceString.toLowerCase();
                 break;
             default:
-                DBPIdentifierCase convertCase = quotedString ? editor.getDataSource().getInfo().storesQuotedCase() : editor.getDataSource().getInfo().storesUnquotedCase();
+                DBPIdentifierCase convertCase = quotedString ? editor.getDataSource().getInfo().storesQuotedCase() : DBPIdentifierCase.MIXED;
                 replaceString = convertCase.transform(replaceString);
                 break;
         }
