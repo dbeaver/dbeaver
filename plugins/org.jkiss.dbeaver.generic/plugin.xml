@@ -293,7 +293,7 @@
                     sampleURL="jdbc:h2:{database}"
                     webURL="http://www.h2database.com/"
                     description="H2 Embedded">
-                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="*"/>
+                    <file type="jar" path="drivers/h2/h2-1.3.173.jar" url="*"/>
                     <file type="license" path="drivers/h2/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
@@ -353,7 +353,7 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
-                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="*"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar" url="*"/>
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -368,7 +368,7 @@
                     webURL="http://hsqldb.org/"
                     anonymous="true"
                     description="HyperSQL DataBase - Embedded Mode">
-                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="*"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar" url="*"/>
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" url="*"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
