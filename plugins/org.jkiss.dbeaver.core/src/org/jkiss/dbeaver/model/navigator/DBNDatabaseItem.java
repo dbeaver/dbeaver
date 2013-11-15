@@ -91,4 +91,9 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         return true;
     }
 
+    @Override
+    public String toString()
+    {
+        return object == null ? super.toString() : object.toString();
+    }
 }

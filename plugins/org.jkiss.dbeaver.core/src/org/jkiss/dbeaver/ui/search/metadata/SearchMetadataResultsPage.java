@@ -227,13 +227,12 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
                         nodeMap.put(parent, parentResults);
                         curParentResults.children.add(parentResults);
                     }
-//                    if (!curParentResults.children.contains(parentResults)) {
-//                        curParentResults.children.add(parentResults);
-//                    }
                     curParentResults = parentResults;
                 }
                 // Make leaf
-                curParentResults.children.add(new ResultsNode(node, curParentResults));
+                ResultsNode leaf = new ResultsNode(node, curParentResults);
+                nodeMap.put(node, leaf);
+                curParentResults.children.add(leaf);
             }
         }
 
