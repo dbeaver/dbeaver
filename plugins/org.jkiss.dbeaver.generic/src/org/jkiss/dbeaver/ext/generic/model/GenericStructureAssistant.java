@@ -65,6 +65,17 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
             };
     }
 
+    public DBSObjectType[] getHyperlinkObjectTypes()
+    {
+        return getSupportedObjectTypes();
+    }
+
+    @Override
+    public DBSObjectType[] getAutoCompleteObjectTypes()
+    {
+        return getSupportedObjectTypes();
+    }
+
     @Override
     protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {

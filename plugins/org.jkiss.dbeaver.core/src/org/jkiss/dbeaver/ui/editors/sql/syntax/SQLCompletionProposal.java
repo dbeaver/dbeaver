@@ -44,7 +44,8 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private String displayString;
     /** The replacement string. */
     private String replacementString;
-    private String replacementLower;
+    private String replacementFull;
+    private String replacementLast;
     /** The replacement offset. */
     private int replacementOffset;
     /** The replacement length. */
@@ -63,7 +64,13 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.syntaxManager = syntaxManager;
         this.displayString = displayString;
         this.replacementString = replacementString;
-        this.replacementLower = replacementString.toLowerCase();
+        this.replacementFull = replacementString.toLowerCase();
+        int divPos = this.replacementFull.lastIndexOf(syntaxManager.getStructSeparator());
+        if (divPos == -1) {
+            this.replacementLast = null;
+        } else {
+            this.replacementLast = this.replacementFull.substring(divPos + 1);
+        }
         this.cursorPosition = cursorPosition;
         this.image = image;
         this.contextInformation = contextInformation;
@@ -165,7 +172,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         if (divPos != -1) {
             wordPart = wordPart.substring(divPos + 1);
         }
-        if (!CommonUtils.isEmpty(wordPart) && replacementLower.startsWith(wordPart.toLowerCase())) {
+        String wordLower = wordPart.toLowerCase();
+        if (!CommonUtils.isEmpty(wordPart) &&
+            (replacementFull.startsWith(wordLower) ||
+                (this.replacementLast != null && this.replacementLast.startsWith(wordLower)))) {
             setPosition(wordDetector);
             return true;
         } else {
