@@ -92,7 +92,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         super(parent, style);
         this.isFitWidth = false;
 
-        int viewerStyle = SWT.MULTI | SWT.FULL_SELECTION;
+        int viewerStyle = getDefaultListStyle();
         if ((style & SWT.SHEET) == 0) {
             viewerStyle |= SWT.BORDER;
         }
@@ -168,6 +168,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 setInfo(status);
             }
         });
+    }
+
+    protected int getDefaultListStyle() {
+        return SWT.MULTI | SWT.FULL_SELECTION;
     }
 
     public ObjectViewerRenderer getRenderer()
@@ -294,19 +298,23 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             // start loading service
             synchronized (this) {
                 this.loadingJob = createLoadService();
-                this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
-                    @Override
-                    public void done(IJobChangeEvent event)
-                    {
-                        loadingJob = null;
-                    }
-                });
-                this.loadingJob.schedule(LAZY_LOAD_DELAY);
+                if (this.loadingJob != null) {
+                    this.loadingJob.addJobChangeListener(new JobChangeAdapter() {
+                        @Override
+                        public void done(IJobChangeEvent event)
+                        {
+                            loadingJob = null;
+                        }
+                    });
+                    this.loadingJob.schedule(LAZY_LOAD_DELAY);
+                }
             }
         } else {
             // Load data synchronously
             final LoadingJob<Collection<OBJECT_TYPE>> loadService = createLoadService();
-            loadService.syncRun();
+            if (loadService != null) {
+                loadService.syncRun();
+            }
         }
     }
 
