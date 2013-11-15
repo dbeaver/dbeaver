@@ -23,24 +23,12 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 /**
  * TreeContentProvider
  */
-public class TreeContentProvider extends ListContentProvider implements ITreeContentProvider {
-
-    @Override
-    public Object[] getChildren(Object parentElement)
-    {
-        return null;
-    }
+public abstract class TreeContentProvider extends ListContentProvider implements ITreeContentProvider {
 
     @Override
     public Object getParent(Object element)
     {
         return null;
-    }
-
-    @Override
-    public boolean hasChildren(Object element)
-    {
-        return false;
     }
 
 }

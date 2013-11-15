@@ -18,9 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.search.metadata;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -30,16 +29,19 @@ import org.eclipse.ui.part.Page;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
+import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.search.IObjectSearchResultPage;
 
-import java.util.Collection;
+import java.util.*;
 
 public class SearchMetadataResultsPage extends Page implements IObjectSearchResultPage<DBNNode>, INavigatorModelView {
-
-    static final Log log = LogFactory.getLog(SearchMetadataResultsPage.class);
 
     private SearchResultsControl itemList;
 
@@ -80,6 +82,7 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
     {
         if (itemList != null && !itemList.isDisposed()) {
             itemList.appendListData(objects);
+            ((TreeViewer)itemList.getItemsViewer()).expandAll();
         }
     }
 
@@ -101,15 +104,138 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
         return itemList.getNavigatorViewer();
     }
 
-    private class SearchResultsControl extends ItemListControl {
+    private class SearchResultsControl extends NodeListControl {
         public SearchResultsControl(Composite resultsGroup)
         {
-            super(resultsGroup, SWT.SHEET, getSite(), DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
+            super(resultsGroup, SWT.SHEET, getSite(),
+                DBeaverCore.getInstance().getNavigatorModel().getRoot(),
+                new ResultsContentProvider());
         }
 
         @Override
         protected void fillCustomToolbar(ToolBarManager toolbarManager)
         {
         }
+
+        @Override
+        protected Class<?>[] getListBaseTypes(Collection<DBNNode> items)
+        {
+            return new Class<?>[] {DBPNamedObject.class};
+        }
+
+        @Override
+        protected LoadingJob<Collection<DBNNode>> createLoadService()
+        {
+            // No load service
+            return null;
+        }
+    }
+
+    private static class ResultsNode {
+        DBNNode node;
+        ResultsNode parent;
+        final List<ResultsNode> children = new ArrayList<ResultsNode>();
+
+        public ResultsNode(DBNNode node, ResultsNode parent)
+        {
+            this.node = node;
+            this.parent = parent;
+        }
+        DBNNode[] getChildrenNodes()
+        {
+            DBNNode[] nodes = new DBNNode[children.size()];
+            for (int i = 0; i < children.size(); i++) {
+                nodes[i] = children.get(i).node;
+            }
+            return nodes;
+        }
+    }
+
+    private class ResultsContentProvider extends TreeContentProvider {
+
+        private ResultsNode rootResults;
+        private Map<DBNNode,ResultsNode> nodeMap;
+
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
+        {
+            if (newInput instanceof Collection) {
+                rebuildObjectTree((Collection<DBNNode>) newInput);
+            }
+        }
+
+        @Override
+        public Object getParent(Object element)
+        {
+            if (element instanceof DBNNode) {
+                ResultsNode results = nodeMap.get(element);
+                if (results != null && results.parent != null) {
+                    return results.parent.node;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public boolean hasChildren(Object parentElement)
+        {
+            if (parentElement instanceof DBNNode) {
+                ResultsNode results = nodeMap.get(parentElement);
+                return results != null && !results.children.isEmpty();
+            }
+            return false;
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement)
+        {
+            if (parentElement instanceof DBNNode) {
+                ResultsNode results = nodeMap.get(parentElement);
+                if (results != null) {
+                    return results.getChildrenNodes();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Object[] getElements(Object inputElement)
+        {
+            return rootResults.getChildrenNodes();
+        }
+
+        private void rebuildObjectTree(Collection<DBNNode> nodeList)
+        {
+            rootResults = new ResultsNode(getRootNode(), null);
+            nodeMap = new IdentityHashMap<DBNNode, ResultsNode>();
+            final List<DBNNode> allParents = new ArrayList<DBNNode>();
+            for (DBNNode node : nodeList) {
+                // Collect parent nodes
+                allParents.clear();
+                for (DBNNode parent = node.getParentNode(); parent != null && parent != getRootNode(); parent = parent.getParentNode()) {
+                    if (parent instanceof DBNContainer || parent instanceof DBNResource) {
+                        continue;
+                    }
+                    allParents.add(0, parent);
+                }
+                // Construct hierarchy
+                ResultsNode curParentResults = rootResults;
+                for (DBNNode parent : allParents) {
+                    ResultsNode parentResults = nodeMap.get(parent);
+                    if (parentResults == null) {
+                        parentResults = new ResultsNode(parent, curParentResults);
+                        nodeMap.put(parent, parentResults);
+                        curParentResults.children.add(parentResults);
+                    }
+//                    if (!curParentResults.children.contains(parentResults)) {
+//                        curParentResults.children.add(parentResults);
+//                    }
+                    curParentResults = parentResults;
+                }
+                // Make leaf
+                curParentResults.children.add(new ResultsNode(node, curParentResults));
+            }
+        }
+
     }
 }

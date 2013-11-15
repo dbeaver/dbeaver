@@ -399,7 +399,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 result = resourceBundle.getString(messageID);
             } catch (Exception e) {
                 // Try to find the same property in parent classes
-                for (Class parent = getter.getDeclaringClass().getSuperclass(); parent != Object.class; parent = parent.getSuperclass()) {
+                for (Class parent = getter.getDeclaringClass().getSuperclass(); parent != null && parent != Object.class; parent = parent.getSuperclass()) {
                     try {
                         Method parentGetter = parent.getMethod(getter.getName(), getter.getParameterTypes());
                         Class<?> parentOwner = parentGetter.getDeclaringClass();
