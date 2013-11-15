@@ -59,7 +59,15 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     /** The additional info of this proposal. */
     private String additionalProposalInfo;
 
-    public SQLCompletionProposal(SQLSyntaxManager syntaxManager, String displayString, String replacementString, SQLWordPartDetector wordDetector, int cursorPosition, Image image, IContextInformation contextInformation, String additionalProposalInfo)
+    public SQLCompletionProposal(
+        SQLSyntaxManager syntaxManager,
+        String displayString,
+        String replacementString,
+        SQLWordPartDetector wordDetector,
+        int cursorPosition,
+        Image image,
+        IContextInformation contextInformation,
+        String additionalProposalInfo)
     {
         this.syntaxManager = syntaxManager;
         this.displayString = displayString;
