@@ -2,6 +2,6 @@
 <plugin>
 	<extension point="org.jkiss.dbeaver.resources">
 		<resource name="drivers/hsqldb/LICENSE.txt"/>
-		<resource name="drivers/hsqldb/hsqldb.jar"/>
+		<resource name="drivers/hsqldb/hsqldb-2.3.1.jar"/>
 	</extension>
 </plugin>
