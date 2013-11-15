@@ -20,11 +20,10 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -305,7 +304,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                             if (tableCatalog == null) {
                                 throw new DBException("Column catalog '" + catalogName + "' not found");
                             }
-                            MySQLTable table = tableCatalog.getTable(monitor, tableName);
+                            MySQLTableBase table = tableCatalog.getTableCache().getObject(monitor, tableCatalog, tableName);
                             if (table == null) {
                                 throw new DBException("Column table '" + tableName + "' not found in catalog '" + tableCatalog.getName() + "'");
                             }
