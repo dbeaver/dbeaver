@@ -106,6 +106,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             itemsViewer = treeViewer;
             editorActivationStrategy = new EditorActivationStrategy(treeViewer);
             TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
+            // We need measure item listener to prevent collapse/expand on double click
+            // Looks like a bug in SWT: http://www.eclipse.org/forums/index.php/t/257325/
+            treeViewer.getControl().addListener(SWT.MeasureItem, new Listener(){
+                @Override
+                public void handleEvent(Event event) {
+                    // Just do nothing
+                }});
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
