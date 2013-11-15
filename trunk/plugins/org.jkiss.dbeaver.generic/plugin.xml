@@ -317,7 +317,7 @@
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
-                    <file type="jar" path="drivers/derby/derby.jar" url="*"/>
+                    <file type="jar" path="drivers/derby/derby-10.10.1.1.jar" url="*"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
@@ -329,7 +329,7 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
-                    <file type="jar" path="drivers/derby/derbyclient.jar" url="*"/>
+                    <file type="jar" path="drivers/derby/derbyclient-10.10.1.1.jar" url="*"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
