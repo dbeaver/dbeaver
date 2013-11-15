@@ -2,7 +2,7 @@
 <plugin>
 	<extension point="org.jkiss.dbeaver.resources">
 		<resource name="drivers/derby/LICENSE.txt"/>
-		<resource name="drivers/derby/derby.jar"/>
-		<resource name="drivers/derby/derbyclient.jar"/>
+		<resource name="drivers/derby/derby-10.10.1.1.jar"/>
+		<resource name="drivers/derby/derbyclient-10.10.1.1.jar"/>
 	</extension>
 </plugin>
