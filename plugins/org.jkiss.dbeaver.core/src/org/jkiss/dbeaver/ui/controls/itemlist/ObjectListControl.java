@@ -327,7 +327,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             {
                 // Collect list of items' classes
                 final List<Class<?>> classList = new ArrayList<Class<?>>();
-                Class<?>[] baseTypes = getListBaseTypes();
+                Class<?>[] baseTypes = getListBaseTypes(items);
                 if (!CommonUtils.isEmpty(baseTypes)) {
                     Collections.addAll(classList, baseTypes);
                 }
@@ -600,10 +600,18 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         for (Class valueClass = objectValue.getClass(); prop == null && valueClass != Object.class; valueClass = valueClass.getSuperclass()) {
             prop = column.propMap.get(valueClass);
         }
+        if (prop == null) {
+            for (Map.Entry<Class<?>, ObjectPropertyDescriptor> entry : column.propMap.entrySet()) {
+                if (entry.getKey().isInstance(objectValue)) {
+                    prop = entry.getValue();
+                    break;
+                }
+            }
+        }
         return prop;
     }
 
-    protected Class<?>[] getListBaseTypes()
+    protected Class<?>[] getListBaseTypes(Collection<OBJECT_TYPE> items)
     {
         return null;
     }

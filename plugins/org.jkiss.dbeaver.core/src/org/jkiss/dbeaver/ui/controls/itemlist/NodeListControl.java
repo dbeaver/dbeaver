@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -65,22 +66,17 @@ import java.util.Set;
 public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener, IMenuListener {
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
-    private IWorkbenchSite workbenchSite;
-    private DBNNode rootNode;
+    private final IWorkbenchSite workbenchSite;
+    private final DBNNode rootNode;
     private DBXTreeNode nodeMeta;
-    private NodeSelectionProvider selectionProvider;
+    private final NodeSelectionProvider selectionProvider;
 
-    public NodeListControl(
-        Composite parent,
-        int style,
-        final IWorkbenchSite workbenchSite,
-        DBNNode rootNode,
-        DBXTreeNode nodeMeta)
+    protected NodeListControl(Composite parent, int style, final IWorkbenchSite workbenchSite, DBNNode rootNode, IContentProvider contentProvider)
     {
-        super(parent, style, createContentProvider(rootNode, nodeMeta));
+        super(parent, style, contentProvider);
         this.workbenchSite = workbenchSite;
         this.rootNode = rootNode;
-        this.nodeMeta = nodeMeta;
+
         this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
         // Add context menu
@@ -108,8 +104,17 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         NavigatorUtils.addDragAndDropSupport(getItemsViewer());
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
+    }
 
-        //getSelectionProvider().setSelection(new StructuredSelection(rootNode));
+    public NodeListControl(
+        Composite parent,
+        int style,
+        final IWorkbenchSite workbenchSite,
+        DBNNode rootNode,
+        DBXTreeNode nodeMeta)
+    {
+        this(parent, style, workbenchSite, rootNode, createContentProvider(rootNode, nodeMeta));
+        this.nodeMeta = nodeMeta;
     }
 
     @Override
@@ -207,19 +212,17 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     @Override
-    protected Class<?>[] getListBaseTypes()
+    protected Class<?>[] getListBaseTypes(Collection<DBNNode> items)
     {
-        List<Class<?>> baseTypes;
         // Collect base types for root node
-        if (getRootNode() instanceof DBNDatabaseNode) {
+        if (getRootNode() instanceof DBNDatabaseNode && nodeMeta != null) {
             DBNDatabaseNode dbNode = (DBNDatabaseNode) getRootNode();
-            baseTypes = dbNode.getChildrenTypes(nodeMeta);
+            List<Class<?>> baseTypes = dbNode.getChildrenTypes(nodeMeta);
+            // Collect base types for inline children
+            return CommonUtils.isEmpty(baseTypes) ? null : baseTypes.toArray(new Class<?>[baseTypes.size()]);
         } else {
-            baseTypes = null;
+            return null;
         }
-
-        // Collect base types for inline children
-        return baseTypes == null || baseTypes.isEmpty() ? null : baseTypes.toArray(new Class<?>[baseTypes.size()]);
     }
 
     @Override
@@ -233,7 +236,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         return rootNode;
     }
 
-    public DBXTreeNode getNodeMeta()
+    protected DBXTreeNode getNodeMeta()
     {
         return nodeMeta;
     }

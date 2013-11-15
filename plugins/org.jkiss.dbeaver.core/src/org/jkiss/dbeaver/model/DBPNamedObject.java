@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.meta.Property;
+
 /**
  * Abstract model object
  */
@@ -30,6 +32,7 @@ public interface DBPNamedObject extends DBPObject
      *
      * @return object name
      */
+    @Property(viewable = true, order = 1)
     String getName();
 
 }
