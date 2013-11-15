@@ -282,7 +282,7 @@
                     defaultPort="9092"
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
-                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="*"/>
+                    <file type="jar" path="drivers/h2/h2-1.3.173.jar" url="*"/>
                     <file type="license" path="drivers/h2/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
