@@ -112,6 +112,10 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
                 new ResultsContentProvider());
         }
 
+        protected int getDefaultListStyle() {
+            return SWT.NONE;
+        }
+
         @Override
         protected void fillCustomToolbar(ToolBarManager toolbarManager)
         {
