@@ -36,6 +36,10 @@ public class ProjectRegistry implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
 
     private static final String PROP_PROJECT_ACTIVE = "project.active";
+    private static final String[] IGNORED_FILES = {
+        DataSourceRegistry.CONFIG_FILE_NAME,
+        DataSourceRegistry.OLD_CONFIG_FILE_NAME
+    };
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
     private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<String, ResourceHandlerDescriptor>();
@@ -160,7 +164,7 @@ public class ProjectRegistry implements IResourceChangeListener {
             // Skip not accessible hidden and phantom resources
             return null;
         }
-        if (resource.getParent() instanceof IProject && resource.getName().equals(DataSourceRegistry.CONFIG_FILE_NAME)) {
+        if (resource.getParent() instanceof IProject && CommonUtils.contains(IGNORED_FILES, resource.getName())) {
             // Skip connections settings file
             // TODO: remove in some older version
             return null;

@@ -1,16 +1,16 @@
 Major:
 
+Improve driver tree (recent on top)
+.dbeaver-data-sources.xml
+Find table/object (similar to eclipse ctrl-shift-r/t)
+
 1. Multiple result sets support (MS SQL)
 2. Dialect-dependent SQL generator
-3. Client-side filters (maybe a bad idea)
-4. Outline for data editor (RSV) - columns' filters, search, hide/show
-5. Check on MacOS
-6. Query manager fixes. + keep only primitive props + persistence
-7. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
-8. Async autocomplete
+3. Query manager fixes. + keep only primitive props + persistence
+4. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
+5. Async autocomplete
+6. Check on MacOS
 
-Show container in search results
-Find table/object (similar to eclipse ctrl-shift-r/t)
 
 Minor:
 
