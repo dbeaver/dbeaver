@@ -63,7 +63,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 {
     static final Log log = LogFactory.getLog(DataSourceRegistry.class);
 
-    public static final String CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
+    public static final String CONFIG_FILE_NAME = ".dbeaver-data-sources.xml"; //$NON-NLS-1$
+    public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
     private final IProject project;
 
@@ -74,10 +75,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     {
         this.project = project;
         IFile configFile = project.getFile(CONFIG_FILE_NAME);
-
-        File dsFile = configFile.getLocation().toFile();
-        if (dsFile.exists()) {
-            loadDataSources(dsFile, new SimpleStringEncrypter());
+        if (!configFile.exists()) {
+            configFile = project.getFile(OLD_CONFIG_FILE_NAME);
+        }
+        if (configFile.exists()) {
+            File dsFile = configFile.getLocation().toFile();
+            if (dsFile.exists()) {
+                loadDataSources(dsFile, new SimpleStringEncrypter());
+            }
         }
         DBeaverCore.getInstance().getDataSourceProviderRegistry().fireRegistryChange(this, true);
     }

@@ -214,15 +214,19 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 
     void removeDataSource(DataSourceDescriptor descriptor)
     {
+        DBNDataSource removedNode = null;
         for (Iterator<DBNDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
             DBNDataSource dataSource = iter.next();
             if (dataSource.getObject() == descriptor) {
                 iter.remove();
-                dataSource.dispose(true);
+                removedNode = dataSource;
                 break;
             }
         }
-        children = null;
+        if (removedNode != null) {
+            children = null;
+            removedNode.dispose(true);
+        }
     }
 
     @Override
