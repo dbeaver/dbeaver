@@ -1,7 +1,5 @@
 Major:
 
-Improve driver tree (recent on top)
-.dbeaver-data-sources.xml
 Find table/object (similar to eclipse ctrl-shift-r/t)
 
 1. Multiple result sets support (MS SQL)
