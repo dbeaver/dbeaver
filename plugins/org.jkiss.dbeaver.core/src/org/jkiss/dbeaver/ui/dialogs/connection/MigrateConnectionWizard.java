@@ -195,7 +195,7 @@ public class MigrateConnectionWizard extends Wizard
         {
             Composite placeholder = UIUtils.createPlaceholder(parent, 1);
             driverTreeControl = new DriverTreeControl(placeholder);
-            driverTreeControl.initDrivers(this, DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders());
+            driverTreeControl.initDrivers(this, DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders(), true);
             Control control = driverTreeControl.getControl();
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;

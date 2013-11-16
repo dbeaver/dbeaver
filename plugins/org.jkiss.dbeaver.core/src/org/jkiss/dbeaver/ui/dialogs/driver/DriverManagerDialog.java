@@ -104,7 +104,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
         {
             treeControl = new DriverTreeControl(group);
-            treeControl.initDrivers(this, providers);
+            treeControl.initDrivers(this, providers, false);
             treeControl.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 

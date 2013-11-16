@@ -67,6 +67,12 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         }
 
         @Override
+        public String toString()
+        {
+            return name;
+        }
+
+        @Override
         public boolean equals(Object obj)
         {
             return obj instanceof DriverCategory &&
@@ -93,7 +99,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         });
     }
 
-    public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers)
+    public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent)
     {
         this.site = site;
         this.providers = providers;
@@ -107,21 +113,30 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         TreeColumn usersColumn = new TreeColumn(getTree(), SWT.RIGHT);
         usersColumn.setText("Connections");
 
-        //TreeColumn descColumn = new TreeColumn(getTree(), SWT.RIGHT);
-        //descColumn.setText("Description");
-
         this.setContentProvider(new ViewContentProvider());
         this.setLabelProvider(new ViewLabelProvider());
-        this.setInput(collectDrivers());
 
         this.addSelectionChangedListener(this);
         this.addDoubleClickListener(this);
         this.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        Collection<Object> drivers = collectDrivers();
+        this.setInput(drivers);
         this.expandAll();
         UIUtils.packColumns(getTree());
-        this.collapseAll();
-        //this.expandToLevel(2);
+
+        if (expandRecent) {
+            // Expand used driver categories
+            for (Object driver : drivers) {
+                if (driver instanceof DriverCategory && getConnectionCount(driver) > 0) {
+                    expandToLevel(driver, ALL_LEVELS);
+                } else {
+                    collapseToLevel(driver, ALL_LEVELS);
+                }
+            }
+        } else {
+            this.collapseAll();
+        }
     }
 
     @Override
@@ -155,9 +170,15 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
             @Override
             public int compare(Object o1, Object o2)
             {
-                String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory)o1).getName();
-                String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory)o2).getName();
-                return name1.compareTo(name2);
+                int count1 = getConnectionCount(o1);
+                int count2 = getConnectionCount(o2);
+                if (count1 == count2) {
+                    String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory)o1).getName();
+                    String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory)o2).getName();
+                    return name1.compareTo(name2);
+                } else {
+                    return count2 - count1;
+                }
             }
         });
         for (DriverCategory category : categories.values()) {
@@ -170,6 +191,27 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
             });
         }
         return result;
+    }
+
+    public int getConnectionCount(Object obj)
+    {
+        if (obj instanceof DataSourceProviderDescriptor) {
+            int count = 0;
+            for (DriverDescriptor driver : ((DataSourceProviderDescriptor) obj).getEnabledDrivers()) {
+                count += driver.getUsedBy().size();
+            }
+            return count;
+        } else if (obj instanceof DriverCategory) {
+            int count = 0;
+            for (DriverDescriptor driver : ((DriverCategory) obj).drivers) {
+                count += driver.getUsedBy().size();
+            }
+            return count;
+        } else if (obj instanceof DriverDescriptor) {
+            return ((DriverDescriptor) obj).getUsedBy().size();
+        } else {
+            return 0;
+        }
     }
 
     class ViewContentProvider implements ITreeContentProvider
@@ -253,27 +295,6 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 return ((DriverDescriptor) obj).getName();
             } else {
                 return obj.toString();
-            }
-        }
-
-        public int getConnectionCount(Object obj)
-        {
-            if (obj instanceof DataSourceProviderDescriptor) {
-                int count = 0;
-                for (DriverDescriptor driver : ((DataSourceProviderDescriptor) obj).getEnabledDrivers()) {
-                    count += driver.getUsedBy().size();
-                }
-                return count;
-            } else if (obj instanceof DriverCategory) {
-                int count = 0;
-                for (DriverDescriptor driver : ((DriverCategory) obj).drivers) {
-                    count += driver.getUsedBy().size();
-                }
-                return count;
-            } else if (obj instanceof DriverDescriptor) {
-                return ((DriverDescriptor) obj).getUsedBy().size();
-            } else {
-                return 0;
             }
         }
 
