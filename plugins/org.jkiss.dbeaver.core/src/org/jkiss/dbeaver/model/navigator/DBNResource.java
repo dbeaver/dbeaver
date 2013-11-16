@@ -150,7 +150,7 @@ public class DBNResource extends DBNNode
         //final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         List<DBNNode> result = new ArrayList<DBNNode>();
         try {
-            IResource[] members = ((IContainer) resource).members(IContainer.INCLUDE_HIDDEN);
+            IResource[] members = ((IContainer) resource).members();
             for (IResource member : members) {
                 DBNNode newChild = makeNode(member);
                 if (newChild != null) {
