@@ -52,7 +52,19 @@
             <date>18.11.2013</date>
 
             <release-notes>
-                -
+                - Open editors are no restored after restart
+                - Connections' folders support has been added
+                - SQL auto-completion was improved
+                - Auto-completion and hyperlinks for procedures/packages has been added
+                - Database search results are now structured
+                - Disconnect detection by error code has been added
+                - Driver management UI was redesigned
+                - DB2 for AS 400 driver has been added
+                - H2, Derby and HSQLDB drivers were updated
+                - Minor fixes in Oracle, MySQL and DB2 plugins
+                - Data transfer columns mapping fixed
+                - SQL processing UI fixed
+                - Minor UI bugfixes
             </release-notes>
         </version>
 
