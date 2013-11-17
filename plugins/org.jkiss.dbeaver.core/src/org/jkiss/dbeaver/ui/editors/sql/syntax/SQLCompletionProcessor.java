@@ -162,10 +162,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     private void makeStructureProposals(
-        DBRProgressMonitor monitor,
-        List<ICompletionProposal> proposals,
-        String wordPart,
-        QueryType queryType)
+        final DBRProgressMonitor monitor,
+        final List<ICompletionProposal> proposals,
+        final String wordPart,
+        final QueryType queryType)
     {
         DBPDataSource dataSource = editor.getDataSource();
         if (queryType != null && dataSource != null) {
@@ -336,7 +336,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         String tableNamePattern = "((" + quote + "([.[^" + quote + "]]+)" + quote + ")|([\\w" + Pattern.quote(catalogSeparator) + "]+))";
         String structNamePattern;
         if (CommonUtils.isEmpty(token)) {
-            structNamePattern = "from\\s*" + tableNamePattern + "\\s*where";
+            structNamePattern = "from\\s*" + tableNamePattern;
         } else {
             structNamePattern = tableNamePattern +
                 "(\\s*\\.\\s*" + tableNamePattern + ")?" +
@@ -422,6 +422,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     {
         if (startPart != null) {
             startPart = wordDetector.removeQuotes(startPart).toUpperCase();
+            int divPos = startPart.lastIndexOf(editor.getSyntaxManager().getStructSeparator());
+            if (divPos != -1) {
+                startPart = startPart.substring(divPos + 1);
+            }
         }
         try {
             Collection<? extends DBSObject> children = null;
