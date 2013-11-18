@@ -52,7 +52,7 @@
             <date>18.11.2013</date>
 
             <release-notes>
-                - Open editors are no restored after restart
+                - Open editors are now restored after restart
                 - Connections' folders support has been added
                 - SQL auto-completion was improved
                 - Auto-completion and hyperlinks for procedures/packages has been added
