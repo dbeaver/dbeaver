@@ -661,8 +661,7 @@ public final class DBUtils {
         long maxRows) throws DBCException
     {
         final boolean dataModifyQuery = SQLUtils.isDataModifyQuery(query);
-        final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0 &&
-            session.getDataSource().getInfo().supportsResultSetLimit();
+        final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
         if (!dataModifyQuery) {
