@@ -49,7 +49,7 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Open editors are no restored after restart
+        - Open editors are now restored after restart
         - Connections' folders support has been added
         - SQL auto-completion was improved
         - Auto-completion and hyperlinks for procedures/packages has been added
