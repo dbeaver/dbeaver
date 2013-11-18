@@ -202,7 +202,13 @@ public class CommonUtils {
 
     public static boolean getBoolean(Object value, boolean defaultValue)
     {
-        return value != null && (value instanceof Boolean ? (Boolean) value : getBoolean(value.toString()));
+        if (value == null) {
+            return defaultValue;
+        } else if (value instanceof Boolean) {
+            return (Boolean) value;
+        } else {
+            return getBoolean(value.toString(), defaultValue);
+        }
     }
 
     public static String getLineSeparator()
