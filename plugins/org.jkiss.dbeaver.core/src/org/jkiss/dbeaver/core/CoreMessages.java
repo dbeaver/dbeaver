@@ -119,7 +119,10 @@ public class CoreMessages extends NLS {
 	public static String confirm_entity_delete_title;
 	public static String confirm_entity_delete_message;
 
-	public static String confirm_close_editor_edit_title;
+    public static String confirm_local_folder_delete_title;
+    public static String confirm_local_folder_delete_message;
+
+    public static String confirm_close_editor_edit_title;
 	public static String confirm_close_editor_edit_message;
 	public static String confirm_close_editor_edit_toggleMessage;
 
