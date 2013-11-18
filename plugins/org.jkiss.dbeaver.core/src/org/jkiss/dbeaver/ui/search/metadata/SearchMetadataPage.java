@@ -195,7 +195,11 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
                             Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
                             return folderItemsClass != null && DBSObjectContainer.class.isAssignableFrom(folderItemsClass);
                         }
-                        if (element instanceof DBNProjectDatabases || element instanceof DBNDataSource || (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSObjectContainer)) {
+                        if (element instanceof DBNLocalFolder ||
+                            element instanceof DBNProjectDatabases ||
+                            element instanceof DBNDataSource ||
+                            (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSObjectContainer))
+                        {
                             return true;
                         }
                     }
@@ -207,6 +211,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
                     @Override
                     public void selectionChanged(SelectionChangedEvent event)
                     {
+                        updateEnablement();
                         IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
                         for (Iterator<?> iter = structSel.iterator(); iter.hasNext(); ) {
                             Object object = iter.next();
@@ -337,9 +342,11 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
     private void updateEnablement()
     {
         boolean enabled = false;
-        for (TableItem item : typesTable.getItems()) {
-            if (item.getChecked()) {
-                enabled = true;
+        if (getSelectedDataSource() != null) {
+            for (TableItem item : typesTable.getItems()) {
+                if (item.getChecked()) {
+                    enabled = true;
+                }
             }
         }
         if (CommonUtils.isEmpty(nameMask)) {
