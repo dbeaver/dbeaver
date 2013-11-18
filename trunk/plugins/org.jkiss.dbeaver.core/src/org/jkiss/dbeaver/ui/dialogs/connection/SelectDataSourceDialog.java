@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -29,11 +30,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
+import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 
 import java.util.List;
 
@@ -46,9 +51,17 @@ public class SelectDataSourceDialog extends Dialog {
 
     private DataSourceDescriptor dataSource = null;
 
+    private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
+
     private SelectDataSourceDialog(Shell parentShell)
     {
         super(parentShell);
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
@@ -69,31 +82,22 @@ public class SelectDataSourceDialog extends Dialog {
         DBeaverCore core = DBeaverCore.getInstance();
         DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
 
-        ItemListControl dsList = new ItemListControl(
-            group,
-            SWT.BORDER | SWT.SHEET,
-            null,
-            rootNode.getDatabases(),
-            null);
-        dsList.createProgressPanel();
-        gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 300;
-        gd.widthHint = 500;
-        dsList.setLayoutData(gd);
-        //dsList.setLoadProperties(false);
-        //dsList.setBrief(true);
-        dsList.loadData();
-        dsList.getNavigatorViewer().addSelectionChangedListener(new ISelectionChangedListener()
-        {
+        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, rootNode.getDatabases(), SWT.SINGLE, false);
+        dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
+        dataSourceTree.getViewer().addFilter(new ViewerFilter() {
             @Override
-            public void selectionChanged(SelectionChangedEvent event)
+            public boolean select(Viewer viewer, Object parentElement, Object element)
             {
-                IStructuredSelection selection = (IStructuredSelection)event.getSelection();
-                if (selection.isEmpty()) {
-                    dataSource = null;
-                    getButton(IDialogConstants.OK_ID).setEnabled(false);
-                } else {
-                    Object selNode = selection.getFirstElement();
+                return element instanceof DBNLocalFolder || element instanceof DBNDataSource;
+            }
+        });
+        dataSourceTree.getViewer().addSelectionChangedListener(
+            new ISelectionChangedListener() {
+                @Override
+                public void selectionChanged(SelectionChangedEvent event)
+                {
+                    IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
+                    Object selNode = structSel.isEmpty() ? null : structSel.getFirstElement();
                     if (selNode instanceof DBNDataSource) {
                         dataSource = ((DBNDataSource) selNode).getObject();
                         getButton(IDialogConstants.OK_ID).setEnabled(true);
@@ -103,9 +107,8 @@ public class SelectDataSourceDialog extends Dialog {
                     }
                 }
             }
-        });
-        dsList.setDoubleClickHandler(new IDoubleClickListener()
-        {
+        );
+        dataSourceTree.getViewer().addDoubleClickListener(new IDoubleClickListener() {
             @Override
             public void doubleClick(DoubleClickEvent event)
             {
