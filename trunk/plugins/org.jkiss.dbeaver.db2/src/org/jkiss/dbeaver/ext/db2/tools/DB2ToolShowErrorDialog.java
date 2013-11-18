@@ -1,0 +1,158 @@
+/*
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jkiss.dbeaver.ext.db2.tools;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.ui.UIUtils;
+
+/**
+ * Dialog to display the SQL message associated with an SQL Error Code
+ * 
+ * @author Denis Forveille
+ * 
+ */
+class DB2ToolShowErrorDialog extends Dialog {
+
+    private static final Log LOG = LogFactory.getLog(DB2Utils.class);
+
+    private final DB2DataSource db2DataSource;
+
+    private Text textSqlErrorCode;
+    private Text resultMessage;
+
+    public DB2ToolShowErrorDialog(IWorkbenchWindow window, DB2DataSource db2DataSource)
+    {
+        super(window.getShell());
+        this.db2DataSource = db2DataSource;
+    }
+
+    @Override
+    protected void configureShell(Shell newShell)
+    {
+        super.configureShell(newShell);
+        newShell.setText(DB2Messages.dialog_tools_msg_title);
+    }
+
+    @Override
+    protected Button createButton(Composite parent, int id, String label, boolean defaultButton)
+    {
+        // Remove "Cancel" Button
+        if (id == IDialogConstants.CANCEL_ID) {
+            return null;
+        }
+        return super.createButton(parent, id, label, defaultButton);
+    }
+
+    @Override
+    protected Control createDialogArea(Composite parent)
+    {
+        Composite area = (Composite) super.createDialogArea(parent);
+
+        // -----------------------------------
+        // Line 1: Label + input code + button
+        // -----------------------------------
+        Composite container1 = new Composite(area, SWT.NONE);
+        container1.setLayout(new GridLayout(3, false));
+        container1.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        // SQL Error Code
+        Label l1 = new Label(container1, SWT.NONE);
+        l1.setText(DB2Messages.dialog_tools_msg_code);
+
+        textSqlErrorCode = new Text(container1, SWT.BORDER);
+
+        // Button
+        Button button = new Button(container1, SWT.PUSH);
+        button.setText("Retrieve Message");
+        button.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                Integer sqlIntegerCode = 0;
+                try {
+                    sqlIntegerCode = Integer.valueOf(textSqlErrorCode.getText());
+                } catch (NumberFormatException nfe) {
+                    UIUtils.showErrorDialog(getShell(), DB2Messages.dialog_tools_mes_error_code_title,
+                        DB2Messages.dialog_tools_mes_error_code);
+                    return;
+                }
+
+                try {
+                    String msg = DB2Utils.getMessageFromCode(db2DataSource, sqlIntegerCode);
+                    resultMessage.setText(msg);
+                } catch (Exception e1) {
+                    // Most propably, there is no message for this code. tell this to the user..
+                    resultMessage.setText(e1.getMessage());
+                }
+            }
+        });
+
+        // -----------------------------------
+        // Line 2: Label for Message
+        // -----------------------------------
+        Composite container2 = new Composite(area, SWT.NONE);
+        container2.setLayout(new GridLayout(1, false));
+        container2.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        Label l2 = new Label(container2, SWT.NONE);
+        l2.setText(DB2Messages.dialog_tools_mes_message);
+
+        // -----------------------------------
+        // Line 3: Message
+        // -----------------------------------
+        Composite container3 = new Composite(area, SWT.NONE);
+        container3.setLayout(new GridLayout(1, false));
+        container3.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        // Message
+        resultMessage = new Text(container3, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+        resultMessage.setLayoutData(new GridData(GridData.FILL_BOTH));
+        resultMessage.setEditable(false);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 600;
+        gd.heightHint = 80;
+        resultMessage.setLayoutData(gd);
+
+        return area;
+    }
+
+    @Override
+    protected boolean isResizable()
+    {
+        return true;
+    }
+}

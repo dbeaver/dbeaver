@@ -47,13 +47,5 @@ call SYSPROC.ADMIN_DROP_SCHEMA('${schema}',null,?,?);
               description="Admin Copy Schema">
 call SYSPROC.ADMIN_COPY_SCHEMA('${schema}','&lt;target schema&gt;','COPY', NULL, '&lt;source ts1, source ts2&gt;','&lt;target ts1, target ts2&gt;',?,?);
     </template>
-    <template id="org.jkiss.dbeaver.templates.getErrorMessage" 
-              name="getErrorMessage" 
-              context="sql_db2" 
-              autoinsert="true" 
-              description="Get SQL Message">
--- Replace parameter by SQL error number, ie 551 for SQL0551N              
-VALUES (SYSPROC.SQLERRM(?))
-    </template>
 
 </templates>
