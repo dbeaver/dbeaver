@@ -211,43 +211,38 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
                     @Override
                     public void selectionChanged(SelectionChangedEvent event)
                     {
+                        fillObjectTypes();
                         updateEnablement();
                         IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
-                        for (Iterator<?> iter = structSel.iterator(); iter.hasNext(); ) {
-                            Object object = iter.next();
-                            if (object instanceof DBNNode) {
-                                for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
-                                    if (node instanceof DBNDataSource) {
-                                        DBNDataSource dsNode = (DBNDataSource) node;
-                                        dsNode.initializeNode(null, new DBRProcessListener() {
-                                            @Override
-                                            public void onProcessFinish(IStatus status)
-                                            {
-                                                if (status.isOK()) {
-                                                    Display.getDefault().asyncExec(new Runnable() {
-                                                        @Override
-                                                        public void run()
-                                                        {
-                                                            if (!dataSourceTree.isDisposed()) {
-                                                                fillObjectTypes();
-                                                            }
+                        Object object = structSel.isEmpty() ? null : structSel.getFirstElement();
+                        if (object instanceof DBNNode) {
+                            for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
+                                if (node instanceof DBNDataSource) {
+                                    DBNDataSource dsNode = (DBNDataSource) node;
+                                    dsNode.initializeNode(null, new DBRProcessListener() {
+                                        @Override
+                                        public void onProcessFinish(IStatus status)
+                                        {
+                                            if (status.isOK()) {
+                                                Display.getDefault().asyncExec(new Runnable() {
+                                                    @Override
+                                                    public void run()
+                                                    {
+                                                        if (!dataSourceTree.isDisposed()) {
+                                                            fillObjectTypes();
                                                         }
-                                                    });
-                                                }
+                                                    }
+                                                });
                                             }
-                                        });
-                                        break;
-                                    }
+                                        }
+                                    });
+                                    break;
                                 }
                             }
                         }
                     }
                 }
             );
-            if (!sourceNodes.isEmpty()) {
-                dataSourceTree.getViewer().setSelection(
-                    new StructuredSelection(sourceNodes));
-            }
         }
 
         {
@@ -278,7 +273,12 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_description);
         }
 
-        updateEnablement();
+        if (!sourceNodes.isEmpty()) {
+            dataSourceTree.getViewer().setSelection(
+                new StructuredSelection(sourceNodes));
+        } else {
+            updateEnablement();
+        }
     }
 
     private DBNNode getSelectedNode()
@@ -343,11 +343,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
     {
         boolean enabled = false;
         if (getSelectedDataSource() != null) {
-            for (TableItem item : typesTable.getItems()) {
-                if (item.getChecked()) {
-                    enabled = true;
-                }
-            }
+            enabled = !checkedTypes.isEmpty();
         }
         if (CommonUtils.isEmpty(nameMask)) {
             enabled = false;

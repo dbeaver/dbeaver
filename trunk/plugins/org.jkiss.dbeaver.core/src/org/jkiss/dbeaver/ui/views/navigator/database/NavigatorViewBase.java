@@ -106,15 +106,16 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             @Override
             public void doubleClick(DoubleClickEvent event)
             {
-                IStructuredSelection selection = (IStructuredSelection)tree.getViewer().getSelection();
+                TreeViewer viewer = tree.getViewer();
+                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 if (selection.size() == 1) {
                     DBNNode node = (DBNNode)selection.getFirstElement();
                     if (node instanceof DBNResource) {
                         if (((DBNResource) node).getResource() instanceof IFolder) {
-                            if (Boolean.TRUE.equals(tree.getViewer().getExpandedState(node))) {
-                                tree.getViewer().collapseToLevel(node, 1);
+                            if (Boolean.TRUE.equals(viewer.getExpandedState(node))) {
+                                viewer.collapseToLevel(node, 1);
                             } else {
-                                tree.getViewer().expandToLevel(node, 1);
+                                viewer.expandToLevel(node, 1);
                             }
 
                         } else {
@@ -127,6 +128,12 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                             (DBNDatabaseNode) node,
                             null,
                             getSite().getWorkbenchWindow());
+                    } else if (node instanceof DBNLocalFolder) {
+                        if (viewer.getExpandedState(node)) {
+                            viewer.collapseToLevel(selection.getFirstElement(), 1);
+                        } else {
+                            viewer.expandToLevel(selection.getFirstElement(), 1);
+                        }
                     }
                 }
             }
