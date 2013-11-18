@@ -225,13 +225,15 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             this.rsMaxRows = limit;
             totalRows = (int)(offset + limit);
         }
-        try {
-            getOriginal().setMaxRows(totalRows);
-        }
-        catch (SQLException e) {
-            // [JDBC:ODBC] Probably setMaxRows is not supported. Just log this error
-            // We'll use rsOffset and rsMaxRows anyway
-            log.debug(getOriginal().getClass().getName() + ".setMaxRows not supported?", e);
+        if (connection.getDataSource().getInfo().supportsResultSetLimit()) {
+            try {
+                getOriginal().setMaxRows(totalRows);
+            }
+            catch (SQLException e) {
+                // [JDBC:ODBC] Probably setMaxRows is not supported. Just log this error
+                // We'll use rsOffset and rsMaxRows anyway
+                log.debug(getOriginal().getClass().getName() + ".setMaxRows not supported?", e);
+            }
         }
     }
 
@@ -270,7 +272,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         if (rsOffset > 0) {
             JDBCUtils.scrollResultSet(resultSet, rsOffset);
         }
-        if (rsMaxRows > 0) {
+
+        if (rsMaxRows > 0 && connection.getDataSource().getInfo().supportsResultSetLimit()) {
             dbResult.setMaxRows(rsMaxRows);
         }
         return dbResult;
