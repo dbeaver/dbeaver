@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -54,6 +55,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
 
     private static final int SEARCH_ID = 1000;
     private static final String NEW_TAB_PREF_NAME = "search.dialog.results.newTab";
+    private static final String DIALOG_ID = "DBeaver.SearchDialog";//$NON-NLS-1$
 
     private volatile static DatabaseSearchDialog instance;
 
@@ -69,6 +71,11 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
         setShellStyle(SWT.DIALOG_TRIM | SWT.MAX | SWT.RESIZE | getDefaultOrientation());
     }
 
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
+    }
 
     @Override
     protected Control createDialogArea(Composite parent)
