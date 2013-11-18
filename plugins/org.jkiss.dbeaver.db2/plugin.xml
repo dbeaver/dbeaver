@@ -403,6 +403,21 @@
                     class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage">
                 </view>
             </views>
+            
+            <tools>
+                <tool
+                    class="org.jkiss.dbeaver.ext.db2.tools.DB2ToolShowError"
+                    description="Display SQL Error Message"
+                    id="org.jkiss.dbeaver.ext.oracle.tools.DB2ToolShowError"
+                    label="Retrieve SQL Error Message">
+                    
+                    <!-- DF this is not complete -->
+                    <!-- The tool menu should appear on all nodes (Meta object or folders..) when connected to a DB2 Database-->
+                    <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2DataSource"/>
+                    <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
+                </tool>
+            </tools>
+            
         </datasource>
     </extension>
 

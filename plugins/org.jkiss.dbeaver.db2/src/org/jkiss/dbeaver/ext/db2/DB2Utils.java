@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -106,6 +107,8 @@ public class DB2Utils {
 
     // APPLICATIONS
     private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+
+    private static final String GET_MSG = "VALUES (SYSPROC.SQLERRM(?))";
 
     // ------------------------
     // Admin Command
@@ -217,6 +220,16 @@ public class DB2Utils {
 
             monitor.done();
         }
+    }
+
+    // ------------------------
+    // Error Message
+    // ------------------------
+
+    public static String getMessageFromCode(DB2DataSource db2DataSource, Integer sqlErrorCode) throws SQLException
+    {
+        JDBCSession session = db2DataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Get Error Code");
+        return JDBCUtils.queryString(session, GET_MSG, sqlErrorCode);
     }
 
     // ------------------------
