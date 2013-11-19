@@ -115,17 +115,22 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         }
 
         // Store associated DB2Schema
+        // DB2DataType can have 3 owners:
+        // - DataSource (= "System" DataTypes)
+        // - DB2Schema (=UDT)
+        // - DB2Module
         if (owner instanceof DB2Schema) {
             this.db2Schema = (DB2Schema) owner;
         } else {
             if (owner instanceof DB2Module) {
                 this.db2Schema = ((DB2Module) owner).getSchema();
             } else {
+                // System datatypes
                 String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
                 try {
                     this.db2Schema = db2DataSource.getSchema(VoidProgressMonitor.INSTANCE, schemaName);
                 } catch (DBException e) {
-                    LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??");
+                    LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??", e);
                     // In this case, 'this.db2Schema' will be null...
                 }
             }
