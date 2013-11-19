@@ -186,10 +186,14 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             checkCache.getObjects(monitor, this);
             monitor.subTask("Cache Sequences");
             sequenceCache.getObjects(monitor, this);
-            monitor.subTask("Cache XML Schemas");
-            xmlSchemaCache.getObjects(monitor, this);
-            monitor.subTask("Cache Modules");
-            moduleCache.getObjects(monitor, this);
+            if (xmlSchemaCache != null) {
+                monitor.subTask("Cache XML Schemas");
+                xmlSchemaCache.getObjects(monitor, this);
+            }
+            if (moduleCache != null) {
+                monitor.subTask("Cache Modules");
+                moduleCache.getObjects(monitor, this);
+            }
         }
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
@@ -221,8 +225,12 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         udtCache.clearCache();
         sequenceCache.clearCache();
         aliasCache.clearCache();
-        xmlSchemaCache.clearCache();
-        moduleCache.clearCache();
+        if (xmlSchemaCache != null) {
+            xmlSchemaCache.clearCache();
+        }
+        if (moduleCache != null) {
+            moduleCache.clearCache();
+        }
 
         // For those 2, need to refresh dependent cache (cache for tables..?)
         indexCache.clearCache();
