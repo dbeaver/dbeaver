@@ -42,6 +42,7 @@ public class DB2Constants {
     public static final String EXPLAIN_SCHEMA_NAME_DEFAULT = "SYSTOOLS";
 
     // DB2 Versions
+    public static final Double DB2v9_1 = 9.1;
     public static final Double DB2v9_5 = 9.5;
     public static final Double DB2v9_7 = 9.7;
     public static final Double DB2v10_1 = 10.1;
@@ -85,11 +86,7 @@ public class DB2Constants {
         "SUBPAGES", "SYNONYM", "SYSTEM", "TABLESPACE", "TRIGGER", "TYPE", "UNDO", "UNTIL", "VALIDPROC", "VARIABLE", "VARIANT",
         "VCAT", "VOLUMES", "WHILE", "WLM", "YEARS", };
 
-    public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT = new DBDPseudoAttribute(
-        DBDPseudoAttributeType.ROWID,
-        "RID_BIT()",
-        "RID_BIT($alias)",
-        "rid_bit",
-        "Unique physical row identifier");
+    public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "RID_BIT()",
+        "RID_BIT($alias)", "rid_bit", "Unique physical row identifier");
 
 }

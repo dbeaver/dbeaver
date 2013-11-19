@@ -92,7 +92,7 @@ public class DB2XMLString implements DBSObject {
         return string;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = false, order = 3)
     public String getStringUTF8()
     {
         return stringUTF8;

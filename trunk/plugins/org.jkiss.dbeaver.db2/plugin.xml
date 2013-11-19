@@ -173,7 +173,11 @@
                                <items label="%tree.triggerdeps.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema" label="%tree.xmlschemas.node.name" icon="#xmlschemas" description="XML Schemas">
+                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema" 
+                                label="%tree.xmlschemas.node.name" 
+                                icon="#xmlschemas" 
+                                description="XML Schemas"
+                                visibleIf="object.dataSource.atLeastV9_1">
                            <items label="%tree.xmlschema.node.name" path="xmlschema" property="XMLSchemas" icon="#xmlschema" >
                               <folder type="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchemaDep" label="%tree.xmlschemadeps.node.name" icon="#dependencies" description="XML Schemas Dependencies" navigable="false">
                                  <items label="%tree.xmlschemadep.node.name" path="xmlschemadep" property="xmlschemaDeps" icon="#xmlschemadep"/>
@@ -251,7 +255,11 @@
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Variable" label="%tree.variables.node.name" icon="#data_types" description="Global Variables">
                         <items label="%tree.variable.node.name" path="variable" property="variables" icon="icons/variable.gif"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.db2.info.DB2XMLString" label="%tree.xmlstrings.node.name" icon="#parameters" description="XML Strings">
+                    <folder type="org.jkiss.dbeaver.ext.db2.info.DB2XMLString" 
+                            label="%tree.xmlstrings.node.name" 
+                            icon="#parameters" 
+                            description="XML Strings"
+                            visibleIf="object.dataSource.atLeastV9_7" >
                         <items label="%tree.xmlstring.node.name" path="xmlstring" property="xmlStrings" icon="#parameter" navigable="false" />
                     </folder>
                 </folder>
