@@ -36,7 +36,7 @@ public class DB2User extends DB2Grantee implements DBAUser {
     // -----------------------
     public DB2User(DBRProgressMonitor monitor, DB2DataSource dataSource, ResultSet resultSet)
     {
-        super(monitor, dataSource, resultSet);
+        super(monitor, dataSource, resultSet, "GRANTEE");
 
     }
 
