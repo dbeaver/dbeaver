@@ -80,7 +80,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private final DB2TriggerCache triggerCache = new DB2TriggerCache();
     private final DB2AliasCache aliasCache = new DB2AliasCache();
     private final DBSObjectCache<DB2Schema, DB2Package> packageCache;
-    private final DBSObjectCache<DB2Schema, DB2XMLSchema> xmlSchemaCache;
+    private DBSObjectCache<DB2Schema, DB2XMLSchema> xmlSchemaCache;
 
     private final DB2RoutineCache udfCache = new DB2RoutineCache(DB2RoutineType.F);
     private final DB2RoutineCache methodCache = new DB2RoutineCache(DB2RoutineType.M);
@@ -134,7 +134,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class, C_SEQ, name);
         this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class, C_PKG, name);
         this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class, C_DTT, name);
-        this.xmlSchemaCache = new JDBCObjectSimpleCache<DB2Schema, DB2XMLSchema>(DB2XMLSchema.class, C_XSR, name);
+        if (db2DataSource.isAtLeastV9_1()) {
+            this.xmlSchemaCache = new JDBCObjectSimpleCache<DB2Schema, DB2XMLSchema>(DB2XMLSchema.class, C_XSR, name);
+        }
         if (db2DataSource.isAtLeastV9_7()) {
             this.moduleCache = new JDBCObjectSimpleCache<DB2Schema, DB2Module>(DB2Module.class, C_MOD, name);
         }
