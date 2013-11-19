@@ -104,12 +104,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         DB2Bufferpool.class, C_BP);
     private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(
         DB2Tablespace.class, C_TS);
-    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache = new JDBCObjectSimpleCache<DB2DataSource, DB2StorageGroup>(
-        DB2StorageGroup.class, C_SG);
-    private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
-        DB2Role.class, C_RL);
-    private final DBSObjectCache<DB2DataSource, DB2Variable> variableCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Variable>(
-        DB2Variable.class, C_VR);
 
     private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache = new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(
         DB2RemoteServer.class, C_SV);
@@ -120,6 +114,15 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private final DB2GranteeCache groupCache = new DB2GranteeCache(DB2AuthIDType.G);
     private final DB2GranteeCache userCache = new DB2GranteeCache(DB2AuthIDType.U);
+
+    // Those are dependent of DB2 version
+    // This is ok as they will never been called as the folder/menu is hidden in plugin.xml
+    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache = new JDBCObjectSimpleCache<DB2DataSource, DB2StorageGroup>(
+        DB2StorageGroup.class, C_SG);
+    private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
+        DB2Role.class, C_RL);
+    private final DBSObjectCache<DB2DataSource, DB2Variable> variableCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Variable>(
+        DB2Variable.class, C_VR);
 
     private List<DB2Parameter> listDBParameters;
     private List<DB2Parameter> listDBMParameters;
@@ -680,6 +683,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public boolean isAtLeastV10_5()
     {
         return version >= DB2Constants.DB2v10_5;
+    }
+
+    public Double getVersion()
+    {
+        return version;
     }
 
     // -------------------------

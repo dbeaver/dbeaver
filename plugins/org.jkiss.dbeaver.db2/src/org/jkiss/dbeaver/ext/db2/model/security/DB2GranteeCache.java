@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,12 +36,63 @@ import java.sql.SQLException;
  */
 public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Grantee> {
 
-    private static String SQL;
-
     private DB2AuthIDType authIdType;
     private String authIdTypeName;
 
-    static {
+    public DB2GranteeCache(DB2AuthIDType authIdType)
+    {
+        this.authIdType = authIdType;
+        this.authIdTypeName = authIdType.name();
+    }
+
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2DataSource db2DataSource) throws SQLException
+    {
+        JDBCPreparedStatement dbStat = session.prepareStatement(getSQLStatement(db2DataSource));
+        dbStat.setString(1, authIdTypeName);
+        dbStat.setString(2, authIdTypeName);
+        dbStat.setString(3, authIdTypeName);
+        dbStat.setString(4, authIdTypeName);
+        dbStat.setString(5, authIdTypeName);
+        dbStat.setString(6, authIdTypeName);
+        dbStat.setString(7, authIdTypeName);
+        dbStat.setString(8, authIdTypeName);
+        dbStat.setString(9, authIdTypeName);
+        if (db2DataSource.isAtLeastV9_1()) {
+            dbStat.setString(10, authIdTypeName);
+        }
+        if (db2DataSource.isAtLeastV9_5()) {
+            dbStat.setString(11, authIdTypeName);
+        }
+        if (db2DataSource.isAtLeastV9_7()) {
+            dbStat.setString(12, authIdTypeName);
+        }
+        return dbStat;
+    }
+
+    @Override
+    protected DB2Grantee fetchObject(JDBCSession session, DB2DataSource db2DataSource, ResultSet resultSet) throws SQLException,
+        DBException
+    {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        switch (authIdType) {
+        case G:
+            return new DB2Group(monitor, db2DataSource, resultSet);
+        case U:
+            return new DB2User(monitor, db2DataSource, resultSet);
+        default:
+            throw new DBException("Structural problem. " + authIdType + " type not implemented");
+        }
+    }
+
+    // -------
+    // Helpers
+    // -------
+
+    private String getSQLStatement(DB2DataSource db2DataSource)
+    {
+
+        // DF: could be put in a cache "per version"
 
         StringBuilder sb = new StringBuilder(1536);
 
@@ -88,77 +139,43 @@ public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Gra
         sb.append(" UNION ");
 
         sb.append("SELECT DISTINCT GRANTEE");
-        sb.append("  FROM SYSCAT.MODULEAUTH");
+        sb.append("  FROM SYSCAT.ROUTINEAUTH");
         sb.append(" WHERE GRANTEETYPE = ?");// 8
 
         sb.append(" UNION ");
 
         sb.append("SELECT DISTINCT GRANTEE");
-        sb.append("  FROM SYSCAT.ROLEAUTH");
+        sb.append("  FROM SYSCAT.DBAUTH");
         sb.append(" WHERE GRANTEETYPE = ?");// 9
 
-        sb.append(" UNION ");
+        if (db2DataSource.isAtLeastV9_1()) {
+            sb.append(" UNION ");
 
-        sb.append("SELECT DISTINCT GRANTEE");
-        sb.append("  FROM SYSCAT.ROUTINEAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 10
+            sb.append("SELECT DISTINCT GRANTEE");
+            sb.append("  FROM SYSCAT.XSROBJECTAUTH");
+            sb.append(" WHERE GRANTEETYPE = ?"); // 10
+        }
 
-        sb.append(" UNION ");
+        if (db2DataSource.isAtLeastV9_5()) {
+            sb.append(" UNION ");
 
-        sb.append("SELECT DISTINCT GRANTEE");
-        sb.append("  FROM SYSCAT.XSROBJECTAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 11
+            sb.append("SELECT DISTINCT GRANTEE");
+            sb.append("  FROM SYSCAT.ROLEAUTH");
+            sb.append(" WHERE GRANTEETYPE = ?"); // 11
+        }
 
-        sb.append(" UNION ");
+        if (db2DataSource.isAtLeastV9_7()) {
+            sb.append(" UNION ");
 
-        sb.append("SELECT DISTINCT GRANTEE");
-        sb.append("  FROM SYSCAT.DBAUTH");
-        sb.append(" WHERE GRANTEETYPE = ?");// 12
+            sb.append("SELECT DISTINCT GRANTEE");
+            sb.append("  FROM SYSCAT.MODULEAUTH");
+            sb.append(" WHERE GRANTEETYPE = ?"); // 12
+        }
 
         sb.append(" ORDER BY GRANTEE");
         sb.append(" WITH UR");
 
-        SQL = sb.toString();
-    }
-
-    public DB2GranteeCache(DB2AuthIDType authIdType)
-    {
-        this.authIdType = authIdType;
-        this.authIdTypeName = authIdType.name();
-    }
-
-    @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2DataSource db2DataSource) throws SQLException
-    {
-        JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
-        dbStat.setString(1, authIdTypeName);
-        dbStat.setString(2, authIdTypeName);
-        dbStat.setString(3, authIdTypeName);
-        dbStat.setString(4, authIdTypeName);
-        dbStat.setString(5, authIdTypeName);
-        dbStat.setString(6, authIdTypeName);
-        dbStat.setString(7, authIdTypeName);
-        dbStat.setString(8, authIdTypeName);
-        dbStat.setString(9, authIdTypeName);
-        dbStat.setString(10, authIdTypeName);
-        dbStat.setString(11, authIdTypeName);
-        dbStat.setString(12, authIdTypeName);
-        return dbStat;
-    }
-
-    @Override
-    protected DB2Grantee fetchObject(JDBCSession session, DB2DataSource db2DataSource, ResultSet resultSet)
-        throws SQLException, DBException
-    {
-        DBRProgressMonitor monitor = session.getProgressMonitor();
-        switch (authIdType) {
-        case G:
-            return new DB2Group(monitor, db2DataSource, resultSet);
-        case U:
-            return new DB2User(monitor, db2DataSource, resultSet);
-        default:
-            throw new DBException("Structural problem. " + authIdType + " type not implemented");
-        }
+        return sb.toString();
     }
 
 }

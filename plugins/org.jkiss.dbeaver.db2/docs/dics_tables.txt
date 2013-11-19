@@ -1,3 +1,41 @@
+"XMLSchema"        since v9.1
+"Table Partitions" since v9.1
+"Roles"            since v9.5
+"Variables"        since v9.5
+"Modules"          since v9.7
+"XML Strings"      since v9.7
+"Stogroups"        since v10.1
+
+Catalog tables used by DBeaver that do not exists in v8.x:
+-----------------------------------------------------------
+SYSCAT.CONDITIONS
+SYSCAT.DATAPARTITIONS
+SYSCAT.MODULEAUTH
+SYSCAT.MODULES
+SYSCAT.ROLE
+SYSCAT.ROLEAUTH
+SYSCAT.STOGROUPS
+SYSCAT.VARIABLEAUTH
+SYSCAT.VARIABLES
+SYSCAT.XMLSTRINGS
+SYSCAT.XSROBJECTS
+SYSCAT.XSROBJECTAUTH
+SYSCAT.XSROBJECTDEP
+
+Catalog tables used by DBeaver that do not exists in v9.1:
+----------------------------------------------------------
+SYSCAT.CONDITIONS
+SYSCAT.MODULEAUTH
+SYSCAT.MODULES
+SYSCAT.ROLE
+SYSCAT.ROLEAUTH
+SYSCAT.STOGROUPS
+SYSCAT.VARIABLEAUTH
+SYSCAT.VARIABLES
+SYSCAT.XMLSTRINGS
+
+DB2 v10.5 catalog Tables
+-------------------------
 attributes of structured data types SYSCAT.ATTRIBUTES
 audit policies SYSCAT.AUDITPOLICIES,SYSCAT.AUDITUSE
 authorities on database SYSCAT.DBAUTH

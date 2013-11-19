@@ -51,10 +51,10 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2Grantee(DBRProgressMonitor monitor, DB2DataSource dataSource, ResultSet resultSet)
+    public DB2Grantee(DBRProgressMonitor monitor, DB2DataSource dataSource, ResultSet resultSet, String keyColName)
     {
         super(dataSource, true);
-        this.name = JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTEE");
+        this.name = JDBCUtils.safeGetStringTrimmed(resultSet, keyColName);
 
         cachePerObject = new HashMap<Class<?>, Collection<? extends DB2AuthBase>>(12);
     }

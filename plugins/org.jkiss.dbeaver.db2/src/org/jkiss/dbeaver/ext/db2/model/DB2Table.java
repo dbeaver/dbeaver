@@ -69,6 +69,8 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
     private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
     private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
+
+    // Dependent of DB2 Version. OK because the folder is hidden in plugin.xml
     private DBSObjectCache<DB2Table, DB2TablePartition> partitionCache;
 
     private DB2TableStatus status;

@@ -37,7 +37,7 @@ public class DB2Group extends DB2Grantee implements DBAUser {
 
     public DB2Group(DBRProgressMonitor monitor, DB2DataSource dataSource, ResultSet resultSet)
     {
-        super(monitor, dataSource, resultSet);
+        super(monitor, dataSource, resultSet, "GRANTEE");
     }
 
     // -----------------------
