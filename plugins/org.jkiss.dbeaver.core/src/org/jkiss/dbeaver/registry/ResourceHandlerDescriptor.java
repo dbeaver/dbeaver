@@ -119,6 +119,18 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
             } catch (CoreException e) {
                 log.warn("Can't obtain content description for '" + resource.getName() + "'", e);
             }
+            // Check for file extension
+            String fileExtension = resource.getFileExtension();
+            for (IContentType contentType : contentTypes) {
+                String[] ctExtensions = contentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
+                if (!CommonUtils.isEmpty(ctExtensions)) {
+                    for (String ext : ctExtensions) {
+                        if (ext.equalsIgnoreCase(fileExtension)) {
+                            return true;
+                        }
+                    }
+                }
+            }
         }
         if (!resourceTypes.isEmpty()) {
             for (ObjectType objectType : resourceTypes) {
