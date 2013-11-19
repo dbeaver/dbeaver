@@ -79,6 +79,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private static final Log LOG = LogFactory.getLog(DB2DataSource.class);
 
+    private static final String GET_CURRENT_USER = "VALUES(SYSTEM_USER)";
     private static final String GET_CURRENT_SCHEMA = "VALUES(CURRENT SCHEMA)";
     private static final String SET_CURRENT_SCHEMA = "SET CURRENT SCHEMA = %s";
     private static final String GET_SESSION_USER = "VALUES(SESSION_USER)";
@@ -151,12 +152,22 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         final JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
         try {
-            // Get active schema
+
+            // First try to get active schema from special register 'CURRENT SCHEMA'
             this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
-            if (this.activeSchemaName != null) {
-                this.activeSchemaName = this.activeSchemaName.trim();
+            if (this.activeSchemaName == null) {
+                LOG.error(GET_CURRENT_SCHEMA
+                    + " returned null! How can it be? Trying to set active schema to special register 'SYSTEM_USER'");
+
+                // Then try to get active schema from special register 'SYSTEM_USER'
+                this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_USER);
+                if (this.activeSchemaName == null) {
+                    throw new DBException(
+                        "Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Can not set active schema");
+                }
             }
 
+            this.activeSchemaName = this.activeSchemaName.trim();
             db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, activeSchemaName);
 
         } catch (SQLException e) {

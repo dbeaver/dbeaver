@@ -64,7 +64,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     private Integer db2TypeId;
 
-    private String owner;
+    private String ownerCol;
     private DB2OwnerType ownerType;
 
     // private String moduleName;
@@ -96,7 +96,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
         this.db2TypeId = JDBCUtils.safeGetInteger(dbResult, "TYPEID");
 
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this.ownerCol = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         // this.moduleName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPEMODULENAME");
         this.sourceSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCESCHEMA");
@@ -126,12 +126,13 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                     this.db2Schema = db2DataSource.getSchema(VoidProgressMonitor.INSTANCE, schemaName);
                 } catch (DBException e) {
                     LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??");
+                    // In this case, 'this.db2Schema' will be null...
                 }
             }
         }
 
-        // DF: not sure of that. Maybe for system DataTypes, we should set db2Schema to null instead..
-        if (db2Schema.getName().equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA)) {
+        if ((db2Schema != null) && (db2Schema.getName().equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA))) {
+            // DF: not sure of that. Maybe for system DataTypes, we should set db2Schema to null instead..
             fullyQualifiedName = name;
         } else {
             fullyQualifiedName = db2Schema.getName() + "." + name;
@@ -278,7 +279,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
-        return owner;
+        return ownerCol;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
