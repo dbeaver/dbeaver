@@ -47,7 +47,6 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
 
     private final DBSObjectCache<DB2Role, DB2RoleDep> roleDepCache;
 
-    private String name;
     private Integer id;
     private Timestamp createTime;
     private Integer auditPolicyId;
@@ -58,18 +57,19 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
     // Constructors
     // -----------------------
 
-    public DB2Role(DB2DataSource dataSource, ResultSet resultSet)
+    public DB2Role(DB2DataSource db2DataSource, ResultSet resultSet)
     {
-        super(VoidProgressMonitor.INSTANCE, dataSource, resultSet);
+        super(VoidProgressMonitor.INSTANCE, db2DataSource, resultSet, "ROLENAME");
 
-        this.name = JDBCUtils.safeGetStringTrimmed(resultSet, "ROLENAME");
         this.id = JDBCUtils.safeGetInteger(resultSet, "ROLEID");
         this.createTime = JDBCUtils.safeGetTimestamp(resultSet, "CREATE_TIME");
-        // DB2 v10 this.auditPolicyId = JDBCUtils.safeGetInteger(resultSet, "AUDITPOLICYID");
-        // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
         this.remarks = JDBCUtils.safeGetString(resultSet, "REMARKS");
+        if (db2DataSource.isAtLeastV10_1()) {
+            this.auditPolicyId = JDBCUtils.safeGetInteger(resultSet, "AUDITPOLICYID");
+            this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
+        }
 
-        this.roleDepCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleDep>(DB2RoleDep.class, C_RL, name);
+        this.roleDepCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleDep>(DB2RoleDep.class, C_RL, getName());
     }
 
     // -----------------------
@@ -102,13 +102,6 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
     // -----------------
     // Properties
     // -----------------
-
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName()
-    {
-        return name;
-    }
 
     @Property(viewable = true, order = 2)
     public Integer getId()

@@ -118,7 +118,11 @@
                                         <items label="%tree.check_constraint_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" />
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablePartition" label="%tree.partitions.node.name" icon="#triggers" description="Partitions">
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablePartition" 
+                                        label="%tree.partitions.node.name" 
+                                        icon="#triggers" 
+                                        description="Partitions"
+                                         visibleIf="object.dataSource.atLeastV9_1">
                                     <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition" />
                                 </folder>
                                 <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Trigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
@@ -252,7 +256,11 @@
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="#data_types" description="Types">
                         <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Variable" label="%tree.variables.node.name" icon="#data_types" description="Global Variables">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Variable" 
+                            label="%tree.variables.node.name" 
+                            icon="#data_types" 
+                            description="Global Variables"
+                            visibleIf="object.dataSource.atLeastV9_5">
                         <items label="%tree.variable.node.name" path="variable" property="variables" icon="icons/variable.gif"/>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2XMLString" 
@@ -314,7 +322,11 @@
                     </folder>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="icons/folder_security.gif" description="Security management" >
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Role" 
+                            label="%tree.roles.node.name" 
+                            icon="#folder_role" 
+                            description="Roles"
+                            visibleIf="object.dataSource.atLeastV9_5">
                         <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif">
                            <items label="%tree.users.node.name" path="role" property="roleDeps" icon="#user" navigable="false"/>
                            <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
@@ -335,7 +347,7 @@
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Group" label="%tree.groups.node.name" icon="icons/folder_group.gif" description="Groups">
                         <items label="%tree.group.node.name" path="group" property="groups" icon="icons/group.gif">
-                           <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif" navigable="false"/>
+                           <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif" navigable="false" visibleIf="object.dataSource.atLeastV9_5"/>
                            <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth"  navigable="false"/>
                            <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
                            <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
@@ -355,7 +367,7 @@
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2User" label="%tree.users.node.name" icon="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="user" property="users" icon="#user">
-                           <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif" navigable="false"/>
+                           <items label="%tree.roles.node.name" path="role" property="roles" icon="icons/role.gif" navigable="false" visibleIf="object.dataSource.atLeastV9_5"/>
                            <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth"  navigable="false"/>
                            <items label="%tree.tablesauths.node.name" path="tableauth" property="tablesAuths" icon="#userauth" navigable="false"/>
                            <items label="%tree.viewsauths.node.name" path="viewauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
