@@ -448,7 +448,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             addFiltersHistory(whereCondition);
         }
 
-        if (getDataSource() != null && getModel().getVisibleColumnCount() > 0 && supportsDataFilter()) {
+        if (getDataSource() != null && (!CommonUtils.isEmpty(filtersText.getText())) ||
+            (getModel().getVisibleColumnCount() > 0 && supportsDataFilter()))
+        {
             if (filtersEnableState != null) {
                 filtersEnableState.restore();
                 filtersEnableState = null;
