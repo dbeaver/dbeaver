@@ -59,7 +59,9 @@ public class SQLConstants {
         "SET",
         "ON",
         "AND",
-        "OR"
+        "OR",
+        "BY",
+        "HAVING"
     };
     public static final String[] SQL92_KEYWORDS = {
         "ABSOLUTE",
