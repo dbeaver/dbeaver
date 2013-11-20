@@ -47,6 +47,19 @@
 
     <versions>
         <version>
+            <number>2.3.3</number>
+            <type>hotfix</type>
+            <date>20.11.2013</date>
+
+            <release-notes>
+                - Result set scrolling fixed
+                - DB2 schema loading fixed
+                - Folders management fixed
+                - SQL auto-completion fixed
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.3.2</number>
             <type>stable</type>
             <date>18.11.2013</date>
