@@ -90,8 +90,8 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.tbspaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
-        this.tbspaceType = DB2TablespaceType.valueOf(JDBCUtils.safeGetString(dbResult, "TBSPACETYPE"));
-        this.dataType = DB2TablespaceDataType.valueOf(JDBCUtils.safeGetString(dbResult, "DATATYPE"));
+        this.tbspaceType = CommonUtils.valueOf(DB2TablespaceType.class, JDBCUtils.safeGetString(dbResult, "TBSPACETYPE"));
+        this.dataType = CommonUtils.valueOf(DB2TablespaceDataType.class, JDBCUtils.safeGetString(dbResult, "DATATYPE"));
         this.extentSize = JDBCUtils.safeGetInteger(dbResult, "EXTENTSIZE");
         this.prefetchSize = JDBCUtils.safeGetInteger(dbResult, "PREFETCHSIZE");
         this.overHead = JDBCUtils.safeGetDouble(dbResult, "OVERHEAD");
@@ -277,13 +277,11 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         return null;
     }
 
-    static DB2Tablespace resolveTablespaceReference(DBRProgressMonitor monitor, DB2DataSource dataSource, Object reference) throws DBException
+    static DB2Tablespace resolveTablespaceReference(DBRProgressMonitor monitor, DB2DataSource dataSource, Object reference)
+        throws DBException
     {
         if (reference instanceof String) {
-            return dataSource.getTablespaceCache().getObject(
-                    monitor,
-                    dataSource,
-                    (String) reference);
+            return dataSource.getTablespaceCache().getObject(monitor, dataSource, (String) reference);
         }
         return (DB2Tablespace) reference;
     }
