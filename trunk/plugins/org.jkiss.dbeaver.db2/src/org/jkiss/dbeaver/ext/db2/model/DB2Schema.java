@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -114,7 +115,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         this(db2DataSource, JDBCUtils.safeGetStringTrimmed(dbResult, "SCHEMANAME"));
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = DB2OwnerType.valueOf(JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
