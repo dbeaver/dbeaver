@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -86,7 +87,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         super(db2DataSource, true);
         this.name = JDBCUtils.safeGetString(dbResult, "TBSPACE");
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = DB2OwnerType.valueOf(JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.tbspaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
         this.tbspaceType = DB2TablespaceType.valueOf(JDBCUtils.safeGetString(dbResult, "TBSPACETYPE"));
