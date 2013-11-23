@@ -223,12 +223,13 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
 
         // Compute Database version
-        version = DB2Constants.DB2v99_9;
+        version = DB2Constants.DB2v9_1; // Be defensive, assume lowest possible version
         try {
             version = Integer.valueOf(metaData.getDatabaseMajorVersion()).doubleValue();
             version += Integer.valueOf(metaData.getDatabaseMinorVersion()).doubleValue() / 10;
         } catch (SQLException e) {
-            LOG.warn("SQLException when reading database version. Set it to " + DB2Constants.DB2v99_9 + " : " + e.getMessage());
+            LOG.warn("SQLException when reading database version. Set it to lowest supported version : " + DB2Constants.DB2v9_1
+                + " : " + e.getMessage());
         }
         LOG.debug(getName() + " is version v" + version);
 
@@ -659,11 +660,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // -------------------------
     // Version Testing
     // -------------------------
-
-    public boolean isAtLeastV9_1()
-    {
-        return version >= DB2Constants.DB2v9_1;
-    }
 
     public boolean isAtLeastV9_5()
     {
