@@ -20,10 +20,11 @@ package org.jkiss.dbeaver.ext.db2.model.cache;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
@@ -82,8 +83,9 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
     {
+        DB2DataSource db2DataSource = db2Schema.getDataSource();
         String sql;
-        if (db2Schema.getDataSource().isAtLeastV9_7()) {
+        if (db2DataSource.isAtLeastV9_7()) {
             sql = SQL;
         } else {
             sql = SQL_WITHOUT_MODULE;
@@ -91,14 +93,13 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
         dbStat.setString(2, db2Schema.getName());
-        if (db2Schema.getDataSource().isAtLeastV9_7()) {
+        if (db2DataSource.isAtLeastV9_7()) {
             dbStat.setString(3, db2Schema.getName());
         }
         return dbStat;
     }
 
-    protected DB2Alias fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet resultSet) throws SQLException,
-        DBException
+    protected DB2Alias fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet resultSet) throws SQLException, DBException
     {
         return new DB2Alias(session.getProgressMonitor(), db2Schema, resultSet);
     }
