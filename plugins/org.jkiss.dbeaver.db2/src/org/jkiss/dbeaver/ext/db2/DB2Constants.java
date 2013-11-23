@@ -42,12 +42,11 @@ public class DB2Constants {
     public static final String EXPLAIN_SCHEMA_NAME_DEFAULT = "SYSTOOLS";
 
     // DB2 Versions
-    public static final Double DB2v9_1 = 9.1;
+    public static final Double DB2v9_1 = 9.1; // Lowest supported version
     public static final Double DB2v9_5 = 9.5;
     public static final Double DB2v9_7 = 9.7;
     public static final Double DB2v10_1 = 10.1;
     public static final Double DB2v10_5 = 10.5;
-    public static final Double DB2v99_9 = 99.9;
 
     // Display Categories
     public static final String CAT_AUDIT = "Audit";
