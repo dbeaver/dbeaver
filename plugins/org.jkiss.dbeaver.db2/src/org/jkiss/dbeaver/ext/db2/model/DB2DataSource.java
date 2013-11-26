@@ -159,14 +159,14 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             // First try to get active schema from special register 'CURRENT SCHEMA'
             this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
             if (this.activeSchemaName == null) {
-                LOG.error(GET_CURRENT_SCHEMA
+                LOG.warn(GET_CURRENT_SCHEMA
                     + " returned null! How can it be? Trying to set active schema to special register 'SYSTEM_USER'");
 
                 // Then try to get active schema from special register 'SYSTEM_USER'
                 this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_USER);
                 if (this.activeSchemaName == null) {
-                    throw new DBException(
-                        "Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Can not set active schema");
+                    LOG.warn("Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Use connection username as active schema");
+                    this.activeSchemaName = getContainer().getActualConnectionInfo().getUserName();
                 }
             }
 
