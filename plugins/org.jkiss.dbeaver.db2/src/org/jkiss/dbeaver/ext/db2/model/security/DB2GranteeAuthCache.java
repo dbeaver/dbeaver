@@ -269,7 +269,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
                     objectName);
                 return new DB2AuthProcedure(monitor, db2Grantee, db2Procedure, resultSet);
             default:
-                throw new DBException(routineType + " isnt a vald DB2RoutineType");
+                throw new DBException(routineType + " is not a valid DB2RoutineType");
             }
 
         case SCHEMA:
