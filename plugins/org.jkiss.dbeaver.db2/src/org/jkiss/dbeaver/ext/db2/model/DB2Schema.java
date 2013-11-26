@@ -66,9 +66,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
     private static final String C_SEQ = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR";
     private static final String C_PKG = "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR";
-    private static final String C_DTT = "SELECT * FROM SYSCAT.DATATYPES WHERE TYPESCHEMA = ? AND METATYPE <> 'S' AND  TYPEMODULENAME IS NULL ORDER BY TYPENAME WITH UR";
     private static final String C_XSR = "SELECT * FROM SYSCAT.XSROBJECTS WHERE OBJECTSCHEMA = ? ORDER BY OBJECTNAME WITH UR";
     private static final String C_MOD = "SELECT * FROM SYSCAT.MODULES WHERE MODULESCHEMA = ? AND MODULETYPE <> 'A'  ORDER BY MODULENAME WITH UR";
+    private static final String C_DTT = "SELECT * FROM SYSCAT.DATATYPES WHERE TYPESCHEMA = ? AND METATYPE <> 'S' ORDER BY TYPENAME WITH UR";
+    private static final String C_DTT_97 = "SELECT * FROM SYSCAT.DATATYPES WHERE TYPESCHEMA = ? AND METATYPE <> 'S' AND TYPEMODULENAME IS NULL ORDER BY TYPENAME WITH UR";
 
     // DB2Schema's children
     private final DB2TableCache tableCache = new DB2TableCache();
@@ -136,11 +137,20 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
         this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class, C_SEQ, name);
         this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class, C_PKG, name);
-        this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class, C_DTT, name);
         this.xmlSchemaCache = new JDBCObjectSimpleCache<DB2Schema, DB2XMLSchema>(DB2XMLSchema.class, C_XSR, name);
+
         if (db2DataSource.isAtLeastV9_7()) {
             this.moduleCache = new JDBCObjectSimpleCache<DB2Schema, DB2Module>(DB2Module.class, C_MOD, name);
         }
+
+        String datatypeSQL;
+        if (db2DataSource.isAtLeastV9_7()) {
+            datatypeSQL = C_DTT_97;
+        } else {
+            datatypeSQL = C_DTT;
+        }
+        this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class, datatypeSQL, name);
+
     }
 
     // -----------------

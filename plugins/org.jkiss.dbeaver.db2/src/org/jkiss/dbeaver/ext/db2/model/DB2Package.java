@@ -103,14 +103,12 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.defaultSchema = getDataSource().getSchema(VoidProgressMonitor.INSTANCE, defaultSchemaName);
 
         this.uniqueId = JDBCUtils.safeGetString(dbResult, "UNIQUE_ID");
-        this.id = JDBCUtils.safeGetLong(dbResult, "PKGID");
         this.valid = JDBCUtils.safeGetBoolean(dbResult, "VALID", DB2YesNo.Y.name());
         this.version = JDBCUtils.safeGetString(dbResult, "PKGVERSION");
 
         this.totalSections = JDBCUtils.safeGetInteger(dbResult, "TOTAL_SECT");
         this.dateTimeFormat = JDBCUtils.safeGetString(dbResult, "FORMAT");
         this.isolation = JDBCUtils.safeGetString(dbResult, "ISOLATION");
-        this.concurrentAccessResolution = JDBCUtils.safeGetString(dbResult, "CONCURRENTACCESSRESOLUTION");
         this.blocking = JDBCUtils.safeGetString(dbResult, "BLOCKING");
         this.insertBuf = JDBCUtils.safeGetBoolean(dbResult, "INSERT_BUF", DB2YesNo.Y.name());
         this.langLevel = JDBCUtils.safeGetString(dbResult, "LANG_LEVEL");
@@ -123,15 +121,19 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.dynamicRules = JDBCUtils.safeGetString(dbResult, "DYNAMICRULES");
         this.sqlerror = JDBCUtils.safeGetString(dbResult, "SQLERROR");
 
-        this.firstBindTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.lastBindTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_BIND_TIME");
         this.explicitBindTime = JDBCUtils.safeGetTimestamp(dbResult, "EXPLICIT_BIND_TIME");
-        this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
-        this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
         if (db2DataSource.isAtLeastV9_5()) {
             this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        }
+        if (db2DataSource.isAtLeastV9_7()) {
+            this.firstBindTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+            this.concurrentAccessResolution = JDBCUtils.safeGetString(dbResult, "CONCURRENTACCESSRESOLUTION");
+            this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
+            this.id = JDBCUtils.safeGetLong(dbResult, "PKGID");
         }
         if (schema.getDataSource().isAtLeastV10_1()) {
             this.busTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "BUSTIMESENSITIVE", DB2YesNo.Y.name());

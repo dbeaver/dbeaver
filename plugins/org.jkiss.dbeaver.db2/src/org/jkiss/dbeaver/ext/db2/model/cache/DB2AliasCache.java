@@ -38,30 +38,28 @@ import java.sql.SQLException;
  */
 public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
 
-    private static final String SQL_WITHOUT_MODULE;
-    private static final String SQL;
+    private static final String SQL_WITHOUT_MODULE_AND_SEQUALIAS;
+    private static final String SQL_FULL;
 
     static {
-        StringBuilder sb = new StringBuilder(1024);
-        sb.append(" SELECT 'TABLE' as TYPE ");
-        sb.append("      , TABNAME AS NAME");
-        sb.append("      , BASE_TABSCHEMA AS BASE_SCHEMA");
-        sb.append("      , BASE_TABNAME AS BASE_NAME");
-        sb.append("   FROM SYSCAT.TABLES");
-        sb.append("  WHERE TABSCHEMA = ?"); // 1
-        sb.append("    AND TYPE = '").append(DB2TableType.A.name()).append("'");
-
-        sb.append(" UNION ALL");
-
-        sb.append(" SELECT 'SEQUENCE' as TYPE ");
-        sb.append("       , SEQNAME AS NAME");
-        sb.append("       , BASE_SEQSCHEMA AS BASE_SCHEMA");
-        sb.append("       , BASE_SEQNAME AS BASE_NAME");
-        sb.append("   FROM SYSCAT.SEQUENCES");
-        sb.append("  WHERE SEQSCHEMA = ?"); // 2
-        sb.append("    AND SEQTYPE = '").append(DB2TableType.A.name()).append("'");
+        StringBuilder sb1 = new StringBuilder(1024);
+        sb1.append(" SELECT 'TABLE' as TYPE ");
+        sb1.append("      , TABNAME AS NAME");
+        sb1.append("      , BASE_TABSCHEMA AS BASE_SCHEMA");
+        sb1.append("      , BASE_TABNAME AS BASE_NAME");
+        sb1.append("   FROM SYSCAT.TABLES");
+        sb1.append("  WHERE TABSCHEMA = ?"); // 1
+        sb1.append("    AND TYPE = '").append(DB2TableType.A.name()).append("'");
 
         StringBuilder sb2 = new StringBuilder(256);
+        sb2.append(" UNION ALL");
+        sb2.append(" SELECT 'SEQUENCE' as TYPE ");
+        sb2.append("       , SEQNAME AS NAME");
+        sb2.append("       , BASE_SEQSCHEMA AS BASE_SCHEMA");
+        sb2.append("       , BASE_SEQNAME AS BASE_NAME");
+        sb2.append("   FROM SYSCAT.SEQUENCES");
+        sb2.append("  WHERE SEQSCHEMA = ?"); // 2
+        sb2.append("    AND SEQTYPE = '").append(DB2TableType.A.name()).append("'");
         sb2.append(" UNION ALL");
         sb2.append(" SELECT 'MODULE' as TYPE ");
         sb2.append("       , MODULENAME AS NAME");
@@ -76,8 +74,8 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         sb3.append("        , TYPE");
         sb3.append(" WITH UR");
 
-        SQL = sb.toString() + sb2.toString() + sb3.toString();
-        SQL_WITHOUT_MODULE = sb.toString() + sb3.toString();
+        SQL_FULL = sb1.toString() + sb2.toString() + sb3.toString();
+        SQL_WITHOUT_MODULE_AND_SEQUALIAS = sb1.toString() + sb3.toString();
     }
 
     @Override
@@ -86,14 +84,14 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         DB2DataSource db2DataSource = db2Schema.getDataSource();
         String sql;
         if (db2DataSource.isAtLeastV9_7()) {
-            sql = SQL;
+            sql = SQL_FULL;
         } else {
-            sql = SQL_WITHOUT_MODULE;
+            sql = SQL_WITHOUT_MODULE_AND_SEQUALIAS;
         }
         JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
-        dbStat.setString(2, db2Schema.getName());
         if (db2DataSource.isAtLeastV9_7()) {
+            dbStat.setString(2, db2Schema.getName());
             dbStat.setString(3, db2Schema.getName());
         }
         return dbStat;

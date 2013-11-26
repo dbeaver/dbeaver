@@ -95,8 +95,6 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         this.prefetchSize = JDBCUtils.safeGetInteger(dbResult, "PREFETCHSIZE");
         this.overHead = JDBCUtils.safeGetDouble(dbResult, "OVERHEAD");
         this.transferRate = JDBCUtils.safeGetDouble(dbResult, "TRANSFERRATE");
-        this.writeOverHead = JDBCUtils.safeGetDouble(dbResult, "WRITEOVERHEAD");
-        this.writeTransferRate = JDBCUtils.safeGetDouble(dbResult, "WRITETRANSFERRATE");
         this.pageSize = JDBCUtils.safeGetInteger(dbResult, "PAGESIZE");
         this.dbpgName = JDBCUtils.safeGetString(dbResult, "DBPGNAME");
         this.dropRecovery = JDBCUtils.safeGetBoolean(dbResult, "DROP_RECOVERY", DB2YesNo.Y.name());
@@ -105,9 +103,15 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         if (db2DataSource.isAtLeastV9_5()) {
             this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         }
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.writeOverHead = JDBCUtils.safeGetDouble(dbResult, "WRITEOVERHEAD");
+            this.writeTransferRate = JDBCUtils.safeGetDouble(dbResult, "WRITETRANSFERRATE");
+        }
         if (db2DataSource.isAtLeastV10_1()) {
             this.dataTag = JDBCUtils.safeGetInteger(dbResult, "DATATAG");
             this.effectivePrefetchSize = JDBCUtils.safeGetInteger(dbResult, "EFFECTIVEPREFETCHSIZE");
+            this.writeOverHead = JDBCUtils.safeGetDouble(dbResult, "WRITEOVERHEAD");
+            this.writeTransferRate = JDBCUtils.safeGetDouble(dbResult, "WRITETRANSFERRATE");
 
             String storageGroupName = JDBCUtils.safeGetString(dbResult, "SGNAME");
             if (storageGroupName != null) {

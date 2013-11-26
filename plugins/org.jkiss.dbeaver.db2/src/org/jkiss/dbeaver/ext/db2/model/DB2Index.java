@@ -82,6 +82,8 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
     {
         super(schema, table, JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME"), null, true);
 
+        DB2DataSource db2DataSource = (DB2DataSource) schema.getDataSource();
+
         this.uniqueRule = CommonUtils.valueOf(DB2UniqueRule.class, JDBCUtils.safeGetString(dbResult, "UNIQUERULE"));
         this.colCount = JDBCUtils.safeGetInteger(dbResult, "COLCOUNT");
         this.uniqueColCount = JDBCUtils.safeGetInteger(dbResult, "UNIQUE_COLCOUNT");
@@ -90,7 +92,6 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         this.minPctUsed = JDBCUtils.safeGetInteger(dbResult, "MINPCTUSED");
         this.reverseScans = JDBCUtils.safeGetBoolean(dbResult, "REVERSE_SCANS", DB2YesNo.Y.name());
         this.tablespaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
-        this.compression = JDBCUtils.safeGetBoolean(dbResult, "COMPRESSION", DB2YesNo.Y.name());
         this.pageSplit = CommonUtils.valueOf(DB2IndexPageSplit.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PAGESPLIT"));
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
@@ -104,6 +105,10 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         this.first3Keycard = JDBCUtils.safeGetLong(dbResult, "FIRST3KEYCARD");
         this.first4Keycard = JDBCUtils.safeGetLong(dbResult, "FIRST4KEYCARD");
         this.clusterRatio = JDBCUtils.safeGetInteger(dbResult, "CLUSTERRATIO");
+
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.compression = JDBCUtils.safeGetBoolean(dbResult, "COMPRESSION", DB2YesNo.Y.name());
+        }
 
         // DF: Could have been done in constructor. More "readable" to do it here
         this.db2IndexType = CommonUtils.valueOf(DB2IndexType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "INDEXTYPE"));
