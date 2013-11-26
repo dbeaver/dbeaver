@@ -24,12 +24,12 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCheckConstraintType;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -70,8 +70,9 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     {
         super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.CHECK, true);
 
+        DB2DataSource db2DataSource = (DB2DataSource) table.getDataSource();
+
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.qualifier = JDBCUtils.safeGetString(dbResult, "QUALIFIER");
         this.type = CommonUtils.valueOf(DB2TableCheckConstraintType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
@@ -82,6 +83,11 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
         this.collationName = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
         this.collationSchemaOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA_ORDERBY");
         this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");
+
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        }
+
     }
 
     @Override

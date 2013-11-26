@@ -115,10 +115,12 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         this(db2DataSource, JDBCUtils.safeGetStringTrimmed(dbResult, "SCHEMANAME"));
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        }
         if (db2DataSource.isAtLeastV10_1()) {
             this.auditPolicyID = JDBCUtils.safeGetInteger(dbResult, "AUDITPOLICYID");
             this.auditPolicyName = JDBCUtils.safeGetString(dbResult, "AUDITPOLICYNAME");
