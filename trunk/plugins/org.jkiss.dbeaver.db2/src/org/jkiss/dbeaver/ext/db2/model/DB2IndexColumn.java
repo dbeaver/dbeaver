@@ -50,11 +50,16 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     public DB2IndexColumn(DBRProgressMonitor monitor, DB2Index db2Index, ResultSet dbResult) throws DBException
     {
 
+        DB2DataSource db2DataSource = (DB2DataSource) db2Index.getDataSource();
+
         this.db2Index = db2Index;
         this.colSeq = JDBCUtils.safeGetInteger(dbResult, "COLSEQ");
         this.colOrder = CommonUtils.valueOf(DB2IndexColOrder.class, JDBCUtils.safeGetString(dbResult, "COLORDER"));
-        this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
-        this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
+            this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+        }
 
         // Look for Table Column
         DB2Table db2Table = db2Index.getTable();

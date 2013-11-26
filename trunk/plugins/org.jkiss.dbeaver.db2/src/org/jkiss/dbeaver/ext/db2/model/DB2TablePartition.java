@@ -71,6 +71,8 @@ public class DB2TablePartition extends DB2Object<DB2Table> {
         super(db2Table, JDBCUtils.safeGetString(dbResult, "DATAPARTITIONNAME"), JDBCUtils.safeGetInt(dbResult, "DATAPARTITIONID"),
             true);
 
+        DB2DataSource db2DataSource = db2Table.getDataSource();
+
         this.partitionObjectId = JDBCUtils.safeGetInteger(dbResult, "PARTITIONOBJECTID");
 
         this.accessMode = CommonUtils.valueOf(DB2TablePartitionAccessMode.class, JDBCUtils.safeGetString(dbResult, "ACCESS_MODE"));
@@ -81,22 +83,27 @@ public class DB2TablePartition extends DB2Object<DB2Table> {
         this.highInclusive = JDBCUtils.safeGetBoolean(dbResult, "HIGHINCLUSIVE", DB2YesNo.Y.name());
         this.highValue = JDBCUtils.safeGetString(dbResult, "HIGHVALUE");
 
-        this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
-        this.card = JDBCUtils.safeGetLongNullable(dbResult, "CARD");
-        this.nPages = JDBCUtils.safeGetLongNullable(dbResult, "NPAGES");
-        this.fPages = JDBCUtils.safeGetLongNullable(dbResult, "FPAGES");
-        this.overFLow = JDBCUtils.safeGetLongNullable(dbResult, "OVERFLOW");
+        if (db2DataSource.isAtLeastV9_5()) {
 
-        this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
+        }
 
         // Lookup tablespaces
         Integer tablespaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
-        tablespace = DB2Utils.findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(), tablespaceId);
+        this.tablespace = DB2Utils.findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(), tablespaceId);
         Integer longTablespaceId = JDBCUtils.safeGetInteger(dbResult, "LONG_TBSPACEID");
-        indexTablespace = DB2Utils.findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(), longTablespaceId);
-        Integer indexTablespaceId = JDBCUtils.safeGetInteger(dbResult, "INDEX_TBSPACEID");
-        longTablespace = DB2Utils.findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(), indexTablespaceId);
-
+        this.indexTablespace = DB2Utils
+            .findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(), longTablespaceId);
+        if (db2DataSource.isAtLeastV9_7()) {
+            this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
+            this.card = JDBCUtils.safeGetLongNullable(dbResult, "CARD");
+            this.nPages = JDBCUtils.safeGetLongNullable(dbResult, "NPAGES");
+            this.fPages = JDBCUtils.safeGetLongNullable(dbResult, "FPAGES");
+            this.overFLow = JDBCUtils.safeGetLongNullable(dbResult, "OVERFLOW");
+            this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
+            Integer indexTablespaceId = JDBCUtils.safeGetInteger(dbResult, "INDEX_TBSPACEID");
+            this.longTablespace = DB2Utils.findTablespaceById(VoidProgressMonitor.INSTANCE, db2Table.getDataSource(),
+                indexTablespaceId);
+        }
     }
 
     // -----------------

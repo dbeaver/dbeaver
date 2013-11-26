@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
@@ -37,28 +37,36 @@ import java.sql.SQLException;
  */
 public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
 
-    private static final String SQL_BASE = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= '%s' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_BASE_V95 = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= '%s' ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_BASE_ALL = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= '%s' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
 
-    private final String SQL;
+    private final String SQL_V95;
+    private final String SQL_ALL;
 
     public DB2RoutineCache(DB2RoutineType routineType)
     {
         super();
 
-        SQL = String.format(SQL_BASE, routineType.name());
+        SQL_V95 = String.format(SQL_BASE_V95, routineType.name());
+        SQL_ALL = String.format(SQL_BASE_ALL, routineType.name());
     }
 
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
     {
-        JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
+        String sql;
+        if (db2Schema.getDataSource().isAtLeastV9_7()) {
+            sql = SQL_ALL;
+        } else {
+            sql = SQL_V95;
+        }
+        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
         dbStat.setString(1, db2Schema.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2Routine fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2Routine fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult) throws SQLException, DBException
     {
         return new DB2Routine(db2Schema, dbResult);
     }

@@ -92,22 +92,30 @@ public class DB2CurrentUserPrivileges {
     // ------------------------
     // Constructors
     // ------------------------
-    public DB2CurrentUserPrivileges(DBRProgressMonitor monitor, JDBCSession session, String currentAuthId) throws SQLException
+    public DB2CurrentUserPrivileges(DBRProgressMonitor monitor, JDBCSession session, String currentAuthId,
+        DB2DataSource db2DataSource) throws SQLException
     {
+
+        JDBCPreparedStatement dbStat;
+
+        // DF: There is no easy way to get this information from DB2 v9.1
+        // WE consider the user has no system authorities
         listAuthorities = new ArrayList<String>();
-        JDBCPreparedStatement dbStat = session.prepareStatement(SEL_AUTHORITIES);
-        try {
-            dbStat.setString(1, currentAuthId);
-            JDBCResultSet dbResult = dbStat.executeQuery();
+        if (db2DataSource.isAtLeastV9_5()) {
+            dbStat = session.prepareStatement(SEL_AUTHORITIES);
             try {
-                while (dbResult.next()) {
-                    listAuthorities.add(dbResult.getString(1));
+                dbStat.setString(1, currentAuthId);
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    while (dbResult.next()) {
+                        listAuthorities.add(dbResult.getString(1));
+                    }
+                } finally {
+                    dbResult.close();
                 }
             } finally {
-                dbResult.close();
+                dbStat.close();
             }
-        } finally {
-            dbStat.close();
         }
 
         listObjectPrivileges = new ArrayList<String>();

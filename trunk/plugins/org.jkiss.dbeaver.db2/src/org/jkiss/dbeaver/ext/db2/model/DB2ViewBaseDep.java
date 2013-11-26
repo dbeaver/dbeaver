@@ -51,11 +51,16 @@ public class DB2ViewBaseDep extends DB2Object<DB2ViewBase> {
         // TODO DF: Bad should be BTYPE+BSCHEMA+BNAME
         super(db2ViewBase, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
 
-        this.depModuleId = JDBCUtils.safeGetString(resultSet, "BMODULEID");
+        DB2DataSource db2DataSource = (DB2DataSource) db2ViewBase.getDataSource();
+
         this.tabAuth = JDBCUtils.safeGetString(resultSet, "TABAUTH");
         this.tableDepType = CommonUtils.valueOf(DB2TableDepType.class, JDBCUtils.safeGetString(resultSet, "BTYPE"));
 
         String depSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "BSCHEMA");
+
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.depModuleId = JDBCUtils.safeGetString(resultSet, "BMODULEID");
+        }
 
         DB2ObjectType db2ObjectType = tableDepType.getDb2ObjectType();
         if (db2ObjectType != null) {

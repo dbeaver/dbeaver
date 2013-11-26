@@ -54,12 +54,9 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
         // TODO DF: Bad should be BTYPE+BSCHEMA+BNAME
         super(db2Package, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
 
-        this.depModuleName = JDBCUtils.safeGetString(resultSet, "BMODULENAME");
-        this.depModuleId = JDBCUtils.safeGetString(resultSet, "BMODULEID");
+        DB2DataSource db2DataSource = db2Package.getDataSource();
+
         this.tabAuth = JDBCUtils.safeGetString(resultSet, "TABAUTH");
-        this.binder = JDBCUtils.safeGetString(resultSet, "BINDER");
-        this.binderType = JDBCUtils.safeGetString(resultSet, "BINDERTYPE");
-        this.varAuth = JDBCUtils.safeGetString(resultSet, "VARAUTH");
         // this.uniqueId = JDBCUtils.safeGetString(resultSet, "UNIQUE_ID");
         this.version = JDBCUtils.safeGetString(resultSet, "PKGVERSION");
 
@@ -71,12 +68,19 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
         if (packageDepType == null) {
             this.packageDepType = CommonUtils.valueOf(DB2PackageDepType.class, DB2PackageDepType.FAKE_PREFIX + depType);
         }
-
         if (this.packageDepType != null) {
             DB2ObjectType db2ObjectType = packageDepType.getDb2ObjectType();
             if (db2ObjectType != null) {
                 depSchema = getDataSource().getSchemaCache().getCachedObject(depSchemaName);
             }
+        }
+
+        if (db2DataSource.isAtLeastV9_7()) {
+            this.binder = JDBCUtils.safeGetString(resultSet, "BINDER");
+            this.binderType = JDBCUtils.safeGetString(resultSet, "BINDERTYPE");
+            this.varAuth = JDBCUtils.safeGetString(resultSet, "VARAUTH");
+            this.depModuleName = JDBCUtils.safeGetString(resultSet, "BMODULENAME");
+            this.depModuleId = JDBCUtils.safeGetString(resultSet, "BMODULEID");
         }
     }
 
