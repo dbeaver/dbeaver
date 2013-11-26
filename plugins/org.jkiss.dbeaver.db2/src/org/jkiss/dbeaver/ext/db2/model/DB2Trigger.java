@@ -101,14 +101,14 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
         this.funcPath = JDBCUtils.safeGetString(dbResult, "FUNC_PATH");
         this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
-        this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
-        this.collationName = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
-        this.collationSchemaOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA_ORDERBY");
-        this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
         if (db2DataSource.isAtLeastV9_5()) {
             this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+            this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
+            this.collationName = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+            this.collationSchemaOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA_ORDERBY");
+            this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");
         }
         if (db2DataSource.isAtLeastV10_1()) {
             this.eventUpdate = JDBCUtils.safeGetBoolean(dbResult, "EVENTUPDATE", DB2YesNo.Y.name());

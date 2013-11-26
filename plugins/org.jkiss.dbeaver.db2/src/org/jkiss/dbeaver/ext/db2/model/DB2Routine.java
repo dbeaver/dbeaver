@@ -31,11 +31,11 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineValidType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -94,6 +94,8 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     {
         super(owner, JDBCUtils.safeGetString(dbResult, "SPECIFICNAME"), true);
 
+        DB2DataSource db2DataSource = (DB2DataSource) owner.getDataSource();
+
         this.routineName = JDBCUtils.safeGetString(dbResult, "ROUTINENAME");
         this.routineId = JDBCUtils.safeGetInteger(dbResult, "ROUTINEID");
 
@@ -101,9 +103,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
 
         this.origin = CommonUtils.valueOf(DB2RoutineOrigin.class, JDBCUtils.safeGetString(dbResult, "ORIGIN"));
         this.language = CommonUtils.valueOf(DB2RoutineLanguage.class, JDBCUtils.safeGetStringTrimmed(dbResult, "LANGUAGE"));
-        this.dialect = JDBCUtils.safeGetString(dbResult, "DIALECT");
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
@@ -121,6 +121,13 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
         this.jarSignature = JDBCUtils.safeGetString(dbResult, "JAR_SIGNATURE");
         this.javaClass = JDBCUtils.safeGetString(dbResult, "CLASS");
         this.valid = CommonUtils.valueOf(DB2RoutineValidType.class, JDBCUtils.safeGetString(dbResult, "VALID"));
+
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        }
+        if (db2DataSource.isAtLeastV9_7()) {
+            this.dialect = JDBCUtils.safeGetString(dbResult, "DIALECT");
+        }
 
         if (owner instanceof DB2Schema) {
             db2Schema = (DB2Schema) owner;

@@ -74,6 +74,8 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     {
         super(tableBase, true);
 
+        DB2DataSource db2DataSource = (DB2DataSource) tableBase.getDataSource();
+
         setName(JDBCUtils.safeGetString(dbResult, "COLNAME"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLNO"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "NULLS", DB2YesNo.N.name()));
@@ -87,8 +89,6 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.generated = JDBCUtils.safeGetBoolean(dbResult, "GENERATED", DB2YesNo.Y.name());
         this.generatedText = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.compress = CommonUtils.valueOf(DB2TableColumnCompression.class, JDBCUtils.safeGetString(dbResult, "COMPRESS"));
-        this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
-        this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
         this.colcard = JDBCUtils.safeGetLong(dbResult, "COLCARD");
         this.high2key = JDBCUtils.safeGetString(dbResult, "HIGH2KEY");
         this.low2key = JDBCUtils.safeGetString(dbResult, "LOW2KEY");
@@ -99,7 +99,11 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        if (tableBase.getDataSource().isAtLeastV10_1()) {
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
+            this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+        }
+        if (db2DataSource.isAtLeastV10_1()) {
             this.rowBegin = JDBCUtils.safeGetBoolean(dbResult, "ROWBEGIN", DB2YesNo.Y.name());
             this.rowEnd = JDBCUtils.safeGetBoolean(dbResult, "ROWEND", DB2YesNo.Y.name());
         }
