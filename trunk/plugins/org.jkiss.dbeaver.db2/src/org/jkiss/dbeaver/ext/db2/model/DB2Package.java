@@ -95,8 +95,9 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
     {
         super(schema, JDBCUtils.safeGetStringTrimmed(dbResult, "PKGNAME"), true);
 
+        DB2DataSource db2DataSource = (DB2DataSource) schema.getDataSource();
+
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
 
         String defaultSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "DEFAULT_SCHEMA");
         this.defaultSchema = getDataSource().getSchema(VoidProgressMonitor.INSTANCE, defaultSchemaName);
@@ -129,6 +130,9 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.lastUsed = JDBCUtils.safeGetDate(dbResult, "LASTUSED");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        }
         if (schema.getDataSource().isAtLeastV10_1()) {
             this.busTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "BUSTIMESENSITIVE", DB2YesNo.Y.name());
             this.sysTimeSensitive = JDBCUtils.safeGetBoolean(dbResult, "SYSTIMESENSITIVE", DB2YesNo.Y.name());

@@ -67,8 +67,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     private String ownerCol;
     private DB2OwnerType ownerType;
 
-    // private String moduleName;
-
     private String sourceSchemaName;
     private String sourceModuleName;
     private String sourceName;
@@ -97,10 +95,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         this.db2TypeId = JDBCUtils.safeGetInteger(dbResult, "TYPEID");
 
         this.ownerCol = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
-        // this.moduleName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPEMODULENAME");
         this.sourceSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCESCHEMA");
-        this.sourceModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCEMODULENAME");
         this.sourceName = JDBCUtils.safeGetString(dbResult, "SOURCENAME");
         this.metaType = CommonUtils.valueOf(DB2DataTypeMetaType.class, JDBCUtils.safeGetString(dbResult, "METATYPE"));
         this.length = JDBCUtils.safeGetInteger(dbResult, "LENGTH");
@@ -109,6 +104,12 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        }
+        if (db2DataSource.isAtLeastV9_7()) {
+            this.sourceModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCEMODULENAME");
+        }
         if (db2DataSource.isAtLeastV10_5()) {
             this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
             this.constraintText = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TEXT");

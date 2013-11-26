@@ -66,17 +66,21 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
 
         setName(JDBCUtils.safeGetString(dbResult, "TABNAME"));
 
+        DB2DataSource db2DataSource = (DB2DataSource) schema.getDataSource();
+
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
-
         this.tableId = JDBCUtils.safeGetInteger(dbResult, "TABLEID");
-
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
         this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        if (db2DataSource.isAtLeastV9_5()) {
+            this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        }
+
     }
 
     public DB2TableBase(DB2Schema container, String name, Boolean persisted)
