@@ -26,11 +26,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -88,7 +86,7 @@ class DB2ToolShowErrorDialog extends Dialog {
         Composite container1 = UIUtils.createPlaceholder(area, 3, 5);
 
         // SQL Error Code
-        UIUtils.createControlLabel(container1, DB2Messages.dialog_tools_msg_code);
+        UIUtils.createTextLabel(container1, DB2Messages.dialog_tools_msg_code);
 
         textSqlErrorCode = new Text(container1, SWT.BORDER);
 
