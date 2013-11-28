@@ -22,6 +22,8 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 
 /**
@@ -64,6 +66,15 @@ public class DataSourceToolDescriptor extends AbstractContextDescriptor
     public Image getIcon()
     {
         return icon;
+    }
+
+    @Override
+    protected Object adaptType(DBPObject object)
+    {
+        if (object instanceof DBSObject) {
+            return ((DBSObject) object).getDataSource();
+        }
+        return super.adaptType(object);
     }
 
     public IExternalTool createTool()

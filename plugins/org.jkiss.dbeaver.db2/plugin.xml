@@ -60,7 +60,7 @@
 
     <extension point="org.eclipse.ui.menus">
        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
-          <menu label="%menu.tables.manage" icon="icons/tools.png">
+          <menu label="%menu.tables.manage" icon="icons/manage_database.png">
              <command commandId="org.jkiss.dbeaver.ext.db2.table.runstats">
                 <visibleWhen checkEnabled="true"/>
              </command>
@@ -428,11 +428,7 @@
                     description="Display SQL Error Message"
                     id="org.jkiss.dbeaver.ext.oracle.tools.DB2ToolShowError"
                     label="Retrieve SQL Error Message">
-                    
-                    <!-- DF this is not complete -->
-                    <!-- The tool menu should appear on all nodes (Meta object or folders..) when connected to a DB2 Database-->
                     <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2DataSource"/>
-                    <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
                 </tool>
             </tools>
             
