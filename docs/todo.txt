@@ -1,8 +1,6 @@
 Major:
 
 Find table/object (similar to eclipse ctrl-shift-r/t)
-Fix driver manager (create/delete driver)
-Fix DB2 tools (context menu only on DB2 DS)
 
 1. Multiple result sets support (MS SQL)
 2. Dialect-dependent SQL generator

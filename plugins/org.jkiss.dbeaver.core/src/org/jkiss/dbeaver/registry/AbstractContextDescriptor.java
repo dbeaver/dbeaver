@@ -51,12 +51,17 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
     public boolean appliesTo(DBPObject object)
     {
         object = DBUtils.getPublicObject(object);
+        Object adapted = adaptType(object);
         for (ObjectType objectType : objectTypes) {
-            if (objectType.appliesTo(object)) {
+            if (objectType.appliesTo(object) || (adapted != null && objectType.appliesTo(adapted))) {
                 return true;
             }
         }
         return false;
     }
 
+    protected Object adaptType(DBPObject object)
+    {
+        return null;
+    }
 }
