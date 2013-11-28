@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.CopyUnformattedTextAction;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.NavigateObjectAction;
 
 import java.util.ResourceBundle;
 
@@ -49,7 +48,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     private RetargetTextEditorAction contentAssistTip;
     private RetargetTextEditorAction contentFormatProposal;
     private CopyUnformattedTextAction copyUnformattedTextAction;
-    private NavigateObjectAction navigateObjectAction;
 
     public SQLEditorContributor()
     {
@@ -79,8 +77,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         contentAssistTip = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_TIP));
         contentAssistTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
         copyUnformattedTextAction = new CopyUnformattedTextAction();
-        navigateObjectAction = new NavigateObjectAction();
-        navigateObjectAction.setActionDefinitionId(ICommandIds.CMD_NAVIGATE_OBJECT);
     }
 
     @Override
@@ -111,9 +107,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             contentAssistTip.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
             contentFormatProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
             copyUnformattedTextAction.setEditor(activeEditorPart);
-
-            activeEditorPart.setAction(ICommandIds.CMD_NAVIGATE_OBJECT, navigateObjectAction);
-            navigateObjectAction.setEditor(activeEditorPart);
         }
     }
 
@@ -132,19 +125,12 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
 
         IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
         if (editMenu != null && !isNestedEditor()) {
-            //editMenu.add(new Separator());
             editMenu.add(contentAssistProposal);
             editMenu.add(contentAssistTip);
             MenuManager formatMenu = new MenuManager(CoreMessages.actions_menu_edit_ContentFormat);
             editMenu.add(formatMenu);
             formatMenu.add(contentFormatProposal);
             formatMenu.add(copyUnformattedTextAction);
-            //editMenu.add(executeStatementAction);
-            //editMenu.add(executeScriptAction);
-        }
-        IMenuManager navigateMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
-        if (navigateMenu != null && !isNestedEditor()) {
-            navigateMenu.add(navigateObjectAction);
         }
     }
 

@@ -766,6 +766,20 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" class="org.jkiss.dbeaver.ui.editors.sql.handlers.NavigateObjectHandler">
+            <enabledWhen>
+                <and>
+                    <with variable="activeEditor">
+                        <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase">
+                            <test property="org.jkiss.dbeaver.ui.editors.sql.canNavigate"/>
+                        </adapt>
+                    </with>
+                    <with variable="selection">
+                        <instanceof value="org.eclipse.jface.text.ITextSelection"/>
+                    </with>
+                </and>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExportDataHandler">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -1415,6 +1429,12 @@
                     </with>
                 </visibleWhen>
                 <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
+            </menu>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="navigate" label="%menu.navigate">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object"><visibleWhen checkEnabled="true"/></command>
             </menu>
         </menuContribution>
 

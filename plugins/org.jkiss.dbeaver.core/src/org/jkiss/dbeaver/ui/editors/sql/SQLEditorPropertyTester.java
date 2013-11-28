@@ -19,9 +19,13 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.Region;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLIdentifierDetector;
 
 /**
  * DatabaseEditorPropertyTester
@@ -42,24 +46,27 @@ public class SQLEditorPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof SQLEditor)) {
+        if (!(receiver instanceof SQLEditorBase)) {
             return false;
         }
         SQLEditor editor = (SQLEditor)receiver;
         boolean isConnected = editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
         if (property.equals(PROP_CAN_EXECUTE)) {
-            if (isConnected) {
-                if ("statement".equals(expectedValue)) {
-                    return editor.hasActiveQuery();
-                } else {
-                    return true;
-                }
-            }
-            return false;
+            return isConnected && (!"statement".equals(expectedValue) || editor.hasActiveQuery());
         } else if (property.equals(PROP_CAN_EXPLAIN)) {
             return isConnected && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
         } else if (property.equals(PROP_CAN_NAVIGATE)) {
-            return isConnected;
+            // Check whether some word is under cursor
+            ISelectionProvider selectionProvider = editor.getSelectionProvider();
+            if (selectionProvider == null) {
+                return false;
+            }
+            ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
+            return selection != null &&
+                !new SQLIdentifierDetector(
+                editor.getSyntaxManager().getStructSeparator(),
+                editor.getSyntaxManager().getQuoteSymbol())
+                .detectIdentifier(editor.getDocument(), new Region(selection.getOffset(), selection.getLength())).isEmpty();
         } else if (property.equals(PROP_CAN_EXPORT)) {
             return isConnected && editor.hasActiveQuery();
         }
