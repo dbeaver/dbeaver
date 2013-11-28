@@ -85,13 +85,10 @@ class DB2ToolShowErrorDialog extends Dialog {
         // -----------------------------------
         // Line 1: Label + input code + button
         // -----------------------------------
-        Composite container1 = new Composite(area, SWT.NONE);
-        container1.setLayout(new GridLayout(3, false));
-        container1.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite container1 = UIUtils.createPlaceholder(area, 3, 5);
 
         // SQL Error Code
-        Label l1 = new Label(container1, SWT.NONE);
-        l1.setText(DB2Messages.dialog_tools_msg_code);
+        UIUtils.createControlLabel(container1, DB2Messages.dialog_tools_msg_code);
 
         textSqlErrorCode = new Text(container1, SWT.BORDER);
 
@@ -124,25 +121,19 @@ class DB2ToolShowErrorDialog extends Dialog {
         // -----------------------------------
         // Line 2: Label for Message
         // -----------------------------------
-        Composite container2 = new Composite(area, SWT.NONE);
-        container2.setLayout(new GridLayout(1, false));
-        container2.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Label l2 = new Label(container2, SWT.NONE);
-        l2.setText(DB2Messages.dialog_tools_mes_message);
+        UIUtils.createControlLabel(container1, DB2Messages.dialog_tools_mes_message);
 
         // -----------------------------------
         // Line 3: Message
         // -----------------------------------
-        Composite container3 = new Composite(area, SWT.NONE);
-        container3.setLayout(new GridLayout(1, false));
-        container3.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Message
-        resultMessage = new Text(container3, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+        resultMessage = new Text(container1, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         resultMessage.setLayoutData(new GridData(GridData.FILL_BOTH));
         resultMessage.setEditable(false);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
         gd.widthHint = 600;
         gd.heightHint = 80;
         resultMessage.setLayoutData(gd);
