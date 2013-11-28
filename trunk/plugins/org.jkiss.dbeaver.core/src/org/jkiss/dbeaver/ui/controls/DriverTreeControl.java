@@ -46,6 +46,8 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     private Object site;
     private List<DataSourceProviderDescriptor> providers;
     private Font boldFont;
+    private final Map<String,DriverCategory> categories = new HashMap<String, DriverCategory>();
+    private final List<Object> driverList = new ArrayList<Object>();
 
     public static class DriverCategory {
         final String name;
@@ -142,31 +144,37 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     @Override
     public void refresh()
     {
-        setInput(collectDrivers());
+        collectDrivers();
+        super.refresh();
     }
 
     private Collection<Object> collectDrivers()
     {
-        List<Object> result = new ArrayList<Object>();
-        Map<String, DriverCategory> categories = new HashMap<String, DriverCategory>();
+        for (DriverCategory category : categories.values()) {
+            category.drivers.clear();
+        }
+
+        driverList.clear();
         for (DataSourceProviderDescriptor provider : providers) {
             List<DriverDescriptor> drivers = provider.getEnabledDrivers();
             for (DriverDescriptor driver : drivers) {
                 String category = driver.getCategory();
                 if (CommonUtils.isEmpty(category)) {
-                    result.add(driver);
+                    driverList.add(driver);
                 } else {
                     DriverCategory driverCategory = categories.get(category);
                     if (driverCategory == null) {
                         driverCategory = new DriverCategory(category);
                         categories.put(category, driverCategory);
-                        result.add(driverCategory);
+                    }
+                    if (!driverList.contains(driverCategory)) {
+                        driverList.add(driverCategory);
                     }
                     driverCategory.drivers.add(driver);
                 }
             }
         }
-        Collections.sort(result, new Comparator<Object>() {
+        Collections.sort(driverList, new Comparator<Object>() {
             @Override
             public int compare(Object o1, Object o2)
             {
@@ -175,7 +183,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 if (count1 == count2) {
                     String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory)o1).getName();
                     String name2 = o2 instanceof DriverDescriptor ? ((DriverDescriptor) o2).getName() : ((DriverCategory)o2).getName();
-                    return name1.compareTo(name2);
+                    return name1.compareToIgnoreCase(name2);
                 } else {
                     return count2 - count1;
                 }
@@ -186,11 +194,11 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                 @Override
                 public int compare(DriverDescriptor o1, DriverDescriptor o2)
                 {
-                    return o1.getName().compareTo(o2.getName());
+                    return o1.getName().compareToIgnoreCase(o2.getName());
                 }
             });
         }
-        return result;
+        return driverList;
     }
 
     public int getConnectionCount(Object obj)

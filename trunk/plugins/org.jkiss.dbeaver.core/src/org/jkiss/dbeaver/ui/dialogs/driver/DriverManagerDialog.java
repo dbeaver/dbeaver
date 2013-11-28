@@ -296,7 +296,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
             DriverEditDialog dialog = new DriverEditDialog(getShell(), provider, selectedCategory);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                treeControl.refresh(provider);
+                treeControl.refresh();
             }
         }
     }
