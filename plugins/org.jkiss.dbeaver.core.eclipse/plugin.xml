@@ -58,10 +58,6 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.general"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.connectionTypes" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" name="%pref.page.name.connectionTypes"/>
-<!--
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.ui.resources" class="org.jkiss.dbeaver.ui.preferences.PrefPageResources" name="%pref.page.name.resources">
-        </page>
--->
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageEmpty" name="%pref.page.name.db.editors"/>
 

@@ -77,53 +77,14 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        int offset = region.getOffset();
-
         SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(syntaxManager.getStructSeparator(), syntaxManager.getQuoteSymbol());
-        int docLength = document.getLength();
-        int identStart = offset;
-        int identEnd = offset;
-        int wordStart = -1, wordEnd = -1;
-        String identifier, word;
-        try {
-            if (!wordDetector.isPlainWordPart(document.getChar(offset))) {
-                return null;
-            }
-            while (identStart >= 0) {
-                char ch = document.getChar(identStart);
-                if (!wordDetector.isWordPart(ch)) {
-                    break;
-                }
-                if (wordStart < 0 && !wordDetector.isPlainWordPart(ch)) {
-                    wordStart = identStart + 1;
-                }
-                identStart--;
-            }
-            identStart++;
-            while (identEnd < docLength) {
-                char ch = document.getChar(identEnd);
-                if (!wordDetector.isWordPart(ch)) {
-                    break;
-                }
-                if (!wordDetector.isPlainWordPart(ch)) {
-                    wordEnd = identEnd;
-                }
-                identEnd++;
-            }
-            if (wordStart < 0) wordStart = identStart;
-            if (wordEnd < 0) wordEnd = identEnd;
-            identifier = document.get(identStart, identEnd - identStart);
-            word = document.get(wordStart, wordEnd - wordStart);
-        } catch (BadLocationException e) {
-            log.debug(e);
+        SQLIdentifierDetector.WordRegion wordRegion = wordDetector.detectIdentifier(document, region);
+
+        if (wordRegion.word.length() == 0) {
             return null;
         }
 
-        if (word.length() == 0) {
-            return null;
-        }
-
-        if (syntaxManager.getKeywordManager().getKeywordType(identifier) == DBPKeywordType.KEYWORD) {
+        if (syntaxManager.getKeywordManager().getKeywordType(wordRegion.identifier) == DBPKeywordType.KEYWORD) {
             // Skip keywords
             return null;
         }
@@ -132,13 +93,13 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        String tableName = word;
+        String tableName = wordRegion.word;
         ObjectLookupCache tlc = linksCache.get(tableName);
         if (tlc == null) {
             // Start new word finder job
             tlc = new ObjectLookupCache();
             linksCache.put(tableName, tlc);
-            TablesFinderJob job = new TablesFinderJob(structureAssistant, tableName, wordDetector.isQuoted(identifier), tlc);
+            TablesFinderJob job = new TablesFinderJob(structureAssistant, tableName, wordDetector.isQuoted(wordRegion.identifier), tlc);
             job.schedule();
         }
         if (tlc.loading) {
@@ -169,10 +130,10 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 return null;
             }
             // Create hyperlinks based on references
-            final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
+            final IRegion hlRegion = new Region(wordRegion.wordStart, wordRegion.wordEnd - wordRegion.wordStart);
             IHyperlink[] links = new IHyperlink[tlc.references.size()];
             for (int i = 0, objectsSize = tlc.references.size(); i < objectsSize; i++) {
-                links[i] = new EntityHyperlink(tlc.references.get(i), wordRegion);
+                links[i] = new EntityHyperlink(tlc.references.get(i), hlRegion);
             }
             return links;
         }
