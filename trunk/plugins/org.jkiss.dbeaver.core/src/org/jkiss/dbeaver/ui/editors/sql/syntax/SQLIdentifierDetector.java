@@ -18,6 +18,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -86,4 +90,68 @@ public class SQLIdentifierDetector extends SQLWordDetector
     }
 
 
+    public WordRegion detectIdentifier(IDocument document, IRegion region)
+    {
+        final WordRegion id = new WordRegion(region.getOffset());
+        int docLength = document.getLength();
+
+        try {
+            if (!isPlainWordPart(document.getChar(region.getOffset()))) {
+                return id;
+            }
+            while (id.identStart >= 0) {
+                char ch = document.getChar(id.identStart);
+                if (!isWordPart(ch)) {
+                    break;
+                }
+                if (id.wordStart < 0 && !isPlainWordPart(ch)) {
+                    id.wordStart = id.identStart + 1;
+                }
+                id.identStart--;
+            }
+            id.identStart++;
+            while (id.identEnd < docLength) {
+                char ch = document.getChar(id.identEnd);
+                if (!isWordPart(ch)) {
+                    break;
+                }
+                if (!isPlainWordPart(ch)) {
+                    id.wordEnd = id.identEnd;
+                }
+                id.identEnd++;
+            }
+            id.extract(document);
+        } catch (BadLocationException e) {
+            // ignore
+        }
+
+        return id;
+    }
+
+    public static class WordRegion {
+        public int identStart;
+        public int identEnd;
+        public int wordStart = -1, wordEnd = -1;
+        public String identifier = "";
+        public String word = "";
+
+        WordRegion(int offset)
+        {
+            identStart = offset;
+            identEnd = offset;
+        }
+
+        void extract(IDocument document) throws BadLocationException
+        {
+            if (wordStart < 0) wordStart = identStart;
+            if (wordEnd < 0) wordEnd = identEnd;
+            identifier = document.get(identStart, identEnd - identStart);
+            word = document.get(wordStart, wordEnd - wordStart);
+        }
+
+        public boolean isEmpty()
+        {
+            return word.isEmpty();
+        }
+    }
 }
