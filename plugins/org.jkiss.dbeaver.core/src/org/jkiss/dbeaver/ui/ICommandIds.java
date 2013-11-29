@@ -32,9 +32,6 @@ public interface ICommandIds
     public static final String CMD_OBJECT_OPEN = "org.jkiss.dbeaver.core.object.open"; //$NON-NLS-1$
     public static final String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create"; //$NON-NLS-1$
     public static final String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete"; //$NON-NLS-1$
-    //public static final String CMD_OBJECT_RENAME = "org.jkiss.dbeaver.core.object.rename"; //$NON-NLS-1$
-    public static final String CMD_OBJECT_FIND = "org.jkiss.dbeaver.core.object.find"; //$NON-NLS-1$
-    //public static final String CMD_OBJECT_FILTER = "org.jkiss.dbeaver.core.object.filter"; //$NON-NLS-1$
 
     public static final String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement"; //$NON-NLS-1$
     public static final String CMD_EXECUTE_STATEMENT_NEW = "org.jkiss.dbeaver.ui.editors.sql.run.statementNew"; //$NON-NLS-1$
@@ -49,7 +46,6 @@ public interface ICommandIds
     public static final String CMD_TOGGLE_AUTOCOMMIT = "org.jkiss.dbeaver.core.txn.autocommit"; //$NON-NLS-1$
 
     public static final String CMD_CONTENT_FORMAT = "org.jkiss.dbeaver.ui.editors.text.content.format"; //$NON-NLS-1$
-    public static final String CMD_NAVIGATE_OBJECT = "org.jkiss.dbeaver.ui.editors.sql.navigate.object"; //$NON-NLS-1$;
 
     public static final String GROUP_TOOLS = "tools";
 
