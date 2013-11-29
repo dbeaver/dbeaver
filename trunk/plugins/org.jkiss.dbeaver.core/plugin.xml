@@ -194,6 +194,7 @@
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.delete" name="%command.org.jkiss.dbeaver.core.object.delete.name" description="%command.org.jkiss.dbeaver.core.object.delete.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter" name="%command.org.jkiss.dbeaver.core.object.filter.name" description="%command.org.jkiss.dbeaver.core.object.filter.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.goto" name="%command.org.jkiss.dbeaver.core.object.goto.name" description="%command.org.jkiss.dbeaver.core.object.goto.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -202,13 +203,13 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.explain" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.validate" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.validate.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.validate.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.analyse" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.analyse.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.analyse.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.navigate.object" name="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.single" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.multi" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.word.wrap" name="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.export.data" name="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.navigate.object" name="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="%command.org.jkiss.dbeaver.core.export.data.name" description="%command.org.jkiss.dbeaver.core.export.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.import.data" name="%command.org.jkiss.dbeaver.core.import.data.name" description="%command.org.jkiss.dbeaver.core.import.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.compare.objects" name="%command.org.jkiss.dbeaver.core.compare.objects.name" description="%command.org.jkiss.dbeaver.core.compare.objects.description" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -333,6 +334,11 @@
         <definition id="DBeaverNavigatorViewActive">
             <with variable="activePart">
                 <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+            </with>
+        </definition>
+        <definition id="DBeaverDataSourceActive">
+            <with variable="activePart">
+                <instanceof value="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
             </with>
         </definition>
     </extension>
@@ -686,6 +692,15 @@
             </enabledWhen>
         </handler>
 
+        <handler commandId="org.jkiss.dbeaver.core.object.goto" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectGoto">
+            <activeWhen>
+                <or>
+                    <reference definitionId="DBeaverNavigatorViewActive"/>
+                    <reference definitionId="DBeaverDataSourceActive"/>
+                </or>
+            </activeWhen>
+        </handler>
+
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.open" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler">
             <enabledWhen>
                 <with variable="activePart">
@@ -705,7 +720,7 @@
         
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementHandler">
             <enabledWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
                     </adapt>
@@ -714,7 +729,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementNewHandler">
             <enabledWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
                     </adapt>
@@ -723,7 +738,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteScriptHandler">
             <enabledWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
                     </adapt>
@@ -732,7 +747,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteScriptNewHandler">
             <enabledWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
                     </adapt>
@@ -741,7 +756,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExplainPlanHandler">
             <enabledWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
                     </adapt>
@@ -750,7 +765,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" class="org.jkiss.dbeaver.ui.editors.sql.handlers.AnalyseStatementHandler">
             <enabledWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canAnalyse"/>
                     </adapt>
@@ -759,7 +774,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ValidateStatementHandler">
             <enabledWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canValidate"/>
                     </adapt>
@@ -768,16 +783,11 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" class="org.jkiss.dbeaver.ui.editors.sql.handlers.NavigateObjectHandler">
             <enabledWhen>
-                <and>
-                    <with variable="activeEditor">
-                        <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase">
-                            <test property="org.jkiss.dbeaver.ui.editors.sql.canNavigate"/>
-                        </adapt>
-                    </with>
-                    <with variable="selection">
-                        <instanceof value="org.eclipse.jface.text.ITextSelection"/>
-                    </with>
-                </and>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canNavigate"/>
+                    </adapt>
+                </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExportDataHandler">
@@ -1434,6 +1444,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="navigate" label="%menu.navigate">
+                <command commandId="org.jkiss.dbeaver.core.object.goto"><visibleWhen checkEnabled="true"/></command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object"><visibleWhen checkEnabled="true"/></command>
             </menu>
         </menuContribution>
@@ -1589,6 +1600,7 @@
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+D"/>
         <key commandId="org.jkiss.dbeaver.core.object.create" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="NUMPAD_ADD"/>
+        <key commandId="org.jkiss.dbeaver.core.object.goto" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+D"/>
 
         <!-- SQL Editor -->
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>

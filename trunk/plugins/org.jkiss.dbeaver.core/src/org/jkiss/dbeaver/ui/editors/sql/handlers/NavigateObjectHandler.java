@@ -21,20 +21,15 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLIdentifierDetector;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Map;
 
 public class NavigateObjectHandler extends AbstractHandler {
 
