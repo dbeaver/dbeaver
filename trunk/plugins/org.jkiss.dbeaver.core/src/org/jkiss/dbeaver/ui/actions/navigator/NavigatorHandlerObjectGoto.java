@@ -20,12 +20,46 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.ui.dialogs.GotoObjectDialog;
 
 public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        DBPDataSource dataSource = null;
+        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+        if (activePart instanceof IDataSourceProvider) {
+            dataSource = ((IDataSourceProvider) activePart).getDataSource();
+        } else if (activePart instanceof INavigatorModelView) {
+            final ISelection selection = HandlerUtil.getCurrentSelection(event);
+            if (selection instanceof IStructuredSelection) {
+                Object element = ((IStructuredSelection) selection).getFirstElement();
+                if (element instanceof DBSWrapper) {
+                    DBSObject object = ((DBSWrapper) element).getObject();
+                    if (object != null) {
+                        dataSource = object.getDataSource();
+                    }
+                }
+            }
+        }
+        if (dataSource == null) {
+            return null;
+        }
+        GotoObjectDialog dialog = new GotoObjectDialog(HandlerUtil.getActiveShell(event), dataSource, null);
+        dialog.open();
+        Object[] objectsToOpen = dialog.getResult();
+
         return null;
     }
 
