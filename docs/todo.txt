@@ -1,5 +1,6 @@
 Major:
 
+S/DB selector combo works as crap
 Find table/object (similar to eclipse ctrl-shift-r/t)
 
 1. Multiple result sets support (MS SQL)
