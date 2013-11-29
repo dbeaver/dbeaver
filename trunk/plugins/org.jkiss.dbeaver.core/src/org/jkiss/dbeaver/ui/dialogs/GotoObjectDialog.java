@@ -23,7 +23,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -42,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -143,7 +146,22 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         return item.toString();
     }
 
-    private static class ObjectLabelProvider extends LabelProvider {
+    private static class ObjectLabelProvider extends LabelProvider implements DelegatingStyledCellLabelProvider.IStyledLabelProvider {
+        @Override
+        public StyledString getStyledText(Object element) {
+            if (element instanceof DBPNamedObject) {
+                DBPNamedObject namedObject = (DBPNamedObject) element;
+                StyledString str = new StyledString(namedObject.getName());
+                String fullName = DBUtils.getObjectFullName(namedObject);
+                if (!CommonUtils.equalObjects(fullName, namedObject.getName())) {
+                    str.append(" - ", StyledString.QUALIFIER_STYLER); //$NON-NLS-1$
+                    str.append(fullName, StyledString.QUALIFIER_STYLER);
+                }
+                return str;
+            }
+            return new StyledString("?");
+        }
+
         @Override
         public Image getImage(Object element)
         {
@@ -167,6 +185,14 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     }
 
     private static class DetailsLabelProvider extends ObjectLabelProvider {
+        @Override
+        public String getText(Object element)
+        {
+            if (element instanceof DBPNamedObject) {
+                return DBUtils.getObjectFullName((DBPNamedObject) element);
+            }
+            return super.getText(element);
+        }
     }
 
     private class ObjectFilter extends ItemsFilter {
