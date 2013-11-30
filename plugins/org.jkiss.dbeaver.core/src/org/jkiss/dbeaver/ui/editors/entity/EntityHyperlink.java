@@ -112,7 +112,7 @@ public class EntityHyperlink implements IHyperlink
             monitor.beginTask("Resolve object " + reference.getName(), 1);
             try {
                 DBSObject object = reference.resolveObject(monitor);
-                node = DBNModel.getInstance().getNodeByObject(monitor, object);
+                node = DBNModel.getInstance().getNodeByObject(monitor, object, true);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             } finally {

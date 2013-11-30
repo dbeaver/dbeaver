@@ -424,7 +424,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                         {
                             DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
                                 monitor,
-                                refTable
+                                refTable,
+                                true
                             );
                             if (tableNode != null) {
                                 NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
