@@ -37,17 +37,16 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -122,10 +121,19 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         String nameMask = ((ObjectFilter)itemsFilter).getNameMask();
         DefaultProgressMonitor monitor = new DefaultProgressMonitor(progressMonitor);
         try {
+            List<DBSObjectType> typesToSearch = new ArrayList<DBSObjectType>();
+            for (DBSObjectType type : structureAssistant.getSupportedObjectTypes()) {
+                Class<? extends DBSObject> typeClass = type.getTypeClass();
+                if (DBSEntityElement.class.isAssignableFrom(typeClass)) {
+                    // Skipp attributes (columns), methods, etc
+                    continue;
+                }
+                typesToSearch.add(type);
+            }
             Collection<DBSObjectReference> result = structureAssistant.findObjectsByMask(
                 monitor,
                 container,
-                structureAssistant.getSupportedObjectTypes(),
+                typesToSearch.toArray(new DBSObjectType[typesToSearch.size()]),
                 nameMask,
                 false,
                 500);

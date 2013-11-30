@@ -23,14 +23,20 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.dialogs.GotoObjectDialog;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
 
@@ -38,6 +44,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         DBPDataSource dataSource = null;
+        DBSObject container = null;
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         if (activePart instanceof IDataSourceProvider) {
             dataSource = ((IDataSourceProvider) activePart).getDataSource();
@@ -48,6 +55,10 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
                 if (element instanceof DBSWrapper) {
                     DBSObject object = ((DBSWrapper) element).getObject();
                     if (object != null) {
+                        container = object;
+                        while (container instanceof DBSFolder) {
+                            container = container.getParentObject();
+                        }
                         dataSource = object.getDataSource();
                     }
                 }
@@ -56,9 +67,16 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
         if (dataSource == null) {
             return null;
         }
-        GotoObjectDialog dialog = new GotoObjectDialog(HandlerUtil.getActiveShell(event), dataSource, null);
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        GotoObjectDialog dialog = new GotoObjectDialog(HandlerUtil.getActiveShell(event), dataSource, container);
         dialog.open();
         Object[] objectsToOpen = dialog.getResult();
+        if (!CommonUtils.isEmpty(objectsToOpen)) {
+            Collection<DBNDatabaseNode> nodes = NavigatorHandlerObjectBase.getNodesByObjects(Arrays.asList(objectsToOpen));
+            for (DBNDatabaseNode node : nodes) {
+                NavigatorHandlerObjectOpen.openEntityEditor(node, null, workbenchWindow);
+            }
+        }
 
         return null;
     }
