@@ -136,7 +136,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 typesToSearch.toArray(new DBSObjectType[typesToSearch.size()]),
                 nameMask,
                 false,
-                50);
+                1000);
             for (DBSObjectReference ref : result) {
                 contentProvider.add(ref, itemsFilter);
             }
@@ -239,7 +239,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             String nameMask = getPattern();
             nameMask = nameMask.replace("*", "%").replace("?", "_");
             int matchRule = getMatchRule();
-            if ((matchRule & SearchPattern.RULE_PREFIX_MATCH) != 0) {
+            if ((matchRule & SearchPattern.RULE_PREFIX_MATCH) != 0 && !nameMask.endsWith("%")) {
                 nameMask += "%";
             }
             return nameMask;
