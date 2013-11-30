@@ -138,7 +138,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                     for (DBSObject database : databasesInfo.list) {
                         if (DBUtils.getAdapter(DBSObjectContainer.class, database) != null) {
-                            navigatorModel.getNodeByObject(monitor, database);
+                            navigatorModel.getNodeByObject(monitor, database, false);
                         }
                     }
                 }

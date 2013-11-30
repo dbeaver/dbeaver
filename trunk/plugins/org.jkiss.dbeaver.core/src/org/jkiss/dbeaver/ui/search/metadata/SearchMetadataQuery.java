@@ -97,7 +97,7 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
                 try {
                     DBSObject object = reference.resolveObject(monitor);
                     if (object != null) {
-                        DBNNode node = navigatorModel.getNodeByObject(monitor, object);
+                        DBNNode node = navigatorModel.getNodeByObject(monitor, object, false);
                         if (node != null) {
                             nodes.add(node);
                         }
