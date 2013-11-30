@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,7 +52,10 @@ import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
@@ -146,7 +150,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
         DBNDatabaseNode node = model.findNode(object);
         if (node == null) {
-            NodeLoader nodeLoader = new NodeLoader(model, object);
+            NodeLoader nodeLoader = new NodeLoader(model, Collections.singleton(object));
             try {
                 DBeaverUI.runInProgressService(nodeLoader);
             } catch (InvocationTargetException e) {
@@ -154,9 +158,40 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             } catch (InterruptedException e) {
                 // do nothing
             }
-            node = nodeLoader.node;
+            if (!nodeLoader.nodes.isEmpty()) {
+                node = nodeLoader.nodes.get(0);
+            }
         }
         return node;
+    }
+
+    public static Collection<DBNDatabaseNode> getNodesByObjects(Collection<Object> objects)
+    {
+        DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
+        List<DBNDatabaseNode> result = new ArrayList<DBNDatabaseNode>();
+        List<Object> missingObjects = new ArrayList<Object>();
+        for (Object object : objects) {
+            if (object instanceof DBSObject) {
+                DBNDatabaseNode node = model.findNode((DBSObject) object);
+                if (node != null) {
+                    result.add(node);
+                    continue;
+                }
+            }
+            missingObjects.add(object);
+        }
+        if (!missingObjects.isEmpty()) {
+            NodeLoader nodeLoader = new NodeLoader(model, missingObjects);
+            try {
+                DBeaverUI.runInProgressService(nodeLoader);
+            } catch (InvocationTargetException e) {
+                log.warn("Could not load node for objects " + missingObjects.size(), e.getTargetException());
+            } catch (InterruptedException e) {
+                // do nothing
+            }
+            result.addAll(nodeLoader.nodes);
+        }
+        return result;
     }
 
     protected static boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, String dialogTitle)
@@ -183,19 +218,39 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     private static class NodeLoader implements DBRRunnableWithProgress {
         private final DBNModel model;
-        private final DBSObject object;
-        private DBNDatabaseNode node;
+        private final Collection<? extends Object> objects;
+        private List<DBNDatabaseNode> nodes;
 
-        public NodeLoader(DBNModel model, DBSObject object)
+        public NodeLoader(DBNModel model, Collection<? extends Object> objects)
         {
             this.model = model;
-            this.object = object;
+            this.objects = objects;
+            this.nodes = new ArrayList<DBNDatabaseNode>(objects.size());
         }
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
-            node = model.getNodeByObject(monitor, object, true);
+            for (Object object : objects) {
+                DBSObject structObject;
+                if (object instanceof DBSObject) {
+                    structObject = (DBSObject) object;
+                } else if (object instanceof DBSObjectReference) {
+                    try {
+                        structObject = ((DBSObjectReference) object).resolveObject(monitor);
+                    } catch (DBException e) {
+                        log.error("Can't resolve object reference", e);
+                        continue;
+                    }
+                } else {
+                    log.warn("Unsupported object type: " + object);
+                    continue;
+                }
+                DBNDatabaseNode node = model.getNodeByObject(monitor, structObject, true);
+                if (node != null) {
+                    nodes.add(node);
+                }
+            }
         }
     }
 
