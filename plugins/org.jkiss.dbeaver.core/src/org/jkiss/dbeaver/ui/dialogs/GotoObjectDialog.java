@@ -136,7 +136,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 typesToSearch.toArray(new DBSObjectType[typesToSearch.size()]),
                 nameMask,
                 false,
-                500);
+                50);
             for (DBSObjectReference ref : result) {
                 contentProvider.add(ref, itemsFilter);
             }
@@ -217,7 +217,12 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         {
             if (item instanceof DBPNamedObject) {
                 String objectName = ((DBPNamedObject) item).getName();
-                return getNamePattern().matcher(objectName).matches();
+                if (!getNamePattern().matcher(objectName).matches()) {
+                    return false;
+                }
+                // Check for filters
+
+                return true;
             } else {
                 return false;
             }
