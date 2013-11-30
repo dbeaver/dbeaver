@@ -187,10 +187,10 @@ public class DBNModel implements IResourceChangeListener {
 */
     }
 
-    public DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean load)
+    public DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object)
     {
         DBNDatabaseNode node = getNodeByObject(object);
-        if (node != null || !load) {
+        if (node != null) {
             return node;
         }
         List<DBSObject> path = new ArrayList<DBSObject>();
@@ -206,7 +206,7 @@ public class DBNModel implements IResourceChangeListener {
                 return null;
             }
             try {
-                cacheNodeChildren(monitor, node, nextItem.getClass());
+                cacheNodeChildren(monitor, node, nextItem);
             } catch (DBException e) {
                 log.error(e.getMessage());
                 return null;
@@ -250,19 +250,30 @@ public class DBNModel implements IResourceChangeListener {
         return curNode;
     }
 
-    private void cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> objectType) throws DBException
+    private boolean cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, DBSObject objectToCache) throws DBException
     {
         List<? extends DBNDatabaseNode> children = node.getChildren(monitor);
+        boolean cached = false;
         if (!CommonUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
                 if (child instanceof DBNDatabaseFolder) {
                     Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
-                    if (itemsClass != null && itemsClass.isAssignableFrom(objectType)) {
-                        cacheNodeChildren(monitor, child, objectType);
+                    if (itemsClass != null && itemsClass.isAssignableFrom(objectToCache.getClass())) {
+                        cached = cacheNodeChildren(monitor, child, objectToCache);
+                        if (cached) {
+                            break;
+                        }
                     }
                 }
             }
         }
+        if (!cached && node.isFiltered()) {
+            // It seems this object was filtered out
+            // As it was requested explicitly - let's add new node
+            node.addChildItem(objectToCache);
+            return true;
+        }
+        return false;
     }
 
     public DBNDatabaseNode getParentNode(DBSObject object)
