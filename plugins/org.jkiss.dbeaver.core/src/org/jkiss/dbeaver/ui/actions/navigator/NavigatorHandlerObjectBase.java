@@ -246,7 +246,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                     log.warn("Unsupported object type: " + object);
                     continue;
                 }
-                DBNDatabaseNode node = model.getNodeByObject(monitor, structObject);
+                DBNDatabaseNode node = model.getNodeByObject(monitor, structObject, true);
                 if (node != null) {
                     nodes.add(node);
                 }
