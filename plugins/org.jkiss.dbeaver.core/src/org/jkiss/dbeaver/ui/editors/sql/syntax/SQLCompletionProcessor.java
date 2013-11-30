@@ -472,7 +472,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     private ICompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, DBSObject object)
     {
-        DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, true);
+        DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object);
         return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
     }
 

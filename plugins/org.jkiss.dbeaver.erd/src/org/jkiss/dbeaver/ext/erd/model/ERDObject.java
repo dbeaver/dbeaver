@@ -108,8 +108,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
                 {
                     DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
                         monitor,
-                        (DBSObject) object,
-                        true
+                        (DBSObject) object
                     );
                     if (node != null) {
                         NavigatorHandlerObjectOpen.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
