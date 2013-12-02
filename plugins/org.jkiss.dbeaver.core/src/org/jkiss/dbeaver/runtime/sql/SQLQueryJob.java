@@ -56,8 +56,10 @@ public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
 
-    private SQLEditorBase editor;
-    private List<SQLStatementInfo> queries;
+    private final SQLEditorBase editor;
+    private final List<SQLStatementInfo> queries;
+    private final SQLQueryListener listener;
+
     private DBDDataFilter dataFilter;
     private DBDDataReceiver dataReceiver;
     private boolean connectionInvalidated = false;
@@ -71,7 +73,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBCStatement curStatement;
     private DBCResultSet curResultSet;
     //private boolean statementCancel = false;
-    private boolean statementCanceled = false;
+    //private boolean statementCanceled = false;
     private Throwable lastError = null;
 
     private SQLQueryResult curResult;
@@ -82,7 +84,8 @@ public class SQLQueryJob extends DataSourceJob
     public SQLQueryJob(
         String name,
         SQLEditorBase editor,
-        List<SQLStatementInfo> queries)
+        List<SQLStatementInfo> queries,
+        SQLQueryListener listener)
     {
         super(
             name,
@@ -90,17 +93,14 @@ public class SQLQueryJob extends DataSourceJob
             editor.getDataSource());
         this.editor = editor;
         this.queries = queries;
+        this.listener = listener;
 
         {
             // Read config form preference store
             IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
             this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_COMMIT_TYPE));
             this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_ERROR_HANDLING));
-            if (queries.size() == 1) {
-                this.fetchResultSets = true;
-            } else {
-                this.fetchResultSets = preferenceStore.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS);
-            }
+            this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS);
             this.rsMaxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
         }
     }
@@ -151,7 +151,9 @@ public class SQLQueryJob extends DataSourceJob
                 monitor.beginTask(this.getName(), queries.size());
 
                 // Notify job start
-                onStartJob();
+                if (listener != null) {
+                    listener.onStartJob();
+                }
 
                 for (int queryNum = 0; queryNum < queries.size(); ) {
                     // Execute query
@@ -268,7 +270,9 @@ public class SQLQueryJob extends DataSourceJob
         }
         finally {
             // Notify job end
-            onEndJob(lastError != null);
+            if (listener != null) {
+                listener.onEndJob(statistics, lastError != null);
+            }
         }
     }
 
@@ -276,9 +280,9 @@ public class SQLQueryJob extends DataSourceJob
     {
         lastError = null;
 
-        if (fireEvents) {
+        if (fireEvents && listener != null) {
             // Notify query start
-            onStartQuery(sqlStatement);
+            listener.onStartQuery(sqlStatement);
         }
 
         long startTime = System.currentTimeMillis();
@@ -451,9 +455,9 @@ public class SQLQueryJob extends DataSourceJob
         }
         curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
-        if (fireEvents) {
+        if (fireEvents && listener != null) {
             // Notify query end
-            onEndQuery(curResult);
+            listener.onEndQuery(curResult);
         }
 
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
@@ -674,26 +678,6 @@ public class SQLQueryJob extends DataSourceJob
     public DBCStatistics getStatistics()
     {
         return statistics;
-    }
-
-    protected void onStartJob()
-    {
-
-    }
-
-    protected void onStartQuery(SQLStatementInfo query)
-    {
-
-    }
-
-    protected void onEndQuery(SQLQueryResult result)
-    {
-
-    }
-
-    protected void onEndJob(boolean hasErrors)
-    {
-
     }
 
 }
