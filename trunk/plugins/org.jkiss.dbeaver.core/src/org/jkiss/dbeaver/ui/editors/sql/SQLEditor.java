@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
+import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -1050,118 +1051,14 @@ public class SQLEditor extends SQLEditorBase
 
             // Prepare execution job
             {
-                final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
-
                 showScriptPositionRuler(true);
 
+                SQLQueryListener listener = new SQLEditorQueryListener(this);
                 final SQLQueryJob job = new SQLQueryJob(
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
                     SQLEditor.this,
-                    queries)
-                {
-                    private long lastUIUpdateTime;
-
-                    @Override
-                    public void onStartJob()
-                    {
-                        lastUIUpdateTime = -1;
-                        if (!isSingleQuery) {
-                            UIUtils.runInUI(null, new Runnable() {
-                                @Override
-                                public void run()
-                                {
-                                    sashForm.setMaximizedControl(editorControl);
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onStartQuery(final SQLStatementInfo query)
-                    {
-                        curJobRunning.incrementAndGet();
-                        synchronized (runningQueries) {
-                            runningQueries.add(query);
-                        }
-                        if (lastUIUpdateTime < 0 || System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
-                            showStatementInEditor(query, false);
-                            lastUIUpdateTime = System.currentTimeMillis();
-                        }
-                    }
-
-                    @Override
-                    public void onEndQuery(final SQLQueryResult result)
-                    {
-                        synchronized (runningQueries) {
-                            runningQueries.remove(result.getStatement());
-                        }
-                        curJobRunning.decrementAndGet();
-
-                        if (isDisposed()) {
-                            return;
-                        }
-                        if (result.hasError()) {
-                            showStatementInEditor(result.getStatement(), true);
-                        }
-                        if (isSingleQuery) {
-                            DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
-                                @Override
-                                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                                {
-                                    processQueryResult(result);
-                                }
-                            });
-                        }
-                    }
-
-                    private void processQueryResult(SQLQueryResult result)
-                    {
-                        if (result.hasError()) {
-                            setStatus(result.getError().getMessage(), true);
-                        }
-                        if (queries.size() < 2) {
-                            getSelectionProvider().setSelection(originalSelection);
-                        }
-                        if (!tabItem.isDisposed()) {
-                            tabItem.setToolTipText(result.getStatement().getQuery());
-                            if (!CommonUtils.isEmpty(result.getSourceEntity())) {
-                                tabItem.setText(result.getSourceEntity());
-                            } else {
-                                int tabIndex = getTabIndex(tabItem);
-                                tabItem.setText(
-                                    CoreMessages.editors_sql_data_grid + (tabIndex == 0 ? "" : " [" + (tabIndex + 1) + "]"));
-                            }
-                        }
-
-                        if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
-                            DBeaverUI.notifyAgent(
-                                "Query completed [" + getEditorInput().getPath().lastSegment() + "]" + ContentUtils.getDefaultLineSeparator() +
-                                    CommonUtils.truncateString(result.getStatement().getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
-                        }
-                    }
-
-                    @Override
-                    public void onEndJob(final boolean hasErrors)
-                    {
-                        if (isDisposed()) {
-                            return;
-                        }
-                        UIUtils.runInUI(null, new Runnable() {
-                            @Override
-                            public void run()
-                            {
-                                if (!hasErrors && queries.size() > 1) {
-                                    getSelectionProvider().setSelection(originalSelection);
-                                }
-                                if (!isSingleQuery) {
-                                    sashForm.setMaximizedControl(null);
-                                }
-                                viewer.getModel().setStatistics(getStatistics());
-                                viewer.updateStatusMessage();
-                            }
-                        });
-                    }
-                };
+                    queries,
+                    listener);
                 job.setDataReceiver(viewer.getDataReceiver());
 
                 if (export) {
@@ -1205,6 +1102,109 @@ public class SQLEditor extends SQLEditorBase
         public boolean isReadyToRun()
         {
             return curJob != null && curJobRunning.get() == 0;
+        }
+
+    }
+
+    private class SQLEditorQueryListener implements SQLQueryListener {
+        private final DataContainer dataContainer;
+        private boolean scriptMode;
+        private long lastUIUpdateTime;
+        private final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
+
+        private SQLEditorQueryListener(DataContainer dataContainer) {
+            this.dataContainer = dataContainer;
+        }
+
+        @Override
+        public void onStartJob() {
+            lastUIUpdateTime = -1;
+            scriptMode = true;
+            UIUtils.runInUI(null, new Runnable() {
+                @Override
+                public void run() {
+                    sashForm.setMaximizedControl(editorControl);
+                }
+            });
+        }
+
+        @Override
+        public void onStartQuery(final SQLStatementInfo query) {
+            dataContainer.curJobRunning.incrementAndGet();
+            synchronized (runningQueries) {
+                runningQueries.add(query);
+            }
+            if (lastUIUpdateTime < 0 || System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
+                showStatementInEditor(query, false);
+                lastUIUpdateTime = System.currentTimeMillis();
+            }
+        }
+
+        @Override
+        public void onEndQuery(final SQLQueryResult result) {
+            synchronized (runningQueries) {
+                runningQueries.remove(result.getStatement());
+            }
+            dataContainer.curJobRunning.decrementAndGet();
+
+            if (isDisposed()) {
+                return;
+            }
+            if (result.hasError()) {
+                showStatementInEditor(result.getStatement(), true);
+            }
+            if (!scriptMode) {
+                DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        processQueryResult(result);
+                    }
+                });
+            }
+        }
+
+        private void processQueryResult(SQLQueryResult result) {
+            if (result.hasError()) {
+                setStatus(result.getError().getMessage(), true);
+            }
+            if (!scriptMode) {
+                getSelectionProvider().setSelection(originalSelection);
+            }
+            CTabItem tabItem = dataContainer.tabItem;
+            if (!tabItem.isDisposed()) {
+                tabItem.setToolTipText(result.getStatement().getQuery());
+                if (!CommonUtils.isEmpty(result.getSourceEntity())) {
+                    tabItem.setText(result.getSourceEntity());
+                } else {
+                    int tabIndex = getTabIndex(tabItem);
+                    tabItem.setText(
+                            CoreMessages.editors_sql_data_grid + (tabIndex == 0 ? "" : " [" + (tabIndex + 1) + "]"));
+                }
+            }
+
+            if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
+                DBeaverUI.notifyAgent(
+                        "Query completed [" + getEditorInput().getPath().lastSegment() + "]" + ContentUtils.getDefaultLineSeparator() +
+                                CommonUtils.truncateString(result.getStatement().getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
+            }
+        }
+
+        @Override
+        public void onEndJob(final DBCStatistics statistics, final boolean hasErrors) {
+            if (isDisposed()) {
+                return;
+            }
+            UIUtils.runInUI(null, new Runnable() {
+                @Override
+                public void run() {
+                    if (!hasErrors) {
+                        getSelectionProvider().setSelection(originalSelection);
+                    }
+                    sashForm.setMaximizedControl(null);
+                    dataContainer.viewer.getModel().setStatistics(statistics);
+                    dataContainer.viewer.updateStatusMessage();
+                }
+            });
         }
     }
 
