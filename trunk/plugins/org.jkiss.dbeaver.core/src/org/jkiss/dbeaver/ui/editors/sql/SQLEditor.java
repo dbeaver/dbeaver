@@ -370,7 +370,7 @@ public class SQLEditor extends SQLEditorBase
                             @Override
                             public void run()
                             {
-                                closeExtraResultTabs();
+                                closeExtraResultTabs(null);
                             }
                         });
                     }
@@ -552,7 +552,7 @@ public class SQLEditor extends SQLEditorBase
 
         if (newTab && !isSingleQuery) {
             // If we execute a script with newTabs - close all previously opened ones
-            closeExtraResultTabs();
+            closeExtraResultTabs(null);
         }
 
         if (newTab) {
@@ -564,6 +564,7 @@ public class SQLEditor extends SQLEditorBase
             }
         } else {
             // Use current tab
+            closeExtraResultTabs(curQueryProcessor);
             resultTabs.setSelection(curQueryProcessor.getFirstResults().tabItem);
             curQueryProcessor.processQueries(queries, false, export);
         }
@@ -641,12 +642,17 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private void closeExtraResultTabs()
+    private void closeExtraResultTabs(QueryProcessor queryProcessor)
     {
         // Close all tabs except first one
         for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
-            if (resultTabs.getItem(i).getData() instanceof QueryResultsProvider) {
-                resultTabs.getItem(i).dispose();
+            CTabItem item = resultTabs.getItem(i);
+            if (item.getData() instanceof QueryResultsProvider) {
+                QueryResultsProvider resultsProvider = (QueryResultsProvider)item.getData();
+                if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
+                    continue;
+                }
+                item.dispose();
             }
         }
     }
@@ -915,6 +921,7 @@ public class SQLEditor extends SQLEditorBase
         private SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
         private final List<QueryResultsProvider> resultProviders = new ArrayList<QueryResultsProvider>();
+        private DBDDataReceiver curDataReceiver = null;
 
         public QueryProcessor() {
             // Create first (default) results provider
@@ -953,6 +960,7 @@ public class SQLEditor extends SQLEditorBase
         {
             final SQLQueryJob job = curJob;
             if (job != null) {
+                curDataReceiver = dataReceiver;
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
                 job.extractData(session);
@@ -1094,6 +1102,9 @@ public class SQLEditor extends SQLEditorBase
 
         @Override
         public DBDDataReceiver getDataReceiver(SQLStatementInfo statement, final int resultSetNumber) {
+            if (resultSetNumber == 0 && curDataReceiver != null) {
+                return curDataReceiver;
+            }
             if (resultSetNumber >= resultProviders.size()) {
                 // Open new results processor in UI thread
                 getSite().getShell().getDisplay().syncExec(new Runnable() {
