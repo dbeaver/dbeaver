@@ -126,7 +126,7 @@ public class WMIStatement implements DBCStatement {
     }
 
     @Override
-    public boolean hasMoreResults() throws DBCException {
+    public boolean nextResults() throws DBCException {
         return false;
     }
 

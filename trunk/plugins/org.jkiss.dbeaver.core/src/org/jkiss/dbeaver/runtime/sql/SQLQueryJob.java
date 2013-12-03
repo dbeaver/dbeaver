@@ -58,10 +58,10 @@ public class SQLQueryJob extends DataSourceJob
 
     private final SQLEditorBase editor;
     private final List<SQLStatementInfo> queries;
+    private final SQLResultsConsumer resultsConsumer;
     private final SQLQueryListener listener;
 
     private DBDDataFilter dataFilter;
-    private DBDDataReceiver dataReceiver;
     private boolean connectionInvalidated = false;
 
     private SQLScriptCommitType commitType;
@@ -71,12 +71,8 @@ public class SQLQueryJob extends DataSourceJob
     private long rsMaxRows;
 
     private DBCStatement curStatement;
-    private DBCResultSet curResultSet;
-    //private boolean statementCancel = false;
-    //private boolean statementCanceled = false;
+    private final List<DBCResultSet> curResultSets = new ArrayList<DBCResultSet>();
     private Throwable lastError = null;
-
-    private SQLQueryResult curResult;
 
     private static final String NESTED_QUERY_AlIAS = "origdbvr";
     private DBCStatistics statistics;
@@ -85,6 +81,7 @@ public class SQLQueryJob extends DataSourceJob
         String name,
         SQLEditorBase editor,
         List<SQLStatementInfo> queries,
+        SQLResultsConsumer resultsConsumer,
         SQLQueryListener listener)
     {
         super(
@@ -93,6 +90,7 @@ public class SQLQueryJob extends DataSourceJob
             editor.getDataSource());
         this.editor = editor;
         this.queries = queries;
+        this.resultsConsumer = resultsConsumer;
         this.listener = listener;
 
         {
@@ -113,11 +111,6 @@ public class SQLQueryJob extends DataSourceJob
     public SQLStatementInfo getLastQuery()
     {
         return queries.isEmpty() ? null : queries.get(0);
-    }
-
-    public SQLQueryResult getLastResult()
-    {
-        return curResult;
     }
 
     public boolean hasLimits()
@@ -152,7 +145,7 @@ public class SQLQueryJob extends DataSourceJob
 
                 // Notify job start
                 if (listener != null) {
-                    listener.onStartJob();
+                    listener.onStartScript();
                 }
 
                 for (int queryNum = 0; queryNum < queries.size(); ) {
@@ -210,7 +203,7 @@ public class SQLQueryJob extends DataSourceJob
                 monitor.done();
 
                 // Fetch script execution results
-                fetchExecutionResult(session);
+                fetchExecutionResult(session, resultsConsumer.getDataReceiver(null, 0));
 
                 // Commit data
                 if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
@@ -232,24 +225,6 @@ public class SQLQueryJob extends DataSourceJob
                     txnManager.setAutoCommit(oldAutoCommit);
                 }
 
-/*
-            if (lastError != null) {
-                int code = lastError instanceof DBException ? ((DBException)lastError).getErrorCode() : 0;
-                // Return error
-                return new Status(
-                    Status.ERROR,
-                    DBeaverCore.getInstance().getCorePluginID(),
-                    code,
-                    lastError.getMessage(),
-                    null);
-            } else {
-                // Return success
-                return new Status(
-                    Status.OK,
-                    DBeaverCore.getInstance().getCorePluginID(),
-                    "SQL job completed");
-            }
-*/
                 QMUtils.getDefaultHandler().handleScriptEnd(session);
 
                 // Return success
@@ -271,7 +246,7 @@ public class SQLQueryJob extends DataSourceJob
         finally {
             // Notify job end
             if (listener != null) {
-                listener.onEndJob(statistics, lastError != null);
+                listener.onEndScript(statistics, lastError != null);
             }
         }
     }
@@ -303,7 +278,7 @@ public class SQLQueryJob extends DataSourceJob
             }
             sqlQuery = modifiedQuery.toString();
         }
-        curResult = new SQLQueryResult(sqlStatement);
+        SQLQueryResult curResult = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
         }
@@ -395,13 +370,15 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.addExecuteTime(System.currentTimeMillis() - startTime);
                 statistics.addStatementsCount();
 
+                int resultSetNumber = 0;
                 boolean hasMoreResults = true;
                 while (hasMoreResults) {
+                    DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlStatement, resultSetNumber);
                     // Show results only if we are not in the script execution
                     // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
                     // return messy results here
                     if (fetchResultSets) {
-                        hasResultSet = fetchQueryData(session, curStatement.openResultSet(), true);
+                        hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
                     }
                     long updateCount = -1;
                     if (!hasResultSet) {
@@ -418,7 +395,7 @@ public class SQLQueryJob extends DataSourceJob
                             log.warn("Can't obtain update count", e);
                         }
                         if (fetchResultSets) {
-                            fetchExecutionResult(session);
+                            fetchExecutionResult(session, dataReceiver);
                         }
                     }
                     if (!hasResultSet && updateCount < 0) {
@@ -426,10 +403,9 @@ public class SQLQueryJob extends DataSourceJob
                         // Possibly driver is broken and we are in infinite loop
                         break;
                     }
-                    hasMoreResults = curStatement.hasMoreResults();
+                    hasMoreResults = curStatement.nextResults();
                     if (hasMoreResults) {
-                        // TODO: make real processing
-                        break;
+                        resultSetNumber++;
                     }
                 }
             }
@@ -449,9 +425,12 @@ public class SQLQueryJob extends DataSourceJob
                 }
             }
         }
-        catch (Throwable ex) {
+        catch (DBCException ex) {
             curResult.setError(ex);
             lastError = ex;
+        }
+        catch (Throwable ex) {
+            log.error("Unexpected error while processing SQL", ex);
         }
         curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
@@ -467,7 +446,7 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    private void fetchExecutionResult(DBCSession session) throws DBCException
+    private void fetchExecutionResult(DBCSession session, DBDDataReceiver dataReceiver) throws DBCException
     {
         // Fetch fake result set
         LocalResultSet fakeResultSet = new LocalResultSet(session, curStatement);
@@ -494,7 +473,7 @@ public class SQLQueryJob extends DataSourceJob
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
         }
-        fetchQueryData(session, fakeResultSet, false);
+        fetchQueryData(session, fakeResultSet, null, dataReceiver, false);
     }
 
     private boolean bindStatementParameters(final List<SQLStatementParameter> parameters)
@@ -515,28 +494,28 @@ public class SQLQueryJob extends DataSourceJob
         return binder.getResult();
     }
 
-    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, boolean updateStatistics)
+    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, DBDDataReceiver dataReceiver, boolean updateStatistics)
         throws DBCException
     {
         if (dataReceiver == null) {
             // No data pump - skip fetching stage
             return false;
         }
-        closeResultSet();
-        curResultSet = resultSet;
-        if (curResultSet == null) {
+        if (resultSet == null) {
             return false;
         }
+
+        curResultSets.add(resultSet);
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.subTask("Fetch result set");
         long rowCount = 0;
 
-        dataReceiver.fetchStart(session, curResultSet);
+        dataReceiver.fetchStart(session, resultSet);
 
         try {
             // Retrieve source entity
-            {
-                DBCResultSetMetaData rsMeta = curResultSet.getResultSetMetaData();
+            if (result != null) {
+                DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
                 String sourceName = null;
                 for (DBCAttributeMetaData attr : rsMeta.getAttributes()) {
                     String entityName = attr.getEntityName();
@@ -551,13 +530,13 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
                 if (!CommonUtils.isEmpty(sourceName)) {
-                    curResult.setSourceEntity(sourceName);
+                    result.setSourceEntity(sourceName);
                 }
             }
             long fetchStartTime = System.currentTimeMillis();
 
             // Fetch all rows
-            while ((!hasLimits() || rowCount < rsMaxRows) && curResultSet.nextRow()) {
+            while ((!hasLimits() || rowCount < rsMaxRows) && resultSet.nextRow()) {
                 if (monitor.isCanceled()) {
                     break;
                 }
@@ -568,17 +547,13 @@ public class SQLQueryJob extends DataSourceJob
                     monitor.worked(100);
                 }
 
-                dataReceiver.fetchRow(session, curResultSet);
+                dataReceiver.fetchRow(session, resultSet);
             }
             if (updateStatistics) {
                 statistics.setFetchTime(System.currentTimeMillis() - fetchStartTime);
             }
         }
         finally {
-            if (!keepStatementOpen()) {
-                closeResultSet();
-            }
-
             try {
                 dataReceiver.fetchEnd(session);
             } catch (DBCException e) {
@@ -587,7 +562,9 @@ public class SQLQueryJob extends DataSourceJob
             dataReceiver.close();
         }
 
-        curResult.setRowCount(rowCount);
+        if (result != null) {
+            result.setRowCount(rowCount);
+        }
         if (updateStatistics) {
             statistics.setRowsFetched(rowCount);
         }
@@ -605,18 +582,14 @@ public class SQLQueryJob extends DataSourceJob
 
     private void closeStatement()
     {
-        closeResultSet();
         if (curStatement != null) {
+            for (DBCResultSet resultSet : curResultSets) {
+                resultSet.close();
+            }
+            curResultSets.clear();
+
             curStatement.close();
             curStatement = null;
-        }
-    }
-
-    private void closeResultSet()
-    {
-        if (curResultSet != null) {
-            curResultSet.close();
-            curResultSet = null;
         }
     }
 
@@ -668,11 +641,6 @@ public class SQLQueryJob extends DataSourceJob
     public void setDataFilter(DBDDataFilter dataFilter)
     {
         this.dataFilter = dataFilter;
-    }
-
-    public void setDataReceiver(DBDDataReceiver dataReceiver)
-    {
-        this.dataReceiver = dataReceiver;
     }
 
     public DBCStatistics getStatistics()

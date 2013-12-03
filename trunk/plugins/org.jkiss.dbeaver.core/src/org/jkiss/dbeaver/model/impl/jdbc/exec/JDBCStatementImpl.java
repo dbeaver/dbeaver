@@ -201,7 +201,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Override
-    public boolean hasMoreResults()
+    public boolean nextResults()
         throws DBCException
     {
         try {
