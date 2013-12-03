@@ -394,8 +394,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public void flush() throws IOException
         {
-            writer.flush();
-            outputStream.flush();
+            if (writer != null) {
+                writer.flush();
+            }
+            if (outputStream != null) {
+                outputStream.flush();
+            }
         }
 
         @Override
