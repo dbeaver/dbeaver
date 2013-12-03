@@ -89,8 +89,9 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
 
     /**
      * Checks whether there are additional results (result set or update count).
+     * Moves statement to the next result set if it presents.
      */
-    boolean hasMoreResults() throws DBCException;
+    boolean nextResults() throws DBCException;
 
     /**
      * Close statement.

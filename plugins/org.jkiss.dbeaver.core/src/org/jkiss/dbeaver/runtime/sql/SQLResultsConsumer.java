@@ -18,21 +18,21 @@
  */
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 
 /**
- * SQLQueryListener
+ * SQLResultsConsumer
  *
  * @author Serge Rider
  */
-public interface SQLQueryListener
+public interface SQLResultsConsumer
 {
-    void onStartScript();
-
-    void onStartQuery(SQLStatementInfo query);
-
-    void onEndQuery(SQLQueryResult result);
-
-    void onEndScript(DBCStatistics statistics, boolean hasErrors);
+    /**
+     * Gets (or opens new) data receiver.
+     * @param statement executing statement or null
+     * @param resultSetNumber result set number
+     * @return
+     */
+    DBDDataReceiver getDataReceiver(SQLStatementInfo statement, int resultSetNumber);
 
 }
