@@ -64,10 +64,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.runtime.sql.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
@@ -843,7 +840,7 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public ResultSetViewer getResultSetViewer()
     {
-        if (resultTabs == null) {
+        if (resultTabs == null || resultTabs.isDisposed()) {
             return null;
         }
         CTabItem curTab = resultTabs.getSelection();
@@ -913,14 +910,19 @@ public class SQLEditor extends SQLEditorBase
         return queryProcessor;
     }
 
-    private class QueryProcessor implements DBSDataContainer {
+    private class QueryProcessor implements DBSDataContainer, SQLResultsConsumer {
 
         private SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
         private final List<QueryResultsProvider> resultProviders = new ArrayList<QueryResultsProvider>();
 
         public QueryProcessor() {
-            resultProviders.add(new QueryResultsProvider(this));
+            // Create first (default) results provider
+            createResultsProvider(0);
+        }
+
+        private void createResultsProvider(int resultSetNumber) {
+            resultProviders.add(new QueryResultsProvider(this, resultSetNumber));
         }
 
         QueryResultsProvider getFirstResults()
@@ -938,7 +940,7 @@ public class SQLEditor extends SQLEditorBase
             int features = DATA_SELECT;
 
             final SQLQueryJob job = curJob;
-            if (job != null && job.getLastResult() != null && job.getLastResult().hasResultSet()) {
+            if (job != null) {
                 if (getDataSource().getInfo().supportsSubqueries()) {
                     features |= DATA_FILTER;
                 }
@@ -953,7 +955,6 @@ public class SQLEditor extends SQLEditorBase
             if (job != null) {
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
-                job.setDataReceiver(dataReceiver);
                 job.extractData(session);
                 return job.getStatistics();
             } else {
@@ -1040,8 +1041,8 @@ public class SQLEditor extends SQLEditorBase
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
                     SQLEditor.this,
                     queries,
+                    this,
                     listener);
-                job.setDataReceiver(resultSetViewer.getDataReceiver());
 
                 if (export) {
                     // Assign current job from active query and open wizard
@@ -1090,6 +1091,20 @@ public class SQLEditor extends SQLEditorBase
                 }
             }
         }
+
+        @Override
+        public DBDDataReceiver getDataReceiver(SQLStatementInfo statement, final int resultSetNumber) {
+            if (resultSetNumber >= resultProviders.size()) {
+                // Open new results processor in UI thread
+                getSite().getShell().getDisplay().syncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        createResultsProvider(resultSetNumber);
+                    }
+                });
+            }
+            return resultProviders.get(resultSetNumber).getResultSetViewer().getDataReceiver();
+        }
     }
 
     private class QueryResultsProvider implements ResultSetProvider {
@@ -1098,7 +1113,7 @@ public class SQLEditor extends SQLEditorBase
         private final CTabItem tabItem;
         private final ResultSetViewer viewer;
 
-        private QueryResultsProvider(QueryProcessor queryProcessor)
+        private QueryResultsProvider(QueryProcessor queryProcessor, int resultSetNumber)
         {
             this.queryProcessor = queryProcessor;
             viewer = new ResultSetViewer(resultTabs, getSite(), this);
@@ -1115,10 +1130,15 @@ public class SQLEditor extends SQLEditorBase
             });
 
             boolean firstResultSet = queryProcessors.isEmpty();
-            int tabIndex = queryProcessors.size();
+            int tabIndex = queryProcessors.size() + resultSetNumber;
+            if (resultSetNumber > 0) {
+                tabIndex--;
+            }
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
             String tabName = CoreMessages.editors_sql_data_grid;
-            if (!firstResultSet) {
+            if (resultSetNumber > 0) {
+                tabName += " [" + queryProcessors.indexOf(queryProcessor) + " - " + resultSetNumber + "]";
+            } else if (!firstResultSet) {
                 tabName += " [" + (getTabIndex(tabItem) + 1) + "]";
             }
             tabItem.setText(tabName);
@@ -1167,7 +1187,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public void onStartJob() {
+        public void onStartScript() {
             lastUIUpdateTime = -1;
             scriptMode = true;
             UIUtils.runInUI(null, new Runnable() {
@@ -1240,7 +1260,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public void onEndJob(final DBCStatistics statistics, final boolean hasErrors) {
+        public void onEndScript(final DBCStatistics statistics, final boolean hasErrors) {
             if (isDisposed()) {
                 return;
             }
