@@ -447,7 +447,7 @@ public class ContentUtils {
         syncFile(monitor, localFile);
     }
 
-    public static void syncFile(DBRProgressMonitor monitor, IFile localFile) {
+    public static void syncFile(DBRProgressMonitor monitor, IResource localFile) {
         // Sync file with contents
         try {
             localFile.refreshLocal(IFile.DEPTH_ZERO, monitor.getNestedMonitor());
