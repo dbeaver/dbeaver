@@ -92,9 +92,6 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     public static void openResource(IResource resource, IWorkbenchWindow window)
     {
         try {
-            if (!resource.isSynchronized(IResource.DEPTH_ZERO)) {
-                ContentUtils.syncFile(VoidProgressMonitor.INSTANCE, resource);
-            }
             DBPResourceHandler handler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
             if (handler != null) {
                 handler.openResource(resource, window);
