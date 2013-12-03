@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -169,6 +171,12 @@ public class ProjectRegistry implements IResourceChangeListener {
             // TODO: remove in some older version
             return null;
         }
+        // Check resource is synced
+        if (resource instanceof IFile && !resource.isSynchronized(IResource.DEPTH_ZERO)) {
+            ContentUtils.syncFile(VoidProgressMonitor.INSTANCE, resource);
+        }
+
+        // Find handler
         DBPResourceHandler handler = null;
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             if (rhd.canHandle(resource)) {
