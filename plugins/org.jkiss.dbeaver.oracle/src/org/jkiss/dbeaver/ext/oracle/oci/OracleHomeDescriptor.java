@@ -51,7 +51,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
         this.isInstantClient = OCIUtils.isInstantClient(oraHome);
         this.oraVersion = getOracleVersion();
         if (oraVersion == null) {
-            log.warn("Unrecognized Oracle client version at " + oraHome);
+            log.debug("Unrecognized Oracle client version at " + oraHome);
         }
         this.displayName = OCIUtils.readWinRegistry(oraHome, OCIUtils.WIN_REG_ORA_HOME_NAME);
     }

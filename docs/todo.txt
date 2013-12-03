@@ -1,9 +1,9 @@
 Major:
 
 S/DB selector combo works as crap
-Find table/object (similar to eclipse ctrl-shift-r/t)
 
 1. Multiple result sets support (MS SQL)
+2. Browse data by foreign keys
 2. Dialect-dependent SQL generator
 3. Query manager fixes. + keep only primitive props + persistence
 4. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
