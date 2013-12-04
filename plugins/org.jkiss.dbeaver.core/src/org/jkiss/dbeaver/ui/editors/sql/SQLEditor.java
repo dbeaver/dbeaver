@@ -657,18 +657,6 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private int getTabIndex(CTabItem tab)
-    {
-        CTabItem[] items = resultTabs.getItems();
-        for (int i = 0; i < items.length; i++) {
-            if (items[i] == tab) {
-                return i;
-            }
-        }
-        log.warn("Bad tab: " + tab);
-        return 0;
-    }
-
     private void checkSession()
         throws DBException
     {
@@ -854,13 +842,13 @@ public class SQLEditor extends SQLEditorBase
             return ((QueryResultsProvider)curTab.getData()).getResultSetViewer();
         }
 
-        return curQueryProcessor == null ? null : curQueryProcessor.getFirstResults().getResultSetViewer();
+        return curQueryProcessor == null ? null : curQueryProcessor.getCurrentResults().getResultSetViewer();
     }
 
     @Override
     public DBSDataContainer getDataContainer()
     {
-        return curQueryProcessor;
+        return curQueryProcessor == null ? null : curQueryProcessor.getCurrentResults();
     }
 
     @Override
@@ -916,7 +904,7 @@ public class SQLEditor extends SQLEditorBase
         return queryProcessor;
     }
 
-    private class QueryProcessor implements DBSDataContainer, SQLResultsConsumer {
+    private class QueryProcessor implements SQLResultsConsumer {
 
         private SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
@@ -937,82 +925,17 @@ public class SQLEditor extends SQLEditorBase
             return resultProviders.get(0);
         }
 
+        QueryResultsProvider getCurrentResults()
+        {
+            CTabItem curTab = resultTabs.getSelection();
+            if (curTab != null && curTab.getData() instanceof QueryResultsProvider) {
+                return (QueryResultsProvider)curTab.getData();
+            }
+            return getFirstResults();
+        }
+
         List<QueryResultsProvider> getResultProviders() {
             return resultProviders;
-        }
-
-        @Override
-        public int getSupportedFeatures()
-        {
-            int features = DATA_SELECT;
-
-            final SQLQueryJob job = curJob;
-            if (job != null) {
-                if (getDataSource().getInfo().supportsSubqueries()) {
-                    features |= DATA_FILTER;
-                }
-            }
-            return features;
-        }
-
-        @Override
-        public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
-        {
-            final SQLQueryJob job = curJob;
-            if (job != null) {
-                curDataReceiver = dataReceiver;
-                job.setResultSetLimit(firstRow, maxRows);
-                job.setDataFilter(dataFilter);
-                job.extractData(session);
-                return job.getStatistics();
-            } else {
-                log.warn("No active query - can't read data");
-                DBCStatistics statistics = new DBCStatistics();
-                statistics.addMessage("No active query - can't read data");
-                return statistics;
-            }
-        }
-
-        @Override
-        public long countData(DBCSession session, DBDDataFilter dataFilter)
-        {
-            return -1;
-        }
-
-        @Override
-        public String getDescription()
-        {
-            return CoreMessages.editors_sql_description;
-        }
-
-        @Override
-        public DBSObject getParentObject()
-        {
-            return getDataSourceContainer();
-        }
-
-        @Override
-        public DBPDataSource getDataSource()
-        {
-            return SQLEditor.this.getDataSource();
-        }
-
-        @Override
-        public boolean isPersisted()
-        {
-            return true;
-        }
-
-        @Override
-        public String getName()
-        {
-            final SQLQueryJob job = curJob;
-            String name = job == null ? null :
-                job.getLastQuery() == null ? null : CommonUtils.truncateString(job.getLastQuery().getQuery(), 200);
-            if (name == null) {
-                name = "SQL";
-            }
-            return name;
         }
 
         private void closeJob()
@@ -1042,7 +965,7 @@ public class SQLEditor extends SQLEditorBase
             // Prepare execution job
             {
                 showScriptPositionRuler(true);
-                ResultSetViewer resultSetViewer = getFirstResults().getResultSetViewer();
+                QueryResultsProvider resultsProvider = getFirstResults();
 
                 SQLQueryListener listener = new SQLEditorQueryListener(this);
                 final SQLQueryJob job = new SQLQueryJob(
@@ -1059,13 +982,14 @@ public class SQLEditor extends SQLEditorBase
                         getSite().getWorkbenchWindow(),
                         new DataTransferWizard(
                             new IDataTransferProducer[] {
-                                new DatabaseTransferProducer(this, null)},
+                                new DatabaseTransferProducer(resultsProvider, null)},
                             null),
                         new StructuredSelection(this));
                     dialog.open();
                 } else if (isSingleQuery) {
                     closeJob();
                     curJob = job;
+                    ResultSetViewer resultSetViewer = resultsProvider.getResultSetViewer();
                     resultSetViewer.resetDataFilter(false);
                     resultSetViewer.refresh();
                 } else {
@@ -1116,17 +1040,20 @@ public class SQLEditor extends SQLEditorBase
             }
             return resultProviders.get(resultSetNumber).getResultSetViewer().getDataReceiver();
         }
+
     }
 
-    private class QueryResultsProvider implements ResultSetProvider {
+    private class QueryResultsProvider implements DBSDataContainer, ResultSetProvider {
 
         private final QueryProcessor queryProcessor;
         private final CTabItem tabItem;
         private final ResultSetViewer viewer;
+        private final int resultSetNumber;
 
         private QueryResultsProvider(QueryProcessor queryProcessor, int resultSetNumber)
         {
             this.queryProcessor = queryProcessor;
+            this.resultSetNumber = resultSetNumber;
             viewer = new ResultSetViewer(resultTabs, getSite(), this);
 
             selectionProvider.trackProvider(viewer.getSpreadsheet(), viewer);
@@ -1141,16 +1068,14 @@ public class SQLEditor extends SQLEditorBase
             });
 
             boolean firstResultSet = queryProcessors.isEmpty();
-            int tabIndex = queryProcessors.size() + resultSetNumber;
-            if (resultSetNumber > 0) {
-                tabIndex--;
-            }
+            int tabIndex = firstResultSet ? 0 : resultTabs.getItemCount() - 2;
+            int queryIndex = queryProcessors.indexOf(queryProcessor) + 1;
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
             String tabName = CoreMessages.editors_sql_data_grid;
             if (resultSetNumber > 0) {
-                tabName += " [" + queryProcessors.indexOf(queryProcessor) + " - " + resultSetNumber + "]";
+                tabName += " " + queryIndex + "/" + (resultSetNumber + 1);
             } else if (!firstResultSet) {
-                tabName += " [" + (getTabIndex(tabItem) + 1) + "]";
+                tabName += " " + queryIndex;
             }
             tabItem.setText(tabName);
             tabItem.setImage(imgDataGrid);
@@ -1176,13 +1101,87 @@ public class SQLEditor extends SQLEditorBase
         @Override
         public DBSDataContainer getDataContainer()
         {
-            return queryProcessor;
+            return this;
         }
 
         @Override
         public boolean isReadyToRun()
         {
             return queryProcessor.curJob != null && queryProcessor.curJobRunning.get() == 0;
+        }
+
+        @Override
+        public int getSupportedFeatures()
+        {
+            int features = DATA_SELECT;
+
+            final SQLQueryJob job = queryProcessor.curJob;
+            if (job != null) {
+                if (getDataSource().getInfo().supportsSubqueries()) {
+                    features |= DATA_FILTER;
+                }
+            }
+            return features;
+        }
+
+        @Override
+        public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+        {
+            final SQLQueryJob job = queryProcessor.curJob;
+            if (job != null) {
+                queryProcessor.curDataReceiver = dataReceiver;
+                job.setResultSetLimit(firstRow, maxRows);
+                job.setDataFilter(dataFilter);
+                job.extractData(session);
+                return job.getStatistics();
+            } else {
+                log.warn("No active query - can't read data");
+                DBCStatistics statistics = new DBCStatistics();
+                statistics.addMessage("No active query - can't read data");
+                return statistics;
+            }
+        }
+
+        @Override
+        public long countData(DBCSession session, DBDDataFilter dataFilter)
+        {
+            return -1;
+        }
+
+        @Override
+        public String getDescription()
+        {
+            return CoreMessages.editors_sql_description;
+        }
+
+        @Override
+        public DBSObject getParentObject()
+        {
+            return getDataSourceContainer();
+        }
+
+        @Override
+        public DBPDataSource getDataSource()
+        {
+            return SQLEditor.this.getDataSource();
+        }
+
+        @Override
+        public boolean isPersisted()
+        {
+            return true;
+        }
+
+        @Override
+        public String getName()
+        {
+            final SQLQueryJob job = queryProcessor.curJob;
+            String name = job == null ? null :
+                    job.getLastQuery() == null ? null : CommonUtils.truncateString(job.getLastQuery().getQuery(), 200);
+            if (name == null) {
+                name = "SQL";
+            }
+            return name;
         }
 
     }
@@ -1257,9 +1256,9 @@ public class SQLEditor extends SQLEditorBase
                 if (!CommonUtils.isEmpty(result.getSourceEntity())) {
                     tabItem.setText(result.getSourceEntity());
                 } else {
-                    int tabIndex = getTabIndex(tabItem);
+                    int queryIndex = queryProcessors.indexOf(queryProcessor) + 1;
                     tabItem.setText(
-                            CoreMessages.editors_sql_data_grid + (tabIndex == 0 ? "" : " [" + (tabIndex + 1) + "]"));
+                            CoreMessages.editors_sql_data_grid + (queryIndex == 1 ? "" : " [" + queryIndex + "]"));
                 }
             }
 

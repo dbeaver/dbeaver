@@ -2315,6 +2315,10 @@ public abstract class LightGrid extends Canvas {
             updateScrollbars();
             scrollValuesObsolete = false;
         }
+        IGridContentProvider contentProvider = getContentProvider();
+        if (contentProvider == null || contentProvider.getColumnCount() != columns.size()) {
+            return;
+        }
 
         int x;
         int y = 0;
