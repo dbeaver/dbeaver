@@ -1129,7 +1129,10 @@ public class SQLEditor extends SQLEditorBase
         {
             final SQLQueryJob job = queryProcessor.curJob;
             if (job != null) {
-                queryProcessor.curDataReceiver = dataReceiver;
+                if (dataReceiver != viewer.getDataReceiver()) {
+                    // Some custom receiver. Probably data export
+                    queryProcessor.curDataReceiver = dataReceiver;
+                }
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
                 job.extractData(session);
