@@ -1029,7 +1029,7 @@ public class SQLEditor extends SQLEditorBase
 
         @Override
         public DBDDataReceiver getDataReceiver(SQLStatementInfo statement, final int resultSetNumber) {
-            if (resultSetNumber == 0 && curDataReceiver != null) {
+            if (curDataReceiver != null) {
                 return curDataReceiver;
             }
             if (resultSetNumber >= resultProviders.size() && !isDisposed()) {
