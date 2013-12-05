@@ -192,7 +192,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 DBSObject rootObject = null;
                 if (queryType == QueryType.COLUMN) {
                     // Part of column name
-                    rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, null);
+                    rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, wordPart);
                 }
                 if (rootObject != null) {
                     makeProposalsFromChildren(monitor, rootObject, wordPart, proposals);
@@ -320,60 +320,54 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             token = "";
         }
 
-        Matcher matcher;
-        Pattern aliasPattern;
-        DBPDataSourceInfo dataSourceInfo = editor.getDataSource().getInfo();
-        String quote = dataSourceInfo.getIdentifierQuoteString();
-        if (quote == null) {
-            quote = SQLConstants.STR_QUOTE_DOUBLE;
-        }
-        quote = Pattern.quote(quote);
-        String catalogSeparator = dataSourceInfo.getCatalogSeparator();
-        if (catalogSeparator == null) {
-            catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
-        }
+        {
+            Matcher matcher;
+            Pattern aliasPattern;
+            DBPDataSourceInfo dataSourceInfo = editor.getDataSource().getInfo();
+            String quoteString = dataSourceInfo.getIdentifierQuoteString();
+            if (quoteString == null) {
+                quoteString = SQLConstants.STR_QUOTE_DOUBLE;
+            }
+            String quote = Pattern.quote(quoteString);
+            String catalogSeparator = dataSourceInfo.getCatalogSeparator();
+            if (catalogSeparator == null) {
+                catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
+            }
+            while (token.endsWith(catalogSeparator)) token = token.substring(0, token.length() -1);
 
-        String tableNamePattern = "((" + quote + "([.[^" + quote + "]]+)" + quote + ")|([\\w" + Pattern.quote(catalogSeparator) + "]+))";
-        String structNamePattern;
-        if (CommonUtils.isEmpty(token)) {
-            structNamePattern = "from\\s*" + tableNamePattern;
-        } else {
-            structNamePattern = tableNamePattern +
-                "(\\s*\\.\\s*" + tableNamePattern + ")?" +
-                "\\s+((AS)\\s)?" + token + "[\\s,]+";
-        }
+            String tableNamePattern = "((?:" + quote + "(?:[.[^" + quote + "]]+)" + quote + ")|(?:[\\w" + Pattern.quote(catalogSeparator) + "]+))";
+            String structNamePattern;
+            if (CommonUtils.isEmpty(token)) {
+                structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
+            } else {
+                structNamePattern = tableNamePattern +
+                    "(?:\\s*\\.\\s*" + tableNamePattern + ")?" +
+                    "\\s+(?:(?:AS)\\s)?" + token + "[\\s,]+";
+            }
 
-        try {
-            aliasPattern = Pattern.compile(structNamePattern, Pattern.CASE_INSENSITIVE);
-        } catch (PatternSyntaxException e) {
-            // Bad pattern - seems to be a bad token
-            return null;
-        }
-        matcher = aliasPattern.matcher(activeQuery);
-        if (!matcher.find()) {
-            return null;
-        }
-
-        int groupCount = matcher.groupCount();
-        if (groupCount < 4) {
-            return null;
-        }
-
-        String startName = matcher.group(3);
-        if (startName == null) {
-            startName = matcher.group(4);
-            if (startName == null) {
+            try {
+                aliasPattern = Pattern.compile(structNamePattern, Pattern.CASE_INSENSITIVE);
+            } catch (PatternSyntaxException e) {
+                // Bad pattern - seems to be a bad token
                 return null;
             }
-        }
-        nameList.addAll(CommonUtils.splitString(startName, catalogSeparator.charAt(0)));
-        if (groupCount >= 8) {
-            String nextName = matcher.group(8);
-            if (nextName == null && groupCount >= 9) {
-                nextName = matcher.group(9);
+            matcher = aliasPattern.matcher(activeQuery);
+            if (!matcher.find()) {
+                return null;
             }
-            if (nextName != null) {
-                nameList.addAll(CommonUtils.splitString(nextName, catalogSeparator.charAt(0)));
+
+            int groupCount = matcher.groupCount();
+            for (int i = 1; i <= groupCount; i++) {
+                String group = matcher.group(i);
+                if (!CommonUtils.isEmpty(group)) {
+                    String[] allNames = group.split(Pattern.quote(catalogSeparator));
+                    for (String name : allNames) {
+                        if (name.startsWith(quoteString) && name.endsWith(quoteString)) {
+                            name = name.substring(1, name.length() - 1);
+                        }
+                        nameList.add(name);
+                    }
+                }
             }
         }
 
