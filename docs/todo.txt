@@ -1,6 +1,7 @@
 Major:
 
 S/DB selector combo works as crap
+Short object name for editors
 
 1. Multiple result sets support (MS SQL)
 2. Browse data by foreign keys
