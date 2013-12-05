@@ -1135,6 +1135,13 @@ public class SQLEditor extends SQLEditorBase
                 if (dataReceiver != viewer.getDataReceiver()) {
                     // Some custom receiver. Probably data export
                     queryProcessor.curDataReceiver = dataReceiver;
+                } else {
+                    queryProcessor.curDataReceiver = null;
+                }
+                if (resultSetNumber > 0) {
+                    job.setFetchResultSetNumber(resultSetNumber);
+                } else {
+                    job.setFetchResultSetNumber(-1);
                 }
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
