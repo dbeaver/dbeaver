@@ -862,7 +862,9 @@ public class SQLEditor extends SQLEditorBase
             return ((QueryResultsProvider)curTab.getData()).isReadyToRun();
         }
 
-        return curQueryProcessor != null && curQueryProcessor.getFirstResults().isReadyToRun();
+        return curQueryProcessor != null &&
+                curQueryProcessor.getFirstResults() != null &&
+                curQueryProcessor.getFirstResults().isReadyToRun();
     }
 
     private void showScriptPositionRuler(boolean show)
@@ -922,14 +924,16 @@ public class SQLEditor extends SQLEditorBase
 
         QueryResultsProvider getFirstResults()
         {
-            return resultProviders.get(0);
+            return resultProviders.isEmpty() ? null : resultProviders.get(0);
         }
 
         QueryResultsProvider getCurrentResults()
         {
-            CTabItem curTab = resultTabs.getSelection();
-            if (curTab != null && curTab.getData() instanceof QueryResultsProvider) {
-                return (QueryResultsProvider)curTab.getData();
+            if (!resultTabs.isDisposed()) {
+                CTabItem curTab = resultTabs.getSelection();
+                if (curTab != null && curTab.getData() instanceof QueryResultsProvider) {
+                    return (QueryResultsProvider)curTab.getData();
+                }
             }
             return getFirstResults();
         }
@@ -1253,15 +1257,19 @@ public class SQLEditor extends SQLEditorBase
             if (!scriptMode) {
                 getSelectionProvider().setSelection(originalSelection);
             }
-            CTabItem tabItem = queryProcessor.getFirstResults().tabItem;
-            if (!tabItem.isDisposed()) {
-                tabItem.setToolTipText(result.getStatement().getQuery());
-                if (!CommonUtils.isEmpty(result.getSourceEntity())) {
-                    tabItem.setText(result.getSourceEntity());
-                } else {
-                    int queryIndex = queryProcessors.indexOf(queryProcessor) + 1;
-                    tabItem.setText(
-                            CoreMessages.editors_sql_data_grid + (queryIndex == 1 ? "" : " [" + queryIndex + "]"));
+            // Get results window (it is possible that it was closed till that moment
+            QueryResultsProvider results = queryProcessor.getFirstResults();
+            if (results != null) {
+                CTabItem tabItem = results.tabItem;
+                if (!tabItem.isDisposed()) {
+                    tabItem.setToolTipText(result.getStatement().getQuery());
+                    if (!CommonUtils.isEmpty(result.getSourceEntity())) {
+                        tabItem.setText(result.getSourceEntity());
+                    } else {
+                        int queryIndex = queryProcessors.indexOf(queryProcessor) + 1;
+                        tabItem.setText(
+                                CoreMessages.editors_sql_data_grid + (queryIndex == 1 ? "" : " [" + queryIndex + "]"));
+                    }
                 }
             }
 
@@ -1284,9 +1292,12 @@ public class SQLEditor extends SQLEditorBase
                         getSelectionProvider().setSelection(originalSelection);
                     }
                     sashForm.setMaximizedControl(null);
-                    ResultSetViewer viewer = queryProcessor.getFirstResults().getResultSetViewer();
-                    viewer.getModel().setStatistics(statistics);
-                    viewer.updateStatusMessage();
+                    QueryResultsProvider results = queryProcessor.getFirstResults();
+                    if (results != null) {
+                        ResultSetViewer viewer = results.getResultSetViewer();
+                        viewer.getModel().setStatistics(statistics);
+                        viewer.updateStatusMessage();
+                    }
                 }
             });
         }

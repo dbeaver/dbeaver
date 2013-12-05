@@ -18,9 +18,17 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -33,6 +41,10 @@ import org.jkiss.dbeaver.ui.DBIcon;
 
 class ResultSetDataPumpJob extends DataSourceJob {
 
+    public static final int PROGRESS_VISULIZE_PERIOD = 50;
+    private static final DBIcon[] PROGRESS_IMAGES = {
+            DBIcon.PROGRESS0, DBIcon.PROGRESS1, DBIcon.PROGRESS2, DBIcon.PROGRESS3,
+            DBIcon.PROGRESS4, DBIcon.PROGRESS5, DBIcon.PROGRESS6, DBIcon.PROGRESS7};
     private ResultSetViewer resultSetViewer;
     private int offset;
     private int maxRows;
@@ -71,7 +83,9 @@ class ResultSetDataPumpJob extends DataSourceJob {
             monitor,
             DBCExecutionPurpose.USER,
             NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
+        PumpVisualizer visualizer = new PumpVisualizer();
         try {
+            //visualizer.schedule(PROGRESS_VISULIZE_PERIOD);
             statistics = resultSetViewer.getDataContainer().readData(
                 session,
                 resultSetViewer.getDataReceiver(),
@@ -85,9 +99,47 @@ class ResultSetDataPumpJob extends DataSourceJob {
         }
         finally {
             session.close();
+            visualizer.finished = true;
         }
 
         return Status.OK_STATUS;
+    }
+
+    private class PumpVisualizer extends UIJob {
+
+        private volatile boolean finished = false;
+        private int drawCount = 0;
+
+        public PumpVisualizer() {
+            super(resultSetViewer.getSite().getShell().getDisplay(), "RSV Pump Visualizer");
+            setSystem(true);
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+            final Control control = resultSetViewer.getSpreadsheet();
+            if (!control.isDisposed()) {
+                control.addPaintListener(new PaintListener() {
+                    @Override
+                    public void paintControl(PaintEvent e) {
+                        if (!finished) {
+                            Rectangle bounds = control.getBounds();
+                            Image image = PROGRESS_IMAGES[drawCount % 8].getImage();
+                            e.gc.drawImage(image, (bounds.width - image.getBounds().x) / 2, bounds.height / 3 + 20);
+                        }
+                        control.removePaintListener(this);
+                    }
+                });
+                control.redraw();
+                drawCount++;
+                if (!finished) {
+                    schedule(PROGRESS_VISULIZE_PERIOD);
+                } else {
+                    control.redraw();
+                }
+            }
+            return Status.OK_STATUS;
+        }
     }
 
 }

@@ -76,15 +76,11 @@ public class TreeLoadNode implements ILabelProvider {
     public String getText(Object element)
     {
         switch (count % 4) {
-            case 0:
-                return text;
-            case 1:
-                return text1;
-            case 2:
-                return text2;
+            case 0: return text;
+            case 1: return text1;
+            case 2: return text2;
             case 3:
-            default:
-                return text3;
+            default: return text3;
         }
     }
 
@@ -92,15 +88,11 @@ public class TreeLoadNode implements ILabelProvider {
     public Image getImage(Object element)
     {
         switch (count = (++count % 4)) {
-            case 0:
-                return imgLoading1;
-            case 1:
-                return imgLoading2;
-            case 2:
-                return imgLoading3;
+            case 0: return imgLoading1;
+            case 1: return imgLoading2;
+            case 2: return imgLoading3;
             case 3:
-            default:
-                return imgLoading4;
+            default: return imgLoading4;
         }
     }
 
@@ -112,13 +104,6 @@ public class TreeLoadNode implements ILabelProvider {
     public void dispose(Object parent)
     {
         disposed = true;
-
-/*
-        imgLoading1.dispose();
-        imgLoading2.dispose();
-        imgLoading3.dispose();
-        imgLoading4.dispose();
-*/
 
         loadingFiles.remove(parent);
         placeHolders.remove(parent);
