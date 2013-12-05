@@ -24,12 +24,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ControlEditor;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -44,7 +47,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 
 class ResultSetDataPumpJob extends DataSourceJob {
 
-    private static final int PROGRESS_VISUALIZE_PERIOD = 50;
+    private static final int PROGRESS_VISUALIZE_PERIOD = 100;
 
     private static final DBIcon[] PROGRESS_IMAGES = {
             DBIcon.PROGRESS0, DBIcon.PROGRESS1, DBIcon.PROGRESS2, DBIcon.PROGRESS3,
@@ -55,6 +58,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private int maxRows;
     private Throwable error;
     private DBCStatistics statistics;
+    private long pumpStartTime;
 
     protected ResultSetDataPumpJob(ResultSetViewer resultSetViewer) {
         super(CoreMessages.controls_rs_pump_job_name, DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
@@ -85,6 +89,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
         error = null;
+        pumpStartTime = System.currentTimeMillis();
         DBCSession session = getDataSource().openSession(
             monitor,
             DBCExecutionPurpose.USER,
@@ -113,34 +118,59 @@ class ResultSetDataPumpJob extends DataSourceJob {
 
     private class ProgressPanel extends Composite {
 
-        private final Label progressTextLabel;
-        private final Label progressImageLabel;
+        private volatile int drawCount = 0;
+        private final Button cancelButton;
 
         public ProgressPanel(Composite parent) {
             super(parent, SWT.TRANSPARENT);
             setLayoutData(new GridData(GridData.FILL_BOTH));
-            setLayout(new GridLayout(1, false));
+            setLayout(new GridLayout(2, false));
             setBackgroundMode(SWT.INHERIT_DEFAULT);
 
-            // Placeholder to center all controls
-            Composite emptyLabel = new Composite(this, SWT.NO_BACKGROUND);
-            emptyLabel.setLayout(new GridLayout(1, false));
-            emptyLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            {
+                // Placeholders to center all controls
+                Composite emptyLabel = new Composite(this, SWT.NO_BACKGROUND);
+                emptyLabel.setLayout(new GridLayout(1, false));
+                emptyLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            progressTextLabel = new Label(this, SWT.TRANSPARENT);
-            progressTextLabel.setText("Executing");
-            progressTextLabel.setBackground(parent.getBackground());
-            progressTextLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+                Composite emptyLabel2 = new Composite(this, SWT.NO_BACKGROUND);
+                emptyLabel2.setLayout(new GridLayout(1, false));
+                GridData gd = new GridData(GridData.FILL_VERTICAL);
+                gd.verticalSpan = 2;
+                emptyLabel2.setLayoutData(gd);
+            }
 
-            progressImageLabel = new Label(this, SWT.NONE);
-            progressImageLabel.setImage(DBIcon.PROGRESS0.getImage());
-            progressImageLabel.setBackground(parent.getBackground());
-            progressImageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
-
-            Button cancelButton = new Button(this, SWT.PUSH);
+            cancelButton = new Button(this, SWT.PUSH);
             cancelButton.setImage(DBIcon.REJECT.getImage());
             cancelButton.setText("Cancel");
-            cancelButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_CENTER));
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
+            gd.verticalIndent = DBIcon.PROGRESS0.getImage().getBounds().height * 2;
+            cancelButton.setLayoutData(gd);
+
+            addPaintListener(new PaintListener() {
+                @Override
+                public void paintControl(PaintEvent e) {
+                    Image image = PROGRESS_IMAGES[drawCount % PROGRESS_IMAGES.length].getImage();
+                    Rectangle buttonBounds = cancelButton.getBounds();
+                    Rectangle imageBounds = image.getBounds();
+                    e.gc.drawImage(
+                            image,
+                            (buttonBounds.x + buttonBounds.width / 2) - imageBounds.width / 2,
+                            buttonBounds.y - imageBounds.height - 5);
+
+                    long elapsedTime = System.currentTimeMillis() - pumpStartTime;
+                    String elapsedString = elapsedTime > 10000 ?
+                            String.valueOf(elapsedTime / 1000) :
+                            String.valueOf(((double)(elapsedTime / 100)) / 10);
+                    String status = "Execute ... (" +  elapsedString + "s)";
+                    Point statusSize = e.gc.textExtent(status);
+                    e.gc.drawText(
+                            status,
+                            (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2,
+                            buttonBounds.y - imageBounds.height - 10 - statusSize.y,
+                            true);
+                }
+            });
         }
     }
 
@@ -149,7 +179,6 @@ class ResultSetDataPumpJob extends DataSourceJob {
         private volatile boolean finished = false;
         private ProgressPanel progressPanel;
         private ControlEditor progressOverlay;
-        private int drawCount = 0;
 
         public PumpVisualizer() {
             super(resultSetViewer.getSite().getShell().getDisplay(), "RSV Pump Visualizer");
@@ -160,7 +189,6 @@ class ResultSetDataPumpJob extends DataSourceJob {
         public IStatus runInUIThread(IProgressMonitor monitor) {
             final Spreadsheet spreadsheet = resultSetViewer.getSpreadsheet();
             if (!spreadsheet.isDisposed()) {
-                drawCount++;
                 if (!finished) {
                     if (progressPanel == null) {
                         progressPanel = new ProgressPanel(spreadsheet);
@@ -173,12 +201,11 @@ class ResultSetDataPumpJob extends DataSourceJob {
                         };
                         Point progressBounds = progressPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT);
                         progressOverlay.grabHorizontal = true;
-                        progressOverlay.minimumHeight = progressBounds.y;
+                        progressOverlay.grabVertical = true;
                         progressOverlay.setEditor(progressPanel);
-                    } else {
-                        progressPanel.progressImageLabel.setImage(
-                                PROGRESS_IMAGES[drawCount % PROGRESS_IMAGES.length].getImage());
                     }
+                    progressPanel.drawCount++;
+                    progressPanel.redraw();
                     schedule(PROGRESS_VISUALIZE_PERIOD);
                 } else {
                     // Last update - remove progress panel
