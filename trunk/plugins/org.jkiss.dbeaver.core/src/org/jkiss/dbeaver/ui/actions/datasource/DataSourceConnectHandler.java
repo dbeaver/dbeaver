@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -131,7 +132,15 @@ public class DataSourceConnectHandler extends DataSourceHandler
                 }
             } else {
                 connectJob.addJobChangeListener(jobChangeAdapter);
-                connectJob.schedule();
+                // Schedule in UI because connect may be initiated during application startup
+                // and UI is still not initiated. In this case no progress dialog will appear
+                // to be sure run in UI async
+                Display.getDefault().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        connectJob.schedule();
+                    }
+                });
             }
         }
     }
