@@ -112,6 +112,8 @@ public enum DBIcon
     PROGRESS5("progress5", "icons/misc/progress_5.gif"), //$NON-NLS-1$ //$NON-NLS-2$
     PROGRESS6("progress6", "icons/misc/progress_6.gif"), //$NON-NLS-1$ //$NON-NLS-2$
     PROGRESS7("progress7", "icons/misc/progress_7.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS8("progress8", "icons/misc/progress_8.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS9("progress9", "icons/misc/progress_9.gif"), //$NON-NLS-1$ //$NON-NLS-2$
 
     RS_MODE_GRID("rs_toggle_grid", "/icons/sql/resultset_grid.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_MODE_RECORD("rs_toggle_record", "/icons/sql/resultset_record.png"), //$NON-NLS-1$ //$NON-NLS-2$

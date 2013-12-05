@@ -255,6 +255,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public void close()
     {
         if (original != null) {
+/*
             // Check for warnings
             try {
                 JDBCUtils.reportWarnings(session, getOriginal().getWarnings());
@@ -262,6 +263,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             } catch (Throwable e) {
                 log.debug("Could not check for resultset warnings", e);
             }
+*/
 
             // Handle close
             QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
