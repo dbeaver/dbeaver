@@ -27,7 +27,6 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -41,10 +40,12 @@ import org.jkiss.dbeaver.ui.DBIcon;
 
 class ResultSetDataPumpJob extends DataSourceJob {
 
-    public static final int PROGRESS_VISULIZE_PERIOD = 50;
+    private static final int PROGRESS_VISUALIZE_PERIOD = 50;
+
     private static final DBIcon[] PROGRESS_IMAGES = {
             DBIcon.PROGRESS0, DBIcon.PROGRESS1, DBIcon.PROGRESS2, DBIcon.PROGRESS3,
             DBIcon.PROGRESS4, DBIcon.PROGRESS5, DBIcon.PROGRESS6, DBIcon.PROGRESS7};
+
     private ResultSetViewer resultSetViewer;
     private int offset;
     private int maxRows;
@@ -85,7 +86,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
             NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
         PumpVisualizer visualizer = new PumpVisualizer();
         try {
-            //visualizer.schedule(PROGRESS_VISULIZE_PERIOD);
+            //visualizer.schedule(PROGRESS_VISUALIZE_PERIOD);
             statistics = resultSetViewer.getDataContainer().readData(
                 session,
                 resultSetViewer.getDataReceiver(),
@@ -133,7 +134,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 control.redraw();
                 drawCount++;
                 if (!finished) {
-                    schedule(PROGRESS_VISULIZE_PERIOD);
+                    schedule(PROGRESS_VISUALIZE_PERIOD);
                 } else {
                     control.redraw();
                 }
