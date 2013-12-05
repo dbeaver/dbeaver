@@ -29,6 +29,7 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -203,7 +204,8 @@ class ResultSetDataPumpJob extends DataSourceJob {
                     int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
                     int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
                     e.gc.setBackground(parent.getBackground());
-                    e.gc.fillRoundRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4, 25, 15);
+                    //e.gc.setBackgroundPattern(new Pattern(e.gc.getDevice(), 0, 0, 3, 3, parent.getBackground(), parent.getBackground()));
+                    e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
                     e.gc.drawText(status, statusX, statusY, true);
                 }
             });
