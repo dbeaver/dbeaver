@@ -151,6 +151,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
             for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
                 try {
+                    if (editorRef.getEditor(false) == null) {
+                        continue;
+                    }
                     IEditorInput editorInput = editorRef.getEditorInput();
 
                     if (editorInput instanceof IAutoSaveEditorInput && ((IAutoSaveEditorInput) editorInput).isAutoSaveEnabled()) {
