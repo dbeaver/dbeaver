@@ -1032,7 +1032,7 @@ public class SQLEditor extends SQLEditorBase
             if (resultSetNumber == 0 && curDataReceiver != null) {
                 return curDataReceiver;
             }
-            if (resultSetNumber >= resultProviders.size()) {
+            if (resultSetNumber >= resultProviders.size() && !isDisposed()) {
                 // Open new results processor in UI thread
                 getSite().getShell().getDisplay().syncExec(new Runnable() {
                     @Override
@@ -1040,6 +1040,10 @@ public class SQLEditor extends SQLEditorBase
                         createResultsProvider(resultSetNumber);
                     }
                 });
+            }
+            if (resultSetNumber >= resultProviders.size()) {
+                // Editor seems to be disposed - no data receiver
+                return null;
             }
             return resultProviders.get(resultSetNumber).getResultSetViewer().getDataReceiver();
         }

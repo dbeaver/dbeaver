@@ -203,8 +203,13 @@ public class SQLQueryJob extends DataSourceJob
                 }
                 monitor.done();
 
-                // Fetch script execution results
-                fetchExecutionResult(session, resultsConsumer.getDataReceiver(null, 0));
+                {
+                    // Fetch script execution results
+                    DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(null, 0);
+                    if (dataReceiver != null) {
+                        fetchExecutionResult(session, dataReceiver);
+                    }
+                }
 
                 // Commit data
                 if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
@@ -380,7 +385,7 @@ public class SQLQueryJob extends DataSourceJob
                         // Show results only if we are not in the script execution
                         // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
                         // return messy results here
-                        if (fetchResultSets) {
+                        if (fetchResultSets && dataReceiver != null) {
                             hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
                         }
                         long updateCount = -1;
@@ -397,7 +402,7 @@ public class SQLQueryJob extends DataSourceJob
                                 // Just print a warning
                                 log.warn("Can't obtain update count", e);
                             }
-                            if (fetchResultSets) {
+                            if (fetchResultSets && dataReceiver != null) {
                                 fetchExecutionResult(session, dataReceiver);
                             }
                         }
