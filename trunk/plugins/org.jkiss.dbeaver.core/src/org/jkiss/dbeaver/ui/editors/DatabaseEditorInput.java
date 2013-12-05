@@ -24,6 +24,7 @@ import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource2;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 
 /**
@@ -75,7 +77,11 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public String getName()
     {
-        return node.getName();
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.NAVIGATOR_EDITOR_FULL_NAME)) {
+            return node.getNodeFullName();
+        } else {
+            return node.getName();
+        }
     }
 
     @Override
