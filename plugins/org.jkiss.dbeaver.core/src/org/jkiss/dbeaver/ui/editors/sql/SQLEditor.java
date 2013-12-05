@@ -895,8 +895,6 @@ public class SQLEditor extends SQLEditorBase
     private QueryProcessor createQueryProcessor(boolean setSelection)
     {
         final QueryProcessor queryProcessor = new QueryProcessor();
-        queryProcessors.add(queryProcessor);
-
         curQueryProcessor = queryProcessor;
 
         if (setSelection) {
@@ -915,6 +913,7 @@ public class SQLEditor extends SQLEditorBase
 
         public QueryProcessor() {
             // Create first (default) results provider
+            queryProcessors.add(this);
             createResultsProvider(0);
         }
 
@@ -1071,20 +1070,20 @@ public class SQLEditor extends SQLEditorBase
                 }
             });
 
-            boolean firstResultSet = queryProcessors.isEmpty();
-            int tabIndex = firstResultSet ? 0 : resultTabs.getItemCount() - 2;
-            int queryIndex = queryProcessors.indexOf(queryProcessor) + 1;
+            //boolean firstResultSet = queryProcessors.isEmpty();
+            int tabIndex = Math.max(resultTabs.getItemCount() - 2, 0);
+            int queryIndex = queryProcessors.indexOf(queryProcessor);
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
             String tabName = CoreMessages.editors_sql_data_grid;
             if (resultSetNumber > 0) {
                 tabName += " " + queryIndex + "/" + (resultSetNumber + 1);
-            } else if (!firstResultSet) {
+            } else if (queryIndex > 0) {
                 tabName += " " + queryIndex;
             }
             tabItem.setText(tabName);
             tabItem.setImage(imgDataGrid);
             tabItem.setData(this);
-            if (!firstResultSet) {
+            if (queryIndex > 0 || resultSetNumber > 0) {
                 tabItem.setShowClose(true);
             }
             tabItem.setControl(viewer.getControl());
@@ -1266,9 +1265,9 @@ public class SQLEditor extends SQLEditorBase
                     if (!CommonUtils.isEmpty(result.getSourceEntity())) {
                         tabItem.setText(result.getSourceEntity());
                     } else {
-                        int queryIndex = queryProcessors.indexOf(queryProcessor) + 1;
+                        int queryIndex = queryProcessors.indexOf(queryProcessor);
                         tabItem.setText(
-                                CoreMessages.editors_sql_data_grid + (queryIndex == 1 ? "" : " [" + queryIndex + "]"));
+                                CoreMessages.editors_sql_data_grid + (queryIndex == 0 ? "" : " " + (queryIndex + 1)));
                     }
                 }
             }
