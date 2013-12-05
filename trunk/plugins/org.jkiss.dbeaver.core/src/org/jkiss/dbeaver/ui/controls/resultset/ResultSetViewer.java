@@ -2683,7 +2683,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             int colNumber = ((Number)element).intValue();
             if (gridMode == GridMode.GRID) {
-                if (model.getDataFilter().getConstraint(model.getVisibleColumn(colNumber)).hasFilter()) {
+                DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(model.getVisibleColumn(colNumber));
+                if (constraint != null && constraint.hasFilter()) {
                     return boldFont;
                 }
             }
