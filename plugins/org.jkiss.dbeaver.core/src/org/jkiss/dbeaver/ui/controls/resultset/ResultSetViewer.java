@@ -90,6 +90,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
@@ -303,10 +304,28 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         filtersPanel = new Composite(viewerPanel, SWT.NONE);
         filtersPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        GridLayout gl = new GridLayout(4, false);
+        GridLayout gl = new GridLayout(5, false);
         gl.marginHeight = 3;
         gl.marginWidth = 3;
         filtersPanel.setLayout(gl);
+
+        Button sourceQueryButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        sourceQueryButton.setImage(DBIcon.SQL_TEXT.getImage());
+        sourceQueryButton.setText("SQL");
+        sourceQueryButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                String queryText = model.getStatistics() == null ? null : model.getStatistics().getQueryText();
+                if (CommonUtils.isEmpty(queryText)) {
+                    queryText = "<empty>";
+                }
+                ViewSQLDialog dialog = new ViewSQLDialog(site, getDataSource(), "Query Text", DBIcon.SQL_TEXT.getImage(), queryText);
+                dialog.setEnlargeViewPanel(false);
+                dialog.setWordWrap(true);
+                dialog.open();
+            }
+        });
 
         Button customizeButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
         customizeButton.setImage(DBIcon.FILTER.getImage());

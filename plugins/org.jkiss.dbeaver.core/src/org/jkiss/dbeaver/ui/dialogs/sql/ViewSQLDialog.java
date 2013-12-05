@@ -32,6 +32,8 @@ public class ViewSQLDialog extends BaseSQLDialog {
     private DBPDataSource dataSource;
     private String text;
     private boolean showSaveButton = false;
+    private boolean enlargeViewPanel = true;
+    private boolean wordWrap = false;
 
     public ViewSQLDialog(final IWorkbenchPartSite parentSite, DBPDataSource dataSource, String title, Image image, String text)
     {
@@ -45,14 +47,32 @@ public class ViewSQLDialog extends BaseSQLDialog {
         this.showSaveButton = showSaveButton;
     }
 
+    public void setEnlargeViewPanel(boolean enlargeViewPanel) {
+        this.enlargeViewPanel = enlargeViewPanel;
+    }
+
+    @Override
+    protected boolean isWordWrap() {
+        return wordWrap;
+    }
+
+    public void setWordWrap(boolean wordWrap) {
+        this.wordWrap = wordWrap;
+    }
+
     @Override
     protected Control createDialogArea(Composite parent)
     {
         Composite composite = (Composite) super.createDialogArea(parent);
         Composite sqlPanel = createSQLPanel(composite);
         GridData gd = (GridData) sqlPanel.getLayoutData();
-        gd.widthHint = 500;
-        gd.heightHint = 400;
+        if (enlargeViewPanel) {
+            gd.widthHint = 500;
+            gd.heightHint = 400;
+        } else {
+            gd.widthHint = 400;
+            gd.heightHint = 100;
+        }
         return sqlPanel;
     }
 
