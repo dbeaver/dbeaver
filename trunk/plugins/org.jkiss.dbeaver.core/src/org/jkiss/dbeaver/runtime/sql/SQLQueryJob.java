@@ -55,6 +55,7 @@ import java.util.List;
 public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
+    private static final String NESTED_QUERY_AlIAS = "origdbvr";
 
     private final SQLEditorBase editor;
     private final List<SQLStatementInfo> queries;
@@ -74,8 +75,8 @@ public class SQLQueryJob extends DataSourceJob
     private final List<DBCResultSet> curResultSets = new ArrayList<DBCResultSet>();
     private Throwable lastError = null;
 
-    private static final String NESTED_QUERY_AlIAS = "origdbvr";
     private DBCStatistics statistics;
+    private int fetchResultSetNumber;
 
     public SQLQueryJob(
         String name,
@@ -336,7 +337,7 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
             }
-
+/*
             // Bind parameters
             if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
                 List<SQLStatementParameter> unresolvedParams = new ArrayList<SQLStatementParameter>();
@@ -345,7 +346,7 @@ public class SQLQueryJob extends DataSourceJob
                         unresolvedParams.add(param);
                     }
                 }
-/*
+
                 if (!CommonUtils.isEmpty(unresolvedParams)) {
                     if (bindStatementParameters(unresolvedParams)) {
                         // Bind them
@@ -361,9 +362,8 @@ public class SQLQueryJob extends DataSourceJob
                         }
                     }
                 }
-*/
             }
-
+*/
             // Execute statement
             try {
                 boolean hasResultSet = curStatement.executeStatement();
@@ -374,35 +374,38 @@ public class SQLQueryJob extends DataSourceJob
                 int resultSetNumber = 0;
                 boolean hasMoreResults = true;
                 while (hasMoreResults) {
-                    DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlStatement, resultSetNumber);
-                    // Show results only if we are not in the script execution
-                    // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
-                    // return messy results here
-                    if (fetchResultSets) {
-                        hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
-                    }
-                    long updateCount = -1;
-                    if (!hasResultSet) {
-                        try {
-                            updateCount = curStatement.getUpdateRowCount();
-                            if (updateCount >= 0) {
-                                curResult.setUpdateCount(updateCount);
-                                statistics.addRowsUpdated(updateCount);
-                            }
-                        } catch (DBCException e) {
-                            // In some cases we can't read update count
-                            // This is bad but we can live with it
-                            // Just print a warning
-                            log.warn("Can't obtain update count", e);
-                        }
+                    // Fetch data only if we have to fetch all results or if it is rs requested
+                    if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
+                        DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlStatement, resultSetNumber);
+                        // Show results only if we are not in the script execution
+                        // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
+                        // return messy results here
                         if (fetchResultSets) {
-                            fetchExecutionResult(session, dataReceiver);
+                            hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
                         }
-                    }
-                    if (!hasResultSet && updateCount < 0) {
-                        // Something is wrong
-                        // Possibly driver is broken and we are in infinite loop
-                        break;
+                        long updateCount = -1;
+                        if (!hasResultSet) {
+                            try {
+                                updateCount = curStatement.getUpdateRowCount();
+                                if (updateCount >= 0) {
+                                    curResult.setUpdateCount(updateCount);
+                                    statistics.addRowsUpdated(updateCount);
+                                }
+                            } catch (DBCException e) {
+                                // In some cases we can't read update count
+                                // This is bad but we can live with it
+                                // Just print a warning
+                                log.warn("Can't obtain update count", e);
+                            }
+                            if (fetchResultSets) {
+                                fetchExecutionResult(session, dataReceiver);
+                            }
+                        }
+                        if (!hasResultSet && updateCount < 0) {
+                            // Something is wrong
+                            // Possibly driver is broken and we are in infinite loop
+                            break;
+                        }
                     }
                     hasMoreResults = curStatement.nextResults();
                     if (hasMoreResults) {
@@ -649,4 +652,8 @@ public class SQLQueryJob extends DataSourceJob
         return statistics;
     }
 
+    public void setFetchResultSetNumber(int fetchResultSetNumber)
+    {
+        this.fetchResultSetNumber = fetchResultSetNumber;
+    }
 }
