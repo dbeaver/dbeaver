@@ -1794,7 +1794,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 public void done(IJobChangeEvent event) {
                     ResultSetDataPumpJob job = (ResultSetDataPumpJob)event.getJob();
                     final Throwable error = job.getError();
-                    model.setStatistics(job.getStatistics());
+                    if (job.getStatistics() != null) {
+                        model.setStatistics(job.getStatistics());
+                    }
                     dataPumpJob = null;
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
