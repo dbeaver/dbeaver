@@ -132,11 +132,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         appendQueryConditions(query, tableAlias, dataFilter);
         appendQueryOrder(query, tableAlias, dataFilter);
 
+        String sqlQuery = query.toString();
+        statistics.setQueryText(sqlQuery);
+
         monitor.subTask(CoreMessages.model_jdbc_fetch_table_data);
         DBCStatement dbStat = DBUtils.prepareStatement(
             session,
             DBCStatementType.SCRIPT,
-            query.toString(),
+                sqlQuery,
             firstRow,
             maxRows);
         try {
@@ -463,6 +466,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
 
             DBCStatistics statistics = new DBCStatistics();
+            statistics.setQueryText(statement.getQueryString());
             for (Object[] rowValues : values) {
                 int paramIndex = 0;
                 for (int k = 0; k < handlers.length; k++) {

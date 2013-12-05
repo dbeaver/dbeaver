@@ -15,6 +15,7 @@ public class DBCStatistics {
     private long executeTime;
     private long fetchTime;
     private int statementsCount;
+    private String queryText;
     private List<String> messages;
 
     public DBCStatistics()
@@ -89,6 +90,14 @@ public class DBCStatistics {
     public void addStatementsCount()
     {
         this.statementsCount++;
+    }
+
+    public String getQueryText() {
+        return queryText;
+    }
+
+    public void setQueryText(String queryText) {
+        this.queryText = queryText;
     }
 
     public List<String> getMessages()

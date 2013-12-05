@@ -278,6 +278,7 @@ public class SQLQueryJob extends DataSourceJob
             }
             sqlQuery = modifiedQuery.toString();
         }
+        statistics.setQueryText(sqlQuery);
         SQLQueryResult curResult = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
