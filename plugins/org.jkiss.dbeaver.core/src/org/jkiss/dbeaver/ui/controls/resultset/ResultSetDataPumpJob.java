@@ -29,15 +29,10 @@ import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Pattern;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -140,83 +135,13 @@ class ResultSetDataPumpJob extends DataSourceJob {
         return Status.OK_STATUS;
     }
 
-    private class ProgressPanel extends Composite {
-
-        private volatile int drawCount = 0;
-        private final Button cancelButton;
-
-        public ProgressPanel(final Composite parent) {
-            super(parent, SWT.TRANSPARENT);
-            setLayoutData(new GridData(GridData.FILL_BOTH));
-            setLayout(new GridLayout(2, false));
-            setBackgroundMode(SWT.INHERIT_DEFAULT);
-
-            {
-                // Placeholders to center all controls
-                Composite emptyLabel = new Composite(this, SWT.NO_BACKGROUND);
-                emptyLabel.setLayout(new GridLayout(1, false));
-                emptyLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-                Composite emptyLabel2 = new Composite(this, SWT.NO_BACKGROUND);
-                emptyLabel2.setLayout(new GridLayout(1, false));
-                GridData gd = new GridData(GridData.FILL_VERTICAL);
-                gd.verticalSpan = 2;
-                emptyLabel2.setLayoutData(gd);
-            }
-
-            cancelButton = new Button(this, SWT.PUSH);
-//            cancelButton.setImage(
-//                    PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
-            cancelButton.setText("Cancel");
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
-            gd.verticalIndent = DBIcon.PROGRESS0.getImage().getBounds().height * 2;
-            cancelButton.setLayoutData(gd);
-            cancelButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    cancelButton.setText("Canceled");
-                    cancelButton.setEnabled(false);
-                    layout();
-                    cancel();
-                }
-            });
-
-            addPaintListener(new PaintListener() {
-                @Override
-                public void paintControl(PaintEvent e) {
-                    Image image = PROGRESS_IMAGES[drawCount % PROGRESS_IMAGES.length].getImage();
-                    Rectangle buttonBounds = cancelButton.getBounds();
-                    Rectangle imageBounds = image.getBounds();
-                    e.gc.drawImage(
-                            image,
-                            (buttonBounds.x + buttonBounds.width / 2) - imageBounds.width / 2,
-                            buttonBounds.y - imageBounds.height - 5);
-
-                    long elapsedTime = System.currentTimeMillis() - pumpStartTime;
-                    String elapsedString = elapsedTime > 10000 ?
-                            String.valueOf(elapsedTime / 1000) :
-                            String.valueOf(((double) (elapsedTime / 100)) / 10);
-                    String statusMessage = CommonUtils.truncateString(
-                            progressMessage.replaceAll("\\s", " "), 64);
-                    String status = statusMessage + " - " + elapsedString + "s";
-                    Point statusSize = e.gc.textExtent(status);
-
-                    int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
-                    int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
-                    e.gc.setBackground(parent.getBackground());
-                    //e.gc.setBackgroundPattern(new Pattern(e.gc.getDevice(), 0, 0, 3, 3, parent.getBackground(), parent.getBackground()));
-                    e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
-                    e.gc.drawText(status, statusX, statusY, true);
-                }
-            });
-        }
-    }
-
     private class PumpVisualizer extends UIJob {
 
         private volatile boolean finished = false;
-        private ProgressPanel progressPanel;
         private ControlEditor progressOverlay;
+        private volatile int drawCount = 0;
+        private Button cancelButton;
+        private PaintListener painListener;
 
         public PumpVisualizer() {
             super(resultSetViewer.getSite().getShell().getDisplay(), "RSV Pump Visualizer");
@@ -227,35 +152,94 @@ class ResultSetDataPumpJob extends DataSourceJob {
         public IStatus runInUIThread(IProgressMonitor monitor) {
             final Spreadsheet spreadsheet = resultSetViewer.getSpreadsheet();
             if (!spreadsheet.isDisposed()) {
-                if (!finished) {
-                    if (progressPanel == null) {
-                        progressPanel = new ProgressPanel(spreadsheet);
-                        progressOverlay = new ControlEditor(spreadsheet) {
-                            @Override
-                            public void layout() {
-                                spreadsheet.redraw();
-                                super.layout();
-                            }
-                        };
-                        Point progressBounds = progressPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                        progressOverlay.grabHorizontal = true;
-                        progressOverlay.grabVertical = true;
-                        progressOverlay.setEditor(progressPanel);
-                    }
-                    progressPanel.drawCount++;
-                    progressPanel.redraw();
-                    schedule(PROGRESS_VISUALIZE_PERIOD);
-                } else {
-                    // Last update - remove progress panel
-                    if (progressOverlay != null) {
-                        progressOverlay.dispose();
-                        progressOverlay = null;
-                        progressPanel.dispose();
-                        progressPanel = null;
-                    }
+                try {
+                    visualizeProgress(spreadsheet);
+                } catch (Exception e) {
+                    System.out.println(111);
                 }
             }
             return Status.OK_STATUS;
+        }
+
+        private void visualizeProgress(final Spreadsheet spreadsheet) {
+            if (!finished) {
+                if (progressOverlay == null) {
+
+                    cancelButton = new Button(spreadsheet, SWT.PUSH);
+//            cancelButton.setImage(
+//                    PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
+                    cancelButton.setText("Cancel");
+                    GridData gd = new GridData(GridData.FILL_BOTH);
+                    gd.verticalIndent = DBIcon.PROGRESS0.getImage().getBounds().height * 2;
+                    cancelButton.setLayoutData(gd);
+                    cancelButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            cancelButton.setText("Canceled");
+                            cancelButton.setEnabled(false);
+                            Point buttonSize = cancelButton.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                            progressOverlay.minimumWidth = buttonSize.x;
+                            progressOverlay.minimumHeight = buttonSize.y;
+                            progressOverlay.layout();
+                            ResultSetDataPumpJob.this.cancel();
+                        }
+                    });
+
+                    painListener = new PaintListener() {
+                        @Override
+                        public void paintControl(PaintEvent e) {
+                            Image image = PROGRESS_IMAGES[drawCount % PROGRESS_IMAGES.length].getImage();
+                            Rectangle buttonBounds = cancelButton.getBounds();
+                            Rectangle imageBounds = image.getBounds();
+                            e.gc.drawImage(
+                                    image,
+                                    (buttonBounds.x + buttonBounds.width / 2) - imageBounds.width / 2,
+                                    buttonBounds.y - imageBounds.height - 5);
+
+                            long elapsedTime = System.currentTimeMillis() - pumpStartTime;
+                            String elapsedString = elapsedTime > 10000 ?
+                                    String.valueOf(elapsedTime / 1000) :
+                                    String.valueOf(((double) (elapsedTime / 100)) / 10);
+                            String statusMessage = CommonUtils.truncateString(
+                                    progressMessage.replaceAll("\\s", " "), 64);
+                            String status = statusMessage + " - " + elapsedString + "s";
+                            Point statusSize = e.gc.textExtent(status);
+
+                            int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
+                            int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
+                            e.gc.setForeground(spreadsheet.getForegroundNormal());
+                            e.gc.setBackground(spreadsheet.getBackground());
+                            e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
+                            e.gc.drawText(status, statusX, statusY, true);
+                        }
+                    };
+                    spreadsheet.addPaintListener(painListener);
+
+                    progressOverlay = new ControlEditor(spreadsheet) {
+                        @Override
+                        public void layout() {
+                            spreadsheet.redraw();
+                            super.layout();
+                        }
+                    };
+                    Point buttonSize = cancelButton.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                    progressOverlay.minimumWidth = buttonSize.x;
+                    progressOverlay.minimumHeight = buttonSize.y;
+                    progressOverlay.setEditor(cancelButton);
+                }
+                drawCount++;
+                progressOverlay.layout();
+                schedule(PROGRESS_VISUALIZE_PERIOD);
+            } else {
+                // Last update - remove progress panel
+                if (progressOverlay != null) {
+                    progressOverlay.dispose();
+                    progressOverlay = null;
+                    cancelButton.dispose();
+                    spreadsheet.removePaintListener(painListener);
+                    spreadsheet.redraw();
+                }
+            }
         }
     }
 
