@@ -24,6 +24,8 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
+import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -75,8 +77,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
                 try {
                     final DataSourceDescriptor dataSourceContainer = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry().getDataSource(dataSourceId);
                     if (dataSourceContainer == null) {
-                        log.warn("Can't find datasource '" + dataSourceId + "'"); //$NON-NLS-2$
-                        return;
+                        throw new DBException("Can't find datasource '" + dataSourceId + "'"); //$NON-NLS-2$
                     }
                     final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
                     dsNode.initializeNode(monitor, new DBRProcessListener() {
@@ -103,10 +104,12 @@ public class DatabaseEditorInputFactory implements IElementFactory
                                         result = DatabaseEditorInput.class.cast(constructor.newInstance(node));
                                         result.setDefaultPageId(activePageId);
                                         result.setDefaultFolderId(activeFolderId);
+                                    } else {
+                                        throw new DBException("Can't create object instance [" + inputClass + "]");
                                     }
                                 }
                             } catch (Exception e) {
-                                log.warn("Can't find navigator node by path [" + nodePath + "]");
+                                log.error(e);
                             }
                         }
                     });
@@ -119,7 +122,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
             DBeaverUI.runInProgressService(opener);
             return opener.getResult();
         } catch (InvocationTargetException e) {
-            log.warn(e.getTargetException());
+            log.error("Error initializing database editor input", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }

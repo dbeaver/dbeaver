@@ -50,7 +50,9 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
     public void setActiveEditor(IEditorPart part)
     {
         super.setActiveEditor(part);
-        curEditor = (EntityEditor) part;
+        if (part instanceof EntityEditor) {
+            curEditor = (EntityEditor) part;
+        }
     }
 
     @Override

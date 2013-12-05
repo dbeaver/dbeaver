@@ -160,6 +160,27 @@
                 </driver>
 
                 <driver
+                        id="db2_luw_old"
+                        label="DB2 LUW 8.x"
+                        category="DB2"
+                        class="com.ibm.db2.jcc.DB2Driver"
+                        sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                        defaultPort="50000"
+                        webURL="http://www.ibm.com/software/data/db2/express/download.html"
+                        description="DB2 LUW driver for older DB2 versions (8.x)">
+                    <replace provider="generic" driver="db2"/>
+                    <file type="jar" path="drivers/db2/db2jcc.jar" url="*"/>
+                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="*"/>
+                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
+                    <property name="fullyMaterializeLobData" value="true"/>
+                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <property name="progressiveStreaming" value="2"/>
+                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
+
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                </driver>
+                <driver
                     id="db2_zos"
                     label="DB2 z/OS"
                     category="DB2"
