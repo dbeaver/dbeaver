@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -110,9 +111,11 @@ public abstract class AbstractJob extends Job
                         if (block != null) {
                             try {
                                 block.cancelBlock();
-                            } catch (Throwable e) {
-                                log.error("Cancel error", e);
+                            } catch (DBException e) {
                                 return RuntimeUtils.makeExceptionStatus("Can't interrupt operation " + block, e); //$NON-NLS-1$
+                            } catch (Throwable e) {
+                                log.debug("Cancel error", e);
+                                return Status.CANCEL_STATUS;
                             }
                             blockCanceled = true;
                         }

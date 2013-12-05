@@ -26,6 +26,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -33,6 +35,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -41,9 +45,11 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
+import org.jkiss.utils.CommonUtils;
 
 class ResultSetDataPumpJob extends DataSourceJob {
 
@@ -51,7 +57,9 @@ class ResultSetDataPumpJob extends DataSourceJob {
 
     private static final DBIcon[] PROGRESS_IMAGES = {
             DBIcon.PROGRESS0, DBIcon.PROGRESS1, DBIcon.PROGRESS2, DBIcon.PROGRESS3,
-            DBIcon.PROGRESS4, DBIcon.PROGRESS5, DBIcon.PROGRESS6, DBIcon.PROGRESS7};
+            DBIcon.PROGRESS4, DBIcon.PROGRESS5, DBIcon.PROGRESS6, DBIcon.PROGRESS7,
+            DBIcon.PROGRESS8, DBIcon.PROGRESS9
+    };
 
     private ResultSetViewer resultSetViewer;
     private int offset;
@@ -59,10 +67,12 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private Throwable error;
     private DBCStatistics statistics;
     private long pumpStartTime;
+    private String progressMessage;
 
     protected ResultSetDataPumpJob(ResultSetViewer resultSetViewer) {
         super(CoreMessages.controls_rs_pump_job_name, DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
         this.resultSetViewer = resultSetViewer;
+        progressMessage = CoreMessages.controls_rs_pump_job_name;
         setUser(false);
     }
 
@@ -90,8 +100,21 @@ class ResultSetDataPumpJob extends DataSourceJob {
     protected IStatus run(DBRProgressMonitor monitor) {
         error = null;
         pumpStartTime = System.currentTimeMillis();
+        DBRProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor) {
+            @Override
+            public void beginTask(String name, int totalWork) {
+                //progressMessage = name;
+                super.beginTask(name, totalWork);
+            }
+
+            @Override
+            public void subTask(String name) {
+                progressMessage = name;
+                super.subTask(name);
+            }
+        };
         DBCSession session = getDataSource().openSession(
-            monitor,
+            proxyMonitor,
             DBCExecutionPurpose.USER,
             NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
         PumpVisualizer visualizer = new PumpVisualizer();
@@ -121,7 +144,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
         private volatile int drawCount = 0;
         private final Button cancelButton;
 
-        public ProgressPanel(Composite parent) {
+        public ProgressPanel(final Composite parent) {
             super(parent, SWT.TRANSPARENT);
             setLayoutData(new GridData(GridData.FILL_BOTH));
             setLayout(new GridLayout(2, false));
@@ -141,11 +164,21 @@ class ResultSetDataPumpJob extends DataSourceJob {
             }
 
             cancelButton = new Button(this, SWT.PUSH);
-            cancelButton.setImage(DBIcon.REJECT.getImage());
+//            cancelButton.setImage(
+//                    PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
             cancelButton.setText("Cancel");
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER);
             gd.verticalIndent = DBIcon.PROGRESS0.getImage().getBounds().height * 2;
             cancelButton.setLayoutData(gd);
+            cancelButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    cancelButton.setText("Canceled");
+                    cancelButton.setEnabled(false);
+                    layout();
+                    cancel();
+                }
+            });
 
             addPaintListener(new PaintListener() {
                 @Override
@@ -161,14 +194,17 @@ class ResultSetDataPumpJob extends DataSourceJob {
                     long elapsedTime = System.currentTimeMillis() - pumpStartTime;
                     String elapsedString = elapsedTime > 10000 ?
                             String.valueOf(elapsedTime / 1000) :
-                            String.valueOf(((double)(elapsedTime / 100)) / 10);
-                    String status = "Execute ... (" +  elapsedString + "s)";
+                            String.valueOf(((double) (elapsedTime / 100)) / 10);
+                    String statusMessage = CommonUtils.truncateString(
+                            progressMessage.replaceAll("\\s", " "), 64);
+                    String status = statusMessage + " - " + elapsedString + "s";
                     Point statusSize = e.gc.textExtent(status);
-                    e.gc.drawText(
-                            status,
-                            (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2,
-                            buttonBounds.y - imageBounds.height - 10 - statusSize.y,
-                            true);
+
+                    int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
+                    int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
+                    e.gc.setBackground(parent.getBackground());
+                    e.gc.fillRoundRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4, 25, 15);
+                    e.gc.drawText(status, statusX, statusY, true);
                 }
             });
         }
