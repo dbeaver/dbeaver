@@ -47,6 +47,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     private Button expandOnConnectCheck;
     private Button sortCaseInsensitiveCheck;
     private Button groupByDriverCheck;
+    private Button editorFullName;
 
     public PrefPageDatabaseGeneral()
     {
@@ -84,6 +85,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
             expandOnConnectCheck = UIUtils.createLabelCheckbox(navigatorGroup, "Expand navigator tree on connect", false);
             sortCaseInsensitiveCheck = UIUtils.createLabelCheckbox(navigatorGroup, "Order elements alphabetically", false);
             groupByDriverCheck = UIUtils.createLabelCheckbox(navigatorGroup, "Group databases by driver", false);
+            editorFullName = UIUtils.createLabelCheckbox(navigatorGroup, "Use full object names in editors", false);
         }
 
         performDefaults();
@@ -102,6 +104,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         expandOnConnectCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT));
         sortCaseInsensitiveCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY));
         groupByDriverCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_GROUP_BY_DRIVER));
+        editorFullName.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_EDITOR_FULL_NAME));
     }
 
     @Override
@@ -116,6 +119,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         store.setValue(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
         store.setValue(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
         store.setValue(PrefConstants.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
+        store.setValue(PrefConstants.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
         RuntimeUtils.savePreferenceStore(store);
 
         return true;

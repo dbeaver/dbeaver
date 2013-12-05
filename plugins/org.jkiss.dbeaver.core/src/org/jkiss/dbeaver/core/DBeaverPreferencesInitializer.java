@@ -47,6 +47,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT, false);
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY, false);
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_GROUP_BY_DRIVER, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_EDITOR_FULL_NAME, false);
 
       // Common
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
@@ -66,7 +67,6 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.READ_EXPENSIVE_PROPERTIES, true);
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.META_SEPARATE_CONNECTION, true);
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.META_CASE_SENSITIVE, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_EDITOR_FULL_NAME, false);
 
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_USE_ALL_COLUMNS, false);
       RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
