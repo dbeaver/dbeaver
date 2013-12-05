@@ -121,6 +121,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         String nameMask = ((ObjectFilter)itemsFilter).getNameMask();
         DefaultProgressMonitor monitor = new DefaultProgressMonitor(progressMonitor);
         try {
+            monitor.beginTask("Search for '" + nameMask + "'", 100);
             List<DBSObjectType> typesToSearch = new ArrayList<DBSObjectType>();
             for (DBSObjectType type : structureAssistant.getSupportedObjectTypes()) {
                 Class<? extends DBSObject> typeClass = type.getTypeClass();
@@ -142,6 +143,9 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             }
         } catch (DBException e) {
             throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
+        }
+        finally {
+            monitor.done();
         }
     }
 
