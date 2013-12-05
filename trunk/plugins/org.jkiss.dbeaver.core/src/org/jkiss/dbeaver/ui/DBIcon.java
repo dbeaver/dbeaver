@@ -104,6 +104,15 @@ public enum DBIcon
     ROTATE3("rotate3", "icons/tree/load/rotate3.png"), //$NON-NLS-1$ //$NON-NLS-2$
     ROTATE4("rotate4", "icons/tree/load/rotate4.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
+    PROGRESS0("progress0", "icons/misc/progress_0.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS1("progress1", "icons/misc/progress_1.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS2("progress2", "icons/misc/progress_2.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS3("progress3", "icons/misc/progress_3.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS4("progress4", "icons/misc/progress_4.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS5("progress5", "icons/misc/progress_5.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS6("progress6", "icons/misc/progress_6.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+    PROGRESS7("progress7", "icons/misc/progress_7.gif"), //$NON-NLS-1$ //$NON-NLS-2$
+
     RS_MODE_GRID("rs_toggle_grid", "/icons/sql/resultset_grid.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_MODE_RECORD("rs_toggle_record", "/icons/sql/resultset_record.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_FIRST("rs_first", "/icons/sql/resultset_first.png"), //$NON-NLS-1$ //$NON-NLS-2$
