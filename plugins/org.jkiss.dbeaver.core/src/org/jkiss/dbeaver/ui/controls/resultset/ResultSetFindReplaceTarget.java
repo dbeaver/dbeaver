@@ -43,7 +43,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     static final Log log = LogFactory.getLog(ResultSetFindReplaceTarget.class);
 
     private final ResultSetViewer resultSet;
-    private String searchString;
+    private Pattern searchPattern;
     private Color scopeHighlightColor;
     private boolean replaceAll;
 
@@ -145,6 +145,8 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
+        searchPattern = null;
+
         IGridContentProvider contentProvider = resultSet.getSpreadsheet().getContentProvider();
         ResultSetModel model = resultSet.getModel();
         if (model.isEmpty()) {
@@ -166,9 +168,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                 return -1;
             }
         } else {
-            if (!caseSensitive) {
-                findString = findString.toLowerCase();
-            }
+            findPattern = Pattern.compile(Pattern.quote(findString), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
         }
         for (GridPos curPosition = new GridPos(startPosition);;) {
             //Object element = contentProvider.getElement(curPosition);
@@ -200,25 +200,13 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                 }
             }
             String cellText = contentProvider.getElementText(curPosition);
-            if (matchesValue(findString, findPattern, cellText, caseSensitive, wholeWord)) {
+            Matcher matcher = findPattern.matcher(cellText);
+            if (wholeWord ? matcher.matches() : matcher.find()) {
                 resultSet.setSelection(
                     new StructuredSelection(curPosition), true);
-                searchString = findString;
+                searchPattern = findPattern;
                 return curPosition.row;
             }
-        }
-    }
-
-    private boolean matchesValue(String findString, Pattern findPattern, String text, boolean caseSensitive, boolean wholeWord)
-    {
-        if (findPattern != null) {
-            Matcher matcher = findPattern.matcher(text);
-            return wholeWord ? matcher.matches() : matcher.find();
-        }
-        if (wholeWord) {
-            return caseSensitive ? findString.equals(text) : findString.equalsIgnoreCase(text);
-        } else {
-            return caseSensitive ? text.contains(findString) : text.toLowerCase().contains(findString);
         }
     }
 
@@ -231,13 +219,9 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         }
         String oldValue = resultSet.getSpreadsheet().getContentProvider().getElementText(selection);
         String newValue = text;
-/*
-        if (regExReplace) {
-            newValue = oldValue.replaceAll(searchString, text);
-        } else {
-            newValue = oldValue.replace(searchString, text);
+        if (searchPattern != null) {
+            newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
-*/
 
         selection = resultSet.translateVisualPos(selection);
         resultSet.getModel().getCellValue(selection.row, selection.col);
