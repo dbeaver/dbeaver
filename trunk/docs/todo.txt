@@ -8,6 +8,7 @@ S/DB selector combo works as crap
 4. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
 5. Async autocomplete
 6. Check on MacOS
+7. Cassandra new driver
 
 
 Minor:
