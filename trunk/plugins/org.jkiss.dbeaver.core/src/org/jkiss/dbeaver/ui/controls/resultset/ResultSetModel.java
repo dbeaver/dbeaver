@@ -44,9 +44,9 @@ public class ResultSetModel {
     private List<Object[]> curRows = new ArrayList<Object[]>();
 
     // Current row number (for record mode)
-    private boolean hasData = false;
+    private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
-    private boolean updateInProgress = false;
+    private volatile boolean updateInProgress = false;
 
     // Edited rows and cells
     private final Set<RowInfo> addedRows = new TreeSet<RowInfo>();
