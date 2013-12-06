@@ -162,7 +162,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private final Color foregroundNull;
     private final Font boldFont;
 
-    private ResultSetDataPumpJob dataPumpJob;
+    private volatile ResultSetDataPumpJob dataPumpJob;
     private ResultSetFindReplaceTarget findReplaceTarget;
 
     private final ResultSetModel model = new ResultSetModel();
@@ -468,8 +468,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         if (getDataSource() != null && resultSetProvider.isReadyToRun() &&
-            (!CommonUtils.isEmpty(whereCondition) ||
-                (getModel().getVisibleColumnCount() > 0 && supportsDataFilter())))
+            !model.isUpdateInProgress() &&
+            (!CommonUtils.isEmpty(whereCondition) || (getModel().getVisibleColumnCount() > 0 && supportsDataFilter())))
         {
             if (filtersEnableState != null) {
                 filtersEnableState.restore();
@@ -987,7 +987,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         } else {
             column = pos.row;
         }
-        return model.isColumnReadOnly(column);
+        return isReadOnly() || model.isColumnReadOnly(column);
     }
 
     boolean isColumnReadOnly(DBDAttributeBinding column)
@@ -1435,7 +1435,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
-        if (curCell.col >= 0 && model.getVisibleColumnCount() > 0) {
+        if (curCell.col >= 0 && model.getVisibleColumnCount() > 0 && !model.isUpdateInProgress()) {
             // Export and other utility methods
             manager.add(new Separator());
             MenuManager filtersMenu = new MenuManager(
@@ -1755,9 +1755,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (getDataContainer() != null && dataPumpJob == null) {
+        if (getDataContainer() != null && !model.isUpdateInProgress() && dataPumpJob == null) {
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
+
             runDataPump(model.getRowCount(), getSegmentMaxRows(), null, null);
         }
     }
@@ -1798,7 +1799,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     if (job.getStatistics() != null) {
                         model.setStatistics(job.getStatistics());
                     }
-                    dataPumpJob = null;
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
                         public void run()
@@ -1837,6 +1837,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             if (finalizer != null) {
                                 finalizer.run();
                             }
+                            dataPumpJob = null;
                         }
                     });
                 }

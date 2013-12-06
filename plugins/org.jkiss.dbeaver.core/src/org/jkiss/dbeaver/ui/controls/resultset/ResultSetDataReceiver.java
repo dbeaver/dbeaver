@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -142,9 +143,9 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
         final boolean nextSegmentRead = this.nextSegmentRead;
         final boolean updateMetaData = this.updateMetaData;
-        DBeaverUI.runUIJob("Set data in result set viewer", new DBRRunnableWithProgress() {
+        resultSetViewer.getControl().getDisplay().asyncExec(new Runnable() {
             @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            public void run()
             {
                 // Check for more data
                 // Push data into viewer
