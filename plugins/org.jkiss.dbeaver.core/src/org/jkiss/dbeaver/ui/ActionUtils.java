@@ -216,7 +216,11 @@ public class ActionUtils
     {
         IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
         if (service != null) {
-            service.requestEvaluation(propertyName);
+            try {
+                service.requestEvaluation(propertyName);
+            } catch (Exception e) {
+                log.warn("Error evaluating property [" + propertyName + "]");
+            }
         }
     }
 
