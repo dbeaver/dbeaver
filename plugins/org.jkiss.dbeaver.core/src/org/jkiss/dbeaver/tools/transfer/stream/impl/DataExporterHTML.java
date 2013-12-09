@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -81,7 +82,11 @@ public class DataExporterHTML extends StreamExporterAbstract {
         out.write("<body><table>");
         out.write("<tr>");
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            writeTextCell(columns.get(i).getMetaAttribute().getName(), true);
+            String colName = columns.get(i).getMetaAttribute().getLabel();
+            if (CommonUtils.isEmpty(colName)) {
+                colName = columns.get(i).getMetaAttribute().getName();
+            }
+            writeTextCell(colName, true);
         }
         out.write("</tr>");
     }
