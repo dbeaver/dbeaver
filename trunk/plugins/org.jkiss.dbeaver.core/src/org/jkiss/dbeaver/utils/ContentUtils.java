@@ -120,6 +120,15 @@ public class ContentUtils {
         return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
     }
 
+    public static String getDefaultConsoleEncoding()
+    {
+        String consoleEncoding = System.getProperty("console.encoding");
+        if (CommonUtils.isEmpty(consoleEncoding)) {
+            consoleEncoding = getDefaultFileEncoding();
+        }
+        return consoleEncoding;
+    }
+
     public static String getDefaultLineSeparator()
     {
         return System.getProperty("line.separator", "\n");
