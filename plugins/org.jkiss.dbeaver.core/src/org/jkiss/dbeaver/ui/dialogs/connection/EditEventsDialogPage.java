@@ -19,10 +19,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -30,7 +27,9 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.runtime.jobs.EventProcessorJob;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
@@ -137,11 +136,38 @@ public class EditEventsDialogPage extends ActiveWizardPage<ConnectionWizard> {
             waitFinishCheck.addSelectionListener(eventEditAdapter);
             terminateCheck = UIUtils.createCheckbox(detailsGroup, CoreMessages.dialog_connection_events_checkbox_terminate_at_disconnect, false);
             terminateCheck.addSelectionListener(eventEditAdapter);
+
+            Group helpGroup = new Group(detailsGroup, SWT.NONE);
+            helpGroup.setText("Command parameters");
+            helpGroup.setLayout(new GridLayout(2, false));
+            helpGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            Label infoLabel = new Label(helpGroup, SWT.NONE);
+            infoLabel.setText("You may use following variables:");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            infoLabel.setLayoutData(gd);
+            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_HOST, "target host");
+            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_PORT, "target port");
+            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_SERVER, "target server name");
+            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_DATABASE, "target database");
+            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_USER, "user name");
+            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_PASSWORD, "password (plain)");
+            addVariableLegend(helpGroup, EventProcessorJob.VARIABLE_URL, "JDBC URL");
         }
 
         selectEventType(null);
 
         setControl(group);
+    }
+
+    private void addVariableLegend(Composite group, String varName, String description) {
+        Text nameText = new Text(group, SWT.READ_ONLY);
+        nameText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        nameText.setText("${" + varName + "}");
+
+        Label descText = new Label(group, SWT.READ_ONLY);
+        descText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        descText.setText("-" + description);
     }
 
     private DBPConnectionEventType getSelectedEventType()
