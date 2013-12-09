@@ -379,6 +379,12 @@ public class RuntimeUtils {
     {
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
+        // Direct execute
+        try {
+            processDescriptor.execute();
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(shell, "Execute process", processDescriptor.getName(), e);
+        }
         if (command.isShowProcessPanel()) {
             shell.getDisplay().asyncExec(new Runnable() {
                 @Override
@@ -397,13 +403,9 @@ public class RuntimeUtils {
                     }
                 }
             });
-        } else {
-            // Direct execute
-            try {
-                processDescriptor.execute();
-            } catch (DBException e) {
-                UIUtils.showErrorDialog(shell, "Execute process", processDescriptor.getName(), e);
-            }
+        }
+        if (command.isWaitProcessFinish()) {
+            processDescriptor.waitFor();
         }
         return processDescriptor;
     }

@@ -122,9 +122,12 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         protected IStatus run(DBRProgressMonitor monitor)
         {
             try {
-                processDescriptor.execute();
+                Process process = processDescriptor.getProcess();
+                if (process == null) {
+                    return Status.OK_STATUS;
+                }
                 try {
-                    final InputStream execOut = processDescriptor.getProcess().getInputStream();
+                    final InputStream execOut = process.getInputStream();
                     final BufferedReader reader = new BufferedReader(
                         new InputStreamReader(execOut)
                     );
