@@ -109,4 +109,15 @@ public class DBRProcessDescriptor
         }
     }
 
+    public int waitFor()
+    {
+        if (this.process != null) {
+            try {
+                exitValue = this.process.waitFor();
+            } catch (InterruptedException e) {
+                // Skip
+            }
+        }
+        return exitValue;
+    }
 }
