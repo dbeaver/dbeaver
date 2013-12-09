@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -103,7 +104,11 @@ public class DataExporterCSV extends StreamExporterAbstract {
     {
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             DBDAttributeBinding column = columns.get(i);
-            writeCellValue(column.getMetaAttribute().getName(), true);
+            String colName = column.getMetaAttribute().getLabel();
+            if (CommonUtils.isEmpty(colName)) {
+                colName = column.getMetaAttribute().getName();
+            }
+            writeCellValue(colName, true);
             if (i < columnsSize - 1) {
                 writeDelimiter();
             }
