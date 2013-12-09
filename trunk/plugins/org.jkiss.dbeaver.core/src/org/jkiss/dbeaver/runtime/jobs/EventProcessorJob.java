@@ -36,6 +36,14 @@ import java.util.Map;
  */
 public abstract class EventProcessorJob extends AbstractJob {
 
+    public static final String VARIABLE_HOST = "host";
+    public static final String VARIABLE_PORT = "port";
+    public static final String VARIABLE_SERVER = "server";
+    public static final String VARIABLE_DATABASE = "database";
+    public static final String VARIABLE_USER = "user";
+    public static final String VARIABLE_PASSWORD = "password";
+    public static final String VARIABLE_URL = "url";
+
     protected final DataSourceDescriptor container;
 
     protected EventProcessorJob(String name, DataSourceDescriptor container)
@@ -53,13 +61,13 @@ public abstract class EventProcessorJob extends AbstractJob {
             for (Map.Entry<Object, Object> entry : info.getProperties().entrySet()) {
                 variables.put(CommonUtils.toString(entry.getKey()), entry.getValue());
             }
-            variables.put("host", info.getHostName());
-            variables.put("port", info.getHostPort());
-            variables.put("server", info.getServerName());
-            variables.put("database", info.getDatabaseName());
-            variables.put("user", info.getUserName());
-            variables.put("password", info.getUserPassword());
-            variables.put("url", info.getUrl());
+            variables.put(VARIABLE_HOST, info.getHostName());
+            variables.put(VARIABLE_PORT, info.getHostPort());
+            variables.put(VARIABLE_SERVER, info.getServerName());
+            variables.put(VARIABLE_DATABASE, info.getDatabaseName());
+            variables.put(VARIABLE_USER, info.getUserName());
+            variables.put(VARIABLE_PASSWORD, info.getUserPassword());
+            variables.put(VARIABLE_URL, info.getUrl());
 
             DBRProcessDescriptor process = RuntimeUtils.processCommand(command, variables);
             if (process != null) {
