@@ -41,7 +41,7 @@ class QueryTransformerLimit implements DBCQueryTransformer {
     @Override
     public String transformQueryString(String query) throws DBCException {
         String testQuery = query.toUpperCase().trim();
-        if (!testQuery.startsWith("SELECT") || testQuery.contains(" LIMIT") || testQuery.contains(" INTO")) {
+        if (!testQuery.startsWith("SELECT") || testQuery.contains("LIMIT") || testQuery.contains("INTO")) {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement
             limitSet = false;
         } else {
