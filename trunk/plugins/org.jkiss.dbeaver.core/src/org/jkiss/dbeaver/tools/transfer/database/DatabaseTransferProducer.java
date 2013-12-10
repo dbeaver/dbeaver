@@ -77,6 +77,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 // Auto-commit has to be turned off because some drivers allows to read LOBs and
                 // other complex structures only in transactional mode
                 session.getTransactionManager().setAutoCommit(false);
+
             }
             long totalRows = 0;
             if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {

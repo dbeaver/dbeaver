@@ -44,13 +44,15 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     static final Log log = LogFactory.getLog(JDBCExecutionContext.class);
 
     private final JDBCDataSource dataSource;
+    private final boolean copyState;
     private volatile JDBCConnectionHolder connectionHolder;
     private final String purpose;
 
-    public JDBCExecutionContext(JDBCDataSource dataSource, String purpose)
+    public JDBCExecutionContext(JDBCDataSource dataSource, String purpose, boolean copyState)
     {
         this.dataSource = dataSource;
         this.purpose = purpose;
+        this.copyState = copyState;
     }
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
@@ -77,6 +79,13 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
                 connectionHolder.setTransactionIsolation(txnLevel);
             } catch (Throwable e) {
                 log.warn("Could not set transaction isolation level", e); //$NON-NLS-1$
+            }
+        }
+        if (copyState) {
+            // Set active object
+            if (dataSource instanceof DBSObjectSelector) {
+//                ((DBSObjectSelector) dataSource).selectObject();
+//                ((DBSObjectSelector) dataSource).getSelectedObject()
             }
         }
         {
