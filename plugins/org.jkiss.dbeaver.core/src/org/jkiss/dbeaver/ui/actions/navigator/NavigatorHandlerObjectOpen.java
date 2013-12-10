@@ -25,10 +25,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -128,7 +125,14 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 selectedNode = (DBNDatabaseNode) selectedNode.getParentNode();
             }
             for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
-                if (ref.getEditorInput() instanceof EntityEditorInput && ((EntityEditorInput)ref.getEditorInput()).getTreeNode() == selectedNode) {
+                IEditorInput editorInput;
+                try {
+                    editorInput = ref.getEditorInput();
+                } catch (PartInitException e) {
+                    log.warn(e);
+                    continue;
+                }
+                if (editorInput instanceof EntityEditorInput && ((EntityEditorInput) editorInput).getTreeNode() == selectedNode) {
                     final IEditorPart editor = ref.getEditor(true);
                     if (editor instanceof IFolderedPart) {
                         // Activate default folder
