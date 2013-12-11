@@ -34,9 +34,9 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
@@ -75,21 +75,17 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
                     curPropertySource = (IPropertySource)element;
                     propertyTree.loadProperties(curPropertySource);
                     if (curPropertySource.getEditableValue() instanceof DBSObject) {
-                        ((DBSObject) curPropertySource.getEditableValue()).getDataSource().getContainer().getRegistry().addDataSourceListener(this);
+                        DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).addDataSourceListener(this);
                     }
                 }
             }
-		    //pageStandard.selectionChanged(part, newSelection);
         }
 	}
 
 	@Override
     public void dispose() {
         if (curPropertySource.getEditableValue() instanceof DBSObject) {
-            final DBPDataSource dataSource = ((DBSObject) curPropertySource.getEditableValue()).getDataSource();
-            if (dataSource != null) {
-                dataSource.getContainer().getRegistry().removeDataSourceListener(this);
-            }
+            DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).removeDataSourceListener(this);
         }
         UIUtils.dispose(boldFont);
         PropertiesContributor.getInstance().removeLazyListener(this);
