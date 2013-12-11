@@ -370,10 +370,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
             ErrorEditorInput errorInput = (ErrorEditorInput) getEditorInput();
             try {
                 addPage(new ErrorEditorPart(errorInput.getError()), errorInput);
+                setPageText(0, "Error");
             } catch (PartInitException e) {
                 log.error(e);
             }
-            return;
+//            return;
         }
         // Command listener
         commandListener = new DBECommandAdapter() {
@@ -416,9 +417,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         if (hasPropertiesEditor) {
             DBNNode node = getEditorInput().getTreeNode();
-            setPageText(0, CoreMessages.editors_entity_properties_text);
-            setPageToolTip(0, node.getNodeType() + CoreMessages.editors_entity_properties_tooltip_suffix);
-            setPageImage(0, node.getNodeIconDefault());
+            int propEditorIndex = getPageCount() - 1;
+            setPageText(propEditorIndex, CoreMessages.editors_entity_properties_text);
+            setPageToolTip(propEditorIndex, node.getNodeType() + CoreMessages.editors_entity_properties_tooltip_suffix);
+            setPageImage(propEditorIndex, node.getNodeIconDefault());
         }
 /*
         if (!mainAdded) {
