@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Constructor;
@@ -128,16 +127,6 @@ public class DatabaseEditorInputFactory implements IElementFactory
                 if (result == null && errorStatus != null) {
                     result = new ErrorEditorInput(errorStatus, dsNode);
                 }
-/*
-                if (errorStatus != null) {
-                    Display.getDefault().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            UIUtils.showErrorDialog(null, "Open Editor", "Can't open editor", errorStatus);
-                        }
-                    });
-                }
-*/
             }
         };
         try {
