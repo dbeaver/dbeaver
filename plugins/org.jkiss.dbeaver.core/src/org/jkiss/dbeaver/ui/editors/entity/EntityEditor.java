@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.*;
+import org.eclipse.ui.internal.ErrorEditorPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -64,6 +65,7 @@ import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
@@ -364,20 +366,15 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected void createPages()
     {
-/*
-        {
-            IBindingService bindingService = (IBindingService)getSite().getService(IBindingService.class);
-            for (Binding binding : bindingService.getBindings()) {
-                System.out.println("binding:" + binding);
+        if (getEditorInput() instanceof ErrorEditorInput) {
+            ErrorEditorInput errorInput = (ErrorEditorInput) getEditorInput();
+            try {
+                addPage(new ErrorEditorPart(errorInput.getError()), errorInput);
+            } catch (PartInitException e) {
+                log.error(e);
             }
+            return;
         }
-        {
-            ICommandService commandService = (ICommandService)getSite().getService(ICommandService.class);
-            for (Command command : commandService.getDefinedCommands()) {
-                System.out.println("command:" + command);
-            }
-        }
-*/
         // Command listener
         commandListener = new DBECommandAdapter() {
             @Override

@@ -22,9 +22,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
-import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Constructor;
@@ -65,26 +67,31 @@ public class DatabaseEditorInputFactory implements IElementFactory
         final String nodePath = memento.getString(TAG_NODE);
         final String dataSourceId = memento.getString(TAG_DATA_SOURCE);
         if (nodePath == null || inputClass == null || dataSourceId == null) {
+            log.error("Corrupted memento"); //$NON-NLS-2$
             return null;
         }
         final String activePageId = memento.getString(TAG_ACTIVE_PAGE);
         final String activeFolderId = memento.getString(TAG_ACTIVE_FOLDER);
+        final DataSourceDescriptor dataSourceContainer = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry().getDataSource(dataSourceId);
+        if (dataSourceContainer == null) {
+            log.error("Can't find datasource '" + dataSourceId + "'"); //$NON-NLS-2$
+            return null;
+        }
 
-        DBRRunnableWithResult<DatabaseEditorInput> opener = new DBRRunnableWithResult<DatabaseEditorInput>() {
+        DBRRunnableWithResult<IEditorInput> opener = new DBRRunnableWithResult<IEditorInput>() {
+            private IStatus errorStatus;
             @Override
             public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
+                DBNDataSource dsNode = null;
                 try {
-                    final DataSourceDescriptor dataSourceContainer = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry().getDataSource(dataSourceId);
-                    if (dataSourceContainer == null) {
-                        throw new DBException("Can't find datasource '" + dataSourceId + "'"); //$NON-NLS-2$
-                    }
-                    final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
+                    dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
                     dsNode.initializeNode(monitor, new DBRProcessListener() {
                         @Override
                         public void onProcessFinish(IStatus status)
                         {
                             if (!status.isOK()) {
+                                errorStatus = status;
                                 return;
                             }
                             try {
@@ -101,32 +108,46 @@ public class DatabaseEditorInputFactory implements IElementFactory
                                         }
                                     }
                                     if (constructor != null) {
-                                        result = DatabaseEditorInput.class.cast(constructor.newInstance(node));
-                                        result.setDefaultPageId(activePageId);
-                                        result.setDefaultFolderId(activeFolderId);
+                                        DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
+                                        input.setDefaultPageId(activePageId);
+                                        input.setDefaultFolderId(activeFolderId);
+                                        result = input;
                                     } else {
                                         throw new DBException("Can't create object instance [" + inputClass + "]");
                                     }
                                 }
                             } catch (Exception e) {
+                                errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
                                 log.error(e);
                             }
                         }
                     });
                 } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                    errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
                 }
+                if (result == null && errorStatus != null) {
+                    result = new ErrorEditorInput(errorStatus, dsNode);
+                }
+/*
+                if (errorStatus != null) {
+                    Display.getDefault().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            UIUtils.showErrorDialog(null, "Open Editor", "Can't open editor", errorStatus);
+                        }
+                    });
+                }
+*/
             }
         };
         try {
             DBeaverUI.runInProgressService(opener);
-            return opener.getResult();
         } catch (InvocationTargetException e) {
             log.error("Error initializing database editor input", e.getTargetException());
         } catch (InterruptedException e) {
             // ignore
         }
-        return null;
+        return opener.getResult();
     }
 
     public static void saveState(IMemento memento, DatabaseEditorInput input)

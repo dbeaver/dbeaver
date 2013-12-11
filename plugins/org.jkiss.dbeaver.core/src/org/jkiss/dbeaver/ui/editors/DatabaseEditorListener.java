@@ -40,7 +40,7 @@ public class DatabaseEditorListener implements IDBNListener
     DatabaseEditorListener(IDatabaseEditor databaseEditor) {
         this.databaseEditor = databaseEditor;
         // Acquire datasource
-        dataSourceContainer = databaseEditor.getEditorInput().getDataSource().getContainer();
+        dataSourceContainer = databaseEditor.getEditorInput().getTreeNode().getDataSourceContainer();
         if (dataSourceContainer != null) {
             dataSourceContainer.acquire(databaseEditor);
         }
