@@ -897,12 +897,26 @@ public final class DBUtils {
     public static DBPObject getPublicObject(DBPObject object)
     {
         if (object instanceof DBSDataSourceContainer) {
-            return ((DBSDataSourceContainer)object).getDataSource();
+            DBPDataSource dataSource = ((DBSDataSourceContainer) object).getDataSource();
+            return dataSource != null ? dataSource : object;
         } else {
             return object;
         }
     }
 
+    public static DBPDataSourceRegistry getRegistry(DBSObject object)
+    {
+        DBSDataSourceContainer container = null;
+        if (object instanceof DBSDataSourceContainer) {
+            container = (DBSDataSourceContainer) object;
+        } else {
+            DBPDataSource dataSource = object.getDataSource();
+            if (dataSource != null) {
+                container = dataSource.getContainer();
+            }
+        }
+        return container == null ? null : container.getRegistry();
+    }
     public static String getObjectShortName(Object object)
     {
         String strValue;
