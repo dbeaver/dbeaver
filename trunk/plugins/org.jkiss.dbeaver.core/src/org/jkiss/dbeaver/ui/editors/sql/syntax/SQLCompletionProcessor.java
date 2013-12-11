@@ -97,15 +97,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         final List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         final String wordPart = wordDetector.getWordPart();
 
-        final boolean isStructureQuery =
-            wordDetector.getPrevKeyWord() != null &&
-            (CommonUtils.isEmpty(wordDetector.getPrevWords()) || (wordDetector.getPrevDelimiter() != null && wordDetector.getPrevDelimiter().indexOf(',') != -1));
+        final boolean isStructureQuery = wordDetector.getPrevKeyWord() != null;
         QueryType queryType = null;
         if (isStructureQuery) {
             if (editor.getSyntaxManager().getKeywordManager().isEntityQueryWord(wordDetector.getPrevKeyWord())) {
                 queryType = QueryType.TABLE;
 
-            } else if (editor.getSyntaxManager().getKeywordManager().isAttributeQueryWord(wordDetector.getPrevKeyWord()) && CommonUtils.isEmptyTrimmed(wordDetector.getPrevDelimiter())) {
+            } else if (editor.getSyntaxManager().getKeywordManager().isAttributeQueryWord(wordDetector.getPrevKeyWord())) {
                 queryType = QueryType.COLUMN;
             }
         }
@@ -190,9 +188,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             } else {
                 DBSObject rootObject = null;
-                if (queryType == QueryType.COLUMN) {
+                if (queryType == QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Part of column name
-                    rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, wordPart);
+                    // Try to get from active object
+                    DBSObjectContainer sc = (DBSObjectContainer) dataSource;
+                    DBSObject selectedObject = getSelectedObject(dataSource);
+                    if (selectedObject instanceof DBSObjectContainer) {
+                        sc = (DBSObjectContainer)selectedObject;
+                    }
+                    rootObject = getTableFromAlias(monitor, sc, wordPart);
                 }
                 if (rootObject != null) {
                     makeProposalsFromChildren(monitor, rootObject, wordPart, proposals);
