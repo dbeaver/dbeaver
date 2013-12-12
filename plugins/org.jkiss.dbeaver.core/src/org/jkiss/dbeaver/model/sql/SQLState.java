@@ -140,10 +140,10 @@ public enum SQLState {
     private final String code;
     private final String description;
 
-    private SQLState(String description, String code)
+    private SQLState(String code, String description)
     {
-        this.description = description;
         this.code = code;
+        this.description = description;
     }
 
     public String getCode()
