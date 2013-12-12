@@ -44,6 +44,8 @@ import java.util.List;
  */
 public class GenericConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
+    // Driver name
+    private Text driverText;
     // Host/port
     private Text hostText;
     private Text portText;
@@ -193,14 +195,14 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gd = new GridData(GridData.FILL_HORIZONTAL);
             //gd.grabExcessHorizontalSpace = true;
             gd.widthHint = 200;
-            //gd.horizontalSpan = 3;
+            gd.horizontalSpan = 2;
             pathText.setLayoutData(gd);
             pathText.addModifyListener(textListener);
 
             Button browseButton = new Button(settingsGroup, SWT.PUSH);
             browseButton.setText(GenericMessages.dialog_connection_browse_button);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 1;
             browseButton.setLayoutData(gd);
             browseButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -248,7 +250,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             userNameText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
-            //gd.horizontalSpan = 3;
             userNameText.setLayoutData(gd);
             userNameText.addModifyListener(textListener);
 
@@ -271,17 +272,29 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             addControlToGroup(GROUP_LOGIN, passwordText);
         }
 
-        {
-            Composite buttonsPanel = UIUtils.createPlaceholder(settingsGroup, 2);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalSpan = 4;
-            buttonsPanel.setLayoutData(gd);
+        Composite placeholder = UIUtils.createPlaceholder(settingsGroup, 1);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
+        gd.horizontalSpan = 4;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        placeholder.setLayoutData(gd);
 
-            Button driverButton = new Button(buttonsPanel, SWT.PUSH);
-            driverButton.setText(GenericMessages.dialog_connection_edit_driver_button);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
+        {
+            Label driverLabel = new Label(settingsGroup, SWT.NONE);
+            driverLabel.setText(GenericMessages.dialog_connection_driver);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            driverLabel.setLayoutData(gd);
+
+            driverText = new Text(settingsGroup, SWT.READ_ONLY);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
             gd.grabExcessHorizontalSpace = true;
-            gd.grabExcessVerticalSpace = true;
+            gd.widthHint = 200;
+            driverText.setLayoutData(gd);
+
+            Button driverButton = new Button(settingsGroup, SWT.PUSH);
+            driverButton.setText(GenericMessages.dialog_connection_edit_driver_button);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
             driverButton.setLayoutData(gd);
             driverButton.addSelectionListener(new SelectionListener()
             {
@@ -346,6 +359,9 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     {
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
+        if (site.getDriver() != null) {
+            driverText.setText(CommonUtils.toString(site.getDriver().getFullName()));
+        }
         if (connectionInfo != null) {
             this.parseSampleURL(site.getDriver());
             if (!isCustom) {

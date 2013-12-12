@@ -41,6 +41,8 @@ public interface DBPDriver extends DBPObject
 
     String getName();
 
+    String getFullName();
+
     String getDescription();
 
     String getNote();
@@ -90,4 +92,5 @@ public interface DBPDriver extends DBPObject
     void validateFilesPresence(IRunnableContext runnableContext);
 
     void loadDriver(IRunnableContext runnableContext) throws DBException;
+
 }

@@ -411,7 +411,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         if (CommonUtils.isEmpty(category)) {
             return name;
         } else {
-            return category + " " + name;
+            return category + " / " + name;
         }
     }
 
