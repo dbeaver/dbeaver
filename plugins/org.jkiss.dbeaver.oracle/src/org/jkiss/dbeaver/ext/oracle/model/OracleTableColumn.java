@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +61,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         throws DBException
     {
         super(table, true);
+        // Read default value first because it is of LONG type and has to be read before others
+        setDefaultValue(JDBCUtils.safeGetString(dbResult, "DATA_DEFAULT"));
 
         setName(JDBCUtils.safeGetString(dbResult, "COLUMN_NAME"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLUMN_ID"));
@@ -82,7 +85,6 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
         setScale(JDBCUtils.safeGetInt(dbResult, "DATA_SCALE"));
         setPrecision(JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION"));
-        setDefaultValue(JDBCUtils.safeGetString(dbResult, "DATA_DEFAULT"));
         this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
         this.hidden = JDBCUtils.safeGetBoolean(dbResult, "HIDDEN_COLUMN", OracleConstants.YES);
     }
