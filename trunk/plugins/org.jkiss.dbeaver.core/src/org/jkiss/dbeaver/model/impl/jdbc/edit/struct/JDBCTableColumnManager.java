@@ -40,6 +40,58 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
     public static final String QUOTE = "'";
 
+    protected interface ColumnModifier<OBJECT_TYPE> {
+        void appendModifier(OBJECT_TYPE column, StringBuilder sql);
+    }
+
+    protected final ColumnModifier<OBJECT_TYPE> DataTypeModifier = new ColumnModifier<OBJECT_TYPE>() {
+        @Override
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
+            final String typeName = column.getTypeName();
+            boolean useMaxLength = false;
+            final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
+            if (dataType == null) {
+                log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
+            } else if (dataType.getDataKind() == DBPDataKind.STRING) {
+                if (typeName.indexOf('(') == -1) {
+                    useMaxLength = true;
+                }
+            }
+            final long maxLength = column.getMaxLength();
+            sql.append(' ').append(typeName);
+            if (useMaxLength && maxLength > 0) {
+                sql.append('(').append(maxLength).append(')');
+            }
+        }
+    };
+
+    protected final ColumnModifier<OBJECT_TYPE> NotNullModifier = new ColumnModifier<OBJECT_TYPE>() {
+        @Override
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
+            if (column.isRequired()) {
+                sql.append(" NOT NULL"); //$NON-NLS-1$
+            }
+        }
+    };
+
+    protected final ColumnModifier<OBJECT_TYPE> DefaultModifier = new ColumnModifier<OBJECT_TYPE>() {
+        @Override
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
+            String defaultValue = CommonUtils.toString(column.getDefaultValue());
+            if (!CommonUtils.isEmpty(defaultValue)) {
+                boolean useQuotes = false;
+                sql.append(" DEFAULT "); //$NON-NLS-1$
+                sql.append(defaultValue);
+            }
+        }
+    };
+
+
+    protected ColumnModifier<OBJECT_TYPE>[] getSupportedModifiers()
+    {
+        return new ColumnModifier[] {DataTypeModifier, NotNullModifier, DefaultModifier};
+    }
+
     @Override
     public boolean canEditObject(OBJECT_TYPE object)
     {
@@ -130,47 +182,10 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         // Create column
         String columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName());
 
-        final String typeName = column.getTypeName();
-        boolean useMaxLength = false;
-        final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
-        if (dataType == null) {
-            log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
-        } else if (dataType.getDataKind() == DBPDataKind.STRING) {
-            if (typeName.indexOf('(') == -1) {
-                useMaxLength = true;
-            }
-        }
-
-        final boolean notNull = column.isRequired();
-        final long maxLength = column.getMaxLength();
         StringBuilder decl = new StringBuilder(40);
-        decl.append(columnName).append(' ').append(typeName);
-        if (useMaxLength && maxLength > 0) {
-            decl.append('(').append(maxLength).append(')');
-        }
-        if (notNull) {
-            decl.append(" NOT NULL"); //$NON-NLS-1$
-        }
-
-        String defaultValue = CommonUtils.toString(column.getDefaultValue());
-        if (!CommonUtils.isEmpty(defaultValue)) {
-            boolean useQuotes = false;
-/*
-            try {
-                Double.parseDouble(defaultValue);
-                useQuotes = false;
-            }
-            catch (NumberFormatException e) {
-            // not a number
-            }
-            if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
-                useQuotes = false;
-            }
-*/
-            decl.append(" DEFAULT "); //$NON-NLS-1$
-            if (useQuotes) decl.append(QUOTE);
-            decl.append(defaultValue);
-            if (useQuotes) decl.append(QUOTE);
+        decl.append(columnName);
+        for (ColumnModifier<OBJECT_TYPE> modifier : getSupportedModifiers()) {
+            modifier.appendModifier(column, decl);
         }
 
         return decl;
