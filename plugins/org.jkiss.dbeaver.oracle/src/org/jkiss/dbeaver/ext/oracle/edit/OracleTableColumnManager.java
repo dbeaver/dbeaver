@@ -49,15 +49,9 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }
 
-    @Override
-    public StringBuilder getNestedDeclaration(OracleTableBase owner, DBECommandComposite<OracleTableColumn, PropertyHandler> command)
+    protected ColumnModifier<OracleTableColumn>[] getSupportedModifiers()
     {
-        StringBuilder decl = super.getNestedDeclaration(owner, command);
-        final OracleTableColumn column = command.getObject();
-//        if (!CommonUtils.isEmpty(column.getComment())) {
-//            decl.append(" COMMENT '").append(column.getComment()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
-//        }
-        return decl;
+        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NotNullModifier};
     }
 
     @Override
