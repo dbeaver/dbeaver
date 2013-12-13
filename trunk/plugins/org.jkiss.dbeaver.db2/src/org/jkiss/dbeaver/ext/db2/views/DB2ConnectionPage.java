@@ -64,7 +64,8 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
         //group.setLayout(new GridLayout(1, true));
         setImageDescriptor(logoImage);
 
-        Composite control = UIUtils.createPlaceholder(composite, 1);
+        Composite control = new Composite(composite, SWT.NONE);
+        control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ModifyListener textListener = new ModifyListener() {
             @Override
@@ -132,6 +133,8 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
         }
+
+        createAdvancedButtons(control, false);
 
         setControl(control);
     }

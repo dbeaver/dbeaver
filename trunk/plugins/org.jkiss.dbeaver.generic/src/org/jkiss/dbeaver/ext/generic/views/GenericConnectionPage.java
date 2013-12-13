@@ -272,12 +272,19 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             addControlToGroup(GROUP_LOGIN, passwordText);
         }
 
+        createAdvancedButtons(settingsGroup, true);
+
         Composite placeholder = UIUtils.createPlaceholder(settingsGroup, 1);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
         gd.horizontalSpan = 4;
         gd.grabExcessHorizontalSpace = true;
         gd.grabExcessVerticalSpace = true;
         placeholder.setLayoutData(gd);
+
+        Label divLabel = new Label(settingsGroup, SWT.SEPARATOR | SWT.HORIZONTAL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 4;
+        divLabel.setLayoutData(gd);
 
         {
             Label driverLabel = new Label(settingsGroup, SWT.NONE);

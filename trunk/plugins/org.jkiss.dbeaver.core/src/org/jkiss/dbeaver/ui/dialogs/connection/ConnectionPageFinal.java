@@ -34,8 +34,10 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionType;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -72,8 +74,6 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
     private Font boldFont;
 
     private boolean connectionNameChanged = false;
-    private Button tunnelButton;
-    private Button eventsButton;
     private java.util.List<FilterInfo> filters = new ArrayList<FilterInfo>();
     private Group filtersGroup;
     private boolean activated = false;
@@ -153,23 +153,6 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
                 }
                 connectionNameText.setText(newName);
                 connectionNameChanged = false;
-
-                if (dataSourceDescriptor == null) {
-                    tunnelButton.setFont(getFont());
-                    for (DBWHandlerConfiguration config : connectionInfo.getDeclaredHandlers()) {
-                        if (config.isEnabled()) {
-                            tunnelButton.setFont(boldFont);
-                            break;
-                        }
-                    }
-                    eventsButton.setFont(getFont());
-                    for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
-                        if (connectionInfo.getEvent(eventType).isEnabled()) {
-                            eventsButton.setFont(boldFont);
-                            break;
-                        }
-                    }
-                }
             }
         }
         if (dataSourceDescriptor != null) {
@@ -419,34 +402,6 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
-
-            if (dataSourceDescriptor == null) {
-                tunnelButton = new Button(buttonsGroup, SWT.PUSH);
-                tunnelButton.setText(CoreMessages.dialog_connection_wizard_final_button_tunneling);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.grabExcessVerticalSpace = true;
-                tunnelButton.setLayoutData(gd);
-                tunnelButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        configureTunnels();
-                    }
-                });
-
-                eventsButton = new Button(buttonsGroup, SWT.PUSH);
-                eventsButton.setText(CoreMessages.dialog_connection_wizard_final_button_events);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.grabExcessHorizontalSpace = true;
-                eventsButton.setLayoutData(gd);
-                eventsButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        configureEvents();
-                    }
-                });
-            }
         }
 
         setControl(group);
@@ -496,40 +451,6 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
                 dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
             }
         }
-    }
-
-    private void configureEvents()
-    {
-        DBPConnectionInfo connectionInfo = wizard.getPageSettings().getConnectionInfo();
-        EditEventsDialog dialog = new EditEventsDialog(
-            getShell(),
-            connectionInfo);
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            eventsButton.setFont(getFont());
-            for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
-                if (connectionInfo.getEvent(eventType).isEnabled()) {
-                    eventsButton.setFont(boldFont);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void configureTunnels()
-    {
-        EditTunnelDialog dialog = new EditTunnelDialog(
-            getShell(),
-            wizard.getPageSettings().getDriver(),
-            wizard.getPageSettings().getConnectionInfo());
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            tunnelButton.setFont(getFont());
-            for (DBWHandlerConfiguration config : wizard.getPageSettings().getConnectionInfo().getDeclaredHandlers()) {
-                if (config.isEnabled()) {
-                    tunnelButton.setFont(boldFont);
-                    break;
-                }
-            }
-       }
     }
 
 }
