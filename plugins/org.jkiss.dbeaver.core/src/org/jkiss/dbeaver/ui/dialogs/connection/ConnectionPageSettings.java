@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -201,6 +202,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     public IRunnableContext getRunnableContext()
     {
         return wizard.getContainer();
+    }
+
+    @Override
+    public DBSDataSourceContainer getDataSourceContainer() {
+        return dataSource;
     }
 
     @Override
