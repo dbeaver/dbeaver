@@ -132,11 +132,17 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
-        homesSelector = new ClientHomesSelector(addrGroup, SWT.NONE, "Local Client");
-        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 2;
-        //gd.minimumWidth = 300;
-        homesSelector.setLayoutData(gd);
+        {
+            Composite buttonsGroup = new Composite(addrGroup, SWT.NONE);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 4;
+            buttonsGroup.setLayoutData(gd);
+            buttonsGroup.setLayout(new GridLayout(2, false));
+            homesSelector = new ClientHomesSelector(buttonsGroup, SWT.NONE, "Local Client");
+            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+            homesSelector.setLayoutData(gd);
+            createAdvancedButtons(buttonsGroup, false);
+        }
 
         setControl(addrGroup);
     }

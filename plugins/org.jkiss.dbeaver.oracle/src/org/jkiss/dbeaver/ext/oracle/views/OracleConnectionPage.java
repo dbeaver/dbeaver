@@ -83,7 +83,8 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
         controlModifyListener = new ControlsListener();
 
-        Composite addrGroup = UIUtils.createPlaceholder(composite, 1);
+        Composite addrGroup = new Composite(composite, SWT.NONE);
+        addrGroup.setLayout(new GridLayout(1, false));
         addrGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         final Group protocolGroup = UIUtils.createControlGroup(addrGroup, OracleMessages.dialog_connection_connection_type_group, 1, GridData.FILL_HORIZONTAL, 0);
@@ -111,7 +112,10 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
         Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createClientHomeGroup(bottomControls);
+        {
+            createClientHomeGroup(bottomControls);
+            createAdvancedButtons(bottomControls, false);
+        }
 
         setControl(addrGroup);
     }
