@@ -200,7 +200,6 @@ public class UIUtils {
             }
             final Rectangle clientArea = table.getClientArea();
             if (clientArea.width > 0 && totalWidth > clientArea.width) {
-                int extraSpace = totalWidth - clientArea.width;
                 for (TableColumn column : columns) {
                     int colWidth = column.getWidth();
                     if (colWidth > totalWidth / 3) {
@@ -211,6 +210,7 @@ public class UIUtils {
                         totalWidth += column.getWidth();
                     }
                 }
+                int extraSpace = totalWidth - clientArea.width;
 
                 for (TableColumn tc : columns) {
                     double ratio = (double) tc.getWidth() / totalWidth;
