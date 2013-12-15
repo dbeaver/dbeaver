@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.views.navigator.database;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -45,7 +46,7 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     public DBNNode getRootNode()
     {
         DBNProject projectNode = getActiveProjectNode();
-        return projectNode == null ? getModel().getRoot() : projectNode.getDatabases();
+        return projectNode == null ? new DBNEmptyNode() : projectNode.getDatabases();
     }
 
     @Override
@@ -65,6 +66,6 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
     @Override
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
-        getNavigatorTree().reloadTree(getRootNode());
+        getNavigatorTree().getViewer().setInput(new DatabaseNavigatorContent(getRootNode()));
     }
 }
