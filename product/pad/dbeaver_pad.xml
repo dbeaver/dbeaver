@@ -38,9 +38,9 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>2.3.3</Program_Version>
-    <Program_Release_Month>11</Program_Release_Month>
-    <Program_Release_Day>20</Program_Release_Day>
+    <Program_Version>2.3.4</Program_Version>
+    <Program_Release_Month>12</Program_Release_Month>
+    <Program_Release_Day>16</Program_Release_Day>
     <Program_Release_Year>2013</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -49,19 +49,7 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Open editors are now restored after restart
-        - Connections' folders support has been added
-        - SQL auto-completion was improved
-        - Auto-completion and hyperlinks for procedures/packages has been added
-        - Database search results are now structured
-        - Disconnect detection by error code has been added
-        - Driver management UI was redesigned
-        - DB2 for AS 400 driver has been added
-        - H2, Derby and HSQLDB drivers were updated
-        - Minor fixes in Oracle, MySQL and DB2 plugins
-        - Data transfer columns mapping fixed
-        - SQL processing UI fixed
-        - Minor UI bugfixes
+        -
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
