@@ -253,7 +253,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             final IProject project = getActiveProject();
             if (project != null) {
                 DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-                return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSources();
+                return dataSourceRegistry == null ? Collections.<DBSDataSourceContainer>emptyList() : dataSourceRegistry.getDataSources();
             }
         }
         return Collections.emptyList();

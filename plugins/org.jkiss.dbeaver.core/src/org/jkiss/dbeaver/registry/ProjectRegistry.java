@@ -78,38 +78,42 @@ public class ProjectRegistry implements IResourceChangeListener {
         String activeProjectName = DBeaverCore.getGlobalPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         List<IProject> projects = core.getLiveProjects();
-        if (DBeaverCore.isStandalone() && CommonUtils.isEmpty(projects)) {
-            // Create initial project (onloy for standalone version)
-            monitor.beginTask("Create general project", 1);
-            try {
-                createGeneralProject(workspace, monitor);
-            } finally {
-                monitor.done();
-            }
-            projects = core.getLiveProjects();
-        }
 
         monitor.beginTask("Open active project", projects.size());
         try {
-            List<IProject> availableProjects = new ArrayList<IProject>();
             for (IProject project : projects) {
                 if (project.exists() && !project.isHidden()) {
                     if (project.getName().equals(activeProjectName)) {
                         activeProject = project;
                         break;
                     }
-                    availableProjects.add(project);
                 }
                 monitor.worked(1);
             }
-            if (activeProject == null && !availableProjects.isEmpty()) {
-                setActiveProject(availableProjects.get(0));
-            }
             if (activeProject != null) {
-                activeProject.open(monitor);
+                try {
+                    activeProject.open(monitor);
+                    setActiveProject(activeProject);
+                } catch (CoreException e) {
+                    // Project seems to be corrupted
+                    activeProject = null;
+                    projects.remove(activeProject);
+                }
             }
         } finally {
             monitor.done();
+        }
+
+        if (DBeaverCore.isStandalone() && CommonUtils.isEmpty(projects)) {
+            // Create initial project (only for standalone version)
+            monitor.beginTask("Create general project", 1);
+            try {
+                activeProject = createGeneralProject(workspace, monitor);
+                activeProject.open(monitor);
+                setActiveProject(activeProject);
+            } finally {
+                monitor.done();
+            }
         }
 
         this.workspace = workspace;
@@ -276,16 +280,22 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     private IProject createGeneralProject(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
     {
-        final IProject project = workspace.getRoot().getProject(
-            DBeaverCore.isStandalone() ?
-                "General" : "DBeaver");
-        project.create(monitor);
-        project.open(monitor);
-        final IProjectDescription description = workspace.newProjectDescription(project.getName());
-        description.setComment("General DBeaver project");
-        project.setDescription(description, monitor);
+        final String baseProjectName = DBeaverCore.isStandalone() ? "General" : "DBeaver";
+        String projectName = baseProjectName;
+        for (int i = 1; ; i++) {
+            final IProject project = workspace.getRoot().getProject(projectName);
+            if (project.exists()) {
+                projectName = baseProjectName + i;
+                continue;
+            }
+            project.create(monitor);
+            project.open(monitor);
+            final IProjectDescription description = workspace.newProjectDescription(project.getName());
+            description.setComment("General DBeaver project");
+            project.setDescription(description, monitor);
 
-        return project;
+            return project;
+        }
     }
 
     /**
