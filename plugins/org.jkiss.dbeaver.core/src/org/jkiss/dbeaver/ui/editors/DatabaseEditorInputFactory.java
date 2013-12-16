@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -36,7 +37,10 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Constructor;
@@ -71,11 +75,23 @@ public class DatabaseEditorInputFactory implements IElementFactory
         }
         final String activePageId = memento.getString(TAG_ACTIVE_PAGE);
         final String activeFolderId = memento.getString(TAG_ACTIVE_FOLDER);
-        final DataSourceDescriptor dataSourceContainer = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry().getDataSource(dataSourceId);
+
+        DataSourceDescriptor dataSourceContainer = null;
+        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
+            DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+            if (dataSourceRegistry != null) {
+                dataSourceContainer = dataSourceRegistry.getDataSource(dataSourceId);
+                if (dataSourceContainer != null) {
+                    break;
+                }
+            }
+        }
         if (dataSourceContainer == null) {
-            log.error("Can't find datasource '" + dataSourceId + "'"); //$NON-NLS-2$
+            log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
         }
+        final DBSDataSourceContainer dsObject = dataSourceContainer;
 
         DBRRunnableWithResult<IEditorInput> opener = new DBRRunnableWithResult<IEditorInput>() {
             private IStatus errorStatus;
@@ -84,7 +100,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
             {
                 DBNDataSource dsNode = null;
                 try {
-                    dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
+                    dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dsObject);
                     dsNode.initializeNode(monitor, new DBRProcessListener() {
                         @Override
                         public void onProcessFinish(IStatus status)
