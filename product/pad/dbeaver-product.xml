@@ -52,7 +52,14 @@
             <date>16.12.2013</date>
 
             <release-notes>
-                -
+                - Database objects quick search dialog has been added
+                - Query execution progress/cancel UI was redesign
+                - SQL auto-completion was improved
+                - Results find/replace has been fixed
+                - Multiple result sets support (SQL Server &amp; Sybase) added
+                - DB2, Oracle extensions was improved. Legacy DB2 LUW driver added
+                - MySQL driver updated
+                - Many UI fixes and improvements
             </release-notes>
         </version>
 
