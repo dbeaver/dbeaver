@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ColumnDataTypeListProvider;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnCompression;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnGenerated;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -49,7 +50,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     private Boolean hidden;
     private Boolean identity;
     private Boolean lobCompact;
-    private Boolean generated;
+    private DB2TableColumnGenerated generated;
     private String generatedText;
     private DB2TableColumnCompression compress;
     private Boolean rowBegin;
@@ -86,7 +87,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.hidden = DB2ColumnHiddenState.isHidden(JDBCUtils.safeGetString(dbResult, "HIDDEN"));
         this.identity = JDBCUtils.safeGetBoolean(dbResult, "IDENTITY", DB2YesNo.Y.name());
         this.lobCompact = JDBCUtils.safeGetBoolean(dbResult, "COMPACT", DB2YesNo.Y.name());
-        this.generated = JDBCUtils.safeGetBoolean(dbResult, "GENERATED", DB2YesNo.Y.name());
+        this.generated = CommonUtils.valueOf(DB2TableColumnGenerated.class, JDBCUtils.safeGetString(dbResult, "GENERATED"));
         this.generatedText = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.compress = CommonUtils.valueOf(DB2TableColumnCompression.class, JDBCUtils.safeGetString(dbResult, "COMPRESS"));
         this.colcard = JDBCUtils.safeGetLong(dbResult, "COLCARD");
@@ -233,21 +234,21 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     }
 
     @Property(viewable = true, order = 43)
-    public Boolean getGenerated()
+    public Boolean getIdentity()
+    {
+        return identity;
+    }
+
+    @Property(viewable = true, order = 44)
+    public DB2TableColumnGenerated getGenerated()
     {
         return generated;
     }
 
-    @Property(viewable = false, order = 44)
+    @Property(viewable = false, order = 45)
     public String getGeneratedText()
     {
         return generatedText;
-    }
-
-    @Property(viewable = true, order = 45)
-    public Boolean getIdentity()
-    {
-        return identity;
     }
 
     @Override
