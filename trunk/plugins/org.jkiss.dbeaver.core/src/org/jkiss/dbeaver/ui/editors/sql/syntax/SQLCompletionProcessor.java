@@ -97,7 +97,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         final List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         final String wordPart = wordDetector.getWordPart();
 
-        final boolean isStructureQuery = wordDetector.getPrevKeyWord() != null;
+        final boolean isStructureQuery = !CommonUtils.isEmpty(wordDetector.getPrevKeyWord());
         QueryType queryType = null;
         if (isStructureQuery) {
             if (editor.getSyntaxManager().getKeywordManager().isEntityQueryWord(wordDetector.getPrevKeyWord())) {
@@ -129,7 +129,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
         } else if (wordPart.length() == 0) {
             // No assist
-        } else {
+        }
+
+        if (proposals.isEmpty()) {
             // Keyword assist
             List<String> matchedKeywords = editor.getSyntaxManager().getKeywordManager().getMatchedKeywords(wordPart);
             for (String keyWord : matchedKeywords) {
