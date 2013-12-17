@@ -196,7 +196,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     if (selectedObject instanceof DBSObjectContainer) {
                         sc = (DBSObjectContainer)selectedObject;
                     }
-                    rootObject = getTableFromAlias(monitor, sc, wordPart);
+                    int divPos = wordPart.indexOf(editor.getSyntaxManager().getStructSeparator());
+                    String tableAlias = divPos == -1 ? null : wordPart.substring(0, divPos);
+                    rootObject = getTableFromAlias(monitor, sc, tableAlias);
                 }
                 if (rootObject != null) {
                     makeProposalsFromChildren(monitor, rootObject, wordPart, proposals);
