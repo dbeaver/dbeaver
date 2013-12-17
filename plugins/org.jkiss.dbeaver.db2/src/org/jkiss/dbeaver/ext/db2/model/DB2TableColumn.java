@@ -151,6 +151,14 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     @Override
     public boolean isSequence()
     {
+        // DF: This method is used when the user use teh "insert row" function
+        // in the data table editor or for generating INSERT INTO statements (not yet 2013-12-17)
+        // GENERATED ALWAYS columns must not be included in such scenario
+        if (generated != null) {
+            if (generated.equals(DB2TableColumnGenerated.A)) {
+                return true;
+            }
+        }
         return false;
     }
 
