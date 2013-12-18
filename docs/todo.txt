@@ -1,7 +1,6 @@
 Major:
 
-S/DB selector combo works as crap
-Multiple tabs - tab removed after execute
+error: S/DB selector combo works as crap
 SOCKS proxy, HTTP proxy
 
 1. Browse data by foreign keys
