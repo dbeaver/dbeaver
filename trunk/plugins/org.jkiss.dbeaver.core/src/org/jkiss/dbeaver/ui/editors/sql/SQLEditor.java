@@ -97,10 +97,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * SQL Executor
  */
 public class SQLEditor extends SQLEditorBase
-    implements IResourceChangeListener, IDataSourceContainerProviderEx,
+    implements IDataSourceContainerProviderEx,
     DBPEventListener, ISaveablePart2, ResultSetProvider, DBPDataSourceUser, DBPDataSourceHandler
 {
-
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
     private SashForm sashForm;
@@ -131,7 +130,6 @@ public class SQLEditor extends SQLEditorBase
     public SQLEditor()
     {
         super();
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
     @Override
@@ -235,15 +233,6 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public Object getAdapter(Class required)
     {
-/*
-        // Return find/replace target of RSV only if it is in focus
-        if (required == IFindReplaceTarget.class) {
-            return
-                UIUtils.hasFocus(resultsView.getControl()) ?
-                    resultsView.getAdapter(required) :
-                    super.getAdapter(required);
-        }
-*/
         if (required == IFindReplaceTarget.class) {
             return findReplaceTarget;
         }
@@ -452,20 +441,6 @@ public class SQLEditor extends SQLEditorBase
     }
 
     @Override
-    public void resourceChanged(final IResourceChangeEvent event)
-    {
-/*
-    	IPath path = getEditorInput().getPath();
-    	if (path != null) {
-	        final IResourceDelta delta = event.getDelta() == null ? null : event.getDelta().findMember(path);
-	        if (delta != null) {
-	            final int kind = delta.getKind();
-	        }
-    	}
-*/
-    }
-
-    @Override
     public void setFocus()
     {
         super.setFocus();
@@ -652,6 +627,10 @@ public class SQLEditor extends SQLEditorBase
                 if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
                     continue;
                 }
+                if (queryProcessor != null && queryProcessor.resultProviders.size() < 2) {
+                    // Do not remove first tab for this processor
+                    continue;
+                }
                 item.dispose();
             }
         }
@@ -683,7 +662,6 @@ public class SQLEditor extends SQLEditorBase
             }
         }
         if (planView != null) {
-            //resultsView.refresh();
             // Refresh plan view
             planView.refresh();
         }
@@ -710,17 +688,6 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public void dispose()
     {
-/*
-        IFile fileToDelete = null;
-        // If it is close then delete it
-        final IDocument document = getDocument();
-        if (document != null) {
-            if (document.get().trim().isEmpty()) {
-                fileToDelete = ContentUtils.getFileFromEditorInput(getEditorInput());
-            }
-        }
-*/
-
         // Acquire ds container
         final DBSDataSourceContainer dsContainer = getDataSourceContainer();
         if (dsContainer != null) {
@@ -740,19 +707,8 @@ public class SQLEditor extends SQLEditorBase
         planView = null;
         queryProcessors.clear();
         curQueryProcessor = null;
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
         super.dispose();
-
-/*
-        if (fileToDelete != null) {
-            try {
-                fileToDelete.delete(true, new NullProgressMonitor());
-            } catch (CoreException e) {
-                log.error("Can't delete empty script file", e); //$NON-NLS-1$
-            }
-        }
-*/
     }
 
     private void closeAllJobs()
