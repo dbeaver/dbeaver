@@ -79,7 +79,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             result = this.loadingService.evaluate();
         }
         catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
+//            log.error(e.getTargetException());
             error = e.getTargetException();
         }
         catch (InterruptedException e) {
