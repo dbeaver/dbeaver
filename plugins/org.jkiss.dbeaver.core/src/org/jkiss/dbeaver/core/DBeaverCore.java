@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWGlobalAuthenticator;
+import org.jkiss.dbeaver.model.net.DBWProxySelector;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
@@ -42,6 +43,7 @@ import org.osgi.framework.Version;
 import java.io.File;
 import java.io.IOException;
 import java.net.Authenticator;
+import java.net.ProxySelector;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -184,7 +186,8 @@ public class DBeaverCore implements DBPApplication {
         this.queryManager.registerMetaListener(qmLogWriter);
 
         // Init default network settings
-        Authenticator.setDefault(DBWGlobalAuthenticator.getInstance());
+        Authenticator.setDefault(new DBWGlobalAuthenticator());
+        ProxySelector.setDefault(new DBWProxySelector(ProxySelector.getDefault()));
 
         // Init project registry
         this.projectRegistry = new ProjectRegistry();
