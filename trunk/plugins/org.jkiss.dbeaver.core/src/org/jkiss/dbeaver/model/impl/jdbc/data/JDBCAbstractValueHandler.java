@@ -23,8 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -44,7 +42,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -80,16 +77,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         catch (SQLException e) {
             throw new DBCException(CoreMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
         }
-    }
-
-    @Override
-    public Object getValueFromClipboard(DBCSession session, DBSTypedObject column, Clipboard clipboard) throws DBCException
-    {
-        String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
-        if (CommonUtils.isEmpty(strValue)) {
-            return null;
-        }
-        return getValueFromObject(session, column, strValue, false);
     }
 
     @Override

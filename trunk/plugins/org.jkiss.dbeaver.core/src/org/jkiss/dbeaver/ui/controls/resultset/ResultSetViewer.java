@@ -2022,15 +2022,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private Object getColumnValueFromClipboard(DBDAttributeBinding metaColumn) throws DBCException
     {
         DBCSession session = getDataSource().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
-        Object newValue;
         try {
-            newValue = metaColumn.getValueHandler().getValueFromClipboard(
-                session, metaColumn.getMetaAttribute(),
-                getSpreadsheet().getClipboard());
+            String strValue = (String) getSpreadsheet().getClipboard().getContents(TextTransfer.getInstance());
+            return metaColumn.getValueHandler().getValueFromObject(
+                    session, metaColumn.getMetaAttribute(), strValue, true);
         } finally {
             session.close();
         }
-        return newValue;
     }
 
     void addNewRow(final boolean copyCurrent)

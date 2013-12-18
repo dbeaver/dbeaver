@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.swt.dnd.Clipboard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -75,12 +74,6 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         return object;
-    }
-
-    @Override
-    public Object getValueFromClipboard(DBCSession session, DBSTypedObject column, Clipboard clipboard) throws DBCException
-    {
-        return null;
     }
 
     @Override
