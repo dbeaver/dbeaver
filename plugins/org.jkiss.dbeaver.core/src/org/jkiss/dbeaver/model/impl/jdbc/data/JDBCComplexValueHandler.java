@@ -83,9 +83,9 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
-        super.fillProperties(propertySource, controller);
+        super.contributeProperties(propertySource, controller);
         try {
             Object value = controller.getValue();
             if (value instanceof DBDComplexType) {

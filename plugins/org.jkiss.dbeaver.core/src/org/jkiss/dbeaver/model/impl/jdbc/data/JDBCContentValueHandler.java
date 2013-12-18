@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Composite;
@@ -222,18 +222,18 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
+    public void contributeActions(IContributionManager manager, final DBDValueController controller)
         throws DBCException
     {
         if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
-            menuManager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBIcon.SAVE.getImageDescriptor()) {
+            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBIcon.SAVE.getImageDescriptor()) {
                 @Override
                 public void run() {
                     saveToFile(controller);
                 }
             });
         }
-        menuManager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBIcon.LOAD.getImageDescriptor()) {
+        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBIcon.LOAD.getImageDescriptor()) {
             @Override
             public void run() {
                 loadFromFile(controller);
@@ -242,9 +242,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
-        super.fillProperties(propertySource, controller);
+        super.contributeProperties(propertySource, controller);
         try {
             Object value = controller.getValue();
             if (value instanceof DBDContent) {

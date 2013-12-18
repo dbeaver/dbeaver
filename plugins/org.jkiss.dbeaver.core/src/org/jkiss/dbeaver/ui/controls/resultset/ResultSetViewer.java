@@ -559,7 +559,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 null);
                             PropertyCollector props = new PropertyCollector(valueController.getAttribute(), false);
                             props.collectProperties();
-                            valueController.getValueHandler().fillProperties(props, valueController);
+                            valueController.getValueHandler().contributeProperties(props, valueController);
                             return props;
                         }
                     }
@@ -1428,7 +1428,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // Menus from value handler
             try {
                 manager.add(new Separator());
-                model.getColumn(cell.col).getValueHandler().fillContextMenu(manager, valueController);
+                model.getColumn(cell.col).getValueHandler().contributeActions(manager, valueController);
             }
             catch (Exception e) {
                 log.error(e);
