@@ -2,6 +2,7 @@ Major:
 
 S/DB selector combo works as crap
 Multiple tabs - tab removed after execute
+SOCKS proxy, HTTP proxy
 
 1. Browse data by foreign keys
 2. Dialect-dependent SQL generator

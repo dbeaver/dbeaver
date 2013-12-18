@@ -139,4 +139,9 @@ public class MySQLPlanNode implements DBCPlanNode {
     {
         return extra;
     }
+
+    @Override
+    public String toString() {
+        return table + " " + type + " " + key;
+    }
 }
