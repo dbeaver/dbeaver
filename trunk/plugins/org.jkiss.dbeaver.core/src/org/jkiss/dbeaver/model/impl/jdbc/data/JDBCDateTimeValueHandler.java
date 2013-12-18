@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -267,10 +267,10 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
+    public void contributeActions(IContributionManager manager, final DBDValueController controller)
         throws DBCException
     {
-        menuManager.add(new Action(CoreMessages.model_jdbc_set_to_current_time) {
+        manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time) {
             @Override
             public void run()
             {
@@ -280,9 +280,9 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
-        super.fillProperties(propertySource, controller);
+        super.contributeProperties(propertySource, controller);
         propertySource.addProperty(
             "Date/Time",
             "format", //$NON-NLS-1$

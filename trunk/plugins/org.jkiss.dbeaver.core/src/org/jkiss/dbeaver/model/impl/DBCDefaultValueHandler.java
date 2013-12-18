@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -89,11 +89,11 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public void fillContextMenu(IMenuManager menuManager, DBDValueController controller) throws DBCException {
+    public void contributeActions(IContributionManager manager, DBDValueController controller) throws DBCException {
     }
 
     @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller) {
+    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller) {
     }
 
     @Override

@@ -245,7 +245,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
 /*
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(
             "max_length",
