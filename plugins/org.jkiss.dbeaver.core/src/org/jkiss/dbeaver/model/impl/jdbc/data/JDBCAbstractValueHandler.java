@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Composite;
@@ -93,14 +93,14 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
+    public void contributeActions(IContributionManager manager, DBDValueController controller)
         throws DBCException
     {
 
     }
 
     @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
     }
 

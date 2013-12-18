@@ -19,7 +19,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -121,11 +121,12 @@ public interface DBDValueHandler
 
     /**
      * Fills context menu for certain value
-     * @param menuManager context menu manager
+     *
+     * @param manager context menu manager
      * @param controller value controller
      * @throws DBCException on error
      */
-    void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
+    void contributeActions(IContributionManager manager, DBDValueController controller)
         throws DBCException;
 
     /**
@@ -133,10 +134,10 @@ public interface DBDValueHandler
      * @param propertySource property source
      * @param controller value controller
      */
-    void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller);
+    void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller);
 
     /**
-     * Shows value editor.
+     * Creates value editor.
      * Value editor could be:
      * <li>inline editor (control created withing inline placeholder)</li>
      * <li>dialog (modal or modeless)</li>

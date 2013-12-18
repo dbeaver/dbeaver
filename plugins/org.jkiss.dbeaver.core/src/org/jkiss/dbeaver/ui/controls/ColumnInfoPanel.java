@@ -51,7 +51,7 @@ public class ColumnInfoPanel extends Composite {
     {
         PropertyCollector infoItem = new PropertyCollector(valueController.getAttribute(), false);
         infoItem.collectProperties();
-        valueController.getValueHandler().fillProperties(infoItem, valueController);
+        valueController.getValueHandler().contributeProperties(infoItem, valueController);
         if (valueController.getValueLocator() != null) {
             infoItem.addProperty(null, "Key", CoreMessages.controls_column_info_panel_property_key, new CellKeyInfo(valueController) ); //$NON-NLS-1$
         }
