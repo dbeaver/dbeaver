@@ -40,8 +40,6 @@ import java.net.PasswordAuthentication;
  */
 public class DBWGlobalAuthenticator extends Authenticator {
 
-    private static DBWGlobalAuthenticator instance = new DBWGlobalAuthenticator();
-
     private SecuredPasswordEncrypter encrypter;
 
     @Override
@@ -84,10 +82,6 @@ public class DBWGlobalAuthenticator extends Authenticator {
         }
 
         return null;
-    }
-
-    public static DBWGlobalAuthenticator getInstance() {
-        return instance;
     }
 
     private String encryptPassword(String password) {
