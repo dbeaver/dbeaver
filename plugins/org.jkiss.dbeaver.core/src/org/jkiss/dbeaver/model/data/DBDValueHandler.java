@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.swt.dnd.Clipboard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -102,20 +101,6 @@ public interface DBDValueHandler
      */
     Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy)
         throws DBCException;
-
-    /**
-     * Get value from clipboard. If clipboard doesn't contain data in appropriate format
-     * or value cannot be parsed then this function should return null
-     *
-     *
-     *
-     * @param session
-     * @param column column descriptor
-     * @param clipboard clipboard
-     * @return value (return null only in case of NULL value in clipboard)
-     * @throws org.jkiss.dbeaver.DBException on unexpected error (IO, etc)
-     */
-    Object getValueFromClipboard(DBCSession session, DBSTypedObject column, Clipboard clipboard) throws DBCException;
 
     /**
      * Release any internal resources associated with this value.
