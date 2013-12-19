@@ -103,8 +103,8 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             job.schedule();
         }
         if (tlc.loading) {
-            // Wait for 250ms maximum
-            for (int i = 0; i < 5; i++) {
+            // Wait for 1000ms maximum
+            for (int i = 0; i < 20; i++) {
                 try {
                     Thread.sleep(50);
                 } catch (InterruptedException e) {
