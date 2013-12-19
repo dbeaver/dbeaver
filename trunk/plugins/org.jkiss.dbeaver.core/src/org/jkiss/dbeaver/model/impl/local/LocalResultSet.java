@@ -117,6 +117,11 @@ public class LocalResultSet implements DBCResultSet
     }
 
     @Override
+    public String getResultSetName() throws DBCException {
+        return null;
+    }
+
+    @Override
     public void close()
     {
         curPosition = -1;

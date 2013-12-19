@@ -157,6 +157,11 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
+    public String getResultSetName() throws DBCException {
+        return null;
+    }
+
+    @Override
     public void close()
     {
         for (WMIObject row : rows) {

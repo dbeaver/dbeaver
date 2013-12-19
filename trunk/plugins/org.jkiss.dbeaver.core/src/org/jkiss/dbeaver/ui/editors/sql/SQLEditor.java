@@ -1032,7 +1032,7 @@ public class SQLEditor extends SQLEditorBase
 
             //boolean firstResultSet = queryProcessors.isEmpty();
             int tabIndex = Math.max(resultTabs.getItemCount() - 2, 0);
-            int queryIndex = queryProcessors.indexOf(queryProcessor);
+            int queryIndex = queryProcessors.indexOf(queryProcessor) + 1;
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
             String tabName = CoreMessages.editors_sql_data_grid;
             if (resultSetNumber > 0) {
