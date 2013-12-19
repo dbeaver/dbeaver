@@ -1229,8 +1229,8 @@ public class SQLEditor extends SQLEditorBase
                 CTabItem tabItem = results.tabItem;
                 if (!tabItem.isDisposed()) {
                     tabItem.setToolTipText(result.getStatement().getQuery());
-                    if (!CommonUtils.isEmpty(result.getSourceEntity())) {
-                        tabItem.setText(result.getSourceEntity());
+                    if (!CommonUtils.isEmpty(result.getResultSetName())) {
+                        tabItem.setText(result.getResultSetName());
                     } else {
                         int queryIndex = queryProcessors.indexOf(queryProcessor);
                         tabItem.setText(
