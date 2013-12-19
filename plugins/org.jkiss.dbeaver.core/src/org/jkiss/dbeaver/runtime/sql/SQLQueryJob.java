@@ -548,7 +548,7 @@ public class SQLQueryJob extends DataSourceJob
                 }
 */
                 if (!CommonUtils.isEmpty(sourceName)) {
-                    result.setSourceEntity(sourceName);
+                    result.setResultSetName(sourceName);
                 }
             }
             long fetchStartTime = System.currentTimeMillis();
