@@ -132,7 +132,7 @@ public class SQLQueryJob extends DataSourceJob
         try {
             DBCSession session = getDataSource().openSession(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
             try {
-// Set transaction settings (only if autocommit is off)
+                // Set transaction settings (only if autocommit is off)
                 QMUtils.getDefaultHandler().handleScriptBegin(session);
 
                 DBCTransactionManager txnManager = session.getTransactionManager();

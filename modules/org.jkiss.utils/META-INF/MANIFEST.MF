@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: JKISS Utils
 Bundle-SymbolicName: org.jkiss.utils
-Bundle-Version: 1.0.20
+Bundle-Version: 1.0.21
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.jkiss.utils,
  org.jkiss.utils.time,
