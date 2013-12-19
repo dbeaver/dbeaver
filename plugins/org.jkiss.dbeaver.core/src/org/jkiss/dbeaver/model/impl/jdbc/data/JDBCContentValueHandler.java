@@ -479,7 +479,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                             }
 
                             if (imageDetector.isImage()) {
-                                return new ImageViewer(editPlaceholder, SWT.BORDER);
+                                ImageViewer imageViewer = new ImageViewer(editPlaceholder, SWT.BORDER);
+                                imageViewer.fillToolBar(valueController.getEditToolBar());
+                                return imageViewer;
                             } else {
                                 return new HexEditControl(editPlaceholder, SWT.BORDER);
                             }
