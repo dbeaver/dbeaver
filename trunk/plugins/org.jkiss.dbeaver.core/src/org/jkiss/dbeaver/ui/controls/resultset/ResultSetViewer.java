@@ -2545,18 +2545,18 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 column = model.getVisibleColumn(row);
                 Object[] values = model.getRowData(curRowNum);
                 if (column.getAttributeIndex() >= values.length) {
-                    log.warn("Bad record row number: " + row);
+                    log.debug("Bad record row number: " + row);
                     return null;
                 }
                 value = values[column.getAttributeIndex()];
             } else {
                 rowNum = row;
                 if (row >= rowCount) {
-                    log.warn("Bad grid row number: " + row);
+                    log.debug("Bad grid row number: " + row);
                     return null;
                 }
                 if (col >= model.getVisibleColumnCount()) {
-                    log.warn("Bad grid column number: " + col);
+                    log.debug("Bad grid column number: " + col);
                     return null;
                 }
                 column = model.getVisibleColumn(col);
