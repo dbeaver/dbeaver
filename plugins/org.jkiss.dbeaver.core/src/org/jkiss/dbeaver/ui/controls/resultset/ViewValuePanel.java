@@ -66,6 +66,7 @@ abstract class ViewValuePanel extends Composite {
         Color infoBackground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
         Composite titleBar = UIUtils.createPlaceholder(this, 3);
+        ((GridLayout)titleBar.getLayout()).marginWidth = 5;
         ((GridLayout)titleBar.getLayout()).horizontalSpacing = 5;
         titleBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         titleBar.setBackground(infoBackground);

@@ -25,6 +25,11 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.InputStream;
 
@@ -34,6 +39,11 @@ import java.io.InputStream;
 public class ImageViewer extends Composite {
 
     private ImageViewCanvas canvas;
+    private ToolItem itemZoomIn;
+    private ToolItem itemZoomOut;
+    private ToolItem itemRotate;
+    private ToolItem itemFit;
+    private ToolItem itemOriginal;
 
     public ImageViewer(Composite parent, int style)
     {
@@ -114,4 +124,23 @@ public class ImageViewer extends Composite {
         default: return "UNKNOWN"; //$NON-NLS-1$
         }
     }
+
+    public void updateActions()
+    {
+        boolean hasImage = getCanvas().getSourceImage() != null;
+        itemZoomIn.setEnabled(hasImage);
+        itemZoomOut.setEnabled(hasImage);
+        itemRotate.setEnabled(hasImage);
+        itemFit.setEnabled(hasImage);
+        itemOriginal.setEnabled(hasImage);
+    }
+
+    public void fillToolBar(ToolBar toolBar) {
+        itemZoomIn = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_zoom_in, DBIcon.ZOOM_IN.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN));
+        itemZoomOut = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_zoom_out, DBIcon.ZOOM_OUT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT));
+        itemRotate = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_rotate, DBIcon.ROTATE_LEFT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE));
+        itemFit = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_fit_window, DBIcon.FIT_WINDOW.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT));
+        itemOriginal = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_original_size, DBIcon.ORIGINAL_SIZE.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL));
+    }
+
 }
