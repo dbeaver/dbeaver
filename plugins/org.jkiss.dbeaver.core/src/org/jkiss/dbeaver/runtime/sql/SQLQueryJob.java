@@ -533,7 +533,7 @@ public class SQLQueryJob extends DataSourceJob
                             sourceName = entityName;
                         } else if (!sourceName.equals(entityName)) {
                             // Multiple source entities
-                            //sourceName = null;
+                            sourceName += "(+)";
                             break;
                         }
                     }
