@@ -45,5 +45,7 @@ public interface DBCResultSet extends DBPObject
 
     DBCResultSetMetaData getResultSetMetaData() throws DBCException;
 
+    String getResultSetName() throws DBCException;
+
     void close();
 }

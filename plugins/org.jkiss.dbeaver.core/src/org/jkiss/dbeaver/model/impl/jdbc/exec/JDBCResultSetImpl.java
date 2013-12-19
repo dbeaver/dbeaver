@@ -207,6 +207,19 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
+    public String getResultSetName() throws DBCException {
+        if (this.original == null) {
+            return null;
+        }
+        try {
+            return original.getCursorName();
+        }
+        catch (SQLException e) {
+            throw new DBCException(e, session.getDataSource());
+        }
+    }
+
+    @Override
     public ResultSetMetaData getMetaData()
         throws SQLException
     {
