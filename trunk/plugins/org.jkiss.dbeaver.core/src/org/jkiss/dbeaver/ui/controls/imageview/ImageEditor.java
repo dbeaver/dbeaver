@@ -23,10 +23,10 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ToolBar;
 
 import java.io.InputStream;
 
@@ -39,12 +39,6 @@ public class ImageEditor extends ImageViewer {
     private Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 
     private Label messageLabel;
-
-    private ToolItem itemZoomIn;
-    private ToolItem itemZoomOut;
-    private ToolItem itemRotate;
-    private ToolItem itemFit;
-    private ToolItem itemOriginal;
 
     public ImageEditor(Composite parent, int style)
     {
@@ -73,24 +67,10 @@ public class ImageEditor extends ImageViewer {
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
                 toolBar.setLayoutData(gd);
 
-                itemZoomIn = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_zoom_in, DBIcon.ZOOM_IN.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN));
-                itemZoomOut = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_zoom_out, DBIcon.ZOOM_OUT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT));
-                itemRotate = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_rotate, DBIcon.ROTATE_LEFT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE));
-                itemFit = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_fit_window, DBIcon.FIT_WINDOW.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT));
-                itemOriginal = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_original_size, DBIcon.ORIGINAL_SIZE.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL));
+                fillToolBar(toolBar);
             }
         }
         updateActions();
-    }
-
-    private void updateActions()
-    {
-        boolean hasImage = getCanvas().getSourceImage() != null;
-        itemZoomIn.setEnabled(hasImage);
-        itemZoomOut.setEnabled(hasImage);
-        itemRotate.setEnabled(hasImage);
-        itemFit.setEnabled(hasImage);
-        itemOriginal.setEnabled(hasImage);
     }
 
     @Override

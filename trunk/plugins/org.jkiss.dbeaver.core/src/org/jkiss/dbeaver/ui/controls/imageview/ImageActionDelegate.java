@@ -40,13 +40,13 @@ public class ImageActionDelegate extends Action {
     /**
      * pointer to image view
      */
-    public ImageEditor imageViewControl = null;
+    public ImageViewer imageViewControl = null;
     /**
      * Action id of this delegate
      */
     public String id;
 
-    public ImageActionDelegate(ImageEditor viewControl, String id) {
+    public ImageActionDelegate(ImageViewer viewControl, String id) {
         this.imageViewControl = viewControl;
         this.id = id;
     }
