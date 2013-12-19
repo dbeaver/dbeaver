@@ -47,6 +47,16 @@
 
     <versions>
         <version>
+            <number>2.3.5</number>
+            <type>hotfix</type>
+            <date>20.12.2013</date>
+
+            <release-notes>
+                -
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.3.4</number>
             <type>major</type>
             <date>16.12.2013</date>

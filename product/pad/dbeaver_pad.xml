@@ -38,7 +38,7 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>2.3.4</Program_Version>
+    <Program_Version>2.3.5</Program_Version>
     <Program_Release_Month>12</Program_Release_Month>
     <Program_Release_Day>16</Program_Release_Day>
     <Program_Release_Year>2013</Program_Release_Year>
@@ -49,14 +49,7 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Database objects quick search dialog has been added
-        - Query execution progress/cancel UI was redesign
-        - SQL auto-completion was improved
-        - Results find/replace has been fixed
-        - Multiple result sets support (SQL Server &amp; Sybase) added
-        - DB2, Oracle extensions was improved. Legacy DB2 LUW driver added
-        - MySQL driver updated
-        - Many UI fixes and improvements
+        -
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -78,8 +71,8 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.3.4-x86-setup.exe</Primary_Download_URL>
-      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.3.4-x86_64-setup.exe</Secondary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.3.5-x86-setup.exe</Primary_Download_URL>
+      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.3.5-x86_64-setup.exe</Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
     </Download_URLs>
