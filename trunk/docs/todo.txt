@@ -2,14 +2,15 @@ Major:
 
 error: S/DB selector combo works as crap
 SOCKS proxy, HTTP proxy
+NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
 
 1. Browse data by foreign keys
-2. Dialect-dependent SQL generator
-3. Query manager fixes. + keep only primitive props + persistence
-4. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
-5. Async autocomplete
-6. Check on MacOS
-7. Cassandra new driver
+2. Tree-like grid
+3. Dialect-dependent SQL generator
+4. Query manager fixes. + keep only primitive props + persistence
+5. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
+6. Async autocomplete
+7. Check on MacOS
 
 
 Minor:
@@ -29,5 +30,3 @@ Search results reflect on disconnect
 Generic driver config for additional metadata reading (stored procedures, ete).
 Columns ordering/search (record mode)
 DB toolbar visibility config in Eclipse mode
-
-

@@ -69,11 +69,11 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
         throws SQLException
     {
-        DBPObject rsSource = resultSetMeta.getResultSet().getSource();
-        DBSObject dataContainer = rsSource instanceof DBCStatement ? ((DBCStatement)rsSource).getDataContainer() : null;
+        DBCStatement rsSource = resultSetMeta.getResultSet().getSourceStatement();
+        Object statementSource = rsSource != null ? rsSource.getStatementSource() : null;
         DBSEntity ownerEntity = null;
-        if (dataContainer instanceof DBSEntity) {
-            ownerEntity = (DBSEntity)dataContainer;
+        if (statementSource instanceof DBSEntity) {
+            ownerEntity = (DBSEntity)statementSource;
         }
         this.index = index;
 
@@ -180,7 +180,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             this.tableMetaData.addAttribute(this);
         }
 
-        dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSource().getSession().getDataSource(), typeName, typeID);
+        dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSourceStatement().getSession().getDataSource(), typeName, typeID);
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 1)

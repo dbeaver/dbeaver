@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.log;
 
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.runtime.qm.QMEventFilter;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
@@ -48,18 +49,25 @@ class SQLLogFilter implements QMEventFilter {
             return ((QMMSessionInfo)object).getContainer() == editor.getDataSourceContainer();
         } else {
             if (object instanceof QMMStatementExecuteInfo) {
-                DBCStatement statement = ((QMMStatementExecuteInfo) object).getStatement().getReference();
-                return statement != null && statement.getSource() == editor;
+                return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getReference());
             } else if (object instanceof QMMStatementInfo) {
-                DBCStatement statement = ((QMMStatementInfo) object).getReference();
-                return statement != null && statement.getSource() == editor;
+                return belongsToEditor(((QMMStatementInfo) object).getReference());
             } else if (object instanceof QMMTransactionInfo) {
-                return ((QMMTransactionInfo)object).getSession().getReference() == editor.getDataSource();
+                return belongsToEditor(((QMMTransactionInfo)object).getSession());
             } else if (object instanceof QMMTransactionSavepointInfo) {
-                return ((QMMTransactionSavepointInfo)object).getTransaction().getSession().getReference() == editor.getDataSource();
+                return belongsToEditor(((QMMTransactionSavepointInfo)object).getTransaction().getSession());
             }
         }
         return false;
+    }
+
+    private boolean belongsToEditor(QMMSessionInfo session) {
+        DBCExecutionContext executionContext = session.getReference();
+        return executionContext != null && executionContext.getDataSource() == editor.getDataSource();
+    }
+
+    private boolean belongsToEditor(DBCStatement statement) {
+        return statement != null && statement.getStatementSource() == editor;
     }
 
 }

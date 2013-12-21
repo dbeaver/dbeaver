@@ -24,10 +24,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -57,10 +56,10 @@ public class SQLQueryJob extends DataSourceJob
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
     private static final String NESTED_QUERY_AlIAS = "origdbvr";
 
-    private final SQLEditorBase editor;
     private final List<SQLStatementInfo> queries;
     private final SQLResultsConsumer resultsConsumer;
     private final SQLQueryListener listener;
+    private final IWorkbenchPartSite partSite;
 
     private DBDDataFilter dataFilter;
     private boolean connectionInvalidated = false;
@@ -79,17 +78,15 @@ public class SQLQueryJob extends DataSourceJob
     private int fetchResultSetNumber;
 
     public SQLQueryJob(
+        IWorkbenchPartSite partSite,
         String name,
-        SQLEditorBase editor,
+        DBPDataSource dataSource,
         List<SQLStatementInfo> queries,
         SQLResultsConsumer resultsConsumer,
         SQLQueryListener listener)
     {
-        super(
-            name,
-            DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor(),
-            editor.getDataSource());
-        this.editor = editor;
+        super(name, DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor(), dataSource);
+        this.partSite = partSite;
         this.queries = queries;
         this.resultsConsumer = resultsConsumer;
         this.listener = listener;
@@ -327,7 +324,7 @@ public class SQLQueryJob extends DataSourceJob
                 sqlQuery,
                 rsOffset,
                 rsMaxRows);
-            curStatement.setSource(editor);
+            curStatement.setStatementSource(partSite.getPart());
 
             if (hasParameters) {
                 // Bind them
@@ -487,19 +484,18 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean bindStatementParameters(final List<SQLStatementParameter> parameters)
     {
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
             @Override
             public void run()
             {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                    editor.getSite(),
+                        partSite,
                     getDataSource(),
                     parameters);
                 result = (dialog.open() == IDialogConstants.OK_ID);
             }
         };
-        UIUtils.runInUI(shell, binder);
+        UIUtils.runInUI(partSite.getShell(), binder);
         return binder.getResult();
     }
 

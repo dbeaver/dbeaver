@@ -86,7 +86,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public DBCStatement getSource()
+    public DBCStatement getSourceStatement()
     {
         return null;
     }
@@ -99,16 +99,6 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
                 throw new DBCException("Column index " + index + " out of bounds (" + properties.size() + ")");
             }
             return row.getValue(properties.get(index - 1).getName());
-        } catch (WMIException e) {
-            throw new DBCException(e, session.getDataSource());
-        }
-    }
-
-    @Override
-    public Object getColumnValue(String name) throws DBCException
-    {
-        try {
-            return row.getValue(name);
         } catch (WMIException e) {
             throw new DBCException(e, session.getDataSource());
         }

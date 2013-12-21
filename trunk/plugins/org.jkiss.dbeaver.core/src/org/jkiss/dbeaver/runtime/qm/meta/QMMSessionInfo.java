@@ -183,9 +183,9 @@ public class QMMSessionInfo extends QMMObject {
 
     QMMStatementExecuteInfo beginFetch(DBCResultSet resultSet)
     {
-        QMMStatementExecuteInfo exec = getExecution(resultSet.getSource());
+        QMMStatementExecuteInfo exec = getExecution(resultSet.getSourceStatement());
         if (exec == null) {
-            exec = beginExecution(resultSet.getSource());
+            exec = beginExecution(resultSet.getSourceStatement());
         }
         exec.beginFetch();
         return exec;
@@ -193,7 +193,7 @@ public class QMMSessionInfo extends QMMObject {
 
     QMMStatementExecuteInfo endFetch(DBCResultSet resultSet, long rowCount)
     {
-        QMMStatementExecuteInfo exec = getExecution(resultSet.getSource());
+        QMMStatementExecuteInfo exec = getExecution(resultSet.getSourceStatement());
         if (exec != null) {
             exec.endFetch(rowCount);
         }

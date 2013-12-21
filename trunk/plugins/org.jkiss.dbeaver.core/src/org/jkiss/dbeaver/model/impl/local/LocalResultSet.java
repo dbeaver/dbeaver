@@ -50,7 +50,7 @@ public class LocalResultSet implements DBCResultSet
     }
 
     @Override
-    public DBCStatement getSource()
+    public DBCStatement getSourceStatement()
     {
         return statement;
     }
@@ -59,17 +59,6 @@ public class LocalResultSet implements DBCResultSet
     public Object getColumnValue(int index) throws DBCException
     {
         return rows.get(curPosition)[index - 1];
-    }
-
-    @Override
-    public Object getColumnValue(String name) throws DBCException
-    {
-        for (int i = 0; i < metaColumns.size(); i++) {
-            if (metaColumns.get(i).getName().equals(name)) {
-                return getColumnValue(metaColumns.get(i).getIndex());
-            }
-        }
-        return null;
     }
 
     @Override

@@ -22,14 +22,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.sql.*;
@@ -51,10 +50,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     private long rsOffset = -1;
     private long rsMaxRows = -1;
 
-    private DBSObject dataContainer;
+    private Object source;
     private int updateCount;
     private Throwable executeError;
-    private Object userData;
 
     public JDBCStatementImpl(JDBCSession connection, STATEMENT original)
     {
@@ -238,27 +236,15 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Override
-    public DBSObject getDataContainer()
+    public Object getStatementSource()
     {
-        return this.dataContainer;
+        return this.source;
     }
 
     @Override
-    public void setDataContainer(DBSObject container)
+    public void setStatementSource(Object source)
     {
-        this.dataContainer = container;
-    }
-
-    @Override
-    public Object getSource()
-    {
-        return userData;
-    }
-
-    @Override
-    public void setSource(Object userData)
-    {
-        this.userData = userData;
+        this.source = source;
     }
 
     private JDBCResultSetImpl makeResultSet(ResultSet resultSet)

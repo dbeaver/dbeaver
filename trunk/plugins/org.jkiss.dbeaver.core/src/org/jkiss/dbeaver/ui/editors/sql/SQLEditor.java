@@ -860,7 +860,7 @@ public class SQLEditor extends SQLEditorBase
         return queryProcessor;
     }
 
-    private class QueryProcessor implements SQLResultsConsumer {
+    public class QueryProcessor implements SQLResultsConsumer {
 
         private SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
@@ -928,8 +928,9 @@ public class SQLEditor extends SQLEditorBase
 
                 SQLQueryListener listener = new SQLEditorQueryListener(this);
                 final SQLQueryJob job = new SQLQueryJob(
+                    getSite(),
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
-                    SQLEditor.this,
+                    getDataSource(),
                     queries,
                     this,
                     listener);
@@ -1006,7 +1007,7 @@ public class SQLEditor extends SQLEditorBase
 
     }
 
-    private class QueryResultsProvider implements DBSDataContainer, ResultSetProvider {
+    public class QueryResultsProvider implements DBSDataContainer, ResultSetProvider {
 
         private final QueryProcessor queryProcessor;
         private final CTabItem tabItem;
@@ -1053,6 +1054,11 @@ public class SQLEditor extends SQLEditorBase
                     QueryResultsProvider.this.queryProcessor.removeResults(QueryResultsProvider.this);
                 }
             });
+        }
+
+        public SQLEditor getOwnerEditor()
+        {
+            return SQLEditor.this;
         }
 
         @Override
