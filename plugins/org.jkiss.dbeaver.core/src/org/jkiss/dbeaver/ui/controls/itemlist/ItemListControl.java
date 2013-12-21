@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
@@ -68,7 +69,7 @@ public class ItemListControl extends NodeListControl
 
         this.searcher = new Searcher();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
-        this.disabledCellColor = new Color(parent.getDisplay(), 0xEA, 0xEA, 0xEA);
+        this.disabledCellColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
         this.normalFont = parent.getFont();
         this.boldFont = UIUtils.makeBoldFont(normalFont);
     }
