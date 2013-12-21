@@ -160,7 +160,7 @@ public class CassandraKeyspace implements DBSSchema
                 null,
                 owner.getName(),
                 null,
-                null).getSource();
+                null).getSourceStatement();
         }
 
         @Override
@@ -184,7 +184,7 @@ public class CassandraKeyspace implements DBSSchema
                 null,
                 owner.getName(),
                 forTable == null ? null : forTable.getName(),
-                null).getSource();
+                null).getSourceStatement();
         }
 
         @Override
