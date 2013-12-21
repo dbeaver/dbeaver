@@ -106,7 +106,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
 
     protected OracleTablespace(OracleDataSource dataSource, ResultSet dbResult)
     {
-        super(dataSource, dbResult != null);
+        super(dataSource, true);
         this.name = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
         this.blockSize = JDBCUtils.safeGetLong(dbResult, "BLOCK_SIZE");
         this.initialExtent = JDBCUtils.safeGetLong(dbResult, "INITIAL_EXTENT");

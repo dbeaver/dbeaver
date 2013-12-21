@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 
@@ -46,7 +47,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         OracleTableConstraint referencedKey,
         DBSForeignKeyModifyRule deleteRule)
     {
-        super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, null, status);
+        super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, status);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
     }
@@ -60,9 +61,10 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         super(
             table,
             JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME"),
-            null,
             DBSEntityConstraintType.FOREIGN_KEY,
-            true);
+            CommonUtils.notNull(
+                CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS")),
+                OracleObjectStatus.ENABLED));
 
         String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
         String refOwnerName = JDBCUtils.safeGetString(dbResult, "R_OWNER");

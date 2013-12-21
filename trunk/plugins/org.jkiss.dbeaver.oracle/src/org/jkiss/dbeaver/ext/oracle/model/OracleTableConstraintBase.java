@@ -36,14 +36,12 @@ public abstract class OracleTableConstraintBase extends JDBCTableConstraint<Orac
 
     static final Log log = LogFactory.getLog(OracleTableConstraintBase.class);
 
-    private String searchCondition;
     private OracleObjectStatus status;
     private List<OracleTableConstraintColumn> columns;
 
-    public OracleTableConstraintBase(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, String searchCondition, OracleObjectStatus status)
+    public OracleTableConstraintBase(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, OracleObjectStatus status)
     {
         super(oracleTable, name, null, constraintType, false);
-        this.searchCondition = searchCondition;
         this.status = status;
     }
 
@@ -65,13 +63,7 @@ public abstract class OracleTableConstraintBase extends JDBCTableConstraint<Orac
         return constraintType;
     }
 
-    @Property(viewable = true, editable = true, order = 4)
-    public String getSearchCondition()
-    {
-        return searchCondition;
-    }
-
-    @Property(viewable = true, editable = false, order = 5)
+    @Property(viewable = true, editable = false, order = 9)
     public OracleObjectStatus getStatus()
     {
         return status;
