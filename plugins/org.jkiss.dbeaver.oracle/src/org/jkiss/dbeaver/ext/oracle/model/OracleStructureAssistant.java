@@ -137,8 +137,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
 
         // Load tables
         JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT \n" +
-                "OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE, SEARCH_CONDITION, STATUS\n" +
+                "SELECT OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE\n" +
                 "FROM SYS.ALL_CONSTRAINTS\n" +
                 "WHERE CONSTRAINT_NAME like ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "") +
                 (schema != null ? " AND OWNER=?" : ""));

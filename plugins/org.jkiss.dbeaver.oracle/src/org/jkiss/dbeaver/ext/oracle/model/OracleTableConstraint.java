@@ -22,7 +22,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 
@@ -33,9 +35,12 @@ public class OracleTableConstraint extends OracleTableConstraintBase {
 
     static final Log log = LogFactory.getLog(OracleTableConstraint.class);
 
+    private String searchCondition;
+
     public OracleTableConstraint(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, String searchCondition, OracleObjectStatus status)
     {
-        super(oracleTable, name, constraintType, searchCondition, status);
+        super(oracleTable, name, constraintType, status);
+        this.searchCondition = searchCondition;
     }
 
     public OracleTableConstraint(OracleTableBase table, ResultSet dbResult)
@@ -43,9 +48,17 @@ public class OracleTableConstraint extends OracleTableConstraintBase {
         super(
             table,
             JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME"),
-            null,
             getConstraintType(JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE")),
-            true);
+            CommonUtils.notNull(
+                CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS")),
+                OracleObjectStatus.ENABLED));
+        this.searchCondition = JDBCUtils.safeGetString(dbResult, "SEARCH_CONDITION");
+    }
+
+    @Property(viewable = true, editable = true, order = 4)
+    public String getSearchCondition()
+    {
+        return searchCondition;
     }
 
     @Override
