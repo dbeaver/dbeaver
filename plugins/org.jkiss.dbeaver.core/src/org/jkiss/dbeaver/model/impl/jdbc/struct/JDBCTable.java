@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.code.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,8 +93,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return DATA_COUNT | DATA_INSERT | DATA_UPDATE | DATA_DELETE | DATA_FILTER;
     }
 
+    @NotNull
     @Override
-    public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
+    public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
         throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
@@ -208,7 +211,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long countData(DBCSession session, DBDDataFilter dataFilter) throws DBCException
+    public long countData(@NotNull DBCSession session, @Nullable DBDDataFilter dataFilter) throws DBCException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
@@ -252,8 +255,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    @NotNull
     @Override
-    public ExecuteBatch insertData(DBCSession session, DBSAttributeBase[] attributes, DBDDataReceiver keysReceiver)
+    public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -291,12 +295,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new BatchImpl(dbStat, attributes, keysReceiver, true);
     }
 
+    @NotNull
     @Override
     public ExecuteBatch updateData(
-        DBCSession session,
-        DBSAttributeBase[] updateAttributes,
-        DBSAttributeBase[] keyAttributes,
-        DBDDataReceiver keysReceiver)
+        @NotNull DBCSession session,
+        @NotNull DBSAttributeBase[] updateAttributes,
+        @NotNull DBSAttributeBase[] keyAttributes,
+        @Nullable DBDDataReceiver keysReceiver)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -330,8 +335,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new BatchImpl(dbStat, attributes, keysReceiver, false);
     }
 
+    @NotNull
     @Override
-    public ExecuteBatch deleteData(DBCSession session, DBSAttributeBase[] keyAttributes)
+    public ExecuteBatch deleteData(@NotNull DBCSession session, @NotNull DBSAttributeBase[] keyAttributes)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -353,12 +359,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new BatchImpl(dbStat, keyAttributes, null, false);
     }
 
-    private String getAttributeName(DBSAttributeBase attribute) {
+    private String getAttributeName(@NotNull DBSAttributeBase attribute) {
         // Do not quote pseudo attribute name
         return attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName());
     }
 
-    private void appendQueryConditions(StringBuilder query, String tableAlias, DBDDataFilter dataFilter)
+    private void appendQueryConditions(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
     {
         if (dataFilter != null && dataFilter.hasConditions()) {
             query.append(" WHERE "); //$NON-NLS-1$
@@ -366,7 +372,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
-    private void appendQueryOrder(StringBuilder query, String tableAlias, DBDDataFilter dataFilter)
+    private void appendQueryOrder(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
     {
         if (dataFilter != null) {
             // Construct ORDER BY
@@ -377,7 +383,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
-    private void readKeys(DBCSession session, DBCStatement dbStat, DBDDataReceiver keysReceiver)
+    private void readKeys(@NotNull DBCSession session, @NotNull DBCStatement dbStat, @NotNull DBDDataReceiver keysReceiver)
         throws DBCException
     {
         DBCResultSet dbResult;
@@ -432,7 +438,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private final DBDDataReceiver keysReceiver;
         private final boolean skipSequences;
 
-        private BatchImpl(DBCStatement statement, DBSAttributeBase[] attributes, DBDDataReceiver keysReceiver, boolean skipSequences)
+        private BatchImpl(@NotNull DBCStatement statement, @NotNull DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, boolean skipSequences)
         {
             this.statement = statement;
             this.attributes = attributes;
@@ -441,7 +447,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         @Override
-        public void add(Object[] attributeValues) throws DBCException
+        public void add(@NotNull Object[] attributeValues) throws DBCException
         {
             if (!CommonUtils.isEmpty(attributes) && CommonUtils.isEmpty(attributeValues)) {
                 throw new DBCException("Bad attribute values: " + Arrays.toString(attributeValues));
@@ -449,6 +455,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             values.add(attributeValues);
         }
 
+        @NotNull
         @Override
         public DBCStatistics execute() throws DBCException
         {

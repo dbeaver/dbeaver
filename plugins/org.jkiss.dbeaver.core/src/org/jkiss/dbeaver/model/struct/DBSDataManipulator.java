@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -35,29 +37,33 @@ public interface DBSDataManipulator extends DBSDataContainer {
     public static final int DATA_DELETE         = 16;
 
     interface ExecuteBatch {
-        void add(Object[] attributeValues) throws DBCException;
+        void add(@NotNull Object[] attributeValues) throws DBCException;
 
+        @NotNull
         DBCStatistics execute() throws DBCException;
 
         void close();
     }
 
+    @NotNull
     ExecuteBatch insertData(
-        DBCSession session,
-        DBSAttributeBase[] attributes,
-        DBDDataReceiver keysReceiver)
+        @NotNull DBCSession session,
+        @NotNull DBSAttributeBase[] attributes,
+        @Nullable DBDDataReceiver keysReceiver)
         throws DBCException;
 
+    @NotNull
     ExecuteBatch updateData(
-        DBCSession session,
-        DBSAttributeBase[] updateAttributes,
-        DBSAttributeBase[] keyAttributes,
-        DBDDataReceiver keysReceiver)
+        @NotNull DBCSession session,
+        @NotNull DBSAttributeBase[] updateAttributes,
+        @NotNull DBSAttributeBase[] keyAttributes,
+        @Nullable DBDDataReceiver keysReceiver)
         throws DBCException;
 
+    @NotNull
     ExecuteBatch deleteData(
-        DBCSession session,
-        DBSAttributeBase[] keyAttributes)
+        @NotNull DBCSession session,
+        @NotNull DBSAttributeBase[] keyAttributes)
         throws DBCException;
 
 }

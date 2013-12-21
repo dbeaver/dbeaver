@@ -23,6 +23,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -145,8 +146,9 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
             return DATA_SELECT;
         }
 
+        @NotNull
         @Override
-        public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+        public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
         {
             DBCStatistics statistics = new DBCStatistics();
             DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -190,7 +192,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         }
 
         @Override
-        public long countData(DBCSession session, DBDDataFilter dataFilter)
+        public long countData(@NotNull DBCSession session, DBDDataFilter dataFilter)
         {
             return -1;
         }

@@ -4,7 +4,8 @@ Bundle-Name: JKISS Utils
 Bundle-SymbolicName: org.jkiss.utils
 Bundle-Version: 1.0.21
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.jkiss.utils,
+Export-Package: org.jkiss.code,
+ org.jkiss.utils,
  org.jkiss.utils.time,
  org.jkiss.utils.xml
 Bundle-Vendor: JKISS
