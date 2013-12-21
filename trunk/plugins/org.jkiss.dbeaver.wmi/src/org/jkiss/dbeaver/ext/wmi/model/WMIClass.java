@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.ext.wmi.Activator;
@@ -424,8 +425,9 @@ public class WMIClass extends WMIContainer
         return DATA_SELECT;
     }
 
+    @NotNull
     @Override
-    public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+    public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
         try {
@@ -467,7 +469,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public long countData(DBCSession session, DBDDataFilter dataFilter)
+    public long countData(@NotNull DBCSession session, DBDDataFilter dataFilter)
     {
         return -1;
     }
