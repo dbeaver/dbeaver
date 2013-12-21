@@ -137,6 +137,12 @@ public class CommonUtils {
         return Character.toUpperCase(str.charAt(0)) + str.substring(1);
     }
 
+    @NotNull
+    public static <T> T notNull(@Nullable T value, @NotNull T defaultValue)
+    {
+        return value != null ? value : defaultValue;
+    }
+
     public static boolean isEmpty(@Nullable CharSequence value)
     {
         return value == null || value.length() == 0;

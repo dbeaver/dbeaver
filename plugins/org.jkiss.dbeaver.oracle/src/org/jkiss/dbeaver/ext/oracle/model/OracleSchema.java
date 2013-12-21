@@ -426,7 +426,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             StringBuilder sql = new StringBuilder(500);
             sql
                 .append("SELECT /*+USE_NL(col) USE_NL(ref)*/\n" +
-                    "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS," +
+                    "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION," +
                     "col.COLUMN_NAME,col.POSITION\n" +
                     "FROM SYS.ALL_CONSTRAINTS c\n" +
                     "LEFT OUTER JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
@@ -495,7 +495,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             StringBuilder sql = new StringBuilder(500);
             sql.append(
                 "SELECT /*+USE_NL(col) USE_NL(ref)*/ \r\n" +
-                "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.SEARCH_CONDITION,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,ref.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
+                "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,ref.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
                 "col.COLUMN_NAME,col.POSITION\r\n" +
                 "FROM SYS.ALL_CONSTRAINTS c\n" +
                 "JOIN SYS.ALL_CONS_COLUMNS col ON c.OWNER=col.OWNER AND c.CONSTRAINT_NAME=col.CONSTRAINT_NAME\n" +
