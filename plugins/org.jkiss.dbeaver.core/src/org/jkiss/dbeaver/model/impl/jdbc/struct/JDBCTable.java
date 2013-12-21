@@ -143,7 +143,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             firstRow,
             maxRows);
         try {
-            dbStat.setDataContainer(this);
+            dbStat.setStatementSource(this);
             long startTime = System.currentTimeMillis();
             boolean executeResult = dbStat.executeStatement();
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
@@ -221,7 +221,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query.toString(),
             false, false, false);
         try {
-            dbStat.setDataContainer(this);
+            dbStat.setStatementSource(this);
             if (!dbStat.executeStatement()) {
                 return 0;
             }
@@ -286,7 +286,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         // Execute
         DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
-        dbStat.setDataContainer(this);
+        dbStat.setStatementSource(this);
 
         return new BatchImpl(dbStat, attributes, keysReceiver, true);
     }
@@ -323,7 +323,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         // Execute
         DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
 
-        dbStat.setDataContainer(this);
+        dbStat.setStatementSource(this);
 
         DBSAttributeBase[] attributes = CommonUtils.concatArrays(updateAttributes, keyAttributes);
 
@@ -349,7 +349,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         // Execute
         DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
-        dbStat.setDataContainer(this);
+        dbStat.setStatementSource(this);
         return new BatchImpl(dbStat, keyAttributes, null, false);
     }
 

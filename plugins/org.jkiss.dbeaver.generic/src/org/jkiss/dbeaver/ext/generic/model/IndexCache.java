@@ -63,7 +63,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
                     // so let's fix it in oracle plugin
                     forParent == null ? owner.getDataSource().getAllObjectsPattern() : DBUtils.getQuotedIdentifier(forParent),
                     false,
-                    true).getSource();
+                    true).getSourceStatement();
         } catch (SQLException e) {
             throw e;
         } catch (Exception e) {

@@ -29,11 +29,9 @@ public interface DBCResultSet extends DBPObject
 {
     DBCSession getSession();
 
-    DBCStatement getSource();
+    DBCStatement getSourceStatement();
 
     Object getColumnValue(int index) throws DBCException;
-
-    Object getColumnValue(String name) throws DBCException;
 
     DBDValueMeta getColumnValueMeta(int index) throws DBCException;
 

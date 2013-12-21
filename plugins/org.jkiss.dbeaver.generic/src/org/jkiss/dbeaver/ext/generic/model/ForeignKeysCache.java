@@ -73,7 +73,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : owner.getSchema().getName(),
             forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName())
-            .getSource();
+            .getSourceStatement();
     }
 
     @Override

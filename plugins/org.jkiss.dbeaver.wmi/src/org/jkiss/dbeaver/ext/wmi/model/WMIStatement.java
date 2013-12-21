@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIObject;
@@ -35,7 +34,6 @@ public class WMIStatement implements DBCStatement {
     private WMISession session;
     private DBCStatementType type;
     private String query;
-    private Object userData;
     private List<WMIObject> queryResult;
     private long firstRow;
     private long maxRows;
@@ -144,26 +142,14 @@ public class WMIStatement implements DBCStatement {
     }
 
     @Override
-    public DBSObject getDataContainer()
+    public Object getStatementSource()
     {
         return null;
     }
 
     @Override
-    public void setDataContainer(DBSObject container)
+    public void setStatementSource(Object source)
     {
-    }
-
-    @Override
-    public Object getSource()
-    {
-        return userData;
-    }
-
-    @Override
-    public void setSource(Object userData)
-    {
-        this.userData = userData;
     }
 
     @Override

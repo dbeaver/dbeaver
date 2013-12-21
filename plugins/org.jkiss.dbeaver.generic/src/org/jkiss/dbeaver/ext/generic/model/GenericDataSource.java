@@ -776,7 +776,7 @@ public class GenericDataSource extends JDBCDataSource
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericDataSource owner) throws SQLException
         {
-            return session.getMetaData().getTableTypes().getSource();
+            return session.getMetaData().getTableTypes().getSourceStatement();
         }
         @Override
         protected GenericTableType fetchObject(JDBCSession session, GenericDataSource owner, ResultSet resultSet) throws SQLException, DBException

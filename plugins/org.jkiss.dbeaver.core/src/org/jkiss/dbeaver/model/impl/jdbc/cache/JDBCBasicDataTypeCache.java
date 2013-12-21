@@ -45,7 +45,7 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, JDBCDataSource owner) throws SQLException
     {
-        return session.getMetaData().getTypeInfo().getSource();
+        return session.getMetaData().getTypeInfo().getSourceStatement();
     }
 
     @Override

@@ -110,7 +110,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
-    public JDBCStatementImpl getSource()
+    public JDBCStatementImpl getSourceStatement()
     {
         return statement;
     }
@@ -128,18 +128,6 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         checkNotEmpty();
         try {
             return original.getObject(index);
-        }
-        catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        }
-    }
-
-    @Override
-    public Object getColumnValue(String name) throws DBCException
-    {
-        checkNotEmpty();
-        try {
-            return original.getObject(name);
         }
         catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
