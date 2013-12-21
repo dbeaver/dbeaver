@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -57,10 +59,11 @@ public interface DBSDataContainer extends DBSObject {
      * @return number of fetched rows
      * @throws DBCException on any error
      */
+    @NotNull
     DBCStatistics readData(
-        DBCSession session,
-        DBDDataReceiver dataReceiver,
-        DBDDataFilter dataFilter,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        @Nullable DBDDataFilter dataFilter,
         long firstRow,
         long maxRows,
         long flags)
@@ -74,8 +77,8 @@ public interface DBSDataContainer extends DBSObject {
      * @throws DBCException on any error
      */
     long countData(
-        DBCSession session,
-        DBDDataFilter dataFilter)
+        @NotNull DBCSession session,
+        @Nullable DBDDataFilter dataFilter)
         throws DBCException;
 
 }

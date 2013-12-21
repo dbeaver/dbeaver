@@ -46,6 +46,7 @@ import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -1093,8 +1094,9 @@ public class SQLEditor extends SQLEditorBase
             return features;
         }
 
+        @NotNull
         @Override
-        public DBCStatistics readData(DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+        public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
         {
             final SQLQueryJob job = queryProcessor.curJob;
             if (job != null) {
@@ -1122,7 +1124,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public long countData(DBCSession session, DBDDataFilter dataFilter)
+        public long countData(@NotNull DBCSession session, DBDDataFilter dataFilter)
         {
             return -1;
         }

@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.utils.CommonUtils;
@@ -150,7 +152,7 @@ public class DBDDataFilter {
         appendConditionString(dataSource, null, query);
     }
 
-    public void appendConditionString(DBPDataSource dataSource, String conditionTable, StringBuilder query)
+    public void appendConditionString(@NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
     {
         boolean hasWhere = false;
         for (DBDAttributeConstraint constraint : constraints) {
@@ -178,7 +180,7 @@ public class DBDDataFilter {
         }
     }
 
-    public void appendOrderString(DBPDataSource dataSource, String conditionTable, StringBuilder query)
+    public void appendOrderString(@NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
     {
             // Construct ORDER BY
         boolean hasOrder = false;
