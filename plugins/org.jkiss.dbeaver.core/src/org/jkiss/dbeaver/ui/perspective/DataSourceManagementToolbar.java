@@ -124,6 +124,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                         Collections.<DBSObject>emptyList() :
                         new ArrayList<DBSObject>(children);
                     databasesInfo.active = objectSelector.getSelectedObject();
+                    // Cache navigator nodes
+                    if (children != null) {
+                        for (DBSObject child : children) {
+                            DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, child, false);
+                        }
+                    }
                 }
             }
             catch (DBException e) {
