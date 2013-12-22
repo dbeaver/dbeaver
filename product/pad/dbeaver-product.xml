@@ -52,7 +52,11 @@
             <date>20.12.2013</date>
 
             <release-notes>
-                -
+                - DB2 row insert fixed
+                - Oracle metadata read fixed
+                - SQL autocomplete fixed
+                - Multiple results UI fixed
+                - Data source refresh fixed
             </release-notes>
         </version>
 
