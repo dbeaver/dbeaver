@@ -486,7 +486,7 @@ public class DataSourceDescriptor
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
-        this.reconnect(monitor, true);
+        this.reconnect(monitor, false);
 
         getRegistry().fireDataSourceEvent(
             DBPEvent.Action.OBJECT_UPDATE,
