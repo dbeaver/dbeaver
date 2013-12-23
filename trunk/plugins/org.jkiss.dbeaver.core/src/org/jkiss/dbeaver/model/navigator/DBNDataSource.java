@@ -21,8 +21,10 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -219,4 +221,16 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     {
         getDataSourceContainer().setFolderPath(folder);
     }
+
+    public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
+    {
+        DBNNode node = super.refreshNode(monitor, source);
+        if (node == this) {
+            // Refresh succeeded. Let's fire event
+            dataSource.fireEvent(
+                new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource));
+        }
+        return node;
+    }
+
 }
