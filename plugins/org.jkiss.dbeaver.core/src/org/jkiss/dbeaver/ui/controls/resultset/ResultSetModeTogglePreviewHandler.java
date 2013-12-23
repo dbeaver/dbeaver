@@ -41,9 +41,11 @@ public class ResultSetModeTogglePreviewHandler extends ResultSetCommandHandler i
                     if (rsv.isPreviewVisible()) {
                         element.setText("Hide value view panel");
                         element.setIcon(DBIcon.RS_PREVIEW_HIDE.getImageDescriptor());
+                        element.setChecked(true);
                     } else {
                         element.setText("Show value view panel");
                         element.setIcon(DBIcon.RS_PREVIEW_SHOW.getImageDescriptor());
+                        element.setChecked(false);
                     }
                 }
             }
