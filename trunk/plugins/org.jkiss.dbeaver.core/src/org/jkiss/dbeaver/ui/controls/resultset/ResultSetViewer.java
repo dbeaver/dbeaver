@@ -731,8 +731,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         };
         toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PREVIEW));
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PREVIEW, CommandContributionItem.STYLE_CHECK));
         toolBarManager.add(new ConfigAction());
 
         toolBarManager.createControl(statusBar);
@@ -1355,6 +1355,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (inline) {
             if (editor != null) {
                 spreadsheet.showCellEditor(focusCell, placeholder);
+                return editor.getControl();
             } else {
                 // No editor was created so just drop placeholder
                 placeholder.dispose();
@@ -1369,7 +1370,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
         }
-        return editor == null ? null : editor.getControl();
+        return null;
     }
 
     @Override

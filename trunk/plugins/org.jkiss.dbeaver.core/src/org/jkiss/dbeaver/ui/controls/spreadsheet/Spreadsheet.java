@@ -364,7 +364,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                     (event.keyCode >= '0' && event.keyCode <= '9'))
                 {
                     final Control editorControl = spreadsheetController.showCellEditor(true);
-                    if (editorControl != null) {
+                    if (editorControl != null && event.keyCode != SWT.CR) {
                         // Forward the same key event to just created control
                         final Event fwdEvent = new Event();
                         fwdEvent.type = SWT.KeyDown;
