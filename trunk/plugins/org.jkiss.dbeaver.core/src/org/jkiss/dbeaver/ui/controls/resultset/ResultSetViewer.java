@@ -58,6 +58,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -1250,20 +1251,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             model.getVisibleColumnCount() > 0;
     }
 
+    @Nullable
     @Override
-    public boolean showCellEditor(
+    public Control showCellEditor(
         final boolean inline)
     {
         // The control that will be the editor must be a child of the Table
         final GridPos focusCell = spreadsheet.getFocusCell();
         //GridPos pos = getPosFromPoint(event.x, event.y);
         if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
-            return false;
+            return null;
         }
         if (!isValidCell(focusCell)) {
             // Out of bounds
             log.debug("Editor position is out of bounds (" + focusCell.col + ":" + focusCell.row + ")");
-            return false;
+            return null;
         }
 
         GridPos cell = translateVisualPos(focusCell);
@@ -1272,14 +1274,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 GridPos cellPos = valueController.getCellPos();
                 if (cellPos != null && cellPos.equalsTo(cell)) {
                     openEditors.get(valueController).showValueEditor();
-                    return true;
+                    return null;
                 }
             }
         }
         DBDAttributeBinding metaColumn = model.getColumn(cell.col);
         final int handlerFeatures = metaColumn.getValueHandler().getFeatures();
         if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
-            return false;
+            return null;
         }
         if (inline &&
             (handlerFeatures & DBDValueHandler.FEATURE_INLINE_EDITOR) == 0 &&
@@ -1290,17 +1292,17 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (!isPreviewVisible()) {
                 togglePreview();
             }
-            return true;
+            return null;
         }
         if (isColumnReadOnly(metaColumn) && inline) {
             // No inline editors for readonly columns
-            return false;
+            return null;
         }
 
         Composite placeholder = null;
         if (inline) {
             if (isReadOnly()) {
-                return false;
+                return null;
             }
             spreadsheet.cancelInlineEditor();
 
@@ -1326,7 +1328,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         catch (Exception e) {
             UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
-            return false;
+            return null;
         }
         if (editor instanceof DBDValueEditorStandalone) {
             valueController.registerEditor((DBDValueEditorStandalone)editor);
@@ -1363,11 +1365,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     if (!isPreviewVisible()) {
                         togglePreview();
                     }
-                    return true;
+                    return null;
                 }
             }
         }
-        return editor != null;
+        return editor == null ? null : editor.getControl();
     }
 
     @Override
@@ -2253,7 +2255,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private Object[] curRow;
         private final DBDAttributeBinding column;
 
-        private ResultSetValueController(GridPos pos, EditType editType, Composite inlinePlaceholder) {
+        private ResultSetValueController(GridPos pos, EditType editType, @Nullable Composite inlinePlaceholder) {
             this.curRow = model.getRowData(pos.row);
             this.pos = new GridPos(pos);
             this.editType = editType;

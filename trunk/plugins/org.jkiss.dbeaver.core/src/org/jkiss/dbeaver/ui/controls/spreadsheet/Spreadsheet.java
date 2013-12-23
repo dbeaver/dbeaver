@@ -32,6 +32,7 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -358,10 +359,25 @@ public class Spreadsheet extends LightGrid implements Listener {
 */
             case SWT.KeyDown:
                 if (event.keyCode == SWT.CR ||
+                    (event.keyCode >= SWT.KEYPAD_0 && event.keyCode <= SWT.KEYPAD_9) ||
                     (event.keyCode >= 'a' && event.keyCode <= 'z') ||
                     (event.keyCode >= '0' && event.keyCode <= '9'))
                 {
-                    spreadsheetController.showCellEditor(true);
+                    final Control editorControl = spreadsheetController.showCellEditor(true);
+                    if (editorControl != null) {
+                        // Forward the same key event to just created control
+                        final Event fwdEvent = new Event();
+                        fwdEvent.type = SWT.KeyDown;
+                        fwdEvent.character = event.character;
+                        fwdEvent.keyCode = event.keyCode;
+                        final Display display = editorControl.getDisplay();
+                        display.asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                display.post(fwdEvent);
+                            }
+                        });
+                    }
                 } else if (event.keyCode == SWT.ESC) {
                     // Reset cell value
                     if (spreadsheetController != null) {
