@@ -86,6 +86,9 @@ public class ProjectRegistry implements IResourceChangeListener {
                     if (project.getName().equals(activeProjectName)) {
                         activeProject = project;
                         break;
+                    } else if (activeProject == null) {
+                        // By default use first project
+                        activeProject = project;
                     }
                 }
                 monitor.worked(1);
