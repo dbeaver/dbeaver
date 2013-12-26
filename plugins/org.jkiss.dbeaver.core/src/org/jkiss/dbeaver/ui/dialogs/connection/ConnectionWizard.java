@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -108,8 +107,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
                 CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
         } catch (InvocationTargetException ex) {
-            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                CoreMessages.dialog_connection_wizard_start_dialog_error_message, ex.getTargetException());
+            UIUtils.showErrorDialog(
+                    getShell(),
+                    CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                    null,
+                    RuntimeUtils.makeExceptionStatus(ex.getTargetException()));
         }
     }
 
