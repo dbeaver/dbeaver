@@ -23,7 +23,7 @@ package org.jkiss.dbeaver.model.impl.net;
  */
 public class SocksConstants {
 
-    public static final int DEFAULT_SOCKS_PORT = 8000;
+    public static final int DEFAULT_SOCKS_PORT = 1080;
     public static final String SOCKET_SCHEME = "socket";
 
     public static final String PROP_HOST = "socks-host";
