@@ -202,10 +202,10 @@ public class DBPConnectionInfo implements DBPObject
         this.handlers.add(handler);
     }
 
-    public DBWHandlerConfiguration getHandler(DBWHandlerType handlerType)
+    public DBWHandlerConfiguration getHandler(String id)
     {
         for (DBWHandlerConfiguration handler : handlers) {
-            if (handler.getType() == handlerType && handler.isEnabled()) {
+            if (handler.getId().equals(id)) {
                 return handler;
             }
         }

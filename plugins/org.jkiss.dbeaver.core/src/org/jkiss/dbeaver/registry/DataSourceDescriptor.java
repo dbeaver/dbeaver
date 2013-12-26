@@ -489,8 +489,8 @@ public class DataSourceDescriptor
         this.reconnect(monitor, false);
 
         getRegistry().fireDataSourceEvent(
-            DBPEvent.Action.OBJECT_UPDATE,
-            DataSourceDescriptor.this);
+                DBPEvent.Action.OBJECT_UPDATE,
+                DataSourceDescriptor.this);
 
         return true;
     }
@@ -602,11 +602,17 @@ public class DataSourceDescriptor
             // Handle tunnel
             // Open tunnel and replace connection info with new one
             this.tunnel = null;
-            DBWHandlerConfiguration handlerConfiguration = connectionInfo.getHandler(DBWHandlerType.TUNNEL);
-            if (handlerConfiguration != null) {
-                tunnel = handlerConfiguration.createHandler(DBWTunnel.class);
+            DBWHandlerConfiguration tunnelConfiguration = null;
+            for (DBWHandlerConfiguration handler : connectionInfo.getDeclaredHandlers()) {
+                if (handler.isEnabled() && handler.getType() == DBWHandlerType.TUNNEL) {
+                    tunnelConfiguration = handler;
+                    break;
+                }
+            }
+            if (tunnelConfiguration != null) {
+                tunnel = tunnelConfiguration.createHandler(DBWTunnel.class);
                 try {
-                    tunnelConnectionInfo = tunnel.initializeTunnel(monitor, handlerConfiguration, connectionInfo);
+                    tunnelConnectionInfo = tunnel.initializeTunnel(monitor, tunnelConfiguration, connectionInfo);
                 } catch (Exception e) {
                     throw new DBCException("Can't initialize tunnel", e);
                 }
