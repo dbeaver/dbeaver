@@ -2205,11 +2205,27 @@
         <handler
                 type="tunnel"
                 id="ssh_tunnel"
-                label="SSH"
+                label="SSH Tunnel"
                 description="SSH tunnel"
                 secured="true"
-                uiClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelConfiguratorUI"
-                handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl"/>
+                uiClass="org.jkiss.dbeaver.ui.dialogs.net.SSHTunnelConfiguratorUI"
+                handlerClass="org.jkiss.dbeaver.model.impl.net.SSHTunnelImpl"/>
+        <handler
+                type="tunnel"
+                id="http_tunnel"
+                label="HTTP Tunnel"
+                description="HTTP(S) tunnel"
+                secured="true"
+                uiClass="org.jkiss.dbeaver.ui.dialogs.net.HTTPTunnelConfiguratorUI"
+                handlerClass="org.jkiss.dbeaver.model.impl.net.HTTPTunnelImpl"/>
+        <handler
+                type="proxy"
+                id="socks_proxy"
+                label="SOCKS Proxy"
+                description="SOCKS4/SOCKS5 proxy"
+                secured="true"
+                uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"
+                handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.search">

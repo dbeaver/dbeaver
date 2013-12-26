@@ -16,24 +16,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.net.ssh;
+package org.jkiss.dbeaver.model.impl.net;
+
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWTunnel;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.io.IOException;
 
 /**
- * Constants for SSH tunnel
+ * HTTP(S) tunnel
  */
-public class SSHConstants {
-    
-    public static final int DEFAULT_SSH_PORT = 22;
+public class HTTPTunnelImpl implements DBWTunnel {
 
-    public static final String PROP_HOST = "host";
-    public static final String PROP_PORT = "port";
-    public static final String PROP_AUTH_TYPE = "authType";
-    public static final String PROP_KEY_PATH = "keyPath";
-    public static final String PROP_ALIVE_INTERVAL = "aliveInterval";
-    public static final String PROP_ALIVE_COUNT = "aliveCount";
-
-    public static enum AuthType {
-        PASSWORD,
-        PUBLIC_KEY
+    @Override
+    public DBPConnectionInfo initializeTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionInfo connectionInfo)
+        throws DBException, IOException
+    {
+        return connectionInfo;
     }
+
+    @Override
+    public void closeTunnel(DBRProgressMonitor monitor, DBPConnectionInfo connectionInfo) throws DBException, IOException
+    {
+    }
+
 }

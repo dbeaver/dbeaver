@@ -16,12 +16,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.net;
+package org.jkiss.dbeaver.model.impl.net;
+
+import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 
 /**
- * Network handler type
+ * SOCKS proxy
  */
-public enum DBWHandlerType {
-    TUNNEL,
-    PROXY
+public class SocksProxyImpl implements DBWNetworkHandler {
+
+
 }
