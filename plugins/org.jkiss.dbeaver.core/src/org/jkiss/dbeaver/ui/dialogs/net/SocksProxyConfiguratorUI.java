@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
-import org.jkiss.dbeaver.model.impl.net.SSHConstants;
+import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -53,31 +53,26 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
         composite.setLayout(new GridLayout(2, false));
-        hostText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_host_ip, null); //$NON-NLS-2$
+        hostText = UIUtils.createLabelText(composite, "Host", null); //$NON-NLS-2$
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        portText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, 0, 65535);
-        userNameText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_user_name, null); //$NON-NLS-2$
+        portText = UIUtils.createLabelSpinner(composite, "Port", SocksConstants.DEFAULT_SOCKS_PORT, 0, 65535);
+        userNameText = UIUtils.createLabelText(composite, "User name", null); //$NON-NLS-2$
         userNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        passwordText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
+        passwordText = UIUtils.createLabelText(composite, "Password", "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
         UIUtils.createPlaceholder(composite,1);
-        savePasswordCheckbox = UIUtils.createCheckbox(composite, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
+        savePasswordCheckbox = UIUtils.createCheckbox(composite, CoreMessages.dialog_connection_auth_checkbox_save_password, false);
     }
 
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration)
     {
-        hostText.setText(CommonUtils.getString(configuration.getProperties().get(SSHConstants.PROP_HOST)));
-        String portString = configuration.getProperties().get(SSHConstants.PROP_PORT);
+        hostText.setText(CommonUtils.getString(configuration.getProperties().get(SocksConstants.PROP_HOST)));
+        String portString = configuration.getProperties().get(SocksConstants.PROP_PORT);
         if (!CommonUtils.isEmpty(portString)) {
             portText.setSelection(CommonUtils.toInt(portString));
         }
         userNameText.setText(CommonUtils.getString(configuration.getUserName()));
-        SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
-        String authTypeName = configuration.getProperties().get(SSHConstants.PROP_AUTH_TYPE);
-        if (!CommonUtils.isEmpty(authTypeName)) {
-            authType = SSHConstants.AuthType.valueOf(authTypeName);
-        }
         passwordText.setText(CommonUtils.getString(configuration.getPassword()));
         savePasswordCheckbox.setSelection(configuration.isSavePassword());
     }
@@ -87,8 +82,8 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
     {
         Map<String,String> properties = configuration.getProperties();
         properties.clear();
-        properties.put(SSHConstants.PROP_HOST, hostText.getText());
-        properties.put(SSHConstants.PROP_PORT, portText.getText());
+        properties.put(SocksConstants.PROP_HOST, hostText.getText());
+        properties.put(SocksConstants.PROP_PORT, portText.getText());
         configuration.setUserName(userNameText.getText());
         configuration.setPassword(passwordText.getText());
         configuration.setSavePassword(savePasswordCheckbox.getSelection());

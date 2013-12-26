@@ -66,37 +66,42 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
             log.error("Reopening not-closed connection");
             close();
         }
-        this.connectionHolder = dataSource.openConnection(monitor, purpose);
-        if (autoCommit != null) {
-            try {
-                connectionHolder.setAutoCommit(autoCommit);
-            } catch (Throwable e) {
-                log.warn("Could not set auto-commit state", e); //$NON-NLS-1$
+        ACTIVE_CONTEXT.set(this);
+        try {
+            this.connectionHolder = dataSource.openConnection(monitor, purpose);
+            if (autoCommit != null) {
+                try {
+                    connectionHolder.setAutoCommit(autoCommit);
+                } catch (Throwable e) {
+                    log.warn("Could not set auto-commit state", e); //$NON-NLS-1$
+                }
             }
-        }
-        if (txnLevel != null) {
-            try {
-                connectionHolder.setTransactionIsolation(txnLevel);
-            } catch (Throwable e) {
-                log.warn("Could not set transaction isolation level", e); //$NON-NLS-1$
+            if (txnLevel != null) {
+                try {
+                    connectionHolder.setTransactionIsolation(txnLevel);
+                } catch (Throwable e) {
+                    log.warn("Could not set transaction isolation level", e); //$NON-NLS-1$
+                }
             }
-        }
-        if (copyState) {
-            // Set active object
-            if (dataSource instanceof DBSObjectSelector) {
-//                ((DBSObjectSelector) dataSource).selectObject();
-//                ((DBSObjectSelector) dataSource).getSelectedObject()
+            if (copyState) {
+                // Set active object
+                if (dataSource instanceof DBSObjectSelector) {
+    //                ((DBSObjectSelector) dataSource).selectObject();
+    //                ((DBSObjectSelector) dataSource).getSelectedObject()
+                }
             }
-        }
-        {
-            // Notify QM
-            boolean autoCommitState = false;
-            try {
-                autoCommitState = connectionHolder.getAutoCommit();
-            } catch (Throwable e) {
-                log.warn("Could not check auto-commit state", e); //$NON-NLS-1$
+            {
+                // Notify QM
+                boolean autoCommitState = false;
+                try {
+                    autoCommitState = connectionHolder.getAutoCommit();
+                } catch (Throwable e) {
+                    log.warn("Could not check auto-commit state", e); //$NON-NLS-1$
+                }
+                QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommitState);
             }
-            QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommitState);
+        } finally {
+            ACTIVE_CONTEXT.remove();
         }
     }
 
