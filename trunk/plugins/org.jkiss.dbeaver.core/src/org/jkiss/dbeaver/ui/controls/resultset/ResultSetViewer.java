@@ -1077,6 +1077,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     public void setData(List<Object[]> rows, boolean updateMetaData)
     {
+        if (spreadsheet.isDisposed()) {
+            return;
+        }
         // Clear previous data
         this.closeEditors();
 

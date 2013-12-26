@@ -426,6 +426,10 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
 
     void saveSettings(DataSourceDescriptor dataSource)
     {
+        if (!activated) {
+            // No changes anyway
+            return;
+        }
         dataSource.setName(connectionNameText.getText());
         dataSource.setSavePassword(savePasswordCheck.getSelection());
         dataSource.setDefaultAutoCommit(autocommit.getSelection(), true);
