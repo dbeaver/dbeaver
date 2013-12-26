@@ -101,7 +101,7 @@ public class EditTunnelDialogPage extends ActiveWizardPage {
     private void createHandlerTab(TabFolder tabFolder, final NetworkHandlerDescriptor descriptor) throws DBException
     {
         IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator = descriptor.createConfigurator();
-        DBWHandlerConfiguration configuration = connectionInfo.getHandler(descriptor.getType());
+        DBWHandlerConfiguration configuration = connectionInfo.getHandler(descriptor.getId());
         if (configuration == null) {
             configuration = new DBWHandlerConfiguration(descriptor, driver);
         }
