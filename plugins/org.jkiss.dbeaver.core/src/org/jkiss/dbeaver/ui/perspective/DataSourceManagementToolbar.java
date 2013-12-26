@@ -291,7 +291,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
 
             // Update controls and actions
-            updateControls(false);
+            updateControls(true);
         }
 
         UIUtils.updateMainWindowTitle(workbenchWindow);
@@ -353,8 +353,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             connectionCombo.add(
                                 dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
                                 ds.getName(),
-                                dsNode == null ? null : dsNode.getDataSourceContainer().getConnectionInfo().getColor(),
+                                ds.getConnectionInfo().getColor(),
                                 ds);
+                        } else {
+                            TableItem item = connectionCombo.getItem(i + 1);
+                            item.setText(ds.getName());
+                            item.setBackground(ds.getConnectionInfo().getColor());
                         }
                         if (dataSourceContainer == ds) {
                             selectionIndex = i + 1;
