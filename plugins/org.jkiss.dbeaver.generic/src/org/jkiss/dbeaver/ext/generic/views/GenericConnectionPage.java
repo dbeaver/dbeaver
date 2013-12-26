@@ -106,7 +106,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 355;
+            //gd.widthHint = 355;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(new ModifyListener() {
                 @Override
@@ -155,7 +155,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             serverText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 270;
+            //gd.widthHint = 270;
             serverText.setLayoutData(gd);
             serverText.addModifyListener(textListener);
 
@@ -174,7 +174,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             dbText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 270;
+            //gd.widthHint = 270;
             //gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
             dbText.addModifyListener(textListener);
@@ -194,7 +194,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             pathText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             //gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 200;
+            //gd.widthHint = 200;
             gd.horizontalSpan = 2;
             pathText.setLayoutData(gd);
             pathText.addModifyListener(textListener);
@@ -296,7 +296,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 200;
+            //gd.widthHint = 200;
             driverText.setLayoutData(gd);
 
             Button driverButton = new Button(settingsGroup, SWT.PUSH);
