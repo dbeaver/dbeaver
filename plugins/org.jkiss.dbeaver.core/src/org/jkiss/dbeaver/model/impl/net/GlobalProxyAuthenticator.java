@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.net;
+package org.jkiss.dbeaver.model.impl.net;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -38,7 +38,7 @@ import java.net.PasswordAuthentication;
 /**
  * Global authenticator
  */
-public class DBWGlobalAuthenticator extends Authenticator {
+public class GlobalProxyAuthenticator extends Authenticator {
 
     private SecuredPasswordEncrypter encrypter;
 

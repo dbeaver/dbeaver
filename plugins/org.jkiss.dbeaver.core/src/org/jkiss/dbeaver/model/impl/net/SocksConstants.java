@@ -16,33 +16,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.net;
-
-import java.io.IOException;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.SocketAddress;
-import java.net.URI;
-import java.util.List;
+package org.jkiss.dbeaver.model.impl.net;
 
 /**
- * Global proxy selector
+ * Constants for SOCKS proxy
  */
-public class DBWProxySelector extends ProxySelector {
+public class SocksConstants {
 
-    private final ProxySelector parent;
+    public static final int DEFAULT_SOCKS_PORT = 8000;
+    public static final String SOCKET_SCHEME = "socket";
 
-    public DBWProxySelector(ProxySelector parent) {
-        this.parent = parent;
-    }
+    public static final String PROP_HOST = "socks-host";
+    public static final String PROP_PORT = "socks-port";
 
-    @Override
-    public List<Proxy> select(URI uri) {
-        return parent.select(uri);
-    }
-
-    @Override
-    public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
-        parent.connectFailed(uri, sa, ioe);
-    }
 }
