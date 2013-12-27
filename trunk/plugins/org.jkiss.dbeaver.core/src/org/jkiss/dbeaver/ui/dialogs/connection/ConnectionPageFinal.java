@@ -277,7 +277,7 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
                 {
                     UIUtils.showPreferencesFor(
                         getControl().getShell(),
-                        dataSourceDescriptor.getConnectionInfo().getConnectionType(),
+                        wizard.getPageSettings().getConnectionInfo().getConnectionType(),
                         PrefPageConnectionTypes.PAGE_ID);
                     loadConnectionTypes();
                     DBPConnectionType connectionType = wizard.getPageSettings().getConnectionInfo().getConnectionType();
