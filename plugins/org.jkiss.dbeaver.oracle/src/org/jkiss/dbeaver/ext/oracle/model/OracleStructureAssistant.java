@@ -62,6 +62,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             OracleObjectType.FOREIGN_KEY,
             OracleObjectType.INDEX,
             OracleObjectType.PROCEDURE,
+            OracleObjectType.SEQUENCE,
             OracleObjectType.TRIGGER,
             };
     }
