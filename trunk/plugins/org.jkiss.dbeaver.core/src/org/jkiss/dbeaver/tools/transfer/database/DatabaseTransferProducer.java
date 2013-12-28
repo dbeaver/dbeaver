@@ -21,6 +21,8 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -38,15 +40,17 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
     static final Log log = LogFactory.getLog(DatabaseTransferProducer.class);
 
+    @NotNull
     private DBSDataContainer dataContainer;
+    @Nullable
     private DBDDataFilter dataFilter;
 
-    public DatabaseTransferProducer(DBSDataContainer dataContainer)
+    public DatabaseTransferProducer(@NotNull DBSDataContainer dataContainer)
     {
         this.dataContainer = dataContainer;
     }
 
-    public DatabaseTransferProducer(DBSDataContainer dataContainer, DBDDataFilter dataFilter)
+    public DatabaseTransferProducer(@NotNull DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter)
     {
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;

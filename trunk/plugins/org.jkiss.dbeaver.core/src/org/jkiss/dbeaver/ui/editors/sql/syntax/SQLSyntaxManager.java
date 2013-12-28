@@ -27,6 +27,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordManager;
 import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
@@ -67,14 +69,18 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         THEME_PROPERTIES.add(CONFIG_COLOR_TEXT);
         THEME_PROPERTIES.add(CONFIG_COLOR_BACKGROUND);
     }
-    private IThemeManager themeManager;
-
+    @NotNull
+    private final IThemeManager themeManager;
+    @NotNull
     private DBPKeywordManager keywordManager;
+    @Nullable
     private String quoteSymbol;
     private char structSeparator;
+    @NotNull
     private String catalogSeparator;
+    @NotNull
     private String statementDelimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
-
+    @NotNull
     private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<Integer, SQLScriptPosition>();
 
     private Set<SQLScriptPosition> addedPositions = new HashSet<SQLScriptPosition>();
@@ -89,7 +95,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     public void dispose()
     {
     }
-
+    @NotNull
     public DBPKeywordManager getKeywordManager()
     {
         return keywordManager;
@@ -100,26 +106,31 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return structSeparator;
     }
 
+    @NotNull
     public String getCatalogSeparator()
     {
         return catalogSeparator;
     }
 
+    @NotNull
     public String getStatementDelimiter()
     {
         return statementDelimiter;
     }
 
+    @Nullable
     public String getQuoteSymbol()
     {
         return quoteSymbol;
     }
 
+    @NotNull
     public Collection<? extends Position> getPositions(int offset, int length)
     {
         return positions.subMap(offset, offset + length).values();
     }
 
+    @NotNull
     public synchronized Set<SQLScriptPosition> getRemovedPositions(boolean clear)
     {
         Set<SQLScriptPosition> posList = removedPositions;
@@ -129,6 +140,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return posList;
     }
 
+    @NotNull
     public synchronized Set<SQLScriptPosition> getAddedPositions(boolean clear)
     {
         Set<SQLScriptPosition> posList = addedPositions;
@@ -146,7 +158,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             structSeparator = SQLConstants.STRUCT_SEPARATOR;
             catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             escapeChar = '\\';
-            statementDelimiter = null;
+            statementDelimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
         } else {
             keywordManager = dataSource.getContainer().getKeywordManager();
             quoteSymbol = dataSource.getInfo().getIdentifierQuoteString();
@@ -222,18 +234,18 @@ public class SQLSyntaxManager extends RuleBasedScanner {
                 public boolean isWordStart(char c)
                 {
                     return SQLConstants.DEFAULT_STATEMENT_DELIMITER.charAt(0) == c ||
-                        (statementDelimiter != null && statementDelimiter.charAt(0) == Character.toLowerCase(c));
+                        statementDelimiter.charAt(0) == Character.toLowerCase(c);
                 }
 
                 @Override
                 public boolean isWordPart(char c)
                 {
                     return SQLConstants.DEFAULT_STATEMENT_DELIMITER.indexOf(c) != -1 ||
-                        (statementDelimiter != null && statementDelimiter.indexOf(Character.toLowerCase(c)) != -1);
+                        statementDelimiter.indexOf(Character.toLowerCase(c)) != -1;
                 }
             }, Token.UNDEFINED, true);
             delimRule.addWord(SQLConstants.DEFAULT_STATEMENT_DELIMITER, delimiterToken);
-            if (statementDelimiter != null) {
+            if (!statementDelimiter.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                 delimRule.addWord(statementDelimiter, delimiterToken);
             }
             rules.add(delimRule);

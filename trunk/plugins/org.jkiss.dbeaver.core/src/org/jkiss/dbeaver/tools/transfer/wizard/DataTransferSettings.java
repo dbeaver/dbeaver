@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.transfer.DataTransferNodeDescriptor;
@@ -77,7 +78,7 @@ public class DataTransferSettings {
 
     private transient int curPipeNum = 0;
 
-    public DataTransferSettings(IDataTransferProducer[] producers, IDataTransferConsumer[] consumers)
+    public DataTransferSettings(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers)
     {
         dataPipes = new ArrayList<DataTransferPipe>();
         if (!CommonUtils.isEmpty(producers) && !CommonUtils.isEmpty(consumers)) {

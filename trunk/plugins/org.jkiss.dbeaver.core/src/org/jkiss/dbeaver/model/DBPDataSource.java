@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -37,6 +38,7 @@ public interface DBPDataSource extends DBCExecutionContext
      * Datasource container
      * @return container implementation
      */
+    @NotNull
     DBSDataSourceContainer getContainer();
 
     /**

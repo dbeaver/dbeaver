@@ -24,6 +24,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -43,7 +44,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     private DataTransferSettings settings;
 
-    public DataTransferWizard(IDataTransferProducer[] producers, IDataTransferConsumer[] consumers) {
+    public DataTransferWizard(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers) {
         this.settings = new DataTransferSettings(producers, consumers);
         loadSettings();
     }
@@ -82,6 +83,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         setNeedsProgressMonitor(true);
     }
 
+    @Nullable
     @Override
     public IWizardPage getNextPage(IWizardPage page)
     {
@@ -108,6 +110,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         return pages[pages.length - 1];
     }
 
+    @Nullable
     @Override
     public IWizardPage getPreviousPage(IWizardPage page)
     {
