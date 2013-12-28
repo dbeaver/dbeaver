@@ -26,6 +26,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -40,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 public class DataSourceConnectHandler extends DataSourceHandler
 {
+    @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -56,7 +59,11 @@ public class DataSourceConnectHandler extends DataSourceHandler
      * @param dataSourceContainer
      * @param onFinish
      */
-    public static void execute(DBRProgressMonitor monitor, DBSDataSourceContainer dataSourceContainer, final DBRProcessListener onFinish) {
+    public static void execute(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull DBSDataSourceContainer dataSourceContainer,
+        @Nullable final DBRProcessListener onFinish)
+    {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
             if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
@@ -153,7 +160,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
             false);
     }
 
-    public static boolean askForPassword(final DataSourceDescriptor dataSourceContainer, final DBWHandlerConfiguration handler)
+    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration handler)
     {
         final boolean[] authResult = new boolean[] { false };
         UIUtils.runInUI(null, new Runnable() {

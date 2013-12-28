@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ext;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
@@ -31,6 +32,7 @@ public interface IDataSourceProvider {
      * Underlying datasource
      * @return data source object.
      */
+    @Nullable
     DBPDataSource getDataSource();
 
 }

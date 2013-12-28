@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
@@ -197,6 +198,7 @@ public abstract class JDBCDataSource
         return new JDBCConnectionImpl(context, monitor, purpose, taskTitle);
     }
 
+    @NotNull
     @Override
     public DBSDataSourceContainer getContainer()
     {

@@ -22,6 +22,8 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * StandardErrorDialog
@@ -29,10 +31,10 @@ import org.eclipse.swt.widgets.Shell;
 public class StandardErrorDialog extends ErrorDialog {
 
     public StandardErrorDialog(
-        Shell parentShell,
-        String dialogTitle,
-        String message,
-        IStatus status,
+        @NotNull Shell parentShell,
+        @NotNull String dialogTitle,
+        @Nullable String message,
+        @NotNull IStatus status,
         int displayMask)
     {
         super(parentShell, dialogTitle, message, status, displayMask);

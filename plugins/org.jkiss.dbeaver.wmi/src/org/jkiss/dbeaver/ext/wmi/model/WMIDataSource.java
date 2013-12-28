@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -50,6 +51,7 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
         this.container = container;
     }
 
+    @NotNull
     @Override
     public DBSDataSourceContainer getContainer()
     {
