@@ -28,6 +28,7 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.internal.IPreferenceConstants;
 import org.eclipse.ui.internal.WorkbenchPlugin;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
@@ -122,10 +123,12 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         return true;
     }
 
+    @Nullable
     @Override
     public DBPDataSource getDataSource()
     {
-        return getDataSourceContainer().getDataSource();
+        DBSDataSourceContainer container = getDataSourceContainer();
+        return container == null ? null : container.getDataSource();
     }
 
     @Nullable
@@ -148,12 +151,12 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         }
     }
 
-    public static void setScriptDataSource(IFile file, DBSDataSourceContainer dataSourceContainer)
+    public static void setScriptDataSource(@NotNull IFile file, @Nullable DBSDataSourceContainer dataSourceContainer)
     {
         setScriptDataSource(file, dataSourceContainer, false);
     }
 
-    public static void setScriptDataSource(IFile file, DBSDataSourceContainer dataSourceContainer, boolean notify)
+    public static void setScriptDataSource(@NotNull IFile file, @Nullable DBSDataSourceContainer dataSourceContainer, boolean notify)
     {
         try {
             file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());

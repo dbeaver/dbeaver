@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -33,7 +35,7 @@ public class ConnectionAuthDialog extends BaseAuthDialog
     private DataSourceDescriptor dataSource;
     private DBWHandlerConfiguration networkHandler;
 
-    public ConnectionAuthDialog(Shell parentShell, DataSourceDescriptor dataSource, DBWHandlerConfiguration networkHandler)
+    public ConnectionAuthDialog(@NotNull Shell parentShell, @NotNull DataSourceDescriptor dataSource, @Nullable DBWHandlerConfiguration networkHandler)
     {
         super(parentShell,
             networkHandler != null ?

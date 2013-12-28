@@ -47,6 +47,7 @@ import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
@@ -103,6 +104,10 @@ public class SQLEditor extends SQLEditorBase
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
+    private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
+    private static Image IMG_EXPLAIN_PLAN = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage(); //$NON-NLS-1$
+    private static Image IMG_LOG = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
+
     private SashForm sashForm;
     private Control editorControl;
     private CTabFolder resultTabs;
@@ -116,23 +121,14 @@ public class SQLEditor extends SQLEditorBase
     private DBSDataSourceContainer dataSourceContainer;
     private final DynamicFindReplaceTarget findReplaceTarget = new DynamicFindReplaceTarget();
     private final List<SQLStatementInfo> runningQueries = new ArrayList<SQLStatementInfo>();
-
-    private static Image imgDataGrid;
-    private static Image imgExplainPlan;
-    private static Image imgLog;
     private CompositeSelectionProvider selectionProvider;
-
-    static {
-        imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
-        imgExplainPlan = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage(); //$NON-NLS-1$
-        imgLog = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
-    }
 
     public SQLEditor()
     {
         super();
     }
 
+    @Nullable
     @Override
     public DBPDataSource getDataSource()
     {
@@ -140,12 +136,14 @@ public class SQLEditor extends SQLEditorBase
         return dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
     }
 
+    @Nullable
     public IProject getProject()
     {
         IFile file = ContentUtils.convertPathToWorkspaceFile(getEditorInput().getPath());
         return file == null ? null : file.getProject();
     }
 
+    @Nullable
     @Override
     public int[] getCurrentLines()
     {
@@ -176,6 +174,7 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
+    @Nullable
     @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
@@ -183,7 +182,7 @@ public class SQLEditor extends SQLEditorBase
     }
 
     @Override
-    public boolean setDataSourceContainer(DBSDataSourceContainer container)
+    public boolean setDataSourceContainer(@Nullable DBSDataSourceContainer container)
     {
         if (container == dataSourceContainer) {
             return true;
@@ -231,6 +230,7 @@ public class SQLEditor extends SQLEditorBase
         return false;
     }
 
+    @Nullable
     @Override
     public Object getAdapter(Class required)
     {
@@ -376,13 +376,13 @@ public class SQLEditor extends SQLEditorBase
         CTabItem item = new CTabItem(resultTabs, SWT.NONE);
         item.setControl(planView.getControl());
         item.setText(CoreMessages.editors_sql_explain_plan);
-        item.setImage(imgExplainPlan);
+        item.setImage(IMG_EXPLAIN_PLAN);
         item.setData(planView);
 
         item = new CTabItem(resultTabs, SWT.NONE);
         item.setControl(logViewer);
         item.setText(CoreMessages.editors_sql_execution_log);
-        item.setImage(imgLog);
+        item.setImage(IMG_LOG);
         item.setData(logViewer);
 
         selectionProvider.trackProvider(getTextViewer().getTextWidget(), getTextViewer());
@@ -507,7 +507,7 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private void processQueries(final List<SQLStatementInfo> queries, final boolean newTab, final boolean export)
+    private void processQueries(@NotNull final List<SQLStatementInfo> queries, final boolean newTab, final boolean export)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -516,7 +516,10 @@ public class SQLEditor extends SQLEditorBase
         try {
             checkSession();
         } catch (DBException ex) {
-            getResultSetViewer().setStatus(ex.getMessage(), true);
+            ResultSetViewer viewer = getResultSetViewer();
+            if (viewer != null) {
+                viewer.setStatus(ex.getMessage(), true);
+            }
             UIUtils.showErrorDialog(
                 getSite().getShell(),
                 CoreMessages.editors_sql_error_cant_obtain_session,
@@ -618,7 +621,7 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private void closeExtraResultTabs(QueryProcessor queryProcessor)
+    private void closeExtraResultTabs(@Nullable QueryProcessor queryProcessor)
     {
         // Close all tabs except first one
         for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
@@ -654,10 +657,11 @@ public class SQLEditor extends SQLEditorBase
 
         for (QueryProcessor queryProcessor : queryProcessors) {
             for (QueryResultsProvider resultsProvider : queryProcessor.getResultProviders()) {
-                if (getDataSource() == null) {
+                DBPDataSource dataSource = getDataSource();
+                if (dataSource == null) {
                     resultsProvider.getResultSetViewer().setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
                 } else {
-                    resultsProvider.getResultSetViewer().setStatus(CoreMessages.editors_sql_staus_connected_to + getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
+                    resultsProvider.getResultSetViewer().setStatus(CoreMessages.editors_sql_staus_connected_to + dataSource.getContainer().getName() + "'"); //$NON-NLS-2$
                 }
                 resultsProvider.getResultSetViewer().updateFiltersText();
             }
@@ -788,6 +792,7 @@ public class SQLEditor extends SQLEditorBase
         return ISaveablePart2.YES;
     }
 
+    @Nullable
     @Override
     public ResultSetViewer getResultSetViewer()
     {
@@ -802,6 +807,7 @@ public class SQLEditor extends SQLEditorBase
         return curQueryProcessor == null ? null : curQueryProcessor.getCurrentResults().getResultSetViewer();
     }
 
+    @Nullable
     @Override
     public DBSDataContainer getDataContainer()
     {
@@ -820,7 +826,6 @@ public class SQLEditor extends SQLEditorBase
         }
 
         return curQueryProcessor != null &&
-                curQueryProcessor.getFirstResults() != null &&
                 curQueryProcessor.getFirstResults().isReadyToRun();
     }
 
@@ -877,12 +882,12 @@ public class SQLEditor extends SQLEditorBase
         private void createResultsProvider(int resultSetNumber) {
             resultProviders.add(new QueryResultsProvider(this, resultSetNumber));
         }
-
+        @NotNull
         QueryResultsProvider getFirstResults()
         {
-            return resultProviders.isEmpty() ? null : resultProviders.get(0);
+            return resultProviders.get(0);
         }
-
+        @NotNull
         QueryResultsProvider getCurrentResults()
         {
             if (!resultTabs.isDisposed()) {
@@ -920,6 +925,14 @@ public class SQLEditor extends SQLEditorBase
                     CoreMessages.editors_sql_error_cant_execute_query_message);
                 return;
             }
+            final DBPDataSource dataSource = getDataSource();
+            if (dataSource == null) {
+                UIUtils.showErrorDialog(
+                    getSite().getShell(),
+                    CoreMessages.editors_sql_error_cant_execute_query_title,
+                    CoreMessages.editors_sql_status_not_connected_to_database);
+                return;
+            }
             final boolean isSingleQuery = (queries.size() == 1);
 
             // Prepare execution job
@@ -931,7 +944,7 @@ public class SQLEditor extends SQLEditorBase
                 final SQLQueryJob job = new SQLQueryJob(
                     getSite(),
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
-                    getDataSource(),
+                    dataSource,
                     queries,
                     this,
                     listener);
@@ -972,8 +985,9 @@ public class SQLEditor extends SQLEditorBase
         }
 
         void removeResults(QueryResultsProvider resultsProvider) {
-            resultProviders.remove(resultsProvider);
-            if (resultProviders.isEmpty()) {
+            if (resultProviders.size() > 1) {
+                resultProviders.remove(resultsProvider);
+            } else {
                 queryProcessors.remove(this);
                 if (curQueryProcessor == this) {
                     if (queryProcessors.isEmpty()) {
@@ -985,6 +999,7 @@ public class SQLEditor extends SQLEditorBase
             }
         }
 
+        @Nullable
         @Override
         public DBDDataReceiver getDataReceiver(SQLStatementInfo statement, final int resultSetNumber) {
             if (curDataReceiver != null) {
@@ -1043,7 +1058,7 @@ public class SQLEditor extends SQLEditorBase
                 tabName += " " + queryIndex;
             }
             tabItem.setText(tabName);
-            tabItem.setImage(imgDataGrid);
+            tabItem.setImage(IMG_DATA_GRID);
             tabItem.setData(this);
             if (queryIndex > 0 || resultSetNumber > 0) {
                 tabItem.setShowClose(true);
@@ -1055,11 +1070,6 @@ public class SQLEditor extends SQLEditorBase
                     QueryResultsProvider.this.queryProcessor.removeResults(QueryResultsProvider.this);
                 }
             });
-        }
-
-        public SQLEditor getOwnerEditor()
-        {
-            return SQLEditor.this;
         }
 
         @Override
@@ -1085,10 +1095,13 @@ public class SQLEditor extends SQLEditorBase
         {
             int features = DATA_SELECT;
 
-            final SQLQueryJob job = queryProcessor.curJob;
-            if (job != null) {
-                if (getDataSource().getInfo().supportsSubqueries()) {
-                    features |= DATA_FILTER;
+            if (resultSetNumber == 0) {
+                final SQLQueryJob job = queryProcessor.curJob;
+                if (job != null) {
+                    DBPDataSource dataSource = getDataSource();
+                    if (dataSource != null && dataSource.getInfo().supportsSubqueries()) {
+                        features |= DATA_FILTER;
+                    }
                 }
             }
             return features;
@@ -1135,12 +1148,14 @@ public class SQLEditor extends SQLEditorBase
             return CoreMessages.editors_sql_description;
         }
 
+        @Nullable
         @Override
         public DBSObject getParentObject()
         {
             return getDataSourceContainer();
         }
 
+        @Nullable
         @Override
         public DBPDataSource getDataSource()
         {
@@ -1233,7 +1248,7 @@ public class SQLEditor extends SQLEditorBase
             }
             // Get results window (it is possible that it was closed till that moment
             QueryResultsProvider results = queryProcessor.getFirstResults();
-            if (results != null) {
+            {
                 CTabItem tabItem = results.tabItem;
                 if (!tabItem.isDisposed()) {
                     tabItem.setToolTipText(result.getStatement().getQuery());
@@ -1267,11 +1282,9 @@ public class SQLEditor extends SQLEditorBase
                     }
                     sashForm.setMaximizedControl(null);
                     QueryResultsProvider results = queryProcessor.getFirstResults();
-                    if (results != null) {
-                        ResultSetViewer viewer = results.getResultSetViewer();
-                        viewer.getModel().setStatistics(statistics);
-                        viewer.updateStatusMessage();
-                    }
+                    ResultSetViewer viewer = results.getResultSetViewer();
+                    viewer.getModel().setStatistics(statistics);
+                    viewer.updateStatusMessage();
                 }
             });
         }

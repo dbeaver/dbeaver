@@ -3,6 +3,7 @@ Major:
 error: S/DB selector combo works as crap
 SOCKS proxy, HTTP proxy
 NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
+Performance profile (RSV, tab switch, connections props dialog)
 
 1. Browse data by foreign keys
 2. Tree-like grid

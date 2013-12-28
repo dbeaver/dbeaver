@@ -46,6 +46,8 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -235,12 +237,12 @@ public class UIUtils {
         }
     }
 
-    public static void packColumns(Tree tree)
+    public static void packColumns(@NotNull Tree tree)
     {
         packColumns(tree, false, null);
     }
 
-    public static void packColumns(Tree tree, boolean fit, float[] ratios)
+    public static void packColumns(@NotNull Tree tree, boolean fit, @Nullable float[] ratios)
     {
         tree.setRedraw(false);
         try {
@@ -485,7 +487,8 @@ public class UIUtils {
         return createLabelText(parent, label, value, style, new GridData(GridData.FILL_HORIZONTAL));
     }
 
-    public static Text createLabelText(Composite parent, String label, String value, int style, Object layoutData)
+    @NotNull
+    public static Text createLabelText(@NotNull Composite parent, @NotNull String label, @Nullable String value, int style, @Nullable Object layoutData)
     {
         createControlLabel(parent, label);
 
@@ -501,7 +504,8 @@ public class UIUtils {
         return text;
     }
 
-    public static Spinner createLabelSpinner(Composite parent, String label, int value, int minimum, int maximum)
+    @NotNull
+    public static Spinner createLabelSpinner(@NotNull Composite parent, @NotNull String label, int value, int minimum, int maximum)
     {
         createControlLabel(parent, label);
 
@@ -513,17 +517,20 @@ public class UIUtils {
         return spinner;
     }
 
+    @NotNull
     public static Button createLabelCheckbox(Composite parent, String label, boolean checked)
     {
         return createLabelCheckbox(parent, label, null, checked, SWT.NONE);
     }
 
+    @NotNull
     public static Button createLabelCheckbox(Composite parent, String label, String tooltip, boolean checked)
     {
         return createLabelCheckbox(parent, label, tooltip, checked, SWT.NONE);
     }
 
-    public static Button createLabelCheckbox(Composite parent, String label, String tooltip, boolean checked, int style)
+    @NotNull
+    public static Button createLabelCheckbox(@NotNull Composite parent, @NotNull String label, @Nullable String tooltip, boolean checked, int style)
     {
         Label labelControl = createControlLabel(parent, label);
         //labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -582,22 +589,26 @@ public class UIUtils {
         return button;
     }
 
+    @Nullable
     public static Shell getActiveShell()
     {
         IWorkbench workbench = PlatformUI.getWorkbench();
         return workbench == null ? null : getShell(workbench.getActiveWorkbenchWindow());
     }
 
+    @Nullable
     public static Shell getShell(IShellProvider provider)
     {
         return provider == null ? null : provider.getShell();
     }
 
+    @Nullable
     public static Shell getShell(IWorkbenchPart part)
     {
         return part == null ? null : getShell(part.getSite());
     }
 
+    @Nullable
     public static Integer getTextInteger(Text text)
     {
         String str = text.getText();
@@ -613,6 +624,7 @@ public class UIUtils {
         }
     }
 
+    @Nullable
     public static IHandlerActivation registerKeyBinding(IServiceLocator serviceLocator, IAction action)
     {
         IHandlerService handlerService = (IHandlerService) serviceLocator.getService(IHandlerService.class);
@@ -647,6 +659,7 @@ public class UIUtils {
         return horizontalLine;
     }
 
+    @Nullable
     public static String getComboSelection(Combo combo)
     {
         int selectionIndex = combo.getSelectionIndex();
@@ -704,6 +717,7 @@ public class UIUtils {
         return encodingCombo;
     }
 
+    @NotNull
     public static SashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
     {
         final SashForm sash = new SashForm(parent, style);
@@ -798,7 +812,7 @@ public class UIUtils {
         Shell shell,
         String title,
         String message,
-        Throwable error)
+        @Nullable Throwable error)
     {
         if (error instanceof DBException && DBUtils.showDatabaseError(shell, title, message, (DBException)error)) {
             // If this DB error was handled by some DB-specific way then just don't care about it
@@ -818,18 +832,18 @@ public class UIUtils {
     }
 
     public static void showErrorDialog(
-        Shell shell,
-        String title,
-        String message)
+        @Nullable Shell shell,
+        @NotNull String title,
+        @Nullable String message)
     {
         showErrorDialog(shell, title, message, (Throwable) null);
     }
 
     public static void showErrorDialog(
-        Shell shell,
-        String title,
-        String message,
-        Collection<String> errorMessages)
+        @Nullable Shell shell,
+        @NotNull String title,
+        @Nullable String message,
+        @NotNull Collection<String> errorMessages)
     {
         //log.debug(message);
         java.util.List<Status> messageStatuses = new ArrayList<Status>(errorMessages.size());
@@ -849,10 +863,10 @@ public class UIUtils {
     }
 
     public static void showErrorDialog(
-        final Shell shell,
-        final String title,
-        final String message,
-        final IStatus status)
+        @Nullable final Shell shell,
+        @NotNull final String title,
+        @Nullable final String message,
+        @NotNull final IStatus status)
     {
         //log.debug(message);
         Runnable runnable = new Runnable() {
@@ -872,7 +886,7 @@ public class UIUtils {
         runInUI(shell, runnable);
     }
 
-    public static void runInUI(Shell shell, Runnable runnable)
+    public static void runInUI(@Nullable Shell shell, @NotNull Runnable runnable)
     {
         final Display display = shell == null ? Display.getDefault() : shell.getDisplay();
         if (display.getThread() != Thread.currentThread()) {
@@ -882,7 +896,8 @@ public class UIUtils {
         }
     }
 
-    public static String formatMessage(String message, Object... args)
+    @NotNull
+    public static String formatMessage(@Nullable String message, @Nullable Object... args)
     {
         if (message == null) {
             return ""; //$NON-NLS-1$
@@ -891,7 +906,8 @@ public class UIUtils {
         }
     }
 
-    public static Button createPushButton(Composite parent, String label, Image image)
+    @NotNull
+    public static Button createPushButton(@NotNull Composite parent, @Nullable String label, @Nullable Image image)
     {
         Button button = new Button(parent, SWT.PUSH);
         if (label != null) {
@@ -918,6 +934,7 @@ public class UIUtils {
             helpContextID);
     }
 
+    @NotNull
     public static Text createOutputFolderChooser(final Composite parent, String label, ModifyListener changeListener)
     {
         UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory);
@@ -972,6 +989,7 @@ public class UIUtils {
     	return "<a>" + text + "</a>"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    @Nullable
     public static <T> T findView(IWorkbenchWindow workbenchWindow, Class<T> viewClass)
     {
         IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
@@ -984,6 +1002,7 @@ public class UIUtils {
         return null;
     }
 
+    @Nullable
     public static IViewPart findView(IWorkbenchWindow workbenchWindow, String viewId)
     {
         IViewReference[] references = workbenchWindow.getActivePage().getViewReferences();
@@ -1069,6 +1088,7 @@ public class UIUtils {
         return section;
     }
 
+    @Nullable
     public static IWorkbenchPartSite getWorkbenchPartSite(IServiceLocator serviceLocator)
     {
         IWorkbenchPartSite partSite = (IWorkbenchPartSite) serviceLocator.getService(IWorkbenchPartSite.class);
@@ -1101,6 +1121,7 @@ public class UIUtils {
         return false;
     }
 
+    @Nullable
     public static ISelectionProvider getSelectionProvider(IServiceLocator serviceLocator)
     {
         ISelectionProvider selectionProvider = (ISelectionProvider) serviceLocator.getService(ISelectionProvider.class);
@@ -1140,7 +1161,7 @@ public class UIUtils {
     }
 
     /**
-     * Determine wether this control or any of it's child has focus
+     * Determine whether this control or any of it's child has focus
      * @param control control to check
      * @return true if it has focus
      */
