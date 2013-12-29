@@ -45,7 +45,7 @@ public class DB2StorageGroup extends DB2GlobalObject implements DBPNamedObject {
     private Double writeOverhead;
     private Double deviceWriteRate;
     private Integer dataTag;
-    private Integer cachingTier;
+    private String cachingTier;
     private String remarks;
 
     // -----------------------
@@ -66,8 +66,10 @@ public class DB2StorageGroup extends DB2GlobalObject implements DBPNamedObject {
         this.deviceWriteRate = JDBCUtils.safeGetDouble(dbResult, "DEVICEWRITERATE");
         this.dataTag = JDBCUtils.safeGetInteger(dbResult, "DATATAG");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        // DF: it is declared "Integer" in infocenter but Varchar in the catalog...
         if (db2DataSource.isAtLeastV10_5()) {
-            this.cachingTier = JDBCUtils.safeGetInteger(dbResult, "CACHINGTIER");
+            this.cachingTier = JDBCUtils.safeGetString(dbResult, "CACHINGTIER");
         }
 
     }
@@ -108,7 +110,7 @@ public class DB2StorageGroup extends DB2GlobalObject implements DBPNamedObject {
     }
 
     @Property(viewable = false)
-    public Integer getCachingTier()
+    public String getCachingTier()
     {
         return cachingTier;
     }
