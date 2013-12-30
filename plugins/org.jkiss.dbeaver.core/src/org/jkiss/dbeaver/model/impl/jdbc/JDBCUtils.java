@@ -420,21 +420,23 @@ public class JDBCUtils {
         }
     }
 
-    public static void scrollResultSet(ResultSet dbResult, long offset) throws SQLException
+    public static void scrollResultSet(ResultSet dbResult, long offset, boolean forceFetch) throws SQLException
     {
         // Scroll to first row
         boolean scrolled = false;
-        try {
-            scrolled = dbResult.absolute((int) offset);
-        } catch (SQLException e) {
-            // Seems to be not supported
-            log.debug(e.getMessage());
-        } catch (UnsupportedOperationException e) {
-            // Seems to be legacy JDBC
-            log.debug(e.getMessage());
-        } catch (IncompatibleClassChangeError e) {
-            // Seems to be legacy JDBC
-            log.debug(e.getMessage());
+        if (!forceFetch) {
+            try {
+                scrolled = dbResult.absolute((int) offset);
+            } catch (SQLException e) {
+                // Seems to be not supported
+                log.debug(e.getMessage());
+            } catch (UnsupportedOperationException e) {
+                // Seems to be legacy JDBC
+                log.debug(e.getMessage());
+            } catch (IncompatibleClassChangeError e) {
+                // Seems to be legacy JDBC
+                log.debug(e.getMessage());
+            }
         }
         if (!scrolled) {
             // Just fetch first 'firstRow' rows

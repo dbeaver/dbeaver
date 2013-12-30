@@ -256,7 +256,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         JDBCResultSetImpl dbResult = createResultSetImpl(resultSet);
         // Scroll original result set if needed
         if (rsOffset > 0) {
-            JDBCUtils.scrollResultSet(resultSet, rsOffset);
+            JDBCUtils.scrollResultSet(resultSet, rsOffset, !getConnection().getDataSource().getInfo().supportsResultSetScroll());
         }
 
         if (rsMaxRows > 0 && connection.getDataSource().getInfo().supportsResultSetLimit()) {
