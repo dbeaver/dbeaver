@@ -539,6 +539,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
+    public boolean supportsResultSetScroll() {
+        return true;
+    }
+
+    @Override
     public boolean supportsBatchUpdates()
     {
         return supportsBatchUpdates;

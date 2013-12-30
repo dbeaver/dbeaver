@@ -227,6 +227,7 @@
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="script-delimiter" value="go"/>
+                    <parameter name="supports-scroll" value="true"/>
                     <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="*"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="*"/>

@@ -142,7 +142,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBCStatement dbStat = DBUtils.prepareStatement(
             session,
             DBCStatementType.SCRIPT,
-                sqlQuery,
+            sqlQuery,
             firstRow,
             maxRows);
         try {

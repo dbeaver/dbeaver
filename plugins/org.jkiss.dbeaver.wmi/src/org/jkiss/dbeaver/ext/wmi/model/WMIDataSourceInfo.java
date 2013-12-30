@@ -255,4 +255,9 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     public boolean supportsResultSetLimit() {
         return true;
     }
+
+    @Override
+    public boolean supportsResultSetScroll() {
+        return false;
+    }
 }
