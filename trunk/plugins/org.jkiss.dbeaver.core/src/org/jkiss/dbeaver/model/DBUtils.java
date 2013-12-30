@@ -704,7 +704,12 @@ public final class DBUtils {
         String query) throws DBCException
     {
         query = SQLUtils.makeUnifiedLineFeeds(query);
-        return session.prepareStatement(DBCStatementType.SCRIPT, query, false, false, false);
+        return session.prepareStatement(
+            DBCStatementType.SCRIPT,
+            query,
+            session.getDataSource().getInfo().supportsResultSetScroll(),
+            false,
+            false);
     }
 
     public static DBCStatement prepareStatement(
@@ -752,7 +757,12 @@ public final class DBUtils {
         }
         return statement;
 */
-        return session.prepareStatement(statementType, query, false, false, false);
+        return session.prepareStatement(
+            statementType,
+            query,
+            session.getDataSource().getInfo().supportsResultSetScroll(),
+            false,
+            false);
     }
 
     public static void fireObjectUpdate(DBSObject object)

@@ -275,4 +275,6 @@ public interface DBPDataSourceInfo
     DBPIdentifierCase storesQuotedCase();
 
     boolean supportsResultSetLimit();
+
+    boolean supportsResultSetScroll();
 }
