@@ -521,6 +521,9 @@ public class CommonUtils {
             return null;
         }
         name = name.trim();
+        if (name.length() == 0) {
+            return null;
+        }
         if (underscoreSpaces) {
             name = name.replace(' ', '_');
         }
