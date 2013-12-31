@@ -2832,7 +2832,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public int getStyle()
         {
-            return AS_RADIO_BUTTON;
+            return AS_CHECK_BOX;
         }
 
         @Override
