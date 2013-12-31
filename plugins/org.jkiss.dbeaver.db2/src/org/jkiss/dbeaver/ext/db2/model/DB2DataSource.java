@@ -235,6 +235,21 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         // disable result set scroll
         // (it doesn't work for some queries and some column types so I have to disable it for ALL queries).
+
+        // DF: DB2 v10 supports "Scrollable Resultsets" with the folowing restrictions (from the DB2 v10.5 infocenter)
+        // Restriction: If the ResultSet is scrollable, and the ResultSet is used to select columns from a table on a DB2 for
+        // Linux, UNIX, and Windows server,
+        // the SELECT list of the SELECT statement that defines the ResultSet cannot include columns with the following data types:
+        // - LONG VARCHAR
+        // - LONG VARGRAPHIC
+        // - BLOB
+        // - CLOB
+        // - XML
+        // - A distinct type that is based on any of the previous data types in this list
+        // - A structured type
+        // So it is not usable for "generic" select statements that may include such columns (ge the "data" tab on tabl view or
+        // queries run from the SQL editor)
+
         info.setSupportsResultSetScroll(false);
 
         return info;
