@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
@@ -52,7 +53,8 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB2SourceObject, DBPRefreshableObject {
+public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB2SourceObject, DBPRefreshableObject,
+    DBSObjectUnique {
 
     private final DB2RoutineParmsCache parmsCache = new DB2RoutineParmsCache();
 
@@ -181,6 +183,13 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
         return getContainer();
     }
 
+    @Override
+    public String getUniqueName()
+    {
+        // unique name is the "specifiname" column
+        return super.getName();
+    }
+
     // -----------------
     // Children
     // -----------------
@@ -212,7 +221,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     @Property(viewable = true, order = 1)
     public String getName()
     {
-        return super.getName();
+        return routineName;
     }
 
     @Property(viewable = true, order = 2)
@@ -222,9 +231,9 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     }
 
     @Property(viewable = true, order = 3)
-    public String getRoutineName()
+    public String getSpecificName()
     {
-        return routineName;
+        return super.getName();
     }
 
     @Property(viewable = true, order = 5, category = DB2Constants.CAT_DATETIME)
