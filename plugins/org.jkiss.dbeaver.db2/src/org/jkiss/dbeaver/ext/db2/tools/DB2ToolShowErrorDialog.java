@@ -18,10 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.tools;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -45,8 +42,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 class DB2ToolShowErrorDialog extends Dialog {
 
-    private static final Log LOG = LogFactory.getLog(DB2Utils.class);
-
     private final DB2DataSource db2DataSource;
 
     private Text textSqlErrorCode;
@@ -68,11 +63,8 @@ class DB2ToolShowErrorDialog extends Dialog {
     @Override
     protected Button createButton(Composite parent, int id, String label, boolean defaultButton)
     {
-        // Remove "Cancel" Button
-        if (id == IDialogConstants.CANCEL_ID) {
-            return null;
-        }
-        return super.createButton(parent, id, label, defaultButton);
+        // Disable all default buttons
+        return null;
     }
 
     @Override
@@ -115,6 +107,8 @@ class DB2ToolShowErrorDialog extends Dialog {
                 }
             }
         });
+
+        getShell().setDefaultButton(button);
 
         // -----------------------------------
         // Line 2: Label for Message
