@@ -77,6 +77,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsIndexes = true;
     private boolean supportsSubqueries = false;
     private boolean supportsBatchUpdates = false;
+    private boolean supportsScroll;
 
     public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
@@ -307,6 +308,8 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         if (!supportedIsolations.contains(JDBCTransactionIsolation.NONE)) {
             supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
         }
+
+        supportsScroll = true;
     }
 
     private String makeTermString(String term, String defTerm)
@@ -539,8 +542,14 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
-    public boolean supportsResultSetScroll() {
-        return true;
+    public boolean supportsResultSetScroll()
+    {
+        return supportsScroll;
+    }
+
+    public void setSupportsResultSetScroll(boolean supportsScroll)
+    {
+        this.supportsScroll = supportsScroll;
     }
 
     @Override
@@ -571,4 +580,5 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         }
         return result;
     }
+
 }

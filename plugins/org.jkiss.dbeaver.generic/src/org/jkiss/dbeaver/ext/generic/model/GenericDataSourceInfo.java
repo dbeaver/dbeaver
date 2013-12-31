@@ -46,14 +46,13 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
     private final String scriptDelimiter;
     private final boolean supportsLimits;
-    private final boolean supportsScroll;
 
     public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
     {
         super(metaData);
         scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
         supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
-        supportsScroll = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false);
+        setSupportsResultSetScroll(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false));
     }
 
     @Override
@@ -73,8 +72,4 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
         return supportsLimits;
     }
 
-    @Override
-    public boolean supportsResultSetScroll() {
-        return supportsScroll;
-    }
 }
