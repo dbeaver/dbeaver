@@ -233,6 +233,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
         LOG.debug(getName() + " is version v" + version);
 
+        // disable result set scroll
+        // (it doesn't work for some queries and some column types so I have to disable it for ALL queries).
+        info.setSupportsResultSetScroll(false);
+
         return info;
     }
 
