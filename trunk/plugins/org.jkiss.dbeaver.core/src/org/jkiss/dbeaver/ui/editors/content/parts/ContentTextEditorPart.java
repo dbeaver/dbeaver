@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
 import javax.activation.MimeType;
@@ -83,7 +83,7 @@ public class ContentTextEditorPart extends BaseTextEditor implements ContentEdit
     public long getMaxContentLength()
     {
         if (contentEditor instanceof IDataSourceProvider) {
-            return ((IDataSourceProvider)contentEditor).getDataSource().getContainer().getPreferenceStore().getInt(PrefConstants.RS_EDIT_MAX_TEXT_SIZE);
+            return ((IDataSourceProvider)contentEditor).getDataSource().getContainer().getPreferenceStore().getInt(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);
         }
         return 10 * 1024 * 1024;
     }

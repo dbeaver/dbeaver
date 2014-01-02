@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -35,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
@@ -236,7 +236,7 @@ public abstract class JDBCDataSource
     public synchronized void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (container.getPreferenceStore().getBoolean(PrefConstants.META_SEPARATE_CONNECTION)) {
+        if (container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {
             this.metaContext = new JDBCExecutionContext(this, "Metadata reader", false);
             this.metaContext.connect(monitor, true, null);
         }

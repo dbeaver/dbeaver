@@ -57,7 +57,7 @@ import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentXMLEditorPart;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -335,7 +335,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 // Open LOB editor
                 Object value = controller.getValue();
                 DBDValueController.EditType binaryEditType = DBDValueController.EditType.valueOf(
-                    controller.getDataSource().getContainer().getPreferenceStore().getString(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE));
+                    controller.getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
                 if (binaryEditType != DBDValueController.EditType.EDITOR && value instanceof DBDContentCached) {
                     // Use string editor for cached content
                     return new TextViewDialog(controller);

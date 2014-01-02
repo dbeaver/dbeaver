@@ -31,13 +31,13 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPathEditorInput;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import javax.activation.MimeType;
@@ -574,7 +574,7 @@ public class ContentUtils {
         } else {
             preferenceStore = dataSource.getContainer().getPreferenceStore();
         }
-        String fileEncoding = preferenceStore.getString(PrefConstants.CONTENT_HEX_ENCODING);
+        String fileEncoding = preferenceStore.getString(DBeaverPreferences.CONTENT_HEX_ENCODING);
         if (CommonUtils.isEmpty(fileEncoding)) {
             fileEncoding = getDefaultFileEncoding();
         }

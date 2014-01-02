@@ -37,6 +37,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -46,7 +47,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.utils.CommonUtils;
 
@@ -519,7 +519,7 @@ public class RuntimeUtils {
                 }
                 int confirmResult = ConfirmationDialog.showConfirmDialog(
                     shell,
-                    PrefConstants.CONFIRM_EDITOR_CLOSE,
+                    DBeaverPreferences.CONFIRM_EDITOR_CLOSE,
                     ConfirmationDialog.QUESTION_WITH_CANCEL,
                     saveableName);
                 switch (confirmResult) {

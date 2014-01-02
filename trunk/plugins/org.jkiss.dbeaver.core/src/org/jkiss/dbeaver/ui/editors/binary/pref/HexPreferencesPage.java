@@ -25,9 +25,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 
@@ -51,9 +51,9 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
     public static FontData getPrefFontData()
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        String fontName = store.getString(PrefConstants.HEX_FONT_NAME);
-        int fontStyle = store.getInt(PrefConstants.HEX_FONT_STYLE);
-        int fontSize = store.getInt(PrefConstants.HEX_FONT_SIZE);
+        String fontName = store.getString(DBeaverPreferences.HEX_FONT_NAME);
+        int fontStyle = store.getInt(DBeaverPreferences.HEX_FONT_STYLE);
+        int fontSize = store.getInt(DBeaverPreferences.HEX_FONT_SIZE);
         if (!CommonUtils.isEmpty(fontName) && fontSize > 0) {
             return new FontData(fontName, fontSize, fontStyle);
         }
@@ -103,9 +103,9 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         FontData fontData = preferences.getFontData();
-        store.setValue(PrefConstants.HEX_FONT_NAME, fontData.getName());
-        store.setValue(PrefConstants.HEX_FONT_STYLE, fontData.getStyle());
-        store.setValue(PrefConstants.HEX_FONT_SIZE, fontData.getHeight());
+        store.setValue(DBeaverPreferences.HEX_FONT_NAME, fontData.getName());
+        store.setValue(DBeaverPreferences.HEX_FONT_STYLE, fontData.getStyle());
+        store.setValue(DBeaverPreferences.HEX_FONT_SIZE, fontData.getHeight());
         store.firePropertyChangeEvent(PROP_FONT_DATA, null, fontData);
 
         RuntimeUtils.savePreferenceStore(store);

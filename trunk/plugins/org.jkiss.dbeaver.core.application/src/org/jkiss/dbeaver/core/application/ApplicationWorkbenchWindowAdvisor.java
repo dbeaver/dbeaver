@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
     //static final Log log = LogFactory.getLog(ApplicationWorkbenchWindowAdvisor.class);
@@ -126,7 +126,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         IWorkbenchWindow window = getWindowConfigurer().getWindow();
 
         try {
-            if (!ConfirmationDialog.confirmAction(window.getShell(), PrefConstants.CONFIRM_EXIT)) {
+            if (!ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
                 return false;
             }
             // Close al content editors

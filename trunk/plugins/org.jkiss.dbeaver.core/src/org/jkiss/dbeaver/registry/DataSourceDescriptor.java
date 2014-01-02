@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
@@ -60,7 +61,6 @@ import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
@@ -285,8 +285,8 @@ public class DataSourceDescriptor
     @Override
     public boolean isDefaultAutoCommit()
     {
-        if (getPreferenceStore().contains(PrefConstants.DEFAULT_AUTO_COMMIT)) {
-            return getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+        if (getPreferenceStore().contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
+            return getPreferenceStore().getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
         } else {
             return getConnectionInfo().getConnectionType().isAutocommit();
         }
@@ -324,9 +324,9 @@ public class DataSourceDescriptor
         }
         // Save in preferences
         if (autoCommit == getConnectionInfo().getConnectionType().isAutocommit()) {
-            getPreferenceStore().setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
+            getPreferenceStore().setToDefault(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
         } else {
-            getPreferenceStore().setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommit);
+            getPreferenceStore().setValue(DBeaverPreferences.DEFAULT_AUTO_COMMIT, autoCommit);
         }
     }
 
@@ -374,7 +374,7 @@ public class DataSourceDescriptor
     {
         try {
             if (isolationLevel == null) {
-                getPreferenceStore().setToDefault(PrefConstants.DEFAULT_ISOLATION);
+                getPreferenceStore().setToDefault(DBeaverPreferences.DEFAULT_ISOLATION);
             } else {
                 DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
@@ -385,7 +385,7 @@ public class DataSourceDescriptor
                         try {
                             if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
                                 txnManager.setTransactionIsolation(isolationLevel);
-                                getPreferenceStore().setValue(PrefConstants.DEFAULT_ISOLATION, isolationLevel.getCode());
+                                getPreferenceStore().setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
                             }
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
@@ -634,17 +634,17 @@ public class DataSourceDescriptor
                     boolean autoCommit = txnManager.isAutoCommit();
                     AbstractPreferenceStore store = getPreferenceStore();
                     boolean newAutoCommit;
-                    if (!store.contains(PrefConstants.DEFAULT_AUTO_COMMIT)) {
+                    if (!store.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
                         newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
                     } else {
-                        newAutoCommit = store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+                        newAutoCommit = store.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
                     }
                     if (autoCommit != newAutoCommit) {
                         // Change auto-commit state
                         txnManager.setAutoCommit(newAutoCommit);
                     }
-                    if (store.contains(PrefConstants.DEFAULT_ISOLATION)) {
-                        int isolationCode = store.getInt(PrefConstants.DEFAULT_ISOLATION);
+                    if (store.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
+                        int isolationCode = store.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
                         Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
                         if (!CommonUtils.isEmpty(supportedLevels)) {
                             for (DBPTransactionIsolation level : supportedLevels) {
@@ -1108,7 +1108,7 @@ public class DataSourceDescriptor
         {
             result = ConfirmationDialog.showConfirmDialog(
                 null,
-                PrefConstants.CONFIRM_TXN_DISCONNECT,
+                DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
                 ConfirmationDialog.QUESTION_WITH_CANCEL,
                 getName());
         }

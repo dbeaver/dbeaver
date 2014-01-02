@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -63,21 +64,21 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
 
         {
             Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_confirmations_group_general_actions, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_EXIT);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ORDER_RESULTSET);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_RS_EDIT_CLOSE);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_TXN_DISCONNECT);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_DRIVER_DOWNLOAD);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_VERSION_CHECK);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_EXIT);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ORDER_RESULTSET);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_VERSION_CHECK);
         }
 
         {
             Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_confirmations_group_object_editor, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_DELETE);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_REJECT);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_ENTITY_REVERT);
-            createConfirmCheckbox(groupObjects, PrefConstants.CONFIRM_KEEP_STATEMENT_OPEN);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_EDIT_CLOSE);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_DELETE);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_REJECT);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_REVERT);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
         }
 
         performDefaults();

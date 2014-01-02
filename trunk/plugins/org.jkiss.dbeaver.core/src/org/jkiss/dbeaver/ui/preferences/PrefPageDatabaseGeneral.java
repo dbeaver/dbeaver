@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -98,13 +99,13 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        automaticUpdateCheck.setSelection(store.getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK));
-        longOperationsCheck.setSelection(store.getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY));
-        longOperationsTimeout.setSelection(store.getInt(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT));
-        expandOnConnectCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT));
-        sortCaseInsensitiveCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY));
-        groupByDriverCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_GROUP_BY_DRIVER));
-        editorFullName.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_EDITOR_FULL_NAME));
+        automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+        longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
+        longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
+        expandOnConnectCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
+        sortCaseInsensitiveCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
+        groupByDriverCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER));
+        editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
     }
 
     @Override
@@ -112,14 +113,14 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        store.setValue(PrefConstants.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
-        //store.setValue(PrefConstants.AGENT_ENABLED, agentEnabledCheck.getSelection());
-        store.setValue(PrefConstants.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
-        store.setValue(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
-        store.setValue(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
-        store.setValue(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
-        store.setValue(PrefConstants.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
-        store.setValue(PrefConstants.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
+        store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
+        //store.setValue(DBeaverPreferences.AGENT_ENABLED, agentEnabledCheck.getSelection());
+        store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
+        store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
         RuntimeUtils.savePreferenceStore(store);
 
         return true;

@@ -16,12 +16,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.preferences;
+package org.jkiss.dbeaver;
 
 /**
- * PrefConstants
+ * Preferences constants
  */
-public final class PrefConstants
+public final class DBeaverPreferences
 {
     public static final String AGENT_ENABLED = "agent.enabled"; //$NON-NLS-1$
     public static final String AGENT_LONG_OPERATION_NOTIFY = "agent.long.operation.notify"; //$NON-NLS-1$
