@@ -159,8 +159,8 @@ public class DBeaverActivator extends AbstractUIPlugin
     {
         try {
 // Dispose core
-            if (DBeaverCore.getInstance() != null) {
-                DBeaverCore.getInstance().dispose();
+            if (DBeaverCore.instance != null) {
+                DBeaverCore.instance.dispose();
             }
         } catch (Throwable e) {
             e.printStackTrace();

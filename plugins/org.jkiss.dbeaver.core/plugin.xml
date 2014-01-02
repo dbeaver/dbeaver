@@ -2210,14 +2210,14 @@
                 secured="true"
                 uiClass="org.jkiss.dbeaver.ui.dialogs.net.SSHTunnelConfiguratorUI"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSHTunnelImpl"/>
-        <handler
+        <!--handler
                 type="tunnel"
                 id="http_tunnel"
                 label="HTTP Tunnel"
                 description="HTTP(S) tunnel"
                 secured="true"
                 uiClass="org.jkiss.dbeaver.ui.dialogs.net.HTTPTunnelConfiguratorUI"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.HTTPTunnelImpl"/>
+                handlerClass="org.jkiss.dbeaver.model.impl.net.HTTPTunnelImpl"/-->
         <handler
                 type="proxy"
                 id="socks_proxy"

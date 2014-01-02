@@ -59,7 +59,7 @@ public class DBeaverCore implements DBPApplication {
     private static final String LOB_DIR = ".lob"; //$NON-NLS-1$
     public static final String TEMP_PROJECT_NAME = "org.jkiss.dbeaver.temp"; //$NON-NLS-1$
 
-    private static DBeaverCore instance;
+    static DBeaverCore instance;
     private static boolean standalone = false;
     private static volatile boolean isClosing = false;
 
