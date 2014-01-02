@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -83,10 +84,11 @@ public class PrefPageResultSet extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
             Group queriesGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
+            queriesGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             UIUtils.createControlLabel(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size);
 
             resultSetSize = new Spinner(queriesGroup, SWT.BORDER);
@@ -109,6 +111,9 @@ public class PrefPageResultSet extends TargetPrefPage
 
         {
             Group binaryGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
+            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            binaryGroup.setLayoutData(gd);
 
             //binaryShowStrings = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_use_strings, false);
 

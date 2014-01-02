@@ -22,6 +22,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -383,7 +385,7 @@ public final class DBUtils {
         return path;
     }
 
-    public static boolean isNullValue(Object value)
+    public static boolean isNullValue(@Nullable Object value)
     {
         return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));
     }
@@ -393,7 +395,7 @@ public final class DBUtils {
         return valueHandler.getValueFromObject(session, type, null, false);
     }
 
-    public static Object makeNullValue(final DBDValueController valueController)
+    public static Object makeNullValue(@NotNull final DBDValueController valueController)
     {
         DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
             @Override
