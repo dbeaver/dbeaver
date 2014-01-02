@@ -60,6 +60,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -93,7 +94,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageStandard;
@@ -1139,7 +1139,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         int result = ConfirmationDialog.showConfirmDialog(
             spreadsheet.getShell(),
-            PrefConstants.CONFIRM_RS_EDIT_CLOSE,
+            DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
         if (result == IDialogConstants.YES_ID) {
             return ISaveablePart2.YES;
@@ -1576,7 +1576,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (isServerSideFiltering() && supportsDataFilter()) {
                 if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
-                    PrefConstants.CONFIRM_ORDER_RESULTSET,
+                    DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
                     metaColumn.getAttributeName()))
                 {
                     return;
@@ -1724,7 +1724,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private boolean isServerSideFiltering()
     {
         return
-            getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE) &&
+            getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
             (dataReceiver.isHasMoreData() || !CommonUtils.isEmpty(model.getDataFilter().getOrder()));
     }
 
@@ -1774,7 +1774,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (getDataContainer() == null) {
             return 0;
         }
-        return getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+        return getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS);
     }
 
     private IPreferenceStore getPreferenceStore()
@@ -2838,7 +2838,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public boolean isChecked()
         {
-            return getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE);
+            return getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
         }
 
         @Override
@@ -2846,8 +2846,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             IPreferenceStore preferenceStore = getPreferenceStore();
             preferenceStore.setValue(
-                PrefConstants.RESULT_SET_ORDER_SERVER_SIDE,
-                !preferenceStore.getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE));
+                DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE,
+                !preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
         }
     }
 

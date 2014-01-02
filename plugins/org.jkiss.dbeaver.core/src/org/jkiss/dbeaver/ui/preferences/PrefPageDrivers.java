@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -165,11 +166,11 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        proxyHostText.setText(store.getString(PrefConstants.UI_PROXY_HOST));
-        proxyPortSpinner.setSelection(store.getInt(PrefConstants.UI_PROXY_PORT));
-        proxyUserText.setText(store.getString(PrefConstants.UI_PROXY_USER));
+        proxyHostText.setText(store.getString(DBeaverPreferences.UI_PROXY_HOST));
+        proxyPortSpinner.setSelection(store.getInt(DBeaverPreferences.UI_PROXY_PORT));
+        proxyUserText.setText(store.getString(DBeaverPreferences.UI_PROXY_USER));
         // Load and decrypt password
-        String passwordString = store.getString(PrefConstants.UI_PROXY_PASSWORD);
+        String passwordString = store.getString(DBeaverPreferences.UI_PROXY_PASSWORD);
         if (!CommonUtils.isEmpty(passwordString) && encrypter != null) {
             try {
                 passwordString = encrypter.decrypt(passwordString);
@@ -190,9 +191,9 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     public boolean performOk()
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        store.setValue(PrefConstants.UI_PROXY_HOST, proxyHostText.getText());
-        store.setValue(PrefConstants.UI_PROXY_PORT, proxyPortSpinner.getSelection());
-        store.setValue(PrefConstants.UI_PROXY_USER, proxyUserText.getText());
+        store.setValue(DBeaverPreferences.UI_PROXY_HOST, proxyHostText.getText());
+        store.setValue(DBeaverPreferences.UI_PROXY_PORT, proxyPortSpinner.getSelection());
+        store.setValue(DBeaverPreferences.UI_PROXY_USER, proxyUserText.getText());
         String password = proxyPasswordText.getText();
         if (!CommonUtils.isEmpty(password) && encrypter != null) {
             // Encrypt password
@@ -202,15 +203,15 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
                 log.warn(e);
             }
         }
-        store.setValue(PrefConstants.UI_PROXY_PASSWORD, password);
-        store.setValue(PrefConstants.UI_DRIVERS_HOME, customDriversHome.getText());
+        store.setValue(DBeaverPreferences.UI_PROXY_PASSWORD, password);
+        store.setValue(DBeaverPreferences.UI_DRIVERS_HOME, customDriversHome.getText());
 
         StringBuilder sources = new StringBuilder();
         for (String item : sourceList.getItems()) {
             if (sources.length() > 0) sources.append('|');
             sources.append(item);
         }
-        store.setValue(PrefConstants.UI_DRIVERS_SOURCES, sources.toString());
+        store.setValue(DBeaverPreferences.UI_DRIVERS_SOURCES, sources.toString());
         RuntimeUtils.savePreferenceStore(store);
 
         return super.performOk();

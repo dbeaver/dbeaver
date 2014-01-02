@@ -22,11 +22,11 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
 import javax.activation.MimeType;
@@ -84,7 +84,7 @@ public class ContentXMLEditorPart extends XMLEditor implements ContentEditorPart
     public long getMaxContentLength()
     {
         if (contentEditor instanceof IDataSourceProvider) {
-            return ((IDataSourceProvider)contentEditor).getDataSource().getContainer().getPreferenceStore().getInt(PrefConstants.RS_EDIT_MAX_TEXT_SIZE);
+            return ((IDataSourceProvider)contentEditor).getDataSource().getContainer().getPreferenceStore().getInt(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);
         }
         return 10 * 1024 * 1024;
     }

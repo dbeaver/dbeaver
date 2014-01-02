@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -107,7 +107,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         IFolder scriptsFolder = folder;
         if (scriptsFolder == null) {
             scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(project, true);
-            if (dataSourceContainer != null && dataSourceContainer.getPreferenceStore().getBoolean(PrefConstants.SCRIPT_AUTO_FOLDERS)) {
+            if (dataSourceContainer != null && dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS)) {
                 IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
                 if (dbFolder != null) {
                     if (!dbFolder.exists()) {

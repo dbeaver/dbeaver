@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -42,7 +43,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 /**
  * TextViewDialog
@@ -69,12 +69,12 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
 
         if (value != null) {
             IPreferenceStore globalPreferenceStore = DBeaverCore.getGlobalPreferenceStore();
-            if (!globalPreferenceStore.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN)) {
+            if (!globalPreferenceStore.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
                         getShell(),
-                        PrefConstants.CONFIRM_KEEP_STATEMENT_OPEN,
+                        DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN,
                         ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID) {
-                    globalPreferenceStore.setValue(PrefConstants.KEEP_STATEMENT_OPEN, true);
+                    globalPreferenceStore.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, true);
                     if (valueController.getValueSite().getPart() instanceof ResultSetProvider) {
                         ((ResultSetProvider)valueController.getValueSite().getPart()).getResultSetViewer().refresh();
                     }

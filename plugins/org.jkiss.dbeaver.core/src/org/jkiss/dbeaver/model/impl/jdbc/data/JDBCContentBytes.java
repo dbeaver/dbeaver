@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -33,7 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
@@ -198,7 +197,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
             return null;
         }
         DBDBinaryFormatter formatter = DBUtils.getBinaryPresentation(dataSource);
-        int maxLength = dataSource.getContainer().getPreferenceStore().getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
+        int maxLength = dataSource.getContainer().getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
         // Convert bytes to string
         int length = data.length;
         if (format == DBDDisplayFormat.UI && length > maxLength) {

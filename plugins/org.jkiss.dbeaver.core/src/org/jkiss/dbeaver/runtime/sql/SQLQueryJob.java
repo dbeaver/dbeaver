@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -94,10 +94,10 @@ public class SQLQueryJob extends DataSourceJob
         {
             // Read config form preference store
             IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
-            this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_COMMIT_TYPE));
-            this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_ERROR_HANDLING));
-            this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS);
-            this.rsMaxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+            this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(DBeaverPreferences.SCRIPT_COMMIT_TYPE));
+            this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING));
+            this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
+            this.rsMaxRows = preferenceStore.getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS);
         }
     }
 
@@ -295,7 +295,7 @@ public class SQLQueryJob extends DataSourceJob
             closeStatement();
 
             // Check and invalidate connection
-            if (!connectionInvalidated && getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
+            if (!connectionInvalidated && getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
                 getDataSource().invalidateContext(session.getProgressMonitor());
                 connectionInvalidated = true;
             }
@@ -591,7 +591,7 @@ public class SQLQueryJob extends DataSourceJob
     {
         // Only in single query mode and if pref option set to true
         return queries.size() == 1 &&
-            getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.KEEP_STATEMENT_OPEN);
+            getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN);
     }
 
     private void closeStatement()

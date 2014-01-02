@@ -27,6 +27,7 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnPreferenceAdapter;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -73,13 +74,13 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE) ||
-            store.contains(PrefConstants.STATEMENT_TIMEOUT) ||
-            store.contains(PrefConstants.SCRIPT_COMMIT_TYPE) ||
-            store.contains(PrefConstants.SCRIPT_ERROR_HANDLING) ||
-            store.contains(PrefConstants.SCRIPT_COMMIT_LINES) ||
-            store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS) ||
-            store.contains(PrefConstants.SCRIPT_AUTO_FOLDERS) ||
+            store.contains(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE) ||
+            store.contains(DBeaverPreferences.STATEMENT_TIMEOUT) ||
+            store.contains(DBeaverPreferences.SCRIPT_COMMIT_TYPE) ||
+            store.contains(DBeaverPreferences.SCRIPT_ERROR_HANDLING) ||
+            store.contains(DBeaverPreferences.SCRIPT_COMMIT_LINES) ||
+            store.contains(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS) ||
+            store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS)
@@ -213,14 +214,14 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            invalidateBeforeExecuteCheck.setSelection(store.getBoolean(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
-            executeTimeoutText.setSelection(store.getInt(PrefConstants.STATEMENT_TIMEOUT));
+            invalidateBeforeExecuteCheck.setSelection(store.getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
+            executeTimeoutText.setSelection(store.getInt(DBeaverPreferences.STATEMENT_TIMEOUT));
 
-            commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(PrefConstants.SCRIPT_COMMIT_TYPE)).ordinal());
-            errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(PrefConstants.SCRIPT_ERROR_HANDLING)).ordinal());
-            commitLinesText.setSelection(store.getInt(PrefConstants.SCRIPT_COMMIT_LINES));
-            fetchResultSetsCheck.setSelection(store.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS));
-            autoFoldersCheck.setSelection(store.getBoolean(PrefConstants.SCRIPT_AUTO_FOLDERS));
+            commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(DBeaverPreferences.SCRIPT_COMMIT_TYPE)).ordinal());
+            errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING)).ordinal());
+            commitLinesText.setSelection(store.getInt(DBeaverPreferences.SCRIPT_COMMIT_LINES));
+            fetchResultSetsCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS));
+            autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
             csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
@@ -245,19 +246,19 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
-            store.setValue(PrefConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
+            store.setValue(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
+            store.setValue(DBeaverPreferences.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
 
             store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
 
-            store.setValue(PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
-            store.setValue(PrefConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
-            store.setValue(PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.fromOrdinal(errorHandlingCombo.getSelectionIndex()).name());
-            store.setValue(PrefConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
-            store.setValue(PrefConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
+            store.setValue(DBeaverPreferences.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
+            store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
+            store.setValue(DBeaverPreferences.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.fromOrdinal(errorHandlingCombo.getSelectionIndex()).name());
+            store.setValue(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
+            store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
 
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
@@ -278,19 +279,19 @@ public class PrefPageSQLEditor extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
-        store.setToDefault(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE);
-        store.setToDefault(PrefConstants.STATEMENT_TIMEOUT);
+        store.setToDefault(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE);
+        store.setToDefault(DBeaverPreferences.STATEMENT_TIMEOUT);
 
         store.setToDefault(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
         store.setToDefault(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY);
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
 
-        store.setToDefault(PrefConstants.SCRIPT_COMMIT_TYPE);
-        store.setToDefault(PrefConstants.SCRIPT_COMMIT_LINES);
-        store.setToDefault(PrefConstants.SCRIPT_ERROR_HANDLING);
-        store.setToDefault(PrefConstants.SCRIPT_FETCH_RESULT_SETS);
-        store.setToDefault(PrefConstants.SCRIPT_AUTO_FOLDERS);
+        store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_TYPE);
+        store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_LINES);
+        store.setToDefault(DBeaverPreferences.SCRIPT_ERROR_HANDLING);
+        store.setToDefault(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
+        store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
 
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);

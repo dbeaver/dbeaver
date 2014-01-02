@@ -35,6 +35,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -45,7 +46,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -203,7 +203,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
 
     private void expandNodeOnLoad(final DBNNode node)
     {
-        if (node instanceof DBNDataSource && DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT)) {
+        if (node instanceof DBNDataSource && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT)) {
             try {
                 DBRRunnableWithResult<DBNNode> runnable = new DBRRunnableWithResult<DBNNode>() {
                     @Override

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.osgi.framework.Bundle;
 
 import java.lang.reflect.InvocationTargetException;
@@ -233,7 +233,7 @@ public class DBeaverUI {
 
     public static void notifyAgent(String message, int status)
     {
-        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY)) {
+        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
             // Notifications disabled
             return;
         }

@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -1003,7 +1003,7 @@ public final class DBUtils {
 
     public static DBDBinaryFormatter getBinaryPresentation(DBPDataSource dataSource)
     {
-        String id = dataSource.getContainer().getPreferenceStore().getString(PrefConstants.RESULT_SET_BINARY_PRESENTATION);
+        String id = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION);
         if (id != null) {
             DBDBinaryFormatter formatter = getBinaryPresentation(id);
             if (formatter != null) {

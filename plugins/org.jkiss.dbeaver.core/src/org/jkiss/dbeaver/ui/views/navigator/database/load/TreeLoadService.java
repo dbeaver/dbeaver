@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -96,7 +96,7 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
     {
         // Sort children is we have this feature on in preferences
         // and if children are not folders
-        if (!children.isEmpty() && DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY)) {
+        if (!children.isEmpty() && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY)) {
             if (!(children.get(0) instanceof DBNContainer)) {
                 Collections.sort(children, new Comparator<DBNNode>() {
                     @Override
