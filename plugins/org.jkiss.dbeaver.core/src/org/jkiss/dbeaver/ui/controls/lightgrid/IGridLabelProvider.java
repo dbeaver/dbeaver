@@ -21,15 +21,20 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 
 public interface IGridLabelProvider {
 
+    @Nullable
     public String getText(int col, int row);
 
+    @Nullable
     public Image getImage(int col, int row);
 
+    @Nullable
     Color getForeground(int col, int row);
 
+    @Nullable
     Color getBackground(int col, int row);
 
 }

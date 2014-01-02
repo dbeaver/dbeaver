@@ -160,6 +160,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private final Color backgroundAdded;
     private final Color backgroundDeleted;
     private final Color backgroundModified;
+    private final Color backgroundOdd;
     private final Color foregroundNull;
     private final Font boldFont;
 
@@ -191,7 +192,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         final ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
         this.backgroundAdded = sharedColors.getColor(SharedTextColors.COLOR_BACK_NEW);
         this.backgroundDeleted = sharedColors.getColor(SharedTextColors.COLOR_BACK_DELETED);
-        this.backgroundModified = sharedColors.getColor(SharedTextColors.COLOR_BACK_MODFIIED);
+        this.backgroundModified = sharedColors.getColor(SharedTextColors.COLOR_BACK_MODIFIED);
+        this.backgroundOdd = sharedColors.getColor(SharedTextColors.COLOR_BACK_ODD);
         this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
@@ -1838,6 +1840,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 spreadsheet.setCursor(newPos, false);
                                 updateStatusMessage();
                                 previewValue();
+                            } else {
+                                spreadsheet.redraw();
                             }
                             updateFiltersText();
                             if (finalizer != null) {
@@ -2535,6 +2539,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     private class ContentLabelProvider implements IGridLabelProvider {
+
+        @Nullable
         private Object getValue(int col, int row, boolean formatString)
         {
             Object value;
@@ -2583,6 +2589,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
+        @Nullable
         @Override
         public Image getImage(int col, int row)
         {
@@ -2611,6 +2618,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return String.valueOf(getValue(col, row, true));
         }
 
+        @Nullable
         @Override
         public Color getForeground(int col, int row)
         {
@@ -2622,6 +2630,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
+        @Nullable
         @Override
         public Color getBackground(int col, int row)
         {
@@ -2640,6 +2649,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 new GridPos(model.getVisibleColumn(col).getAttributeIndex(), row)))
             {
                 return backgroundModified;
+            }
+            if (row % 2 == 0) {
+                return backgroundOdd;
             }
             return null;
         }
