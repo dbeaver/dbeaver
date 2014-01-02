@@ -1,9 +1,9 @@
 Major:
 
 error: S/DB selector combo works as crap
-SOCKS proxy, HTTP proxy
 NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
 Performance profile (RSV, tab switch, connections props dialog)
+Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 DB2 autocomplete
 
 1. Browse data by foreign keys
@@ -13,6 +13,7 @@ DB2 autocomplete
 5. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
 6. Async autocomplete
 7. Check on MacOS
+8. HTTP tunnel?
 
 
 Minor:
