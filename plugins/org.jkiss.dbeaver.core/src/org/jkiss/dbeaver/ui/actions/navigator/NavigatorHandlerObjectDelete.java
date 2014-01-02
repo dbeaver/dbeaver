@@ -38,6 +38,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -51,7 +52,6 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -236,7 +236,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             return deleteAll ? ConfirmResult.YES : ConfirmResult.NO;
         }
         ResourceBundle bundle = DBeaverActivator.getResourceBundle();
-        String objectType = node instanceof DBNLocalFolder ? PrefConstants.CONFIRM_LOCAL_FOLDER_DELETE : PrefConstants.CONFIRM_ENTITY_DELETE;
+        String objectType = node instanceof DBNLocalFolder ? DBeaverPreferences.CONFIRM_LOCAL_FOLDER_DELETE : DBeaverPreferences.CONFIRM_ENTITY_DELETE;
         String titleKey = ConfirmationDialog.RES_CONFIRM_PREFIX + objectType + "_" + ConfirmationDialog.RES_KEY_TITLE; //$NON-NLS-1$
         String messageKey = ConfirmationDialog.RES_CONFIRM_PREFIX + objectType + "_" + ConfirmationDialog.RES_KEY_MESSAGE; //$NON-NLS-1$
 

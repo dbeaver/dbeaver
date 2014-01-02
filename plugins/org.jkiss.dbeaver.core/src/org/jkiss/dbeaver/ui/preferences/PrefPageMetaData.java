@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -51,9 +52,9 @@ public class PrefPageMetaData extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES) ||
-            store.contains(PrefConstants.META_SEPARATE_CONNECTION) ||
-            store.contains(PrefConstants.META_CASE_SENSITIVE)
+            store.contains(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES) ||
+            store.contains(DBeaverPreferences.META_SEPARATE_CONNECTION) ||
+            store.contains(DBeaverPreferences.META_CASE_SENSITIVE)
             ;
     }
 
@@ -84,9 +85,9 @@ public class PrefPageMetaData extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
-            separateMetaConnectionCheck.setSelection(store.getBoolean(PrefConstants.META_SEPARATE_CONNECTION));
-            caseSensitiveNamesCheck.setSelection(store.getBoolean(PrefConstants.META_CASE_SENSITIVE));
+            readExpensiveCheck.setSelection(store.getBoolean(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES));
+            separateMetaConnectionCheck.setSelection(store.getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION));
+            caseSensitiveNamesCheck.setSelection(store.getBoolean(DBeaverPreferences.META_CASE_SENSITIVE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -96,9 +97,9 @@ public class PrefPageMetaData extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
-            store.setValue(PrefConstants.META_SEPARATE_CONNECTION, separateMetaConnectionCheck.getSelection());
-            store.setValue(PrefConstants.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
+            store.setValue(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
+            store.setValue(DBeaverPreferences.META_SEPARATE_CONNECTION, separateMetaConnectionCheck.getSelection());
+            store.setValue(DBeaverPreferences.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -108,9 +109,9 @@ public class PrefPageMetaData extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
-        store.setToDefault(PrefConstants.READ_EXPENSIVE_PROPERTIES);
-        store.setToDefault(PrefConstants.META_SEPARATE_CONNECTION);
-        store.setToDefault(PrefConstants.META_CASE_SENSITIVE);
+        store.setToDefault(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES);
+        store.setToDefault(DBeaverPreferences.META_SEPARATE_CONNECTION);
+        store.setToDefault(DBeaverPreferences.META_CASE_SENSITIVE);
     }
 
     @Override

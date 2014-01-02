@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 
 /**
  * Object name case transformer
@@ -42,7 +42,7 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
 
     public static String transformName(DBPDataSource dataSource, String value)
     {
-        final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(PrefConstants.META_CASE_SENSITIVE);
+        final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.META_CASE_SENSITIVE);
         if (isNameCaseSensitive) {
             return value;
         }

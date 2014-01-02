@@ -22,6 +22,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -52,11 +53,11 @@ public class PrefPageDataEditor extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-                store.contains(PrefConstants.RS_EDIT_USE_ALL_COLUMNS) ||
-                store.contains(PrefConstants.RS_EDIT_MAX_TEXT_SIZE) ||
-                store.contains(PrefConstants.RS_EDIT_LONG_AS_LOB) ||
-                store.contains(PrefConstants.RS_COMMIT_ON_EDIT_APPLY) ||
-                store.contains(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY)
+                store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
+                store.contains(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
+                store.contains(DBeaverPreferences.RS_EDIT_LONG_AS_LOB) ||
+                store.contains(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY) ||
+                store.contains(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY)
             ;
     }
 
@@ -116,12 +117,12 @@ public class PrefPageDataEditor extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            alwaysUseAllColumns.setSelection(store.getBoolean(PrefConstants.RS_EDIT_USE_ALL_COLUMNS));
-            maxTextContentSize.setSelection(store.getInt(PrefConstants.RS_EDIT_MAX_TEXT_SIZE));
-            editLongAsLobCheck.setSelection(store.getBoolean(PrefConstants.RS_EDIT_LONG_AS_LOB));
-            commitOnEditApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_EDIT_APPLY));
-            commitOnContentApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY));
-            UIUtils.setComboSelection(encodingCombo, store.getString(PrefConstants.CONTENT_HEX_ENCODING));
+            alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
+            maxTextContentSize.setSelection(store.getInt(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE));
+            editLongAsLobCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_LONG_AS_LOB));
+            commitOnEditApplyCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY));
+            commitOnContentApplyCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY));
+            UIUtils.setComboSelection(encodingCombo, store.getString(DBeaverPreferences.CONTENT_HEX_ENCODING));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -131,12 +132,12 @@ public class PrefPageDataEditor extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
-            store.setValue(PrefConstants.RS_EDIT_MAX_TEXT_SIZE, maxTextContentSize.getSelection());
-            store.setValue(PrefConstants.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
-            store.setValue(PrefConstants.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
-            store.setValue(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
-            store.setValue(PrefConstants.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
+            store.setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
+            store.setValue(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, maxTextContentSize.getSelection());
+            store.setValue(DBeaverPreferences.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
+            store.setValue(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
+            store.setValue(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
+            store.setValue(DBeaverPreferences.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -146,12 +147,12 @@ public class PrefPageDataEditor extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
-        store.setToDefault(PrefConstants.RS_EDIT_USE_ALL_COLUMNS);
-        store.setToDefault(PrefConstants.RS_EDIT_MAX_TEXT_SIZE);
-        store.setToDefault(PrefConstants.RS_EDIT_LONG_AS_LOB);
-        store.setToDefault(PrefConstants.RS_COMMIT_ON_EDIT_APPLY);
-        store.setToDefault(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY);
-        store.setToDefault(PrefConstants.CONTENT_HEX_ENCODING);
+        store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);
+        store.setToDefault(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);
+        store.setToDefault(DBeaverPreferences.RS_EDIT_LONG_AS_LOB);
+        store.setToDefault(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY);
+        store.setToDefault(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY);
+        store.setToDefault(DBeaverPreferences.CONTENT_HEX_ENCODING);
     }
 
     @Override

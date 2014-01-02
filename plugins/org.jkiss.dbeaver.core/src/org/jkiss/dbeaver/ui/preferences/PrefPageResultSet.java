@@ -22,6 +22,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -61,15 +62,15 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
-            store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
-            store.contains(PrefConstants.KEEP_STATEMENT_OPEN) ||
-            store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
-            store.contains(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS) ||
-            store.contains(PrefConstants.RESULT_SET_BINARY_PRESENTATION) ||
-            store.contains(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE) ||
-            store.contains(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN) ||
-            store.contains(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE)
+            store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
+            store.contains(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR) ||
+            store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
+            store.contains(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE) ||
+            store.contains(DBeaverPreferences.RESULT_SET_BINARY_SHOW_STRINGS) ||
+            store.contains(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION) ||
+            store.contains(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
+            store.contains(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
+            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE)
             ;
     }
 
@@ -151,13 +152,13 @@ public class PrefPageResultSet extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
-            keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
-            rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
-            memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
-            binaryStringMaxLength.setSelection(store.getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN));
+            resultSetSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS));
+            keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
+            rollbackOnErrorCheck.setSelection(store.getBoolean(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR));
+            memoryContentSize.setSelection(store.getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE));
+            binaryStringMaxLength.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN));
 
-            DBDBinaryFormatter formatter = DBUtils.getBinaryPresentation(store.getString(PrefConstants.RESULT_SET_BINARY_PRESENTATION));
+            DBDBinaryFormatter formatter = DBUtils.getBinaryPresentation(store.getString(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION));
             for (int i = 0; i < binaryPresentationCombo.getItemCount(); i++) {
                 if (binaryPresentationCombo.getItem(i).equals(formatter.getTitle())) {
                     binaryPresentationCombo.select(i);
@@ -165,14 +166,14 @@ public class PrefPageResultSet extends TargetPrefPage
                 }
             }
 
-            DBDValueController.EditType editorType = DBDValueController.EditType.valueOf(store.getString(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE));
+            DBDValueController.EditType editorType = DBDValueController.EditType.valueOf(store.getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
             if (editorType == DBDValueController.EditType.EDITOR) {
                 binaryEditorType.select(0);
             } else {
                 binaryEditorType.select(1);
             }
 
-            serverSideOrderingCheck.setSelection(store.getBoolean(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE));
+            serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -182,25 +183,25 @@ public class PrefPageResultSet extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
-            store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
-            store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
-            store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
+            store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
+            store.setValue(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
+            store.setValue(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
 
             String presentationTitle = binaryPresentationCombo.getItem(binaryPresentationCombo.getSelectionIndex());
             for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
                 if (formatter.getTitle().equals(presentationTitle)) {
-                    store.setValue(PrefConstants.RESULT_SET_BINARY_PRESENTATION, formatter.getId());
+                    store.setValue(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION, formatter.getId());
                     break;
                 }
             }
-            store.setValue(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
-            store.setValue(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE,
+            store.setValue(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE,
                 binaryEditorType.getSelectionIndex() == 0 ?
                     DBDValueController.EditType.EDITOR.name() :
                     DBDValueController.EditType.PANEL.name());
 
-            store.setValue(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -210,15 +211,15 @@ public class PrefPageResultSet extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
-        store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
-        store.setToDefault(PrefConstants.KEEP_STATEMENT_OPEN);
-        store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
-        store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
-        store.setToDefault(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
-        store.setToDefault(PrefConstants.RESULT_SET_BINARY_PRESENTATION);
-        store.setToDefault(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
-        store.setToDefault(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE);
-        store.setToDefault(PrefConstants.RESULT_SET_ORDER_SERVER_SIDE);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
+        store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
+        store.setToDefault(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR);
+        store.setToDefault(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_SHOW_STRINGS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
     }
 
     @Override

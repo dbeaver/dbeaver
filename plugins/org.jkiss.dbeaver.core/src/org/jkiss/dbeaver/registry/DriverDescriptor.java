@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -48,7 +49,6 @@ import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.properties.IPropertyDescriptorEx;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -1013,10 +1013,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private void downloadLibraryFile(IProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
     {
         IPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
-        String proxyHost = prefs.getString(PrefConstants.UI_PROXY_HOST);
+        String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
         Proxy proxy = null;
         if (!CommonUtils.isEmpty(proxyHost)) {
-            int proxyPort = prefs.getInt(PrefConstants.UI_PROXY_PORT);
+            int proxyPort = prefs.getInt(DBeaverPreferences.UI_PROXY_PORT);
             if (proxyPort <= 0) {
                 log.warn("Invalid proxy port: " + proxyPort);
             }
@@ -1235,7 +1235,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         File homeFolder;
         // Try to use custom drivers path from preferences
-        String driversHome = DBeaverCore.getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_HOME);
+        String driversHome = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_HOME);
         if (!CommonUtils.isEmpty(driversHome)) {
             homeFolder = new File(driversHome);
         } else {
@@ -1252,14 +1252,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public static String[] getDriversSources()
     {
-        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
+        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_SOURCES);
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
         return pathList.toArray(new String[pathList.size()]);
     }
 
     public static String getDriversPrimarySource()
     {
-        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
+        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_SOURCES);
         int divPos = sourcesString.indexOf('|');
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
     }
@@ -1536,7 +1536,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         {
             proceed = ConfirmationDialog.showConfirmDialog(
                 shell,
-                PrefConstants.CONFIRM_DRIVER_DOWNLOAD,
+                DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD,
                 ConfirmationDialog.QUESTION,
                 getName(),
                 libNames) == IDialogConstants.YES_ID;

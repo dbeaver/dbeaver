@@ -5,6 +5,7 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -17,7 +18,6 @@ import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
@@ -39,43 +39,43 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       }
 
       // Agent
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_ENABLED, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_NOTIFY, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, 30);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, 30);
 
       // Navigator
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_GROUP_BY_DRIVER, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_EDITOR_FULL_NAME, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, false);
 
       // Common
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.KEEP_STATEMENT_OPEN, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.QUERY_ROLLBACK_ON_ERROR, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.DEFAULT_AUTO_COMMIT, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR, false);
 
       // SQL execution
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_LINES, 1000);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_FETCH_RESULT_SETS, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_AUTO_FOLDERS, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_LINES, 1000);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_AUTO_FOLDERS, false);
 
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.STATEMENT_TIMEOUT, 10 * 1000);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.MEMORY_CONTENT_MAX_SIZE, 10000);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.READ_EXPENSIVE_PROPERTIES, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.META_SEPARATE_CONNECTION, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.META_CASE_SENSITIVE, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 10 * 1000);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, 10000);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.META_SEPARATE_CONNECTION, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.META_CASE_SENSITIVE, false);
 
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_USE_ALL_COLUMNS, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_LONG_AS_LOB, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.CONTENT_HEX_ENCODING, ContentUtils.getDefaultFileEncoding());
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_EDIT_APPLY, false);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_LONG_AS_LOB, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.CONTENT_HEX_ENCODING, ContentUtils.getDefaultFileEncoding());
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, false);
 
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.TEXT_EDIT_UNDO_LEVEL, 200);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TEXT_EDIT_UNDO_LEVEL, 200);
 
       RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
       RuntimeUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 500);
@@ -101,29 +101,29 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       // Text editor default preferences
       RuntimeUtils.setDefaultPreferenceValue(store, AbstractTextEditor.PREFERENCE_TEXT_DRAG_AND_DROP_ENABLED, true);
 
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.HEX_FONT_NAME, HexEditControl.DEFAULT_FONT_NAME);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.HEX_FONT_SIZE, 10);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_FONT_NAME, HexEditControl.DEFAULT_FONT_NAME);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.HEX_FONT_SIZE, 10);
 
       // General UI
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_AUTO_UPDATE_CHECK, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_HOST, "");
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_PORT, 0);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_USER, "");
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_PASSWORD, "");
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_DRIVERS_HOME, "");
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_DRIVERS_SOURCES, DBeaverConstants.DEFAULT_DRIVERS_SOURCE);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_AUTO_UPDATE_CHECK, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_HOST, "");
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_PORT, 0);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_USER, "");
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_PASSWORD, "");
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_HOME, "");
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_SOURCES, DBeaverConstants.DEFAULT_DRIVERS_SOURCE);
 
       // Network
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NET_TUNNEL_PORT_MIN, 10000);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NET_TUNNEL_PORT_MAX, 60000);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NET_TUNNEL_PORT_MIN, 10000);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NET_TUNNEL_PORT_MAX, 60000);
 
       // ResultSet
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_MAX_ROWS, 200);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_PRESENTATION, DBDBinaryFormatter.FORMATS[0].getId());
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE, DBDValueController.EditType.EDITOR);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, 32);
-      RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_ORDER_SERVER_SIDE, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS, 200);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION, DBDBinaryFormatter.FORMATS[0].getId());
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_SHOW_STRINGS, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE, DBDValueController.EditType.EDITOR);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, 32);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, true);
 
       // QM
       RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);

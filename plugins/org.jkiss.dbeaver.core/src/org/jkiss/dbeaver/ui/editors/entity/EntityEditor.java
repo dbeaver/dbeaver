@@ -27,6 +27,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.ErrorEditorPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -67,7 +68,6 @@ import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -284,7 +284,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (isDirty()) {
             if (ConfirmationDialog.showConfirmDialog(
                 null,
-                PrefConstants.CONFIRM_ENTITY_REVERT,
+                DBeaverPreferences.CONFIRM_ENTITY_REVERT,
                 ConfirmationDialog.QUESTION,
                 getDatabaseObject().getName()) != IDialogConstants.YES_ID)
             {
@@ -305,7 +305,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 // Let's ask user about it
                 if (ConfirmationDialog.showConfirmDialog(
                     null,
-                    PrefConstants.CONFIRM_ENTITY_REJECT,
+                    DBeaverPreferences.CONFIRM_ENTITY_REJECT,
                     ConfirmationDialog.QUESTION,
                     getDatabaseObject().getName()) != IDialogConstants.YES_ID)
                 {
@@ -567,7 +567,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     {
         final int result = ConfirmationDialog.showConfirmDialog(
             getSite().getShell(),
-            PrefConstants.CONFIRM_ENTITY_EDIT_CLOSE,
+            DBeaverPreferences.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
             getEditorInput().getTreeNode().getNodeName());
         if (result == IDialogConstants.YES_ID) {

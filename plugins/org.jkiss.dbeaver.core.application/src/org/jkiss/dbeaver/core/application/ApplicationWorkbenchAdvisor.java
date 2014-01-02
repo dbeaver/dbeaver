@@ -29,6 +29,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.keys.IBindingService;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.DBeaverVersionChecker;
@@ -39,7 +40,6 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
@@ -106,13 +106,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     private void startVersionChecker()
     {
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK)) {
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK)) {
             if (new Random().nextInt(4) != 0) {
                 // check for update with 25% chance
                 // to avoid too high load on server in release days
                 return;
             }
-            long lastVersionCheckTime = DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.UI_UPDATE_CHECK_TIME);
+            long lastVersionCheckTime = DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.UI_UPDATE_CHECK_TIME);
             if (lastVersionCheckTime > 0) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(lastVersionCheckTime);
@@ -123,7 +123,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     return;
                 }
             }
-            DBeaverCore.getGlobalPreferenceStore().setValue(PrefConstants.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
+            DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
             DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
             checker.schedule(3000);
         }
