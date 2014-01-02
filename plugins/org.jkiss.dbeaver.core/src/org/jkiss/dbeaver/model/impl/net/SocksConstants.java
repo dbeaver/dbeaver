@@ -29,4 +29,6 @@ public class SocksConstants {
     public static final String PROP_HOST = "socks-host";
     public static final String PROP_PORT = "socks-port";
 
+    public static final String PROTOCOL_SOCKS4 = "SOCKS4";
+    public static final String PROTOCOL_SOCKS5 = "SOCKS5";
 }
