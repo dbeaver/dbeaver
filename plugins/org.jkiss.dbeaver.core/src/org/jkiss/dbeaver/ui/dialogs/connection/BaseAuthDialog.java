@@ -25,17 +25,23 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Base authentication dialog
  */
 public class BaseAuthDialog extends Dialog
 {
+
+    public static class AuthInfo {
+        public String userName;
+        public String userPassword;
+        public boolean savePassword;
+    }
+
     private String title;
     private Image icon;
-    private String userName;
-    private String userPassword;
-    private boolean savePassword;
+    private AuthInfo authInfo = new AuthInfo();
 
     private Text usernameText;
     private Text passwordText;
@@ -48,28 +54,33 @@ public class BaseAuthDialog extends Dialog
         this.icon = icon;
     }
 
+    public AuthInfo getAuthInfo()
+    {
+        return authInfo;
+    }
+
     public String getUserName() {
-        return userName;
+        return authInfo.userName;
     }
 
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.authInfo.userName = userName;
     }
 
     public String getUserPassword() {
-        return userPassword;
+        return authInfo.userPassword;
     }
 
     public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
+        this.authInfo.userPassword = userPassword;
     }
 
     public boolean isSavePassword() {
-        return savePassword;
+        return authInfo.savePassword;
     }
 
     public void setSavePassword(boolean savePassword) {
-        this.savePassword = savePassword;
+        this.authInfo.savePassword = savePassword;
     }
 
     @Override
@@ -112,8 +123,8 @@ public class BaseAuthDialog extends Dialog
             gd.widthHint = 120;
             //gd.horizontalSpan = 3;
             usernameText.setLayoutData(gd);
-            if (userName != null) {
-                usernameText.setText(userName);
+            if (authInfo.userName != null) {
+                usernameText.setText(authInfo.userName);
             }
 
             Label passwordLabel = new Label(credGroup, SWT.NONE);
@@ -124,8 +135,8 @@ public class BaseAuthDialog extends Dialog
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             passwordText.setLayoutData(gd);
-            if (userPassword != null) {
-                passwordText.setText(userPassword);
+            if (authInfo.userPassword != null) {
+                passwordText.setText(authInfo.userPassword);
             }
         }
 
@@ -133,18 +144,20 @@ public class BaseAuthDialog extends Dialog
         savePasswordCheck.setText(CoreMessages.dialog_connection_auth_checkbox_save_password);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         savePasswordCheck.setLayoutData(gd);
-        savePasswordCheck.setSelection(savePassword);
+        savePasswordCheck.setSelection(authInfo.savePassword);
 
-        passwordText.setFocus();
+        if (!CommonUtils.isEmpty(usernameText.getText())) {
+            passwordText.setFocus();
+        }
 
         return addrGroup;
     }
 
     @Override
     protected void okPressed() {
-        userName = usernameText.getText();
-        userPassword = passwordText.getText();
-        savePassword = savePasswordCheck.getSelection();
+        authInfo.userName = usernameText.getText();
+        authInfo.userPassword = passwordText.getText();
+        authInfo.savePassword = savePasswordCheck.getSelection();
 
         super.okPressed();
     }

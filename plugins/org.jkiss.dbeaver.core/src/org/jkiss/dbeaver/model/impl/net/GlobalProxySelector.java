@@ -84,7 +84,7 @@ public class GlobalProxySelector extends ProxySelector {
                         }
                     }
                 }
-                if (!CommonUtils.isEmpty(proxies)) {
+                if (proxies != null) {
                     return proxies;
                 }
             }

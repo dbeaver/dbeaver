@@ -21,8 +21,13 @@ package org.jkiss.dbeaver.model.impl.net;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
@@ -42,10 +47,12 @@ public class GlobalProxyAuthenticator extends Authenticator {
 
     private SecuredPasswordEncrypter encrypter;
 
+    @Nullable
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
+        // 1. Check for drivers download proxy
         final String proxyHost = store.getString(PrefConstants.UI_PROXY_HOST);
         if (!CommonUtils.isEmpty(proxyHost) && proxyHost.equalsIgnoreCase(getRequestingHost()) &&
             store.getInt(PrefConstants.UI_PROXY_PORT) == getRequestingPort())
@@ -53,23 +60,11 @@ public class GlobalProxyAuthenticator extends Authenticator {
             String userName = store.getString(PrefConstants.UI_PROXY_USER);
             String userPassword = decryptPassword(store.getString(PrefConstants.UI_PROXY_PASSWORD));
             if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-                // Ask user
-                final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-                final BaseAuthDialog authDialog = new BaseAuthDialog(shell, "Auth proxy '" + proxyHost + "'", DBIcon.CONNECTIONS.getImage());
-                authDialog.setUserName(userName);
-                authDialog.setUserPassword(userPassword);
-                final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
-                    @Override
-                    public void run()
-                    {
-                        result = (authDialog.open() == IDialogConstants.OK_ID);
-                    }
-                };
-                UIUtils.runInUI(shell, binder);
-                if (binder.getResult() != null && binder.getResult()) {
-                    userName = authDialog.getUserName();
-                    userPassword = authDialog.getUserPassword();
-                    if (authDialog.isSavePassword()) {
+                BaseAuthDialog.AuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
+                if (authInfo != null) {
+                    userName = authInfo.userName;
+                    userPassword = authInfo.userPassword;
+                    if (authInfo.savePassword) {
                         // Save in preferences
                         store.setValue(PrefConstants.UI_PROXY_USER, userName);
                         store.setValue(PrefConstants.UI_PROXY_PASSWORD, encryptPassword(userPassword));
@@ -78,6 +73,38 @@ public class GlobalProxyAuthenticator extends Authenticator {
             }
             if (!CommonUtils.isEmpty(userName) && !CommonUtils.isEmpty(userPassword)) {
                 return new PasswordAuthentication(userName, userPassword.toCharArray());
+            }
+        }
+
+        // 2. Check for connections' proxies
+        String requestingProtocol = getRequestingProtocol();
+        if (SocksConstants.PROTOCOL_SOCKS5.equals(requestingProtocol) || SocksConstants.PROTOCOL_SOCKS4.equals(requestingProtocol)) {
+            DBCExecutionContext activeContext = DBCExecutionContext.ACTIVE_CONTEXT.get();
+            if (activeContext != null) {
+                DBSDataSourceContainer container = activeContext.getDataSource().getContainer();
+                for (DBWHandlerConfiguration networkHandler : container.getConnectionInfo().getDeclaredHandlers()) {
+                    if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
+                        String userName = networkHandler.getUserName();
+                        String userPassword = networkHandler.getPassword();
+                        if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
+                            BaseAuthDialog.AuthInfo authInfo = readCredentialsInUI(getRequestingPrompt(), userName, userPassword);
+                            if (authInfo != null) {
+                                userName = authInfo.userName;
+                                userPassword = authInfo.userPassword;
+                                if (authInfo.savePassword) {
+                                    // Save DS config
+                                    networkHandler.setUserName(userName);
+                                    networkHandler.setPassword(userPassword);
+                                    networkHandler.setSavePassword(true);
+                                    container.getRegistry().flushConfig();
+                                }
+                            }
+                        }
+                        if (!CommonUtils.isEmpty(userName) && !CommonUtils.isEmpty(userPassword)) {
+                            return new PasswordAuthentication(userName, userPassword.toCharArray());
+                        }
+                    }
+                }
             }
         }
 
@@ -106,6 +133,28 @@ public class GlobalProxyAuthenticator extends Authenticator {
             return encrypter.decrypt(password);
         } catch (EncryptionException e) {
             return password;
+        }
+    }
+
+    private BaseAuthDialog.AuthInfo readCredentialsInUI(String prompt, String userName, String userPassword)
+    {
+        // Ask user
+        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
+        final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, DBIcon.CONNECTIONS.getImage());
+        authDialog.setUserName(userName);
+        authDialog.setUserPassword(userPassword);
+        final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
+            @Override
+            public void run()
+            {
+                result = (authDialog.open() == IDialogConstants.OK_ID);
+            }
+        };
+        UIUtils.runInUI(shell, binder);
+        if (binder.getResult() != null && binder.getResult()) {
+            return authDialog.getAuthInfo();
+        } else {
+            return null;
         }
     }
 
