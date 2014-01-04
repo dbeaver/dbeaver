@@ -317,12 +317,15 @@
             />
         <desktopentry
             name="${productName}"
+            genericName="${productName}"
             toFile="${debDirectory}/dbeaver.desktop"
             comment="Launches ${productName}."
             path="/usr/share/${packageName}/"
             exec="/usr/share/${packageName}/dbeaver"
             icon="/usr/share/${packageName}/icon.xpm"
-            categories="Development;Java"/>
+            type="Application"
+            terminal="false"
+            categories="IDE;Development"/>
 
         <deb
             package="${packageName}"
