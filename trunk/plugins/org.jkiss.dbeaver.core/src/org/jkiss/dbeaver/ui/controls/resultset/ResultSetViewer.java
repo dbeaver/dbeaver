@@ -58,6 +58,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -2490,7 +2491,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public Object getElement(GridPos pos)
+        public Object getElement(@NotNull GridPos pos)
         {
             pos = translateVisualPos(pos);
             if (gridMode == GridMode.RECORD) {
@@ -2500,8 +2501,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
+        @NotNull
         @Override
-        public String getElementText(GridPos pos)
+        public String getElementText(@NotNull GridPos pos)
         {
             Object value = getElement(pos);
             DBDAttributeBinding column = model.getColumn(translateVisualPos(pos).col);
@@ -2509,7 +2511,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public void updateColumn(GridColumn column)
+        public void updateColumn(@NotNull GridColumn column)
         {
             if (gridMode == GridMode.RECORD) {
                 column.setSort(SWT.NONE);
