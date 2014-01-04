@@ -1832,30 +1832,62 @@
         <themeElementCategory label="SQL Editor" id="org.jkiss.dbeaver.ui.presentation.sql">
             <description>SQL Editor</description>
         </themeElementCategory>
-        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.sql" label="ResultSet grid font">
+        <themeElementCategory label="Database Query Results" id="org.jkiss.dbeaver.ui.presentation.results">
+            <description>SQL Editor</description>
+        </themeElementCategory>
+        <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="Results grid font">
             <description>The grid font is used for result set cells, header and rows number.</description>
         </fontDefinition>
         <colorDefinition
-                label="ResultSet selection background"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                label="Selection background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.selection.background"
                 value="COLOR_LIST_SELECTION">
             <description>Selection background</description>
         </colorDefinition>
         <colorDefinition
-                label="ResultSet selection foreground"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                label="Selection foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.selection.foreground"
                 value="COLOR_LIST_SELECTION_TEXT">
             <description>Selection foreground</description>
         </colorDefinition>
         <colorDefinition
-                label="ResultSet value editor background"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                label="Odd row background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.cell.odd.background"
+                value="219, 229, 241">
+            <description>Odd row background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Value editor background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.preview.background"
                 value="255,255,225">
-            <description>Selection foreground</description>
+            <description>Value editor background</description>
         </colorDefinition>
+        <colorDefinition
+                label="Modified cell background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.cell.modified.background"
+                value="255, 228, 181">
+            <description>Modified cell background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="New row background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.cell.new.background"
+                value="228, 255, 181">
+            <description>New row background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Deleted row background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background"
+                value="255, 99, 71">
+            <description>Deleted row background</description>
+        </colorDefinition>
+
         <colorDefinition
                 label="SQL keyword color"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"

@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
@@ -44,6 +45,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
 
+    @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -94,6 +96,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         return null;
     }
 
+    @Nullable
     protected ResultSetViewer getResultSet(ExecutionEvent event)
     {
         Spreadsheet spreadsheet = getActiveSpreadsheet(event);
