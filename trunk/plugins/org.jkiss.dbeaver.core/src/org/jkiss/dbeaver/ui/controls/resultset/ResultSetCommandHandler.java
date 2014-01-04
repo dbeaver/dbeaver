@@ -86,6 +86,8 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
             resultSet.pasteCellValue();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT)) {
             resultSet.copySelectionToClipboard(false, false, true, null, DBDDisplayFormat.EDIT);
+        } else if (actionId.equals(ITextEditorActionDefinitionIds.SMART_ENTER)) {
+            resultSet.showCellEditor(false);
         }
 
 

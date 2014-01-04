@@ -5,7 +5,6 @@ NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
 Performance profile (RSV, tab switch, connections props dialog)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 DB2 autocomplete
-Shift+Enter RSV handler
 RSV UI:
     - odd row
     - double click behavior
