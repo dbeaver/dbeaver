@@ -29,10 +29,7 @@ import java.util.Map;
 
 public class SharedTextColors implements ISharedTextColors {
 
-    public static final RGB COLOR_BACK_NEW = new RGB(0xE4, 0xFF, 0xB5);
-    public static final RGB COLOR_BACK_DELETED = new RGB(0xFF, 0x63, 0x47);
-    public static final RGB COLOR_BACK_MODIFIED = new RGB(0xFF, 0xE4, 0xB5);
-    public static final RGB COLOR_BACK_ODD = new RGB(0xDB, 0xE5, 0xF1);
+    public static final RGB COLOR_WARNING = new RGB(0xFF, 0x63, 0x47);
 
     /**
      * The display table.

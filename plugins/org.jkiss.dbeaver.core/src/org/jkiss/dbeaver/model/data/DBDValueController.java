@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.data;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -95,12 +96,14 @@ public interface DBDValueController
      * In case of separated editor it is null.
      * @return placeholder control or null
      */
+    @Nullable
     Composite getEditPlaceholder();
 
     /**
      * Editor toolbar. Used with PANEL editors
      * @return toolbar or null if toolbar is not active
      */
+    @Nullable
     ToolBar getEditToolBar();
 
     /**

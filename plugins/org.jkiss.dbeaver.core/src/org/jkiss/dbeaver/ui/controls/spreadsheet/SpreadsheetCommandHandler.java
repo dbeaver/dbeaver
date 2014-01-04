@@ -27,6 +27,7 @@ import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.code.Nullable;
 
 /**
  * Standard command handler
@@ -42,6 +43,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
         return (Spreadsheet)control;
     }
 
+    @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {

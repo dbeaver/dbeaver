@@ -32,7 +32,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IFindReplaceTarget;
-import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
@@ -158,10 +157,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     // UI modifiers
     private final Color colorRed;
-    private final Color backgroundAdded;
-    private final Color backgroundDeleted;
-    private final Color backgroundModified;
-    private final Color backgroundOdd;
+    private Color backgroundAdded;
+    private Color backgroundDeleted;
+    private Color backgroundModified;
+    private Color backgroundOdd;
     private final Color foregroundNull;
     private final Font boldFont;
 
@@ -190,11 +189,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-        final ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
-        this.backgroundAdded = sharedColors.getColor(SharedTextColors.COLOR_BACK_NEW);
-        this.backgroundDeleted = sharedColors.getColor(SharedTextColors.COLOR_BACK_DELETED);
-        this.backgroundModified = sharedColors.getColor(SharedTextColors.COLOR_BACK_MODIFIED);
-        this.backgroundOdd = sharedColors.getColor(SharedTextColors.COLOR_BACK_ODD);
         this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
@@ -930,17 +924,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 control.setBackground(previewBack);
             }
         }
+        this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
+        this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
+        this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
+        this.backgroundOdd = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
-        if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
-            || event.getProperty().equals(ThemeConstants.FONT_SQL_RESULT_SET)
-            || event.getProperty().equals(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK)
-            || event.getProperty().equals(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE)
-            || event.getProperty().equals(ThemeConstants.COLOR_SQL_RESULT_SET_PREVIEW_BACK))
-        {
+        if (event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX)) {
             applyThemeSettings();
         }
     }
@@ -1866,7 +1859,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.curColNum = -1;
     }
 
-    public void applyChanges(DBRProgressMonitor monitor)
+    public void applyChanges(@Nullable DBRProgressMonitor monitor)
     {
         applyChanges(monitor, null);
     }
@@ -1876,7 +1869,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
-    public void applyChanges(DBRProgressMonitor monitor, ResultSetPersister.DataUpdateListener listener)
+    public void applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable ResultSetPersister.DataUpdateListener listener)
     {
         if (!model.isSingleSource()) {
             UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Can't save data for result set from multiple sources");
@@ -2367,12 +2360,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return site;
         }
 
+        @Nullable
         @Override
         public Composite getEditPlaceholder()
         {
             return inlinePlaceholder;
         }
 
+        @Nullable
         @Override
         public ToolBar getEditToolBar()
         {
