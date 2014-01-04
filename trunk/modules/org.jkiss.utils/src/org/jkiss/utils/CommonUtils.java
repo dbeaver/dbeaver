@@ -559,4 +559,22 @@ public class CommonUtils {
         }
     }
 
+    @NotNull
+    public static <T extends Enum> T fromOrdinal(Class<T> enumClass, int ordinal)
+    {
+        T[] enumConstants = enumClass.getEnumConstants();
+        for (T value : enumConstants) {
+            if (value.ordinal() == ordinal) {
+                return value;
+            }
+        }
+        IllegalArgumentException error = new IllegalArgumentException("Invalid ordinal " + ordinal + " for type " + enumClass.getName());
+        if (enumConstants.length == 0) {
+            throw error;
+        } else {
+            error.printStackTrace(System.err);
+            return enumConstants[0];
+        }
+    }
+
 }

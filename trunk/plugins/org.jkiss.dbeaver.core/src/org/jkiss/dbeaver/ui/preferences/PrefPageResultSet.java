@@ -31,7 +31,9 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PrefPageResultSet
@@ -52,6 +54,10 @@ public class PrefPageResultSet extends TargetPrefPage
 
     private Button serverSideOrderingCheck;
 
+    private Button showOddRows;
+    private Button showCellIcons;
+    private Combo doubleClickBehavior;
+
     public PrefPageResultSet()
     {
         super();
@@ -71,7 +77,10 @@ public class PrefPageResultSet extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION) ||
             store.contains(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
             store.contains(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
-            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE)
+            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
+            store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
+            store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
+            store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)
             ;
     }
 
@@ -97,6 +106,8 @@ public class PrefPageResultSet extends TargetPrefPage
             resultSetSize.setIncrement(1);
             resultSetSize.setMinimum(1);
             resultSetSize.setMaximum(1024 * 1024);
+
+            serverSideOrderingCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false);
         }
 
         // General settings
@@ -145,9 +156,14 @@ public class PrefPageResultSet extends TargetPrefPage
         }
 
         {
-            Group orderingGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_ordering, 2, SWT.NONE, 0);
+            Group uiGroup = UIUtils.createControlGroup(composite, "UI", 2, SWT.NONE, 0);
 
-            serverSideOrderingCheck = UIUtils.createLabelCheckbox(orderingGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false);
+            showOddRows = UIUtils.createLabelCheckbox(uiGroup, "Mark odd/even rows", false);
+            showCellIcons = UIUtils.createLabelCheckbox(uiGroup, "Show cell icons", false);
+            doubleClickBehavior = UIUtils.createLabelCombo(uiGroup, "Double-click behavior", SWT.READ_ONLY);
+            doubleClickBehavior.add("None", ResultSetViewer.DoubleClickBehavior.NONE.ordinal());
+            doubleClickBehavior.add("Editor", ResultSetViewer.DoubleClickBehavior.EDITOR.ordinal());
+            doubleClickBehavior.add("Inline Editor", ResultSetViewer.DoubleClickBehavior.INLINE_EDITOR.ordinal());
         }
 
         return composite;
@@ -158,6 +174,8 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         try {
             resultSetSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS));
+            serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
+
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
             rollbackOnErrorCheck.setSelection(store.getBoolean(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR));
             memoryContentSize.setSelection(store.getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE));
@@ -178,7 +196,10 @@ public class PrefPageResultSet extends TargetPrefPage
                 binaryEditorType.select(1);
             }
 
-            serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
+            showOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
+            showCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
+            doubleClickBehavior.select(
+                ResultSetViewer.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -207,6 +228,10 @@ public class PrefPageResultSet extends TargetPrefPage
                     DBDValueController.EditType.PANEL.name());
 
             store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
+
+            store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, showOddRows.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, showCellIcons.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(ResultSetViewer.DoubleClickBehavior.class, doubleClickBehavior.getSelectionIndex()).name());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -225,6 +250,9 @@ public class PrefPageResultSet extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
         store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK);
     }
 
     @Override

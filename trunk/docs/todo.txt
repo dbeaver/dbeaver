@@ -10,7 +10,6 @@ RSV UI:
     - double click behavior
     - show value icons
     - switch to record for single row result
-    - colors theme for edit (+separate theme group for RS)
 
 1. Browse data by foreign keys
 2. Tree-like grid
