@@ -426,7 +426,7 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
 
     void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (!activated) {
+        if (dataSourceDescriptor != null && !activated) {
             // No changes anyway
             return;
         }
