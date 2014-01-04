@@ -20,32 +20,56 @@
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IContentProvider;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public interface IGridContentProvider extends IContentProvider {
 
+    /**
+     * Row count
+     */
     public int getRowCount();
 
+    /**
+     * Column count
+     */
     public int getColumnCount();
+
+    /**
+     * Get parent row index of specified row
+     * @param row
+     * @return parent row index of -1
+     */
+    //public int getRowParent(int row);
+
+    /**
+     * Get parent column index of specified column
+     * @param column column index
+     * @return parent column index of -1
+     */
+    //public int getColumnParent(int column);
 
     /**
      * Gets raw element value by position
      * @param pos grid position
      * @return element (may be null)
      */
-    public Object getElement(GridPos pos);
+    @Nullable
+    public Object getElement(@NotNull GridPos pos);
 
     /**
      * Gets element string representation. Returns string in native format
      * @param pos grid position
      * @return string representation (never null)
      */
-    public String getElementText(GridPos pos);
+    @NotNull
+    public String getElementText(@NotNull GridPos pos);
 
     /**
      * Updates grid column properties.
      * Invoked once right after grid columns initialization.
      * @param column grid column
      */
-    public void updateColumn(GridColumn column);
+    public void updateColumn(@NotNull GridColumn column);
 
 }
