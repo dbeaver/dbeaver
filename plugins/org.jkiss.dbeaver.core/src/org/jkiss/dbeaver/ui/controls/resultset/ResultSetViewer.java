@@ -117,6 +117,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
+    private boolean showOddRows;
 
     public enum GridMode {
         GRID,
@@ -128,6 +129,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         PREVIOUS,
         NEXT,
         LAST
+    }
+
+    public enum DoubleClickBehavior {
+        NONE,
+        EDITOR,
+        INLINE_EDITOR
     }
 
     private final IWorkbenchPartSite site;
@@ -1697,6 +1704,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
+        showOddRows = getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         int oldRowNum = curRowNum;
         int oldColNum = curColNum;
 
@@ -1777,10 +1785,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
-            DBSDataSourceContainer container = dataSource.getContainer();
-            if (container != null) {
-                return container.getPreferenceStore();
-            }
+            return dataSource.getContainer().getPreferenceStore();
         }
         return DBeaverCore.getGlobalPreferenceStore();
     }
@@ -2647,7 +2652,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             {
                 return backgroundModified;
             }
-            if (row % 2 == 0) {
+            if (row % 2 == 0 && showOddRows) {
                 return backgroundOdd;
             }
             return null;
