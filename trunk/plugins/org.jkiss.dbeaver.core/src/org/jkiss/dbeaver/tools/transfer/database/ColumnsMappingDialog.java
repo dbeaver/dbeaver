@@ -130,7 +130,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) cell.getElement();
                     cell.setText(mapping.getTargetName());
                     if (mapping.mappingType == DatabaseMappingType.unspecified) {
-                        cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED));
+                        cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
                     } else {
                         cell.setBackground(null);
                     }
