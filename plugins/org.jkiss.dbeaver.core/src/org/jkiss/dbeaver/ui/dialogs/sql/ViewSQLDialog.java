@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 
@@ -35,7 +36,7 @@ public class ViewSQLDialog extends BaseSQLDialog {
     private boolean enlargeViewPanel = true;
     private boolean wordWrap = false;
 
-    public ViewSQLDialog(final IWorkbenchPartSite parentSite, DBPDataSource dataSource, String title, Image image, String text)
+    public ViewSQLDialog(final IWorkbenchPartSite parentSite, @Nullable DBPDataSource dataSource, String title, Image image, String text)
     {
         super(parentSite, title, image);
         this.dataSource = dataSource;
@@ -106,6 +107,7 @@ public class ViewSQLDialog extends BaseSQLDialog {
         }
     }
 
+    @Nullable
     @Override
     public DBPDataSource getDataSource()
     {

@@ -32,7 +32,6 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -40,6 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 
@@ -48,6 +48,12 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.*;
  */
 public class Spreadsheet extends LightGrid implements Listener {
     static final Log log = LogFactory.getLog(Spreadsheet.class);
+
+    public enum DoubleClickBehavior {
+        NONE,
+        EDITOR,
+        INLINE_EDITOR
+    }
 
     private static final String SPREADSHEET_CONTROL_ID = "org.jkiss.dbeaver.ui.spreadsheet";
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
@@ -389,7 +395,19 @@ public class Spreadsheet extends LightGrid implements Listener {
                 GridPos pos = super.getCell(new Point(event.x, event.y));
                 GridPos focusPos = super.getFocusCell();
                 if (pos != null && focusPos != null && pos.equals(super.getFocusCell())) {
-                    spreadsheetController.showCellEditor(false);
+                    DoubleClickBehavior doubleClickBehavior = DoubleClickBehavior.valueOf(
+                        getController().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK));
+
+                    switch (doubleClickBehavior) {
+                        case NONE:
+                            return;
+                        case EDITOR:
+                            spreadsheetController.showCellEditor(false);
+                            break;
+                        case INLINE_EDITOR:
+                            spreadsheetController.showCellEditor(true);
+                            break;
+                    }
                 }
                 break;
             case SWT.MouseDown:
