@@ -19,6 +19,8 @@
 
 package org.jkiss.utils.xml;
 
+import org.xml.sax.Attributes;
+
 /**
 	SAX document listener
 */
@@ -41,5 +43,25 @@ public interface SAXListener {
         String namespaceURI,
         String localName)
 		throws XMLException;
+
+
+    /**
+     * Empty listener supposed to skip element subtrees
+     */
+    public static class EmptyListener implements SAXListener {
+
+        @Override
+        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+        }
+
+        @Override
+        public void saxText(SAXReader reader, String data) throws XMLException {
+        }
+
+        @Override
+        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
+        }
+    }
+    public static final SAXListener EMPTY_LISTENER = new EmptyListener();
 
 }

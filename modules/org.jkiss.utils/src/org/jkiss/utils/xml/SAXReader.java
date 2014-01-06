@@ -27,6 +27,7 @@ import java.util.Map;
  * SAX document reader
  */
 public final class SAXReader implements org.xml.sax.ContentHandler {
+
     public static final int DEFAULT_POOL_SIZE = 10;
 
     private static javax.xml.parsers.SAXParserFactory saxParserFactory = null;
