@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
@@ -161,9 +161,9 @@ public class PrefPageResultSet extends TargetPrefPage
             showOddRows = UIUtils.createLabelCheckbox(uiGroup, "Mark odd/even rows", false);
             showCellIcons = UIUtils.createLabelCheckbox(uiGroup, "Show cell icons", false);
             doubleClickBehavior = UIUtils.createLabelCombo(uiGroup, "Double-click behavior", SWT.READ_ONLY);
-            doubleClickBehavior.add("None", ResultSetViewer.DoubleClickBehavior.NONE.ordinal());
-            doubleClickBehavior.add("Editor", ResultSetViewer.DoubleClickBehavior.EDITOR.ordinal());
-            doubleClickBehavior.add("Inline Editor", ResultSetViewer.DoubleClickBehavior.INLINE_EDITOR.ordinal());
+            doubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
+            doubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
+            doubleClickBehavior.add("Inline Editor", Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
         }
 
         return composite;
@@ -199,7 +199,7 @@ public class PrefPageResultSet extends TargetPrefPage
             showOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
             showCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
             doubleClickBehavior.select(
-                ResultSetViewer.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
+                Spreadsheet.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -231,7 +231,7 @@ public class PrefPageResultSet extends TargetPrefPage
 
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, showOddRows.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, showCellIcons.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(ResultSetViewer.DoubleClickBehavior.class, doubleClickBehavior.getSelectionIndex()).name());
+            store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, doubleClickBehavior.getSelectionIndex()).name());
         } catch (Exception e) {
             log.warn(e);
         }

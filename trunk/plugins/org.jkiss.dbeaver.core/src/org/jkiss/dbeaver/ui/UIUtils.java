@@ -811,7 +811,7 @@ public class UIUtils {
     public static void showErrorDialog(
         Shell shell,
         String title,
-        String message,
+        @Nullable String message,
         @Nullable Throwable error)
     {
         if (error instanceof DBException && DBUtils.showDatabaseError(shell, title, message, (DBException)error)) {

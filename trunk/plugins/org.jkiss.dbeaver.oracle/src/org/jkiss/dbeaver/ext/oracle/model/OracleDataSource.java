@@ -270,7 +270,7 @@ public class OracleDataSource extends JDBCDataSource
                     }
                 }
                 Object sessionTerritory = connectionInfo.getProperties().get(OracleConstants.PROP_SESSION_TERRITORY);
-                if (sessionLanguage != null) {
+                if (sessionTerritory != null) {
                     try {
                         JDBCUtils.executeSQL(
                             session,
