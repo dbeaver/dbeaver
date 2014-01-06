@@ -38,9 +38,8 @@ public interface IGridContentProvider extends IContentProvider {
     /**
      * Get parent row index of specified row
      * @param row
-     * @return parent row index of -1
      */
-    //public int getRowParent(int row);
+    //public void getRowInfo(int row, GridAxisInfo info);
 
     /**
      * Get parent column index of specified column
