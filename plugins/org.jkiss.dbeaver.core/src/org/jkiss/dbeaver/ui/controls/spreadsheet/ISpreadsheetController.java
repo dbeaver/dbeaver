@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
@@ -43,11 +44,9 @@ public interface ISpreadsheetController {
 
     void resetCellValue(GridPos cell, boolean delete);
 
-    void fillContextMenu(
-        GridPos cell,
-        IMenuManager manager);
+    void fillContextMenu(GridPos cell, IMenuManager manager);
 
-    void changeSorting(
-        GridColumn column,
-        int state);
+    void changeSorting(GridColumn column, int state);
+
+    IPreferenceStore getPreferenceStore();
 }

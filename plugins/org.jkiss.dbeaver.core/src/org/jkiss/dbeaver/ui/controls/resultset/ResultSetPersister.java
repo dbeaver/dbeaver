@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -70,7 +71,7 @@ class ResultSetPersister {
      * @param monitor progress monitor
      * @param listener value listener
      */
-    void applyChanges(DBRProgressMonitor monitor, DataUpdateListener listener)
+    void applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable DataUpdateListener listener)
         throws DBException
     {
         prepareDeleteStatements();

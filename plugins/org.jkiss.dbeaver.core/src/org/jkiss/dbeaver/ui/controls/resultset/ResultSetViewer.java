@@ -117,7 +117,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
-    private boolean showOddRows;
 
     public enum GridMode {
         GRID,
@@ -129,12 +128,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         PREVIOUS,
         NEXT,
         LAST
-    }
-
-    public enum DoubleClickBehavior {
-        NONE,
-        EDITOR,
-        INLINE_EDITOR
     }
 
     private final IWorkbenchPartSite site;
@@ -175,6 +168,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private ResultSetFindReplaceTarget findReplaceTarget;
 
     private final ResultSetModel model = new ResultSetModel();
+
+    private boolean showOddRows = true;
+    private boolean showCelIcons = true;
 
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
@@ -322,7 +318,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             public void widgetSelected(SelectionEvent e)
             {
                 String queryText = model.getStatistics() == null ? null : model.getStatistics().getQueryText();
-                if (CommonUtils.isEmpty(queryText)) {
+                if (queryText == null || queryText.isEmpty()) {
                     queryText = "<empty>";
                 }
                 ViewSQLDialog dialog = new ViewSQLDialog(site, getDataSource(), "Query Text", DBIcon.SQL_TEXT.getImage(), queryText);
@@ -1704,7 +1700,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
-        showOddRows = getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
+        // Cache preferences
+        IPreferenceStore preferenceStore = getPreferenceStore();
+        showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
+        showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
+
+        // Pump data
         int oldRowNum = curRowNum;
         int oldColNum = curColNum;
 
@@ -1781,7 +1782,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS);
     }
 
-    private IPreferenceStore getPreferenceStore()
+    public IPreferenceStore getPreferenceStore()
     {
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
@@ -1793,8 +1794,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private synchronized void runDataPump(
         final int offset,
         final int maxRows,
-        final GridPos oldPos,
-        final Runnable finalizer)
+        @Nullable final GridPos oldPos,
+        @Nullable final Runnable finalizer)
     {
         if (dataPumpJob == null) {
             dataPumpJob = new ResultSetDataPumpJob(this);
@@ -2028,9 +2029,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
+    @Nullable
     private Object getColumnValueFromClipboard(DBDAttributeBinding metaColumn) throws DBCException
     {
-        DBCSession session = getDataSource().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource == null) {
+            return null;
+        }
+        DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
         try {
             String strValue = (String) getSpreadsheet().getClipboard().getContents(TextTransfer.getInstance());
             return metaColumn.getValueHandler().getValueFromObject(
@@ -2054,6 +2060,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         model.shiftRows(rowNum, 1);
 
+        final DBPDataSource dataSource = getDataSource();
+        if (dataSource == null) {
+            return;
+        }
+
         // Add new row
         final DBDAttributeBinding[] columns = model.getColumns();
         final Object[] cells = new Object[columns.length];
@@ -2065,7 +2076,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     throws InvocationTargetException, InterruptedException
                 {
                     // Copy cell values in new context
-                    DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
+                    DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
                     try {
                         if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < model.getRowCount()) {
                             Object[] origRow = model.getRowData(currentRowNumber);
@@ -2173,6 +2184,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     //////////////////////////////////
     // Virtual identifier management
 
+    @Nullable
     DBCEntityIdentifier getVirtualEntityIdentifier()
     {
         if (!model.isSingleSource() || model.getVisibleColumnCount() == 0) {
@@ -2595,6 +2607,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Image getImage(int col, int row)
         {
+            if (!showCelIcons) {
+                return null;
+            }
             DBDAttributeBinding attr;
             if (gridMode == GridMode.RECORD) {
                 if (row >= model.getVisibleColumnCount()) {
