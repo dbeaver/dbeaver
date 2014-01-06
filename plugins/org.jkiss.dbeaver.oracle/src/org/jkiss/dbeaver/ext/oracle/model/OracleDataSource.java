@@ -261,15 +261,23 @@ public class OracleDataSource extends JDBCDataSource
                 DBPConnectionInfo connectionInfo = getContainer().getConnectionInfo();
                 Object sessionLanguage = connectionInfo.getProperties().get(OracleConstants.PROP_SESSION_LANGUAGE);
                 if (sessionLanguage != null) {
-                    JDBCUtils.executeSQL(
-                        session,
-                        "ALTER SESSION SET NLS_LANGUAGE='" + sessionLanguage + "'");
+                    try {
+                        JDBCUtils.executeSQL(
+                            session,
+                            "ALTER SESSION SET NLS_LANGUAGE='" + sessionLanguage + "'");
+                    } catch (SQLException e) {
+                        log.warn("Can't set session language", e);
+                    }
                 }
                 Object sessionTerritory = connectionInfo.getProperties().get(OracleConstants.PROP_SESSION_TERRITORY);
                 if (sessionLanguage != null) {
-                    JDBCUtils.executeSQL(
-                        session,
-                        "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
+                    try {
+                        JDBCUtils.executeSQL(
+                            session,
+                            "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
+                    } catch (SQLException e) {
+                        log.warn("Can't set session territory", e);
+                    }
                 }
 
                 // Check DBA role
