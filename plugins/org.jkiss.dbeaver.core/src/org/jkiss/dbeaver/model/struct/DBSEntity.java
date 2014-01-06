@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -44,6 +45,7 @@ public interface DBSEntity extends DBSObject
      *@param attributeName column name  @return column or null
      * @throws DBException on any DB error
      */
+    @Nullable
     DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException;
 
     /**
@@ -60,6 +62,7 @@ public interface DBSEntity extends DBSObject
      * @throws org.jkiss.dbeaver.DBException on any DB error
      * @param monitor progress monitor
      */
+    @Nullable
     Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException;
 
     /**
@@ -68,6 +71,7 @@ public interface DBSEntity extends DBSObject
      * @throws DBException on any DB error
      * @param monitor progress monitor
      */
+    @Nullable
     Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException;
 
 }

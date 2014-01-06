@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -65,6 +66,7 @@ public class MSSQLTableConstraint extends JDBCTableConstraint<MSSQLTable> {
             this);
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

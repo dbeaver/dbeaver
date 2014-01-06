@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
@@ -208,6 +209,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         return connectionInfo.getUserName();
     }
 
+    @NotNull
     @Override
     public DB2DataSource getDataSource()
     {

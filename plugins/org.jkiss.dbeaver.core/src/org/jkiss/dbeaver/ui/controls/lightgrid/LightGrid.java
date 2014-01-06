@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
@@ -4351,6 +4352,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return an array representing the cell selection
      */
+    @NotNull
     public Collection<GridPos> getSelection()
     {
         if (isDisposed()) {
@@ -4359,6 +4361,7 @@ public abstract class LightGrid extends Canvas {
         return Collections.unmodifiableCollection(selectedCells);
     }
 
+    @NotNull
     public List<GridColumn> getSelectedColumns()
     {
         return selectedColumns;

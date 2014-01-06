@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -61,6 +62,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
         return parent != null ? parent : dataSource.getContainer();
     }
 
+    @NotNull
     @Override
     public WMIDataSource getDataSource()
     {

@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -117,7 +118,7 @@ public interface DBDValueHandler
      * @param format
      * @return formatted string
      */
-    String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format);
+    String getValueDisplayString(DBSTypedObject column, @Nullable Object value, DBDDisplayFormat format);
 
     /**
      * Fills context menu for certain value

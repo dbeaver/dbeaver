@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -62,6 +63,7 @@ public abstract class DB2Object<PARENT extends DBSObject> implements DBSObject, 
         return parent;
     }
 
+    @NotNull
     @Override
     public DB2DataSource getDataSource()
     {

@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -50,7 +51,7 @@ public interface DBSObject extends DBPNamedObject, DBPPersistedObject
      * Datasource which this object belongs
      * @return datasource reference
      */
-    @Nullable
+    @NotNull
     DBPDataSource getDataSource();
 
 }

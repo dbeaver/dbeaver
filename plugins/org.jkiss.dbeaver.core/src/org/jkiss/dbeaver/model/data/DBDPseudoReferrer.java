@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -61,12 +62,14 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
         return entity;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
         return entity.getDataSource();
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {

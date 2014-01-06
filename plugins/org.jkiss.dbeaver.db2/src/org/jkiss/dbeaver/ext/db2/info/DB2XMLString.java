@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.info;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -51,6 +52,7 @@ public class DB2XMLString implements DBSObject {
         this.stringUTF8 = JDBCUtils.safeGetString(dbResult, "STRING_UTF8");
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

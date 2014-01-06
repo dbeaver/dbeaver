@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ColumnDataTypeListProvider;
@@ -142,6 +143,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     // Business Contract
     // -----------------
 
+    @NotNull
     @Override
     public DB2DataSource getDataSource()
     {

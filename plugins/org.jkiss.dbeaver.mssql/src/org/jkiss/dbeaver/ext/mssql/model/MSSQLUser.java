@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -119,6 +120,7 @@ public class MSSQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
         return dataSource.getContainer();
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource() {
         return dataSource;

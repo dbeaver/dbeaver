@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
@@ -44,12 +45,14 @@ public abstract class WMIClassElement<T extends WMIObjectElement> extends WMIPro
         return element;
     }
 
+    @NotNull
     @Override
     public WMIClass getParentObject()
     {
         return wmiClass;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

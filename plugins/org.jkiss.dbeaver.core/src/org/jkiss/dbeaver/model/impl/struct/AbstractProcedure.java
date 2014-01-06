@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -81,6 +82,7 @@ public abstract class AbstractProcedure<
         this.description = description;
     }
 
+    @NotNull
     @Override
     public DATASOURCE getDataSource()
     {

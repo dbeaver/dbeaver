@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -58,6 +59,7 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
         return pk.getParentObject();
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
@@ -76,6 +78,7 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
         return entity;
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {

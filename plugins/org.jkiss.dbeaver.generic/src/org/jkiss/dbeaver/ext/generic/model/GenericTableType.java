@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -47,6 +48,7 @@ public class GenericTableType implements DBSObject {
         return dataSource.getContainer();
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

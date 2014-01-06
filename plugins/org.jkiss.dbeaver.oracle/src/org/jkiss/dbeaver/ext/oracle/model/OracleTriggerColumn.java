@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTriggerColumn;
@@ -97,6 +98,7 @@ public class OracleTriggerColumn extends AbstractTriggerColumn
         return trigger;
     }
 
+    @NotNull
     @Override
     public OracleDataSource getDataSource()
     {

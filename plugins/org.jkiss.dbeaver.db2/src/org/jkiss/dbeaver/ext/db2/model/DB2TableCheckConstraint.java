@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
@@ -96,6 +97,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }
 
+    @NotNull
     @Override
     public DB2DataSource getDataSource()
     {
@@ -154,6 +156,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
         return super.getTable();
     }
 
+    @NotNull
     @Override
     @Property(hidden = true)
     public DBSEntityConstraintType getConstraintType()

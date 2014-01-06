@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -71,6 +72,7 @@ public class MSSQLTableConstraintColumn extends AbstractTableConstraintColumn
         return constraint;
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

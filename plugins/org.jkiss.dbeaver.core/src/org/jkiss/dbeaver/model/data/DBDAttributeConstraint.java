@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -79,7 +80,7 @@ public class DBDAttributeConstraint {
         return criteria;
     }
 
-    public void setCriteria(String criteria)
+    public void setCriteria(@Nullable String criteria)
     {
         this.criteria = criteria;
     }

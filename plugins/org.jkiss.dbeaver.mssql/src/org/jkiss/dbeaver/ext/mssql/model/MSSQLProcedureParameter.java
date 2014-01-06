@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -56,6 +57,7 @@ public class MSSQLProcedureParameter extends JDBCColumn implements DBSProcedureP
         this.parameterType = parameterType;
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

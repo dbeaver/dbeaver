@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ConstraintCheckData;
@@ -97,6 +98,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
@@ -128,6 +130,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
         return super.getTable();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 3)
     public DBSEntityConstraintType getConstraintType()

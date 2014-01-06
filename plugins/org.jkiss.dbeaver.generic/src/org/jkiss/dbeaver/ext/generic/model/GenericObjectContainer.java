@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -86,6 +87,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         return foreignKeysCache;
     }
 
+    @NotNull
     @Override
     public GenericDataSource getDataSource()
     {

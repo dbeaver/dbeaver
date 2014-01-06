@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -41,6 +42,7 @@ public abstract class GenericTableConstraint extends JDBCTableConstraint<Generic
         super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
     }
 
+    @NotNull
     @Override
     public GenericDataSource getDataSource()
     {
