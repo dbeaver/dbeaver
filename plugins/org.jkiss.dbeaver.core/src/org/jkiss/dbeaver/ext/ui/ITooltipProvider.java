@@ -19,12 +19,15 @@
 
 package org.jkiss.dbeaver.ext.ui;
 
+import org.jkiss.code.Nullable;
+
 /**
  * Tooltip provider.
  * Extension of ILabelProvider
  */
 public interface ITooltipProvider {
 
+    @Nullable
     public String getTooltip(Object element);
 
 }

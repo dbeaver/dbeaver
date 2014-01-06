@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -196,6 +197,7 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
                         }
                     });
                 }
+                @NotNull
                 @Override
                 public DBPDataSource getDataSource()
                 {

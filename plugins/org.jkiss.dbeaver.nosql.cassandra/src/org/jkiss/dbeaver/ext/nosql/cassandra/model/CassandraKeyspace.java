@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -64,6 +65,7 @@ public class CassandraKeyspace implements DBSSchema
         return tableCache;
     }
 
+    @NotNull
     @Override
     public CassandraDataSource getDataSource()
     {

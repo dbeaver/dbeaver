@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -57,6 +58,7 @@ public class DBVModel extends DBVContainer {
         return null;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -96,6 +97,7 @@ public class MSSQLPrivilege implements DBAPrivilege
         return dataSource;
     }
 
+    @NotNull
     @Override
     public JDBCDataSource getDataSource() {
         return dataSource;

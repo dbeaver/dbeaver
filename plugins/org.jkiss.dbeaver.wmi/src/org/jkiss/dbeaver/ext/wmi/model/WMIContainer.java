@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -44,6 +45,7 @@ public abstract class WMIContainer extends WMIPropertySource implements DBSObjec
         return parent;
     }
 
+    @NotNull
     @Override
     public WMIDataSource getDataSource()
     {

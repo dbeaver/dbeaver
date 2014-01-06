@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -51,12 +52,14 @@ public class WMIClassConstraint implements DBSEntityConstraint, DBSEntityReferre
         return owner;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
         return owner.getDataSource();
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {

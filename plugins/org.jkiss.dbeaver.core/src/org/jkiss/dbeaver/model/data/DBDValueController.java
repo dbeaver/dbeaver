@@ -22,13 +22,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * DBD Value Controller
  */
-public interface DBDValueController
+public interface DBDValueController extends IDataSourceProvider
 {
     /**
      * Value editor type
@@ -40,12 +41,6 @@ public interface DBDValueController
                 // May be reused to edit different cells of the same type.
         EDITOR  // Separate editor, dialog or standalone editor window
     }
-
-    /**
-     * Controller's data source
-     * @return data source
-     */
-    DBPDataSource getDataSource();
 
     /**
      * Value name (name of attribute or other metadata object)

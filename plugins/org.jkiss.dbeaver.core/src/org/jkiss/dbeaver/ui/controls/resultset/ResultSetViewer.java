@@ -445,9 +445,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void setCustomDataFilter()
     {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource == null) {
+            return;
+        }
         String condition = filtersText.getText();
         StringBuilder currentCondition = new StringBuilder();
-        model.getDataFilter().appendConditionString(getDataSource(), currentCondition);
+        model.getDataFilter().appendConditionString(dataSource, currentCondition);
         if (currentCondition.toString().trim().equals(condition.trim())) {
             // The same
             return;
@@ -460,18 +464,25 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     public void updateFiltersText()
     {
-        StringBuilder where = new StringBuilder();
-        model.getDataFilter().appendConditionString(getDataSource(), where);
-        String whereCondition = where.toString().trim();
-        filtersText.setText(whereCondition);
-        if (!whereCondition.isEmpty()) {
-            addFiltersHistory(whereCondition);
-        }
+        boolean enableFilters = false;
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            StringBuilder where = new StringBuilder();
+            model.getDataFilter().appendConditionString(dataSource, where);
+            String whereCondition = where.toString().trim();
+            filtersText.setText(whereCondition);
+            if (!whereCondition.isEmpty()) {
+                addFiltersHistory(whereCondition);
+            }
 
-        if (getDataSource() != null && resultSetProvider.isReadyToRun() &&
-            !model.isUpdateInProgress() &&
-            (!CommonUtils.isEmpty(whereCondition) || (getModel().getVisibleColumnCount() > 0 && supportsDataFilter())))
-        {
+            if (resultSetProvider.isReadyToRun() &&
+                !model.isUpdateInProgress() &&
+                (!CommonUtils.isEmpty(whereCondition) || (getModel().getVisibleColumnCount() > 0 && supportsDataFilter())))
+            {
+                enableFilters = true;
+            }
+        }
+        if (enableFilters) {
             if (filtersEnableState != null) {
                 filtersEnableState.restore();
                 filtersEnableState = null;
@@ -541,6 +552,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return findReplaceTarget;
     }
 
+    @Nullable
     @Override
     public Object getAdapter(Class adapter)
     {
@@ -548,6 +560,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // Show cell properties
             PropertyPageStandard page = new PropertyPageStandard();
             page.setPropertySourceProvider(new IPropertySourceProvider() {
+                @Nullable
                 @Override
                 public IPropertySource getPropertySource(Object object)
                 {
@@ -1196,7 +1209,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return true;
         }
         DBPDataSource dataSource = dataContainer.getDataSource();
-        return dataSource == null ||
+        return
             !dataSource.isConnected() ||
             dataSource.getContainer().isConnectionReadOnly() ||
             dataSource.getInfo().isReadOnlyData();
@@ -2223,7 +2236,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     boolean editEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
-        DBVEntityConstraint constraint = (DBVEntityConstraint)getVirtualEntityIdentifier().getReferrer();
+        DBCEntityIdentifier virtualEntityIdentifier = getVirtualEntityIdentifier();
+        if (virtualEntityIdentifier == null) {
+            log.warn("No virtual identifier");
+            return false;
+        }
+        DBVEntityConstraint constraint = (DBVEntityConstraint) virtualEntityIdentifier.getReferrer();
 
         EditConstraintDialog dialog = new EditConstraintDialog(
             getControl().getShell(),
@@ -2235,8 +2253,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
         constraint.setAttributes(uniqueColumns);
-        getVirtualEntityIdentifier().reloadAttributes(monitor, model.getVisibleColumn(0).getMetaAttribute().getEntity());
-        getDataSource().getContainer().persistConfiguration();
+        virtualEntityIdentifier = getVirtualEntityIdentifier();
+        if (virtualEntityIdentifier == null) {
+            log.warn("No virtual identifier defined");
+            return false;
+        }
+        virtualEntityIdentifier.reloadAttributes(monitor, model.getVisibleColumn(0).getMetaAttribute().getEntity());
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            dataSource.getContainer().persistConfiguration();
+        }
 
         return true;
     }
@@ -2250,7 +2276,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         identifier.reloadAttributes(monitor, firstColumn.getMetaAttribute().getEntity());
         virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
 
-        getDataSource().getContainer().persistConfiguration();
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            dataSource.getContainer().persistConfiguration();
+        }
     }
 
     void fireResultSetChange() {
@@ -2287,6 +2316,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             this.curRow = curRow;
         }
 
+        @Nullable
         @Override
         public DBPDataSource getDataSource()
         {
@@ -2318,8 +2348,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Override
         public String getColumnId() {
+            DBPDataSource dataSource = getDataSource();
             return DBUtils.getSimpleQualifiedName(
-                getDataSource().getContainer().getName(),
+                dataSource == null ? null : dataSource.getContainer().getName(),
                 getAttribute().getEntityName(),
                 getAttribute().getName());
         }
@@ -2440,6 +2471,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return attributes;
         }
 
+        @Nullable
         @Override
         public DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName)
         {
@@ -2451,6 +2483,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return null;
         }
 
+        @Nullable
         @Override
         public Object getAttributeValue(DBCAttributeMetaData attribute)
         {
@@ -2465,6 +2498,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return null;
         }
 
+        @Nullable
         private GridPos getCellPos()
         {
             if (pos.row >= 0) {
@@ -2675,6 +2709,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     private class ColumnLabelProvider extends LabelProvider implements IFontProvider, ITooltipProvider {
+        @Nullable
         @Override
         public Image getImage(Object element)
         {
@@ -2685,6 +2720,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return null;
         }
 
+        @Nullable
         @Override
         public String getText(Object element)
         {
@@ -2712,6 +2748,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
+        @Nullable
         @Override
         public Font getFont(Object element)
         {
@@ -2725,13 +2762,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return null;
         }
 
+        @Nullable
         @Override
         public String getTooltip(Object element)
         {
             int colNumber = ((Number)element).intValue();
             if (gridMode == GridMode.GRID) {
                 DBDAttributeBinding metaColumn = model.getVisibleColumn(colNumber);
-                DBCAttributeMetaData attribute = metaColumn.getMetaAttribute();
                 String name = metaColumn.getAttributeName();
                 String typeName = DBUtils.getFullTypeName(metaColumn.getMetaAttribute());
                 return name + ": " + typeName;
@@ -2741,6 +2778,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     private class RowLabelProvider extends LabelProvider {
+        @Nullable
         @Override
         public Image getImage(Object element)
         {
@@ -2752,6 +2790,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return null;
         }
 
+        @Nullable
         @Override
         public String getText(Object element)
         {
@@ -2831,6 +2870,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return menuManager.createContextMenu(parent);
         }
 
+        @Nullable
         @Override
         public Menu getMenu(Menu parent)
         {
@@ -2934,6 +2974,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             this.icon = icon;
         }
+        @Nullable
         abstract String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format);
     }
 
@@ -2952,7 +2993,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private final DBDAttributeBinding column;
         public FilterByColumnAction(String pattern, FilterByColumnType type, DBDAttributeBinding column)
         {
-            super(DBUtils.getQuotedIdentifier(getDataSource(), column.getAttributeName()) + " " + translateFilterPattern(pattern, type, column), type.icon);
+            super(column.getAttributeName() + " " + translateFilterPattern(pattern, type, column), type.icon);
             this.pattern = pattern;
             this.type = type;
             this.column = column;
@@ -3047,6 +3088,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     private class ResultSetSelectionImpl implements ResultSetSelection {
+        @Nullable
         @Override
         public GridPos getFirstElement()
         {
@@ -3111,11 +3153,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public boolean equals(Object obj)
         {
-            if (!(obj instanceof ResultSetSelectionImpl)) {
-                return false;
-            }
-            ResultSetSelectionImpl sel = (ResultSetSelectionImpl)obj;
-            return super.equals(obj);
+            return obj instanceof ResultSetSelectionImpl && super.equals(obj);
         }
     }
 

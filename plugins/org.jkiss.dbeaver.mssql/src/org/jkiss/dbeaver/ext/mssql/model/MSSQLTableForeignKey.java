@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -68,6 +69,7 @@ public class MSSQLTableForeignKey extends JDBCTableForeignKey<MSSQLTable, MSSQLT
             this);
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

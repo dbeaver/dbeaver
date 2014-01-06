@@ -26,6 +26,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -530,6 +532,7 @@ public class DataSourceDescriptor
         this.loginDate = loginDate;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

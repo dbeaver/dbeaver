@@ -18,14 +18,18 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Entity constraint
  */
 public interface DBSEntityConstraint extends DBSObject {
 
+    @NotNull
     @Override
     DBSEntity getParentObject();
 
+    @NotNull
     DBSEntityConstraintType getConstraintType();
 
 }

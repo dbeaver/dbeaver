@@ -209,6 +209,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
             return null;
         }
 
+        @NotNull
         @Override
         public DBPDataSource getDataSource()
         {

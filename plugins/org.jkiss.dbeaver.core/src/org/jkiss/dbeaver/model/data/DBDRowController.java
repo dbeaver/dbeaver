@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 
@@ -40,6 +41,7 @@ public interface DBDRowController
      * @param columnName column name
      * @return column meta data or null
      */
+    @Nullable
     DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName);
 
     /**
@@ -47,6 +49,7 @@ public interface DBDRowController
      * @param attribute column, must belong to the same result set as controller's value
      * @return value or null
      */
+    @Nullable
     Object getAttributeValue(DBCAttributeMetaData attribute);
 
 }

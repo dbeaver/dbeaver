@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -68,6 +69,7 @@ public class MSSQLParameter implements DBSObject
         return getDataSource();
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

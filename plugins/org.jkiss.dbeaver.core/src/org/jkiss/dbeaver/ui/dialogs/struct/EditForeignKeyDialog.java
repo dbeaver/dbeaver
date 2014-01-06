@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IProgressControlProvider;
+import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;

@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -608,6 +609,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return null;
     }
 
+    @NotNull
     @Override
     public MySQLDataSource getDataSource() {
         return this;

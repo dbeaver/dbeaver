@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -107,6 +108,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return getParentNode() instanceof DBSWrapper ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

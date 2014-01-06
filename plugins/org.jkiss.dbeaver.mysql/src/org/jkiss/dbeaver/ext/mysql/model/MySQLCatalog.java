@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -92,6 +93,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return dataSource.getContainer();
     }
 
+    @NotNull
     @Override
     public MySQLDataSource getDataSource()
     {

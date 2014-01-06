@@ -38,7 +38,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
 import org.eclipse.ui.views.properties.tabbed.TabContents;
 import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
-import org.jkiss.dbeaver.ext.IProgressControlProvider;
+import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;

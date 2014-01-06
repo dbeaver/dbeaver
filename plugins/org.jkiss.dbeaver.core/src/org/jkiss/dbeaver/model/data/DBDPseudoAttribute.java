@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -141,6 +142,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
             return description;
         }
 
+        @NotNull
         @Override
         public DBPDataSource getDataSource()
         {

@@ -18,11 +18,14 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Entity abstract element
  */
 public interface DBSEntityElement extends DBSObject
 {
+    @NotNull
     @Override
     DBSEntity getParentObject();
 
