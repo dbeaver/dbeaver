@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.StringConverter;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -615,6 +616,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 if (provider == null) {
                     log.warn("Can't find datasource provider " + providerId + " for datasource '" + name + "'");
                     curDataSource = null;
+                    reader.setListener(EMPTY_LISTENER);
                     return;
                 }
                 String driverId = atts.getValue(RegistryConstants.ATTR_DRIVER);
@@ -720,6 +722,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     NetworkHandlerDescriptor handlerDescriptor = DBeaverCore.getInstance().getNetworkHandlerRegistry().getDescriptor(handlerId);
                     if (handlerDescriptor == null) {
                         log.warn("Can't find network handler '" + handlerId + "'");
+                        reader.setListener(EMPTY_LISTENER);
                         return;
                     }
                     curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
@@ -786,6 +789,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             isDescription = false;
         }
 
+        @Nullable
         private String decryptPassword(String encPassword)
         {
             if (!CommonUtils.isEmpty(encPassword)) {
