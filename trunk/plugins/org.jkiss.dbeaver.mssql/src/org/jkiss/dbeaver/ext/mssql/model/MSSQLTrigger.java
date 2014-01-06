@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -91,6 +92,7 @@ public class MSSQLTrigger extends AbstractTrigger implements MSSQLSourceObject
         return catalog;
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

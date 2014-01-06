@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -44,6 +45,7 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
         this.description = description;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
@@ -62,6 +64,7 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
         return entity;
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineRowType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -84,6 +85,7 @@ public class DB2RoutineParm implements DBSProcedureParameter {
         return remarks;
     }
 
+    @NotNull
     @Override
     public DB2DataSource getDataSource()
     {

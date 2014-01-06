@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -168,6 +169,7 @@ public class GenericDataSource extends JDBCDataSource
         return DBUtils.findObject(getSchemas(), name);
     }
 
+    @NotNull
     @Override
     public GenericDataSource getDataSource() {
         return this;

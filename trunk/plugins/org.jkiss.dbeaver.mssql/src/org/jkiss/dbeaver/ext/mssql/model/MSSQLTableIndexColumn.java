@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -107,6 +108,7 @@ public class MSSQLTableIndexColumn extends AbstractTableIndexColumn
         return index;
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

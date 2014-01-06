@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
 import org.jkiss.dbeaver.ext.mssql.MSSQLUtils;
@@ -134,6 +135,7 @@ public class MSSQLTableColumn extends JDBCTableColumn<MSSQLTableBase> implements
         }
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

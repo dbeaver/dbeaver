@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
@@ -32,6 +33,7 @@ public abstract class AbstractTableIndex implements DBSTableIndex
         return true;
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {

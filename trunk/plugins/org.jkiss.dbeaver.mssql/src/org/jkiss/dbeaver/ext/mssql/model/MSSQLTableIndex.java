@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -71,6 +72,7 @@ public class MSSQLTableIndex extends JDBCTableIndex<MSSQLCatalog, MSSQLTable>
         }
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource()
     {

@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -47,7 +49,7 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     }
 
     @Override
-    public Collection<DBVEntityConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public Collection<DBVEntityConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
     {
         return attributes;
     }
@@ -64,12 +66,14 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         return entity;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
         return entity.getDataSource();
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {

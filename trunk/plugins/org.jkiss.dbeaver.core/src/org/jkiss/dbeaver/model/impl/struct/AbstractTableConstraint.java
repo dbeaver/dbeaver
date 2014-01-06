@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -71,6 +72,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         this.description = description;
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {

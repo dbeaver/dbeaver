@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCheckConstraintColUsage;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
@@ -52,6 +53,7 @@ public class DB2TableCheckConstraintColumn extends AbstractTableConstraintColumn
         return constraint;
     }
 
+    @NotNull
     @Override
     public DB2DataSource getDataSource()
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -70,6 +71,7 @@ public abstract class AbstractTable<
         this.tableName = tableName;
     }
 
+    @NotNull
     @Override
     @SuppressWarnings("unchecked")
     public DATASOURCE getDataSource()

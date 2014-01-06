@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.struct;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,7 +31,7 @@ import java.util.Collection;
 /**
  * DBSDataSourceContainer
  */
-public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
+public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IDataSourceProvider
 {
     /**
      * Container unique ID
@@ -56,13 +57,6 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      * @return actual connection info.
      */
     DBPConnectionInfo getActualConnectionInfo();
-
-    /**
-     * Retrieves datasource instance
-     * @return datasource or null (if not connected)
-     */
-    @Override
-    DBPDataSource getDataSource();
 
     boolean isShowSystemObjects();
 

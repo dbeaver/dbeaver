@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -51,6 +52,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         this.defferability = defferability;
     }
 
+    @NotNull
     @Override
     public GenericDataSource getDataSource()
     {

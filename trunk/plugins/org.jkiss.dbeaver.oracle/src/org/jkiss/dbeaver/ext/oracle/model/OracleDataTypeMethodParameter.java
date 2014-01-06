@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -59,6 +60,7 @@ public class OracleDataTypeMethodParameter implements DBSObject {
         return method;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

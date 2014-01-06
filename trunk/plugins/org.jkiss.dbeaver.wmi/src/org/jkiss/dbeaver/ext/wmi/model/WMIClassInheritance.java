@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
@@ -62,6 +63,7 @@ public class WMIClassInheritance implements DBSEntityAssociation
         return subClass;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
@@ -74,6 +76,7 @@ public class WMIClassInheritance implements DBSEntityAssociation
         return superClass;
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraintType getConstraintType()
     {

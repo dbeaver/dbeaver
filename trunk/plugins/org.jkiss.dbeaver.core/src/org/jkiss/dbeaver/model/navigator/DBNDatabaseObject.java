@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.ui.IEditorDescriptor;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -121,6 +122,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
         return getParentNode() instanceof DBNDatabaseNode ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

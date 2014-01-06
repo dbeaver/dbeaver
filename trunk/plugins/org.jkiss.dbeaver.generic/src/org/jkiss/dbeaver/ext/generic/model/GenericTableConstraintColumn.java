@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -78,6 +79,7 @@ public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
         return constraint;
     }
 
+    @NotNull
     @Override
     public GenericDataSource getDataSource()
     {

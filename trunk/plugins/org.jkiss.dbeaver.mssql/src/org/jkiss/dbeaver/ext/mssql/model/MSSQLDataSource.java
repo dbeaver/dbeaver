@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
 import org.jkiss.dbeaver.ext.mssql.MSSQLDataSourceProvider;
@@ -534,6 +535,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return null;
     }
 
+    @NotNull
     @Override
     public MSSQLDataSource getDataSource() {
         return this;

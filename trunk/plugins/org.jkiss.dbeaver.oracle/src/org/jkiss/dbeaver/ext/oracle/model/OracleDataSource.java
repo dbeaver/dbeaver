@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
@@ -412,6 +413,7 @@ public class OracleDataSource extends JDBCDataSource
         return null;
     }
 
+    @NotNull
     @Override
     public OracleDataSource getDataSource() {
         return this;

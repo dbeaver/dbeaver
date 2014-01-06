@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -76,6 +77,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         this.radix = radix;
     }
 
+    @NotNull
     @Override
     public GenericDataSource getDataSource()
     {

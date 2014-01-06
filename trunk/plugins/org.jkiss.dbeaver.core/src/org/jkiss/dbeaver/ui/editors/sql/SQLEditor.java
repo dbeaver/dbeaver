@@ -1060,7 +1060,7 @@ public class SQLEditor extends SQLEditorBase
             tabItem.setText(tabName);
             tabItem.setImage(IMG_DATA_GRID);
             tabItem.setData(this);
-            if (queryIndex > 0 || resultSetNumber > 0) {
+            if (queryIndex > 1 || resultSetNumber > 0) {
                 tabItem.setShowClose(true);
             }
             tabItem.setControl(viewer.getControl());
@@ -1155,7 +1155,7 @@ public class SQLEditor extends SQLEditorBase
             return getDataSourceContainer();
         }
 
-        @Nullable
+        @NotNull
         @Override
         public DBPDataSource getDataSource()
         {

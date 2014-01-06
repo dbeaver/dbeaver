@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
@@ -71,6 +72,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
         updateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

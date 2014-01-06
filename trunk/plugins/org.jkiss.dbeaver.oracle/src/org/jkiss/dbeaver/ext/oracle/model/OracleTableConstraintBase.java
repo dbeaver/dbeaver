@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -50,12 +51,14 @@ public abstract class OracleTableConstraintBase extends JDBCTableConstraint<Orac
         super(oracleTableBase, name, description, constraintType, persisted);
     }
 
+    @NotNull
     @Override
     public OracleDataSource getDataSource()
     {
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 3)
     @Override
     public DBSEntityConstraintType getConstraintType()

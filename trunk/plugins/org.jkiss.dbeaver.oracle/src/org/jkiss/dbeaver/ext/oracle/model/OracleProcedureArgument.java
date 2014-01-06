@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -91,6 +92,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter
         return null;
     }
 
+    @NotNull
     @Override
     public OracleDataSource getDataSource()
     {

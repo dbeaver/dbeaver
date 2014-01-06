@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -76,6 +77,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
 
     }
 
+    @NotNull
     @Override
     public OracleDataSource getDataSource()
     {

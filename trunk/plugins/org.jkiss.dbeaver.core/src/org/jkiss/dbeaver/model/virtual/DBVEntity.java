@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -93,6 +95,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return container;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {
@@ -116,12 +119,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return DBSEntityType.VIRTUAL_ENTITY;
     }
 
+    @Nullable
     public String getProperty(String name)
     {
         return CommonUtils.isEmpty(properties) ? null : properties.get(name);
     }
 
-    public void setProperty(String name, String value)
+    public void setProperty(String name, @Nullable String value)
     {
         if (properties == null) {
             properties = new LinkedHashMap<String, String>();
@@ -143,6 +147,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return realEntity.getAttributes(monitor);
     }
 
+    @Nullable
     @Override
     public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName)
     {
@@ -179,12 +184,14 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         entityConstraints.add(constraint);
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
     {

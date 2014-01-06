@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
@@ -134,6 +135,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         }
     }
 
+    @NotNull
     @Override
     public MySQLDataSource getDataSource()
     {
