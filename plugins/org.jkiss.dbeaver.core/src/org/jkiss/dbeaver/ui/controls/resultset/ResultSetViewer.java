@@ -1075,13 +1075,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         if (model.setMetaData(columns)) {
             this.panelValueController = null;
-//            UIUtils.runInUI(null, new Runnable() {
-//                @Override
-//                public void run()
-//                {
-//                    spreadsheet.clearGrid();
-//                }
-//            });
             return true;
         }
         return false;
@@ -1098,6 +1091,15 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         model.setData(rows, updateMetaData);
 
         if (updateMetaData) {
+
+            if (getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
+                GridMode newMode = (rows.size() == 1) ? GridMode.RECORD : GridMode.GRID;
+                if (newMode != gridMode) {
+                    toggleMode();
+//                    ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_TOGGLE);
+                }
+            }
+
             this.initResultSet();
         } else {
             this.refreshSpreadsheet(updateMetaData, true);

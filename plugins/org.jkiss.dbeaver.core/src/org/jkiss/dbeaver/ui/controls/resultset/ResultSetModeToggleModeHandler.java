@@ -40,12 +40,10 @@ public class ResultSetModeToggleModeHandler extends ResultSetCommandHandler impl
                 if (rsv != null) {
                     if (rsv.getGridMode() == ResultSetViewer.GridMode.GRID) {
                         element.setText("Switch to record mode");
-                        element.setIcon(DBIcon.RS_TOGGLE_RECORD.getImageDescriptor());
-                        element.setChecked(false);
+                        element.setChecked(true);
                     } else {
                         element.setText("Switch to grid mode");
-                        element.setIcon(DBIcon.RS_TOGGLE_GRID.getImageDescriptor());
-                        element.setChecked(true);
+                        element.setChecked(false);
                     }
                 }
             }

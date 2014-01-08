@@ -6,9 +6,6 @@ Performance profile (RSV, tab switch, connections props dialog)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 DB2 autocomplete
 RSV UI:
-    - odd row
-    - double click behavior
-    - show value icons
     - switch to record for single row result
 
 1. Browse data by foreign keys
@@ -19,6 +16,9 @@ RSV UI:
 6. Async autocomplete
 7. Check on MacOS
 8. HTTP tunnel?
+
+Netezza
+Aster Teradata
 
 
 Minor:
