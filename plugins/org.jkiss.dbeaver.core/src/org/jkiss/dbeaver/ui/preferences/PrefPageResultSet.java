@@ -57,6 +57,7 @@ public class PrefPageResultSet extends TargetPrefPage
     private Button showOddRows;
     private Button showCellIcons;
     private Combo doubleClickBehavior;
+    private Button autoSwitchMode;
 
     public PrefPageResultSet()
     {
@@ -80,7 +81,8 @@ public class PrefPageResultSet extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
-            store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)
+            store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
+            store.contains(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)
             ;
     }
 
@@ -164,6 +166,7 @@ public class PrefPageResultSet extends TargetPrefPage
             doubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             doubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
             doubleClickBehavior.add("Inline Editor", Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
+            autoSwitchMode = UIUtils.createLabelCheckbox(uiGroup, "Switch to record/grid mode\non single/multiple row(s)", false);
         }
 
         return composite;
@@ -200,6 +203,7 @@ public class PrefPageResultSet extends TargetPrefPage
             showCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
             doubleClickBehavior.select(
                 Spreadsheet.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
+            autoSwitchMode.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -232,6 +236,7 @@ public class PrefPageResultSet extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, showOddRows.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, showCellIcons.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, doubleClickBehavior.getSelectionIndex()).name());
+            store.setValue(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -253,6 +258,7 @@ public class PrefPageResultSet extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE);
     }
 
     @Override

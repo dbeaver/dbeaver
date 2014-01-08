@@ -290,8 +290,8 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.row.delete" icon="icons/sql/row_delete.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.applyChanges" icon="icons/sql/accept.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" icon="icons/sql/cancel.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/resultset_record.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resultset.togglePreview" icon="icons/sql/resultset_preview_show.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/grid.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.togglePreview" icon="icons/sql/details.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
