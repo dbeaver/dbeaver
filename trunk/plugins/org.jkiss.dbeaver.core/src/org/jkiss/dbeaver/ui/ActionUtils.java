@@ -150,7 +150,9 @@ public class ActionUtils
         IBindingService bindingService = (IBindingService)serviceLocator.getService(IBindingService.class);
         if (bindingService != null) {
             TriggerSequence sequence = bindingService.getBestActiveBindingFor(commandId);
-            shortcut = sequence.format();
+            if (sequence != null) {
+                shortcut = sequence.format();
+            }
         }
 
         if (shortcut == null) {
