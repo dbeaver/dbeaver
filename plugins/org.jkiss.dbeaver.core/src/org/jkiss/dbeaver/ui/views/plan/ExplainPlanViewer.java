@@ -254,7 +254,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private class ToggleViewAction extends Action {
         private ToggleViewAction()
         {
-            super("View Source", DBIcon.RS_MODE_GRID.getImageDescriptor());
+            super("View Source", DBIcon.RS_GRID.getImageDescriptor());
         }
 
         @Override
