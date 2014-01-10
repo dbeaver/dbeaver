@@ -374,8 +374,7 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.addStatementsCount();
 
                 int resultSetNumber = 0;
-                boolean hasMoreResults = true;
-                while (hasMoreResults) {
+                while (hasResultSet) {
                     // Fetch data only if we have to fetch all results or if it is rs requested
                     if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                         DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlStatement, resultSetNumber);
@@ -409,8 +408,8 @@ public class SQLQueryJob extends DataSourceJob
                             break;
                         }
                     }
-                    hasMoreResults = curStatement.nextResults();
-                    if (hasMoreResults) {
+                    hasResultSet = curStatement.nextResults();
+                    if (hasResultSet) {
                         resultSetNumber++;
                     }
                 }
