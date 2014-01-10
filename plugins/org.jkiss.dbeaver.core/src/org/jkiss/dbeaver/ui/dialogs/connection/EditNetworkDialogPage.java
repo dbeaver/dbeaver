@@ -50,9 +50,9 @@ import java.util.Map;
 /**
  * Network handlers edit dialog page
  */
-public class EditTunnelDialogPage extends ActiveWizardPage {
+public class EditNetworkDialogPage extends ActiveWizardPage {
 
-    static final Log log = LogFactory.getLog(EditTunnelDialogPage.class);
+    static final Log log = LogFactory.getLog(EditNetworkDialogPage.class);
 
     private static class HandlerBlock {
         IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
@@ -72,12 +72,12 @@ public class EditTunnelDialogPage extends ActiveWizardPage {
     private DBPConnectionInfo connectionInfo;
     private Map<NetworkHandlerDescriptor, HandlerBlock> configurations = new HashMap<NetworkHandlerDescriptor, HandlerBlock>();
 
-    EditTunnelDialogPage(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    EditNetworkDialogPage(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         super(CoreMessages.dialog_tunnel_title);
         this.driver = driver;
         this.connectionInfo = connectionInfo;
-        setTitle("Tunnelling (SSH)");
+        setTitle("Network");
         setDescription(CoreMessages.dialog_tunnel_title);
     }
 

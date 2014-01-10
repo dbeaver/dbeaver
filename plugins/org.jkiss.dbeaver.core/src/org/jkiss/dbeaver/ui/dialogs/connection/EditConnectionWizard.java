@@ -44,8 +44,8 @@ public class EditConnectionWizard extends ConnectionWizard
     private DBPConnectionInfo oldData;
     private ConnectionPageSettings pageSettings;
     private ConnectionPageFinal pageFinal;
-    private EditTunnelDialogPage pageTunnels;
-    private EditEventsDialogPage pageEvents;
+    private EditNetworkDialogPage pageNetwork;
+    private EditShellEventsDialogPage pageEvents;
     private List<WizardPrefPage> prefPages = new ArrayList<WizardPrefPage>();
 
     /**
@@ -90,11 +90,11 @@ public class EditConnectionWizard extends ConnectionWizard
         }
 
         pageFinal = new ConnectionPageFinal(this, dataSource);
-        pageTunnels = new EditTunnelDialogPage(dataSource.getDriver(), dataSource.getConnectionInfo());
-        pageEvents = new EditEventsDialogPage(dataSource.getConnectionInfo());
+        pageNetwork = new EditNetworkDialogPage(dataSource.getDriver(), dataSource.getConnectionInfo());
+        pageEvents = new EditShellEventsDialogPage(dataSource.getConnectionInfo());
 
         addPage(pageFinal);
-        addPage(pageTunnels);
+        addPage(pageNetwork);
         addPage(pageEvents);
 
         addPreferencePage(new PrefPageMetaData(), "Metadata", "Metadata reading preferences");
@@ -125,7 +125,7 @@ public class EditConnectionWizard extends ConnectionWizard
         super.performFinish();
         dataSource.setUpdateDate(new Date());
         pageFinal.saveSettings(dataSource);
-        pageTunnels.saveConfigurations();
+        pageNetwork.saveConfigurations();
         pageEvents.saveConfigurations();
         for (WizardPrefPage prefPage : prefPages) {
             prefPage.performFinish();
@@ -157,7 +157,7 @@ public class EditConnectionWizard extends ConnectionWizard
     protected void saveSettings()
     {
         super.saveSettings();
-        pageTunnels.saveConfigurations();
+        pageNetwork.saveConfigurations();
         pageEvents.saveConfigurations();
     }
 
