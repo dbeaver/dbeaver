@@ -40,7 +40,7 @@ import java.util.Map;
 /**
  * Events edit dialog page
  */
-public class EditEventsDialogPage extends ActiveWizardPage<ConnectionWizard> {
+public class EditShellEventsDialogPage extends ActiveWizardPage<ConnectionWizard> {
 
     private DBPConnectionInfo connectionInfo;
     private Text commandText;
@@ -51,10 +51,10 @@ public class EditEventsDialogPage extends ActiveWizardPage<ConnectionWizard> {
 
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<DBPConnectionEventType, DBRShellCommand>();
 
-    protected EditEventsDialogPage(DBPConnectionInfo connectionInfo)
+    protected EditShellEventsDialogPage(DBPConnectionInfo connectionInfo)
     {
         super(CoreMessages.dialog_connection_events_title);
-        setTitle("Events");
+        setTitle("Shell Events");
         setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBIcon.EVENT.getImageDescriptor());
         this.connectionInfo = connectionInfo;

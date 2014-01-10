@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
@@ -180,7 +179,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     private void configureEvents()
     {
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
-        EditEventsDialog dialog = new EditEventsDialog(
+        EditShellEventsDialog dialog = new EditShellEventsDialog(
                 getShell(),
                 connectionInfo);
         if (dialog.open() == IDialogConstants.OK_ID) {
@@ -196,7 +195,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     private void configureTunnels()
     {
-        EditTunnelDialog dialog = new EditTunnelDialog(
+        EditNetworkDialog dialog = new EditNetworkDialog(
                 getShell(),
                 site.getDriver(),
                 site.getConnectionInfo());

@@ -30,15 +30,15 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 /**
  * Network handlers edit dialog
  */
-public class EditTunnelDialog extends HelpEnabledDialog {
+public class EditNetworkDialog extends HelpEnabledDialog {
 
-    private EditTunnelDialogPage page;
+    private EditNetworkDialogPage page;
 
-    protected EditTunnelDialog(Shell shell, DBPDriver driver, DBPConnectionInfo connectionInfo)
+    protected EditNetworkDialog(Shell shell, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         super(shell, IHelpContextIds.CTX_EDIT_CONNECTION_TUNNELS);
 
-        page = new EditTunnelDialogPage(driver, connectionInfo);
+        page = new EditNetworkDialogPage(driver, connectionInfo);
     }
 
     @Override
