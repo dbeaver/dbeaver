@@ -144,6 +144,7 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource)
     {
+        pageSettings.saveSettings(dataSource);
         pageGeneral.saveSettings(dataSource);
         pageNetwork.saveConfigurations(dataSource);
         pageEvents.saveConfigurations(dataSource);

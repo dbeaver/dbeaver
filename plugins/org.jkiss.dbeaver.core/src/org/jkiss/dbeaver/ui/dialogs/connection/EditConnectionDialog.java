@@ -49,10 +49,11 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     @Override
     protected Control createContents(Composite parent)
     {
+        Control contents = super.createContents(parent);
         DataSourceDescriptor activeDataSource = getWizard().getPageSettings().getActiveDataSource();
         getShell().setText("Connection '" + activeDataSource.getName() + "' configuration");
         getShell().setImage(activeDataSource.getObjectImage());
-        return super.createContents(parent);
+        return contents;
     }
 
     @Override
