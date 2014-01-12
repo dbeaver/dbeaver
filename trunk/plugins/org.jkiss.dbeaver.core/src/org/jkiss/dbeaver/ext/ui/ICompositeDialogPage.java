@@ -20,12 +20,14 @@
 package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.code.Nullable;
 
 /**
  * ICompositeDialogPage
  */
 public interface ICompositeDialogPage extends IDialogPage
 {
+    @Nullable
     IDialogPage[] getSubPages();
 
 }

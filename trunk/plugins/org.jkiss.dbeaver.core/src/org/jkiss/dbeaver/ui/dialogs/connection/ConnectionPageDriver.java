@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChangedListener, IDoubleClickListener {
     private NewConnectionWizard wizard;
     private DriverDescriptor selectedDriver;
-    private DriverTreeControl driverTreeControl;
 
     ConnectionPageDriver(NewConnectionWizard wizard)
     {
@@ -51,7 +50,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        driverTreeControl = new DriverTreeControl(placeholder);
+        DriverTreeControl driverTreeControl = new DriverTreeControl(placeholder);
         driverTreeControl.initDrivers(this, wizard.getAvailableProvides(), true);
         Control control = driverTreeControl.getControl();
         GridData gd = new GridData(GridData.FILL_BOTH);
