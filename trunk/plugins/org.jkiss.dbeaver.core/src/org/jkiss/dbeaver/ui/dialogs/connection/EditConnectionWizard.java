@@ -43,7 +43,7 @@ public class EditConnectionWizard extends ConnectionWizard
     private DataSourceDescriptor dataSource;
     private DBPConnectionInfo oldData;
     private ConnectionPageSettings pageSettings;
-    private ConnectionPageGeneral pageFinal;
+    private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
     private EditShellEventsDialogPage pageEvents;
     private List<WizardPrefPage> prefPages = new ArrayList<WizardPrefPage>();
@@ -57,12 +57,6 @@ public class EditConnectionWizard extends ConnectionWizard
         this.dataSource = dataSource;
         this.oldData = new DBPConnectionInfo(this.dataSource.getConnectionInfo());
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
-    }
-
-    @Override
-    public DataSourceDescriptor getDataSourceDescriptor()
-    {
-        return dataSource;
     }
 
     @Override
@@ -89,11 +83,11 @@ public class EditConnectionWizard extends ConnectionWizard
             addPage(pageSettings);
         }
 
-        pageFinal = new ConnectionPageGeneral(this, dataSource);
-        pageNetwork = new ConnectionPageNetwork(dataSource.getDriver(), dataSource.getConnectionInfo());
-        pageEvents = new EditShellEventsDialogPage(dataSource.getConnectionInfo());
+        pageGeneral = new ConnectionPageGeneral(this, dataSource);
+        pageNetwork = new ConnectionPageNetwork(this);
+        pageEvents = new EditShellEventsDialogPage(dataSource);
 
-        addPage(pageFinal);
+        addPage(pageGeneral);
         addPage(pageNetwork);
         addPage(pageEvents);
 
@@ -122,14 +116,8 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish()
     {
-        super.performFinish();
         dataSource.setUpdateDate(new Date());
-        pageFinal.saveSettings(dataSource);
-        pageNetwork.saveConfigurations();
-        pageEvents.saveConfigurations();
-        for (WizardPrefPage prefPage : prefPages) {
-            prefPage.performFinish();
-        }
+        saveSettings(dataSource);
         dataSource.getRegistry().updateDataSource(dataSource);
         return true;
     }
@@ -154,11 +142,14 @@ public class EditConnectionWizard extends ConnectionWizard
     }
 
     @Override
-    protected void saveSettings()
+    protected void saveSettings(DataSourceDescriptor dataSource)
     {
-        super.saveSettings();
-        pageNetwork.saveConfigurations();
-        pageEvents.saveConfigurations();
+        pageGeneral.saveSettings(dataSource);
+        pageNetwork.saveConfigurations(dataSource);
+        pageEvents.saveConfigurations(dataSource);
+        for (WizardPrefPage prefPage : prefPages) {
+            prefPage.performFinish();
+        }
     }
 
 }

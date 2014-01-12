@@ -20,10 +20,13 @@
 package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.jface.operation.IRunnableContext;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 /**
  * IDataSourceConnectionEditorSite
@@ -32,12 +35,14 @@ public interface IDataSourceConnectionEditorSite
 {
     IRunnableContext getRunnableContext();
 
-    @Nullable
-    DBSDataSourceContainer getDataSourceContainer();
+    DataSourceRegistry getDataSourceRegistry();
+
+    boolean isNew();
 
     DBPDriver getDriver();
 
-    DBPConnectionInfo getConnectionInfo();
+    @NotNull
+    DataSourceDescriptor getActiveDataSource();
 
     void updateButtons();
 

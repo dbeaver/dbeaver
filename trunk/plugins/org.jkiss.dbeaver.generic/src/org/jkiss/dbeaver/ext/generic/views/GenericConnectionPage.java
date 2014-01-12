@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
@@ -365,58 +366,56 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     public void loadSettings()
     {
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
+        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
         if (site.getDriver() != null) {
             driverText.setText(CommonUtils.toString(site.getDriver().getFullName()));
         }
-        if (connectionInfo != null) {
-            this.parseSampleURL(site.getDriver());
-            if (!isCustom) {
-                if (hostText != null) {
-                    if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                        hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
-                    } else {
-                        hostText.setText("localhost"); //$NON-NLS-1$
-                    }
-                }
-                if (portText != null) {
-                    if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                        portText.setText(String.valueOf(connectionInfo.getHostPort()));
-                    } else if (site.getDriver().getDefaultPort() != null) {
-                        portText.setText(site.getDriver().getDefaultPort());
-                    } else {
-                        portText.setText(""); //$NON-NLS-1$
-                    }
-                }
-                if (serverText != null) {
-                    serverText.setText(CommonUtils.getString(connectionInfo.getServerName()));
-                }
-                if (dbText != null) {
-                    dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-                }
-                if (pathText != null) {
-                    pathText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-                }
-            } else {
-                hostText.setText(""); //$NON-NLS-1$
-                portText.setText(""); //$NON-NLS-1$
-                serverText.setText(""); //$NON-NLS-1$
-                dbText.setText(""); //$NON-NLS-1$
-                pathText.setText(""); //$NON-NLS-1$
-            }
-            if (userNameText != null) {
-                userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
-            }
-            if (passwordText != null) {
-                passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
-            }
-
-            if (urlText != null) {
-                if (connectionInfo.getUrl() != null) {
-                    urlText.setText(CommonUtils.getString(connectionInfo.getUrl()));
+        this.parseSampleURL(site.getDriver());
+        if (!isCustom) {
+            if (hostText != null) {
+                if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                    hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
                 } else {
-                    urlText.setText(""); //$NON-NLS-1$
+                    hostText.setText("localhost"); //$NON-NLS-1$
                 }
+            }
+            if (portText != null) {
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                    portText.setText(String.valueOf(connectionInfo.getHostPort()));
+                } else if (site.getDriver().getDefaultPort() != null) {
+                    portText.setText(site.getDriver().getDefaultPort());
+                } else {
+                    portText.setText(""); //$NON-NLS-1$
+                }
+            }
+            if (serverText != null) {
+                serverText.setText(CommonUtils.getString(connectionInfo.getServerName()));
+            }
+            if (dbText != null) {
+                dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+            }
+            if (pathText != null) {
+                pathText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+            }
+        } else {
+            hostText.setText(""); //$NON-NLS-1$
+            portText.setText(""); //$NON-NLS-1$
+            serverText.setText(""); //$NON-NLS-1$
+            dbText.setText(""); //$NON-NLS-1$
+            pathText.setText(""); //$NON-NLS-1$
+        }
+        if (userNameText != null) {
+            userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+        }
+        if (passwordText != null) {
+            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+        }
+
+        if (urlText != null) {
+            if (connectionInfo.getUrl() != null) {
+                urlText.setText(CommonUtils.getString(connectionInfo.getUrl()));
+            } else {
+                urlText.setText(""); //$NON-NLS-1$
             }
         }
 
@@ -426,36 +425,35 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     }
 
     @Override
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionInfo != null) {
-            final Set<String> properties = metaURL == null ? Collections.<String>emptySet() : metaURL.getAvailableProperties();
+        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+        final Set<String> properties = metaURL == null ? Collections.<String>emptySet() : metaURL.getAvailableProperties();
 
-            if (hostText != null && properties.contains(DriverDescriptor.PROP_HOST)) {
-                connectionInfo.setHostName(hostText.getText());
-            }
-            if (portText != null && properties.contains(DriverDescriptor.PROP_PORT)) {
-                connectionInfo.setHostPort(portText.getText());
-            }
-            if (serverText != null && properties.contains(DriverDescriptor.PROP_SERVER)) {
-                connectionInfo.setServerName(serverText.getText());
-            }
-            if (dbText != null && properties.contains(DriverDescriptor.PROP_DATABASE)) {
-                connectionInfo.setDatabaseName(dbText.getText());
-            }
-            if (pathText != null && (properties.contains(DriverDescriptor.PROP_FOLDER) || properties.contains(DriverDescriptor.PROP_FILE))) {
-                connectionInfo.setDatabaseName(pathText.getText());
-            }
-            if (userNameText != null) {
-                connectionInfo.setUserName(userNameText.getText());
-            }
-            if (passwordText != null) {
-                connectionInfo.setUserPassword(passwordText.getText());
-            }
-            super.saveSettings(connectionInfo);
-            if (urlText != null && connectionInfo.getUrl() != null) {
-                urlText.setText(connectionInfo.getUrl());
-            }
+        if (hostText != null && properties.contains(DriverDescriptor.PROP_HOST)) {
+            connectionInfo.setHostName(hostText.getText());
+        }
+        if (portText != null && properties.contains(DriverDescriptor.PROP_PORT)) {
+            connectionInfo.setHostPort(portText.getText());
+        }
+        if (serverText != null && properties.contains(DriverDescriptor.PROP_SERVER)) {
+            connectionInfo.setServerName(serverText.getText());
+        }
+        if (dbText != null && properties.contains(DriverDescriptor.PROP_DATABASE)) {
+            connectionInfo.setDatabaseName(dbText.getText());
+        }
+        if (pathText != null && (properties.contains(DriverDescriptor.PROP_FOLDER) || properties.contains(DriverDescriptor.PROP_FILE))) {
+            connectionInfo.setDatabaseName(pathText.getText());
+        }
+        if (userNameText != null) {
+            connectionInfo.setUserName(userNameText.getText());
+        }
+        if (passwordText != null) {
+            connectionInfo.setUserPassword(passwordText.getText());
+        }
+        super.saveSettings(dataSource);
+        if (urlText != null && connectionInfo.getUrl() != null) {
+            urlText.setText(connectionInfo.getUrl());
         }
     }
 
@@ -494,7 +492,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
     private void saveAndUpdate()
     {
-        saveSettings(site.getConnectionInfo());
+        saveSettings(site.getActiveDataSource());
         site.updateButtons();
     }
 

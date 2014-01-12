@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.*;
@@ -37,6 +39,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IData
      * Container unique ID
      * @return id
      */
+    @NotNull
     String getId();
 
     /**
@@ -49,6 +52,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IData
      * Connection info
      * @return connection details
      */
+    @NotNull
     DBPConnectionInfo getConnectionInfo();
 
     /**
@@ -68,6 +72,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IData
 
     boolean isConnectionAutoCommit();
 
+    @Nullable
     DBPTransactionIsolation getDefaultTransactionsIsolation();
 
     void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
@@ -79,6 +84,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IData
      * @param parentObject parent object (in DBS objects hierarchy)
      * @return object filter or null if not filter was set for specified type
      */
+    @Nullable
     DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject);
 
     DBVModel getVirtualModel();
@@ -128,6 +134,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IData
      */
     IPreferenceStore getPreferenceStore();
 
+    @NotNull
     DBPDataSourceRegistry getRegistry();
 
     DBPKeywordManager getKeywordManager();

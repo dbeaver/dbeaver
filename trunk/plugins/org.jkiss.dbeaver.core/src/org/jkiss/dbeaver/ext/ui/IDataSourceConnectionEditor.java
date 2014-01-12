@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
  * IDataSourceConnectionEditor
@@ -32,6 +33,6 @@ public interface IDataSourceConnectionEditor extends IDialogPage
 
     void loadSettings();
 
-    void saveSettings();
+    void saveSettings(DataSourceDescriptor dataSource);
 
 }

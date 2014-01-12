@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -155,7 +156,8 @@ public class WMIConnectionPage extends ConnectionPageAbstract
     public void loadSettings()
     {
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
+        DataSourceDescriptor activeDataSource = site.getActiveDataSource();
+        DBPConnectionInfo connectionInfo = activeDataSource.getConnectionInfo();
         if (connectionInfo != null) {
             if (connectionInfo.getHostName() == null) {
                 connectionInfo.setHostName(DEFAULT_HOST);
@@ -184,8 +186,9 @@ public class WMIConnectionPage extends ConnectionPageAbstract
     }
 
     @Override
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
+        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
         if (connectionInfo != null) {
             if (hostText != null) {
                 connectionInfo.setHostName(hostText.getText());
@@ -202,7 +205,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
-            super.saveSettings(connectionInfo);
+            super.saveSettings(dataSource);
         }
     }
 

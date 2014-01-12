@@ -124,7 +124,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (connectionNameText != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
             if (settings != null && connectionNameText != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
-                DBPConnectionInfo connectionInfo = settings.getConnectionInfo();
+                DBPConnectionInfo connectionInfo = settings.getActiveDataSource().getConnectionInfo();
                 String newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
                 if (CommonUtils.isEmpty(newName)) {
                     newName = connectionInfo.getDatabaseName();
@@ -272,12 +272,13 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
+                    DataSourceDescriptor dataSource = wizard.getPageSettings().getActiveDataSource();
                     UIUtils.showPreferencesFor(
                         getControl().getShell(),
-                        wizard.getPageSettings().getConnectionInfo().getConnectionType(),
+                        dataSource.getConnectionInfo().getConnectionType(),
                         PrefPageConnectionTypes.PAGE_ID);
                     loadConnectionTypes();
-                    DBPConnectionType connectionType = wizard.getPageSettings().getConnectionInfo().getConnectionType();
+                    DBPConnectionType connectionType = dataSource.getConnectionInfo().getConnectionType();
                     connectionTypeCombo.select(connectionType);
                     autocommit.setSelection(connectionType.isAutocommit());
                 }
