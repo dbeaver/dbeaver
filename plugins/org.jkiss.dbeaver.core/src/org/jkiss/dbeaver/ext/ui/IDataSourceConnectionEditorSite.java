@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.jface.operation.IRunnableContext;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -31,6 +32,7 @@ public interface IDataSourceConnectionEditorSite
 {
     IRunnableContext getRunnableContext();
 
+    @Nullable
     DBSDataSourceContainer getDataSourceContainer();
 
     DBPDriver getDriver();
@@ -38,8 +40,6 @@ public interface IDataSourceConnectionEditorSite
     DBPConnectionInfo getConnectionInfo();
 
     void updateButtons();
-
-    void updateMessage();
 
     boolean openDriverEditor();
 

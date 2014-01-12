@@ -45,8 +45,8 @@ public class NewConnectionWizard extends ConnectionWizard
     private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<DataSourceProviderDescriptor>();
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<DataSourceProviderDescriptor, ConnectionPageSettings>();
-    private ConnectionPageFinal pageFinal;
-    private EditNetworkDialogPage pageNetwork;
+    private ConnectionPageGeneral pageFinal;
+    private ConnectionPageNetwork pageNetwork;
 
     public NewConnectionWizard()
     {
@@ -131,8 +131,8 @@ public class NewConnectionWizard extends ConnectionWizard
             UIUtils.showErrorDialog(getShell(), "Error", "Error loading views", ex);
         }
 
-        //pageNetwork = new EditNetworkDialogPage();
-        pageFinal = new ConnectionPageFinal(this);
+        //pageNetwork = new ConnectionPageNetwork();
+        pageFinal = new ConnectionPageGeneral(this);
         addPage(pageFinal);
     }
 

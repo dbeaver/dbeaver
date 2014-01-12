@@ -32,13 +32,13 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
  */
 public class EditNetworkDialog extends HelpEnabledDialog {
 
-    private EditNetworkDialogPage page;
+    private ConnectionPageNetwork page;
 
     protected EditNetworkDialog(Shell shell, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         super(shell, IHelpContextIds.CTX_EDIT_CONNECTION_TUNNELS);
 
-        page = new EditNetworkDialogPage(driver, connectionInfo);
+        page = new ConnectionPageNetwork(driver, connectionInfo);
     }
 
     @Override

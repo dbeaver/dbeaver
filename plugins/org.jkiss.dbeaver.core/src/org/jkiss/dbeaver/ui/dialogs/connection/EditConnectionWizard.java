@@ -43,8 +43,8 @@ public class EditConnectionWizard extends ConnectionWizard
     private DataSourceDescriptor dataSource;
     private DBPConnectionInfo oldData;
     private ConnectionPageSettings pageSettings;
-    private ConnectionPageFinal pageFinal;
-    private EditNetworkDialogPage pageNetwork;
+    private ConnectionPageGeneral pageFinal;
+    private ConnectionPageNetwork pageNetwork;
     private EditShellEventsDialogPage pageEvents;
     private List<WizardPrefPage> prefPages = new ArrayList<WizardPrefPage>();
 
@@ -89,8 +89,8 @@ public class EditConnectionWizard extends ConnectionWizard
             addPage(pageSettings);
         }
 
-        pageFinal = new ConnectionPageFinal(this, dataSource);
-        pageNetwork = new EditNetworkDialogPage(dataSource.getDriver(), dataSource.getConnectionInfo());
+        pageFinal = new ConnectionPageGeneral(this, dataSource);
+        pageNetwork = new ConnectionPageNetwork(dataSource.getDriver(), dataSource.getConnectionInfo());
         pageEvents = new EditShellEventsDialogPage(dataSource.getConnectionInfo());
 
         addPage(pageFinal);
