@@ -54,13 +54,10 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 /**
- * The "New" wizard page allows setting the container for the new file as well
- * as the file name. The page will only accept file name without the extension
- * OR with the extension that matches the expected one (mpe).
+ * General connection page (common for all connection types)
  */
-
-class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
-    static final Log log = LogFactory.getLog(ConnectionPageFinal.class);
+class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
+    static final Log log = LogFactory.getLog(ConnectionPageGeneral.class);
 
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
@@ -92,7 +89,7 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
         }
     }
     
-    ConnectionPageFinal(ConnectionWizard wizard)
+    ConnectionPageGeneral(ConnectionWizard wizard)
     {
         super("newConnectionFinal"); //$NON-NLS-1$
         this.wizard = wizard;
@@ -104,7 +101,7 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
         filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
     }
 
-    ConnectionPageFinal(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
+    ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
     {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
@@ -249,7 +246,7 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
             public void modifyText(ModifyEvent e)
             {
                 connectionNameChanged = true;
-                ConnectionPageFinal.this.getContainer().updateButtons();
+                ConnectionPageGeneral.this.getContainer().updateButtons();
             }
         });
 

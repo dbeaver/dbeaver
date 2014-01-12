@@ -50,9 +50,9 @@ import java.util.Map;
 /**
  * Network handlers edit dialog page
  */
-public class EditNetworkDialogPage extends ActiveWizardPage {
+public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
 
-    static final Log log = LogFactory.getLog(EditNetworkDialogPage.class);
+    static final Log log = LogFactory.getLog(ConnectionPageNetwork.class);
 
     private static class HandlerBlock {
         IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
@@ -72,7 +72,7 @@ public class EditNetworkDialogPage extends ActiveWizardPage {
     private DBPConnectionInfo connectionInfo;
     private Map<NetworkHandlerDescriptor, HandlerBlock> configurations = new HashMap<NetworkHandlerDescriptor, HandlerBlock>();
 
-    EditNetworkDialogPage(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    ConnectionPageNetwork(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         super(CoreMessages.dialog_tunnel_title);
         this.driver = driver;

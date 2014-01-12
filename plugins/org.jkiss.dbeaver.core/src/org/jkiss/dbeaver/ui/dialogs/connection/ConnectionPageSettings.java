@@ -32,6 +32,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
@@ -50,29 +52,30 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 /**
- * The "New" wizard page allows setting the container for the new file as well
- * as the file name. The page will only accept file name without the extension
- * OR with the extension that matches the expected one (mpe).
+ * Settings connection page. Hosts particular drivers' connection pages
  */
-
 class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage
 {
     static final Log log = LogFactory.getLog(DriverDescriptor.class);
 
-    private ConnectionWizard wizard;
+    @NotNull
+    private final ConnectionWizard wizard;
+    @NotNull
     private DataSourceViewDescriptor viewDescriptor;
+    @Nullable
     private IDataSourceConnectionEditor connectionEditor;
+    @Nullable
     private DataSourceDescriptor dataSource;
-    private Map<DriverDescriptor, DBPConnectionInfo> infoMap = new HashMap<DriverDescriptor, DBPConnectionInfo>();
+    private final Map<DriverDescriptor, DBPConnectionInfo> infoMap = new HashMap<DriverDescriptor, DBPConnectionInfo>();
+    private final Set<DBPConnectionInfo> activated = new HashSet<DBPConnectionInfo>();
     private IDialogPage[] subPages;
-    private Set<DBPConnectionInfo> activated = new HashSet<DBPConnectionInfo>();
 
     /**
      * Constructor for ConnectionPageSettings
      */
     ConnectionPageSettings(
-        ConnectionWizard wizard,
-        DataSourceViewDescriptor viewDescriptor)
+        @NotNull ConnectionWizard wizard,
+        @NotNull DataSourceViewDescriptor viewDescriptor)
     {
         super("newConnectionSettings");
         this.wizard = wizard;
@@ -86,9 +89,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
      * Constructor for ConnectionPageSettings
      */
     ConnectionPageSettings(
-        ConnectionWizard wizard,
-        DataSourceViewDescriptor viewDescriptor,
-        DataSourceDescriptor dataSource)
+        @NotNull ConnectionWizard wizard,
+        @NotNull DataSourceViewDescriptor viewDescriptor,
+        @Nullable DataSourceDescriptor dataSource)
     {
         this(wizard, viewDescriptor);
         this.dataSource = dataSource;
@@ -192,10 +195,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public boolean isPageComplete()
     {
-        if (wizard.getPageSettings() != this) {
-            return true;
-        }
-        return this.connectionEditor != null && this.connectionEditor.isComplete();
+        return wizard.getPageSettings() != this ||
+            this.connectionEditor != null && this.connectionEditor.isComplete();
     }
 
     @Override
@@ -204,6 +205,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return wizard.getContainer();
     }
 
+    @Nullable
     @Override
     public DBSDataSourceContainer getDataSourceContainer() {
         return dataSource;
@@ -238,13 +240,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public void updateMessage()
-    {
-        getWizard().getContainer().updateMessage();
-        getWizard().getContainer().updateTitleBar();
-    }
-
-    @Override
     public boolean openDriverEditor()
     {
         DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), this.getDriver());
@@ -261,6 +256,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         super.dispose();
     }
 
+    @Nullable
     @Override
     public IDialogPage[] getSubPages()
     {
