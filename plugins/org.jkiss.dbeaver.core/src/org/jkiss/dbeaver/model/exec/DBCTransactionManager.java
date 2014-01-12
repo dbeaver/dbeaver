@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 
@@ -46,6 +47,6 @@ public interface DBCTransactionManager
 
     void commit() throws DBCException;
 
-    void rollback(DBCSavepoint savepoint) throws DBCException;
+    void rollback(@Nullable DBCSavepoint savepoint) throws DBCException;
 
 }

@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -45,13 +46,8 @@ public class NewConnectionWizard extends ConnectionWizard
     private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<DataSourceProviderDescriptor>();
     private ConnectionPageDriver pageDrivers;
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<DataSourceProviderDescriptor, ConnectionPageSettings>();
-    private ConnectionPageGeneral pageFinal;
+    private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
-
-    public NewConnectionWizard()
-    {
-        super(DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry());
-    }
 
     /**
      * Constructor for SampleNewWizard.
@@ -131,18 +127,22 @@ public class NewConnectionWizard extends ConnectionWizard
             UIUtils.showErrorDialog(getShell(), "Error", "Error loading views", ex);
         }
 
-        //pageNetwork = new ConnectionPageNetwork();
-        pageFinal = new ConnectionPageGeneral(this);
-        addPage(pageFinal);
+        pageGeneral = new ConnectionPageGeneral(this);
+        pageNetwork = new ConnectionPageNetwork(this);
+        addPage(pageGeneral);
+        addPage(pageNetwork);
     }
 
+    @Nullable
     @Override
     public IWizardPage getNextPage(IWizardPage page)
     {
         if (page == pageDrivers) {
             return getPageSettings(pageDrivers.getSelectedDriver());
         } else if (page instanceof ConnectionPageSettings) {
-            return pageFinal;
+            return pageNetwork;
+        } else if (page instanceof ConnectionPageNetwork) {
+            return pageGeneral;
         } else {
             return null;
         }
@@ -156,20 +156,31 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish()
     {
-        super.performFinish();
-        DataSourceDescriptor dataSource = new DataSourceDescriptor(
-            dataSourceRegistry,
-            DataSourceDescriptor.generateNewId(pageDrivers.getSelectedDriver()),
-            pageDrivers.getSelectedDriver(),
-            getPageSettings().getConnectionInfo());
-        pageFinal.saveSettings(dataSource);
-        dataSourceRegistry.addDataSource(dataSource);
+        DriverDescriptor driver = getSelectedDriver();
+        DataSourceDescriptor dataSourceTpl = getPageSettings().getActiveDataSource();
+        DataSourceDescriptor dataSourceNew = new DataSourceDescriptor(
+            dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionInfo());
+        dataSourceNew.copyFrom(dataSourceTpl);
+        saveSettings(dataSourceNew);
+        dataSourceRegistry.addDataSource(dataSourceNew);
         return true;
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection)
     {
+    }
+
+    @Override
+    protected void saveSettings(DataSourceDescriptor dataSource) {
+        getPageSettings(dataSource.getDriver()).saveSettings(dataSource);
+        pageGeneral.saveSettings(dataSource);
+        pageNetwork.saveConfigurations(dataSource);
+    }
+
+    @Override
+    public boolean isNew() {
+        return true;
     }
 
 }

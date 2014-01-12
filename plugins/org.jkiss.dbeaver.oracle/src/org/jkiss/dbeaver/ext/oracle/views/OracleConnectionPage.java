@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
@@ -102,7 +103,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             public void widgetSelected(SelectionEvent e)
             {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection()[0].getData();
-                site.getConnectionInfo().getProperties().put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
+                site.getActiveDataSource().getConnectionInfo().getProperties().put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
                 updateUI();
             }
         });
@@ -317,86 +318,78 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         //oraHomeSelector.setVisible(isOCI);
 
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
-        if (connectionInfo != null) {
-            Map<Object,Object> connectionProperties = connectionInfo.getProperties();
+        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
-            final Object sidService = connectionProperties.get(OracleConstants.PROP_SID_SERVICE);
-            if (sidService != null) {
-                sidServiceCombo.setText(OracleConnectionType.valueOf(sidService.toString()).getTitle());
+        final Object sidService = connectionProperties.get(OracleConstants.PROP_SID_SERVICE);
+        if (sidService != null) {
+            sidServiceCombo.setText(OracleConnectionType.valueOf(sidService.toString()).getTitle());
+        }
+
+        //if (isOCI) {
+        oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
+        //}
+
+        if (tnsNameCombo.getItemCount() == 0) {
+            populateTnsNameCombo();
+        }
+
+        if (serviceNameCombo.getItemCount() == 0) {
+            for (String alias : getAvailableServiceNames()) {
+                serviceNameCombo.add(alias);
             }
+        }
 
-            //if (isOCI) {
-                oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
-            //}
-
-            if (tnsNameCombo.getItemCount() == 0) {
-                populateTnsNameCombo();
-            }
-
-            if (serviceNameCombo.getItemCount() == 0) {
-                for (String alias : getAvailableServiceNames()) {
-                    serviceNameCombo.add(alias);
-                }
-            }
-
-            Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
-            if (conTypeProperty != null) {
-                connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
-            } else {
-                connectionType = OracleConstants.ConnectionType.BASIC;
-            }
-            connectionTypeFolder.setSelection(connectionType.ordinal());
-
-            switch (connectionType) {
-                case BASIC:
-                    hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
-                    if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                        portText.setText(String.valueOf(connectionInfo.getHostPort()));
-                    } else {
-                        portText.setText(String.valueOf(OracleConstants.DEFAULT_PORT));
-                    }
-
-                    serviceNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-                    break;
-                case TNS:
-                    tnsNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-                    break;
-                case CUSTOM:
-                    connectionUrlText.setText(CommonUtils.getString(connectionInfo.getUrl()));
-                    break;
-            }
-
-            if (OracleConstants.OS_AUTH_USER_NAME.equals(connectionInfo.getUserName())) {
-                userNameText.setEnabled(false);
-                passwordText.setEnabled(false);
-                osAuthCheck.setSelection(true);
-            } else {
-                userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
-                passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
-                osAuthCheck.setSelection(false);
-            }
-
-            final Object roleName = connectionProperties.get(OracleConstants.PROP_INTERNAL_LOGON);
-            if (roleName != null) {
-                userRoleCombo.setText(roleName.toString().toUpperCase());
-            }
+        Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
+        if (conTypeProperty != null) {
+            connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
         } else {
-            if (portText != null) {
-                portText.setText(String.valueOf(OracleConstants.DEFAULT_PORT));
-            }
+            connectionType = OracleConstants.ConnectionType.BASIC;
+        }
+        connectionTypeFolder.setSelection(connectionType.ordinal());
+
+        switch (connectionType) {
+            case BASIC:
+                hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                    portText.setText(String.valueOf(connectionInfo.getHostPort()));
+                } else {
+                    portText.setText(String.valueOf(OracleConstants.DEFAULT_PORT));
+                }
+
+                serviceNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                break;
+            case TNS:
+                tnsNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                break;
+            case CUSTOM:
+                connectionUrlText.setText(CommonUtils.getString(connectionInfo.getUrl()));
+                break;
+        }
+
+        if (OracleConstants.OS_AUTH_USER_NAME.equals(connectionInfo.getUserName())) {
+            userNameText.setEnabled(false);
+            passwordText.setEnabled(false);
+            osAuthCheck.setSelection(true);
+        } else {
+            userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+            osAuthCheck.setSelection(false);
+        }
+
+        final Object roleName = connectionProperties.get(OracleConstants.PROP_INTERNAL_LOGON);
+        if (roleName != null) {
+            userRoleCombo.setText(roleName.toString().toUpperCase());
         }
 
         super.loadSettings();
     }
 
     @Override
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionInfo == null) {
-            return;
-        }
-        super.saveSettings(connectionInfo);
+        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+        super.saveSettings(dataSource);
         Map<Object, Object> connectionProperties = connectionInfo.getProperties();
         //if (isOCI) {
             connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());

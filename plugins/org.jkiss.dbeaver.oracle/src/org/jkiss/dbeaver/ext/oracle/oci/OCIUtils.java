@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.utils.WinRegistry;
@@ -268,7 +269,7 @@ public class OCIUtils
     /**
      * Reads TNS names from a specified Oracle home or system variable TNS_ADMIN.
      */
-    public static List<String> readTnsNames(File oraHome, boolean checkTnsAdmin)
+    public static List<String> readTnsNames(@Nullable File oraHome, boolean checkTnsAdmin)
     {
         File tnsNamesFile = null;
         if (checkTnsAdmin) {
