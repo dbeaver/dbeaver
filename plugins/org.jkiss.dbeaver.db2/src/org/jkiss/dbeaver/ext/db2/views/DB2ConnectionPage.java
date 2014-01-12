@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
@@ -151,57 +152,50 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     public void loadSettings()
     {
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
-        if (connectionInfo != null) {
-            if (hostText != null) {
-                hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
-            }
-            if (portText != null) {
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(String.valueOf(connectionInfo.getHostPort()));
-                } else {
-                    portText.setText(String.valueOf(DB2Constants.DEFAULT_PORT));
-                }
-            }
-            if (dbText != null) {
-                dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-            }
-            if (usernameText != null) {
-                usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
-            }
-            if (passwordText != null) {
-                passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
-            }
-        } else {
-            if (portText != null) {
+        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        if (hostText != null) {
+            hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+        }
+        if (portText != null) {
+            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                portText.setText(String.valueOf(connectionInfo.getHostPort()));
+            } else {
                 portText.setText(String.valueOf(DB2Constants.DEFAULT_PORT));
             }
+        }
+        if (dbText != null) {
+            dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+        }
+        if (usernameText != null) {
+            usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+        }
+        if (passwordText != null) {
+            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
         }
 
         super.loadSettings();
     }
 
     @Override
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionInfo != null) {
-            if (hostText != null) {
-                connectionInfo.setHostName(hostText.getText());
-            }
-            if (portText != null) {
-                connectionInfo.setHostPort(portText.getText());
-            }
-            if (dbText != null) {
-                connectionInfo.setDatabaseName(dbText.getText());
-            }
-            if (usernameText != null) {
-                connectionInfo.setUserName(usernameText.getText());
-            }
-            if (passwordText != null) {
-                connectionInfo.setUserPassword(passwordText.getText());
-            }
-            super.saveSettings(connectionInfo);
+        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+        if (hostText != null) {
+            connectionInfo.setHostName(hostText.getText());
         }
+        if (portText != null) {
+            connectionInfo.setHostPort(portText.getText());
+        }
+        if (dbText != null) {
+            connectionInfo.setDatabaseName(dbText.getText());
+        }
+        if (usernameText != null) {
+            connectionInfo.setUserName(usernameText.getText());
+        }
+        if (passwordText != null) {
+            connectionInfo.setUserPassword(passwordText.getText());
+        }
+        super.saveSettings(dataSource);
     }
 
     private void evaluateURL()

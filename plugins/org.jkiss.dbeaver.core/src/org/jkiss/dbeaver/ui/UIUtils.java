@@ -809,7 +809,7 @@ public class UIUtils {
     }
 
     public static void showErrorDialog(
-        Shell shell,
+        @Nullable Shell shell,
         String title,
         @Nullable String message,
         @Nullable Throwable error)

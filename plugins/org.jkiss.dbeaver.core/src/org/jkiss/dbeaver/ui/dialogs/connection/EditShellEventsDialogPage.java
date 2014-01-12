@@ -19,17 +19,19 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.EventProcessorJob;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
@@ -42,7 +44,6 @@ import java.util.Map;
  */
 public class EditShellEventsDialogPage extends ActiveWizardPage<ConnectionWizard> {
 
-    private DBPConnectionInfo connectionInfo;
     private Text commandText;
     private Button showProcessCheck;
     private Button terminateCheck;
@@ -51,15 +52,14 @@ public class EditShellEventsDialogPage extends ActiveWizardPage<ConnectionWizard
 
     private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<DBPConnectionEventType, DBRShellCommand>();
 
-    protected EditShellEventsDialogPage(DBPConnectionInfo connectionInfo)
+    protected EditShellEventsDialogPage(DataSourceDescriptor dataSource)
     {
         super(CoreMessages.dialog_connection_events_title);
         setTitle("Shell Events");
         setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBIcon.EVENT.getImageDescriptor());
-        this.connectionInfo = connectionInfo;
         for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
-            DBRShellCommand command = connectionInfo.getEvent(eventType);
+            DBRShellCommand command = dataSource.getConnectionInfo().getEvent(eventType);
             eventsCache.put(eventType, command == null ? null : new DBRShellCommand(command));
         }
     }
@@ -234,10 +234,10 @@ public class EditShellEventsDialogPage extends ActiveWizardPage<ConnectionWizard
         }
     }
 
-    void saveConfigurations()
+    void saveConfigurations(DataSourceDescriptor dataSource)
     {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
-            connectionInfo.setEvent(entry.getKey(), entry.getValue());
+            dataSource.getConnectionInfo().setEvent(entry.getKey(), entry.getValue());
         }
     }
 

@@ -104,7 +104,8 @@ public class DataSourceDescriptor
             }
         }
 
-        public DBSObjectFilter getFilter(DBSObject parentObject, boolean firstMatch)
+        @Nullable
+        public DBSObjectFilter getFilter(@Nullable DBSObject parentObject, boolean firstMatch)
         {
             if (parentObject == null) {
                 return defaultFilter;
@@ -120,12 +121,13 @@ public class DataSourceDescriptor
             return firstMatch ? null : defaultFilter;
         }
     }
-
+    @NotNull
     private DataSourceRegistry registry;
     private DriverDescriptor driver;
+    @NotNull
     private DBPConnectionInfo connectionInfo;
     private DBPConnectionInfo tunnelConnectionInfo;
-
+    @NotNull
     private String id;
     private String name;
     private String description;
@@ -155,10 +157,10 @@ public class DataSourceDescriptor
     private DBVModel virtualModel;
 
     public DataSourceDescriptor(
-        DataSourceRegistry registry,
-        String id,
-        DriverDescriptor driver,
-        DBPConnectionInfo connectionInfo)
+        @NotNull DataSourceRegistry registry,
+        @NotNull String id,
+        @NotNull DriverDescriptor driver,
+        @NotNull DBPConnectionInfo connectionInfo)
     {
         this.registry = registry;
         this.id = id;
@@ -195,6 +197,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @NotNull
     @Override
     public String getId() {
         return id;
@@ -216,13 +219,14 @@ public class DataSourceDescriptor
         this.driver.addUser(this);
     }
 
+    @NotNull
     @Override
     public DBPConnectionInfo getConnectionInfo()
     {
         return connectionInfo;
     }
 
-    public void setConnectionInfo(DBPConnectionInfo connectionInfo)
+    public void setConnectionInfo(@NotNull DBPConnectionInfo connectionInfo)
     {
         this.connectionInfo = connectionInfo;
     }
@@ -351,6 +355,7 @@ public class DataSourceDescriptor
         return false;
     }
 
+    @Nullable
     @Override
     public DBPTransactionIsolation getDefaultTransactionsIsolation()
     {
@@ -413,13 +418,15 @@ public class DataSourceDescriptor
         return filterMap.values();
     }
 
+    @Nullable
     @Override
     public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject)
     {
         return getObjectFilter(type, parentObject, false);
     }
 
-    public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean firstMatch)
+    @Nullable
+    public DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch)
     {
         if (filterMap.isEmpty()) {
             return null;
@@ -452,7 +459,7 @@ public class DataSourceDescriptor
         updateObjectFilter(type, parentObject == null ? null : DBUtils.getObjectUniqueName(parentObject), filter);
     }
 
-    void updateObjectFilter(Class<?> type, String objectID, DBSObjectFilter filter)
+    void updateObjectFilter(Class<?> type, @Nullable String objectID, DBSObjectFilter filter)
     {
         FilterMapping filterMapping = filterMap.get(type);
         if (filterMapping == null) {
@@ -497,7 +504,7 @@ public class DataSourceDescriptor
         return true;
     }
 
-    public void setDescription(String description)
+    public void setDescription(@Nullable String description)
     {
         this.description = description;
     }
@@ -545,6 +552,7 @@ public class DataSourceDescriptor
         return true;
     }
 
+    @NotNull
     @Override
     public DataSourceRegistry getRegistry()
     {
@@ -952,11 +960,10 @@ public class DataSourceDescriptor
 
     public void resetPassword()
     {
-        if (connectionInfo != null) {
-            connectionInfo.setUserPassword(null);
-        }
+        connectionInfo.setUserPassword(null);
     }
 
+    @Nullable
     @Override
     public Object getAdapter(Class adapter)
     {
@@ -1045,6 +1052,7 @@ public class DataSourceDescriptor
         return connectionInfo.getUrl();
     }
 
+    @Nullable
     @Property(order = 6)
     public String getPropertyServerName()
     {
@@ -1058,6 +1066,7 @@ public class DataSourceDescriptor
         return null;
     }
 
+    @Nullable
     @Property(order = 7)
     public String getPropertyDriver()
     {
@@ -1071,6 +1080,7 @@ public class DataSourceDescriptor
         return null;
     }
 
+    @Nullable
     @Property(order = 8)
     public String getPropertyConnectTime()
     {
@@ -1117,7 +1127,7 @@ public class DataSourceDescriptor
         }
     }
 
-    void copyFrom(DataSourceDescriptor descriptor) {
+    public void copyFrom(DataSourceDescriptor descriptor) {
         filterMap.clear();
         for (FilterMapping mapping : descriptor.getObjectFilters()) {
             filterMap.put(mapping.type, new FilterMapping(mapping));

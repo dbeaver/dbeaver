@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -118,42 +119,37 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         //oraHomeSelector.setVisible(isOCI);
 
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
-        if (connectionInfo != null) {
-            Map<Object,Object> connectionProperties = connectionInfo.getProperties();
+        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
-            // Settings
-            final Object nlsLanguage = connectionProperties.get(OracleConstants.PROP_SESSION_LANGUAGE);
-            if (nlsLanguage != null) {
-                languageCombo.setText(nlsLanguage.toString());
-            }
+        // Settings
+        final Object nlsLanguage = connectionProperties.get(OracleConstants.PROP_SESSION_LANGUAGE);
+        if (nlsLanguage != null) {
+            languageCombo.setText(nlsLanguage.toString());
+        }
 
-            final Object nlsTerritory = connectionProperties.get(OracleConstants.PROP_SESSION_TERRITORY);
-            if (nlsTerritory != null) {
-                territoryCombo.setText(nlsTerritory.toString());
-            }
+        final Object nlsTerritory = connectionProperties.get(OracleConstants.PROP_SESSION_TERRITORY);
+        if (nlsTerritory != null) {
+            territoryCombo.setText(nlsTerritory.toString());
+        }
 
-            final Object checkSchemaContent = connectionProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
-            if (checkSchemaContent != null) {
-                hideEmptySchemasCheckbox.setSelection(CommonUtils.getBoolean(checkSchemaContent, false));
-            }
+        final Object checkSchemaContent = connectionProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
+        if (checkSchemaContent != null) {
+            hideEmptySchemasCheckbox.setSelection(CommonUtils.getBoolean(checkSchemaContent, false));
+        }
 
-            final Object showDBAObjects = connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA);
-            if (showDBAObjects != null) {
-                showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(showDBAObjects, false));
-            }
+        final Object showDBAObjects = connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA);
+        if (showDBAObjects != null) {
+            showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(showDBAObjects, false));
         }
         super.loadSettings();
     }
 
     @Override
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionInfo == null) {
-            return;
-        }
-        super.saveSettings(connectionInfo);
-        Map<Object, Object> connectionProperties = connectionInfo.getProperties();
+        super.saveSettings(dataSource);
+        Map<Object, Object> connectionProperties = dataSource.getConnectionInfo().getProperties();
 
         {
             // Settings
@@ -177,12 +173,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 OracleConstants.PROP_ALWAYS_SHOW_DBA,
                 String.valueOf(showDBAAlwaysCheckbox.getSelection()));
         }
-        saveConnectionURL(connectionInfo);
-    }
-
-    private void updateUI()
-    {
-        site.updateButtons();
+        saveConnectionURL(dataSource.getConnectionInfo());
     }
 
 }

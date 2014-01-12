@@ -24,6 +24,7 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -125,7 +126,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         return showConfirmDialog(shell, id, CONFIRM, args) == 0;
     }
 
-    public static int showConfirmDialog(Shell shell, String id, int type, Object ... args)
+    public static int showConfirmDialog(@Nullable Shell shell, String id, int type, Object ... args)
     {
         return showConfirmDialog(shell, id, type, type, args);
     }

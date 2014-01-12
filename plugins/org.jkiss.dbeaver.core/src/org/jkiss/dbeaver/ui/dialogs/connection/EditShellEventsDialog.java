@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
@@ -32,13 +32,14 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
  */
 public class EditShellEventsDialog extends HelpEnabledDialog {
 
-
+    private DataSourceDescriptor dataSource;
     private EditShellEventsDialogPage page;
 
-    protected EditShellEventsDialog(Shell shell, DBPConnectionInfo connectionInfo)
+    protected EditShellEventsDialog(Shell shell, DataSourceDescriptor dataSource)
     {
         super(shell, IHelpContextIds.CTX_EDIT_CONNECTION_EVENTS);
-        page = new EditShellEventsDialogPage(connectionInfo);
+        this.dataSource = dataSource;
+        page = new EditShellEventsDialogPage(dataSource);
     }
 
     @Override
@@ -54,7 +55,7 @@ public class EditShellEventsDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed()
     {
-        page.saveConfigurations();
+        page.saveConfigurations(dataSource);
         super.okPressed();
     }
 

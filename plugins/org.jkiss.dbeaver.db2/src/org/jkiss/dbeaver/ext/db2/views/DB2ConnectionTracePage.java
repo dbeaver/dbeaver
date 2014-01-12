@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -144,47 +145,42 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     public void loadSettings()
     {
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
-        if (connectionInfo != null) {
-            Map<Object,Object> connectionProperties = connectionInfo.getProperties();
+        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
-            // Settings
-            enableTraceCheck.setSelection(
-                CommonUtils.getBoolean(
-                    connectionProperties.get(DB2Constants.PROP_TRACE_ENABLED), false));
-            if (!enableTraceCheck.getSelection()) {
-                traceEnableState = ControlEnableState.disable(traceGroup);
-            }
-            if (connectionProperties.containsKey(DB2Constants.PROP_TRACE_FOLDER)) {
-                folderText.setText(
-                    CommonUtils.toString(
-                        connectionProperties.get(DB2Constants.PROP_TRACE_FOLDER)));
-            }
-            if (connectionProperties.containsKey(DB2Constants.PROP_TRACE_FILE)) {
-                fileNameText.setText(
-                    CommonUtils.toString(
-                        connectionProperties.get(DB2Constants.PROP_TRACE_FILE)));
-            }
-            traceAppendCheck.setSelection(
-                CommonUtils.getBoolean(
-                    connectionProperties.get(DB2Constants.PROP_TRACE_APPEND), false));
-            int traceLevel = CommonUtils.toInt(
-                connectionProperties.get(DB2Constants.PROP_TRACE_LEVEL));
-            for (LevelConfig level : levels) {
-                level.checkbox.setSelection((traceLevel & level.level) != 0);
-            }
+        // Settings
+        enableTraceCheck.setSelection(
+            CommonUtils.getBoolean(
+                connectionProperties.get(DB2Constants.PROP_TRACE_ENABLED), false));
+        if (!enableTraceCheck.getSelection()) {
+            traceEnableState = ControlEnableState.disable(traceGroup);
+        }
+        if (connectionProperties.containsKey(DB2Constants.PROP_TRACE_FOLDER)) {
+            folderText.setText(
+                CommonUtils.toString(
+                    connectionProperties.get(DB2Constants.PROP_TRACE_FOLDER)));
+        }
+        if (connectionProperties.containsKey(DB2Constants.PROP_TRACE_FILE)) {
+            fileNameText.setText(
+                CommonUtils.toString(
+                    connectionProperties.get(DB2Constants.PROP_TRACE_FILE)));
+        }
+        traceAppendCheck.setSelection(
+            CommonUtils.getBoolean(
+                connectionProperties.get(DB2Constants.PROP_TRACE_APPEND), false));
+        int traceLevel = CommonUtils.toInt(
+            connectionProperties.get(DB2Constants.PROP_TRACE_LEVEL));
+        for (LevelConfig level : levels) {
+            level.checkbox.setSelection((traceLevel & level.level) != 0);
         }
         super.loadSettings();
     }
 
     @Override
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionInfo == null) {
-            return;
-        }
-        super.saveSettings(connectionInfo);
-        Map<Object, Object> connectionProperties = connectionInfo.getProperties();
+        super.saveSettings(dataSource);
+        Map<Object, Object> connectionProperties = dataSource.getConnectionInfo().getProperties();
 
         {
             connectionProperties.put(DB2Constants.PROP_TRACE_ENABLED, enableTraceCheck.getSelection());
@@ -199,12 +195,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
             }
             connectionProperties.put(DB2Constants.PROP_TRACE_LEVEL, traceLevel);
         }
-        saveConnectionURL(connectionInfo);
-    }
-
-    private void updateUI()
-    {
-        site.updateButtons();
+        saveConnectionURL(dataSource.getConnectionInfo());
     }
 
 }

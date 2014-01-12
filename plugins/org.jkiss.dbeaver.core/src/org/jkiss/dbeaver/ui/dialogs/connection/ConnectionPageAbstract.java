@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -45,7 +45,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected IDataSourceConnectionEditorSite site;
 
     private Font boldFont;
-    private Button tunnelButton;
     private Button eventsButton;
 
     public IDataSourceConnectionEditorSite getSite() {
@@ -54,7 +53,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected void createAdvancedButtons(Composite parent, boolean makeDiv)
     {
-        if (site.getDataSourceContainer() != null) {
+        if (!site.isNew()) {
             return;
         }
         boldFont = UIUtils.makeBoldFont(parent.getFont());
@@ -81,17 +80,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 gd.horizontalSpan = ((GridLayout)parent.getLayout()).numColumns;
             }
             buttonsGroup.setLayoutData(gd);
-
-            tunnelButton = new Button(buttonsGroup, SWT.PUSH);
-            tunnelButton.setText("SSH Tunnel");
-            tunnelButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            tunnelButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    configureTunnels();
-                }
-            });
 
             eventsButton = new Button(buttonsGroup, SWT.PUSH);
             eventsButton.setText("Connection Events");
@@ -128,20 +116,11 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     @Override
     public void loadSettings()
     {
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
-        if (tunnelButton != null) {
-            tunnelButton.setFont(getFont());
-            for (DBWHandlerConfiguration config : connectionInfo.getDeclaredHandlers()) {
-                if (config.isEnabled()) {
-                    tunnelButton.setFont(boldFont);
-                    break;
-                }
-            }
-        }
+        DataSourceDescriptor dataSource = site.getActiveDataSource();
         if (eventsButton != null) {
             eventsButton.setFont(getFont());
-            for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
-                if (connectionInfo.getEvent(eventType).isEnabled()) {
+            for (DBPConnectionEventType eventType : dataSource.getConnectionInfo().getDeclaredEvents()) {
+                if (dataSource.getConnectionInfo().getEvent(eventType).isEnabled()) {
                     eventsButton.setFont(boldFont);
                     break;
                 }
@@ -150,16 +129,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     @Override
-    public void saveSettings()
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
-        saveSettings(site.getConnectionInfo());
-    }
-
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
-    {
-        if (connectionInfo != null) {
-            saveConnectionURL(connectionInfo);
-        }
+        saveConnectionURL(dataSource.getConnectionInfo());
     }
 
     protected void saveConnectionURL(DBPConnectionInfo connectionInfo)
@@ -178,32 +150,15 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     private void configureEvents()
     {
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
+        DataSourceDescriptor dataSource = site.getActiveDataSource();
         EditShellEventsDialog dialog = new EditShellEventsDialog(
-                getShell(),
-                connectionInfo);
+            getShell(),
+            dataSource);
         if (dialog.open() == IDialogConstants.OK_ID) {
             eventsButton.setFont(getFont());
-            for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
-                if (connectionInfo.getEvent(eventType).isEnabled()) {
+            for (DBPConnectionEventType eventType : dataSource.getConnectionInfo().getDeclaredEvents()) {
+                if (dataSource.getConnectionInfo().getEvent(eventType).isEnabled()) {
                     eventsButton.setFont(boldFont);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void configureTunnels()
-    {
-        EditNetworkDialog dialog = new EditNetworkDialog(
-                getShell(),
-                site.getDriver(),
-                site.getConnectionInfo());
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            tunnelButton.setFont(getFont());
-            for (DBWHandlerConfiguration config : site.getConnectionInfo().getDeclaredHandlers()) {
-                if (config.isEnabled()) {
-                    tunnelButton.setFont(boldFont);
                     break;
                 }
             }

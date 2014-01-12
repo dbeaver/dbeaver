@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 
 /**
@@ -48,8 +49,9 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     @Override
     protected Control createContents(Composite parent)
     {
-        getShell().setText("Connection '" + getWizard().getDataSourceDescriptor().getName() + "' configuration");
-        getShell().setImage(getWizard().getDataSourceDescriptor().getObjectImage());
+        DataSourceDescriptor activeDataSource = getWizard().getPageSettings().getActiveDataSource();
+        getShell().setText("Connection '" + activeDataSource.getName() + "' configuration");
+        getShell().setImage(activeDataSource.getObjectImage());
         return super.createContents(parent);
     }
 

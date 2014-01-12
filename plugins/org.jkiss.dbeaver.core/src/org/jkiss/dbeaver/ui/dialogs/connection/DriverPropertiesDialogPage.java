@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
@@ -72,27 +73,35 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
 
     protected void refreshDriverProperties()
     {
-        if (prevConnectionInfo == site.getConnectionInfo()) {
+        DataSourceDescriptor activeDataSource = site.getActiveDataSource();
+        if (prevConnectionInfo == activeDataSource.getConnectionInfo()) {
             return;
         }
         DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
-        hostPage.saveSettings(tmpConnectionInfo);
-        tmpConnectionInfo.getProperties().putAll(site.getConnectionInfo().getProperties());
-        propertySource = propsControl.makeProperties(
-            site.getRunnableContext(),
-            site.getDriver(),
+        DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
+            site.getDataSourceRegistry(),
+            activeDataSource.getId(),
+            activeDataSource.getDriver(),
             tmpConnectionInfo);
-        propsControl.loadProperties(propertySource);
-        prevConnectionInfo = site.getConnectionInfo();
+        try {
+            hostPage.saveSettings(tempDataSource);
+            tmpConnectionInfo.getProperties().putAll(activeDataSource.getConnectionInfo().getProperties());
+            propertySource = propsControl.makeProperties(
+                site.getRunnableContext(),
+                site.getDriver(),
+                tmpConnectionInfo);
+            propsControl.loadProperties(propertySource);
+            prevConnectionInfo = activeDataSource.getConnectionInfo();
+        } finally {
+            tempDataSource.dispose();
+        }
     }
 
     @Override
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionInfo != null) {
-            if (propertySource != null) {
-                connectionInfo.getProperties().putAll(propertySource.getProperties());
-            }
+        if (propertySource != null) {
+            dataSource.getConnectionInfo().getProperties().putAll(propertySource.getProperties());
         }
     }
 

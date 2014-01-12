@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.nosql.cassandra.Activator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
 
@@ -171,41 +172,35 @@ public class CassandraConnectionPage extends ConnectionPageAbstract
     public void loadSettings()
     {
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getConnectionInfo();
-        if (connectionInfo != null) {
-            if (hostText != null) {
-                if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
-                } else {
-                    hostText.setText("localhost"); //$NON-NLS-1$
-                }
+        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        if (hostText != null) {
+            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+            } else {
+                hostText.setText("localhost"); //$NON-NLS-1$
             }
-            if (portText != null) {
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    portText.setText(String.valueOf(connectionInfo.getHostPort()));
-                } else if (site.getDriver().getDefaultPort() != null) {
-                    portText.setText(site.getDriver().getDefaultPort());
-                } else {
-                    portText.setText(""); //$NON-NLS-1$
-                }
+        }
+        if (portText != null) {
+            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                portText.setText(String.valueOf(connectionInfo.getHostPort()));
+            } else if (site.getDriver().getDefaultPort() != null) {
+                portText.setText(site.getDriver().getDefaultPort());
+            } else {
+                portText.setText(""); //$NON-NLS-1$
             }
-            if (keyspaceText != null) {
-                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    keyspaceText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-                } else {
-                    keyspaceText.setText("system");
-                }
+        }
+        if (keyspaceText != null) {
+            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                keyspaceText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+            } else {
+                keyspaceText.setText("system");
             }
-            if (userNameText != null) {
-                userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
-            }
-            if (passwordText != null) {
-                passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
-            }
-        } else {
-            hostText.setText(""); //$NON-NLS-1$
-            portText.setText(""); //$NON-NLS-1$
-            keyspaceText.setText(""); //$NON-NLS-1$
+        }
+        if (userNameText != null) {
+            userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+        }
+        if (passwordText != null) {
+            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
         }
 
         super.loadSettings();
@@ -214,31 +209,30 @@ public class CassandraConnectionPage extends ConnectionPageAbstract
     }
 
     @Override
-    protected void saveSettings(DBPConnectionInfo connectionInfo)
+    public void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionInfo != null) {
-            if (hostText != null) {
-                connectionInfo.setHostName(hostText.getText());
-            }
-            if (portText != null) {
-                connectionInfo.setHostPort(portText.getText());
-            }
-            if (keyspaceText != null) {
-                connectionInfo.setDatabaseName(keyspaceText.getText());
-            }
-            if (userNameText != null) {
-                connectionInfo.setUserName(userNameText.getText());
-            }
-            if (passwordText != null) {
-                connectionInfo.setUserPassword(passwordText.getText());
-            }
-            super.saveSettings(connectionInfo);
+        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+        if (hostText != null) {
+            connectionInfo.setHostName(hostText.getText());
         }
+        if (portText != null) {
+            connectionInfo.setHostPort(portText.getText());
+        }
+        if (keyspaceText != null) {
+            connectionInfo.setDatabaseName(keyspaceText.getText());
+        }
+        if (userNameText != null) {
+            connectionInfo.setUserName(userNameText.getText());
+        }
+        if (passwordText != null) {
+            connectionInfo.setUserPassword(passwordText.getText());
+        }
+        super.saveSettings(dataSource);
     }
 
     private void saveAndUpdate()
     {
-        saveSettings(site.getConnectionInfo());
+        saveSettings(site.getActiveDataSource());
         site.updateButtons();
     }
 

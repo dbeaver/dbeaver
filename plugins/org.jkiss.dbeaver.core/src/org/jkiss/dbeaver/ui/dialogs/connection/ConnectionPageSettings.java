@@ -39,8 +39,8 @@ import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -66,8 +66,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private IDataSourceConnectionEditor connectionEditor;
     @Nullable
     private DataSourceDescriptor dataSource;
-    private final Map<DriverDescriptor, DBPConnectionInfo> infoMap = new HashMap<DriverDescriptor, DBPConnectionInfo>();
-    private final Set<DBPConnectionInfo> activated = new HashSet<DBPConnectionInfo>();
+    private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<DriverDescriptor, DataSourceDescriptor>();
+    private final Set<DataSourceDescriptor> activated = new HashSet<DataSourceDescriptor>();
     private IDialogPage[] subPages;
 
     /**
@@ -101,7 +101,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     public void activatePage()
     {
         setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getName()));
-        DBPConnectionInfo connectionInfo = getConnectionInfo();
+        DataSourceDescriptor connectionInfo = getActiveDataSource();
         if (!activated.contains(connectionInfo)) {
             if (this.connectionEditor != null) {
                 this.connectionEditor.loadSettings();
@@ -117,22 +117,16 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
     }
 
-    @Override
-    public void deactivatePage()
+    void saveSettings(DataSourceDescriptor dataSource)
     {
-        saveSettings();
-    }
-
-    void saveSettings()
-    {
-        getConnectionInfo().getProperties().clear();
+        getActiveDataSource().getConnectionInfo().getProperties().clear();
         if (connectionEditor != null) {
-            connectionEditor.saveSettings();
+            connectionEditor.saveSettings(dataSource);
         }
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (page instanceof IDataSourceConnectionEditor) {
-                    ((IDataSourceConnectionEditor) page).saveSettings();
+                    ((IDataSourceConnectionEditor) page).saveSettings(dataSource);
                 }
             }
         }
@@ -205,10 +199,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return wizard.getContainer();
     }
 
-    @Nullable
     @Override
-    public DBSDataSourceContainer getDataSourceContainer() {
-        return dataSource;
+    public DataSourceRegistry getDataSourceRegistry() {
+        return wizard.getDataSourceRegistry();
+    }
+
+    @Override
+    public boolean isNew() {
+        return wizard.isNew();
     }
 
     @Override
@@ -217,17 +215,23 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return wizard.getSelectedDriver();
     }
 
+    @NotNull
     @Override
-    public DBPConnectionInfo getConnectionInfo()
+    public DataSourceDescriptor getActiveDataSource()
     {
         if (dataSource != null) {
-            return dataSource.getConnectionInfo();
+            return dataSource;
         }
         DriverDescriptor driver = getDriver();
-        DBPConnectionInfo info = infoMap.get(driver);
+        DataSourceDescriptor info = infoMap.get(driver);
         if (info == null) {
-            info = new DBPConnectionInfo();
-            info.setClientHomeId(driver.getDefaultClientHomeId());
+            DBPConnectionInfo connectionInfo = new DBPConnectionInfo();
+            info = new DataSourceDescriptor(
+                wizard.getDataSourceRegistry(),
+                DataSourceDescriptor.generateNewId(wizard.getSelectedDriver()),
+                wizard.getSelectedDriver(),
+                connectionInfo);
+            info.getConnectionInfo().setClientHomeId(driver.getDefaultClientHomeId());
             infoMap.put(driver, info);
         }
         return info;
@@ -252,6 +256,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (connectionEditor != null) {
             connectionEditor.dispose();
             connectionEditor = null;
+        }
+        // Dispose all temp data sources
+        for (DataSourceDescriptor dataSource : infoMap.values()) {
+            dataSource.dispose();
         }
         super.dispose();
     }
