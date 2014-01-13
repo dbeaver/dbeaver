@@ -156,6 +156,8 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         }
         if (selectItem != null) {
             handlersFolder.setSelection(selectItem);
+        } else {
+            handlersFolder.setSelection(0);
         }
     }
 

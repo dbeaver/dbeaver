@@ -136,13 +136,12 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         {
             Composite buttonsGroup = new Composite(addrGroup, SWT.NONE);
             gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 4;
+            gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
             buttonsGroup.setLayout(new GridLayout(2, false));
             homesSelector = new ClientHomesSelector(buttonsGroup, SWT.NONE, "Local Client");
             gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
             homesSelector.setLayoutData(gd);
-            createAdvancedButtons(buttonsGroup, false);
         }
 
         setControl(addrGroup);
@@ -181,8 +180,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
-
-        super.loadSettings();
     }
 
     @Override

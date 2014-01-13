@@ -173,7 +173,6 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
         for (LevelConfig level : levels) {
             level.checkbox.setSelection((traceLevel & level.level) != 0);
         }
-        super.loadSettings();
     }
 
     @Override

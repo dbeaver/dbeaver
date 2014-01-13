@@ -30,16 +30,16 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 /**
  * Events edit dialog
  */
-public class EditShellEventsDialog extends HelpEnabledDialog {
+public class EditShellCommandsDialog extends HelpEnabledDialog {
 
     private DataSourceDescriptor dataSource;
-    private EditShellEventsDialogPage page;
+    private EditShellCommandsDialogPage page;
 
-    protected EditShellEventsDialog(Shell shell, DataSourceDescriptor dataSource)
+    protected EditShellCommandsDialog(Shell shell, DataSourceDescriptor dataSource)
     {
         super(shell, IHelpContextIds.CTX_EDIT_CONNECTION_EVENTS);
         this.dataSource = dataSource;
-        page = new EditShellEventsDialogPage(dataSource);
+        page = new EditShellCommandsDialogPage(dataSource);
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 
 import java.util.Arrays;
 
@@ -269,7 +270,7 @@ public class CImageCombo extends Composite {
      *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                                  </ul>
      */
-    public void add(Image image, String string, Color background, Object data)
+    public void add(@Nullable Image image, String string, Color background, Object data)
     {
         checkWidget();
         if (string == null) {

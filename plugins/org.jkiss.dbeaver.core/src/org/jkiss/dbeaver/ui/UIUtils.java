@@ -935,7 +935,7 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, String label, ModifyListener changeListener)
+    public static Text createOutputFolderChooser(final Composite parent, String label, @Nullable ModifyListener changeListener)
     {
         UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory);
         Composite chooserPlaceholder = UIUtils.createPlaceholder(parent, 2);
