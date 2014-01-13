@@ -158,55 +158,49 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         // Load values from new connection info
         DataSourceDescriptor activeDataSource = site.getActiveDataSource();
         DBPConnectionInfo connectionInfo = activeDataSource.getConnectionInfo();
-        if (connectionInfo != null) {
-            if (connectionInfo.getHostName() == null) {
-                connectionInfo.setHostName(DEFAULT_HOST);
-            }
-            if (connectionInfo.getDatabaseName() == null) {
-                connectionInfo.setDatabaseName(DEFAULT_NAMESPACE);
-            }
-            if (hostText != null) {
-                hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
-            }
-            if (domainText != null) {
-                domainText.setText(CommonUtils.getString(connectionInfo.getServerName()));
-            }
-            if (usernameText != null) {
-                usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
-            }
-            if (passwordText != null) {
-                passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
-            }
-            if (namespaceCombo != null) {
-                namespaceCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
-            }
+        if (connectionInfo.getHostName() == null) {
+            connectionInfo.setHostName(DEFAULT_HOST);
         }
-
-        super.loadSettings();
+        if (connectionInfo.getDatabaseName() == null) {
+            connectionInfo.setDatabaseName(DEFAULT_NAMESPACE);
+        }
+        if (hostText != null) {
+            hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+        }
+        if (domainText != null) {
+            domainText.setText(CommonUtils.getString(connectionInfo.getServerName()));
+        }
+        if (usernameText != null) {
+            usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+        }
+        if (passwordText != null) {
+            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+        }
+        if (namespaceCombo != null) {
+            namespaceCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+        }
     }
 
     @Override
     public void saveSettings(DataSourceDescriptor dataSource)
     {
         DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
-        if (connectionInfo != null) {
-            if (hostText != null) {
-                connectionInfo.setHostName(hostText.getText());
-            }
-            if (domainText != null) {
-                connectionInfo.setServerName(domainText.getText());
-            }
-            if (namespaceCombo != null) {
-                connectionInfo.setDatabaseName(namespaceCombo.getText());
-            }
-            if (usernameText != null) {
-                connectionInfo.setUserName(usernameText.getText());
-            }
-            if (passwordText != null) {
-                connectionInfo.setUserPassword(passwordText.getText());
-            }
-            super.saveSettings(dataSource);
+        if (hostText != null) {
+            connectionInfo.setHostName(hostText.getText());
         }
+        if (domainText != null) {
+            connectionInfo.setServerName(domainText.getText());
+        }
+        if (namespaceCombo != null) {
+            connectionInfo.setDatabaseName(namespaceCombo.getText());
+        }
+        if (usernameText != null) {
+            connectionInfo.setUserName(usernameText.getText());
+        }
+        if (passwordText != null) {
+            connectionInfo.setUserPassword(passwordText.getText());
+        }
+        super.saveSettings(dataSource);
     }
 
     private void evaluateURL()

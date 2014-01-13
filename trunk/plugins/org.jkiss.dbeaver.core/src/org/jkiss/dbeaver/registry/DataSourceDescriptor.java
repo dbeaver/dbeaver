@@ -377,7 +377,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultTransactionsIsolation(final DBPTransactionIsolation isolationLevel)
+    public void setDefaultTransactionsIsolation(@Nullable final DBPTransactionIsolation isolationLevel)
     {
         try {
             if (isolationLevel == null) {

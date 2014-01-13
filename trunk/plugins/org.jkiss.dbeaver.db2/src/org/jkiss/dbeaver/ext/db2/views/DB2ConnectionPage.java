@@ -135,8 +135,6 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             passwordText.addModifyListener(textListener);
         }
 
-        createAdvancedButtons(control, false);
-
         setControl(control);
     }
 
@@ -172,8 +170,6 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
         if (passwordText != null) {
             passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
         }
-
-        super.loadSettings();
     }
 
     @Override

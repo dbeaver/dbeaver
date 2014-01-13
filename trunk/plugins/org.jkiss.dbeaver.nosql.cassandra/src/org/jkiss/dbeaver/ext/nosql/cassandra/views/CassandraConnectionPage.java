@@ -203,8 +203,6 @@ public class CassandraConnectionPage extends ConnectionPageAbstract
             passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
         }
 
-        super.loadSettings();
-
         activated = true;
     }
 

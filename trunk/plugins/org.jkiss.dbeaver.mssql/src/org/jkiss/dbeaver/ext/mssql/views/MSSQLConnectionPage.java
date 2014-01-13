@@ -175,9 +175,7 @@ public class MSSQLConnectionPage extends ConnectionPageAbstract implements IComp
             passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
-
-        super.loadSettings();
-    }
+   }
 
     @Override
     public void saveSettings(DataSourceDescriptor dataSource)

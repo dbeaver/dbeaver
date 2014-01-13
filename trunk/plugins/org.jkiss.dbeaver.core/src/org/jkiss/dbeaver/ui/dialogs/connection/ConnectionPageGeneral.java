@@ -34,10 +34,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPConnectionType;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -68,6 +65,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private Combo isolationLevel;
     private Button showSystemObjects;
     private Button readOnlyConnection;
+    private Button eventsButton;
     private Font boldFont;
 
     private boolean connectionNameChanged = false;
@@ -179,6 +177,16 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 activated = true;
             }
         } else {
+            if (eventsButton != null) {
+                eventsButton.setFont(getFont());
+                DataSourceDescriptor dataSource = getWizard().getPageSettings().getActiveDataSource();
+                for (DBPConnectionEventType eventType : dataSource.getConnectionInfo().getDeclaredEvents()) {
+                    if (dataSource.getConnectionInfo().getEvent(eventType).isEnabled()) {
+                        eventsButton.setFont(boldFont);
+                        break;
+                    }
+                }
+            }
             // Default settings
             savePasswordCheck.setSelection(true);
             connectionTypeCombo.select(0);
@@ -389,7 +397,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         {
             //Composite buttonsGroup = UIUtils.createPlaceholder(group, 3);
             Composite buttonsGroup = new Composite(group, SWT.NONE);
-            gl = new GridLayout(2, false);
+            gl = new GridLayout(1, false);
             gl.verticalSpacing = 0;
             gl.horizontalSpacing = 10;
             gl.marginHeight = 0;
@@ -400,6 +408,19 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
+
+            if (getWizard().isNew()) {
+                eventsButton = new Button(buttonsGroup, SWT.PUSH);
+                eventsButton.setText("Shell Commands");
+                eventsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                eventsButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        configureEvents();
+                    }
+                });
+            }
         }
 
         setControl(group);
@@ -451,6 +472,23 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {
                 dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
+            }
+        }
+    }
+
+    private void configureEvents()
+    {
+        DataSourceDescriptor dataSource = getWizard().getPageSettings().getActiveDataSource();
+        EditShellCommandsDialog dialog = new EditShellCommandsDialog(
+            getShell(),
+            dataSource);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            eventsButton.setFont(getFont());
+            for (DBPConnectionEventType eventType : dataSource.getConnectionInfo().getDeclaredEvents()) {
+                if (dataSource.getConnectionInfo().getEvent(eventType).isEnabled()) {
+                    eventsButton.setFont(boldFont);
+                    break;
+                }
             }
         }
     }

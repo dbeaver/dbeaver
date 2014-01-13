@@ -273,8 +273,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             addControlToGroup(GROUP_LOGIN, passwordText);
         }
 
-        createAdvancedButtons(settingsGroup, true);
-
         Composite placeholder = UIUtils.createPlaceholder(settingsGroup, 1);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
         gd.horizontalSpan = 4;
@@ -418,8 +416,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
                 urlText.setText(""); //$NON-NLS-1$
             }
         }
-
-        super.loadSettings();
 
         activated = true;
     }

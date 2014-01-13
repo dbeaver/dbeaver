@@ -142,7 +142,6 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         if (showDBAObjects != null) {
             showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(showDBAObjects, false));
         }
-        super.loadSettings();
     }
 
     @Override
