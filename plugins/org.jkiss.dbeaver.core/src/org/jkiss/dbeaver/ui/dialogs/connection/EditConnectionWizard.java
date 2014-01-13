@@ -45,7 +45,7 @@ public class EditConnectionWizard extends ConnectionWizard
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
-    private EditShellEventsDialogPage pageEvents;
+    private EditShellCommandsDialogPage pageEvents;
     private List<WizardPrefPage> prefPages = new ArrayList<WizardPrefPage>();
 
     /**
@@ -85,7 +85,7 @@ public class EditConnectionWizard extends ConnectionWizard
 
         pageGeneral = new ConnectionPageGeneral(this, dataSource);
         pageNetwork = new ConnectionPageNetwork(this);
-        pageEvents = new EditShellEventsDialogPage(dataSource);
+        pageEvents = new EditShellCommandsDialogPage(dataSource);
 
         addPage(pageGeneral);
         addPage(pageNetwork);

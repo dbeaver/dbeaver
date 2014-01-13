@@ -19,23 +19,11 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
-import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * ConnectionPageAbstract
@@ -44,61 +32,12 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 {
     protected IDataSourceConnectionEditorSite site;
 
-    private Font boldFont;
-    private Button eventsButton;
-
     public IDataSourceConnectionEditorSite getSite() {
         return site;
     }
 
-    protected void createAdvancedButtons(Composite parent, boolean makeDiv)
-    {
-        if (!site.isNew()) {
-            return;
-        }
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
-        if (makeDiv) {
-            Label divLabel = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = ((GridLayout)parent.getLayout()).numColumns;
-            divLabel.setLayoutData(gd);
-        }
-        {
-
-            //Composite buttonsGroup = UIUtils.createPlaceholder(group, 3);
-            Composite buttonsGroup = new Composite(parent, SWT.NONE);
-            GridLayout gl = new GridLayout(2, true);
-            gl.verticalSpacing = 0;
-            gl.horizontalSpacing = 10;
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
-            buttonsGroup.setLayout(gl);
-
-            //buttonsGroup.setLayout(new GridLayout(2, true));
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            if (makeDiv) {
-                gd.horizontalSpan = ((GridLayout)parent.getLayout()).numColumns;
-            }
-            buttonsGroup.setLayoutData(gd);
-
-            eventsButton = new Button(buttonsGroup, SWT.PUSH);
-            eventsButton.setText("Connection Events");
-            eventsButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            eventsButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    configureEvents();
-                }
-            });
-        }
-    }
-
     @Override
     public void dispose() {
-        if (boldFont != null) {
-            UIUtils.dispose(boldFont);
-        }
         super.dispose();
     }
 
@@ -111,21 +50,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected boolean isCustomURL()
     {
         return false;
-    }
-
-    @Override
-    public void loadSettings()
-    {
-        DataSourceDescriptor dataSource = site.getActiveDataSource();
-        if (eventsButton != null) {
-            eventsButton.setFont(getFont());
-            for (DBPConnectionEventType eventType : dataSource.getConnectionInfo().getDeclaredEvents()) {
-                if (dataSource.getConnectionInfo().getEvent(eventType).isEnabled()) {
-                    eventsButton.setFont(boldFont);
-                    break;
-                }
-            }
-        }
     }
 
     @Override
@@ -144,23 +68,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                         connectionInfo));
             } catch (DBException e) {
                 setErrorMessage(e.getMessage());
-            }
-        }
-    }
-
-    private void configureEvents()
-    {
-        DataSourceDescriptor dataSource = site.getActiveDataSource();
-        EditShellEventsDialog dialog = new EditShellEventsDialog(
-            getShell(),
-            dataSource);
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            eventsButton.setFont(getFont());
-            for (DBPConnectionEventType eventType : dataSource.getConnectionInfo().getDeclaredEvents()) {
-                if (dataSource.getConnectionInfo().getEvent(eventType).isEnabled()) {
-                    eventsButton.setFont(boldFont);
-                    break;
-                }
             }
         }
     }

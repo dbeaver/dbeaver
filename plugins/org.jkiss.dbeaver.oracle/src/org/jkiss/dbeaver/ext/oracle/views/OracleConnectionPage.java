@@ -115,7 +115,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
             createClientHomeGroup(bottomControls);
-            createAdvancedButtons(bottomControls, false);
         }
 
         setControl(addrGroup);
@@ -381,8 +380,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         if (roleName != null) {
             userRoleCombo.setText(roleName.toString().toUpperCase());
         }
-
-        super.loadSettings();
     }
 
     @Override
