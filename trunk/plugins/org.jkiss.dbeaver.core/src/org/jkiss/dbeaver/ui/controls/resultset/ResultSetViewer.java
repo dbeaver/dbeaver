@@ -1114,6 +1114,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         spreadsheet.refreshData(false);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
+
+        updateEditControls();
     }
 
     private void closeEditors() {
