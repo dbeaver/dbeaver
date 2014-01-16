@@ -2,9 +2,9 @@
 <plugin>
 	<extension point="org.jkiss.dbeaver.resources">
 		<resource name="drivers/ucanaccess/LICENSE.txt"/>
-		<resource name="drivers/ucanaccess/ucanaccess-1.0.1.jar"/>
-		<resource name="drivers/ucanaccess/commons-lang-2.4.jar"/>
+		<resource name="drivers/ucanaccess/ucanaccess-2.0.1.jar"/>
+		<resource name="drivers/ucanaccess/commons-lang-2.6.jar"/>
 		<resource name="drivers/ucanaccess/hsqldb.jar"/>
-		<resource name="drivers/ucanaccess/jackcess-1.2.12.jar"/>
+		<resource name="drivers/ucanaccess/jackcess-2.0.1.jar"/>
 	</extension>
 </plugin>
