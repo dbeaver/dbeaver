@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -71,6 +72,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
         return resource.getName();
     }
 
+    @Nullable
     @Override
     public Collection<DBSDataSourceContainer> getAssociatedDataSources(IResource resource)
     {

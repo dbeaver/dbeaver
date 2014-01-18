@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -29,6 +28,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -48,7 +47,6 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
-import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -98,6 +96,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         }
     }
 
+    @Nullable
     public static IEditorPart openEntityEditor(DBSObject object)
     {
         DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject(object);
@@ -107,12 +106,13 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         return null;
     }
 
-    public static IEditorPart openEntityEditor(DBNDatabaseNode selectedNode, String defaultPageId, IWorkbenchWindow workbenchWindow)
+    public static IEditorPart openEntityEditor(
+        DBNDatabaseNode selectedNode,
+        @Nullable String defaultPageId,
+        IWorkbenchWindow workbenchWindow)
     {
         if (selectedNode.getObject() instanceof DBEPrivateObjectEditor) {
             ((DBEPrivateObjectEditor)selectedNode.getObject()).editObject(workbenchWindow);
-//            ISelectionProvider selectionProvider = workbenchWindow.getActivePage().getActivePart().getSite().getSelectionProvider();
-//            selectionProvider.setSelection(selectionProvider.getSelection());
             return null;
         }
         if (!selectedNode.isPersisted()) {

@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -39,6 +40,7 @@ public abstract class BaseSQLEditorHandler extends DataSourceHandler {
 
     static final Log log = LogFactory.getLog(BaseSQLEditorHandler.class);
 
+    @Nullable
     protected DBSDataSourceContainer getCurrentConnection(ExecutionEvent event)
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
@@ -59,6 +61,7 @@ public abstract class BaseSQLEditorHandler extends DataSourceHandler {
         return dataSourceContainer;
     }
 
+    @Nullable
     protected IFolder getCurrentFolder(ExecutionEvent event)
     {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);

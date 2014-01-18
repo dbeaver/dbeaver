@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -150,7 +151,7 @@ public class DBPConnectionInfo implements DBPObject
         return userPassword;
     }
 
-    public void setUserPassword(String userPassword)
+    public void setUserPassword(@Nullable String userPassword)
     {
         this.userPassword = userPassword;
     }
