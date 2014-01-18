@@ -26,6 +26,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -66,7 +67,8 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         return scriptsFolder;
     }
 
-    public static IFile findRecentScript(IProject project, DBSDataSourceContainer container) throws CoreException
+    @Nullable
+    public static IFile findRecentScript(IProject project, @Nullable DBSDataSourceContainer container) throws CoreException
     {
         List<IFile> scripts = new ArrayList<IFile>();
         findRecentScripts(ScriptsHandlerImpl.getScriptsFolder(project, false), container, scripts);
@@ -81,7 +83,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         return recentFile;
     }
 
-    public static void findRecentScripts(IFolder folder, DBSDataSourceContainer container, List<IFile> result)
+    public static void findRecentScripts(IFolder folder, @Nullable DBSDataSourceContainer container, List<IFile> result)
     {
         try {
             for (IResource resource : folder.members()) {
@@ -99,7 +101,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         }
     }
 
-    public static IFile createNewScript(IProject project, IFolder folder, DBSDataSourceContainer dataSourceContainer) throws CoreException
+    public static IFile createNewScript(IProject project, @Nullable IFolder folder, @Nullable DBSDataSourceContainer dataSourceContainer) throws CoreException
     {
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
 
@@ -181,10 +183,11 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
                 sqlInput,
                 SQLEditor.class.getName());
         } else {
-            //throw new DBException("Cannot open folder");
+            log.warn("Cannot open folder resource: " + resource.getName());
         }
     }
 
+    @Nullable
     @Override
     public Collection<DBSDataSourceContainer> getAssociatedDataSources(IResource resource)
     {
