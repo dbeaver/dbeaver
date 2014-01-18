@@ -23,6 +23,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
@@ -41,7 +42,7 @@ public class DataSourceDisconnectHandler extends DataSourceHandler
         return null;
     }
 
-    public static void execute(DBSDataSourceContainer dataSourceContainer, final Runnable onFinish) {
+    public static void execute(DBSDataSourceContainer dataSourceContainer, @Nullable final Runnable onFinish) {
         if (dataSourceContainer instanceof DataSourceDescriptor && dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
             if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {

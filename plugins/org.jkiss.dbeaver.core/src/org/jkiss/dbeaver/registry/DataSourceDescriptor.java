@@ -1099,12 +1099,8 @@ public class DataSourceDescriptor
     @Override
     public void editObject(IWorkbenchWindow workbenchWindow)
     {
-//        CreateConnectionDialog dialog = new CreateConnectionDialog(
-//            workbenchWindow,
-//            new EditConnectionWizard(this));
         EditConnectionDialog dialog = new EditConnectionDialog(workbenchWindow, new EditConnectionWizard(this));
         dialog.open();
-        //workbenchWindow.
     }
 
     public void addChildProcess(DBRProcessDescriptor process)

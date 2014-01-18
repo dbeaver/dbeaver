@@ -31,6 +31,7 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_SORT_ALPHABETICALLY = "navigator.sort.case.insensitive"; //$NON-NLS-1$
     public static final String NAVIGATOR_GROUP_BY_DRIVER = "navigator.group.by.driver"; //$NON-NLS-1$
     public static final String NAVIGATOR_EDITOR_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
+    public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
 
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
     public static final String DEFAULT_ISOLATION = "default.isolation"; //$NON-NLS-1$
