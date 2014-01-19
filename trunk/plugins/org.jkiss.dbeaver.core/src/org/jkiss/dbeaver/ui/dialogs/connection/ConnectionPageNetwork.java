@@ -177,15 +177,19 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
 
     void saveConfigurations(DataSourceDescriptor dataSource)
     {
+        boolean foundHandlers = false;
         java.util.List<DBWHandlerConfiguration> handlers = new ArrayList<DBWHandlerConfiguration>();
         for (HandlerBlock handlerBlock : configurations.values()) {
             DBWHandlerConfiguration configuration = handlerBlock.loadedConfigs.get(dataSource.getId());
             if (configuration != null) {
+                foundHandlers = true;
                 handlerBlock.configurator.saveSettings(configuration);
                 handlers.add(configuration);
             }
         }
-        dataSource.getConnectionInfo().setHandlers(handlers);
+        if (foundHandlers) {
+            dataSource.getConnectionInfo().setHandlers(handlers);
+        }
     }
 
 }
