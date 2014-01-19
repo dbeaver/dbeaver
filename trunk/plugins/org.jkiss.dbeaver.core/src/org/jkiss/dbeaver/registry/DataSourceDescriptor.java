@@ -1134,6 +1134,7 @@ public class DataSourceDescriptor
         setSavePassword(descriptor.isSavePassword());
         setShowSystemObjects(descriptor.isShowSystemObjects());
         setConnectionReadOnly(descriptor.isConnectionReadOnly());
+        folderPath = descriptor.folderPath;
     }
 
 }

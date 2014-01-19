@@ -560,6 +560,16 @@
                     <file type="jar" path="drivers/ucanaccess/hsqldb.jar" url="*"/>
                     <file type="jar" path="drivers/ucanaccess/jackcess-2.0.1.jar" url="*"/>
                 </driver>
+                <driver
+                    id="netezza"
+                    label="Netezza"
+                    class="org.netezza.Driver"
+                    sampleURL="jdbc:netezza://{host}:{port}/{database}"
+                    defaultPort="5480"
+                    webURL=""
+                    description="Netezza database driver">
+                </driver>
+
             </drivers>
 
             <views>
