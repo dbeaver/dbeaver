@@ -52,7 +52,15 @@
             <date>20.01.2014</date>
 
             <release-notes>
-                -
+                - Resultset viewer/editor was redesigned
+                - SOCKS (4/5) proxy support was added
+                - Connection network configuration UI was redesigned
+                - MS Access driver was updated
+                - SQLite SQL statements processing was fixed
+                - DB2 metadata browser has been fixed
+                - Oracle sequences search was added
+                - Many additional UI preferences was added
+                - Minor UI fixes
             </release-notes>
         </version>
 
