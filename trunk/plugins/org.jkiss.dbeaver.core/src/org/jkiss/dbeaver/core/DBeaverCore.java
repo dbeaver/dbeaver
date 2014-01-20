@@ -25,6 +25,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.impl.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.model.impl.net.GlobalProxySelector;
@@ -190,59 +191,59 @@ public class DBeaverCore implements DBPApplication {
         ProxySelector.setDefault(new GlobalProxySelector(ProxySelector.getDefault()));
 
         // Init project registry
-        this.projectRegistry = new ProjectRegistry();
+        this.projectRegistry = new ProjectRegistry(workspace);
         this.projectRegistry.loadExtensions(extensionRegistry);
 
-        initializeTempProject();
+        // Projects registry
+        initializeProjects();
 
         // Navigator model
         this.navigatorModel = new DBNModel();
         this.navigatorModel.initialize();
     }
 
-    private void initializeTempProject()
+    private void initializeProjects()
     {
+        final IProgressMonitor monitor = new NullProgressMonitor();
         try {
-            final IProgressMonitor monitor = new NullProgressMonitor();
-            try {
-                // Temp project
-                tempProject = workspace.getRoot().getProject(TEMP_PROJECT_NAME);
-                File systemTempFolder = new File(System.getProperty("java.io.tmpdir"));
-                File dbeaverTempFolder = new File(
-                    systemTempFolder,
-                    TEMP_PROJECT_NAME + "." + CommonUtils.escapeIdentifier(workspace.getRoot().getLocation().toString()));
-                if (tempProject.exists()) {
-                    try {
-                        tempProject.delete(true, true, monitor);
-                    } catch (CoreException e) {
-                        log.error("Can't delete temp project", e);
-                    }
-                }
-                if (!dbeaverTempFolder.exists()) {
-                    if (!dbeaverTempFolder.mkdirs()) {
-                        log.error("Can't create directory '" + dbeaverTempFolder.getAbsolutePath() + "'");
-                    }
-                }
-                IProjectDescription description = workspace.newProjectDescription(TEMP_PROJECT_NAME);
-                description.setLocation(new Path(dbeaverTempFolder.getAbsolutePath()));
-                description.setName(TEMP_PROJECT_NAME);
-                description.setComment("Project for DBeaver temporary content");
-                try {
-                    tempProject.create(description, IProject.HIDDEN, monitor);
-                } catch (CoreException e) {
-                    log.error("Can't create temp project", e);
-                }
+            projectRegistry.loadProjects(monitor);
+        } catch (DBException e) {
+            log.error("Error loading projects", e);
+        }
 
-                tempProject.open(monitor);
-                //tempProject.setHidden(true);
+        try {
+            // Temp project
+            tempProject = workspace.getRoot().getProject(TEMP_PROJECT_NAME);
+            File systemTempFolder = new File(System.getProperty("java.io.tmpdir"));
+            File dbeaverTempFolder = new File(
+                systemTempFolder,
+                TEMP_PROJECT_NAME + "." + CommonUtils.escapeIdentifier(workspace.getRoot().getLocation().toString()));
+            if (tempProject.exists()) {
+                try {
+                    tempProject.delete(true, true, monitor);
+                } catch (CoreException e) {
+                    log.error("Can't delete temp project", e);
+                }
+            }
+            if (!dbeaverTempFolder.exists()) {
+                if (!dbeaverTempFolder.mkdirs()) {
+                    log.error("Can't create directory '" + dbeaverTempFolder.getAbsolutePath() + "'");
+                }
+            }
+            IProjectDescription description = workspace.newProjectDescription(TEMP_PROJECT_NAME);
+            description.setLocation(new Path(dbeaverTempFolder.getAbsolutePath()));
+            description.setName(TEMP_PROJECT_NAME);
+            description.setComment("Project for DBeaver temporary content");
+            try {
+                tempProject.create(description, IProject.HIDDEN, monitor);
             } catch (CoreException e) {
-                log.error("Cannot open temp project", e); //$NON-NLS-1$
+                log.error("Can't create temp project", e);
             }
 
-            // Projects registry
-            projectRegistry.loadProjects(workspace, monitor);
+            tempProject.open(monitor);
+            //tempProject.setHidden(true);
         } catch (Throwable e) {
-            log.error(e);
+            log.error("Cannot open temp project", e); //$NON-NLS-1$
         }
     }
 
@@ -404,6 +405,9 @@ public class DBeaverCore implements DBPApplication {
     private IFolder getTempFolder(IProgressMonitor monitor, String name)
         throws IOException
     {
+        if (tempProject == null) {
+            throw new IOException("Temp project wasn't initialized properly");
+        }
         IPath tempPath = tempProject.getProjectRelativePath().append(name);
         IFolder tempFolder = tempProject.getFolder(tempPath);
         if (!tempFolder.exists()) {

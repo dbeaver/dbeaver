@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -52,8 +53,10 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     private final List<DBPProjectListener> projectListeners = new ArrayList<DBPProjectListener>();
 
-    public ProjectRegistry()
+    public ProjectRegistry(IWorkspace workspace)
     {
+        this.workspace = workspace;
+        this.workspace.addResourceChangeListener(this);
     }
 
     public void loadExtensions(IExtensionRegistry registry)
@@ -72,7 +75,8 @@ public class ProjectRegistry implements IResourceChangeListener {
         }
     }
 
-    public void loadProjects(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
+    public void loadProjects(IProgressMonitor monitor)
+        throws DBException
     {
         final DBeaverCore core = DBeaverCore.getInstance();
         String activeProjectName = DBeaverCore.getGlobalPreferenceStore().getString(PROP_PROJECT_ACTIVE);
@@ -111,16 +115,15 @@ public class ProjectRegistry implements IResourceChangeListener {
             // Create initial project (only for standalone version)
             monitor.beginTask("Create general project", 1);
             try {
-                activeProject = createGeneralProject(workspace, monitor);
+                activeProject = createGeneralProject(monitor);
                 activeProject.open(monitor);
                 setActiveProject(activeProject);
+            } catch (CoreException e) {
+                throw new DBException("Can't create default project", e);
             } finally {
                 monitor.done();
             }
         }
-
-        this.workspace = workspace;
-        workspace.addResourceChangeListener(this);
     }
 
     public void dispose()
@@ -281,7 +284,7 @@ public class ProjectRegistry implements IResourceChangeListener {
         });
     }
 
-    private IProject createGeneralProject(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
+    private IProject createGeneralProject(IProgressMonitor monitor) throws CoreException
     {
         final String baseProjectName = DBeaverCore.isStandalone() ? "General" : "DBeaver";
         String projectName = baseProjectName;
