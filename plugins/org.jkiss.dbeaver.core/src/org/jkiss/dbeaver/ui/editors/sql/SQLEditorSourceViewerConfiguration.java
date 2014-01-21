@@ -45,6 +45,7 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
@@ -120,6 +121,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      * @see SourceViewerConfiguration#getAutoIndentStrategy(ISourceViewer, String)
      */
 
+    @Nullable
     @Override
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType)
     {
@@ -404,6 +406,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         };
     }
 
+    @Nullable
     @Override
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer)
     {

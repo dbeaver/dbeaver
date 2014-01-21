@@ -150,7 +150,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void setDataSource(DBPDataSource dataSource)
+    public void setDataSource(@Nullable DBPDataSource dataSource)
     {
         if (dataSource == null) {
             keywordManager = EmptyKeywordManager.INSTANCE;

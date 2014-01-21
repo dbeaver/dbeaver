@@ -37,6 +37,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.eclipse.ui.texteditor.rulers.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
@@ -90,6 +91,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         super.dispose();
     }
 
+    @Nullable
     public Document getDocument()
     {
         IDocumentProvider provider = getDocumentProvider();
@@ -138,10 +140,6 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         safelySanityCheckState(getEditorInput());
     }
 
-    /*
-      * @see org.eclipse.ui.texteditor.AbstractTextEditor#rulerContextMenuAboutToShow(org.eclipse.jface.action.IMenuManager)
-      * @since 3.1
-      */
     @Override
     protected void rulerContextMenuAboutToShow(IMenuManager menu) {
         menu.add(new Separator(ITextEditorActionConstants.GROUP_RULERS));
@@ -264,6 +262,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         return new CompositeRuler();
     }
 
+    @Nullable
     public DBPCommentsManager getCommentsSupport()
     {
         return null;
@@ -302,7 +301,10 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                 "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());
         }
         if (newContent != null) {
-            getDocument().set(newContent);
+            Document document = getDocument();
+            if (document != null) {
+                document.set(newContent);
+            }
         }
     }
 
@@ -312,8 +314,9 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         String fileName = (editorInput instanceof ProjectFileEditorInput ?
             ((ProjectFileEditorInput)getEditorInput()).getFile().getName() : null);
 
+        final Document document = getDocument();
         final File saveFile = ContentUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[] { "*.sql", "*.txt", "*.*"}, fileName);
-        if (saveFile == null) {
+        if (document == null || saveFile == null) {
             return;
         }
 
@@ -331,7 +334,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                     });
 
                     try {
-                        ContentUtils.saveContentToFile(new StringReader(getDocument().get()), saveFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
+                        ContentUtils.saveContentToFile(new StringReader(document.get()), saveFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }
@@ -344,6 +347,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         }
     }
 
+    @Nullable
     public int[] getCurrentLines()
     {
         return null;

@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPathEditorInput;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -178,7 +179,7 @@ public class ContentUtils {
         return selectFileForSave(parentShell, "Save Content As", null, null);
     }
 
-    public static File selectFileForSave(Shell parentShell, String title, String[] filterExt, String fileName)
+    public static File selectFileForSave(Shell parentShell, String title, String[] filterExt, @Nullable String fileName)
     {
         FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
         fileDialog.setText(title);
