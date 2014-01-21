@@ -47,6 +47,8 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -73,8 +75,8 @@ import java.util.*;
 public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider {
     static protected final Log log = LogFactory.getLog(SQLEditorBase.class);
 
-    private SQLSyntaxManager syntaxManager;
-
+    @NotNull
+    private final SQLSyntaxManager syntaxManager;
     private ProjectionSupport projectionSupport;
 
     private ProjectionAnnotationModel annotationModel;
@@ -109,6 +111,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
     }
 
+    @NotNull
     public SQLSyntaxManager getSyntaxManager()
     {
         return syntaxManager;
@@ -288,10 +291,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             decorationSupport.dispose();
             decorationSupport = null;
         }
-        if (syntaxManager != null) {
-            syntaxManager.dispose();
-            syntaxManager = null;
-        }
+        syntaxManager.dispose();
         if (themeListener != null) {
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeListener);
             themeListener = null;
@@ -356,11 +356,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     public void reloadSyntaxRules()
     {
         // Refresh syntax
-        final SQLSyntaxManager syntaxManager = getSyntaxManager();
-        if (syntaxManager != null) {
-            syntaxManager.setDataSource(getDataSource());
-            syntaxManager.refreshRules();
-        }
+        syntaxManager.setDataSource(getDataSource());
+        syntaxManager.refreshRules();
 
         Document document = getDocument();
         if (document != null) {
@@ -411,6 +408,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         return !CommonUtils.isEmpty(selText.trim());
     }
 
+    @Nullable
     protected SQLStatementInfo extractActiveQuery()
     {
         SQLStatementInfo sqlQuery;
@@ -486,7 +484,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         }
 
         // Parse range
-        SQLSyntaxManager syntaxManager = getSyntaxManager();
         syntaxManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         for (; ; ) {
@@ -588,6 +585,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 getSourceViewer().getTextWidget().isDisposed();
     }
 
+    @Nullable
     @Override
     public DBPCommentsManager getCommentsSupport()
     {
