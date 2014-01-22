@@ -5,8 +5,9 @@ NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
 Performance profile (RSV, tab switch, connections props dialog)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 DB2 autocomplete
-Connection Wizard/Network
 SSL
+Secure-storage for passwords
+Auto-complete for columns
 
 1. Browse data by foreign keys
 2. Tree-like grid
