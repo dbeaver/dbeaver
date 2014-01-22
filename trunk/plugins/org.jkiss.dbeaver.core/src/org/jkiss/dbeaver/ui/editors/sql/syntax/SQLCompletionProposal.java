@@ -29,6 +29,7 @@ import org.eclipse.jface.text.contentassist.ICompletionProposalExtension2;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -65,7 +66,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         String replacementString,
         SQLWordPartDetector wordDetector,
         int cursorPosition,
-        Image image,
+        @Nullable Image image,
         IContextInformation contextInformation,
         String additionalProposalInfo)
     {
