@@ -40,7 +40,7 @@
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>2.3.6</Program_Version>
     <Program_Release_Month>01</Program_Release_Month>
-    <Program_Release_Day>20</Program_Release_Day>
+    <Program_Release_Day>22</Program_Release_Day>
     <Program_Release_Year>2014</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -49,7 +49,15 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        -
+        - Resultset viewer/editor was redesigned
+        - SOCKS (4/5) proxy support was added
+        - Connection network configuration UI was redesigned
+        - MS Access driver was updated
+        - SQLite SQL statements processing was fixed
+        - DB2 metadata browser has been fixed
+        - Oracle sequences search was added
+        - Many additional UI preferences was added
+        - Minor UI fixes
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>

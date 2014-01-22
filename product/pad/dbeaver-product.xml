@@ -49,7 +49,7 @@
         <version>
             <number>2.3.6</number>
             <type>hotfix</type>
-            <date>20.01.2014</date>
+            <date>22.01.2014</date>
 
             <release-notes>
                 - Resultset viewer/editor was redesigned
