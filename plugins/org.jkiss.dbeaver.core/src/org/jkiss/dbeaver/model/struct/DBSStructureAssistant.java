@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -38,7 +39,7 @@ public interface DBSStructureAssistant
 
     Collection<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,
-        DBSObject parentObject,
+        @Nullable DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,

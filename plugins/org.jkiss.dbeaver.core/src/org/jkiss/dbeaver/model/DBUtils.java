@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
@@ -216,6 +217,7 @@ public final class DBUtils {
      * @return found object or null
      * @throws DBException
      */
+    @Nullable
     public static DBSObject getObjectByPath(
             DBRProgressMonitor monitor,
             DBSObjectContainer rootSC,
@@ -260,6 +262,7 @@ public final class DBUtils {
         }
     }
 
+    @Nullable
     public static DBSObject findNestedObject(
         DBRProgressMonitor monitor,
         DBSObjectContainer parent,
@@ -301,6 +304,7 @@ public final class DBUtils {
      * @param objectName object name
      * @return object or null
      */
+    @Nullable
     public static <T extends DBPNamedObject> T findObject(Collection<T> theList, String objectName)
     {
         if (theList != null && !theList.isEmpty()) {
@@ -330,6 +334,7 @@ public final class DBUtils {
      * @param objectName object name
      * @return object or null
      */
+    @Nullable
     public static <T extends DBPNamedObject> List<T> findObjects(Collection<T> theList, String objectName)
     {
         if (theList != null && !theList.isEmpty()) {
@@ -344,6 +349,7 @@ public final class DBUtils {
         return null;
     }
 
+    @Nullable
     public static <T> T getAdapter(Class<T> adapterType, DBPObject object)
     {
         if (object instanceof DBSDataSourceContainer) {
@@ -363,12 +369,19 @@ public final class DBUtils {
         }
     }
 
+    @Nullable
     public static <T> T getParentAdapter(Class<T> i, DBSObject object)
     {
-        if (object == null || object.getParentObject() == null) {
+        if (object == null) {
             return null;
         }
-        return getAdapter(i, object.getParentObject());
+        DBSObject parent = object.getParentObject();
+        if (parent == null) {
+            return null;
+        }
+        T adapter = getAdapter(i, parent);
+        // In some cases parent's adapter is object itself (e.g. DS maybe DS adapter of container)
+        return adapter == object ? null : adapter;
     }
 
     /**
@@ -395,22 +408,29 @@ public final class DBUtils {
         return valueHandler.getValueFromObject(session, type, null, false);
     }
 
+    @Nullable
     public static Object makeNullValue(@NotNull final DBDValueController valueController)
     {
         DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
-                DBCSession session = valueController.getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, "Set NULL value");
+                final DBPDataSource dataSource = valueController.getDataSource();
                 try {
-                    result = DBUtils.makeNullValue(
-                        session,
-                        valueController.getValueHandler(),
-                        valueController.getValueType());
+                    if (dataSource == null) {
+                        throw new DBCException(CoreMessages.editors_sql_status_not_connected_to_database);
+                    }
+                    DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Set NULL value");
+                    try {
+                        result = DBUtils.makeNullValue(
+                            session,
+                            valueController.getValueHandler(),
+                            valueController.getValueType());
+                    } finally {
+                        session.close();
+                    }
                 } catch (DBCException e) {
                     throw new InvocationTargetException(e);
-                } finally {
-                    session.close();
                 }
             }
         };
@@ -506,7 +526,7 @@ public final class DBUtils {
         return getUniqueForeignConstraint(null, attribute);
     }
 
-    public static DBSEntityReferrer getUniqueForeignConstraint(DBRProgressMonitor monitor, DBCAttributeMetaData attribute)
+    public static DBSEntityReferrer getUniqueForeignConstraint(@Nullable DBRProgressMonitor monitor, DBCAttributeMetaData attribute)
     {
         RefColumnFinder finder = new RefColumnFinder(attribute);
         try {
@@ -603,6 +623,7 @@ public final class DBUtils {
         return attributes;
     }
 
+    @Nullable
     public static DBSEntityAttributeRef getConstraintColumn(DBRProgressMonitor monitor, DBSEntityReferrer constraint, DBSEntityAttribute tableColumn) throws DBException
     {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
@@ -616,6 +637,7 @@ public final class DBUtils {
         return null;
     }
 
+    @Nullable
     public static DBSEntityAttributeRef getConstraintColumn(DBRProgressMonitor monitor, DBSEntityReferrer constraint, String columnName) throws DBException
     {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
@@ -633,6 +655,7 @@ public final class DBUtils {
      * Return reference column of referrer association (FK).
      * Assumes that columns in both constraints are in the same order.
      */
+    @Nullable
     public static DBSEntityAttribute getReferenceAttribute(DBRProgressMonitor monitor, DBSEntityAssociation association, DBSEntityAttribute tableColumn) throws DBException
     {
         final DBSEntityConstraint refConstr = association.getReferencedConstraint();
@@ -772,7 +795,7 @@ public final class DBUtils {
         fireObjectUpdate(object, null);
     }
 
-    public static void fireObjectUpdate(DBSObject object, Object data)
+    public static void fireObjectUpdate(DBSObject object, @Nullable Object data)
     {
         final DBSDataSourceContainer container = getContainer(object);
         if (container != null) {
@@ -804,17 +827,14 @@ public final class DBUtils {
         }
     }
 
+    @Nullable
     public static DBSDataSourceContainer getContainer(DBSObject object)
     {
         if (object == null) {
             log.warn("Null object passed");
             return null;
         }
-        final DBPDataSource dataSource = object.getDataSource();
-        if (dataSource == null) {
-            return null;
-        }
-        return dataSource.getContainer();
+        return object.getDataSource().getContainer();
     }
 
     public static String getObjectUniqueName(DBSObject object)
@@ -826,6 +846,7 @@ public final class DBUtils {
         }
     }
 
+    @Nullable
     public static DBSDataType findBestDataType(Collection<? extends DBSDataType> allTypes, String ... typeNames)
     {
         for (String testType : typeNames) {
@@ -838,17 +859,19 @@ public final class DBUtils {
         return null;
     }
 
+    @Nullable
     public static DBSDataType resolveDataType(
         DBRProgressMonitor monitor,
         DBPDataSource dataSource,
         String fullTypeName)
         throws DBException
     {
-        if (!(dataSource instanceof DBPDataTypeProvider)) {
+        DBPDataTypeProvider dataTypeProvider = getAdapter(DBPDataTypeProvider.class, dataSource);
+        if (dataTypeProvider == null) {
             // NoSuchElementException data type provider
             return null;
         }
-        DBSDataType dataType = ((DBPDataTypeProvider) dataSource).resolveDataType(monitor, fullTypeName);
+        DBSDataType dataType = dataTypeProvider.resolveDataType(monitor, fullTypeName);
         if (dataType == null) {
             log.debug("Data type '" + fullTypeName + "' can't be resolved by '" + dataSource + "'");
         }
@@ -909,26 +932,24 @@ public final class DBUtils {
     public static DBPObject getPublicObject(DBPObject object)
     {
         if (object instanceof DBSDataSourceContainer) {
-            DBPDataSource dataSource = ((DBSDataSourceContainer) object).getDataSource();
-            return dataSource != null ? dataSource : object;
+            return ((DBSDataSourceContainer) object).getDataSource();
         } else {
             return object;
         }
     }
 
-    public static DBPDataSourceRegistry getRegistry(DBSObject object)
+    public static DBPDataSourceRegistry getRegistry(@NotNull DBSObject object)
     {
-        DBSDataSourceContainer container = null;
+        DBSDataSourceContainer container;
         if (object instanceof DBSDataSourceContainer) {
             container = (DBSDataSourceContainer) object;
         } else {
             DBPDataSource dataSource = object.getDataSource();
-            if (dataSource != null) {
-                container = dataSource.getContainer();
-            }
+            container = dataSource.getContainer();
         }
-        return container == null ? null : container.getRegistry();
+        return container.getRegistry();
     }
+
     public static String getObjectShortName(Object object)
     {
         String strValue;
@@ -940,7 +961,7 @@ public final class DBUtils {
         return strValue;
     }
 
-    public static String getObjectFullName(DBPNamedObject object)
+    public static String getObjectFullName(@NotNull DBPNamedObject object)
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullQualifiedName();
@@ -949,7 +970,7 @@ public final class DBUtils {
         }
     }
 
-    public static String getFullTypeName(DBSTypedObject typedObject)
+    public static String getFullTypeName(@NotNull DBSTypedObject typedObject)
     {
         String typeName = typedObject.getTypeName();
         switch (typedObject.getDataKind()) {
@@ -974,7 +995,7 @@ public final class DBUtils {
         return script.toString();
     }
 
-    public static DBIcon getDataIcon(DBSTypedObject type)
+    public static DBIcon getDataIcon(@NotNull DBSTypedObject type)
     {
         switch (type.getDataKind()) {
             case BOOLEAN:
@@ -1003,7 +1024,7 @@ public final class DBUtils {
         }
     }
 
-    public static DBDBinaryFormatter getBinaryPresentation(DBPDataSource dataSource)
+    public static DBDBinaryFormatter getBinaryPresentation(@NotNull DBPDataSource dataSource)
     {
         String id = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION);
         if (id != null) {
@@ -1015,6 +1036,7 @@ public final class DBUtils {
         return DBDBinaryFormatter.FORMATS[0];
     }
 
+    @Nullable
     public static DBDBinaryFormatter getBinaryPresentation(String id)
     {
         for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
