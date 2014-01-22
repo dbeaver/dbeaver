@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -143,19 +144,22 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
         final boolean nextSegmentRead = this.nextSegmentRead;
         final boolean updateMetaData = this.updateMetaData;
-        resultSetViewer.getControl().getDisplay().asyncExec(new Runnable() {
-            @Override
-            public void run()
-            {
-                // Check for more data
-                // Push data into viewer
-                if (!nextSegmentRead) {
-                    resultSetViewer.setData(tmpRows, updateMetaData);
-                } else {
-                    resultSetViewer.appendData(tmpRows);
+        Control control = resultSetViewer.getControl();
+        if (!control.isDisposed()) {
+            control.getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run()
+                {
+                    // Check for more data
+                    // Push data into viewer
+                    if (!nextSegmentRead) {
+                        resultSetViewer.setData(tmpRows, updateMetaData);
+                    } else {
+                        resultSetViewer.appendData(tmpRows);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
