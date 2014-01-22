@@ -100,7 +100,7 @@ public interface DBDValueHandler
      * @return initial object value
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy)
+    Object getValueFromObject(DBCSession session, DBSTypedObject type, @Nullable Object object, boolean copy)
         throws DBCException;
 
     /**

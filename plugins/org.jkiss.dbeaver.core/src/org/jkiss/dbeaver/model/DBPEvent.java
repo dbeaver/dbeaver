@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -51,7 +52,7 @@ public class DBPEvent
         this.enabled = enabled;
     }
 
-    public DBPEvent(Action action, DBSObject object, Object data) {
+    public DBPEvent(Action action, DBSObject object, @Nullable Object data) {
         this.action = action;
         this.object = object;
         this.data = data;

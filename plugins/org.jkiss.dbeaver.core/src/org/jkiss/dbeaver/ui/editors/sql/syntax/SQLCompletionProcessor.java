@@ -26,6 +26,7 @@ import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -93,23 +94,22 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         this.documentOffset = documentOffset;
         this.activeQuery = null;
 
-        wordDetector = new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
+        this.wordDetector = new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
         final List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
         final String wordPart = wordDetector.getWordPart();
 
-        final boolean isStructureQuery = !CommonUtils.isEmpty(wordDetector.getPrevKeyWord());
         QueryType queryType = null;
-        if (isStructureQuery) {
-            if (editor.getSyntaxManager().getKeywordManager().isEntityQueryWord(wordDetector.getPrevKeyWord())) {
-                queryType = QueryType.TABLE;
-
-            } else if (editor.getSyntaxManager().getKeywordManager().isAttributeQueryWord(wordDetector.getPrevKeyWord())) {
-                queryType = QueryType.COLUMN;
+        {
+            final String prevKeyWord = wordDetector.getPrevKeyWord();
+            if (!CommonUtils.isEmpty(prevKeyWord)) {
+                if (editor.getSyntaxManager().getKeywordManager().isEntityQueryWord(prevKeyWord)) {
+                    queryType = QueryType.TABLE;
+                } else if (editor.getSyntaxManager().getKeywordManager().isAttributeQueryWord(prevKeyWord)) {
+                    queryType = QueryType.COLUMN;
+                }
             }
         }
-        if (queryType != null || wordDetector.containsSeparator(wordPart)) {
-            // It's a table query
-            // Use database information (only we are connected, of course)
+        if (queryType != null) {
             if (editor.getDataSource() != null) {
                 try {
                     final QueryType qt = queryType;
@@ -127,11 +127,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     // interrupted - do nothing
                 }
             }
-        } else if (wordPart.length() == 0) {
-            // No assist
         }
 
-        if (proposals.isEmpty()) {
+        if (proposals.isEmpty() || !wordPart.isEmpty())  {
             // Keyword assist
             List<String> matchedKeywords = editor.getSyntaxManager().getKeywordManager().getMatchedKeywords(wordPart);
             for (String keyWord : matchedKeywords) {
@@ -168,7 +166,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         final QueryType queryType)
     {
         DBPDataSource dataSource = editor.getDataSource();
-        if (queryType != null && dataSource != null) {
+        if (dataSource == null) {
+            return;
+        }
+        if (queryType != null) {
             // Try to determine which object is queried (if wordPart is not empty)
             // or get list of root database objects
             if (wordPart.length() == 0) {
@@ -317,13 +318,18 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
     }
 
-    private DBSObject getTableFromAlias(DBRProgressMonitor monitor, DBSObjectContainer sc, String token)
+    @Nullable
+    private DBSObject getTableFromAlias(DBRProgressMonitor monitor, DBSObjectContainer sc, @Nullable String token)
     {
+        final DBPDataSource dataSource = editor.getDataSource();
+        if (dataSource == null) {
+            return null;
+        }
         if (activeQuery == null) {
             activeQuery = editor.extractQueryAtPos(documentOffset).getQuery() + " ";
         }
 
-        List<String> nameList = new ArrayList<String>();
+        final List<String> nameList = new ArrayList<String>();
         if (token == null) {
             token = "";
         }
@@ -331,7 +337,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         {
             Matcher matcher;
             Pattern aliasPattern;
-            DBPDataSourceInfo dataSourceInfo = editor.getDataSource().getInfo();
+            DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
             String quoteString = dataSourceInfo.getIdentifierQuoteString();
             if (quoteString == null) {
                 quoteString = SQLConstants.STR_QUOTE_DOUBLE;
@@ -389,7 +395,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
 
         try {
-            DBSObject childObject = DBUtils.findNestedObject(monitor, sc, nameList);
+            DBSObject childObject = null;
+            while (childObject == null) {
+                childObject = DBUtils.findNestedObject(monitor, sc, nameList);
+                if (childObject == null) {
+                    DBSObjectContainer parentSc = DBUtils.getParentAdapter(DBSObjectContainer.class, sc);
+                    if (parentSc == null) {
+                        break;
+                    }
+                    sc = parentSc;
+                }
+            }
             if (childObject == null && nameList.size() <= 1) {
                 // No such object found - may be it's start of table name
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
@@ -419,7 +435,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     private void makeProposalsFromChildren(
         DBRProgressMonitor monitor,
         DBSObject parent,
-        String startPart,
+        @Nullable String startPart,
         List<ICompletionProposal> proposals)
     {
         if (startPart != null) {
@@ -452,7 +468,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     private void makeProposalsFromAssistant(
         DBRProgressMonitor monitor,
         DBSStructureAssistant assistant,
-        DBSObjectContainer rootSC,
+        @Nullable DBSObjectContainer rootSC,
         String objectName,
         List<ICompletionProposal> proposals)
     {
@@ -478,7 +494,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
     }
 
-    private ICompletionProposal makeProposalsFromObject(DBPNamedObject object, Image objectIcon)
+    private ICompletionProposal makeProposalsFromObject(DBPNamedObject object, @Nullable Image objectIcon)
     {
         String objectFullName = DBUtils.getObjectFullName(object);
 
@@ -498,7 +514,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         boolean isSingleObject = true;
         String replaceString = null;
-        {
+        DBPDataSource dataSource = editor.getDataSource();
+        if (dataSource != null) {
             // If we replace short name with referenced object
             // and current active schema (catalog) is not this object's container then
             // replace with full qualified name
@@ -506,10 +523,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 if (wordDetector.getFullWord().indexOf(editor.getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
-                        DBSObject selectedObject = getSelectedObject(editor.getDataSource());
+                        DBSObject selectedObject = getSelectedObject(dataSource);
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = DBUtils.getFullQualifiedName(
-                                editor.getDataSource(),
+                                dataSource,
                                 structObject.getContainer(),
                                 object);
                             isSingleObject = false;
@@ -518,8 +535,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
             if (replaceString == null) {
-                replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), object.getName());
+                replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
             }
+        } else {
+            replaceString = DBUtils.getObjectShortName(object);
         }
         return createCompletionProposal(
             replaceString,
@@ -536,16 +555,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         String replaceString,
         String displayString,
         String description,
-        Image image,
+        @Nullable Image image,
         boolean isObject)
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        if (editor.getDataSource() != null) {
-            store = editor.getDataSource().getContainer().getPreferenceStore();
-        }
-        if (isObject) {
-            // Escape replace string if required
-            replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
+        DBPDataSource dataSource = editor.getDataSource();
+        if (dataSource != null) {
+            store = dataSource.getContainer().getPreferenceStore();
+            if (isObject) {
+                // Escape replace string if required
+                replaceString = DBUtils.getQuotedIdentifier(dataSource, replaceString);
+            }
         }
 
         // If we have quoted string then ignore pref settings
@@ -561,7 +581,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 replaceString = replaceString.toLowerCase();
                 break;
             default:
-                DBPIdentifierCase convertCase = quotedString ? editor.getDataSource().getInfo().storesQuotedCase() : DBPIdentifierCase.MIXED;
+                DBPIdentifierCase convertCase = quotedString && dataSource != null ? dataSource.getInfo().storesQuotedCase() : DBPIdentifierCase.MIXED;
                 replaceString = convertCase.transform(replaceString);
                 break;
         }
@@ -586,6 +606,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeContextInformation(ITextViewer,
      *      int)
      */
+    @Nullable
     @Override
     public IContextInformation[] computeContextInformation(
         ITextViewer viewer, int documentOffset)
@@ -606,12 +627,14 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         return new char[] {'.'};
     }
 
+    @Nullable
     @Override
     public char[] getContextInformationAutoActivationCharacters()
     {
         return null;
     }
 
+    @Nullable
     @Override
     public String getErrorMessage()
     {
@@ -624,6 +647,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         return validator;
     }
 
+    @Nullable
     private static DBSObject getSelectedObject(DBPDataSource dataSource)
     {
         DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);

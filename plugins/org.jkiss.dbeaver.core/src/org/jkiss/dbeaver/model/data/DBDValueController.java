@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
