@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -60,7 +61,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
         connect(monitor, null, null);
     }
 
-    public void connect(DBRProgressMonitor monitor, Boolean autoCommit, Integer txnLevel) throws DBCException
+    public void connect(DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel) throws DBCException
     {
         if (connectionHolder != null) {
             log.error("Reopening not-closed connection");

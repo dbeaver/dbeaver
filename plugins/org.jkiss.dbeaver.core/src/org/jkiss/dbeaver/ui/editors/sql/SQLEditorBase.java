@@ -54,7 +54,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
@@ -110,6 +110,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             syntaxManager));
         setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
     }
+
+    public abstract SQLDataSource getDataSource();
 
     @NotNull
     public SQLSyntaxManager getSyntaxManager()
@@ -589,9 +591,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     @Override
     public DBPCommentsManager getCommentsSupport()
     {
-        DBPDataSource dataSource = getDataSource();
+        SQLDataSource dataSource = getDataSource();
         if (dataSource != null) {
-            return dataSource.getContainer().getKeywordManager();
+            return dataSource.getSQLDialect().getKeywordManager();
         } else {
             return null;
         }

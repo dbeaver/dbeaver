@@ -30,13 +30,12 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -96,9 +95,9 @@ public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvide
 
         sqlViewer = new SQLEditorBase() {
             @Override
-            public DBPDataSource getDataSource()
+            public SQLDataSource getDataSource()
             {
-                return BaseSQLDialog.this.getDataSource();
+                return (SQLDataSource)BaseSQLDialog.this.getDataSource();
             }
         };
         updateSQL();

@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.Nullable;
+
 /**
  * Query transform provider.
  * This interface could be implemented by {@link org.jkiss.dbeaver.model.DBPDataSource} implementor.
@@ -30,6 +32,7 @@ public interface DBCQueryTransformProvider {
      * @param type transformation type
      * @return new transformer or null if transformation of specified type is not supported
      */
+    @Nullable
     DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type);
 
 }

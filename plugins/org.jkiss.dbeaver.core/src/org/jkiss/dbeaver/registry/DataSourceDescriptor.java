@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
-import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -145,8 +144,6 @@ public class DataSourceDescriptor
     private DBPDataSource dataSource;
 
     private final List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
-
-    private DataSourceKeywordManager keywordManager;
 
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
@@ -559,18 +556,6 @@ public class DataSourceDescriptor
         return registry;
     }
 
-    @Override
-    public DBPKeywordManager getKeywordManager()
-    {
-        if (!isConnected()) {
-            return EmptyKeywordManager.INSTANCE;
-        }
-        if (keywordManager == null) {
-            keywordManager = new DataSourceKeywordManager(dataSource);
-        }
-        return keywordManager;
-    }
-
     public String getFolderPath()
     {
         return folderPath;
@@ -799,7 +784,6 @@ public class DataSourceDescriptor
 
         dataSource = null;
         connectTime = null;
-        keywordManager = null;
 
         if (reflect) {
             // Reflect UI

@@ -39,8 +39,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
@@ -115,13 +117,18 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
-        final JDBCDataSourceInfo info = new JDBCDataSourceInfo(metaData);
+        return new JDBCDataSourceInfo(metaData);
+    }
+
+    @Override
+    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData) {
+        JDBCSQLDialect dialect = new JDBCSQLDialect(this, "Oracle", metaData);
         for (String kw : OracleConstants.ADVANCED_KEYWORDS) {
-            info.addSQLKeyword(kw);
+            dialect.addSQLKeyword(kw);
         }
-        return info;
+        return dialect;
     }
 
     @Override

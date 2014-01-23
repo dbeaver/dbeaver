@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mssql.model.plan;
 
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -63,7 +64,7 @@ public class MSSQLPlanAnalyser implements DBCPlan {
     public void explain(DBCSession session)
         throws DBCException
     {
-        String plainQuery = SQLUtils.stripComments(session.getDataSource(), query).toUpperCase();
+        String plainQuery = SQLUtils.stripComments((SQLDataSource) session.getDataSource(), query).toUpperCase();
         if (!plainQuery.startsWith("SELECT")) {
             throw new DBCException("Only SELECT statements could produce execution plan");
         }

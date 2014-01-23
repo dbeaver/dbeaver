@@ -56,8 +56,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
+import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
@@ -217,12 +219,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
         final JDBCDataSourceInfo info = new JDBCDataSourceInfo(metaData);
-        for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
-            info.addSQLKeyword(kw);
-        }
 
         // Compute Database version
         version = DB2Constants.DB2v9_1; // Be defensive, assume lowest possible version
@@ -255,6 +254,15 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         info.setSupportsResultSetScroll(false);
 
         return info;
+    }
+
+    @Override
+    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData) {
+        JDBCSQLDialect dialect = new JDBCSQLDialect(this, "DB2", metaData);
+        for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
+            dialect.addSQLKeyword(kw);
+        }
+        return dialect;
     }
 
     @Override

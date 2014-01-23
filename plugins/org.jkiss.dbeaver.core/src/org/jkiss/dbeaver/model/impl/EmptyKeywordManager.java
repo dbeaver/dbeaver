@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.model.DBPKeywordManager;
+import org.jkiss.dbeaver.model.sql.SQLKeywordManager;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.utils.Pair;
 
@@ -29,8 +29,8 @@ import java.util.Set;
 /**
  * Empty keyword manager
  */
-public class EmptyKeywordManager implements DBPKeywordManager {
-    public static final DBPKeywordManager INSTANCE = new EmptyKeywordManager();
+public class EmptyKeywordManager implements SQLKeywordManager {
+    public static final SQLKeywordManager INSTANCE = new EmptyKeywordManager();
 
     @Override
     public Set<String> getReservedWords()

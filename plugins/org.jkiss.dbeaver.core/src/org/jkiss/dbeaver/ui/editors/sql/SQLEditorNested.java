@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -94,12 +95,12 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public DBPDataSource getDataSource() {
+    public SQLDataSource getDataSource() {
         IDatabaseEditorInput editorInput = getEditorInput();
         if (editorInput == null) {
             return null;
         }
-        return editorInput.getDataSource();
+        return (SQLDataSource) editorInput.getDataSource();
     }
 
     @Override

@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -130,10 +131,19 @@ public class SQLEditor extends SQLEditorBase
 
     @Nullable
     @Override
-    public DBPDataSource getDataSource()
+    public SQLDataSource getDataSource()
     {
         final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        return dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
+        if (dataSourceContainer == null) {
+            return null;
+        }
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (dataSource instanceof SQLDataSource) {
+            return (SQLDataSource)dataSource;
+        } else {
+            log.debug("Data source doesn't support SQL");
+            return null;
+        }
     }
 
     @Nullable
@@ -1099,7 +1109,7 @@ public class SQLEditor extends SQLEditorBase
                 final SQLQueryJob job = queryProcessor.curJob;
                 if (job != null) {
                     DBPDataSource dataSource = getDataSource();
-                    if (dataSource != null && dataSource.getInfo().supportsSubqueries()) {
+                    if (dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries()) {
                         features |= DATA_FILTER;
                     }
                 }

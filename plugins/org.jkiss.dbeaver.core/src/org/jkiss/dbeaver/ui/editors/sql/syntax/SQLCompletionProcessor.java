@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
@@ -321,7 +323,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     @Nullable
     private DBSObject getTableFromAlias(DBRProgressMonitor monitor, DBSObjectContainer sc, @Nullable String token)
     {
-        final DBPDataSource dataSource = editor.getDataSource();
+        final SQLDataSource dataSource = editor.getDataSource();
         if (dataSource == null) {
             return null;
         }
@@ -337,13 +339,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         {
             Matcher matcher;
             Pattern aliasPattern;
-            DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
-            String quoteString = dataSourceInfo.getIdentifierQuoteString();
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            String quoteString = sqlDialect.getIdentifierQuoteString();
             if (quoteString == null) {
                 quoteString = SQLConstants.STR_QUOTE_DOUBLE;
             }
             String quote = Pattern.quote(quoteString);
-            String catalogSeparator = dataSourceInfo.getCatalogSeparator();
+            String catalogSeparator = sqlDialect.getCatalogSeparator();
             if (catalogSeparator == null) {
                 catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             }
@@ -559,7 +561,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         boolean isObject)
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        DBPDataSource dataSource = editor.getDataSource();
+        SQLDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
             store = dataSource.getContainer().getPreferenceStore();
             if (isObject) {
@@ -581,7 +583,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 replaceString = replaceString.toLowerCase();
                 break;
             default:
-                DBPIdentifierCase convertCase = quotedString && dataSource != null ? dataSource.getInfo().storesQuotedCase() : DBPIdentifierCase.MIXED;
+                DBPIdentifierCase convertCase = quotedString && dataSource != null ? dataSource.getSQLDialect().storesQuotedCase() : DBPIdentifierCase.MIXED;
                 replaceString = convertCase.transform(replaceString);
                 break;
         }

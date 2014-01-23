@@ -19,8 +19,10 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.*;
@@ -162,9 +164,14 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         return objectMap;
     }
 
-    private void detectCaseSensitivity(DBSObject object) {
-        if (this.caseSensitive && object.getDataSource().getInfo().storesUnquotedCase() == DBPIdentifierCase.MIXED) {
-            this.caseSensitive = false;
+    protected void detectCaseSensitivity(DBSObject object) {
+        if (this.caseSensitive) {
+            DBPDataSource dataSource = object.getDataSource();
+            if (dataSource instanceof SQLDataSource &&
+                ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED)
+            {
+                this.caseSensitive = false;
+            }
         }
     }
 

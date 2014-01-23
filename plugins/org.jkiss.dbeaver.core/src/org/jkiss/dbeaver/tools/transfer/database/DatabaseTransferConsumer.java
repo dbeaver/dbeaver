@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -295,14 +296,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         monitor.subTask("Create table " + containerMapping.getTargetName());
         StringBuilder sql = new StringBuilder(500);
         DBSObjectContainer schema = settings.getContainer();
-        DBPDataSource targetDataSource = schema.getDataSource();
+        if (!(schema.getDataSource() instanceof SQLDataSource)) {
+            throw new DBException("Data source doesn't support SQL");
+        }
+        SQLDataSource targetDataSource = (SQLDataSource)schema.getDataSource();
 
         String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
         sql.append("CREATE TABLE ");
         if (schema instanceof DBSSchema || schema instanceof DBSCatalog) {
             sql.append(DBUtils.getQuotedIdentifier(schema));
-            sql.append(targetDataSource.getInfo().getCatalogSeparator());
+            sql.append(targetDataSource.getSQLDialect().getCatalogSeparator());
         }
         sql.append(DBUtils.getQuotedIdentifier(targetDataSource, tableName)).append("(\n");
         Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<DBSAttributeBase, DatabaseMappingAttribute>();
