@@ -107,7 +107,7 @@ public final class DBUtils {
         }
 
         // Check for keyword conflict
-        boolean hasBadChars = sqlDialect.getKeywordManager().getKeywordType(str) == DBPKeywordType.KEYWORD;
+        boolean hasBadChars = sqlDialect.getKeywordType(str) == DBPKeywordType.KEYWORD;
 
         if (!hasBadChars) {
             hasBadChars = Character.isDigit(str.charAt(0));

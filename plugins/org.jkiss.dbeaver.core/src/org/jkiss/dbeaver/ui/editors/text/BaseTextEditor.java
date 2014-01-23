@@ -40,7 +40,7 @@ import org.eclipse.ui.texteditor.rulers.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPCommentsManager;
+import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -263,7 +263,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     }
 
     @Nullable
-    public DBPCommentsManager getCommentsSupport()
+    public ICommentsSupport getCommentsSupport()
     {
         return null;
     }

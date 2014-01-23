@@ -104,9 +104,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         {
             final String prevKeyWord = wordDetector.getPrevKeyWord();
             if (!CommonUtils.isEmpty(prevKeyWord)) {
-                if (editor.getSyntaxManager().getKeywordManager().isEntityQueryWord(prevKeyWord)) {
+                if (editor.getSyntaxManager().getDialect().isEntityQueryWord(prevKeyWord)) {
                     queryType = QueryType.TABLE;
-                } else if (editor.getSyntaxManager().getKeywordManager().isAttributeQueryWord(prevKeyWord)) {
+                } else if (editor.getSyntaxManager().getDialect().isAttributeQueryWord(prevKeyWord)) {
                     queryType = QueryType.COLUMN;
                 }
             }
@@ -133,9 +133,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         if (proposals.isEmpty() || !wordPart.isEmpty())  {
             // Keyword assist
-            List<String> matchedKeywords = editor.getSyntaxManager().getKeywordManager().getMatchedKeywords(wordPart);
+            List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(wordPart);
             for (String keyWord : matchedKeywords) {
-                DBPKeywordType keywordType = editor.getSyntaxManager().getKeywordManager().getKeywordType(keyWord);
+                DBPKeywordType keywordType = editor.getSyntaxManager().getDialect().getKeywordType(keyWord);
                 proposals.add(
                     createCompletionProposal(
                         keyWord,
