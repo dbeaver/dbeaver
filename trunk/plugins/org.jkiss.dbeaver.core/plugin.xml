@@ -1944,6 +1944,13 @@
                 value="COLOR_WHITE">
             <description>SQL text background</description>
         </colorDefinition>
+        <colorDefinition
+                label="SQL disabled background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.disabled.background"
+                value="COLOR_WIDGET_BACKGROUND">
+            <description>SQL text background</description>
+        </colorDefinition>
     </extension>
 
 

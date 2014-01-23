@@ -381,6 +381,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 }
             }
         }
+        getTextViewer().getTextWidget().setBackground(
+            getSyntaxManager().getColor(getDataSource() == null ?
+                SQLSyntaxManager.CONFIG_COLOR_DISABLED :
+                SQLSyntaxManager.CONFIG_COLOR_BACKGROUND));
 
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
