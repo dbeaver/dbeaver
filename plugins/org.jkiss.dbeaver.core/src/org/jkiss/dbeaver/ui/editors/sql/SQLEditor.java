@@ -18,7 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -49,6 +50,7 @@ import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -85,7 +87,6 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -665,9 +666,9 @@ public class SQLEditor extends SQLEditorBase
         }
         DatabaseEditorUtils.setPartBackground(this, sashForm);
 
+        DBPDataSource dataSource = getDataSource();
         for (QueryProcessor queryProcessor : queryProcessors) {
             for (QueryResultsProvider resultsProvider : queryProcessor.getResultProviders()) {
-                DBPDataSource dataSource = getDataSource();
                 if (dataSource == null) {
                     resultsProvider.getResultSetViewer().setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
                 } else {

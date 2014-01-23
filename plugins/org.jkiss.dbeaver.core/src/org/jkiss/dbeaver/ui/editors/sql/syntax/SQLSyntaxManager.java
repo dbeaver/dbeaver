@@ -56,6 +56,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     public static final String CONFIG_COLOR_PARAMETER = "org.jkiss.dbeaver.sql.editor.color.parameter.foreground";
     public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
+    public static final String CONFIG_COLOR_DISABLED = "org.jkiss.dbeaver.sql.editor.color.disabled.background";
 
     public static final Set<String> THEME_PROPERTIES = new HashSet<String>();
     static {
@@ -68,9 +69,12 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         THEME_PROPERTIES.add(CONFIG_COLOR_PARAMETER);
         THEME_PROPERTIES.add(CONFIG_COLOR_TEXT);
         THEME_PROPERTIES.add(CONFIG_COLOR_BACKGROUND);
+        THEME_PROPERTIES.add(CONFIG_COLOR_DISABLED);
     }
     @NotNull
     private final IThemeManager themeManager;
+    @Nullable
+    private SQLDataSource dataSource;
     @NotNull
     private SQLDialect sqlDialect;
     @Nullable
@@ -152,7 +156,8 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
     public void setDataSource(@Nullable SQLDataSource dataSource)
     {
-        if (dataSource == null) {
+        this.dataSource = dataSource;
+        if (this.dataSource == null) {
             sqlDialect = new BasicSQLDialect();
             quoteSymbol = null;
             structSeparator = SQLConstants.STRUCT_SEPARATOR;
@@ -160,7 +165,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             escapeChar = '\\';
             statementDelimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
         } else {
-            sqlDialect = dataSource.getSQLDialect();
+            sqlDialect = this.dataSource.getSQLDialect();
             quoteSymbol = sqlDialect.getIdentifierQuoteString();
             structSeparator = sqlDialect.getStructSeparator();
             catalogSeparator = sqlDialect.getCatalogSeparator();
@@ -172,7 +177,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
     public void refreshRules()
     {
-        final Color backgroundColor = getColor(SQLSyntaxManager.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE);
+        final Color backgroundColor = dataSource != null ?
+            getColor(SQLSyntaxManager.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE) :
+            getColor(SQLSyntaxManager.CONFIG_COLOR_DISABLED, SWT.COLOR_WIDGET_LIGHT_SHADOW);
         final IToken keywordToken = new Token(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_KEYWORD), backgroundColor, SWT.BOLD));
         final IToken typeToken = new Token(
@@ -199,11 +206,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<IRule>();
 
-        if (sqlDialect != null) {
-            // Add rule for single-line comments.
-            for (String lineComment : sqlDialect.getSingleLineComments()) {
-                rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
-            }
+        // Add rule for single-line comments.
+        for (String lineComment : sqlDialect.getSingleLineComments()) {
+            rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
         }
 
         // Add rules for delimited identifiers and string literals.
@@ -217,12 +222,10 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             rules.add(new SingleLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
         }
 
-        if (sqlDialect != null) {
-            Pair<String, String> multiLineComments = sqlDialect.getMultiLineComments();
-            if (multiLineComments != null) {
-                // Add rules for multi-line comments
-                rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
-            }
+        Pair<String, String> multiLineComments = sqlDialect.getMultiLineComments();
+        if (multiLineComments != null) {
+            // Add rules for multi-line comments
+            rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
         }
 
         // Add generic whitespace rule.
@@ -257,16 +260,14 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
         // Add word rule for keywords, types, and constants.
         WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
-        if (sqlDialect != null) {
-            for (String reservedWord : sqlDialect.getReservedWords()) {
-                wordRule.addWord(reservedWord, keywordToken);
-            }
-            for (String function : sqlDialect.getFunctions()) {
-                wordRule.addWord(function, typeToken);
-            }
-            for (String type : sqlDialect.getTypes()) {
-                wordRule.addWord(type, typeToken);
-            }
+        for (String reservedWord : sqlDialect.getReservedWords()) {
+            wordRule.addWord(reservedWord, keywordToken);
+        }
+        for (String function : sqlDialect.getFunctions()) {
+            wordRule.addWord(function, typeToken);
+        }
+        for (String type : sqlDialect.getTypes()) {
+            wordRule.addWord(type, typeToken);
         }
         wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);
         wordRule.addWord(SQLConstants.BLOCK_END, blockEndToken);
