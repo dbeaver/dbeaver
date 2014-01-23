@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -28,8 +29,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
+import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -49,6 +53,7 @@ import java.util.Properties;
 public abstract class JDBCDataSource
     implements
         DBPDataSource,
+        SQLDataSource,
         DBPDataTypeProvider,
         DBPErrorAssistant,
         DBPRefreshableObject,
@@ -61,6 +66,7 @@ public abstract class JDBCDataSource
     private final JDBCExecutionContext executionContext;
     private volatile JDBCExecutionContext metaContext;
     protected volatile DBPDataSourceInfo dataSourceInfo;
+    protected volatile SQLDialect sqlDialect;
 
     public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
@@ -173,6 +179,7 @@ public abstract class JDBCDataSource
      * Note: these properties may be overwritten by connection advanced properties.
      * @return predefined connection properties
      */
+    @Nullable
     protected Map<String, String> getInternalConnectionProperties()
     {
         return null;
@@ -216,6 +223,11 @@ public abstract class JDBCDataSource
     }
 
     @Override
+    public SQLDialect getSQLDialect() {
+        return sqlDialect;
+    }
+
+    @Override
     public String getContextName() {
         return executionContext.getContextName();
     }
@@ -246,7 +258,9 @@ public abstract class JDBCDataSource
         }
         JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {
-            dataSourceInfo = makeInfo(session.getMetaData());
+            JDBCDatabaseMetaData metaData = session.getMetaData();
+            dataSourceInfo = createDataSourceInfo(metaData);
+            sqlDialect = createSQLDialect(metaData);
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC meta data", ex, this);
         }
@@ -299,14 +313,15 @@ public abstract class JDBCDataSource
         return true;
     }
 
+    @Nullable
     @Override
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type)
     {
-        if (type == DBCQueryTransformType.ORDER_BY) {
-
-        } else if (type == DBCQueryTransformType.FILTER) {
-
-        }
+//        if (type == DBCQueryTransformType.ORDER_BY) {
+//
+//        } else if (type == DBCQueryTransformType.FILTER) {
+//
+//        }
         return null;
     }
 
@@ -419,9 +434,14 @@ public abstract class JDBCDataSource
     /////////////////////////////////////////////////
     // Overridable functions
 
-    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
         return new JDBCDataSourceInfo(metaData);
+    }
+
+    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData)
+    {
+        return new JDBCSQLDialect(this, "JDBC", metaData);
     }
 
     /////////////////////////////////////////////////

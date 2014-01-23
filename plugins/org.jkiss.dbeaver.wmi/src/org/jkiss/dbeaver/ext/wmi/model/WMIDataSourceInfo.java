@@ -19,12 +19,9 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.exec.DBCStateType;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Info
@@ -72,54 +69,6 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     }
 
     @Override
-    public String getIdentifierQuoteString()
-    {
-        return "'";
-    }
-
-    @Override
-    public Collection<String> getSQLKeywords()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getNumericFunctions()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getStringFunctions()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getSystemFunctions()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getTimeDateFunctions()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getExecuteKeywords()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public String getSearchStringEscape()
-    {
-        return "%";
-    }
-
-    @Override
     public String getSchemaTerm()
     {
         return "Namespace";
@@ -135,42 +84,6 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     public String getCatalogTerm()
     {
         return "Server";
-    }
-
-    @Override
-    public int getCatalogUsage()
-    {
-        return 0;
-    }
-
-    @Override
-    public int getSchemaUsage()
-    {
-        return 0;
-    }
-
-    @Override
-    public String getCatalogSeparator()
-    {
-        return ".";
-    }
-
-    @Override
-    public char getStructSeparator()
-    {
-        return '.';
-    }
-
-    @Override
-    public boolean isCatalogAtStart()
-    {
-        return true;
-    }
-
-    @Override
-    public DBCStateType getSQLStateType()
-    {
-        return DBCStateType.UNKNOWN;
     }
 
     @Override
@@ -204,51 +117,9 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     }
 
     @Override
-    public String getScriptDelimiter()
-    {
-        return ";";
-    }
-
-    @Override
-    public boolean validUnquotedCharacter(char c)
-    {
-        return Character.isLetter(c) || Character.isDigit(c) || c == '_';
-    }
-
-    @Override
-    public boolean supportsUnquotedMixedCase()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean supportsQuotedMixedCase()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean supportsSubqueries()
-    {
-        return false;
-    }
-
-    @Override
     public boolean supportsBatchUpdates()
     {
         return false;
-    }
-
-    @Override
-    public DBPIdentifierCase storesUnquotedCase()
-    {
-        return DBPIdentifierCase.MIXED;
-    }
-
-    @Override
-    public DBPIdentifierCase storesQuotedCase()
-    {
-        return DBPIdentifierCase.MIXED;
     }
 
     @Override

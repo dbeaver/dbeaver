@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -105,7 +106,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
         final GenericDataSourceInfo info = new GenericDataSourceInfo(getContainer().getDriver(), metaData);
 
@@ -124,6 +125,11 @@ public class GenericDataSource extends JDBCDataSource
             info.setSupportsIndexes(Boolean.valueOf(supportsSubqueries.toString()));
         }
         return info;
+    }
+
+    @Override
+    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData) {
+        return new GenericSQLDialect(this, metaData);
     }
 
     @Override

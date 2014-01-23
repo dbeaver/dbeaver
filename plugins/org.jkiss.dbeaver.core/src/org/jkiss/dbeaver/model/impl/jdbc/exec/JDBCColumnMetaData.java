@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -105,21 +107,23 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         // Sometimes [DBSPEC: Informix] it contains schema/catalog name inside
         if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(fetchedCatalogName) && CommonUtils.isEmpty(fetchedSchemaName)) {
             final DBPDataSource dataSource = resultSetMeta.getResultSet().getSession().getDataSource();
-            final DBPDataSourceInfo dsInfo = dataSource.getInfo();
-            if (!DBUtils.isQuotedIdentifier(dataSource, fetchedTableName)) {
-                final String catalogSeparator = dsInfo.getCatalogSeparator();
-                final int catDivPos = fetchedTableName.indexOf(catalogSeparator);
-                if (catDivPos != -1 && (dsInfo.getCatalogUsage() & DBPDataSourceInfo.USAGE_DML) != 0) {
-                    // Catalog in table name - extract it
-                    fetchedCatalogName = fetchedTableName.substring(0, catDivPos);
-                    fetchedTableName = fetchedTableName.substring(catDivPos + catalogSeparator.length());
-                }
-                final char structSeparator = dsInfo.getStructSeparator();
-                final int schemaDivPos = fetchedTableName.indexOf(structSeparator);
-                if (schemaDivPos != -1 && (dsInfo.getSchemaUsage() & DBPDataSourceInfo.USAGE_DML) != 0) {
-                    // Schema in table name - extract it
-                    fetchedSchemaName = fetchedTableName.substring(0, schemaDivPos);
-                    fetchedTableName = fetchedTableName.substring(schemaDivPos + 1);
+            if (dataSource instanceof SQLDataSource) {
+                SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+                if (!DBUtils.isQuotedIdentifier(dataSource, fetchedTableName)) {
+                    final String catalogSeparator = sqlDialect.getCatalogSeparator();
+                    final int catDivPos = fetchedTableName.indexOf(catalogSeparator);
+                    if (catDivPos != -1 && (sqlDialect.getCatalogUsage() & SQLDialect.USAGE_DML) != 0) {
+                        // Catalog in table name - extract it
+                        fetchedCatalogName = fetchedTableName.substring(0, catDivPos);
+                        fetchedTableName = fetchedTableName.substring(catDivPos + catalogSeparator.length());
+                    }
+                    final char structSeparator = sqlDialect.getStructSeparator();
+                    final int schemaDivPos = fetchedTableName.indexOf(structSeparator);
+                    if (schemaDivPos != -1 && (sqlDialect.getSchemaUsage() & SQLDialect.USAGE_DML) != 0) {
+                        // Schema in table name - extract it
+                        fetchedSchemaName = fetchedTableName.substring(0, schemaDivPos);
+                        fetchedTableName = fetchedTableName.substring(schemaDivPos + 1);
+                    }
                 }
             }
         }

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -99,7 +100,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findTablesByMask(JDBCSession session, final MySQLCatalog catalog, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTablesByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -149,7 +150,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findProceduresByMask(JDBCSession session, final MySQLCatalog catalog, String procNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findProceduresByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, String procNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -199,7 +200,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findConstraintsByMask(JDBCSession session, final MySQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findConstraintsByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -260,7 +261,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findTableColumnsByMask(JDBCSession session, final MySQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTableColumnsByMask(JDBCSession session, @Nullable final MySQLCatalog catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -291,9 +292,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                         public String getFullQualifiedName()
                         {
                             return DBUtils.getQuotedIdentifier(dataSource, catalogName) +
-                                dataSource.getInfo().getStructSeparator() +
+                                '.' +
                                 DBUtils.getQuotedIdentifier(dataSource, tableName) +
-                                dataSource.getInfo().getStructSeparator() +
+                                '.' +
                                 DBUtils.getQuotedIdentifier(dataSource, columnName);
 
                         }

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -44,10 +45,10 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 public abstract class GenerateSQLDialog extends BaseSQLDialog {
 
-    private DBPDataSource dataSource;
+    private SQLDataSource dataSource;
     private Runnable onSuccess;
 
-    public GenerateSQLDialog(IWorkbenchPartSite parentSite, DBPDataSource dataSource, String title, Image image)
+    public GenerateSQLDialog(IWorkbenchPartSite parentSite, SQLDataSource dataSource, String title, Image image)
     {
         super(parentSite, title, image);
         this.dataSource = dataSource;
@@ -149,7 +150,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     @Override
     protected String getSQLText()
     {
-        String scriptDelimiter = dataSource.getInfo().getScriptDelimiter() + ContentUtils.getDefaultLineSeparator();
+        String scriptDelimiter = dataSource.getSQLDialect().getScriptDelimiter() + ContentUtils.getDefaultLineSeparator();
         String[] scriptLines = generateSQLScript();
         StringBuilder sql = new StringBuilder(scriptLines.length * 64);
         for (String line : scriptLines) {

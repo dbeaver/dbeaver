@@ -16,11 +16,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.impl.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLKeywordManager;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
@@ -35,8 +38,8 @@ import java.util.*;
  * Contains information about some concrete datasource underlying database syntax.
  * Support runtime change of datasource (reloads syntax information)
  */
-public class DataSourceKeywordManager implements DBPKeywordManager {
-    static final Log log = LogFactory.getLog(DataSourceKeywordManager.class);
+public class JDBCSQLKeywordManager implements SQLKeywordManager {
+    static final Log log = LogFactory.getLog(JDBCSQLKeywordManager.class);
 
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<String, DBPKeywordType>();
 
@@ -49,7 +52,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
     private Pair<String, String> multiLineComments = new Pair<String, String>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
     private String[] singleLineComments = {"--"};
 
-    public DataSourceKeywordManager(DBPDataSource dataSource)
+    public JDBCSQLKeywordManager(SQLDataSource dataSource)
     {
         loadSyntax(dataSource);
     }
@@ -112,9 +115,9 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         return columnQueryWords.contains(word.toUpperCase());
     }
 
-    void loadSyntax(final DBPDataSource dataSource)
+    void loadSyntax(final SQLDataSource dataSource)
     {
-        DBPDataSourceInfo dataSourceInfo = dataSource.getInfo();
+        SQLDialect sqlDialect = dataSource.getSQLDialect();
         allKeywords.clear();
         reservedWords.clear();
         functions.clear();
@@ -128,13 +131,13 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
 
         try {
             // Keywords
-            Collection<String> sqlKeywords = dataSourceInfo.getSQLKeywords();
+            Collection<String> sqlKeywords = sqlDialect.getSQLKeywords();
             if (!CommonUtils.isEmpty(sqlKeywords)) {
                 for (String keyword : sqlKeywords) {
                     reservedWords.add(keyword.toUpperCase());
                 }
             }
-            final Collection<String> executeKeywords = dataSourceInfo.getExecuteKeywords();
+            final Collection<String> executeKeywords = sqlDialect.getExecuteKeywords();
             if (!CommonUtils.isEmpty(executeKeywords)) {
                 for (String keyword : executeKeywords) {
                     reservedWords.add(keyword.toUpperCase());
@@ -143,23 +146,23 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
 
             // Functions
             Set<String> allFunctions = new HashSet<String>();
-            if (dataSourceInfo.getNumericFunctions() != null) {
-                for (String func : dataSourceInfo.getNumericFunctions()) {
+            if (sqlDialect.getNumericFunctions() != null) {
+                for (String func : sqlDialect.getNumericFunctions()) {
                     allFunctions.add(func.toUpperCase());
                 }
             }
-            if (dataSourceInfo.getStringFunctions() != null) {
-                for (String func : dataSourceInfo.getStringFunctions()) {
+            if (sqlDialect.getStringFunctions() != null) {
+                for (String func : sqlDialect.getStringFunctions()) {
                     allFunctions.add(func.toUpperCase());
                 }
             }
-            if (dataSourceInfo.getSystemFunctions() != null) {
-                for (String func : dataSourceInfo.getSystemFunctions()) {
+            if (sqlDialect.getSystemFunctions() != null) {
+                for (String func : sqlDialect.getSystemFunctions()) {
                     allFunctions.add(func.toUpperCase());
                 }
             }
-            if (dataSourceInfo.getTimeDateFunctions() != null) {
-                for (String func : dataSourceInfo.getTimeDateFunctions()) {
+            if (sqlDialect.getTimeDateFunctions() != null) {
+                for (String func : sqlDialect.getTimeDateFunctions()) {
                     allFunctions.add(func.toUpperCase());
                 }
             }

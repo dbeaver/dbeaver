@@ -29,9 +29,10 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPKeywordManager;
+import org.jkiss.dbeaver.model.sql.SQLKeywordManager;
 import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
@@ -72,7 +73,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     @NotNull
     private final IThemeManager themeManager;
     @NotNull
-    private DBPKeywordManager keywordManager;
+    private SQLKeywordManager keywordManager;
     @Nullable
     private String quoteSymbol;
     private char structSeparator;
@@ -96,7 +97,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     {
     }
     @NotNull
-    public DBPKeywordManager getKeywordManager()
+    public SQLKeywordManager getKeywordManager()
     {
         return keywordManager;
     }
@@ -150,7 +151,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void setDataSource(@Nullable DBPDataSource dataSource)
+    public void setDataSource(@Nullable SQLDataSource dataSource)
     {
         if (dataSource == null) {
             keywordManager = EmptyKeywordManager.INSTANCE;
@@ -160,13 +161,14 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             escapeChar = '\\';
             statementDelimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
         } else {
-            keywordManager = dataSource.getContainer().getKeywordManager();
-            quoteSymbol = dataSource.getInfo().getIdentifierQuoteString();
-            structSeparator = dataSource.getInfo().getStructSeparator();
-            catalogSeparator = dataSource.getInfo().getCatalogSeparator();
-            dataSource.getInfo().getSearchStringEscape();
+            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            keywordManager = sqlDialect.getKeywordManager();
+            quoteSymbol = sqlDialect.getIdentifierQuoteString();
+            structSeparator = sqlDialect.getStructSeparator();
+            catalogSeparator = sqlDialect.getCatalogSeparator();
+            sqlDialect.getSearchStringEscape();
             escapeChar = '\\';
-            statementDelimiter = dataSource.getInfo().getScriptDelimiter().toLowerCase();
+            statementDelimiter = sqlDialect.getScriptDelimiter().toLowerCase();
         }
     }
 
