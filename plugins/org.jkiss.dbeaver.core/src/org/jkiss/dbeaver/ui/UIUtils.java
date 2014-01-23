@@ -544,7 +544,8 @@ public class UIUtils {
             public void mouseUp(MouseEvent e)
             {
                 if (!button.isDisposed() && button.isVisible() && button.isEnabled()) {
-                    button.setSelection(!button.getSelection());
+                    button.getDisplay().post(new Event());
+                    //button.setSelection(!button.getSelection());
                 }
             }
         });
@@ -935,7 +936,7 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, String label, @Nullable ModifyListener changeListener)
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable ModifyListener changeListener)
     {
         UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory);
         Composite chooserPlaceholder = UIUtils.createPlaceholder(parent, 2);

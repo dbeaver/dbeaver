@@ -60,102 +60,92 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     private DBDDataFormatterProfile formatterProfile;
 
+    private boolean outputClipboard = false;
     private boolean compressResults = false;
     private boolean openFolderOnFinish = true;
 
-    public LobExtractType getLobExtractType()
-    {
+    public LobExtractType getLobExtractType() {
         return lobExtractType;
     }
 
-    public void setLobExtractType(LobExtractType lobExtractType)
-    {
+    public void setLobExtractType(LobExtractType lobExtractType) {
         this.lobExtractType = lobExtractType;
     }
 
-    public LobEncoding getLobEncoding()
-    {
+    public LobEncoding getLobEncoding() {
         return lobEncoding;
     }
 
-    public void setLobEncoding(LobEncoding lobEncoding)
-    {
+    public void setLobEncoding(LobEncoding lobEncoding) {
         this.lobEncoding = lobEncoding;
     }
 
-    public String getOutputFolder()
-    {
+    public String getOutputFolder() {
         return outputFolder;
     }
 
-    public void setOutputFolder(String outputFolder)
-    {
+    public void setOutputFolder(String outputFolder) {
         this.outputFolder = outputFolder;
     }
 
-    public String getOutputFilePattern()
-    {
+    public String getOutputFilePattern() {
         return outputFilePattern;
     }
 
-    public void setOutputFilePattern(String outputFilePattern)
-    {
+    public void setOutputFilePattern(String outputFilePattern) {
         this.outputFilePattern = outputFilePattern;
     }
 
-    public String getOutputEncoding()
-    {
+    public String getOutputEncoding() {
         return outputEncoding;
     }
 
-    public void setOutputEncoding(String outputEncoding)
-    {
+    public void setOutputEncoding(String outputEncoding) {
         this.outputEncoding = outputEncoding;
     }
 
-    public boolean isOutputEncodingBOM()
-    {
+    public boolean isOutputEncodingBOM() {
         return outputEncodingBOM;
     }
 
-    public void setOutputEncodingBOM(boolean outputEncodingBOM)
-    {
+    public void setOutputEncodingBOM(boolean outputEncodingBOM) {
         this.outputEncodingBOM = outputEncodingBOM;
     }
 
-    public boolean isCompressResults()
-    {
+    public boolean isOutputClipboard() {
+        return outputClipboard;
+    }
+
+    public void setOutputClipboard(boolean outputClipboard) {
+        this.outputClipboard = outputClipboard;
+    }
+
+    public boolean isCompressResults() {
         return compressResults;
     }
 
-    public void setCompressResults(boolean compressResults)
-    {
+    public void setCompressResults(boolean compressResults) {
         this.compressResults = compressResults;
     }
 
-    public boolean isOpenFolderOnFinish()
-    {
+    public boolean isOpenFolderOnFinish() {
         return openFolderOnFinish;
     }
 
-    public void setOpenFolderOnFinish(boolean openFolderOnFinish)
-    {
+    public void setOpenFolderOnFinish(boolean openFolderOnFinish) {
         this.openFolderOnFinish = openFolderOnFinish;
     }
 
-    public DBDDataFormatterProfile getFormatterProfile()
-    {
+    public DBDDataFormatterProfile getFormatterProfile() {
         return formatterProfile;
     }
 
-    public void setFormatterProfile(DBDDataFormatterProfile formatterProfile)
-    {
+    public void setFormatterProfile(DBDDataFormatterProfile formatterProfile) {
         this.formatterProfile = formatterProfile;
     }
 
     @Override
-    public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings)
-    {
+    public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings) {
         if (!CommonUtils.isEmpty(dialogSettings.get("lobExtractType"))) {
             try {
                 lobExtractType = LobExtractType.valueOf(dialogSettings.get("lobExtractType"));
@@ -182,6 +172,9 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         }
         if (!CommonUtils.isEmpty(dialogSettings.get("outputEncodingBOM"))) {
             outputEncodingBOM = dialogSettings.getBoolean("outputEncodingBOM");
+        }
+        if (!CommonUtils.isEmpty(dialogSettings.get("outputClipboard"))) {
+            outputClipboard = dialogSettings.getBoolean("outputClipboard");
         }
 
         if (!CommonUtils.isEmpty(dialogSettings.get("compressResults"))) {
@@ -220,8 +213,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void saveSettings(IDialogSettings dialogSettings)
-    {
+    public void saveSettings(IDialogSettings dialogSettings) {
         dialogSettings.put("lobExtractType", lobExtractType.name());
         dialogSettings.put("lobEncoding", lobEncoding.name());
 
@@ -229,6 +221,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("outputFilePattern", outputFilePattern);
         dialogSettings.put("outputEncoding", outputEncoding);
         dialogSettings.put("outputEncodingBOM", outputEncodingBOM);
+        dialogSettings.put("outputClipboard", outputClipboard);
 
         dialogSettings.put("compressResults", compressResults);
         dialogSettings.put("openFolderOnFinish", openFolderOnFinish);
