@@ -18,10 +18,12 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
+
 /**
  * Data source which supports SQL
  */
-public interface SQLDataSource {
+public interface SQLDataSource extends DBPDataSource {
 
     /**
      * SQL dialect provided by this data source

@@ -83,7 +83,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
             schema == null ? null : schema.getCatalog();
         final GenericDataSource dataSource = getDataSource();
-        DBPIdentifierCase convertCase = caseSensitive ? dataSource.getInfo().storesQuotedCase() : dataSource.getInfo().storesUnquotedCase();
+        DBPIdentifierCase convertCase = caseSensitive ? dataSource.getSQLDialect().storesQuotedCase() : dataSource.getSQLDialect().storesUnquotedCase();
         objectNameMask = convertCase.transform(objectNameMask);
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {

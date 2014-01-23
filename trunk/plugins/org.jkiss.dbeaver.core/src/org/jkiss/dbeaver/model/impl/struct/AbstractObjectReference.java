@@ -56,9 +56,7 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
             // and data source is a root container
             return DBUtils.getQuotedIdentifier(dataSource, name);
         }
-        return DBUtils.getFullQualifiedName(dataSource, container) +
-            dataSource.getInfo().getStructSeparator() +
-            DBUtils.getQuotedIdentifier(dataSource, name);
+        return DBUtils.getFullQualifiedName(dataSource, container, this);
 
     }
 }

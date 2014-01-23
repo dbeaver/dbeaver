@@ -23,25 +23,46 @@ import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Generic data source info
  */
-class GenericDataSourceInfo extends JDBCDataSourceInfo {
+class GenericSQLDialect extends JDBCSQLDialect {
 
-    private final boolean supportsLimits;
+    private static List<String> EXEC_KEYWORDS = new ArrayList<String>();
 
-    public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
+    static {
+        EXEC_KEYWORDS.add("EXEC");
+        //EXEC_KEYWORDS.add("EXECUTE");
+        EXEC_KEYWORDS.add("CALL");
+        //EXEC_KEYWORDS.add("BEGIN");
+        //EXEC_KEYWORDS.add("DECLARE");
+    }
+
+    private final String scriptDelimiter;
+
+    public GenericSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData)
     {
-        super(metaData);
-        supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
-        setSupportsResultSetScroll(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false));
+        super(dataSource, "Generic", metaData);
+        scriptDelimiter = CommonUtils.toString(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
     }
 
     @Override
-    public boolean supportsResultSetLimit() {
-        return supportsLimits;
+    public String getScriptDelimiter()
+    {
+        return CommonUtils.isEmpty(scriptDelimiter) ? super.getScriptDelimiter() : scriptDelimiter;
+    }
+
+    @Override
+    public Collection<String> getExecuteKeywords()
+    {
+        return EXEC_KEYWORDS;
     }
 
 }

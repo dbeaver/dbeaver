@@ -19,8 +19,6 @@
 package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPKeywordManager;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
@@ -65,9 +63,9 @@ public final class SQLUtils {
         return query.startsWith("UPDATE") || query.startsWith("INSERT") || query.startsWith("DELETE");
     }
 
-    public static String stripComments(DBPDataSource dataSource, String query)
+    public static String stripComments(SQLDataSource dataSource, String query)
     {
-        DBPKeywordManager keywordManager = dataSource.getContainer().getKeywordManager();
+        SQLKeywordManager keywordManager = dataSource.getSQLDialect().getKeywordManager();
         Pair<String, String> multiLineComments = keywordManager.getMultiLineComments();
         return stripComments(
             query,
@@ -199,7 +197,7 @@ public final class SQLUtils {
         return result.toString();
     }
 
-    public static String formatSQL(DBPDataSource dataSource, String query)
+    public static String formatSQL(SQLDataSource dataSource, String query)
     {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.setDataSource(dataSource);

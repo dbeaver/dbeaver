@@ -22,16 +22,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.exec.DBCStateType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * JDBCDataSourceInfo
@@ -49,33 +48,15 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private String databaseProductVersion;
     private String driverName;
     private String driverVersion;
-    private String identifierQuoteString;
-    private List<String> sqlKeywords;
-    private List<String> numericFunctions;
-    private List<String> stringFunctions;
-    private List<String> systemFunctions;
-    private List<String> timeDateFunctions;
-    private String searchStringEscape;
     private String schemaTerm;
     private String procedureTerm;
     private String catalogTerm;
-    private int catalogUsage;
-    private int schemaUsage;
-    private String catalogSeparator;
-    private boolean isCatalogAtStart;
-    private String validCharacters;
 
-    private DBCStateType sqlStateType;
     private boolean supportsTransactions;
     private List<DBPTransactionIsolation> supportedIsolations;
 
-    private boolean supportsUnquotedMixedCase;
-    private boolean supportsQuotedMixedCase;
-    private DBPIdentifierCase unquotedIdentCase;
-    private DBPIdentifierCase quotedIdentCase;
     private boolean supportsReferences = true;
     private boolean supportsIndexes = true;
-    private boolean supportsSubqueries = false;
     private boolean supportsBatchUpdates = false;
     private boolean supportsScroll;
 
@@ -112,103 +93,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             this.driverVersion = "?"; //$NON-NLS-1$
         }
         try {
-            this.identifierQuoteString = metaData.getIdentifierQuoteString();
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.identifierQuoteString = null;
-        }
-        if (identifierQuoteString != null) {
-            identifierQuoteString = identifierQuoteString.trim();
-        }
-        if (identifierQuoteString != null && identifierQuoteString.isEmpty()) {
-            identifierQuoteString = null;
-        }
-
-        try {
-            supportsSubqueries = metaData.supportsCorrelatedSubqueries();
-        } catch (SQLException e) {
-            log.debug(e);
-        }
-
-        try {
-            supportsBatchUpdates = metaData.supportsBatchUpdates();
-        } catch (SQLException e) {
-            log.debug(e);
-        }
-
-        try {
-            this.supportsUnquotedMixedCase = metaData.supportsMixedCaseIdentifiers();
-        } catch (SQLException e) {
-            log.debug(e.getMessage());
-            this.supportsUnquotedMixedCase = false;
-        }
-        try {
-            this.supportsQuotedMixedCase = metaData.supportsMixedCaseQuotedIdentifiers();
-        } catch (SQLException e) {
-            log.debug(e.getMessage());
-            this.supportsQuotedMixedCase = false;
-        }
-        try {
-            if (metaData.storesUpperCaseIdentifiers()) {
-                this.unquotedIdentCase = DBPIdentifierCase.UPPER;
-            } else if (metaData.storesLowerCaseIdentifiers()) {
-                this.unquotedIdentCase = DBPIdentifierCase.LOWER;
-            } else {
-                this.unquotedIdentCase = DBPIdentifierCase.MIXED;
-            }
-        } catch (SQLException e) {
-            log.debug(e.getMessage());
-            this.unquotedIdentCase = DBPIdentifierCase.MIXED;
-        }
-        try {
-            if (metaData.storesUpperCaseQuotedIdentifiers()) {
-                this.quotedIdentCase = DBPIdentifierCase.UPPER;
-            } else if (metaData.storesLowerCaseQuotedIdentifiers()) {
-                this.quotedIdentCase = DBPIdentifierCase.LOWER;
-            } else {
-                this.quotedIdentCase = DBPIdentifierCase.MIXED;
-            }
-        } catch (SQLException e) {
-            log.debug(e.getMessage());
-            this.quotedIdentCase = DBPIdentifierCase.MIXED;
-        }
-        try {
-            this.sqlKeywords = makeStringList(metaData.getSQLKeywords());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.sqlKeywords = new ArrayList<String>();
-        }
-        try {
-            this.numericFunctions = makeStringList(metaData.getNumericFunctions());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.numericFunctions = Collections.emptyList();
-        }
-        try {
-            this.stringFunctions = makeStringList(metaData.getStringFunctions());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.stringFunctions = Collections.emptyList();
-        }
-        try {
-            this.systemFunctions = makeStringList(metaData.getSystemFunctions());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.systemFunctions = Collections.emptyList();
-        }
-        try {
-            this.timeDateFunctions = makeStringList(metaData.getTimeDateFunctions());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.timeDateFunctions = Collections.emptyList();
-        }
-        try {
-            this.searchStringEscape = metaData.getSearchStringEscape();
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.searchStringEscape = "\\"; //$NON-NLS-1$
-        }
-        try {
             this.schemaTerm = makeTermString(metaData.getSchemaTerm(), TERM_SCHEMA);
         } catch (Throwable e) {
             log.debug(e.getMessage());
@@ -227,64 +111,9 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             this.catalogTerm = TERM_CATALOG;
         }
         try {
-            this.catalogSeparator = metaData.getCatalogSeparator();
-            if (CommonUtils.isEmpty(this.catalogSeparator)) {
-                this.catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
-            }
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
-        }
-        try {
-            catalogUsage = 
-                (metaData.supportsCatalogsInDataManipulation() ? USAGE_DML : 0) |
-                (metaData.supportsCatalogsInTableDefinitions() ? USAGE_DDL : 0) |
-                (metaData.supportsCatalogsInProcedureCalls() ? USAGE_PROC : 0) |
-                (metaData.supportsCatalogsInIndexDefinitions() ? USAGE_INDEX : 0) |
-                (metaData.supportsCatalogsInPrivilegeDefinitions() ? USAGE_PRIV : 0);
+            supportsBatchUpdates = metaData.supportsBatchUpdates();
         } catch (SQLException e) {
-            log.debug(e.getMessage());
-            catalogUsage = USAGE_NONE;
-        }
-        try {
-            schemaUsage = 
-                (metaData.supportsSchemasInDataManipulation() ? USAGE_DML : 0) |
-                (metaData.supportsSchemasInTableDefinitions() ? USAGE_DDL : 0) |
-                (metaData.supportsSchemasInProcedureCalls() ? USAGE_PROC : 0) |
-                (metaData.supportsSchemasInIndexDefinitions() ? USAGE_INDEX : 0) |
-                (metaData.supportsSchemasInPrivilegeDefinitions() ? USAGE_PRIV : 0);
-        } catch (SQLException e) {
-            log.debug(e.getMessage());
-            schemaUsage = USAGE_NONE;
-        }
-        try {
-            validCharacters = metaData.getExtraNameCharacters();
-        } catch (SQLException e) {
-            log.debug(e.getMessage());
-            validCharacters = ""; //$NON-NLS-1$
-        }
-
-        try {
-            this.isCatalogAtStart = metaData.isCatalogAtStart();
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.isCatalogAtStart = true;
-        }
-        try {
-            switch (metaData.getSQLStateType()) {
-                case DatabaseMetaData.sqlStateXOpen:
-                    this.sqlStateType = DBCStateType.XOPEN;
-                    break;
-                case DatabaseMetaData.sqlStateSQL99:
-                    this.sqlStateType = DBCStateType.SQL99;
-                    break;
-                default:
-                    this.sqlStateType = DBCStateType.UNKNOWN;
-                    break;
-            }
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.sqlStateType = DBCStateType.UNKNOWN;
+            log.debug(e);
         }
 
         try {
@@ -354,59 +183,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
-    public String getIdentifierQuoteString()
-    {
-        return identifierQuoteString;
-    }
-
-    @Override
-    public Collection<String> getSQLKeywords()
-    {
-        return sqlKeywords;
-    }
-
-    public void addSQLKeyword(String keyword)
-    {
-        sqlKeywords.add(keyword);
-    }
-
-    @Override
-    public Collection<String> getNumericFunctions()
-    {
-        return numericFunctions;
-    }
-
-    @Override
-    public Collection<String> getStringFunctions()
-    {
-        return stringFunctions;
-    }
-
-    @Override
-    public Collection<String> getSystemFunctions()
-    {
-        return systemFunctions;
-    }
-
-    @Override
-    public Collection<String> getTimeDateFunctions()
-    {
-        return timeDateFunctions;
-    }
-
-    @Override
-    public Collection<String> getExecuteKeywords()
-    {
-        return null;
-    }
-
-    @Override
-    public String getSearchStringEscape()
-    {
-        return searchStringEscape;
-    }
-
-    @Override
     public String getSchemaTerm()
     {
         return schemaTerm;
@@ -422,42 +198,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public String getCatalogTerm()
     {
         return catalogTerm;
-    }
-
-    @Override
-    public int getCatalogUsage()
-    {
-        return catalogUsage;
-    }
-
-    @Override
-    public int getSchemaUsage()
-    {
-        return schemaUsage;
-    }
-
-    @Override
-    public String getCatalogSeparator()
-    {
-        return catalogSeparator;
-    }
-
-    @Override
-    public char getStructSeparator()
-    {
-        return SQLConstants.STRUCT_SEPARATOR;
-    }
-
-    @Override
-    public boolean isCatalogAtStart()
-    {
-        return isCatalogAtStart;
-    }
-
-    @Override
-    public DBCStateType getSQLStateType()
-    {
-        return sqlStateType;
     }
 
     @Override
@@ -501,42 +241,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
-    public String getScriptDelimiter()
-    {
-        return ";"; //$NON-NLS-1$
-    }
-
-    @Override
-    public boolean validUnquotedCharacter(char c)
-    {
-        return Character.isLetter(c) || Character.isDigit(c) || c == '_' || validCharacters.indexOf(c) != -1;
-    }
-
-    @Override
-    public boolean supportsUnquotedMixedCase()
-    {
-        return supportsUnquotedMixedCase;
-    }
-
-    @Override
-    public boolean supportsQuotedMixedCase()
-    {
-        return supportsQuotedMixedCase;
-    }
-
-    @Override
-    public DBPIdentifierCase storesUnquotedCase()
-    {
-        return unquotedIdentCase;
-    }
-
-    @Override
-    public DBPIdentifierCase storesQuotedCase()
-    {
-        return quotedIdentCase;
-    }
-
-    @Override
     public boolean supportsResultSetLimit() {
         return true;
     }
@@ -556,29 +260,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public boolean supportsBatchUpdates()
     {
         return supportsBatchUpdates;
-    }
-
-    @Override
-    public boolean supportsSubqueries()
-    {
-        return supportsSubqueries;
-    }
-
-    public void setSupportsSubqueries(boolean supportsSubqueries)
-    {
-        this.supportsSubqueries = supportsSubqueries;
-    }
-
-    private static List<String> makeStringList(String source)
-    {
-        List<String> result = new ArrayList<String>();
-        if (source != null && source.length() > 0) {
-            StringTokenizer st = new StringTokenizer(source, ";,"); //$NON-NLS-1$
-            while (st.hasMoreTokens()) {
-                result.add(st.nextToken().trim());
-            }
-        }
-        return result;
     }
 
 }

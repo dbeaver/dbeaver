@@ -17,33 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model;
-
-import java.util.List;
-import java.util.Set;
+package org.jkiss.dbeaver.model.sql;
 
 /**
- * Keyword manager.
- * <p/>
- * Contains information about some concrete datasource underlying database syntax.
- * Support runtime change of datasource (reloads syntax information)
+ * SQLStateType
  */
-public interface DBPKeywordManager extends DBPCommentsManager {
-
-    Set<String> getReservedWords();
-
-    Set<String> getFunctions();
-
-    Set<String> getTypes();
-
-    DBPKeywordType getKeywordType(String word);
-
-    List<String> getMatchedKeywords(String word);
-
-    boolean isKeywordStart(String word);
-
-    boolean isEntityQueryWord(String word);
-
-    boolean isAttributeQueryWord(String word);
-
+public enum SQLStateType
+{
+    XOPEN,
+    SQL99,
+    UNKNOWN
 }

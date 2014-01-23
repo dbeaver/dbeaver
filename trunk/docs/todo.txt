@@ -1,13 +1,10 @@
 Major:
 
-error: S/DB selector combo works as crap
 NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
 Performance profile (RSV, tab switch, connections props dialog)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
-DB2 autocomplete
 SSL
 Secure-storage for passwords
-Auto-complete for columns
 
 1. Browse data by foreign keys
 2. Tree-like grid
@@ -18,14 +15,8 @@ Auto-complete for columns
 7. Check on MacOS
 8. HTTP tunnel?
 
-Netezza
 Aster Teradata
 
-
-Minor:
-
-rename mysql (generic?) table,column
-comment mysql table, column
 
 
 Connection "dirty" flag handle
@@ -39,3 +30,8 @@ Search results reflect on disconnect
 Generic driver config for additional metadata reading (stored procedures, ete).
 Columns ordering/search (record mode)
 DB toolbar visibility config in Eclipse mode
+
+DB specific:
+
+rename mysql (generic?) table,column
+comment mysql table, column

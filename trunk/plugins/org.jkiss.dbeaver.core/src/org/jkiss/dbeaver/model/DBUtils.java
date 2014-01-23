@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -75,19 +77,27 @@ public final class DBUtils {
 
     public static boolean isQuotedIdentifier(DBPDataSource dataSource, String str)
     {
-        final String quote = dataSource.getInfo().getIdentifierQuoteString();
-        return quote != null && str.startsWith(quote) && str.endsWith(quote);
+        if (dataSource instanceof SQLDataSource) {
+            final String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
+            return quote != null && str.startsWith(quote) && str.endsWith(quote);
+        } else {
+            return false;
+        }
     }
 
     public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
     {
-        return getQuotedIdentifier(dataSource, str, true);
+        if (dataSource instanceof SQLDataSource) {
+            return getQuotedIdentifier((SQLDataSource)dataSource, str, true);
+        } else {
+            return str;
+        }
     }
 
-    public static String getQuotedIdentifier(DBPDataSource dataSource, String str, boolean caseSensitiveNames)
+    public static String getQuotedIdentifier(SQLDataSource dataSource, String str, boolean caseSensitiveNames)
     {
-        final DBPDataSourceInfo info = dataSource.getInfo();
-        String quoteString = info.getIdentifierQuoteString();
+        final SQLDialect sqlDialect = dataSource.getSQLDialect();
+        String quoteString = sqlDialect.getIdentifierQuoteString();
         if (quoteString == null) {
             return str;
         }
@@ -97,19 +107,19 @@ public final class DBUtils {
         }
 
         // Check for keyword conflict
-        boolean hasBadChars = dataSource.getContainer().getKeywordManager().getKeywordType(str) == DBPKeywordType.KEYWORD;
+        boolean hasBadChars = sqlDialect.getKeywordManager().getKeywordType(str) == DBPKeywordType.KEYWORD;
 
         if (!hasBadChars) {
             hasBadChars = Character.isDigit(str.charAt(0));
         }
         if (caseSensitiveNames) {
             // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
-            if (!hasBadChars && info.supportsQuotedMixedCase()) {
+            if (!hasBadChars && sqlDialect.supportsQuotedMixedCase()) {
                 // See how unquoted idents are stored
                 // If passed identifier case differs from unquoted then we need to escape it
-                if (info.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
+                if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
                     hasBadChars = !str.equals(str.toUpperCase());
-                } else if (info.storesUnquotedCase() == DBPIdentifierCase.LOWER) {
+                } else if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.LOWER) {
                     hasBadChars = !str.equals(str.toLowerCase());
                 }
             }
@@ -118,7 +128,7 @@ public final class DBUtils {
         // Check for bad characters
         if (!hasBadChars) {
             for (int i = 0; i < str.length(); i++) {
-                if (!info.validUnquotedCharacter(str.charAt(i))) {
+                if (!sqlDialect.validUnquotedCharacter(str.charAt(i))) {
                     hasBadChars = true;
                     break;
                 }
@@ -136,37 +146,46 @@ public final class DBUtils {
 
     public static String getFullQualifiedName(DBPDataSource dataSource, DBPNamedObject ... path)
     {
-        final DBPDataSourceInfo info = dataSource.getInfo();
         StringBuilder name = new StringBuilder(20);
-        DBPNamedObject parent = null;
-        for (DBPNamedObject namePart : path) {
-            if (namePart == null) {
-                continue;
+        if (!(dataSource instanceof SQLDataSource)) {
+            // It is not SQL identifier, let's just make it simple then
+            for (DBPNamedObject namePart : path) {
+                if (name.length() > 0) { name.append('.'); }
+                name.append(namePart.getName());
             }
-            if (namePart instanceof DBSCatalog && ((info.getCatalogUsage() & DBPDataSourceInfo.USAGE_DML) == 0)) {
-                // Do not use catalog name in FQ name
-                continue;
-            }
-            if (namePart instanceof DBSSchema && ((info.getSchemaUsage() & DBPDataSourceInfo.USAGE_DML) == 0)) {
-                // Do not use schema name in FQ name
-                continue;
-            }
-            // Check for valid object name
-            if (!isValidObjectName(namePart.getName())) {
-               continue;
-            }
-            if (name.length() > 0) {
-                if (parent instanceof DBSCatalog) {
-                    if (!info.isCatalogAtStart()) {
-                        log.warn("Catalog name should be at the start of full-qualified name!");
-                    }
-                    name.append(info.getCatalogSeparator());
-                } else {
-                    name.append(info.getStructSeparator());
+        } else {
+            final SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+
+            DBPNamedObject parent = null;
+            for (DBPNamedObject namePart : path) {
+                if (namePart == null) {
+                    continue;
                 }
+                if (namePart instanceof DBSCatalog && ((sqlDialect.getCatalogUsage() & SQLDialect.USAGE_DML) == 0)) {
+                    // Do not use catalog name in FQ name
+                    continue;
+                }
+                if (namePart instanceof DBSSchema && ((sqlDialect.getSchemaUsage() & SQLDialect.USAGE_DML) == 0)) {
+                    // Do not use schema name in FQ name
+                    continue;
+                }
+                // Check for valid object name
+                if (!isValidObjectName(namePart.getName())) {
+                   continue;
+                }
+                if (name.length() > 0) {
+                    if (parent instanceof DBSCatalog) {
+                        if (!sqlDialect.isCatalogAtStart()) {
+                            log.warn("Catalog name should be at the start of full-qualified name!");
+                        }
+                        name.append(sqlDialect.getCatalogSeparator());
+                    } else {
+                        name.append(sqlDialect.getStructSeparator());
+                    }
+                }
+                name.append(DBUtils.getQuotedIdentifier(dataSource, namePart.getName()));
+                parent = namePart;
             }
-            name.append(DBUtils.getQuotedIdentifier(dataSource, namePart.getName()));
-            parent = namePart;
         }
         return name.toString();
     }
@@ -752,9 +771,10 @@ public final class DBUtils {
             statementType = DBCStatementType.EXEC;
         }
 */
-
+        DBPDataSource dataSource = session.getDataSource();
+        if (dataSource instanceof SQLDataSource) {
             // Check for EXEC query
-            final Collection<String> executeKeywords = session.getDataSource().getInfo().getExecuteKeywords();
+            final Collection<String> executeKeywords = ((SQLDataSource) dataSource).getSQLDialect().getExecuteKeywords();
             if (!CommonUtils.isEmpty(executeKeywords)) {
                 final String queryStart = SQLUtils.getFirstKeyword(query);
                 for (String keyword : executeKeywords) {
@@ -764,6 +784,7 @@ public final class DBUtils {
                     }
                 }
             }
+        }
 
 /*
         final DBCStatement statement = context.prepareStatement(statementType, query, false, false, false);
@@ -785,7 +806,7 @@ public final class DBUtils {
         return session.prepareStatement(
             statementType,
             query,
-            session.getDataSource().getInfo().supportsResultSetScroll(),
+            dataSource.getInfo().supportsResultSetScroll(),
             false,
             false);
     }

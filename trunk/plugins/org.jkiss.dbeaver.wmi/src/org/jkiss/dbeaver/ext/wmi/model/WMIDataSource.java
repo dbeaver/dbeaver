@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.wmi.service.WMIService;
@@ -40,15 +42,17 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
+public class WMIDataSource implements DBPDataSource, SQLDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
 {
     private DBSDataSourceContainer container;
     private WMINamespace rootNamespace;
+    private SQLDialect dialect;
 
     public WMIDataSource(DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
+        this.dialect = new WMIDialect();
     }
 
     @NotNull
@@ -147,5 +151,10 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
             return rootNamespace;
         }
         return null;
+    }
+
+    @Override
+    public SQLDialect getSQLDialect() {
+        return dialect;
     }
 }
