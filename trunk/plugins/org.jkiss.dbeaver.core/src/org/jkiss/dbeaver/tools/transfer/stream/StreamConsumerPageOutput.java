@@ -42,6 +42,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     private Text fileNameText;
     private Button compressCheckbox;
     private Button showFolderCheckbox;
+    private Button clipboardCheck;
 
     public StreamConsumerPageOutput() {
         super(CoreMessages.data_transfer_wizard_output_name);
@@ -65,6 +66,16 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
         {
             Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.data_transfer_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
+            clipboardCheck = UIUtils.createLabelCheckbox(generalSettings, "Copy to clipboard", false);
+            clipboardCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, false, false, 4, 1));
+            clipboardCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setOutputClipboard(clipboardCheck.getSelection());
+                    toggleClipboardOutput();
+                    updatePageCompletion();
+                }
+            });
             directoryText = UIUtils.createOutputFolderChooser(generalSettings, null, new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
@@ -141,11 +152,23 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
 
     }
 
+    private void toggleClipboardOutput() {
+        boolean clipboard = clipboardCheck.getSelection();
+        directoryText.setEnabled(!clipboard);
+        fileNameText.setEnabled(!clipboard);
+        compressCheckbox.setEnabled(!clipboard);
+        encodingCombo.setEnabled(!clipboard);
+        encodingBOMLabel.setEnabled(!clipboard);
+        encodingBOMCheckbox.setEnabled(!clipboard);
+        showFolderCheckbox.setEnabled(!clipboard);
+    }
+
     @Override
     public void activatePage()
     {
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
+        clipboardCheck.setSelection(settings.isOutputClipboard());
         directoryText.setText(settings.getOutputFolder());
         fileNameText.setText(settings.getOutputFilePattern());
         compressCheckbox.setSelection(settings.isCompressResults());
@@ -154,6 +177,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         showFolderCheckbox.setSelection(settings.isOpenFolderOnFinish());
 
         updatePageCompletion();
+        toggleClipboardOutput();
     }
 
     @Override
@@ -166,12 +190,16 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         if (selectionIndex >= 0) {
             encoding = encodingCombo.getItem(selectionIndex);
         }
-        if (encoding == null || ContentUtils.getCharsetBOM(encoding) == null) {
+        if (settings.isOutputClipboard() || encoding == null || ContentUtils.getCharsetBOM(encoding) == null) {
             encodingBOMLabel.setEnabled(false);
             encodingBOMCheckbox.setEnabled(false);
         } else {
             encodingBOMLabel.setEnabled(true);
             encodingBOMCheckbox.setEnabled(true);
+        }
+
+        if (settings.isOutputClipboard()) {
+            return true;
         }
 
         boolean valid = true;

@@ -5,6 +5,8 @@ Performance profile (RSV, tab switch, connections props dialog)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 SSL
 Secure-storage for passwords
+SQL editor bg when disconnected
+Oracle/MySQL maintenance menu (truncate, statistics, etc)
 
 1. Browse data by foreign keys
 2. Tree-like grid

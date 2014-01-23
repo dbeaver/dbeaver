@@ -20,6 +20,9 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -36,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
@@ -71,6 +75,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private File outputFile;
     private StreamExportSite exportSite;
     private Map<Object, Object> processorProperties;
+    private StringWriter outputBuffer;
 
     public StreamTransferConsumer()
     {
@@ -108,7 +113,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             for (int i = 0; i < metaColumns.size(); i++) {
                 DBDAttributeBinding column = metaColumns.get(i);
                 Object value = column.getValueHandler().fetchValueObject(session, resultSet, column.getMetaAttribute(), column.getAttributeIndex());
-                if (value instanceof DBDContent) {
+                if (value instanceof DBDContent && !settings.isOutputClipboard()) {
                     // Check for binary type export
                     if (!ContentUtils.isTextContent((DBDContent)value)) {
                         switch (settings.getLobExtractType()) {
@@ -191,21 +196,26 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         exportSite = new StreamExportSite();
 
         // Open output streams
-        outputFile = makeOutputFile();
+        boolean outputClipboard = settings.isOutputClipboard();
+        outputFile = outputClipboard ? null : makeOutputFile();
         try {
-            this.outputStream = new BufferedOutputStream(
-                new FileOutputStream(outputFile),
-                10000);
-
-            if (settings.isCompressResults()) {
-                zipStream = new ZipOutputStream(this.outputStream);
-                zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
-                StreamTransferConsumer.this.outputStream = zipStream;
+            if (outputClipboard) {
+                this.outputBuffer = new StringWriter(2048);
+                this.writer = new PrintWriter(this.outputBuffer, true);
+            } else {
+                this.outputStream = new BufferedOutputStream(
+                    new FileOutputStream(outputFile),
+                    10000);
+                if (settings.isCompressResults()) {
+                    zipStream = new ZipOutputStream(this.outputStream);
+                    zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
+                    StreamTransferConsumer.this.outputStream = zipStream;
+                }
+                this.writer = new PrintWriter(new OutputStreamWriter(this.outputStream, settings.getOutputEncoding()), true);
             }
-            this.writer = new PrintWriter(new OutputStreamWriter(this.outputStream, settings.getOutputEncoding()), true);
 
             // Check for BOM
-            if (settings.isOutputEncodingBOM()) {
+            if (!outputClipboard && settings.isOutputEncodingBOM()) {
                 byte[] bom = ContentUtils.getCharsetBOM(settings.getOutputEncoding());
                 if (bom != null) {
                     outputStream.write(bom);
@@ -283,7 +293,21 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public void finishTransfer(boolean last)
     {
-        if (last && settings.isOpenFolderOnFinish()) {
+        if (!last) {
+            return;
+        }
+        if (settings.isOutputClipboard()) {
+            UIUtils.runInUI(null, new Runnable() {
+                @Override
+                public void run() {
+                    TextTransfer textTransfer = TextTransfer.getInstance();
+                    new Clipboard(DBeaverUI.getDisplay()).setContents(
+                        new Object[]{outputBuffer.toString()},
+                        new Transfer[]{textTransfer});
+                }
+            });
+            outputBuffer = null;
+        } else if (settings.isOpenFolderOnFinish()) {
             // Last one
             DBeaverUI.getDisplay().asyncExec(new Runnable() {
                 @Override
@@ -297,7 +321,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public String getTargetName()
     {
-        return makeOutputFile().getAbsolutePath();
+        return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getAbsolutePath();
     }
 
     public String getOutputFileName()
