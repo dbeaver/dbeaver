@@ -221,7 +221,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     encounterBetween = false;
                 }
             } else if (token.getType() == FormatterConstants.COMMENT) {
-                Pair<String, String> mlComments = formatterCfg.getSyntaxManager().getKeywordManager().getMultiLineComments();
+                Pair<String, String> mlComments = formatterCfg.getSyntaxManager().getDialect().getMultiLineComments();
                 if (mlComments != null) {
                     if (token.getString().startsWith(mlComments.getFirst())) {
                         index += insertReturnAndIndent(argList, index + 1, indent);

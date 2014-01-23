@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.model.DBPCommentsManager;
+import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.text.handlers.AbstractTextHandler;
 import org.jkiss.utils.CommonUtils;
@@ -57,7 +57,7 @@ public class TextEditorPropertyTester extends PropertyTester
             {
                 return false;
             }
-            DBPCommentsManager commentsSupport = editor.getCommentsSupport();
+            ICommentsSupport commentsSupport = editor.getCommentsSupport();
             if (commentsSupport == null) {
                 return false;
             }

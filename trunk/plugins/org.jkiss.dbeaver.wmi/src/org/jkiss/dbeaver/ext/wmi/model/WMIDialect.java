@@ -19,13 +19,15 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLKeywordManager;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
+import org.jkiss.utils.Pair;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Info
@@ -48,44 +50,49 @@ public class WMIDialect implements SQLDialect {
     }
 
     @Override
-    public Collection<String> getSQLKeywords()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getNumericFunctions()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getStringFunctions()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getSystemFunctions()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Collection<String> getTimeDateFunctions()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
     public Collection<String> getExecuteKeywords()
     {
         return Collections.emptyList();
     }
 
     @Override
-    public SQLKeywordManager getKeywordManager() {
-        return EmptyKeywordManager.INSTANCE;
+    public Set<String> getReservedWords() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> getFunctions() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> getTypes() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public DBPKeywordType getKeywordType(String word) {
+        return null;
+    }
+
+    @Override
+    public List<String> getMatchedKeywords(String word) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean isKeywordStart(String word) {
+        return false;
+    }
+
+    @Override
+    public boolean isEntityQueryWord(String word) {
+        return false;
+    }
+
+    @Override
+    public boolean isAttributeQueryWord(String word) {
+        return false;
     }
 
     @Override
@@ -172,4 +179,13 @@ public class WMIDialect implements SQLDialect {
         return DBPIdentifierCase.MIXED;
     }
 
+    @Override
+    public Pair<String, String> getMultiLineComments() {
+        return null;
+    }
+
+    @Override
+    public String[] getSingleLineComments() {
+        return new String[] { "--" };
+    }
 }

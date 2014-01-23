@@ -29,8 +29,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.SQLKeywordManager;
-import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
@@ -73,7 +72,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     @NotNull
     private final IThemeManager themeManager;
     @NotNull
-    private SQLKeywordManager keywordManager;
+    private SQLDialect sqlDialect;
     @Nullable
     private String quoteSymbol;
     private char structSeparator;
@@ -96,10 +95,10 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     public void dispose()
     {
     }
+
     @NotNull
-    public SQLKeywordManager getKeywordManager()
-    {
-        return keywordManager;
+    public SQLDialect getDialect() {
+        return sqlDialect;
     }
 
     public char getStructSeparator()
@@ -154,15 +153,14 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     public void setDataSource(@Nullable SQLDataSource dataSource)
     {
         if (dataSource == null) {
-            keywordManager = EmptyKeywordManager.INSTANCE;
+            sqlDialect = new BasicSQLDialect();
             quoteSymbol = null;
             structSeparator = SQLConstants.STRUCT_SEPARATOR;
             catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             escapeChar = '\\';
             statementDelimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
         } else {
-            SQLDialect sqlDialect = dataSource.getSQLDialect();
-            keywordManager = sqlDialect.getKeywordManager();
+            sqlDialect = dataSource.getSQLDialect();
             quoteSymbol = sqlDialect.getIdentifierQuoteString();
             structSeparator = sqlDialect.getStructSeparator();
             catalogSeparator = sqlDialect.getCatalogSeparator();
@@ -201,9 +199,11 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<IRule>();
 
-        // Add rule for single-line comments.
-        for (String lineComment : getKeywordManager().getSingleLineComments()) {
-            rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
+        if (sqlDialect != null) {
+            // Add rule for single-line comments.
+            for (String lineComment : sqlDialect.getSingleLineComments()) {
+                rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
+            }
         }
 
         // Add rules for delimited identifiers and string literals.
@@ -217,10 +217,12 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             rules.add(new SingleLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
         }
 
-        Pair<String, String> multiLineComments = getKeywordManager().getMultiLineComments();
-        if (multiLineComments != null) {
-            // Add rules for multi-line comments
-            rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
+        if (sqlDialect != null) {
+            Pair<String, String> multiLineComments = sqlDialect.getMultiLineComments();
+            if (multiLineComments != null) {
+                // Add rules for multi-line comments
+                rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
+            }
         }
 
         // Add generic whitespace rule.
@@ -255,14 +257,16 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
         // Add word rule for keywords, types, and constants.
         WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
-        for (String reservedWord : keywordManager.getReservedWords()) {
-            wordRule.addWord(reservedWord, keywordToken);
-        }
-        for (String function : keywordManager.getFunctions()) {
-            wordRule.addWord(function, typeToken);
-        }
-        for (String type : keywordManager.getTypes()) {
-            wordRule.addWord(type, typeToken);
+        if (sqlDialect != null) {
+            for (String reservedWord : sqlDialect.getReservedWords()) {
+                wordRule.addWord(reservedWord, keywordToken);
+            }
+            for (String function : sqlDialect.getFunctions()) {
+                wordRule.addWord(function, typeToken);
+            }
+            for (String type : sqlDialect.getTypes()) {
+                wordRule.addWord(type, typeToken);
+            }
         }
         wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);
         wordRule.addWord(SQLConstants.BLOCK_END, blockEndToken);

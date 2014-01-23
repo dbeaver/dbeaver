@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ui.editors.text.handlers;
 
 import org.eclipse.jface.text.*;
-import org.jkiss.dbeaver.model.DBPCommentsManager;
+import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -28,7 +28,7 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
     @Override
     protected void processAction(BaseTextEditor textEditor, IDocument document, ITextSelection textSelection) throws BadLocationException
     {
-        DBPCommentsManager commentsSupport = textEditor.getCommentsSupport();
+        ICommentsSupport commentsSupport = textEditor.getCommentsSupport();
         if (commentsSupport == null) {
             return;
         }

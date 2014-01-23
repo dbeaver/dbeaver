@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPKeywordType;
@@ -65,6 +66,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         this.syntaxManager = syntaxManager;
     }
 
+    @Nullable
     @Override
     public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
@@ -84,7 +86,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        if (syntaxManager.getKeywordManager().getKeywordType(wordRegion.identifier) == DBPKeywordType.KEYWORD) {
+        if (syntaxManager.getDialect().getKeywordType(wordRegion.identifier) == DBPKeywordType.KEYWORD) {
             // Skip keywords
             return null;
         }

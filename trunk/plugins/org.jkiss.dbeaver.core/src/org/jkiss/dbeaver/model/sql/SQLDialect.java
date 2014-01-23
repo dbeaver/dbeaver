@@ -18,14 +18,19 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * SQL dialect
  */
-public interface SQLDialect {
+public interface SQLDialect extends ICommentsSupport {
 
     int USAGE_NONE = 0;
     int USAGE_DML = 1;
@@ -50,56 +55,34 @@ public interface SQLDialect {
     String getIdentifierQuoteString();
 
     /**
+     * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
+     * @return the list of execute keywords.
+     */
+    @Nullable
+    Collection<String> getExecuteKeywords();
+
+    /**
      * Retrieves a list of all of this database's SQL keywords
      * that are NOT also SQL92 keywords.
      *
      * @return the list of this database's keywords that are not also
      *         SQL92 keywords
      */
-    Collection<String> getSQLKeywords();
+    Set<String> getReservedWords();
 
-    /**
-     * Retrieves a list of math functions available with
-     * this database.  These are the Open /Open CLI math function names used in
-     * the function escape clause.
-     *
-     * @return the list of math functions supported by this database
-     */
-    Collection<String> getNumericFunctions();
+    Set<String> getFunctions();
 
-    /**
-     * Retrieves a list of string functions available with
-     * this database.  These are the  Open Group CLI string function names used
-     * in the function escape clause.
-     *
-     * @return the list of string functions supported by this database
-     */
-    Collection<String> getStringFunctions();
+    Set<String> getTypes();
 
-    /**
-     * Retrieves a list of system functions available with
-     * this database.  These are the  Open Group CLI system function names used
-     * in the function escape clause.
-     *
-     * @return a list of system functions supported by this database
-     */
-    Collection<String> getSystemFunctions();
+    DBPKeywordType getKeywordType(String word);
 
-    /**
-     * Retrieves a list of the time and date functions available
-     * with this database.
-     *
-     * @return the list of time and date functions supported by this database
-     */
-    Collection<String> getTimeDateFunctions();
+    List<String> getMatchedKeywords(String word);
 
-    /**
-     * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
-     * @return the list of execute keywords.
-     */
-    Collection<String> getExecuteKeywords();
+    boolean isKeywordStart(String word);
 
-    SQLKeywordManager getKeywordManager();
+    boolean isEntityQueryWord(String word);
+
+    boolean isAttributeQueryWord(String word);
 
     /**
      * Retrieves the string that can be used to escape wildcard characters.
