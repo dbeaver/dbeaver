@@ -53,7 +53,7 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPCommentsManager;
+import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
@@ -589,11 +589,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     @Nullable
     @Override
-    public DBPCommentsManager getCommentsSupport()
+    public ICommentsSupport getCommentsSupport()
     {
         SQLDataSource dataSource = getDataSource();
         if (dataSource != null) {
-            return dataSource.getSQLDialect().getKeywordManager();
+            return dataSource.getSQLDialect();
         } else {
             return null;
         }

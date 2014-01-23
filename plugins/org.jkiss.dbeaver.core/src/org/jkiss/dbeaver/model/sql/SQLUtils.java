@@ -65,13 +65,13 @@ public final class SQLUtils {
 
     public static String stripComments(SQLDataSource dataSource, String query)
     {
-        SQLKeywordManager keywordManager = dataSource.getSQLDialect().getKeywordManager();
-        Pair<String, String> multiLineComments = keywordManager.getMultiLineComments();
+        SQLDialect dialect = dataSource.getSQLDialect();
+        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         return stripComments(
             query,
             multiLineComments == null ? null : multiLineComments.getFirst(),
             multiLineComments == null ? null : multiLineComments.getSecond(),
-            keywordManager.getSingleLineComments());
+            dialect.getSingleLineComments());
     }
 
     public static String stripComments(String query, String mlCommentStart, String mlCommentEnd, String[] slComments)

@@ -150,7 +150,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
         rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
 
-        for (String lineComment : sqlSyntax.getKeywordManager().getSingleLineComments()) {
+        for (String lineComment : sqlSyntax.getDialect().getSingleLineComments()) {
             rules.add(new EndOfLineRule(lineComment, commentToken));
         }
 
@@ -159,7 +159,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         rules.add(wordRule);
 
         // Add rules for multi-line comments
-        Pair<String, String> multiLineComments = sqlSyntax.getKeywordManager().getMultiLineComments();
+        Pair<String, String> multiLineComments = sqlSyntax.getDialect().getMultiLineComments();
         if (multiLineComments != null) {
             rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), multilineCommentToken, (char) 0, true));
         }
@@ -176,7 +176,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
     private void setCommentsScanner(SQLSyntaxManager sqlSyntax)
     {
-        String[] singleLineComments = sqlSyntax.getKeywordManager().getSingleLineComments();
+        String[] singleLineComments = sqlSyntax.getDialect().getSingleLineComments();
 
         for (String singleLineComment : singleLineComments) {
             // Add rule for single line comments.

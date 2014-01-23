@@ -135,7 +135,7 @@ class SQLTokensParser {
                 fChar = fBefore.charAt(fPos);
             }
             String word = s.toString();
-            if (configuration.getSyntaxManager().getKeywordManager().getKeywordType(word) != null) {
+            if (configuration.getSyntaxManager().getDialect().getKeywordType(word) != null) {
                 return new FormatterToken(FormatterConstants.KEYWORD, word, start_pos);
             }
             return new FormatterToken(FormatterConstants.NAME, word, start_pos);

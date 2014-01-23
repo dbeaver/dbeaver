@@ -68,8 +68,8 @@ public class CopyUnformattedTextAction extends Action {
         StringBuilder result = new StringBuilder();
         SQLSyntaxManager syntaxManager = sqlEditor.getSyntaxManager();
         syntaxManager.setRange(document, startPos, endPos - startPos);
-        String[] singleLineComments = syntaxManager.getKeywordManager().getSingleLineComments();
-        Pair<String, String> multiLineComments = syntaxManager.getKeywordManager().getMultiLineComments();
+        String[] singleLineComments = syntaxManager.getDialect().getSingleLineComments();
+        Pair<String, String> multiLineComments = syntaxManager.getDialect().getMultiLineComments();
         boolean lastWhitespace = false;
         try {
             for (;;) {

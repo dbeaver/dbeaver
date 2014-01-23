@@ -65,7 +65,7 @@ public class SQLFormatterConfiguration {
     }
 
     public boolean isFunction(String name) {
-        return syntaxManager.getKeywordManager().getKeywordType(name) == DBPKeywordType.FUNCTION;
+        return syntaxManager.getDialect().getKeywordType(name) == DBPKeywordType.FUNCTION;
     }
 
 }

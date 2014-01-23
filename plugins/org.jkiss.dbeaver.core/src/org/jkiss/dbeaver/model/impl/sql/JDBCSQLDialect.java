@@ -20,15 +20,18 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLKeywordManager;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
@@ -36,7 +39,7 @@ import java.util.*;
 /**
  * SQL Dialect JDBC API implementation
  */
-public class JDBCSQLDialect implements SQLDialect {
+public class JDBCSQLDialect extends BasicSQLDialect {
 
     static final Log log = LogFactory.getLog(JDBCSQLDialect.class);
 
@@ -44,11 +47,6 @@ public class JDBCSQLDialect implements SQLDialect {
     private String name;
     private String identifierQuoteString;
     private SQLStateType sqlStateType;
-    private List<String> sqlKeywords;
-    private List<String> numericFunctions;
-    private List<String> stringFunctions;
-    private List<String> systemFunctions;
-    private List<String> timeDateFunctions;
     private String searchStringEscape;
     private String catalogSeparator;
     private boolean isCatalogAtStart;
@@ -60,13 +58,13 @@ public class JDBCSQLDialect implements SQLDialect {
     private DBPIdentifierCase unquotedIdentCase;
     private DBPIdentifierCase quotedIdentCase;
     private boolean supportsSubqueries = false;
-    private SQLKeywordManager keywordManager;
+
+    private transient boolean typesLoaded = false;
 
     public JDBCSQLDialect(JDBCDataSource dataSource, String name, JDBCDatabaseMetaData metaData)
     {
         this.dataSource = dataSource;
         this.name = name;
-        //this.keywordManager = new JDBCSQLKeywordManager(dataSource);
 
         try {
             this.identifierQuoteString = metaData.getIdentifierQuoteString();
@@ -141,36 +139,6 @@ public class JDBCSQLDialect implements SQLDialect {
             this.quotedIdentCase = DBPIdentifierCase.MIXED;
         }
         try {
-            this.sqlKeywords = makeStringList(metaData.getSQLKeywords());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.sqlKeywords = new ArrayList<String>();
-        }
-        try {
-            this.numericFunctions = makeStringList(metaData.getNumericFunctions());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.numericFunctions = Collections.emptyList();
-        }
-        try {
-            this.stringFunctions = makeStringList(metaData.getStringFunctions());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.stringFunctions = Collections.emptyList();
-        }
-        try {
-            this.systemFunctions = makeStringList(metaData.getSystemFunctions());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.systemFunctions = Collections.emptyList();
-        }
-        try {
-            this.timeDateFunctions = makeStringList(metaData.getTimeDateFunctions());
-        } catch (Throwable e) {
-            log.debug(e.getMessage());
-            this.timeDateFunctions = Collections.emptyList();
-        }
-        try {
             this.searchStringEscape = metaData.getSearchStringEscape();
         } catch (Throwable e) {
             log.debug(e.getMessage());
@@ -221,6 +189,7 @@ public class JDBCSQLDialect implements SQLDialect {
             this.isCatalogAtStart = true;
         }
 
+        loadKeywords(metaData);
     }
 
     @Override
@@ -234,53 +203,10 @@ public class JDBCSQLDialect implements SQLDialect {
         return identifierQuoteString;
     }
 
+    @Nullable
     @Override
-    public Collection<String> getSQLKeywords()
-    {
-        return sqlKeywords;
-    }
-
-    public void addSQLKeyword(String keyword)
-    {
-        sqlKeywords.add(keyword);
-    }
-
-    @Override
-    public Collection<String> getNumericFunctions()
-    {
-        return numericFunctions;
-    }
-
-    @Override
-    public Collection<String> getStringFunctions()
-    {
-        return stringFunctions;
-    }
-
-    @Override
-    public Collection<String> getSystemFunctions()
-    {
-        return systemFunctions;
-    }
-
-    @Override
-    public Collection<String> getTimeDateFunctions()
-    {
-        return timeDateFunctions;
-    }
-
-    @Override
-    public Collection<String> getExecuteKeywords()
-    {
+    public Collection<String> getExecuteKeywords() {
         return null;
-    }
-
-    @Override
-    public SQLKeywordManager getKeywordManager() {
-        if (keywordManager == null) {
-            keywordManager = new JDBCSQLKeywordManager(dataSource);
-        }
-        return keywordManager;
     }
 
     @Override
@@ -370,6 +296,66 @@ public class JDBCSQLDialect implements SQLDialect {
     public void setSupportsSubqueries(boolean supportsSubqueries)
     {
         this.supportsSubqueries = supportsSubqueries;
+    }
+
+    @Override
+    public TreeSet<String> getTypes() {
+        if (!typesLoaded) {
+            types.clear();
+
+            Collection<? extends DBSDataType> supportedDataTypes = dataSource.getDataTypes();
+            if (supportedDataTypes != null) {
+                for (DBSDataType dataType : supportedDataTypes) {
+                    types.add(dataType.getName().toUpperCase());
+                }
+            }
+
+            if (types.isEmpty()) {
+                // Add default types
+                Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
+            }
+            addKeywords(types, DBPKeywordType.TYPE);
+            typesLoaded = true;
+        }
+        return types;
+    }
+
+    void loadKeywords(JDBCDatabaseMetaData metaData)
+    {
+        try {
+            // Keywords
+            Collection<String> sqlKeywords = makeStringList(metaData.getSQLKeywords());
+            if (!CommonUtils.isEmpty(sqlKeywords)) {
+                for (String keyword : sqlKeywords) {
+                    addSQLKeyword(keyword.toUpperCase());
+                }
+            }
+
+            // Functions
+            Set<String> allFunctions = new HashSet<String>();
+            for (String func : makeStringList(metaData.getNumericFunctions())) {
+                allFunctions.add(func.toUpperCase());
+            }
+            for (String func : makeStringList(metaData.getStringFunctions())) {
+                allFunctions.add(func.toUpperCase());
+            }
+            for (String func : makeStringList(metaData.getSystemFunctions())) {
+                allFunctions.add(func.toUpperCase());
+            }
+            for (String func : makeStringList(metaData.getTimeDateFunctions())) {
+                allFunctions.add(func.toUpperCase());
+            }
+            functions.addAll(allFunctions);
+        }
+        catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = ((InvocationTargetException)e).getTargetException();
+            }
+            log.error(e);
+        }
+
+        // Remove types and functions from reserved words list
+        addKeywords(functions, DBPKeywordType.FUNCTION);
     }
 
     private static List<String> makeStringList(String source)
