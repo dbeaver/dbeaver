@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
@@ -44,6 +45,7 @@ public interface SQLDialect extends ICommentsSupport {
      * Dialect name
      * @return SQL dialect name
      */
+    @NotNull
     String getDialectName();
 
     /**
@@ -52,13 +54,14 @@ public interface SQLDialect extends ICommentsSupport {
      *
      * @return the quoting string or a space if quoting is not supported
      */
+    @NotNull
     String getIdentifierQuoteString();
 
     /**
      * Retrieves a list of execute keywords. If database doesn't support implicit execute returns empty list or null.
      * @return the list of execute keywords.
      */
-    @Nullable
+    @NotNull
     Collection<String> getExecuteKeywords();
 
     /**
@@ -68,21 +71,22 @@ public interface SQLDialect extends ICommentsSupport {
      * @return the list of this database's keywords that are not also
      *         SQL92 keywords
      */
+    @NotNull
     Set<String> getReservedWords();
-
+    @NotNull
     Set<String> getFunctions();
-
+    @NotNull
     Set<String> getTypes();
+    @Nullable
+    DBPKeywordType getKeywordType(@NotNull String word);
+    @NotNull
+    List<String> getMatchedKeywords(@NotNull String word);
 
-    DBPKeywordType getKeywordType(String word);
+    boolean isKeywordStart(@NotNull String word);
 
-    List<String> getMatchedKeywords(String word);
+    boolean isEntityQueryWord(@NotNull String word);
 
-    boolean isKeywordStart(String word);
-
-    boolean isEntityQueryWord(String word);
-
-    boolean isAttributeQueryWord(String word);
+    boolean isAttributeQueryWord(@NotNull String word);
 
     /**
      * Retrieves the string that can be used to escape wildcard characters.
@@ -96,6 +100,7 @@ public interface SQLDialect extends ICommentsSupport {
      *
      * @return the string used to escape wildcard characters
      */
+    @NotNull
     String getSearchStringEscape();
 
     /**
@@ -116,6 +121,7 @@ public interface SQLDialect extends ICommentsSupport {
      *
      * @return the separator string
      */
+    @NotNull
     String getCatalogSeparator();
 
     /**
@@ -130,6 +136,7 @@ public interface SQLDialect extends ICommentsSupport {
      * Script delimiter character
      * @return script delimiter mark
      */
+    @NotNull
     String getScriptDelimiter();
 
     /**
@@ -145,6 +152,7 @@ public interface SQLDialect extends ICommentsSupport {
      * SQL state type
      * @return sql state type
      */
+    @NotNull
     SQLStateType getSQLStateType();
 
     /**
@@ -159,9 +167,9 @@ public interface SQLDialect extends ICommentsSupport {
     boolean supportsQuotedMixedCase();
 
     boolean supportsSubqueries();
-
+    @NotNull
     DBPIdentifierCase storesUnquotedCase();
-
+    @NotNull
     DBPIdentifierCase storesQuotedCase();
 
 }

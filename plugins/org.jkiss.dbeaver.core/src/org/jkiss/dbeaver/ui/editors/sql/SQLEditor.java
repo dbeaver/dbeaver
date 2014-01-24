@@ -687,6 +687,12 @@ public class SQLEditor extends SQLEditorBase
         SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXPLAIN);
 
         reloadSyntaxRules();
+
+        if (getDataSourceContainer() == null) {
+            sashForm.setMaximizedControl(editorControl);
+        } else {
+            sashForm.setMaximizedControl(null);
+        }
     }
 
 

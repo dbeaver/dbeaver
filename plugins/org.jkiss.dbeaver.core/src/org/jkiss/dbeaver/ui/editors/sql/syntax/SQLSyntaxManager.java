@@ -208,7 +208,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
         // Add rule for single-line comments.
         for (String lineComment : sqlDialect.getSingleLineComments()) {
-            rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
+            rules.add(new EndOfLineWordRule(lineComment, commentToken)); //$NON-NLS-1$
         }
 
         // Add rules for delimited identifiers and string literals.

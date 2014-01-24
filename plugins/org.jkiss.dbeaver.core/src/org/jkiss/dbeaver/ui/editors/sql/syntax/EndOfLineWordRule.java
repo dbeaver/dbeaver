@@ -1,0 +1,105 @@
+/*
+ * Copyright (C) 2010-2013 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jkiss.dbeaver.ui.editors.sql.syntax;
+
+import org.eclipse.jface.text.rules.*;
+
+/**
+ * The same as end-of-line rule but matches word in case-insensitive fashion +
+ * needs whitespace after last letter or digit
+ */
+public class EndOfLineWordRule extends EndOfLineRule
+{
+    public EndOfLineWordRule(String startSequence, IToken token) {
+        super(startSequence, token, (char) 0);
+    }
+
+    public EndOfLineWordRule(String startSequence, IToken token, char escapeCharacter) {
+        super(startSequence, token, escapeCharacter);
+    }
+
+    public EndOfLineWordRule(String startSequence, IToken token, char escapeCharacter, boolean escapeContinuesLine) {
+        super(startSequence, token, escapeCharacter, escapeContinuesLine);
+    }
+
+    protected IToken doEvaluate(ICharacterScanner scanner, boolean resume) {
+
+        if (resume) {
+
+            if (endSequenceDetected(scanner))
+                return fToken;
+
+        } else {
+
+            int c= scanner.read();
+            if (Character.toUpperCase(c) == Character.toUpperCase(fStartSequence[0])) {
+                if (sequenceDetected(scanner, fStartSequence, false)) {
+                    if (endSequenceDetected(scanner))
+                        return fToken;
+                }
+            }
+        }
+
+        scanner.unread();
+        return Token.UNDEFINED;
+    }
+
+    @Override
+    public IToken evaluate(ICharacterScanner scanner, boolean resume) {
+        if (fColumn == UNDEFINED)
+            return doEvaluate(scanner, resume);
+
+        int c= scanner.read();
+        scanner.unread();
+        if (Character.toUpperCase(c) == Character.toUpperCase(fStartSequence[0]))
+            return (fColumn == scanner.getColumn() ? doEvaluate(scanner, resume) : Token.UNDEFINED);
+        return Token.UNDEFINED;
+    }
+
+    @Override
+    protected boolean sequenceDetected(ICharacterScanner scanner, char[] sequence, boolean eofAllowed) {
+        for (int i= 1; i < sequence.length; i++) {
+            int c= scanner.read();
+            if (c == ICharacterScanner.EOF && eofAllowed) {
+                return true;
+            } else if (Character.toUpperCase(c) != Character.toUpperCase(sequence[i])) {
+                // Non-matching character detected, rewind the scanner back to the start.
+                // Do not unread the first character.
+                scanner.unread();
+                for (int j= i-1; j > 0; j--)
+                    scanner.unread();
+                return false;
+            }
+        }
+
+        if (Character.isLetterOrDigit(sequence[sequence.length - 1])) {
+            // Check for trailing whitespace
+            int lastChar = scanner.read();
+            scanner.unread();
+            if (lastChar != ICharacterScanner.EOF) {
+                if (!Character.isWhitespace((char) lastChar)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+}
