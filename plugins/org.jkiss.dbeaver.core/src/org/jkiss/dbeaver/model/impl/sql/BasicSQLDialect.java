@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.code.Nullable;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -37,6 +37,8 @@ public class BasicSQLDialect implements SQLDialect {
 
     static final Log log = LogFactory.getLog(BasicSQLDialect.class);
 
+    private static final String[] DEFAULT_LINE_COMMENTS = {"--"};
+
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<String, DBPKeywordType>();
 
@@ -46,8 +48,7 @@ public class BasicSQLDialect implements SQLDialect {
     protected final TreeSet<String> tableQueryWords = new TreeSet<String>();
     protected final TreeSet<String> columnQueryWords = new TreeSet<String>();
     // Comments
-    private Pair<String, String> multiLineComments = new Pair<String, String>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
-    private String[] singleLineComments = {"--"};
+    protected Pair<String, String> multiLineComments = new Pair<String, String>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
 
     public BasicSQLDialect()
     {
@@ -65,10 +66,10 @@ public class BasicSQLDialect implements SQLDialect {
         return "\\";
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Collection<String> getExecuteKeywords() {
-        return null;
+        return Collections.emptyList();
     }
 
     public void addSQLKeyword(String keyword)
@@ -235,7 +236,7 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public String[] getSingleLineComments()
     {
-        return singleLineComments;
+        return DEFAULT_LINE_COMMENTS;
     }
 
     void loadKeywords()
