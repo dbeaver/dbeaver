@@ -24,7 +24,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -140,7 +139,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 3);
             Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
 
-            DriverDescriptor driver = getSelectedDriver();
             try {
                 testDataSource.setName(testDataSource.getConnectionInfo().getUrl());
                 monitor.worked(1);

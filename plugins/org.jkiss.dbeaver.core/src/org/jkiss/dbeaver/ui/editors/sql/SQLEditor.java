@@ -109,12 +109,14 @@ public class SQLEditor extends SQLEditorBase
     private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
     private static Image IMG_EXPLAIN_PLAN = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage(); //$NON-NLS-1$
     private static Image IMG_LOG = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
+    private static Image IMG_OUTPUT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output.png").createImage(); //$NON-NLS-1$
 
     private SashForm sashForm;
     private Control editorControl;
     private CTabFolder resultTabs;
 
     private ExplainPlanViewer planView;
+    private SQLEditorOutputViewer outputViewer;
 
     //private volatile SQLQueryJob curJob;
     private volatile QueryProcessor curQueryProcessor;
@@ -342,6 +344,29 @@ public class SQLEditor extends SQLEditorBase
             }
         });
 
+        // Create tabs
+        createQueryProcessor(true);
+
+        outputViewer = new SQLEditorOutputViewer(getSite(), resultTabs, SWT.NONE);
+
+        CTabItem item = new CTabItem(resultTabs, SWT.NONE);
+        item.setControl(planView.getControl());
+        item.setText(CoreMessages.editors_sql_explain_plan);
+        item.setImage(IMG_EXPLAIN_PLAN);
+        item.setData(planView);
+
+        item = new CTabItem(resultTabs, SWT.NONE);
+        item.setControl(logViewer);
+        item.setText(CoreMessages.editors_sql_execution_log);
+        item.setImage(IMG_LOG);
+        item.setData(logViewer);
+
+        item = new CTabItem(resultTabs, SWT.NONE);
+        item.setControl(outputViewer);
+        item.setText(CoreMessages.editors_sql_output);
+        item.setImage(IMG_OUTPUT);
+        item.setData(outputViewer);
+
         {
             MenuManager menuMgr = new MenuManager();
             Menu menu = menuMgr.createContextMenu(resultTabs);
@@ -380,21 +405,6 @@ public class SQLEditor extends SQLEditorBase
             menuMgr.setRemoveAllWhenShown(true);
             resultTabs.setMenu(menu);
         }
-
-        // Create tabs
-        createQueryProcessor(true);
-
-        CTabItem item = new CTabItem(resultTabs, SWT.NONE);
-        item.setControl(planView.getControl());
-        item.setText(CoreMessages.editors_sql_explain_plan);
-        item.setImage(IMG_EXPLAIN_PLAN);
-        item.setData(planView);
-
-        item = new CTabItem(resultTabs, SWT.NONE);
-        item.setControl(logViewer);
-        item.setText(CoreMessages.editors_sql_execution_log);
-        item.setImage(IMG_LOG);
-        item.setData(logViewer);
 
         selectionProvider.trackProvider(getTextViewer().getTextWidget(), getTextViewer());
         selectionProvider.trackProvider(planView.getViewer().getControl(), planView.getViewer());
@@ -869,6 +879,12 @@ public class SQLEditor extends SQLEditorBase
                 }
             }
         });
+    }
+
+    @Override
+    public void reloadSyntaxRules() {
+        super.reloadSyntaxRules();
+        outputViewer.refreshStyles();
     }
 
     private QueryProcessor createQueryProcessor(boolean setSelection)
