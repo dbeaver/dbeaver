@@ -90,6 +90,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     private Set<SQLScriptPosition> addedPositions = new HashSet<SQLScriptPosition>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<SQLScriptPosition>();
     private char escapeChar;
+    private boolean unassigned;
 
     public SQLSyntaxManager()
     {
@@ -98,6 +99,13 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
     public void dispose()
     {
+    }
+
+    /**
+     * Returns true if this syntax manager wasn't assigned to a some particular data source container/ SQL dialect
+     */
+    public boolean isUnassigned() {
+        return unassigned;
     }
 
     @NotNull
@@ -154,8 +162,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void setDataSource(@Nullable SQLDataSource dataSource)
+    public void setDataSource(boolean unassigned, @Nullable SQLDataSource dataSource)
     {
+        this.unassigned = unassigned;
         this.dataSource = dataSource;
         if (this.dataSource == null) {
             sqlDialect = new BasicSQLDialect();
@@ -177,7 +186,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
     public void refreshRules()
     {
-        final Color backgroundColor = dataSource != null ?
+        final Color backgroundColor = unassigned || dataSource != null ?
             getColor(SQLSyntaxManager.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE) :
             getColor(SQLSyntaxManager.CONFIG_COLOR_DISABLED, SWT.COLOR_WIDGET_LIGHT_SHADOW);
         final IToken keywordToken = new Token(
@@ -208,7 +217,11 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
         // Add rule for single-line comments.
         for (String lineComment : sqlDialect.getSingleLineComments()) {
-            rules.add(new EndOfLineWordRule(lineComment, commentToken)); //$NON-NLS-1$
+            if (lineComment.startsWith("^")) {
+                rules.add(new LineCommentRule(lineComment, commentToken)); //$NON-NLS-1$
+            } else {
+                rules.add(new EndOfLineRule(lineComment, commentToken)); //$NON-NLS-1$
+            }
         }
 
         // Add rules for delimited identifiers and string literals.
