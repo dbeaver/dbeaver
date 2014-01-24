@@ -36,6 +36,7 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -98,6 +99,11 @@ public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvide
             public SQLDataSource getDataSource()
             {
                 return (SQLDataSource)BaseSQLDialog.this.getDataSource();
+            }
+
+            @Override
+            public DBSDataSourceContainer getDataSourceContainer() {
+                return null;
             }
         };
         updateSQL();

@@ -24,17 +24,17 @@ import org.eclipse.jface.text.rules.*;
  * The same as end-of-line rule but matches word in case-insensitive fashion +
  * needs whitespace after last letter or digit
  */
-public class EndOfLineWordRule extends EndOfLineRule
+public class LineCommentRule extends EndOfLineRule
 {
-    public EndOfLineWordRule(String startSequence, IToken token) {
+    public LineCommentRule(String startSequence, IToken token) {
         super(startSequence, token, (char) 0);
     }
 
-    public EndOfLineWordRule(String startSequence, IToken token, char escapeCharacter) {
+    public LineCommentRule(String startSequence, IToken token, char escapeCharacter) {
         super(startSequence, token, escapeCharacter);
     }
 
-    public EndOfLineWordRule(String startSequence, IToken token, char escapeCharacter, boolean escapeContinuesLine) {
+    public LineCommentRule(String startSequence, IToken token, char escapeCharacter, boolean escapeContinuesLine) {
         super(startSequence, token, escapeCharacter, escapeContinuesLine);
     }
 
@@ -46,7 +46,14 @@ public class EndOfLineWordRule extends EndOfLineRule
                 return fToken;
 
         } else {
+/*
+            // Check we are at the line beginning
+            for (;;) {
+                scanner.unread();
+                int c = scanner.read();
+            }
 
+*/
             int c= scanner.read();
             if (Character.toUpperCase(c) == Character.toUpperCase(fStartSequence[0])) {
                 if (sequenceDetected(scanner, fStartSequence, false)) {

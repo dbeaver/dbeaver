@@ -25,7 +25,10 @@ import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 * Oracle SQL dialect
 */
 class OracleSQLDialect extends JDBCSQLDialect {
-    private static final String[] ORACLE_LINE_COMMENTS = {"--", "rem"};
+    private static final String[] ORACLE_LINE_COMMENTS = {
+            "--",
+            //"^rem"
+    };
 
     public OracleSQLDialect(OracleDataSource oracleDataSource, JDBCDatabaseMetaData metaData) {
         super(oracleDataSource, "Oracle", metaData);

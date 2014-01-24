@@ -52,10 +52,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -72,7 +75,7 @@ import java.util.*;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider {
+public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider, IDataSourceContainerProvider {
     static protected final Log log = LogFactory.getLog(SQLEditorBase.class);
 
     @NotNull
@@ -112,6 +115,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     }
 
     public abstract SQLDataSource getDataSource();
+
+    @Override
+    public DBSDataSourceContainer getDataSourceContainer() {
+        SQLDataSource dataSource = getDataSource();
+        return dataSource == null ? null : dataSource.getContainer();
+    }
 
     @NotNull
     public SQLSyntaxManager getSyntaxManager()
@@ -358,7 +367,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     public void reloadSyntaxRules()
     {
         // Refresh syntax
-        syntaxManager.setDataSource(getDataSource());
+        syntaxManager.setDataSource(getDataSourceContainer() == null, getDataSource());
         syntaxManager.refreshRules();
 
         Document document = getDocument();
@@ -381,8 +390,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 }
             }
         }
+
         getTextViewer().getTextWidget().setBackground(
-            getSyntaxManager().getColor(getDataSource() == null ?
+            getSyntaxManager().getColor(!syntaxManager.isUnassigned() && getDataSource() == null ?
                 SQLSyntaxManager.CONFIG_COLOR_DISABLED :
                 SQLSyntaxManager.CONFIG_COLOR_BACKGROUND));
 
