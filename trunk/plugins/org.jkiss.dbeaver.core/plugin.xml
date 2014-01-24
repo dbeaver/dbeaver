@@ -1838,6 +1838,15 @@
         <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="Results grid font">
             <description>The grid font is used for result set cells, header and rows number.</description>
         </fontDefinition>
+        <fontDefinition
+                id="org.jkiss.dbeaver.sql.output.font"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                label="SQL output font"
+                value="Courier New-regular-10">
+            <description>Font to show SQL output. Preferred to be a monospace font.</description>
+            <fontValue os="linux" value="Monospace-regular-10"/>
+            <fontValue os="macosx" value="Courier-regular-11"/>
+        </fontDefinition>
         <colorDefinition
                 label="Selection background"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
