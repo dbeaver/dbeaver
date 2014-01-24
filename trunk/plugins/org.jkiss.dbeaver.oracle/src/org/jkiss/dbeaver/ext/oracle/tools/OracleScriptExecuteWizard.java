@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -83,8 +84,17 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
             url = conInfo.getServerName();
         }
         else {
+            boolean isSID = OracleConnectionType.SID.name().equals(conInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE));
             String port = conInfo.getHostPort();
-            url = "//" + conInfo.getHostName() + (port != null ? ":" + port : "") + "/" + conInfo.getDatabaseName(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            if (isSID) {
+                url = "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=" + conInfo.getHostName() + ")(Port=" + port + "))(CONNECT_DATA=(SID=" + conInfo.getDatabaseName() + ")))";
+            } else {
+                url = "//" + conInfo.getHostName() + (port != null ? ":" + port : "") + "/" + conInfo.getDatabaseName(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+            }
+        }
+        final Object role = conInfo.getProperties().get(OracleConstants.PROP_INTERNAL_LOGON);
+        if (role != null) {
+            url += (" AS " + role);
         }
         cmd.add(conInfo.getUserName() + "/" + conInfo.getUserPassword() + "@" + url); //$NON-NLS-1$ //$NON-NLS-2$
 /*
