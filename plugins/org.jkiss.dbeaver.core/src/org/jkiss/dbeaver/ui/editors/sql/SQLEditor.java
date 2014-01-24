@@ -1273,6 +1273,8 @@ public class SQLEditor extends SQLEditorBase
         }
 
         private void processQueryResult(SQLQueryResult result) {
+            outputViewer.println(result.getStatement().getQuery());
+            outputViewer.scrollToEnd();
             if (result.hasError()) {
                 setStatus(result.getError().getMessage(), true);
             }
