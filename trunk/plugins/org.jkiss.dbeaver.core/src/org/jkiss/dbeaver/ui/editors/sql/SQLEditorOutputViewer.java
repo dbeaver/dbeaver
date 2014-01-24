@@ -7,12 +7,10 @@ import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 
 /**
  * SQL content type describer
@@ -25,7 +23,7 @@ public class SQLEditorOutputViewer extends Composite {
         super(parent, style);
         setLayout(new FillLayout());
 
-        text = new StyledText(this, SWT.NONE);
+        text = new StyledText(this, SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
 
         text.addFocusListener(new FocusListener() {
             @Override
@@ -47,9 +45,25 @@ public class SQLEditorOutputViewer extends Composite {
 
     void refreshStyles() {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Font outputFont = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.sql.output.font");
+        Font outputFont = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.sql.editor.font.output");
         if (outputFont != null) {
             this.text.setFont(outputFont);
         }
     }
+
+    void print(String out)
+    {
+        text.append(out);
+    }
+
+    void println(String out)
+    {
+        print(out + "\n");
+    }
+
+    void scrollToEnd()
+    {
+        text.setTopIndex(text.getLineCount() - 1);
+    }
+
 }

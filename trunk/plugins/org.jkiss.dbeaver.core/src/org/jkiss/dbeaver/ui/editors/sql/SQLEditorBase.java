@@ -100,7 +100,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             public void propertyChange(PropertyChangeEvent event)
             {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
-                    SQLSyntaxManager.THEME_PROPERTIES.contains(event.getProperty())) {
+                    event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
                     reloadSyntaxRules();
                 }
             }
