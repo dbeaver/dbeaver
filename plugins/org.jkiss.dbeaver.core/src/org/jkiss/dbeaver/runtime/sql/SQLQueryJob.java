@@ -374,14 +374,14 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.addStatementsCount();
 
                 int resultSetNumber = 0;
-                while (hasResultSet) {
+                while (hasResultSet || resultSetNumber == 0) {
                     // Fetch data only if we have to fetch all results or if it is rs requested
                     if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                         DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlStatement, resultSetNumber);
                         // Show results only if we are not in the script execution
                         // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
                         // return messy results here
-                        if (fetchResultSets && dataReceiver != null) {
+                        if (hasResultSet && fetchResultSets && dataReceiver != null) {
                             hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
                         }
                         long updateCount = -1;
@@ -409,9 +409,7 @@ public class SQLQueryJob extends DataSourceJob
                         }
                     }
                     hasResultSet = curStatement.nextResults();
-                    if (hasResultSet) {
-                        resultSetNumber++;
-                    }
+                    resultSetNumber++;
                 }
             }
             finally {

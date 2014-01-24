@@ -1839,7 +1839,7 @@
             <description>The grid font is used for result set cells, header and rows number.</description>
         </fontDefinition>
         <fontDefinition
-                id="org.jkiss.dbeaver.sql.output.font"
+                id="org.jkiss.dbeaver.sql.editor.font.output"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 label="SQL output font"
                 value="Courier New-regular-10">

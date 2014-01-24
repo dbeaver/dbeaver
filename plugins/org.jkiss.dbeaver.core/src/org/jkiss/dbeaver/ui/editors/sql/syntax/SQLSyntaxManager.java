@@ -58,19 +58,6 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
     public static final String CONFIG_COLOR_DISABLED = "org.jkiss.dbeaver.sql.editor.color.disabled.background";
 
-    public static final Set<String> THEME_PROPERTIES = new HashSet<String>();
-    static {
-        THEME_PROPERTIES.add(CONFIG_COLOR_KEYWORD);
-        THEME_PROPERTIES.add(CONFIG_COLOR_DATATYPE);
-        THEME_PROPERTIES.add(CONFIG_COLOR_STRING);
-        THEME_PROPERTIES.add(CONFIG_COLOR_NUMBER);
-        THEME_PROPERTIES.add(CONFIG_COLOR_COMMENT);
-        THEME_PROPERTIES.add(CONFIG_COLOR_DELIMITER);
-        THEME_PROPERTIES.add(CONFIG_COLOR_PARAMETER);
-        THEME_PROPERTIES.add(CONFIG_COLOR_TEXT);
-        THEME_PROPERTIES.add(CONFIG_COLOR_BACKGROUND);
-        THEME_PROPERTIES.add(CONFIG_COLOR_DISABLED);
-    }
     @NotNull
     private final IThemeManager themeManager;
     @Nullable
