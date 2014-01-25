@@ -118,20 +118,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration)
     {
-        hostText.setText(CommonUtils.getString(configuration.getProperties().get(SSHConstants.PROP_HOST)));
+        hostText.setText(CommonUtils.notEmpty(configuration.getProperties().get(SSHConstants.PROP_HOST)));
         String portString = configuration.getProperties().get(SSHConstants.PROP_PORT);
         if (!CommonUtils.isEmpty(portString)) {
             portText.setSelection(CommonUtils.toInt(portString));
         }
-        userNameText.setText(CommonUtils.getString(configuration.getUserName()));
+        userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
         String authTypeName = configuration.getProperties().get(SSHConstants.PROP_AUTH_TYPE);
         if (!CommonUtils.isEmpty(authTypeName)) {
             authType = SSHConstants.AuthType.valueOf(authTypeName);
         }
         authMethodCombo.select(authType == SSHConstants.AuthType.PASSWORD ? 0 : 1);
-        privateKeyText.setText(CommonUtils.getString(configuration.getProperties().get(SSHConstants.PROP_KEY_PATH)));
-        passwordText.setText(CommonUtils.getString(configuration.getPassword()));
+        privateKeyText.setText(CommonUtils.notEmpty(configuration.getProperties().get(SSHConstants.PROP_KEY_PATH)));
+        passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
         savePasswordCheckbox.setSelection(configuration.isSavePassword());
 
         String kaString = configuration.getProperties().get(SSHConstants.PROP_ALIVE_INTERVAL);

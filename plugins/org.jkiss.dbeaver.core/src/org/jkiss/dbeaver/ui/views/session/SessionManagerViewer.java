@@ -101,7 +101,7 @@ public class SessionManagerViewer
             sessionProps.clearProperties();
         } else {
             final String activeQuery = session.getActiveQuery();
-            sessionInfo.setText(CommonUtils.getString(activeQuery));
+            sessionInfo.setText(CommonUtils.notEmpty(activeQuery));
 
             PropertyCollector propCollector = new PropertyCollector(session, true);
             propCollector.collectProperties();

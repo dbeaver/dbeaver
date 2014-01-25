@@ -156,7 +156,7 @@ public class MSSQLConnectionPage extends ConnectionPageAbstract implements IComp
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
         if (hostText != null) {
-            hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+            hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
         }
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
@@ -166,13 +166,13 @@ public class MSSQLConnectionPage extends ConnectionPageAbstract implements IComp
             }
         }
         if (dbText != null) {
-            dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+            dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
         if (usernameText != null) {
-            usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+            usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
         }
         if (passwordText != null) {
-            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
    }

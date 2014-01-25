@@ -19,8 +19,6 @@
 package org.jkiss.dbeaver.ui.dialogs.net;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -28,9 +26,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.model.impl.net.SSHConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -72,18 +68,18 @@ public class HTTPTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBW
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration)
     {
-        hostText.setText(CommonUtils.getString(configuration.getProperties().get(SSHConstants.PROP_HOST)));
+        hostText.setText(CommonUtils.notEmpty(configuration.getProperties().get(SSHConstants.PROP_HOST)));
         String portString = configuration.getProperties().get(SSHConstants.PROP_PORT);
         if (!CommonUtils.isEmpty(portString)) {
             portText.setSelection(CommonUtils.toInt(portString));
         }
-        userNameText.setText(CommonUtils.getString(configuration.getUserName()));
+        userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
         String authTypeName = configuration.getProperties().get(SSHConstants.PROP_AUTH_TYPE);
         if (!CommonUtils.isEmpty(authTypeName)) {
             authType = SSHConstants.AuthType.valueOf(authTypeName);
         }
-        passwordText.setText(CommonUtils.getString(configuration.getPassword()));
+        passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
         savePasswordCheckbox.setSelection(configuration.isSavePassword());
 
         String kaString = configuration.getProperties().get(SSHConstants.PROP_ALIVE_INTERVAL);
