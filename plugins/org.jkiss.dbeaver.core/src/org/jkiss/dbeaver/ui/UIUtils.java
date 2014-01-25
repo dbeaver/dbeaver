@@ -29,6 +29,8 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.Clipboard;
@@ -58,6 +60,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorOutputViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -1204,6 +1207,15 @@ public class UIUtils {
             }
 
         }
+    }
+
+    public static CTabItem getTabItem(CTabFolder tabFolder, Object data) {
+        for (CTabItem item : tabFolder.getItems()) {
+            if (item.getData() == data) {
+                return item;
+            }
+        }
+        return null;
     }
 
     public interface TableEditorController {
