@@ -349,20 +349,20 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
         switch (connectionType) {
             case BASIC:
-                hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+                hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
                 if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                     portText.setText(String.valueOf(connectionInfo.getHostPort()));
                 } else {
                     portText.setText(String.valueOf(OracleConstants.DEFAULT_PORT));
                 }
 
-                serviceNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
                 break;
             case TNS:
-                tnsNameCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                tnsNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
                 break;
             case CUSTOM:
-                connectionUrlText.setText(CommonUtils.getString(connectionInfo.getUrl()));
+                connectionUrlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
                 break;
         }
 
@@ -371,8 +371,8 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             passwordText.setEnabled(false);
             osAuthCheck.setSelection(true);
         } else {
-            userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
-            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+            userNameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
+            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
             osAuthCheck.setSelection(false);
         }
 

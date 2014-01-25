@@ -47,11 +47,11 @@ public class ConnectionAuthDialog extends BaseAuthDialog
         this.networkHandler = networkHandler;
 
         if (networkHandler != null) {
-            setUserName(CommonUtils.getString(networkHandler.getUserName()));
-            setUserPassword(CommonUtils.getString(networkHandler.getPassword()));
+            setUserName(CommonUtils.notEmpty(networkHandler.getUserName()));
+            setUserPassword(CommonUtils.notEmpty(networkHandler.getPassword()));
         } else {
-            setUserName(CommonUtils.getString(dataSource.getConnectionInfo().getUserName()));
-            setUserPassword(CommonUtils.getString(dataSource.getConnectionInfo().getUserPassword()));
+            setUserName(CommonUtils.notEmpty(dataSource.getConnectionInfo().getUserName()));
+            setUserPassword(CommonUtils.notEmpty(dataSource.getConnectionInfo().getUserPassword()));
         }
     }
 

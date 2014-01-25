@@ -175,7 +175,7 @@ public class CassandraConnectionPage extends ConnectionPageAbstract
         DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
         if (hostText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+                hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
             } else {
                 hostText.setText("localhost"); //$NON-NLS-1$
             }
@@ -191,16 +191,16 @@ public class CassandraConnectionPage extends ConnectionPageAbstract
         }
         if (keyspaceText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                keyspaceText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                keyspaceText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
             } else {
                 keyspaceText.setText("system");
             }
         }
         if (userNameText != null) {
-            userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+            userNameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
         }
         if (passwordText != null) {
-            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
 
         activated = true;

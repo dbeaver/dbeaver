@@ -188,16 +188,16 @@ public class ClientHomesPanel extends Composite
     private void selectHome(HomeInfo home)
     {
         removeButton.setEnabled(home != null && !home.isProvided);
-        idText.setText(home == null ? "" : CommonUtils.getString(home.home.getHomeId())); //$NON-NLS-1$
+        idText.setText(home == null ? "" : CommonUtils.notEmpty(home.home.getHomeId())); //$NON-NLS-1$
         pathText.setText(home == null ? "" : home.home.getHomePath().getAbsolutePath()); //$NON-NLS-1$
-        nameText.setText(home == null ? "" : CommonUtils.getString(home.home.getDisplayName())); //$NON-NLS-1$
+        nameText.setText(home == null ? "" : CommonUtils.notEmpty(home.home.getDisplayName())); //$NON-NLS-1$
         try {
-            productNameText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductName())); //$NON-NLS-1$
+            productNameText.setText(home == null ? "" : CommonUtils.notEmpty(home.home.getProductName())); //$NON-NLS-1$
         } catch (DBException e) {
             log.warn(e);
         }
         try {
-            productVersionText.setText(home == null ? "" : CommonUtils.getString(home.home.getProductVersion())); //$NON-NLS-1$
+            productVersionText.setText(home == null ? "" : CommonUtils.notEmpty(home.home.getProductVersion())); //$NON-NLS-1$
         } catch (DBException e) {
             log.warn(e);
         }

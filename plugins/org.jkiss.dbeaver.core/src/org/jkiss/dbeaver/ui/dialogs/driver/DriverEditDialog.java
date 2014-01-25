@@ -150,7 +150,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             namePlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             driverNameText = new Text(namePlaceholder, SWT.BORDER | advStyle);
-            driverNameText.setText(CommonUtils.getString(driver.getName()));
+            driverNameText.setText(CommonUtils.notEmpty(driver.getName()));
             driverNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverNameText.addModifyListener(new ModifyListener() {
                 @Override
@@ -181,9 +181,9 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             }
 
-            driverDescText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_description, CommonUtils.getString(driver.getDescription()), SWT.BORDER | advStyle);
+            driverDescText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_description, CommonUtils.notEmpty(driver.getDescription()), SWT.BORDER | advStyle);
 
-            driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name, CommonUtils.getString(driver.getDriverClassName()), SWT.BORDER | advStyle);
+            driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name, CommonUtils.notEmpty(driver.getDriverClassName()), SWT.BORDER | advStyle);
             driverClassText.addModifyListener(new ModifyListener()
             {
                 @Override
@@ -193,7 +193,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             });
 
-            driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.getString(driver.getSampleURL()), SWT.BORDER | advStyle);
+            driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle);
             driverURLText.addModifyListener(new ModifyListener()
             {
                 @Override
@@ -597,10 +597,10 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private void resetSettings()
     {
-        driverNameText.setText(CommonUtils.getString(driver.getOrigName()));
-        driverDescText.setText(CommonUtils.getString(driver.getOrigDescription()));
-        driverClassText.setText(CommonUtils.getString(driver.getOrigClassName()));
-        driverURLText.setText(CommonUtils.getString(driver.getOrigSampleURL()));
+        driverNameText.setText(CommonUtils.notEmpty(driver.getOrigName()));
+        driverDescText.setText(CommonUtils.notEmpty(driver.getOrigDescription()));
+        driverClassText.setText(CommonUtils.notEmpty(driver.getOrigClassName()));
+        driverURLText.setText(CommonUtils.notEmpty(driver.getOrigSampleURL()));
         driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort()); //$NON-NLS-1$
         if (!CommonUtils.isEmpty(driver.getCategory())) {
             driverCategoryCombo.setText(driver.getCategory());
@@ -637,7 +637,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         // Set props
         driver.setName(driverNameText.getText());
         driver.setCategory(driverCategoryCombo.getText());
-        driver.setDescription(CommonUtils.getString(driverDescText.getText()));
+        driver.setDescription(CommonUtils.notEmpty(driverDescText.getText()));
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
         driver.setDriverDefaultPort(driverPortText.getText());

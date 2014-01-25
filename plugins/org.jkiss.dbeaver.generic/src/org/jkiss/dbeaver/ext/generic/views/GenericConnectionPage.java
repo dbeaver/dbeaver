@@ -372,7 +372,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         if (!isCustom) {
             if (hostText != null) {
                 if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+                    hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
                 } else {
                     hostText.setText("localhost"); //$NON-NLS-1$
                 }
@@ -387,13 +387,13 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
                 }
             }
             if (serverText != null) {
-                serverText.setText(CommonUtils.getString(connectionInfo.getServerName()));
+                serverText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
             }
             if (dbText != null) {
-                dbText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                dbText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
             }
             if (pathText != null) {
-                pathText.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+                pathText.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
             }
         } else {
             hostText.setText(""); //$NON-NLS-1$
@@ -403,15 +403,15 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             pathText.setText(""); //$NON-NLS-1$
         }
         if (userNameText != null) {
-            userNameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+            userNameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
         }
         if (passwordText != null) {
-            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
 
         if (urlText != null) {
             if (connectionInfo.getUrl() != null) {
-                urlText.setText(CommonUtils.getString(connectionInfo.getUrl()));
+                urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
             } else {
                 urlText.setText(""); //$NON-NLS-1$
             }

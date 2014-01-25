@@ -63,6 +63,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private Button savePasswordCheck;
     private Button autocommit;
     private Combo isolationLevel;
+    private Combo defaultSchema;
     private Button showSystemObjects;
     private Button readOnlyConnection;
     private Button eventsButton;
@@ -174,6 +175,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 } else {
                     isolationLevel.setEnabled(false);
                 }
+                defaultSchema.setText(CommonUtils.notEmpty(dataSourceDescriptor.getDefaultActiveObject()));
                 activated = true;
             }
         } else {
@@ -194,6 +196,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             showSystemObjects.setSelection(true);
             readOnlyConnection.setSelection(false);
             isolationLevel.setEnabled(false);
+            defaultSchema.setText("");
         }
         if (savePasswordCheck != null) {
             //savePasswordCheck.setEnabled();
@@ -310,16 +313,19 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             optionsGroup.setLayoutData(gd);
-
+            Composite leftSide = UIUtils.createPlaceholder(optionsGroup, 1, 5);
+            leftSide.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
+            Composite rightSide = UIUtils.createPlaceholder(optionsGroup, 1, 5);
+            rightSide.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
             {
-                Group securityGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+                Group securityGroup = UIUtils.createControlGroup(leftSide, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
                 savePasswordCheck = UIUtils.createCheckbox(securityGroup, CoreMessages.dialog_connection_wizard_final_checkbox_save_password_locally, dataSourceDescriptor == null || dataSourceDescriptor.isSavePassword());
                 savePasswordCheck.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             }
 
             {
-                Group txnGroup = UIUtils.createControlGroup(optionsGroup, "Transactions", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+                Group txnGroup = UIUtils.createControlGroup(rightSide, "Connection", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
                 autocommit = UIUtils.createCheckbox(
                     txnGroup,
                     CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
@@ -338,11 +344,16 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 });
 
                 isolationLevel = UIUtils.createLabelCombo(txnGroup, "Isolation level", SWT.DROP_DOWN | SWT.READ_ONLY);
+                isolationLevel.setToolTipText(
+                    "Default transaction isolation level.");
+                defaultSchema = UIUtils.createLabelCombo(txnGroup, "Default schema/catalog", SWT.DROP_DOWN);
+                defaultSchema.setToolTipText(
+                    "Name of schema or catalog which will be set as default.");
             }
 
             {
                 Group miscGroup = UIUtils.createControlGroup(
-                    optionsGroup,
+                    leftSide,
                     CoreMessages.dialog_connection_wizard_final_group_misc,
                     1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
 
@@ -363,7 +374,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             {
                 // Filters
                 filtersGroup = UIUtils.createControlGroup(
-                    optionsGroup,
+                    rightSide,
                     CoreMessages.dialog_connection_wizard_final_group_filters,
                     1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
 
@@ -460,6 +471,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex - 1));
             }
         }
+        dataSource.setDefaultActiveObject(defaultSchema.getText());
         dataSource.setShowSystemObjects(showSystemObjects.getSelection());
         dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
         if (!dataSource.isSavePassword()) {

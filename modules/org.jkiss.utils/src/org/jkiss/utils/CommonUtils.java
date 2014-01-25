@@ -202,7 +202,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static String getString(@Nullable String value)
+    public static String notEmpty(@Nullable String value)
     {
         return value == null ? "" : value;
     }
