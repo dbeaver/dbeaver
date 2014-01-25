@@ -52,6 +52,8 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
         RuntimeUtils.setDefaultPreferenceValue(
             DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
+        RuntimeUtils.setDefaultPreferenceValue(
+            DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_DBMS_OUTPUT, true);
     }
 
 	/*
