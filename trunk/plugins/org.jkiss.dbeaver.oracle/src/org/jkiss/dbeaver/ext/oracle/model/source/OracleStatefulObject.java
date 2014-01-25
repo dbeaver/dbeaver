@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.source;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
@@ -32,6 +33,7 @@ public interface OracleStatefulObject extends DBSObjectStateful
     @Override
     OracleDataSource getDataSource();
 
+    @Nullable
     OracleSchema getSchema();
 
 }

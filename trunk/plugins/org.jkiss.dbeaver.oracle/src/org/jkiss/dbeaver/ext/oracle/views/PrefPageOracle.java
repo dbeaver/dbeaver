@@ -39,6 +39,7 @@ public class PrefPageOracle extends TargetPrefPage
 
     private Text explainTableText;
     private Button rowidSupportCheck;
+    private Button enableDbmsOuputCheck;
 
     public PrefPageOracle()
     {
@@ -52,8 +53,8 @@ public class PrefPageOracle extends TargetPrefPage
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(OracleConstants.PREF_EXPLAIN_TABLE_NAME) ||
-            store.contains(OracleConstants.PREF_SUPPORT_ROWID)
-
+            store.contains(OracleConstants.PREF_SUPPORT_ROWID) ||
+            store.contains(OracleConstants.PREF_DBMS_OUTPUT)
             ;
     }
 
@@ -83,6 +84,7 @@ public class PrefPageOracle extends TargetPrefPage
         {
             Group planGroup = UIUtils.createControlGroup(composite, "Misc", 2, GridData.FILL_HORIZONTAL, 0);
             rowidSupportCheck = UIUtils.createLabelCheckbox(planGroup, "Use ROWID to identify rows", true);
+            enableDbmsOuputCheck = UIUtils.createLabelCheckbox(planGroup, "Enable DBMS Output", true);
         }
 
         return composite;
@@ -93,6 +95,7 @@ public class PrefPageOracle extends TargetPrefPage
     {
         explainTableText.setText(store.getString(OracleConstants.PREF_EXPLAIN_TABLE_NAME));
         rowidSupportCheck.setSelection(store.getBoolean(OracleConstants.PREF_SUPPORT_ROWID));
+        enableDbmsOuputCheck.setSelection(store.getBoolean(OracleConstants.PREF_DBMS_OUTPUT));
     }
 
     @Override
@@ -100,6 +103,7 @@ public class PrefPageOracle extends TargetPrefPage
     {
         store.setValue(OracleConstants.PREF_EXPLAIN_TABLE_NAME, explainTableText.getText());
         store.setValue(OracleConstants.PREF_SUPPORT_ROWID, rowidSupportCheck.getSelection());
+        store.setValue(OracleConstants.PREF_DBMS_OUTPUT, enableDbmsOuputCheck.getSelection());
         RuntimeUtils.savePreferenceStore(store);
     }
 
@@ -108,6 +112,7 @@ public class PrefPageOracle extends TargetPrefPage
     {
         store.setToDefault(OracleConstants.PREF_EXPLAIN_TABLE_NAME);
         store.setToDefault(OracleConstants.PREF_SUPPORT_ROWID);
+        store.setToDefault(OracleConstants.PREF_DBMS_OUTPUT);
     }
 
     @Override

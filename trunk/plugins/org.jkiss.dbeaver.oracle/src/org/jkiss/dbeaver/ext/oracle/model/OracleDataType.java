@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
@@ -222,12 +223,14 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
     }
 
+    @Nullable
     public static DBPDataKind getDataKind(String typeName)
     {
         TypeDesc desc = PREDEFINED_TYPES.get(typeName);
         return desc != null ? desc.dataKind : null;
     }
 
+    @Nullable
     @Override
     public OracleSchema getSchema()
     {

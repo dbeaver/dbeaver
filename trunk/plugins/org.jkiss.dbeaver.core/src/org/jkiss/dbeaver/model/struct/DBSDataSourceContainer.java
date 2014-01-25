@@ -85,7 +85,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IData
      * @return object filter or null if not filter was set for specified type
      */
     @Nullable
-    DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject);
+    DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject);
 
     DBVModel getVirtualModel();
 

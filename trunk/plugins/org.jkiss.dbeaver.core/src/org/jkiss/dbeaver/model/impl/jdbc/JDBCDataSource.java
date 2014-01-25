@@ -345,7 +345,7 @@ public abstract class JDBCDataSource
         return valueType;
     }
 
-    public DBPDataKind resolveDataKind(String typeName, int valueType)
+    public DBPDataKind resolveDataKind(@Nullable String typeName, int valueType)
     {
         return getDataKind(typeName, valueType);
     }
@@ -406,6 +406,7 @@ public abstract class JDBCDataSource
         return DBPDataKind.UNKNOWN;
     }
 
+    @Nullable
     @Override
     public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException
     {
