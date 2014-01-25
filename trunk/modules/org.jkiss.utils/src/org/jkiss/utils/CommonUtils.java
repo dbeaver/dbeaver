@@ -150,7 +150,7 @@ public class CommonUtils {
 
     public static boolean isEmpty(@Nullable String value)
     {
-        return value == null || value.trim().length() == 0;
+        return value == null || value.length() == 0;
     }
 
     public static boolean isNotEmpty(@Nullable String value)

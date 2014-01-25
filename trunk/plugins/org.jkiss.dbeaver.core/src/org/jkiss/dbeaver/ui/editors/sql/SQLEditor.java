@@ -111,6 +111,7 @@ public class SQLEditor extends SQLEditorBase
     private static Image IMG_EXPLAIN_PLAN = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage(); //$NON-NLS-1$
     private static Image IMG_LOG = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
     private static Image IMG_OUTPUT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output.png").createImage(); //$NON-NLS-1$
+    private static Image IMG_OUTPUT_ALERT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output_alert.png").createImage(); //$NON-NLS-1$
 
     private SashForm sashForm;
     private Control editorControl;
@@ -119,7 +120,6 @@ public class SQLEditor extends SQLEditorBase
     private ExplainPlanViewer planView;
     private SQLEditorOutputViewer outputViewer;
 
-    //private volatile SQLQueryJob curJob;
     private volatile QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<QueryProcessor>();
 
@@ -322,6 +322,9 @@ public class SQLEditor extends SQLEditorBase
                     QueryResultsProvider resultsProvider = (QueryResultsProvider) data;
                     curQueryProcessor = resultsProvider.queryProcessor;
                     resultsProvider.getResultSetViewer().getSpreadsheet().setFocus();
+                } else if (data == outputViewer) {
+                    ((CTabItem)e.item).setImage(IMG_OUTPUT);
+                    outputViewer.resetNewOutput();
                 }
             }
         });
@@ -476,11 +479,9 @@ public class SQLEditor extends SQLEditorBase
             setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
             return;
         }
-        for (CTabItem item : resultTabs.getItems()) {
-            if (item.getData() == planView) {
-                resultTabs.setSelection(item);
-                break;
-            }
+        final CTabItem planItem = UIUtils.getTabItem(resultTabs, planView);
+        if (planItem != null) {
+            resultTabs.setSelection(planItem);
         }
         try {
             planView.explainQueryPlan(sqlQuery.getQuery());
@@ -1273,8 +1274,13 @@ public class SQLEditor extends SQLEditorBase
         }
 
         private void processQueryResult(SQLQueryResult result) {
-            outputViewer.println(result.getStatement().getQuery());
-            outputViewer.scrollToEnd();
+            SQLDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                DBCServerOutputReader outputReader = DBUtils.getAdapter(DBCServerOutputReader.class, dataSource);
+                if (outputReader != null && outputReader.isServerOutputEnabled()) {
+                    dumpServerOutput(dataSource, outputReader);
+                }
+            }
             if (result.hasError()) {
                 setStatus(result.getError().getMessage(), true);
             }
@@ -1323,6 +1329,29 @@ public class SQLEditor extends SQLEditorBase
                 }
             });
         }
+    }
+
+    private void dumpServerOutput(final DBPDataSource dataSource, final DBCServerOutputReader outputReader) {
+        DBeaverUI.runUIJob("Dump server ouput", new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                if (outputViewer.isDisposed()) {
+                    return;
+                }
+                try {
+                    outputReader.readServerOutput(monitor, dataSource, outputViewer.getOutputWriter());
+                    if (outputViewer.isHasNewOutput()) {
+                        outputViewer.scrollToEnd();
+                        CTabItem outputItem = UIUtils.getTabItem(resultTabs, outputViewer);
+                        if (outputItem != resultTabs.getSelection()) {
+                            outputItem.setImage(IMG_OUTPUT_ALERT);
+                        }
+                    }
+                } catch (DBCException e) {
+                    log.error("Error dumping server output", e);
+                }
+            }
+        });
     }
 
 }
