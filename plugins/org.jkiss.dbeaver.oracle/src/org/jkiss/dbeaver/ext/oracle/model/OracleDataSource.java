@@ -268,7 +268,7 @@ public class OracleDataSource extends JDBCDataSource
         enableServerOutput(
             monitor,
             this,
-            getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_OUTPUT));
+            isServerOutputEnabled());
     }
 
     @Override
@@ -474,6 +474,11 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
+    public boolean isServerOutputEnabled() {
+        return getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_OUTPUT);
+    }
+
+    @Override
     public void enableServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, boolean enable) throws DBCException {
         String sql = enable ?
             "BEGIN DBMS_OUTPUT.ENABLE(" + OracleConstants.MAXIMUM_DBMS_OUTPUT_SIZE + "); END;" :
@@ -515,7 +520,7 @@ public class OracleDataSource extends JDBCDataSource
                     dbCall.setInt( 1, 32000 );
                     dbCall.executeUpdate();
                     String outputString = dbCall.getString(3);
-                    if (!CommonUtils.isEmpty(outputString)) {
+                    if (!CommonUtils.isEmptyTrimmed(outputString)) {
                         output.write(outputString);
                     }
                     int status = dbCall.getInt(2);

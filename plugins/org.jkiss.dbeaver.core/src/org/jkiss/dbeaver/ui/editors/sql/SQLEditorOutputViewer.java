@@ -12,12 +12,18 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+
 /**
  * SQL content type describer
  */
 public class SQLEditorOutputViewer extends Composite {
 
     private final StyledText text;
+    private PrintWriter writer;
+    private boolean hasNewOutput;
 
     public SQLEditorOutputViewer(final IWorkbenchPartSite site, Composite parent, int style) {
         super(parent, style);
@@ -37,7 +43,24 @@ public class SQLEditorOutputViewer extends Composite {
                 UIUtils.enableHostEditorKeyBindings(site, true);
             }
         });
+        Writer out = new Writer() {
+            @Override
+            public void write(char[] cbuf, int off, int len) throws IOException {
+                text.append(String.valueOf(cbuf, off, len));
+                if (len > 0) {
+                    hasNewOutput = true;
+                }
+            }
 
+            @Override
+            public void flush() throws IOException {
+            }
+
+            @Override
+            public void close() throws IOException {
+            }
+        };
+        writer = new PrintWriter(out, true);
         refreshStyles();
     }
 
@@ -64,4 +87,15 @@ public class SQLEditorOutputViewer extends Composite {
         text.setTopIndex(text.getLineCount() - 1);
     }
 
+    public PrintWriter getOutputWriter() {
+        return writer;
+    }
+
+    public boolean isHasNewOutput() {
+        return hasNewOutput;
+    }
+
+    void resetNewOutput() {
+        hasNewOutput = false;
+    }
 }

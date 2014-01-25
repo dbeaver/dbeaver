@@ -30,6 +30,8 @@ import java.io.Writer;
  */
 public interface DBCServerOutputReader extends DBPObject,DBPCloseableObject
 {
+    boolean isServerOutputEnabled();
+
     void enableServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, boolean enable) throws DBCException;
 
     void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output)
