@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -704,7 +705,6 @@ public class SQLEditor extends SQLEditorBase
             sashForm.setMaximizedControl(null);
         }
     }
-
 
     @Override
     public void beforeConnect()

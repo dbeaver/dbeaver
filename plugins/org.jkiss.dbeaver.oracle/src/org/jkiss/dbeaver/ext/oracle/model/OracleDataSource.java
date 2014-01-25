@@ -22,16 +22,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCServerOutputReader;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -50,8 +48,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.io.Writer;
-import java.sql.Driver;
+import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -206,58 +203,6 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Driver getDriverInstance(DBRProgressMonitor monitor) throws DBException {
-        DBSDataSourceContainer container = getContainer();
-        DBPDriver driver = container.getDriver();
-/*
-        boolean ociDriver = OCIUtils.isOciDriver(driver);
-        if (ociDriver) {
-            String homeId = container.getConnectionInfo().getClientHomeId();
-            if (homeId != null) {
-                OCIClassLoader ociClassLoader = ociClassLoadersCache.get(homeId);
-                if (ociClassLoader == null) {
-                    OracleHomeDescriptor homeDescriptor = (OracleHomeDescriptor)driver.getClientHome(homeId);
-                    if (homeDescriptor == null) {
-                        throw new DBException("Can't load driver from '" + homeId + "'");
-                    }
-                    ociClassLoader = new OCIClassLoader(homeDescriptor, getClass().getClassLoader());
-                    loadOCILibraries(ociClassLoader);
-                    ociClassLoadersCache.put(homeId, ociClassLoader);
-                }
-                String driverClassName = driver.getDriverClassName();
-                try {
-                    final Class<?> driverClass = ociClassLoader.loadClass(driverClassName);
-                    return (Driver) driverClass.newInstance();
-                } catch (ClassNotFoundException ex) {
-                    throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
-                } catch (InstantiationException ex) {
-                    throw new DBException("Can't create driver class '" + driverClassName + "'", ex);
-                } catch (IllegalAccessException ex) {
-                    throw new DBException("Can't create driver class '" + driverClassName + "'", ex);
-                }
-            }
-        }
-*/
-        return super.getDriverInstance(monitor);
-    }
-
-/*
-    private void loadOCILibraries(OCIClassLoader classLoader)
-    {
-        loadOCILibrary(classLoader, "oci");
-        loadOCILibrary(classLoader, "ocijdbc11");
-    }
-
-    private void loadOCILibrary(OCIClassLoader classLoader, String libName)
-    {
-        String libPath = classLoader.findLibrary(libName);
-        if (libPath != null) {
-            System.load(libPath);
-        }
-    }
-*/
-
-    @Override
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -307,6 +252,7 @@ public class OracleDataSource extends JDBCDataSource
                 this.activeSchemaName = JDBCUtils.queryString(
                     session,
                     "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
+
             } catch (SQLException e) {
                 //throw new DBException(e);
                 log.warn(e);
@@ -315,7 +261,14 @@ public class OracleDataSource extends JDBCDataSource
                 session.close();
             }
         }
+        // Cache data types
         this.dataTypeCache.getObjects(monitor, this);
+
+        // Enable DBMS output
+        enableServerOutput(
+            monitor,
+            this,
+            getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_OUTPUT));
     }
 
     @Override
@@ -371,6 +324,7 @@ public class OracleDataSource extends JDBCDataSource
         return true;
     }
 
+    @Nullable
     @Override
     public OracleSchema getSelectedObject()
     {
@@ -413,6 +367,7 @@ public class OracleDataSource extends JDBCDataSource
         return plan;
     }
 
+    @Nullable
     @Override
     public Object getAdapter(Class adapter)
     {
@@ -436,9 +391,11 @@ public class OracleDataSource extends JDBCDataSource
         {
             return DBPDataKind.LOB;
         }
-        DBPDataKind dataKind = OracleDataType.getDataKind(typeName);
-        if (dataKind != null) {
-            return dataKind;
+        if (typeName != null) {
+            DBPDataKind dataKind = OracleDataType.getDataKind(typeName);
+            if (dataKind != null) {
+                return dataKind;
+            }
         }
         return super.resolveDataKind(typeName, valueType);
     }
@@ -455,6 +412,7 @@ public class OracleDataSource extends JDBCDataSource
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Nullable
     @Override
     public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException
     {
@@ -473,6 +431,7 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
+    @Nullable
     public String getPlanTableName(JDBCSession session)
         throws SQLException
     {
@@ -515,8 +474,65 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public void readServerOutput(DBCSession session, Writer output) throws DBCException {
+    public void enableServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, boolean enable) throws DBCException {
+        String sql = enable ?
+            "BEGIN DBMS_OUTPUT.ENABLE(" + OracleConstants.MAXIMUM_DBMS_OUTPUT_SIZE + "); END;" :
+            "BEGIN DBMS_OUTPUT.DISABLE; END;";
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output");
+        try {
+            JDBCUtils.executeSQL(session, sql);
+        } catch (SQLException e) {
+            throw new DBCException(e, this);
+        }
+        finally {
+            session.close();
+        }
+    }
 
+    @Override
+    public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
+        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output");
+        try {
+            final JDBCCallableStatement dbCall = session.prepareCall(
+                "DECLARE " +
+                    "l_line varchar2(255); " +
+                    "l_done number; " +
+                    "l_buffer long; " +
+                "BEGIN " +
+                    "LOOP " +
+                        "EXIT WHEN LENGTH(l_buffer)+255 > :maxbytes OR l_done = 1; " +
+                        "DBMS_OUTPUT.GET_LINE( l_line, l_done ); " +
+                        "l_buffer := l_buffer || l_line || chr(10); " +
+                    "END LOOP; " +
+                    ":done := l_done; " +
+                    ":buffer := l_buffer; " +
+                "END;");
+            try {
+                dbCall.registerOutParameter( 2, java.sql.Types.INTEGER );
+                dbCall.registerOutParameter( 3, java.sql.Types.VARCHAR );
+
+                for(;;) {
+                    dbCall.setInt( 1, 32000 );
+                    dbCall.executeUpdate();
+                    String outputString = dbCall.getString(3);
+                    if (!CommonUtils.isEmpty(outputString)) {
+                        output.write(outputString);
+                    }
+                    int status = dbCall.getInt(2);
+                    if ( status == 1 ) {
+                        break;
+                    }
+                }
+            }
+            finally {
+                dbCall.close();
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, this);
+        }
+        finally {
+            session.close();
+        }
     }
 
     static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {

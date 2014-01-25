@@ -20,7 +20,9 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.PrintWriter;
 import java.io.Writer;
 
 /**
@@ -28,6 +30,8 @@ import java.io.Writer;
  */
 public interface DBCServerOutputReader extends DBPObject,DBPCloseableObject
 {
-    void readServerOutput(DBCSession session, Writer output)
+    void enableServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, boolean enable) throws DBCException;
+
+    void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output)
         throws DBCException;
 }

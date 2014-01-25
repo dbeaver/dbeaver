@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -30,6 +31,7 @@ public interface DBSObjectSelector
 
     boolean supportsObjectSelect();
 
+    @Nullable
     DBSObject getSelectedObject();
 
     void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException;
