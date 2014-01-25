@@ -144,9 +144,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
-        this.id = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_ID));
-        this.category = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_CATEGORY));
-        this.origName = this.name = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_LABEL));
+        this.id = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_ID));
+        this.category = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_CATEGORY));
+        this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.note = config.getAttribute(RegistryConstants.ATTR_NOTE);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
@@ -1154,7 +1154,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         if (this.getDefaultPort() != null) {
             xml.addAttribute(RegistryConstants.ATTR_PORT, this.getDefaultPort());
         }
-        xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.getString(this.getDescription()));
+        xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.notEmpty(this.getDescription()));
         if (this.isCustomDriverLoader()) {
             xml.addAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, this.isCustomDriverLoader());
         }

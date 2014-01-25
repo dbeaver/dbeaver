@@ -440,7 +440,7 @@ public class RuntimeUtils {
     public static ProgramInfo getProgram(IResource resource)
     {
         if (resource instanceof IFile) {
-            final String fileExtension = CommonUtils.getString(resource.getFileExtension());
+            final String fileExtension = CommonUtils.notEmpty(resource.getFileExtension());
             ProgramInfo programInfo = programMap.get(fileExtension);
             if (programInfo == null) {
                 Program program = Program.findProgram(fileExtension);

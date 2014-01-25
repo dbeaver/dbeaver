@@ -165,19 +165,19 @@ public class WMIConnectionPage extends ConnectionPageAbstract
             connectionInfo.setDatabaseName(DEFAULT_NAMESPACE);
         }
         if (hostText != null) {
-            hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
+            hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
         }
         if (domainText != null) {
-            domainText.setText(CommonUtils.getString(connectionInfo.getServerName()));
+            domainText.setText(CommonUtils.notEmpty(connectionInfo.getServerName()));
         }
         if (usernameText != null) {
-            usernameText.setText(CommonUtils.getString(connectionInfo.getUserName()));
+            usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
         }
         if (passwordText != null) {
-            passwordText.setText(CommonUtils.getString(connectionInfo.getUserPassword()));
+            passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
         if (namespaceCombo != null) {
-            namespaceCombo.setText(CommonUtils.getString(connectionInfo.getDatabaseName()));
+            namespaceCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
     }
 

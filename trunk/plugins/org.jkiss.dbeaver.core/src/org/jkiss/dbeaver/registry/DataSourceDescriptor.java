@@ -410,6 +410,14 @@ public class DataSourceDescriptor
         }
     }
 
+    public String getDefaultActiveObject() {
+        return getPreferenceStore().getString(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT);
+    }
+
+    public void setDefaultActiveObject(String defaultActiveObject) {
+        getPreferenceStore().setValue(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT, defaultActiveObject);
+    }
+
     public Collection<FilterMapping> getObjectFilters()
     {
         return filterMap.values();
@@ -627,6 +635,7 @@ public class DataSourceDescriptor
                 DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Set session defaults ...");
                 try {
                     DBCTransactionManager txnManager = session.getTransactionManager();
+                    // Set auto-commit
                     boolean autoCommit = txnManager.isAutoCommit();
                     AbstractPreferenceStore store = getPreferenceStore();
                     boolean newAutoCommit;
@@ -639,6 +648,7 @@ public class DataSourceDescriptor
                         // Change auto-commit state
                         txnManager.setAutoCommit(newAutoCommit);
                     }
+                    // Set txn isolation level
                     if (store.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
                         int isolationCode = store.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
                         Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
@@ -648,6 +658,22 @@ public class DataSourceDescriptor
                                     txnManager.setTransactionIsolation(level);
                                     break;
                                 }
+                            }
+                        }
+                    }
+                    // Set active object
+                    if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
+                        String activeObject = getDefaultActiveObject();
+                        if (!CommonUtils.isEmptyTrimmed(activeObject)) {
+                            DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
+                            if (child != null) {
+                                try {
+                                    ((DBSObjectSelector)dataSource).selectObject(monitor, child);
+                                } catch (DBException e) {
+                                    log.warn("Can't select active object", e);
+                                }
+                            } else {
+                                log.debug("Object '" + activeObject + "' not found");
                             }
                         }
                     }

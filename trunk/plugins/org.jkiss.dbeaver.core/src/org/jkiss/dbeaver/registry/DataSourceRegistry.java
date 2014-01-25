@@ -426,10 +426,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                 xml.addAttribute(RegistryConstants.ATTR_PORT, connectionInfo.getHostPort());
             }
-            xml.addAttribute(RegistryConstants.ATTR_SERVER, CommonUtils.getString(connectionInfo.getServerName()));
-            xml.addAttribute(RegistryConstants.ATTR_DATABASE, CommonUtils.getString(connectionInfo.getDatabaseName()));
-            xml.addAttribute(RegistryConstants.ATTR_URL, CommonUtils.getString(connectionInfo.getUrl()));
-            xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.getString(connectionInfo.getUserName()));
+            xml.addAttribute(RegistryConstants.ATTR_SERVER, CommonUtils.notEmpty(connectionInfo.getServerName()));
+            xml.addAttribute(RegistryConstants.ATTR_DATABASE, CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
+            xml.addAttribute(RegistryConstants.ATTR_URL, CommonUtils.notEmpty(connectionInfo.getUrl()));
+            xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(connectionInfo.getUserName()));
             if (dataSource.isSavePassword() && !CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
                 String encPassword = connectionInfo.getUserPassword();
                 if (!CommonUtils.isEmpty(encPassword)) {
@@ -476,9 +476,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
                 xml.startElement(RegistryConstants.TAG_NETWORK_HANDLER);
                 xml.addAttribute(RegistryConstants.ATTR_TYPE, configuration.getType().name());
-                xml.addAttribute(RegistryConstants.ATTR_ID, CommonUtils.getString(configuration.getId()));
+                xml.addAttribute(RegistryConstants.ATTR_ID, CommonUtils.notEmpty(configuration.getId()));
                 xml.addAttribute(RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
-                xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.getString(configuration.getUserName()));
+                xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.notEmpty(configuration.getUserName()));
                 xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
                 if (configuration.isSavePassword() && !CommonUtils.isEmpty(configuration.getPassword())) {
                     String encPassword = configuration.getPassword();
@@ -495,7 +495,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 for (Map.Entry<String, String> entry : configuration.getProperties().entrySet()) {
                     xml.startElement(RegistryConstants.TAG_PROPERTY);
                     xml.addAttribute(RegistryConstants.ATTR_NAME, entry.getKey());
-                    xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.getString(entry.getValue()));
+                    xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.notEmpty(entry.getValue()));
                     xml.endElement();
                 }
                 xml.endElement();
@@ -727,7 +727,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     }
                     curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
                     curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
-                    curNetworkHandler.setUserName(CommonUtils.getString(atts.getValue(RegistryConstants.ATTR_USER)));
+                    curNetworkHandler.setUserName(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_USER)));
                     curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                     curNetworkHandler.setPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
                     curDataSource.getConnectionInfo().addHandler(curNetworkHandler);
@@ -748,11 +748,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
             } else if (localName.equals(RegistryConstants.TAG_INCLUDE)) {
                 if (curFilter != null) {
-                    curFilter.addInclude(CommonUtils.getString(atts.getValue(RegistryConstants.ATTR_NAME)));
+                    curFilter.addInclude(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_NAME)));
                 }
             } else if (localName.equals(RegistryConstants.TAG_EXCLUDE)) {
                 if (curFilter != null) {
-                    curFilter.addExclude(CommonUtils.getString(atts.getValue(RegistryConstants.ATTR_NAME)));
+                    curFilter.addExclude(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_NAME)));
                 }
             } else if (localName.equals(RegistryConstants.TAG_DESCRIPTION)) {
                 isDescription = true;

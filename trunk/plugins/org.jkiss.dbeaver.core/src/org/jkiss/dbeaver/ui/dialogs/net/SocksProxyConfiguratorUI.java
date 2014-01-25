@@ -67,13 +67,13 @@ public class SocksProxyConfiguratorUI implements IObjectPropertyConfigurator<DBW
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration)
     {
-        hostText.setText(CommonUtils.getString(configuration.getProperties().get(SocksConstants.PROP_HOST)));
+        hostText.setText(CommonUtils.notEmpty(configuration.getProperties().get(SocksConstants.PROP_HOST)));
         String portString = configuration.getProperties().get(SocksConstants.PROP_PORT);
         if (!CommonUtils.isEmpty(portString)) {
             portText.setSelection(CommonUtils.toInt(portString));
         }
-        userNameText.setText(CommonUtils.getString(configuration.getUserName()));
-        passwordText.setText(CommonUtils.getString(configuration.getPassword()));
+        userNameText.setText(CommonUtils.notEmpty(configuration.getUserName()));
+        passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
         savePasswordCheckbox.setSelection(configuration.isSavePassword());
     }
 
