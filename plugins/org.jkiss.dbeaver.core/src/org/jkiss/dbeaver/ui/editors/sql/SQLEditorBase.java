@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -393,8 +392,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
         getTextViewer().getTextWidget().setBackground(
             getSyntaxManager().getColor(!syntaxManager.isUnassigned() && getDataSource() == null ?
-                SQLSyntaxManager.CONFIG_COLOR_DISABLED :
-                SQLSyntaxManager.CONFIG_COLOR_BACKGROUND));
+                SQLConstants.CONFIG_COLOR_DISABLED :
+                SQLConstants.CONFIG_COLOR_BACKGROUND));
 
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
