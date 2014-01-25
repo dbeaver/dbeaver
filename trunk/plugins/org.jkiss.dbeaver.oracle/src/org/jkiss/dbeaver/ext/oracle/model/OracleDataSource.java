@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCServerOutputReader;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.Writer;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -60,7 +62,7 @@ import java.util.Map;
  * GenericDataSource
  */
 public class OracleDataSource extends JDBCDataSource
-    implements DBSObjectSelector, DBCQueryPlanner, IAdaptable
+    implements DBSObjectSelector, DBCServerOutputReader, DBCQueryPlanner, IAdaptable
 {
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
@@ -510,6 +512,11 @@ public class OracleDataSource extends JDBCDataSource
     {
         JDBCUtils.executeSQL(session, OracleConstants.PLAN_TABLE_DEFINITION);
         return "PLAN_TABLE";
+    }
+
+    @Override
+    public void readServerOutput(DBCSession session, Writer output) throws DBCException {
+
     }
 
     static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
