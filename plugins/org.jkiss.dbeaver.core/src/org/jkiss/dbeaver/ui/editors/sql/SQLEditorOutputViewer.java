@@ -66,10 +66,12 @@ public class SQLEditorOutputViewer extends Composite {
 
     void refreshStyles() {
         ITheme currentTheme = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme();
-        Font outputFont = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.sql.editor.font.output");
+        Font outputFont = currentTheme.getFontRegistry().get(SQLConstants.CONFIG_FONT_OUTPUT);
         if (outputFont != null) {
             this.text.setFont(outputFont);
         }
+        this.text.setForeground(currentTheme.getColorRegistry().get(SQLConstants.CONFIG_COLOR_TEXT));
+        this.text.setBackground(currentTheme.getColorRegistry().get(SQLConstants.CONFIG_COLOR_BACKGROUND));
     }
 
     void print(String out)
