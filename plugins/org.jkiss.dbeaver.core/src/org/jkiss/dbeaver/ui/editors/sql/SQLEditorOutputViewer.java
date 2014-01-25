@@ -39,8 +39,6 @@ public class SQLEditorOutputViewer extends Composite {
         });
 
         refreshStyles();
-        //text.setFont();
-        text.append("Hey there");
     }
 
     void refreshStyles() {

@@ -544,8 +544,8 @@ public class UIUtils {
             public void mouseUp(MouseEvent e)
             {
                 if (!button.isDisposed() && button.isVisible() && button.isEnabled()) {
-                    button.getDisplay().post(new Event());
-                    //button.setSelection(!button.getSelection());
+                    button.setSelection(!button.getSelection());
+                    button.notifyListeners(SWT.Selection, new Event());
                 }
             }
         });
