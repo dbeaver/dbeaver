@@ -83,6 +83,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return name;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

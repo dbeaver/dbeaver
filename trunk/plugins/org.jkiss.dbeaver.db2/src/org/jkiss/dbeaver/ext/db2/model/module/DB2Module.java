@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.module;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
@@ -197,6 +198,7 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
         return createTime;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false)
     public String getDescription()

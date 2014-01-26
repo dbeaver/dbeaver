@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
@@ -256,6 +257,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         return dataTag;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false)
     public String getDescription()

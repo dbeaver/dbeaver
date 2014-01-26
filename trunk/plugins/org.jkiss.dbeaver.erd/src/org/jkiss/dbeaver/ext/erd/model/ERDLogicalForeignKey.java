@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -66,6 +67,7 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
         return entity.getDataSource();
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

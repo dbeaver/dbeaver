@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexPageSplit;
@@ -248,6 +249,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         return compression;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, editable = false)
     public String getDescription()

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -114,6 +115,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return super.getName();
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

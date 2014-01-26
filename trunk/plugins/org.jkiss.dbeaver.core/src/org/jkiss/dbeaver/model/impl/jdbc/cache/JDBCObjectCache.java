@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -48,6 +49,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner)
         throws SQLException;
 
+    @Nullable
     abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, ResultSet resultSet)
         throws SQLException, DBException;
 

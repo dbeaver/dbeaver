@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -127,6 +128,7 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
         return auditPolicyName;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true)
     public String getDescription()

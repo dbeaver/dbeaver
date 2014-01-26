@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
@@ -350,6 +351,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
         return ownerType;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false)
     public String getDescription()

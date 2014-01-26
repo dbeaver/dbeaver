@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -86,6 +87,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter
         this.dataPrecision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

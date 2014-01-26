@@ -246,6 +246,7 @@ public class DataSourceDescriptor
         this.name = name;
     }
 
+    @Nullable
     @Override
     @Property(order = 100)
     public String getDescription()

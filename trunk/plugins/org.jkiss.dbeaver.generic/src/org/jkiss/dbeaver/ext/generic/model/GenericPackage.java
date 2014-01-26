@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -57,6 +58,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         return packageName;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

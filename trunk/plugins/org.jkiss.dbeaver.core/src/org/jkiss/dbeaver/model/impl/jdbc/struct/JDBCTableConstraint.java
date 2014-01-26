@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -53,7 +54,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
 
     private boolean persisted;
 
-    protected JDBCTableConstraint(TABLE table, String name, String description, DBSEntityConstraintType constraintType, boolean persisted) {
+    protected JDBCTableConstraint(TABLE table, String name, @Nullable String description, DBSEntityConstraintType constraintType, boolean persisted) {
         super(table, name, description, constraintType);
         this.persisted = persisted;
     }

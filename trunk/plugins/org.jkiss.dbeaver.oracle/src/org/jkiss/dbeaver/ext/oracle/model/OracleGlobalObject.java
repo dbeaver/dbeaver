@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -42,6 +43,7 @@ public abstract class OracleGlobalObject implements DBSObject, DBPSaveableObject
         this.persisted = persisted;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

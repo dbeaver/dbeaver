@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -86,6 +87,7 @@ public class MSSQLTableIndex extends JDBCTableIndex<MSSQLCatalog, MSSQLTable>
         return !nonUnique;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 6)
     public String getDescription()

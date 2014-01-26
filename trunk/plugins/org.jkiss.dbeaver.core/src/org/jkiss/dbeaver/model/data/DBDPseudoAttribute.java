@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -136,6 +137,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
             return owner;
         }
 
+        @Nullable
         @Override
         public String getDescription()
         {

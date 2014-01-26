@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -80,6 +81,7 @@ public class JDBCDataType implements DBSDataType
         return name;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

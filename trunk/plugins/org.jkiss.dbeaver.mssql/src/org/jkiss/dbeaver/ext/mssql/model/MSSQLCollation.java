@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -93,6 +94,7 @@ public class MSSQLCollation extends MSSQLInformation {
         return sortLength;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

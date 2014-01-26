@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
@@ -31,7 +32,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
 {
     private List<GenericTableConstraintColumn> columns;
 
-    public GenericPrimaryKey(GenericTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
+    public GenericPrimaryKey(GenericTable table, String name, @Nullable String remarks, DBSEntityConstraintType constraintType, boolean persisted)
     {
         super(table, name, remarks, constraintType, persisted);
     }

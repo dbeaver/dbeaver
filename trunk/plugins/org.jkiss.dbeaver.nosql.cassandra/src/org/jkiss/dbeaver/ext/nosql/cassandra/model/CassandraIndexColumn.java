@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -67,6 +68,7 @@ public class CassandraIndexColumn extends AbstractTableIndexColumn
         return true;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

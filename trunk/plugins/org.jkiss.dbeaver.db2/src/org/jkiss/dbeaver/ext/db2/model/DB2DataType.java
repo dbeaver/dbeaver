@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DataTypeMetaType;
@@ -342,6 +343,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return constraintText;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, editable = false)
     public String getDescription()

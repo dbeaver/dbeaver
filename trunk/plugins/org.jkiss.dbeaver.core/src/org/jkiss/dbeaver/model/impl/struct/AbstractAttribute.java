@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
@@ -169,6 +170,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
         this.precision = precision;
     }
 
+    @Nullable
     public String getDescription()
     {
         return null;

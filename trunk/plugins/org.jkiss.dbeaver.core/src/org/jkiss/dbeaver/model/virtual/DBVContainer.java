@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -82,6 +83,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         return name;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

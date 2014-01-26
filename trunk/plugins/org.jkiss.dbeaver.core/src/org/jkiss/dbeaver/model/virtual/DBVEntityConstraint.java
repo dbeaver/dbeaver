@@ -54,6 +54,7 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         return attributes;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {
