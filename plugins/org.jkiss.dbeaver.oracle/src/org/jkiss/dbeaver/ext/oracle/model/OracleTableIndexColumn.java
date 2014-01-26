@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -86,6 +87,7 @@ public class OracleTableIndexColumn extends AbstractTableIndexColumn
         return ascending;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

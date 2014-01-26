@@ -289,6 +289,7 @@ public abstract class JDBCDataSource
         return container.getName();
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

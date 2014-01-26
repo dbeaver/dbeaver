@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -87,6 +88,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
             null).getSourceStatement();
     }
 
+    @Nullable
     @Override
     protected GenericTable fetchObject(JDBCSession session, GenericStructContainer owner, ResultSet dbResult)
         throws SQLException, DBException

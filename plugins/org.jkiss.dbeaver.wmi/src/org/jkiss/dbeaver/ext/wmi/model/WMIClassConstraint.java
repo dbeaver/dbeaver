@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -40,6 +41,7 @@ public class WMIClassConstraint implements DBSEntityConstraint, DBSEntityReferre
         this.key = key;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

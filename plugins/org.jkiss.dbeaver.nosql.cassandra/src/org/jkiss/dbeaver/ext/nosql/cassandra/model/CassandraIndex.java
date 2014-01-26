@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -49,6 +50,7 @@ public class CassandraIndex extends JDBCTableIndex<CassandraKeyspace, CassandraC
         return getTable().getDataSource();
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -36,6 +37,7 @@ public class GenericTableType implements DBSObject {
         this.name = name;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

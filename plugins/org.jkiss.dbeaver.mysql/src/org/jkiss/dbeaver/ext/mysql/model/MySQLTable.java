@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -489,6 +490,7 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

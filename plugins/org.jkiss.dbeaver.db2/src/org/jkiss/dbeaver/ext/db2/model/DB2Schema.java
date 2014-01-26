@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2AliasCache;
@@ -519,6 +520,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return dataCapture;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, editable = false)
     public String getDescription()

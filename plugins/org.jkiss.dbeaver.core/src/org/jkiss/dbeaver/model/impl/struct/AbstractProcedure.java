@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -70,6 +71,7 @@ public abstract class AbstractProcedure<
         this.name = tableName;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 100)
     public String getDescription()

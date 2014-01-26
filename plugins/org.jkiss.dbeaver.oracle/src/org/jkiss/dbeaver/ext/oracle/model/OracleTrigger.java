@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -162,6 +163,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         return status;
     }
 
+    @Nullable
     @Override
     @Property(order = 11)
     public String getDescription()

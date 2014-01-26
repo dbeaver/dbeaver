@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -87,6 +88,7 @@ public class MySQLPrivilege implements DBAPrivilege
     }
 
 //    @Property(name = "Description", viewable = true, order = 100)
+    @Nullable
     @Override
     public String getDescription() {
         return comment;

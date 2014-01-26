@@ -37,7 +37,7 @@ public interface JDBCDatabaseMetaData extends DatabaseMetaData {
         throws SQLException;
 
     @Override
-    JDBCResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types)
+    JDBCResultSet getTables(@Nullable String catalog, @Nullable String schemaPattern, String tableNamePattern, @Nullable String[] types)
         throws SQLException;
 
     @Override
@@ -74,7 +74,7 @@ public interface JDBCDatabaseMetaData extends DatabaseMetaData {
         throws SQLException;
 
     @Override
-    JDBCResultSet getPrimaryKeys(String catalog, String schema, String table)
+    JDBCResultSet getPrimaryKeys(@Nullable String catalog, @Nullable String schema, String table)
         throws SQLException;
 
     @Override
@@ -96,7 +96,7 @@ public interface JDBCDatabaseMetaData extends DatabaseMetaData {
         throws SQLException;
 
     @Override
-    JDBCResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate)
+    JDBCResultSet getIndexInfo(@Nullable String catalog, @Nullable String schema, String table, boolean unique, boolean approximate)
         throws SQLException;
 
     @Override

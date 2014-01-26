@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.ui.IEditorDescriptor;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -110,6 +111,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
         return meta.getNodeType(getDataSource());
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

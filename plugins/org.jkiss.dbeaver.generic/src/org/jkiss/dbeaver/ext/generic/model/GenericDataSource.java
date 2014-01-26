@@ -842,6 +842,7 @@ public class GenericDataSource extends JDBCDataSource
             return GenericDataSource.this.getName();
         }
 
+        @Nullable
         @Override
         public String getDescription() {
             return GenericDataSource.this.getDescription();

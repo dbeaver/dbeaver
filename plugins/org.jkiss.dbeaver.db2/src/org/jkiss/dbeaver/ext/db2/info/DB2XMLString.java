@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.info;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -71,6 +72,7 @@ public class DB2XMLString implements DBSObject {
         return false;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

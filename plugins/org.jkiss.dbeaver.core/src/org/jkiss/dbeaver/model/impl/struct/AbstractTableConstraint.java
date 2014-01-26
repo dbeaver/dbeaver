@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -61,6 +62,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
     }
 
     //    @Property(name = "Description", viewable = true, order = 100)
+    @Nullable
     @Override
     public String getDescription()
     {

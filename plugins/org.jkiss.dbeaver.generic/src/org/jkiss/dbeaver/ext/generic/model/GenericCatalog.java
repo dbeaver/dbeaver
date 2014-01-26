@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -95,6 +96,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return catalogName;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

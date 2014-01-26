@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -68,9 +69,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     public GenericTable(
         GenericStructContainer container,
-        String tableName,
-        String tableType,
-        String remarks,
+        @Nullable String tableName,
+        @Nullable String tableType,
+        @Nullable String remarks,
         boolean persisted)
     {
         super(container, tableName, persisted);
@@ -81,7 +82,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             this.isView = (type.contains("VIEW"));
             this.isSystem =
                 (type.contains("SYSTEM")) || // general rule
-                tableName.contains("RDB$");    // [JDBC: Firebird]
+                    (tableName != null && tableName.contains("RDB$"));    // [JDBC: Firebird]
         }
     }
 
@@ -133,6 +134,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return getContainer().getSchema();
     }
 
+    @Nullable
     @Override
     public synchronized Collection<GenericTableColumn> getAttributes(DBRProgressMonitor monitor)
         throws DBException
@@ -185,11 +187,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return null;
     }
 
+    @Nullable
     public Collection<GenericTable> getSubTables()
     {
         return null;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 100)
     public String getDescription()
@@ -209,6 +213,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
+    @Nullable
     @Property(viewable = true, expensive = true, order = 5)
     public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
@@ -247,6 +252,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return rowCount;
     }
 
+    @Nullable
     public Long getRowCountFromIndexes(DBRProgressMonitor monitor)
     {
         try {
@@ -359,7 +365,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
                 // Find PK
                 GenericPrimaryKey pk = null;
-                if (info.pkName != null) {
+                if (!CommonUtils.isEmpty(info.pkName)) {
                     pk = DBUtils.findObject(this.getConstraints(monitor), info.pkName);
                     if (pk == null) {
                         log.warn("Unique key '" + info.pkName + "' not found in table " + this.getFullQualifiedName());
@@ -387,14 +393,20 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 }
 
                 // Find (or create) FK
-                GenericTableForeignKey fk = DBUtils.findObject(fkTable.getAssociations(monitor), info.fkName);
-                if (fk == null) {
-                    log.warn("Could not find foreign key '" + info.fkName + "' for table " + fkTable.getFullQualifiedName());
-                    // No choice, we have to create fake foreign key :(
+                GenericTableForeignKey fk = null;
+                if (CommonUtils.isEmpty(info.fkName)) {
+                    // Make fake FK name
+                    info.fkName = info.fkTableName.toUpperCase() + "_FK" + info.keySeq;
+                    fk = DBUtils.findObject(fkTable.getAssociations(monitor), info.fkName);
                 } else {
-                    if (!fkList.contains(fk)) {
-                        fkList.add(fk);
+                    fk = DBUtils.findObject(fkTable.getAssociations(monitor), info.fkName);
+                    if (fk == null) {
+                        log.warn("Could not find foreign key '" + info.fkName + "' for table " + fkTable.getFullQualifiedName());
+                        // No choice, we have to create fake foreign key :(
                     }
+                }
+                if (fk != null && !fkList.contains(fk)) {
+                    fkList.add(fk);
                 }
 
                 if (fk == null) {

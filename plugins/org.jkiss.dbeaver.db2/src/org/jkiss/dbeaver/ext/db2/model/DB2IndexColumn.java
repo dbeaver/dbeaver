@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexColOrder;
@@ -109,6 +110,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         return db2Index;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {
