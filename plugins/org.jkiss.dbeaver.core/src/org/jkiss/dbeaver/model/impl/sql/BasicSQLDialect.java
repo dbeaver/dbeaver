@@ -55,11 +55,13 @@ public class BasicSQLDialect implements SQLDialect {
         loadKeywords();
     }
 
+    @NotNull
     @Override
     public String getDialectName() {
         return "SQL";
     }
 
+    @NotNull
     @Override
     public String getIdentifierQuoteString()
     {
@@ -85,18 +87,21 @@ public class BasicSQLDialect implements SQLDialect {
         }
     }
 
+    @NotNull
     @Override
     public Set<String> getReservedWords()
     {
         return reservedWords;
     }
 
+    @NotNull
     @Override
     public Set<String> getFunctions()
     {
         return functions;
     }
 
+    @NotNull
     @Override
     public TreeSet<String> getTypes()
     {
@@ -104,13 +109,14 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public DBPKeywordType getKeywordType(String word)
+    public DBPKeywordType getKeywordType(@NotNull String word)
     {
         return allKeywords.get(word.toUpperCase());
     }
 
+    @NotNull
     @Override
-    public List<String> getMatchedKeywords(String word)
+    public List<String> getMatchedKeywords(@NotNull String word)
     {
         word = word.toUpperCase();
         List<String> result = new ArrayList<String>();
@@ -125,24 +131,25 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean isKeywordStart(String word)
+    public boolean isKeywordStart(@NotNull String word)
     {
         SortedMap<String, DBPKeywordType> map = allKeywords.tailMap(word);
         return !map.isEmpty() && map.firstKey().startsWith(word);
     }
 
     @Override
-    public boolean isEntityQueryWord(String word)
+    public boolean isEntityQueryWord(@NotNull String word)
     {
         return tableQueryWords.contains(word.toUpperCase());
     }
 
     @Override
-    public boolean isAttributeQueryWord(String word)
+    public boolean isAttributeQueryWord(@NotNull String word)
     {
         return columnQueryWords.contains(word.toUpperCase());
     }
 
+    @NotNull
     @Override
     public String getSearchStringEscape()
     {
@@ -161,6 +168,7 @@ public class BasicSQLDialect implements SQLDialect {
         return USAGE_NONE;
     }
 
+    @NotNull
     @Override
     public String getCatalogSeparator()
     {
@@ -179,12 +187,14 @@ public class BasicSQLDialect implements SQLDialect {
         return true;
     }
 
+    @NotNull
     @Override
     public SQLStateType getSQLStateType()
     {
         return SQLStateType.SQL99;
     }
 
+    @NotNull
     @Override
     public String getScriptDelimiter()
     {
@@ -209,12 +219,14 @@ public class BasicSQLDialect implements SQLDialect {
         return true;
     }
 
+    @NotNull
     @Override
     public DBPIdentifierCase storesUnquotedCase()
     {
         return DBPIdentifierCase.UPPER;
     }
 
+    @NotNull
     @Override
     public DBPIdentifierCase storesQuotedCase()
     {

@@ -100,6 +100,7 @@
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
+                    <property id="supports-struct-cache" label="Driver supports structure cache" description="Driver supports structure cache reading. Enables schema columns, keys, etc." type="boolean" required="false" defaultValue="true"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -467,8 +468,10 @@
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
                     <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="*"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
-                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-struct-cache" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
+
                 </driver>
                 <driver
                     id="sqlite_ch_werner"

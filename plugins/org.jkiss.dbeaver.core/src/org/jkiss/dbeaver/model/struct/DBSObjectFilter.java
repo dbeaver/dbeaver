@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -144,12 +145,13 @@ public class DBSObjectFilter
         return include != null && include.size() == 1 && CommonUtils.isEmpty(exclude);
     }
 
+    @Nullable
     public String getSingleMask()
     {
         return !CommonUtils.isEmpty(include) ? include.get(0) : null;
     }
     
-    public boolean matches(String name)
+    public synchronized boolean matches(String name)
     {
         if (includePatterns == null && !CommonUtils.isEmpty(include)) {
             includePatterns = new ArrayList<Pattern>(include.size());

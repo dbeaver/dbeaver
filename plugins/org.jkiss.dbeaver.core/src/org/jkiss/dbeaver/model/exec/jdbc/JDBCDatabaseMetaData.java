@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.exec.jdbc;
 
+import org.jkiss.code.Nullable;
+
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
@@ -51,7 +53,7 @@ public interface JDBCDatabaseMetaData extends DatabaseMetaData {
         throws SQLException;
 
     @Override
-    JDBCResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern,
+    JDBCResultSet getColumns(@Nullable String catalog, @Nullable String schemaPattern, String tableNamePattern,
                          String columnNamePattern)
         throws SQLException;
 

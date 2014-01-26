@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -72,6 +73,7 @@ public class GenericDataSource extends JDBCDataSource
     private String selectedEntityName;
     private boolean selectedEntityFromAPI;
     private String allObjectsPattern;
+    private boolean supportsStructCache;
 
     public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -100,6 +102,7 @@ public class GenericDataSource extends JDBCDataSource
         return allObjectsPattern;
     }
 
+    @Nullable
     public GenericMetaObject getMetaObject(String id)
     {
         return metaModel == null ? null : metaModel.getObject(id);
@@ -124,6 +127,11 @@ public class GenericDataSource extends JDBCDataSource
         if (supportsSubqueries != null) {
             info.setSupportsIndexes(Boolean.valueOf(supportsSubqueries.toString()));
         }
+
+        final Object supportsStructCacheParam = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STRUCT_CACHE);
+        if (supportsStructCacheParam != null) {
+            this.supportsStructCache = CommonUtils.toBoolean(supportsStructCacheParam);
+        }
         return info;
     }
 
@@ -147,6 +155,10 @@ public class GenericDataSource extends JDBCDataSource
                 log.debug(e);
             }
         }
+    }
+
+    public boolean supportsStructCache() {
+        return supportsStructCache;
     }
 
     public Collection<GenericTableType> getTableTypes(DBRProgressMonitor monitor)

@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -38,6 +39,7 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
     OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
         throws DBException;
 
+    @Nullable
     OBJECT getCachedObject(String name);
 
     boolean isCached();
