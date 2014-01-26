@@ -2,6 +2,6 @@
 <plugin>
 	<extension point="org.jkiss.dbeaver.resources">
 		<resource name="drivers/sqlite/xerial/LICENSE.txt"/>
-		<resource name="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar"/>
+		<resource name="drivers/sqlite/xerial/sqlite-jdbc4-3.8.2-SNAPSHOT.jar"/>
 	</extension>
 </plugin>

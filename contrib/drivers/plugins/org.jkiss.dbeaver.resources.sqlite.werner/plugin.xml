@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<plugin>
-	<extension point="org.jkiss.dbeaver.resources">
-		<resource name="drivers/sqlite/werner/LICENSE.txt"/>
-		<resource name="drivers/sqlite/werner/sqlite.jar"/>
-		<resource name="drivers/sqlite/werner/sqlite_jni.dll"/>
-	</extension>
-</plugin>
