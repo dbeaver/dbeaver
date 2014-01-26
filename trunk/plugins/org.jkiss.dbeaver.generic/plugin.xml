@@ -466,11 +466,11 @@
                     defaultPort=""
                     webURL="http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC/"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="*"/>
+                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc4-3.8.2-SNAPSHOT.jar" url="*"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
-                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
 
                 </driver>
                 <driver
@@ -485,6 +485,24 @@
                     <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="*"/>
                 </driver>
+                <driver
+                    id="sqlite_jdbc"
+                    label="SQLite"
+                    class="org.sqlite.JDBC"
+                    sampleURL="jdbc:sqlite:{file}"
+                    defaultPort=""
+                    webURL="https://bitbucket.org/xerial/sqlite-jdbc"
+                    description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
+                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc4-3.8.2-SNAPSHOT.jar" url="*"/>
+                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-struct-cache" value="false"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <replace provider="generic" driver="sqlite_zentus"/>
+                    <replace provider="generic" driver="sqlite_xerial"/>
+                    <replace provider="generic" driver="sqlite_ch_werner"/>
+                </driver>
+
                 <driver
                     id="teradata"
                     label="Teradata"
