@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -72,6 +73,7 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema
         return schemaName;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 100)
     public String getDescription()

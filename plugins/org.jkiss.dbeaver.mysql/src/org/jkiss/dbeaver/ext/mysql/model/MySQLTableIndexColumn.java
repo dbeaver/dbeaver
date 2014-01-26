@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -96,6 +97,7 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
         return nullable;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

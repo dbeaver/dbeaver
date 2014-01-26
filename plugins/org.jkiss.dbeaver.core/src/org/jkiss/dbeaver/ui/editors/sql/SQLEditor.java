@@ -1176,6 +1176,7 @@ public class SQLEditor extends SQLEditorBase
             return -1;
         }
 
+        @Nullable
         @Override
         public String getDescription()
         {

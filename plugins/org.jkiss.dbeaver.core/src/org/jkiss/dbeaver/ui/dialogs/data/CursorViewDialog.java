@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -197,6 +198,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
             return -1;
         }
 
+        @Nullable
         @Override
         public String getDescription()
         {

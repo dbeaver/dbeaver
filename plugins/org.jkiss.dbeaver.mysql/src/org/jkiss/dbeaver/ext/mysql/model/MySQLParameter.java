@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -57,6 +58,7 @@ public class MySQLParameter implements DBSObject
     }
 
 //    @Property(name = "Description", viewable = true, order = 100)
+    @Nullable
     @Override
     public String getDescription()
     {

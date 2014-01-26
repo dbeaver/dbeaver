@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.module;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
@@ -60,6 +61,7 @@ public class DB2ModuleCondition extends DB2Object<DB2Module> {
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

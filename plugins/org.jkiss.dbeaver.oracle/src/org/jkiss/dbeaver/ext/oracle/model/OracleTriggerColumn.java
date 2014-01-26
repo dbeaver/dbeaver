@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTriggerColumn;
@@ -86,6 +87,7 @@ public class OracleTriggerColumn extends AbstractTriggerColumn
         return 0;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

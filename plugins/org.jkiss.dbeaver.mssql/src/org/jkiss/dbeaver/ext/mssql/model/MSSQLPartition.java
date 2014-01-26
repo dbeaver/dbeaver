@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableObject;
@@ -142,6 +143,7 @@ public class MSSQLPartition extends JDBCTableObject<MSSQLTable>
         return expression;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 5)
     public String getDescription()

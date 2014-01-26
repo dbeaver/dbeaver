@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
@@ -173,6 +174,7 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
         return objectInfoString;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false, order = 20, updatable = true)
     public String getDescription()

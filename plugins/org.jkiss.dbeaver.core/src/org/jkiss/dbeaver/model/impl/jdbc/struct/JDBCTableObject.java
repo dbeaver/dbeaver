@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -67,6 +68,7 @@ public abstract class JDBCTableObject<TABLE extends JDBCTable> implements DBSObj
         return table;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

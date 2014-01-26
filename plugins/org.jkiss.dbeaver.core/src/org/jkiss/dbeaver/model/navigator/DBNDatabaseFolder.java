@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -96,6 +97,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return meta.getChildrenType(getDataSource());
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

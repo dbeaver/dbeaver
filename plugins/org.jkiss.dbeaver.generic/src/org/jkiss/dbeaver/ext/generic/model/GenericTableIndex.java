@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -79,6 +80,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
         return getTable().getDataSource();
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 100)
     public String getDescription()
@@ -111,6 +113,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
         return columns;
     }
 
+    @Nullable
     public GenericTableIndexColumn getColumn(String columnName)
     {
         return DBUtils.findObject(columns, columnName);

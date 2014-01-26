@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -80,6 +81,7 @@ public class GenericProcedureParameter extends JDBCColumn implements DBSProcedur
         return parameterType;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -86,6 +87,7 @@ public class MSSQLCharset extends MSSQLInformation {
         return maxLength;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 100)
     public String getDescription()

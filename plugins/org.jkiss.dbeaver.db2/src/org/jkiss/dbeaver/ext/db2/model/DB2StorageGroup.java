@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
@@ -121,6 +122,7 @@ public class DB2StorageGroup extends DB2GlobalObject implements DBPNamedObject {
         return dataTag;
     }
 
+    @Nullable
     @Override
     @Property(viewable = false)
     public String getDescription()

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -489,6 +490,7 @@ public class MSSQLTable extends MSSQLTableBase
         }
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {

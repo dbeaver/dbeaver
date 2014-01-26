@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewBaseDepCache;
@@ -114,6 +115,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
     // Properties
     // -----------------
 
+    @Nullable
     @Override
     @Property(viewable = false, editable = false, updatable = false)
     public String getDescription()
