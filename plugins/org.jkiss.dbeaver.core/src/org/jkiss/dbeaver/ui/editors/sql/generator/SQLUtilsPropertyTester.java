@@ -54,7 +54,7 @@ public class SQLUtilsPropertyTester extends PropertyTester
         if (property.equals(PROP_CAN_GENERATE)) {
             if (structuredSelection instanceof ResultSetSelection) {
                 // Results
-                return true;
+                return ((ResultSetSelection) structuredSelection).getResultSetViewer().getModel().isSingleSource();
             } else {
                 // Table
                 if (structuredSelection.isEmpty()) {
