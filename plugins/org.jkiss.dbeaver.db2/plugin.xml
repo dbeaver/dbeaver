@@ -26,6 +26,7 @@
         <command id="org.jkiss.dbeaver.ext.db2.table.reorg" name="%command.org.jkiss.dbeaver.ext.db2.table.reorg.name" description="%command.org.jkiss.dbeaver.ext.db2.table.reorg.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
         <command id="org.jkiss.dbeaver.ext.db2.table.reorgix" name="%command.org.jkiss.dbeaver.ext.db2.table.reorgix.name" description="%command.org.jkiss.dbeaver.ext.db2.table.reorgix.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
         <command id="org.jkiss.dbeaver.ext.db2.table.runstats" name="%command.org.jkiss.dbeaver.ext.db2.table.runstats.name" description="%command.org.jkiss.dbeaver.ext.db2.table.runstats.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
+        <command id="org.jkiss.dbeaver.ext.db2.table.truncate" name="%command.org.jkiss.dbeaver.ext.db2.table.truncate.name" description="%command.org.jkiss.dbeaver.ext.db2.table.truncate.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
@@ -45,16 +46,20 @@
             </with>
         </definition>
     </extension>
-
+    
     <extension point="org.eclipse.ui.handlers">
        <handler commandId="org.jkiss.dbeaver.ext.db2.table.reorg" class="org.jkiss.dbeaver.ext.db2.actions.DB2TableToolsHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
+          <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
        </handler>
        <handler commandId="org.jkiss.dbeaver.ext.db2.table.reorgix" class="org.jkiss.dbeaver.ext.db2.actions.DB2TableToolsHandler">
-           <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
+          <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
        </handler>
        <handler commandId="org.jkiss.dbeaver.ext.db2.table.runstats" class="org.jkiss.dbeaver.ext.db2.actions.DB2TableToolsHandler">
-           <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
+          <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
+        </handler>
+       <handler commandId="org.jkiss.dbeaver.ext.db2.table.truncate" class="org.jkiss.dbeaver.ext.db2.actions.DB2TableToolsHandler">
+          <!-- TODO DF: How to restrict this menu item only to DB2v9.7+ ? -->
+          <enabledWhen><reference definitionId="org.jkiss.dbeaver.db2.tableSelected"/></enabledWhen>
         </handler>
     </extension>
 
@@ -68,6 +73,9 @@
                 <visibleWhen checkEnabled="true"/>
              </command>
              <command commandId="org.jkiss.dbeaver.ext.db2.table.reorgix">
+                <visibleWhen checkEnabled="true"/>
+             </command>
+             <command commandId="org.jkiss.dbeaver.ext.db2.table.truncate">
                 <visibleWhen checkEnabled="true"/>
              </command>
           </menu>
