@@ -177,7 +177,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         }
 
         // Cache attributes
-        if ((scope & STRUCT_ATTRIBUTES) != 0) {
+        if ((scope & STRUCT_ATTRIBUTES) != 0 && getDataSource().supportsStructCache()) {
             // Try to cache columns
             // Cannot be sure that all jdbc drivers support reading of all catalog columns
             // So error here is not fatal
@@ -189,7 +189,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             }
         }
         // Cache associations
-        if ((scope & STRUCT_ASSOCIATIONS) != 0) {
+        if ((scope & STRUCT_ASSOCIATIONS) != 0 && getDataSource().supportsStructCache()) {
             // Try to read all PKs
             // Try to read all FKs
             try {

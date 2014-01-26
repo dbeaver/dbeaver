@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -69,7 +70,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
      * @throws org.jkiss.dbeaver.DBException
      *             on error
      */
-    public void loadChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject) throws DBException
+    public void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException
     {
         if ((forObject == null && this.childrenCached)
             || (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject))) || monitor.isCanceled()) {
@@ -202,6 +203,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
+    @Nullable
     public Collection<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject) throws DBException
     {
         loadChildren(monitor, owner, forObject);
@@ -211,6 +213,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
+    @Nullable
     public CHILD getChild(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject, String objectName) throws DBException
     {
         loadChildren(monitor, owner, forObject);
@@ -244,6 +247,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(parent);
             if (nestedCache == null) {
                 nestedCache = new SimpleObjectCache<OBJECT, CHILD>();
+                nestedCache.setCaseSensitive(caseSensitive);
                 childrenCache.put(parent, nestedCache);
             }
             nestedCache.setCache(children);

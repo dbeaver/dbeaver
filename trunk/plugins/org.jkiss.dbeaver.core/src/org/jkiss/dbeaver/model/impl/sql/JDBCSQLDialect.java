@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
@@ -192,23 +193,26 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         loadKeywords(metaData);
     }
 
+    @NotNull
     @Override
     public String getDialectName() {
         return name;
     }
 
+    @NotNull
     @Override
     public String getIdentifierQuoteString()
     {
         return identifierQuoteString;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Collection<String> getExecuteKeywords() {
         return null;
     }
 
+    @NotNull
     @Override
     public String getSearchStringEscape()
     {
@@ -227,6 +231,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return schemaUsage;
     }
 
+    @NotNull
     @Override
     public String getCatalogSeparator()
     {
@@ -245,12 +250,14 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return isCatalogAtStart;
     }
 
+    @NotNull
     @Override
     public SQLStateType getSQLStateType()
     {
         return sqlStateType;
     }
 
+    @NotNull
     @Override
     public String getScriptDelimiter()
     {
@@ -275,12 +282,14 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return supportsQuotedMixedCase;
     }
 
+    @NotNull
     @Override
     public DBPIdentifierCase storesUnquotedCase()
     {
         return unquotedIdentCase;
     }
 
+    @NotNull
     @Override
     public DBPIdentifierCase storesQuotedCase()
     {
@@ -298,6 +307,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         this.supportsSubqueries = supportsSubqueries;
     }
 
+    @NotNull
     @Override
     public TreeSet<String> getTypes() {
         if (!typesLoaded) {

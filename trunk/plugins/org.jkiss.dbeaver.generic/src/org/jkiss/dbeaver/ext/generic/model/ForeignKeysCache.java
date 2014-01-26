@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -76,6 +77,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             .getSourceStatement();
     }
 
+    @Nullable
     @Override
     protected GenericTableForeignKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String fkName, ResultSet dbResult)
         throws SQLException, DBException
@@ -113,7 +115,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
         // Find PK
         GenericPrimaryKey pk = null;
-        if (pkName != null) {
+        if (!CommonUtils.isEmpty(pkName)) {
             pk = DBUtils.findObject(pkTable.getConstraints(session.getProgressMonitor()), pkName);
             if (pk == null) {
                 log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
@@ -150,7 +152,10 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 pk.addColumn(new GenericTableConstraintColumn(pk, pkColumn, keySeq));
             }
         }
-
+        if (CommonUtils.isEmpty(fkName)) {
+            // [JDBC: SQLite] Some drivers return empty foreign key names
+            fkName = "FK" + keySeq;
+        }
         return new GenericTableForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
     }
 

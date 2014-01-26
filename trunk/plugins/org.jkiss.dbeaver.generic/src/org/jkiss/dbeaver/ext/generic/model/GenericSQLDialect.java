@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -53,12 +54,14 @@ class GenericSQLDialect extends JDBCSQLDialect {
         scriptDelimiter = CommonUtils.toString(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
     }
 
+    @NotNull
     @Override
     public String getScriptDelimiter()
     {
         return CommonUtils.isEmpty(scriptDelimiter) ? super.getScriptDelimiter() : scriptDelimiter;
     }
 
+    @NotNull
     @Override
     public Collection<String> getExecuteKeywords()
     {

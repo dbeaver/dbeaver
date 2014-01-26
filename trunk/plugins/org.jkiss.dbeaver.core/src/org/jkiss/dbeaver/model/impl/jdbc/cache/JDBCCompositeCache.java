@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -77,9 +78,11 @@ public abstract class JDBCCompositeCache<
     abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner, PARENT forParent)
         throws SQLException;
 
+    @Nullable
     abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, PARENT parent, String childName, ResultSet resultSet)
         throws SQLException, DBException;
 
+    @Nullable
     abstract protected ROW_REF fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, ResultSet resultSet)
         throws SQLException, DBException;
 
@@ -224,10 +227,12 @@ public abstract class JDBCCompositeCache<
                             JDBCUtils.safeGetString(dbResult, ((Number)objectColumnName).intValue()) :
                             JDBCUtils.safeGetString(dbResult, objectColumnName.toString());
 
-                        if (CommonUtils.isEmpty(objectName) || CommonUtils.isEmpty(parentName)) {
-                            // Bad object - can't evaluate it
+                        if (forParent == null && CommonUtils.isEmpty(parentName)) {
+                            // No parent - can't evaluate it
+                            log.debug("Empty parent name in " + this);
                             continue;
                         }
+
                         PARENT parent = forParent;
                         if (parent == null) {
                             parent = parentCache.getObject(monitor, owner, parentName, parentType);
@@ -252,12 +257,15 @@ public abstract class JDBCCompositeCache<
                             parentObjectMap.put(parent, objectMap);
                         }
 
-                        ObjectInfo objectInfo = objectMap.get(objectName);
+                        ObjectInfo objectInfo = CommonUtils.isEmpty(objectName) ? null : objectMap.get(objectName);
                         if (objectInfo == null) {
                             OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
                             if (object == null) {
                                 // Could not fetch object
                                 continue;
+                            }
+                            if (CommonUtils.isEmpty(objectName)) {
+                                objectName = object.getName();
                             }
                             objectInfo = new ObjectInfo(object);
                             objectMap.put(objectName, objectInfo);

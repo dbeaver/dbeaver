@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
@@ -76,6 +77,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         return result;
     }
 
+    @Nullable
     @Override
     public OBJECT getCachedObject(String name)
     {
@@ -118,6 +120,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
+    @Nullable
     public <SUB_TYPE> SUB_TYPE getObject(DBRProgressMonitor monitor, OWNER owner, String name, Class<SUB_TYPE> type)
         throws DBException
     {
