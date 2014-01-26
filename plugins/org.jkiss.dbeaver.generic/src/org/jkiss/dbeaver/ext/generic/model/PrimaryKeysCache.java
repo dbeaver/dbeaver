@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -82,6 +83,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             true);
     }
 
+    @Nullable
     @Override
     protected GenericTableConstraintColumn fetchObjectRow(
         JDBCSession session,
@@ -91,6 +93,10 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
         if (CommonUtils.isEmpty(columnName)) {
             return null;
+        }
+        if (columnName.startsWith("[") && columnName.endsWith("]")) {
+            // [JDBC: SQLite] Escaped column name. Let's un-escape it
+            columnName = columnName.substring(1, columnName.length() - 1);
         }
         int keySeq = GenericUtils.safeGetInt(pkObject, dbResult, JDBCConstants.KEY_SEQ);
 

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -38,63 +39,71 @@ public class WMIDialect implements SQLDialect {
     {
     }
 
+    @NotNull
     @Override
     public String getDialectName() {
         return "WMI";
     }
 
+    @NotNull
     @Override
     public String getIdentifierQuoteString()
     {
         return "'";
     }
 
+    @NotNull
     @Override
     public Collection<String> getExecuteKeywords()
     {
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
     public Set<String> getReservedWords() {
         return Collections.emptySet();
     }
 
+    @NotNull
     @Override
     public Set<String> getFunctions() {
         return Collections.emptySet();
     }
 
+    @NotNull
     @Override
     public Set<String> getTypes() {
         return Collections.emptySet();
     }
 
     @Override
-    public DBPKeywordType getKeywordType(String word) {
+    public DBPKeywordType getKeywordType(@NotNull String word) {
         return null;
     }
 
+    @NotNull
     @Override
-    public List<String> getMatchedKeywords(String word) {
+    public List<String> getMatchedKeywords(@NotNull String word) {
         return Collections.emptyList();
     }
 
     @Override
-    public boolean isKeywordStart(String word) {
+    public boolean isKeywordStart(@NotNull String word) {
         return false;
     }
 
     @Override
-    public boolean isEntityQueryWord(String word) {
+    public boolean isEntityQueryWord(@NotNull String word) {
         return false;
     }
 
     @Override
-    public boolean isAttributeQueryWord(String word) {
+    public boolean isAttributeQueryWord(@NotNull String word) {
         return false;
     }
 
+    @NotNull
     @Override
     public String getSearchStringEscape()
     {
@@ -113,6 +122,7 @@ public class WMIDialect implements SQLDialect {
         return 0;
     }
 
+    @NotNull
     @Override
     public String getCatalogSeparator()
     {
@@ -131,12 +141,14 @@ public class WMIDialect implements SQLDialect {
         return true;
     }
 
+    @NotNull
     @Override
     public SQLStateType getSQLStateType()
     {
         return SQLStateType.UNKNOWN;
     }
 
+    @NotNull
     @Override
     public String getScriptDelimiter()
     {
@@ -167,12 +179,14 @@ public class WMIDialect implements SQLDialect {
         return false;
     }
 
+    @NotNull
     @Override
     public DBPIdentifierCase storesUnquotedCase()
     {
         return DBPIdentifierCase.MIXED;
     }
 
+    @NotNull
     @Override
     public DBPIdentifierCase storesQuotedCase()
     {

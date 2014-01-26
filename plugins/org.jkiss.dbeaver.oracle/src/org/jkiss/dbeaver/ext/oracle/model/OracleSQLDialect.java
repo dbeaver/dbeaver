@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 
@@ -37,6 +38,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         super(oracleDataSource, "Oracle", metaData);
     }
 
+    @NotNull
     @Override
     public Collection<String> getExecuteKeywords() {
         return Collections.singleton("call");

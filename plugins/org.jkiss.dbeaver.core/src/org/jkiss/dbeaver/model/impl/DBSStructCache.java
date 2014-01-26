@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -34,9 +35,11 @@ public interface DBSStructCache<OWNER extends DBSObject, OBJECT extends DBSObjec
 
     DBSObjectCache<OBJECT, CHILD> getChildrenCache(final OBJECT forObject);
 
+    @Nullable
     Collection<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject)
         throws DBException;
 
+    @Nullable
     CHILD getChild(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject, String objectName)
         throws DBException;
 
