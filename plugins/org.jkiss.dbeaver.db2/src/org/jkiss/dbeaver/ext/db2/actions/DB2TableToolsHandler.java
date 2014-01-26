@@ -82,6 +82,9 @@ public class DB2TableToolsHandler extends AbstractHandler {
             case RUNSTATS:
                 performRunstats(activePart.getSite(), dataSource, selectedDB2Tables);
                 break;
+            case TRUNCATE:
+                performTruncate(activePart.getSite(), dataSource, selectedDB2Tables);
+                break;
             }
         }
 
@@ -140,6 +143,21 @@ public class DB2TableToolsHandler extends AbstractHandler {
         dialog.open();
     }
 
+    private void performTruncate(final IWorkbenchPartSite partSite, DB2DataSource dataSource,
+        final Collection<DB2Table> selectedDB2Tables)
+    {
+        DB2TableTruncateDialog dialog = new DB2TableTruncateDialog(partSite, dataSource, selectedDB2Tables);
+        dialog.setOnSuccess(new Runnable() {
+            @Override
+            public void run()
+            {
+                UIUtils.showMessageBox(partSite.getShell(), DB2Messages.dialog_table_tools_success_title,
+                    DB2Messages.dialog_table_tools_truncate_success, SWT.ICON_INFORMATION);
+            }
+        });
+        dialog.open();
+    }
+
     // -------
     // Helpers
     // -------
@@ -149,7 +167,9 @@ public class DB2TableToolsHandler extends AbstractHandler {
 
         REORGIX("org.jkiss.dbeaver.ext.db2.table.reorgix"),
 
-        RUNSTATS("org.jkiss.dbeaver.ext.db2.table.runstats");
+        RUNSTATS("org.jkiss.dbeaver.ext.db2.table.runstats"),
+
+        TRUNCATE("org.jkiss.dbeaver.ext.db2.table.truncate");
 
         private String commandId;
 
