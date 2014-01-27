@@ -164,6 +164,10 @@
                 </view>
             </views>
             <tools>
+                <toolGroup
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Table Maintenance"
+                    icon="#tools"/>
                 <tool
                     class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
                     description="Export database"
@@ -190,10 +194,42 @@
                     singleton="true">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>
-                <toolGroup
-                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
-                    label="Maintenance"
-                    icon="#tools"/>
+                <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
+                    description="Analyse table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
+                    label="Analyse"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                </tool>
+                <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
+                    description="Check table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
+                    label="Check"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                </tool>
+                <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
+                    description="Optimize table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
+                    label="Optimize"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                </tool>
+                <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
+                    description="Repair table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
+                    label="Repair"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+                </tool>
                 <tool
                     class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
                     description="Truncate table(s)"
