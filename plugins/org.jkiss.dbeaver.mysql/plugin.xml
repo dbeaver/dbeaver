@@ -169,7 +169,8 @@
                     description="Export database"
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
                     label="Export database"
-                    icon="#export">
+                    icon="#export"
+                    singleton="true">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>
                 <tool
@@ -177,15 +178,30 @@
                     description="Import database"
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
                     label="Import database"
-                    icon="#import">
+                    icon="#import"
+                    singleton="true">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 </tool>
                 <tool
                     class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
                     description="Execute script with native client"
                     id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
-                    label="Execute script">
+                    label="Execute script"
+                    singleton="true">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+                </tool>
+                <toolGroup
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Maintenance"
+                    icon="#tools"/>
+                <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
+                    description="Truncate table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
+                    label="Truncate"
+                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
                 </tool>
             </tools>
         </datasource>

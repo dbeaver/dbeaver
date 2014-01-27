@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DataSourceToolDescriptor
+ * ToolDescriptor
  */
 public abstract class AbstractContextDescriptor extends AbstractDescriptor
 {

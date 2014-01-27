@@ -19,7 +19,10 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -28,10 +31,13 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,7 +57,6 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_CAN_RENAME = "canRename";
     public static final String PROP_CAN_FILTER = "canFilter";
-    public static final String PROP_HAS_TOOLS = "hasTools";
 
     public ObjectPropertyTester() {
         super();
@@ -59,6 +64,7 @@ public class ObjectPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+
         if (!(receiver instanceof DBNNode)) {
             return false;
         }
@@ -149,14 +155,6 @@ public class ObjectPropertyTester extends PropertyTester
         } else if (property.equals(PROP_CAN_FILTER)) {
             if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
                 return true;
-            }
-        } else if (property.equals(PROP_HAS_TOOLS)) {
-            if (node instanceof DBNDatabaseNode) {
-                DBSObject object = ((DBNDatabaseNode)node).getObject();
-                if (object.getDataSource() != null) {
-                    DriverDescriptor driver = (DriverDescriptor) object.getDataSource().getContainer().getDriver();
-                    return !CommonUtils.isEmpty(driver.getProviderDescriptor().getTools(object));
-                }
             }
         }
         return false;
