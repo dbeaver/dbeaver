@@ -117,8 +117,6 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
     @Override
     protected void createControls(Composite parent)
     {
-        SelectionAdapter changeListener = new SQLChangeListener();
-
         Composite composite = new Composite(parent, 2);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -184,12 +182,12 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
 
         // INDEXSCAN
         dlgIndexScan = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_useindexscan, false);
-        dlgIndexScan.addSelectionListener(changeListener);
+        dlgIndexScan.addSelectionListener(SQL_CHANGE_LISTENER);
         UIUtils.createPlaceholder(composite, 1);
 
         // TRUNCATE
         dlgTruncate = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_truncate, false);
-        dlgTruncate.addSelectionListener(changeListener);
+        dlgTruncate.addSelectionListener(SQL_CHANGE_LISTENER);
         UIUtils.createPlaceholder(composite, 1);
 
         // USE TEMP TS
@@ -244,7 +242,7 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
 
         // RESET DICTIONARY
         dlgResetDictionary = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_resetdict, false);
-        dlgResetDictionary.addSelectionListener(changeListener);
+        dlgResetDictionary.addSelectionListener(SQL_CHANGE_LISTENER);
         UIUtils.createPlaceholder(composite, 1);
 
         // TABLE ACCESS
@@ -253,13 +251,13 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
         groupRB.setLayout(new RowLayout());
         dlgAccesNo = new Button(groupRB, SWT.RADIO);
         dlgAccesNo.setText(DB2Messages.dialog_table_tools_reorg_access_no);
-        dlgAccesNo.addSelectionListener(changeListener);
+        dlgAccesNo.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgAccesReadOnly = new Button(groupRB, SWT.RADIO);
         dlgAccesReadOnly.setText(DB2Messages.dialog_table_tools_reorg_access_read);
-        dlgAccesReadOnly.addSelectionListener(changeListener);
+        dlgAccesReadOnly.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgAccesReadWrite = new Button(groupRB, SWT.RADIO);
         dlgAccesReadWrite.setText(DB2Messages.dialog_table_tools_reorg_access_readwrite);
-        dlgAccesReadWrite.addSelectionListener(changeListener);
+        dlgAccesReadWrite.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // Initial setup
         dlgTruncate.setEnabled(false);

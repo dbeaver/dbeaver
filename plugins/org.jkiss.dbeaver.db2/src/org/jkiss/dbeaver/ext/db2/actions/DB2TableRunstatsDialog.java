@@ -61,8 +61,6 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
     @Override
     protected void createControls(Composite parent)
     {
-        SelectionAdapter changeListener = new SQLChangeListener();
-
         Composite composite = new Composite(parent, 2);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -74,13 +72,13 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
         groupCols.setLayout(new RowLayout(SWT.VERTICAL));
         dlgColsAllAndDistribution = new Button(groupCols, SWT.RADIO);
         dlgColsAllAndDistribution.setText(DB2Messages.dialog_table_tools_runstats_cols_all_and_distribution);
-        dlgColsAllAndDistribution.addSelectionListener(changeListener);
+        dlgColsAllAndDistribution.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgColsAll = new Button(groupCols, SWT.RADIO);
         dlgColsAll.setText(DB2Messages.dialog_table_tools_runstats_cols_all);
-        dlgColsAll.addSelectionListener(changeListener);
+        dlgColsAll.addSelectionListener(SQL_CHANGE_LISTENER);
         Button dlgColsNo = new Button(groupCols, SWT.RADIO);
         dlgColsNo.setText(DB2Messages.dialog_table_tools_runstats_cols_no);
-        dlgColsNo.addSelectionListener(changeListener);
+        dlgColsNo.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // RUNSTATS ON INDEXES
         UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_runstats_indexes_title).setLayoutData(
@@ -89,13 +87,13 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
         groupIx.setLayout(new RowLayout(SWT.VERTICAL));
         dlgIndexesDetailed = new Button(groupIx, SWT.RADIO);
         dlgIndexesDetailed.setText(DB2Messages.dialog_table_tools_runstats_indexes_detailed);
-        dlgIndexesDetailed.addSelectionListener(changeListener);
+        dlgIndexesDetailed.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgIndexesAll = new Button(groupIx, SWT.RADIO);
         dlgIndexesAll.setText(DB2Messages.dialog_table_tools_runstats_indexes_all);
-        dlgIndexesAll.addSelectionListener(changeListener);
+        dlgIndexesAll.addSelectionListener(SQL_CHANGE_LISTENER);
         Button dlgIndexesNo = new Button(groupIx, SWT.RADIO);
         dlgIndexesNo.setText(DB2Messages.dialog_table_tools_runstats_indexes_no);
-        dlgIndexesNo.addSelectionListener(changeListener);
+        dlgIndexesNo.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // SAMPLING
         dlgSample = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_runstats_stats_title, false);
@@ -115,7 +113,7 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
         Rectangle clientArea = getShell().getClientArea();
         dlgSampleValue.setLocation(clientArea.x, clientArea.y);
         dlgSampleValue.pack();
-        dlgSampleValue.addSelectionListener(changeListener);
+        dlgSampleValue.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // Read only Resulting RUNSTATS Command
         GridData gd = new GridData();

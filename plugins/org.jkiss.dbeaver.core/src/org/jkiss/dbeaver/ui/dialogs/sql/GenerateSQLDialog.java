@@ -25,11 +25,15 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -48,7 +52,15 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     private SQLDataSource dataSource;
     private Runnable onSuccess;
 
-    public GenerateSQLDialog(IWorkbenchPartSite parentSite, SQLDataSource dataSource, String title, Image image)
+    protected SelectionListener SQL_CHANGE_LISTENER = new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e)
+        {
+            updateSQL();
+        }
+    };
+
+    public GenerateSQLDialog(IWorkbenchPartSite parentSite, SQLDataSource dataSource, String title, @Nullable Image image)
     {
         super(parentSite, title, image);
         this.dataSource = dataSource;

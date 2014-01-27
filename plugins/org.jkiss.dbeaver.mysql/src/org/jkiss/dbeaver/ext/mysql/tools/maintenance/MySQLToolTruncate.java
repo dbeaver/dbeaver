@@ -16,33 +16,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.oracle.tools;
+package org.jkiss.dbeaver.ext.mysql.tools.maintenance;
 
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
-import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Database import
  */
-public class OracleToolScript implements IExternalTool
+public class MySQLToolTruncate implements IExternalTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        for (DBSObject object : objects) {
-            if (object.getDataSource() instanceof OracleDataSource) {
-                ToolWizardDialog dialog = new ToolWizardDialog(
-                    window,
-                    new OracleScriptExecuteWizard((OracleDataSource)((DBSObject) objects).getDataSource()));
-                dialog.open();
-            }
+        List<MySQLTable> tables = CommonUtils.filterCollection(objects, MySQLTable.class);
+        if (!tables.isEmpty()) {
+            MySQLTableTruncateDialog dialog = new MySQLTableTruncateDialog(
+                activePart.getSite(), tables.get(0).getDataSource(), tables);
+            dialog.open();
         }
     }
+
 }

@@ -115,6 +115,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     public abstract SQLDataSource getDataSource();
 
+    public boolean hasAnnotations()
+    {
+        return false;
+    }
+
     @Override
     public DBSDataSourceContainer getDataSourceContainer() {
         SQLDataSource dataSource = getDataSource();
@@ -218,22 +223,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     protected ISourceViewer createSourceViewer(Composite parent,
                                                IVerticalRuler ruler, int styles)
     {
-        OverviewRuler overviewRuler = new OverviewRuler(
-            getAnnotationAccess(),
-            VERTICAL_RULER_WIDTH,
-            getSharedColors());
-
-        char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
-        ICharacterPairMatcher matcher;
-        try {
-            matcher = new DefaultCharacterPairMatcher(matchChars,
-                SQLPartitionScanner.SQL_PARTITIONING,
-                true);
-        } catch (Throwable e) {
-            // If we below Eclipse 4.2.1
-            matcher = new DefaultCharacterPairMatcher(matchChars, SQLPartitionScanner.SQL_PARTITIONING);
+        OverviewRuler overviewRuler = null;
+        if (hasAnnotations()) {
+            overviewRuler = new OverviewRuler(
+                getAnnotationAccess(),
+                VERTICAL_RULER_WIDTH,
+                getSharedColors());
         }
-
         SQLEditorSourceViewer sourceViewer = new SQLEditorSourceViewer(
             parent,
             ruler,
@@ -241,13 +237,26 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             true,
             styles);
 
-        // Configure decorations
-        decorationSupport = new SourceViewerDecorationSupport(sourceViewer, overviewRuler, getAnnotationAccess(), getSharedColors());
-        decorationSupport.setCursorLinePainterPreferenceKeys(SQLPreferenceConstants.CURRENT_LINE, SQLPreferenceConstants.CURRENT_LINE_COLOR);
-        decorationSupport.setMarginPainterPreferenceKeys(SQLPreferenceConstants.PRINT_MARGIN, SQLPreferenceConstants.PRINT_MARGIN_COLOR, SQLPreferenceConstants.PRINT_MARGIN_COLUMN);
-        decorationSupport.setSymbolicFontName(getFontPropertyPreferenceKey());
-        decorationSupport.setCharacterPairMatcher(matcher);
-        decorationSupport.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
+        if (hasAnnotations()) {
+            char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
+            ICharacterPairMatcher matcher;
+            try {
+                matcher = new DefaultCharacterPairMatcher(matchChars,
+                    SQLPartitionScanner.SQL_PARTITIONING,
+                    true);
+            } catch (Throwable e) {
+                // If we below Eclipse 4.2.1
+                matcher = new DefaultCharacterPairMatcher(matchChars, SQLPartitionScanner.SQL_PARTITIONING);
+            }
+
+            // Configure decorations
+            decorationSupport = new SourceViewerDecorationSupport(sourceViewer, overviewRuler, getAnnotationAccess(), getSharedColors());
+            decorationSupport.setCursorLinePainterPreferenceKeys(SQLPreferenceConstants.CURRENT_LINE, SQLPreferenceConstants.CURRENT_LINE_COLOR);
+            decorationSupport.setMarginPainterPreferenceKeys(SQLPreferenceConstants.PRINT_MARGIN, SQLPreferenceConstants.PRINT_MARGIN_COLOR, SQLPreferenceConstants.PRINT_MARGIN_COLUMN);
+            decorationSupport.setSymbolicFontName(getFontPropertyPreferenceKey());
+            decorationSupport.setCharacterPairMatcher(matcher);
+            decorationSupport.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
+        }
 
         return sourceViewer;
     }

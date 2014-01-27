@@ -2072,6 +2072,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         } else {
             rowNum = curPos.row;
         }
+        if (rowNum >= getModel().getRowCount()) {
+            rowNum = getModel().getRowCount() - 1;
+        }
         if (rowNum < 0) {
             rowNum = 0;
         }

@@ -19,9 +19,13 @@
 
 package org.jkiss.dbeaver.tools;
 
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Collection;
 
 /**
  * Database external utility.
@@ -29,7 +33,7 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface IExternalTool {
 
-    void execute(IWorkbenchWindow window, DBPObject object)
+    void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects)
         throws DBException;
 
 }

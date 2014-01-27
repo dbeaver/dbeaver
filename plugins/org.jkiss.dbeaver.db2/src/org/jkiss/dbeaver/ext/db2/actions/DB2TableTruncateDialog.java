@@ -54,8 +54,6 @@ public class DB2TableTruncateDialog extends DB2TableToolDialog {
     @Override
     protected void createControls(Composite parent)
     {
-        SelectionAdapter changeListener = new SQLChangeListener();
-
         Composite composite = new Composite(parent, 2);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -67,10 +65,10 @@ public class DB2TableTruncateDialog extends DB2TableToolDialog {
         groupCols.setLayout(new RowLayout(SWT.VERTICAL));
         dlgStorageDrop = new Button(groupCols, SWT.RADIO);
         dlgStorageDrop.setText(DB2Messages.dialog_table_tools_truncate_storage_drop);
-        dlgStorageDrop.addSelectionListener(changeListener);
+        dlgStorageDrop.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgStorageReuse = new Button(groupCols, SWT.RADIO);
         dlgStorageReuse.setText(DB2Messages.dialog_table_tools_truncate_storage_reuse);
-        dlgStorageReuse.addSelectionListener(changeListener);
+        dlgStorageReuse.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // Triggers Clauses
         UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_truncate_triggers_title).setLayoutData(
@@ -79,10 +77,10 @@ public class DB2TableTruncateDialog extends DB2TableToolDialog {
         groupIx.setLayout(new RowLayout(SWT.VERTICAL));
         dlgTriggersDelete = new Button(groupIx, SWT.RADIO);
         dlgTriggersDelete.setText(DB2Messages.dialog_table_tools_truncate_triggers_ignore);
-        dlgTriggersDelete.addSelectionListener(changeListener);
+        dlgTriggersDelete.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgTriggersRestrict = new Button(groupIx, SWT.RADIO);
         dlgTriggersRestrict.setText(DB2Messages.dialog_table_tools_truncate_triggers_restrict);
-        dlgTriggersRestrict.addSelectionListener(changeListener);
+        dlgTriggersRestrict.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // Read only Resulting RUNSTATS Command
         GridData gd = new GridData();
