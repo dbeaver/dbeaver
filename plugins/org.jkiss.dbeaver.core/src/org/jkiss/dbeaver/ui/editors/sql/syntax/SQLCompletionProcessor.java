@@ -120,7 +120,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException
                         {
-                            makeStructureProposals(monitor, proposals, wordPart, qt);
+                            monitor.beginTask("Seeking for completion proposals", 1);
+                            try {
+                                monitor.subTask("Make structure proposals");
+                                makeStructureProposals(monitor, proposals, wordPart, qt);
+                            } finally {
+                                monitor.done();
+                            }
                         }
                     });
                 } catch (InvocationTargetException e) {
