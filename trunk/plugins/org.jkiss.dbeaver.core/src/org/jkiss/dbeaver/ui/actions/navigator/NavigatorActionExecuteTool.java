@@ -27,17 +27,17 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
+import org.jkiss.dbeaver.registry.ToolDescriptor;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class NavigatorActionExecuteTool implements IActionDelegate
 {
     private IWorkbenchWindow window;
-    private DataSourceToolDescriptor tool;
+    private ToolDescriptor tool;
     private ISelection selection;
 
-    public NavigatorActionExecuteTool(IWorkbenchWindow window, DataSourceToolDescriptor tool)
+    public NavigatorActionExecuteTool(IWorkbenchWindow window, ToolDescriptor tool)
     {
         this.window = window;
         this.tool = tool;

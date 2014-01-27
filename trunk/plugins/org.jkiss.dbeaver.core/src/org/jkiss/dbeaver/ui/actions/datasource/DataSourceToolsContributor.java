@@ -22,23 +22,26 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.registry.ToolDescriptor;
+import org.jkiss.dbeaver.registry.ToolGroupDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DataSourceToolsContributor extends DataSourceMenuContributor
 {
@@ -49,21 +52,20 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
     {
         IWorkbenchPart activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
 
-        DBSObject selectedObject = null;
         ISelection selection = activePart.getSite().getSelectionProvider().getSelection();
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            Object element = ((IStructuredSelection) selection).getFirstElement();
-            selectedObject = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
+        if (!(selection instanceof IStructuredSelection)) {
+            return;
         }
+        DBSObject selectedObject = NavigatorUtils.getSelectedObject((IStructuredSelection) selection);
 
         if (selectedObject != null && selectedObject.getDataSource() != null) {
             DriverDescriptor driver = (DriverDescriptor) selectedObject.getDataSource().getContainer().getDriver();
-            List<DataSourceToolDescriptor> tools = driver.getProviderDescriptor().getTools(selectedObject);
-            fillToolsMenu(menuItems, tools, new StructuredSelection(selectedObject));
+            List<ToolDescriptor> tools = driver.getProviderDescriptor().getTools((IStructuredSelection) selection);
+            fillToolsMenu(menuItems, tools, selection);
         }
     }
 
-    public static void fillToolsMenu(List<IContributionItem> menuItems, List<DataSourceToolDescriptor> tools, ISelection selection)
+    private static void fillToolsMenu(List<IContributionItem> menuItems, List<ToolDescriptor> tools, ISelection selection)
     {
         boolean hasTools = false;
         if (!CommonUtils.isEmpty(tools)) {
@@ -71,8 +73,13 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
                 IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
                 if (activePart != null) {
-                    hasTools = true;
-                    for (DataSourceToolDescriptor tool : tools) {
+                    Map<ToolGroupDescriptor, MenuManager> groupsMap = new HashMap<ToolGroupDescriptor, MenuManager>();
+                    for (ToolDescriptor tool : tools) {
+                        hasTools = true;
+                        MenuManager parentMenu = null;
+                        if (tool.getGroup() != null) {
+                            parentMenu = getGroupMenu(menuItems, groupsMap, tool.getGroup());
+                        }
                         IAction action = ActionUtils.makeAction(
                             new NavigatorActionExecuteTool(workbenchWindow, tool),
                             activePart.getSite(),
@@ -80,7 +87,11 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                             tool.getLabel(),
                             tool.getIcon() == null ? null : ImageDescriptor.createFromImage(tool.getIcon()),
                             tool.getDescription());
-                        menuItems.add(new ActionContributionItem(action));
+                        if (parentMenu == null) {
+                            menuItems.add(new ActionContributionItem(action));
+                        } else {
+                            parentMenu.add(new ActionContributionItem(action));
+                        }
                     }
                 }
             }
@@ -88,5 +99,20 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         if (!hasTools) {
             menuItems.add(new ActionContributionItem(new EmptyListAction()));
         }
+    }
+
+    private static MenuManager getGroupMenu(List<IContributionItem> rootItems, Map<ToolGroupDescriptor, MenuManager> groupsMap, ToolGroupDescriptor group) {
+        MenuManager item = groupsMap.get(group);
+        if (item == null) {
+            item = new MenuManager(group.getLabel(), null, group.getId());
+            if (group.getParent() != null) {
+                MenuManager parentMenu = getGroupMenu(rootItems, groupsMap, group.getParent());
+                parentMenu.add(item);
+            } else {
+                rootItems.add(item);
+            }
+        }
+        groupsMap.put(group, item);
+        return item;
     }
 }

@@ -21,75 +21,58 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.utils.CommonUtils;
 
 /**
- * DataSourceToolDescriptor
+ * ToolDescriptor
  */
-public class DataSourceToolDescriptor extends AbstractContextDescriptor
-{
+public class ToolGroupDescriptor extends AbstractContextDescriptor {
     private final String id;
     private final String label;
     private final String description;
-    private final String toolClassName;
     private final Image icon;
+    private final ToolGroupDescriptor parent;
 
-    public DataSourceToolDescriptor(
+    public ToolGroupDescriptor(
         DataSourceProviderDescriptor provider, IConfigurationElement config)
     {
         super(provider.getPluginId(), config);
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.toolClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        this.parent = CommonUtils.isEmpty(parentId) ? null : provider.getToolGroup(parentId);
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public String getLabel()
-    {
+    public String getLabel() {
         return label;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public Image getIcon()
-    {
+    public Image getIcon() {
         return icon;
     }
 
+    public ToolGroupDescriptor getParent() {
+        return parent;
+    }
+
     @Override
-    protected Object adaptType(DBPObject object)
-    {
+    protected Object adaptType(DBPObject object) {
         if (object instanceof DBSObject) {
             return ((DBSObject) object).getDataSource();
         }
         return super.adaptType(object);
-    }
-
-    public IExternalTool createTool()
-        throws DBException
-    {
-        Class<IExternalTool> toolClass = getObjectClass(toolClassName, IExternalTool.class);
-        if (toolClass == null) {
-            throw new DBException("Tool class '" + toolClassName + "' not found");
-        }
-        try {
-            return toolClass.newInstance();
-        }
-        catch (Throwable ex) {
-            throw new DBException("Can't create tool '" + toolClassName + "'", ex);
-        }
     }
 
 }
