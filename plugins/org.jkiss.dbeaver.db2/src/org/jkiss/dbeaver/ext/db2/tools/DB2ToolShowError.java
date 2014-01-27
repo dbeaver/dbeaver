@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.tools;
 
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
+
+import java.util.Collection;
 
 /**
  * Manage the "Database/Tools" menu for DB2
@@ -32,12 +34,13 @@ import org.jkiss.dbeaver.tools.IExternalTool;
  */
 public class DB2ToolShowError implements IExternalTool {
     @Override
-    public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
+    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        if (object instanceof DBSObject && ((DBSObject) object).getDataSource() instanceof DB2DataSource) {
-            DB2DataSource db2DataSource = (DB2DataSource) ((DBSObject) object).getDataSource();
-            DB2ToolShowErrorDialog dialog = new DB2ToolShowErrorDialog(window, db2DataSource);
-            dialog.open();
+        for (DBSObject object : objects) {
+            if (object.getDataSource() instanceof DB2DataSource) {
+                DB2ToolShowErrorDialog dialog = new DB2ToolShowErrorDialog(window, (DB2DataSource)object.getDataSource());
+                dialog.open();
+            }
         }
     }
 }

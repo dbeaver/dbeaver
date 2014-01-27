@@ -577,4 +577,14 @@ public class CommonUtils {
         }
     }
 
+    @NotNull
+    public static <T> List<T> filterCollection(@NotNull Collection<?> collection, @NotNull Class<T> type) {
+        List<T> result = new ArrayList<T>();
+        for (Object item : collection) {
+            if (type.isInstance(item)) {
+                result.add(type.cast(item));
+            }
+        }
+        return result;
+    }
 }

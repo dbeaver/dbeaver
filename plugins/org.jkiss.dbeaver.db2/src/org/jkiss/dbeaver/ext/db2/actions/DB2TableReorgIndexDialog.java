@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.db2.actions;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -55,8 +54,6 @@ public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
     @Override
     protected void createControls(Composite parent)
     {
-        SelectionAdapter changeListener = new SQLChangeListener();
-
         Composite composite = new Composite(parent, 2);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -68,16 +65,16 @@ public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
         groupAccess.setLayout(new RowLayout(SWT.VERTICAL));
         Button dlgAccessDefault = new Button(groupAccess, SWT.RADIO);
         dlgAccessDefault.setText(DB2Messages.dialog_table_tools_reorgix_access_default);
-        dlgAccessDefault.addSelectionListener(changeListener);
+        dlgAccessDefault.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgAccessNo = new Button(groupAccess, SWT.RADIO);
         dlgAccessNo.setText(DB2Messages.dialog_table_tools_reorgix_access_no);
-        dlgAccessNo.addSelectionListener(changeListener);
+        dlgAccessNo.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgAccessReadOnly = new Button(groupAccess, SWT.RADIO);
         dlgAccessReadOnly.setText(DB2Messages.dialog_table_tools_reorgix_access_read);
-        dlgAccessReadOnly.addSelectionListener(changeListener);
+        dlgAccessReadOnly.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgAccessReadWrite = new Button(groupAccess, SWT.RADIO);
         dlgAccessReadWrite.setText(DB2Messages.dialog_table_tools_reorgix_access_readwrite);
-        dlgAccessReadWrite.addSelectionListener(changeListener);
+        dlgAccessReadWrite.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // PAGE CLEANUP
         UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_reorgix_options_title).setLayoutData(
@@ -86,14 +83,14 @@ public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
         groupCleanup.setLayout(new RowLayout(SWT.VERTICAL));
         Button dlgFullIndex = new Button(groupCleanup, SWT.RADIO);
         dlgFullIndex.setText(DB2Messages.dialog_table_tools_reorgix_options_full);
-        dlgFullIndex.addSelectionListener(changeListener);
+        dlgFullIndex.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgFullIndex.setSelection(true);
         dlgCleanupKeysAndpages = new Button(groupCleanup, SWT.RADIO);
         dlgCleanupKeysAndpages.setText(DB2Messages.dialog_table_tools_reorgix_options_cleanup_keys);
-        dlgCleanupKeysAndpages.addSelectionListener(changeListener);
+        dlgCleanupKeysAndpages.addSelectionListener(SQL_CHANGE_LISTENER);
         dlgCleanupPagesOnly = new Button(groupCleanup, SWT.RADIO);
         dlgCleanupPagesOnly.setText(DB2Messages.dialog_table_tools_reorgix_options_cleanup_pages);
-        dlgCleanupPagesOnly.addSelectionListener(changeListener);
+        dlgCleanupPagesOnly.addSelectionListener(SQL_CHANGE_LISTENER);
     }
 
     @Override
