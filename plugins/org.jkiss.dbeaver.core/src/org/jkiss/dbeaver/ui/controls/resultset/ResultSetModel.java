@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -82,6 +83,7 @@ public class ResultSetModel {
      * for queries then is will null.
      * @return single source entity
      */
+    @Nullable
     public DBSEntity getSingleSource()
     {
         if (!singleSourceCells) {
@@ -148,6 +150,7 @@ public class ResultSetModel {
         }
     }
 
+    @Nullable
     public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)
     {
         for (DBDAttributeBinding binding : columns) {
@@ -158,6 +161,7 @@ public class ResultSetModel {
         return null;
     }
 
+    @Nullable
     DBDAttributeBinding getAttributeBinding(DBSEntity table, String columnName)
     {
         for (DBDAttributeBinding column : visibleColumns) {

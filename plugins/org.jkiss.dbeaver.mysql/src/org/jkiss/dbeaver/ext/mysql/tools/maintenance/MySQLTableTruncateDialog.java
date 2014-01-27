@@ -45,6 +45,6 @@ public class MySQLTableTruncateDialog extends MySQLTableToolDialog {
 
     @Override
     protected void createControls(Composite parent) {
-
+        createObjectsSelector(parent);
     }
 }
