@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -16,11 +15,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.actions;
+package org.jkiss.dbeaver.ext.mysql.tools.maintenance;
 
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateSQLDialog;
 
 import java.util.Collection;
@@ -28,30 +27,29 @@ import java.util.Collection;
 /**
  * Super class for handling dialogs related to table tools
  * 
- * @author Denis Forveille
  * @author Serge Rieder
  * 
  */
-public abstract class DB2TableToolDialog extends GenerateSQLDialog {
+public abstract class MySQLTableToolDialog extends GenerateSQLDialog {
 
-    protected final Collection<DB2Table> selectedDB2Tables;
+    protected final Collection<MySQLTable> selectedTables;
 
-    public DB2TableToolDialog(IWorkbenchPartSite partSite, String title, DB2DataSource db2DataSource,
-        Collection<DB2Table> selectedDB2Tables)
+    public MySQLTableToolDialog(IWorkbenchPartSite partSite, String title, MySQLDataSource dataSource,
+                                Collection<MySQLTable> selectedTables)
     {
-        super(partSite, db2DataSource, title, null);
-        this.selectedDB2Tables = selectedDB2Tables;
+        super(partSite, dataSource, title, null);
+        this.selectedTables = selectedTables;
     }
 
     protected String[] generateSQLScript()
     {
-        String[] lines = new String[selectedDB2Tables.size()];
+        String[] lines = new String[selectedTables.size()];
         int index = 0;
         StringBuilder sb = new StringBuilder(512);
-        for (DB2Table db2Table : selectedDB2Tables) {
-            sb.append("CALL SYSPROC.ADMIN_CMD('");
-            sb.append(generateTableCommand(db2Table));
-            sb.append("')");
+        for (MySQLTable db2Table : selectedTables) {
+//            sb.append("CALL SYSPROC.ADMIN_CMD('");
+            generateTableCommand(sb, db2Table);
+//            sb.append("')");
             lines[index++] = sb.toString();
             sb.setLength(0);
         }
@@ -59,6 +57,6 @@ public abstract class DB2TableToolDialog extends GenerateSQLDialog {
         return lines;
     }
 
-    protected abstract StringBuilder generateTableCommand(DB2Table db2Table);
+    protected abstract void generateTableCommand(StringBuilder sql, MySQLTable table);
 
 }

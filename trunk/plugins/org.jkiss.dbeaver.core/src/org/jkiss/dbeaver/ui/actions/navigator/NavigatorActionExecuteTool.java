@@ -22,14 +22,18 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionDelegate;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.ToolDescriptor;
 import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.util.Collection;
+import java.util.List;
 
 public class NavigatorActionExecuteTool implements IActionDelegate
 {
@@ -47,20 +51,16 @@ public class NavigatorActionExecuteTool implements IActionDelegate
     public void run(IAction action)
     {
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DBSWrapper) {
-                executeTool(((DBSWrapper) element).getObject());
-            } else if (element instanceof DBPObject) {
-                executeTool((DBPObject) element);
-            }
+            List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects((IStructuredSelection) selection);
+            executeTool(DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart(), selectedObjects);
         }
     }
 
-    private void executeTool(DBPObject object)
+    private void executeTool(IWorkbenchPart part, Collection<DBSObject> objects)
     {
         try {
             IExternalTool toolInstance = tool.createTool();
-            toolInstance.execute(window, DBUtils.getPublicObject(object));
+            toolInstance.execute(window, part, objects);
         } catch (DBException e) {
             UIUtils.showErrorDialog(window.getShell(), "Tool error", "Error executing tool '" + tool.getLabel() + "'", e);
         }

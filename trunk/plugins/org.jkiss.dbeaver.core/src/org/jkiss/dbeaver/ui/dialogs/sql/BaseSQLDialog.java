@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -50,7 +51,7 @@ public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvide
     private Image image;
     private StringEditorInput sqlInput;
 
-    public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, Image image)
+    public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable Image image)
     {
         super(parentSite.getShell());
         this.title = title;

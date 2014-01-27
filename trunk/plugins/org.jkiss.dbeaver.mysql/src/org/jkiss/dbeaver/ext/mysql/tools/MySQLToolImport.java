@@ -18,12 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
+
+import java.util.Collection;
 
 /**
  * Database import
@@ -31,13 +34,15 @@ import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 public class MySQLToolImport implements IExternalTool
 {
     @Override
-    public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
+    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        if (object instanceof MySQLCatalog) {
-            ToolWizardDialog dialog = new ToolWizardDialog(
-                window,
-                new MySQLScriptExecuteWizard((MySQLCatalog) object, true));
-            dialog.open();
+        for (DBSObject object : objects) {
+            if (object instanceof MySQLCatalog) {
+                ToolWizardDialog dialog = new ToolWizardDialog(
+                    window,
+                    new MySQLScriptExecuteWizard((MySQLCatalog) object, true));
+                dialog.open();
+            }
         }
     }
 }
