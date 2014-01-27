@@ -66,7 +66,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 namespace="org.jkiss.dbeaver.core.object"
-                properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter,hasTools"
+                properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter"
                 type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
@@ -96,7 +96,7 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql.util"
-                properties="canGenerate"
+                properties="canGenerate,hasTools"
                 type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
@@ -1439,11 +1439,8 @@
 
             <menu label="%menu.database.tools" icon="icons/misc/tools.png">
                 <visibleWhen>
-                    <with variable="selection">
-                        <count value="1"/>
-                        <iterate operator="and">
-                            <test property="org.jkiss.dbeaver.core.object.hasTools"/>
-                        </iterate>
+                    <with variable="activePart">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.util.hasTools"/>
                     </with>
                 </visibleWhen>
                 <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>

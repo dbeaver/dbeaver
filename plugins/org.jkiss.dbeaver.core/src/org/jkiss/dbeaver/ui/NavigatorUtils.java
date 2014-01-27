@@ -113,6 +113,23 @@ public class NavigatorUtils {
         }
     }
 
+    public static List<DBSObject> getSelectedObjects(IStructuredSelection selection)
+    {
+        if (selection.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<DBSObject> result = new ArrayList<DBSObject>();
+        for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+            Object selectedObject = iter.next();
+            if (selectedObject instanceof DBSWrapper) {
+                result.add(((DBSWrapper) selectedObject).getObject());
+            } else if (selectedObject instanceof DBSObject) {
+                result.add((DBSObject)selectedObject);
+            }
+        }
+        return result;
+    }
+
     public static void addContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control)
     {
         addContextMenu(workbenchSite, selectionProvider, control, null);

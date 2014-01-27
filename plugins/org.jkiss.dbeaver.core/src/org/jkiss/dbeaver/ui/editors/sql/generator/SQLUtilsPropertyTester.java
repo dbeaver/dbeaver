@@ -19,14 +19,19 @@
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSelection;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLUtilsPropertyTester
@@ -37,6 +42,7 @@ public class SQLUtilsPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql.util";
     public static final String PROP_CAN_GENERATE = "canGenerate";
+    public static final String PROP_HAS_TOOLS = "hasTools";
 
     public SQLUtilsPropertyTester() {
         super();
@@ -64,6 +70,12 @@ public class SQLUtilsPropertyTester extends PropertyTester
                 if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSTable) {
                     return true;
                 }
+            }
+        } else if (property.equals(PROP_HAS_TOOLS)) {
+            DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
+            if (object != null && object.getDataSource() != null) {
+                DataSourceDescriptor container = (DataSourceDescriptor)object.getDataSource().getContainer();
+                return !CommonUtils.isEmpty(container.getDriver().getProviderDescriptor().getTools(structuredSelection));
             }
         }
         return false;

@@ -78,6 +78,9 @@ public class RegistryConstants {
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
     public static final String ATTR_AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_EXECUTE = "confirmExecute"; //$NON-NLS-1$
+    public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
+    public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
+    public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -99,6 +102,7 @@ public class RegistryConstants {
     static final String TAG_VIEW = "view"; //$NON-NLS-1$
     static final String TAG_TOOLS = "tools"; //$NON-NLS-1$
     static final String TAG_TOOL = "tool"; //$NON-NLS-1$
+    static final String TAG_TOOL_GROUP = "toolGroup"; //$NON-NLS-1$
 
     public static final String ATTR_REF = "ref"; //$NON-NLS-1$
     public static final String ATTR_VISIBLE_IF = "visibleIf"; //$NON-NLS-1$

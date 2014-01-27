@@ -23,23 +23,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.*;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DataSourceProviderDescriptor
@@ -63,7 +62,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private final List<IPropertyDescriptor> driverProperties = new ArrayList<IPropertyDescriptor>();
     private final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
     private final List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
-    private final List<DataSourceToolDescriptor> tools = new ArrayList<DataSourceToolDescriptor>();
+    private final Map<String, ToolGroupDescriptor> toolGroups = new LinkedHashMap<String, ToolGroupDescriptor>();
+    private final List<ToolDescriptor> tools = new ArrayList<ToolDescriptor>();
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -115,12 +115,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
         }
 
-        // Load views
+        // Load tools
         {
             for (IConfigurationElement toolsElement : config.getChildren(RegistryConstants.TAG_TOOLS)) {
+                for (IConfigurationElement toolElement : toolsElement.getChildren(RegistryConstants.TAG_TOOL_GROUP)) {
+                    ToolGroupDescriptor group = new ToolGroupDescriptor(this, toolElement);
+                    this.toolGroups.put(group.getId(), group);
+                }
                 for (IConfigurationElement toolElement : toolsElement.getChildren(RegistryConstants.TAG_TOOL)) {
                     this.tools.add(
-                        new DataSourceToolDescriptor(this, toolElement));
+                        new ToolDescriptor(this, toolElement));
                 }
             }
         }
@@ -132,6 +136,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             driver.dispose();
         }
         drivers.clear();
+        tools.clear();
+        toolGroups.clear();
         if (this.instance != null) {
             this.instance.close();
         }
@@ -274,11 +280,26 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return null;
     }
 
-    public List<DataSourceToolDescriptor> getTools(DBPObject object)
+    ToolGroupDescriptor getToolGroup(String id) {
+        return toolGroups.get(id);
+    }
+
+    public List<ToolDescriptor> getTools(IStructuredSelection selection)
     {
-        List<DataSourceToolDescriptor> result = new ArrayList<DataSourceToolDescriptor>();
-        for (DataSourceToolDescriptor descriptor : tools) {
-            if (descriptor.appliesTo(object)) {
+        List<DBSObject> objects = NavigatorUtils.getSelectedObjects(selection);
+        List<ToolDescriptor> result = new ArrayList<ToolDescriptor>();
+        for (ToolDescriptor descriptor : tools) {
+            if (descriptor.isSingleton() && objects.size() > 1) {
+                continue;
+            }
+            boolean applies = true;
+            for (DBSObject object : objects) {
+                if (!descriptor.appliesTo(object)) {
+                    applies = false;
+                    break;
+                }
+            }
+            if (applies) {
                 result.add(descriptor);
             }
         }
