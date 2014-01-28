@@ -15,7 +15,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.mysql.tools.maintenance;
+package org.jkiss.dbeaver.ui.dialogs.sql;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -26,79 +26,85 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.sql.GenerateSQLDialog;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Super class for handling dialogs related to table tools
+ * Super class for handling dialogs related to
  * 
  * @author Serge Rieder
  * 
  */
-public abstract class MySQLTableToolDialog extends GenerateSQLDialog {
+public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends GenerateSQLDialog {
 
-    protected final Collection<MySQLTable> selectedTables;
-    private Table tablesTable;
+    protected final Collection<T> selectedObjects;
+    private Table objectsTable;
 
-    public MySQLTableToolDialog(
-        IWorkbenchPartSite partSite, String title, MySQLDataSource dataSource,
-        Collection<MySQLTable> selectedTables)
+    public GenerateMultiSQLDialog(
+        IWorkbenchPartSite partSite,
+        String title,
+        Collection<T> objects)
     {
-        super(partSite, dataSource, title, null);
-        this.selectedTables = selectedTables;
+        super(
+            partSite,
+            (SQLDataSource) objects.iterator().next().getDataSource(),
+            title,
+            null);
+        this.selectedObjects = objects;
     }
 
     protected String[] generateSQLScript()
     {
-        List<MySQLTable> checkedObjects = getCheckedObjects();
-        String[] lines = new String[checkedObjects.size()];
+        List<T> checkedObjects = getCheckedObjects();
+        List<String> lines = new ArrayList<String>();
         int index = 0;
-        StringBuilder sb = new StringBuilder(512);
-        for (MySQLTable table : checkedObjects) {
-//            sb.append("CALL SYSPROC.ADMIN_CMD('");
-            generateTableCommand(sb, table);
-//            sb.append("')");
-            lines[index++] = sb.toString();
-            sb.setLength(0);
+        for (T object : checkedObjects) {
+            generateObjectCommand(lines, object);
         }
 
-        return lines;
+        return lines.toArray(new String[lines.size()]);
     }
 
-    private List<MySQLTable> getCheckedObjects() {
-        List<MySQLTable> checkedObjects = new ArrayList<MySQLTable>();
-        if (tablesTable != null) {
-            for (TableItem item : tablesTable.getItems()) {
+    private List<T> getCheckedObjects() {
+        List<T> checkedObjects = new ArrayList<T>();
+        if (objectsTable != null) {
+            for (TableItem item : objectsTable.getItems()) {
                 if (item.getChecked()) {
-                    checkedObjects.add((MySQLTable) item.getData());
+                    checkedObjects.add((T) item.getData());
                 }
             }
         } else {
-            checkedObjects.addAll(selectedTables);
+            checkedObjects.addAll(selectedObjects);
         }
         return checkedObjects;
     }
 
     protected void createObjectsSelector(Composite parent) {
+        if (selectedObjects.size() < 2) {
+            // Don't need it for a single object
+            return;
+        }
         UIUtils.createControlLabel(parent, "Tables");
-        tablesTable = new Table(parent, SWT.BORDER | SWT.CHECK);
-        tablesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        for (MySQLTable table : selectedTables) {
-            TableItem item = new TableItem(tablesTable, SWT.NONE);
-            item.setText(table.getFullQualifiedName());
+        objectsTable = new Table(parent, SWT.BORDER | SWT.CHECK);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.heightHint = 100;
+        objectsTable.setLayoutData(gd);
+        for (T table : selectedObjects) {
+            TableItem item = new TableItem(objectsTable, SWT.NONE);
+            item.setText(DBUtils.getObjectFullName(table));
             item.setImage(DBIcon.TREE_TABLE.getImage());
             item.setChecked(true);
             item.setData(table);
         }
-        tablesTable.addSelectionListener(SQL_CHANGE_LISTENER);
-        tablesTable.addSelectionListener(new SelectionAdapter() {
+        objectsTable.addSelectionListener(SQL_CHANGE_LISTENER);
+        objectsTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean hasChecked = !getCheckedObjects().isEmpty();
@@ -108,6 +114,6 @@ public abstract class MySQLTableToolDialog extends GenerateSQLDialog {
         });
     }
 
-    protected abstract void generateTableCommand(StringBuilder sql, MySQLTable table);
+    protected abstract void generateObjectCommand(List<String> sql, T object);
 
 }

@@ -32,6 +32,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -81,16 +82,17 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     protected Control createDialogArea(Composite parent)
     {
         Composite composite = (Composite) super.createDialogArea(parent);
-        SashForm sashForm = new SashForm(composite, SWT.VERTICAL | SWT.SMOOTH);
-        sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
-        sashForm.setSashWidth(5);
-        Composite controlsPanel = UIUtils.createPlaceholder(sashForm, 1);
-        controlsPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite controlsPanel = UIUtils.createPlaceholder(composite, 1, 5);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        //gd.heightHint = 300;
+        controlsPanel.setLayoutData(gd);
         createControls(controlsPanel);
-        createSQLPanel(sashForm);
-        //sashForm.setWeights(new int[] {800, 200});
+        Label divLabel = new Label(controlsPanel, SWT.SEPARATOR | SWT.HORIZONTAL);
+        divLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        return sashForm;
+        createSQLPanel(controlsPanel);
+
+        return composite;
     }
 
     @Override
