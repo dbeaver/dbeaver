@@ -18,7 +18,12 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools.maintenance;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -26,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,9 +39,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Table truncate
+ * Table check
  */
-public class MySQLToolTruncate implements IExternalTool
+public class MySQLToolCheck implements IExternalTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
@@ -49,18 +55,35 @@ public class MySQLToolTruncate implements IExternalTool
 
     static class SQLDialog extends TableToolDialog {
 
+        private Combo optionCombo;
+
         public SQLDialog(IWorkbenchPartSite partSite, Collection<MySQLTable> selectedTables)
         {
-            super(partSite, "Truncate table(s)", selectedTables);
+            super(partSite, "Check table(s)", selectedTables);
         }
 
         @Override
         protected void generateObjectCommand(List<String> lines, MySQLTable object) {
-            lines.add("TRUNCATE TABLE " + object.getFullQualifiedName());
+            String sql = "CHECK TABLE " + object.getFullQualifiedName();
+            String option = optionCombo.getText();
+            if (!CommonUtils.isEmpty(option)) sql += " " + option;
+            lines.add(sql);
         }
 
         @Override
         protected void createControls(Composite parent) {
+            Group optionsGroup = UIUtils.createControlGroup(parent, "Options", 1, 0, 0);
+            optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            optionCombo = UIUtils.createLabelCombo(optionsGroup, "Option", SWT.DROP_DOWN | SWT.READ_ONLY);
+            optionCombo.add("");
+            optionCombo.add("FOR UPGRADE");
+            optionCombo.add("QUICK");
+            optionCombo.add("FAST");
+            optionCombo.add("MEDIUM");
+            optionCombo.add("EXTENDED");
+            optionCombo.add("CHANGED");
+            optionCombo.addSelectionListener(SQL_CHANGE_LISTENER);
+
             createObjectsSelector(parent);
         }
     }

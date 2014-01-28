@@ -115,7 +115,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
         }
     }
 
-    private void executeSQL()
+    protected void executeSQL()
     {
         final String jobName = getShell().getText();
         final String[] scriptLines = generateSQLScript();

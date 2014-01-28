@@ -33,9 +33,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Table truncate
+ * Table optimize
  */
-public class MySQLToolTruncate implements IExternalTool
+public class MySQLToolOptimize implements IExternalTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
@@ -51,12 +51,13 @@ public class MySQLToolTruncate implements IExternalTool
 
         public SQLDialog(IWorkbenchPartSite partSite, Collection<MySQLTable> selectedTables)
         {
-            super(partSite, "Truncate table(s)", selectedTables);
+            super(partSite, "Optimize table(s)", selectedTables);
         }
 
         @Override
         protected void generateObjectCommand(List<String> lines, MySQLTable object) {
-            lines.add("TRUNCATE TABLE " + object.getFullQualifiedName());
+            String sql = "OPTIMIZE TABLE " + object.getFullQualifiedName();
+            lines.add(sql);
         }
 
         @Override
