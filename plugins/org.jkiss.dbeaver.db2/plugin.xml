@@ -441,7 +441,7 @@
                 <tool
                     class="org.jkiss.dbeaver.ext.db2.tools.DB2ToolShowError"
                     description="Display SQL Error Message"
-                    id="org.jkiss.dbeaver.ext.oracle.tools.DB2ToolShowError"
+                    id="org.jkiss.dbeaver.ext.db2.tools.DB2ToolShowError"
                     label="Retrieve SQL Error Message"
                     singleton="true">
                     <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2DataSource"/>
