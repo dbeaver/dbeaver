@@ -51,7 +51,7 @@ public class MySQLToolRepair implements IExternalTool
         }
     }
 
-    static class SQLDialog extends GenerateMultiSQLDialog<MySQLTable> {
+    static class SQLDialog extends TableToolDialog {
 
         private Button quickCheck;
         private Button extendedCheck;

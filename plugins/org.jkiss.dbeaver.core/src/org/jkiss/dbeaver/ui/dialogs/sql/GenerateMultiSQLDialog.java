@@ -64,7 +64,6 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     {
         List<T> checkedObjects = getCheckedObjects();
         List<String> lines = new ArrayList<String>();
-        int index = 0;
         for (T object : checkedObjects) {
             generateObjectCommand(lines, object);
         }
