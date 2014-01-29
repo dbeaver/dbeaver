@@ -17,21 +17,16 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.sql;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.operation.ModalContext;
-import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -45,7 +40,6 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -71,6 +65,8 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             null);
         this.selectedObjects = objects;
     }
+
+    protected abstract SQLScriptProgressListener<T> getScriptListener();
 
     protected String[] generateSQLScript()
     {
@@ -128,6 +124,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     @Override
     protected void executeSQL() {
         final String jobName = getShell().getText();
+        final SQLScriptProgressListener<T> scriptListener = getScriptListener();
         final List<T> objects = getCheckedObjects();
         final Map<T, List<String>> objectsSQL = new LinkedHashMap<T, List<String>>();
         for (T object : objects) {
@@ -139,7 +136,12 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {
-                beginScriptProcessing();
+                UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                    @Override
+                    public void run() {
+                        scriptListener.beginScriptProcessing(objects.size());
+                    }
+                });
                 monitor.beginTask(jobName, objects.size());
                 DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
                 try {
@@ -147,18 +149,28 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         if (monitor.isCanceled()) {
                             break;
                         }
+                        final int objectNumber = i;
                         final T object = objects.get(i);
                         monitor.subTask("Process " + DBUtils.getObjectFullName(object));
-                        beginObjectProcessing(object);
+                        UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                            @Override
+                            public void run() {
+                                scriptListener.beginObjectProcessing(object, objectNumber);
+                            }
+                        });
                         try {
                             final List<String> lines = objectsSQL.get(object);
                             for (String line : lines) {
                                 DBCStatement statement = DBUtils.prepareStatement(session, line);
                                 try {
                                     if (statement.executeStatement()) {
-                                        DBCResultSet resultSet = statement.openResultSet();
+                                        final DBCResultSet resultSet = statement.openResultSet();
                                         try {
-                                            processObjectResults(object, resultSet);
+                                            // Run in sync because we need result set
+                                            UIUtils.runInUI(getShell(), new Runnable() {
+                                                @Override
+                                                public void run() { scriptListener.processObjectResults(object, resultSet); }
+                                            });
                                         } finally {
                                             resultSet.close();
                                         }
@@ -168,7 +180,12 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                 }
                             }
                         } finally {
-                            endObjectProcessing(object);
+                            UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                                @Override
+                                public void run() {
+                                    scriptListener.endObjectProcessing(object);
+                                }
+                            });
                         }
                         monitor.worked(1);
                     }
@@ -177,7 +194,12 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                 } finally {
                     session.close();
                     monitor.done();
-                    endScriptProcessing();
+                    UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                        @Override
+                        public void run() {
+                            scriptListener.endScriptProcessing();
+                        }
+                    });
                 }
                 return Status.OK_STATUS;
             }
@@ -192,30 +214,5 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     }
 
     protected abstract void generateObjectCommand(List<String> sql, T object);
-
-    protected void beginScriptProcessing()
-    {
-
-    }
-
-    protected void endScriptProcessing()
-    {
-
-    }
-
-    protected void beginObjectProcessing(T object)
-    {
-
-    }
-
-    protected void endObjectProcessing(T object)
-    {
-
-    }
-
-     protected void processObjectResults(T object, DBCResultSet resultSet)
-    {
-
-    }
 
 }
