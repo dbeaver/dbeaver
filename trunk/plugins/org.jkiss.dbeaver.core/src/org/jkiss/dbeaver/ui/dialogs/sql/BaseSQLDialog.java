@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.sql;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -39,43 +38,25 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
-public abstract class BaseSQLDialog extends Dialog implements IDataSourceProvider {
+public abstract class BaseSQLDialog extends BaseDialog implements IDataSourceProvider {
 
     private IEditorSite subSite;
     private SQLEditorBase sqlViewer;
-    private String title;
-    private Image image;
     private StringEditorInput sqlInput;
 
     public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable Image image)
     {
-        super(parentSite.getShell());
-        this.title = title;
-        this.image = image;
+        super(parentSite.getShell(), title, image);
         this.subSite = new SubEditorSite(parentSite);
-    }
-
-    @Override
-    protected boolean isResizable() {
-    	return true;
     }
 
     protected boolean isWordWrap() {
         return false;
-    }
-
-    @Override
-    public void create()
-    {
-        super.create();
-        getShell().setText(title);
-        if (image != null) {
-            getShell().setImage(image);
-        }
     }
 
     protected Composite createSQLPanel(Composite parent)

@@ -1,5 +1,6 @@
 Major:
 
+Unclosed sessions (test connection)
 Oracle/MySQL maintenance menu (truncate, statistics, etc)
 Process scripts with external native tool (SQLPlus + mysql)
 Process SQL blocks (begin/end/final delimiter)
@@ -9,7 +10,7 @@ Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 SSL
 Secure-storage for passwords
 
-1. Browse data by foreign keys
+1. Browse data by foreign keys. Table history (back/forward)
 2. Tree-like grid
 3. Dialect-dependent SQL generator
 4. Query manager fixes. + keep only primitive props + persistence

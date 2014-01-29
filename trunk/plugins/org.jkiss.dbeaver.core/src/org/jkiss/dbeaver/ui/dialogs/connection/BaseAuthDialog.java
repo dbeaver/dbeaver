@@ -25,12 +25,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * Base authentication dialog
  */
-public class BaseAuthDialog extends Dialog
+public class BaseAuthDialog extends BaseDialog
 {
 
     public static class AuthInfo {
@@ -39,8 +40,6 @@ public class BaseAuthDialog extends Dialog
         public boolean savePassword;
     }
 
-    private String title;
-    private Image icon;
     private AuthInfo authInfo = new AuthInfo();
 
     private Text usernameText;
@@ -49,9 +48,7 @@ public class BaseAuthDialog extends Dialog
 
     public BaseAuthDialog(Shell parentShell, String title, Image icon)
     {
-        super(parentShell);
-        this.title = title;
-        this.icon = icon;
+        super(parentShell, title, icon);
     }
 
     public AuthInfo getAuthInfo()
@@ -84,17 +81,8 @@ public class BaseAuthDialog extends Dialog
     }
 
     @Override
-    protected boolean isResizable()
-    {
-        return true;
-    }
-
-    @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(title);
-        getShell().setImage(icon);
-
         Composite addrGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 10;

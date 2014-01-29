@@ -18,30 +18,25 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-public class EditTextDialog extends Dialog {
+public class EditTextDialog extends BaseDialog {
 
-    private String title;
     private String text;
     private Text textControl;
     private int textWidth = 300;
     private int textHeight = 200;
-    private Image image;
     private boolean readonly = false;
 
     public EditTextDialog(Shell parentShell, String title, String text)
     {
-        super(parentShell);
-        this.title = title;
+        super(parentShell, title, null);
         this.text = text;
     }
 
@@ -50,24 +45,9 @@ public class EditTextDialog extends Dialog {
         this.readonly = readonly;
     }
 
-    public void setImage(Image image)
-    {
-        this.image = image;
-    }
-
-    @Override
-    protected boolean isResizable() {
-    	return true;
-    }
-
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(title);
-        if (image != null) {
-            getShell().setImage(image);
-        }
-
         Composite composite = (Composite) super.createDialogArea(parent);
 
         textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);

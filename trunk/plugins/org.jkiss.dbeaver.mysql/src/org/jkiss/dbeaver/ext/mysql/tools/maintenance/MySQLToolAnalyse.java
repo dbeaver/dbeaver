@@ -56,7 +56,7 @@ public class MySQLToolAnalyse implements IExternalTool
 
         @Override
         protected void generateObjectCommand(List<String> lines, MySQLTable object) {
-            lines.add("ANALYSE TABLE " + object.getFullQualifiedName());
+            lines.add("ANALYZE TABLE " + object.getFullQualifiedName());
         }
 
         @Override
