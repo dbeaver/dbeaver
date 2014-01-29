@@ -18,22 +18,13 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools.maintenance;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptStatusDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
+import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Table truncate
@@ -45,5 +36,9 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<MySQLTable>
         super(partSite, title, objects);
     }
 
-
+    @Override
+    protected SQLScriptProgressListener<MySQLTable> getScriptListener() {
+        return new SQLScriptStatusDialog<MySQLTable>(getShell(), "Progress", null) {
+        };
+    }
 }

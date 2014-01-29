@@ -900,6 +900,12 @@ public class UIUtils {
         }
     }
 
+    public static void runInDetachedUI(@Nullable Shell shell, @NotNull Runnable runnable)
+    {
+        final Display display = shell == null ? Display.getDefault() : shell.getDisplay();
+        display.asyncExec(runnable);
+    }
+
     @NotNull
     public static String formatMessage(@Nullable String message, @Nullable Object... args)
     {
