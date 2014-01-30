@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.impl.local;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
@@ -59,6 +60,17 @@ public class LocalResultSet implements DBCResultSet
     public Object getColumnValue(int index) throws DBCException
     {
         return rows.get(curPosition)[index - 1];
+    }
+
+    @Nullable
+    @Override
+    public Object getColumnValue(String name) throws DBCException {
+        for (int i = 0; i < metaColumns.size(); i++) {
+            if (metaColumns.get(i).getName().equals(name)) {
+                return getColumnValue(i);
+            }
+        }
+        return null;
     }
 
     @Override

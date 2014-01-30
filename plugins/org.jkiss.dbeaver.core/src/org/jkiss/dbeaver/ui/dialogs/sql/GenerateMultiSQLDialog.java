@@ -132,14 +132,17 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             generateObjectCommand(lines, object);
             objectsSQL.put(object, lines);
         }
-        DataSourceJob job = new DataSourceJob(jobName, null, getDataSource()) {
+        final DataSourceJob job = new DataSourceJob(jobName, null, getDataSource()) {
+            public Exception objectProcessingError;
+
             @Override
-            protected IStatus run(DBRProgressMonitor monitor)
+            protected IStatus run(final DBRProgressMonitor monitor)
             {
+                final DataSourceJob curJob = this;
                 UIUtils.runInDetachedUI(getShell(), new Runnable() {
                     @Override
                     public void run() {
-                        scriptListener.beginScriptProcessing(objects.size());
+                        scriptListener.beginScriptProcessing(curJob, objects);
                     }
                 });
                 monitor.beginTask(jobName, objects.size());
@@ -152,6 +155,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         final int objectNumber = i;
                         final T object = objects.get(i);
                         monitor.subTask("Process " + DBUtils.getObjectFullName(object));
+                        objectProcessingError = null;
                         UIUtils.runInDetachedUI(getShell(), new Runnable() {
                             @Override
                             public void run() {
@@ -169,28 +173,37 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                             // Run in sync because we need result set
                                             UIUtils.runInUI(getShell(), new Runnable() {
                                                 @Override
-                                                public void run() { scriptListener.processObjectResults(object, resultSet); }
+                                                public void run() {
+                                                    try {
+                                                        scriptListener.processObjectResults(object, resultSet);
+                                                    } catch (DBCException e) {
+                                                        objectProcessingError = e;
+                                                    }
+                                                }
                                             });
                                         } finally {
                                             resultSet.close();
+                                        }
+                                        if (objectProcessingError != null) {
+                                            break;
                                         }
                                     }
                                 } finally {
                                     statement.close();
                                 }
                             }
+                        } catch (Exception e) {
+                            objectProcessingError = e;
                         } finally {
                             UIUtils.runInDetachedUI(getShell(), new Runnable() {
                                 @Override
                                 public void run() {
-                                    scriptListener.endObjectProcessing(object);
+                                    scriptListener.endObjectProcessing(object, objectProcessingError);
                                 }
                             });
                         }
                         monitor.worked(1);
                     }
-                } catch (DBCException e) {
-                    return RuntimeUtils.makeExceptionStatus(e);
                 } finally {
                     session.close();
                     monitor.done();
