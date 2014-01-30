@@ -668,7 +668,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
 
-            this.spreadsheet.reinitState(columnsChanged);
+            this.spreadsheet.reinitState(true);
 
             // Set cursor on new row
             if (gridMode == GridMode.GRID) {
@@ -1340,7 +1340,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         ResultSetValueController valueController = new ResultSetValueController(
             cell,
             inline ? DBDValueController.EditType.INLINE : DBDValueController.EditType.EDITOR,
-            inline ? placeholder : null);
+            placeholder);
         final DBDValueEditor editor;
         try {
             editor = metaColumn.getValueHandler().createEditor(valueController);

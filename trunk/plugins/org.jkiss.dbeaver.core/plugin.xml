@@ -627,7 +627,10 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canCreate"/>
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canCreate"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -638,7 +641,10 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canFilter"/>
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canFilter"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -650,7 +656,10 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canPaste"/>
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canPaste"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -662,7 +671,10 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -674,7 +686,10 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -686,7 +701,10 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canRename"/>
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canRename"/>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
