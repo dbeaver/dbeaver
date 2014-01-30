@@ -135,6 +135,17 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
+    public Object getColumnValue(String name) throws DBCException {
+        checkNotEmpty();
+        try {
+            return original.getObject(name);
+        }
+        catch (SQLException e) {
+            throw new DBCException(e, session.getDataSource());
+        }
+    }
+
+    @Override
     public DBDValueMeta getColumnValueMeta(int index) throws DBCException
     {
         // No meta information in standard JDBC

@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,11 +37,19 @@ public class BaseDialog extends Dialog
     private String title;
     private Image icon;
 
-    public BaseDialog(Shell parentShell, String title, Image icon)
+    public BaseDialog(Shell parentShell, String title, @Nullable Image icon)
     {
         super(parentShell);
         this.title = title;
         this.icon = icon;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public Image getImage() {
+        return icon;
     }
 
     public void setImage(Image image)

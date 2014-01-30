@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -99,6 +100,16 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
                 throw new DBCException("Column index " + index + " out of bounds (" + properties.size() + ")");
             }
             return row.getValue(properties.get(index - 1).getName());
+        } catch (WMIException e) {
+            throw new DBCException(e, session.getDataSource());
+        }
+    }
+
+    @Nullable
+    @Override
+    public Object getColumnValue(String name) throws DBCException {
+        try {
+            return row.getValue(name);
         } catch (WMIException e) {
             throw new DBCException(e, session.getDataSource());
         }
