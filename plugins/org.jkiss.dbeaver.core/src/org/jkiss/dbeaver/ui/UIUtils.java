@@ -1224,6 +1224,15 @@ public class UIUtils {
         return null;
     }
 
+    public static TreeItem getTreeItem(Tree tree, Object data) {
+        for (TreeItem item : tree.getItems()) {
+            if (item.getData() == data) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     public interface TableEditorController {
         void showEditor(TableItem item);
         void closeEditor(TableEditor tableEditor);

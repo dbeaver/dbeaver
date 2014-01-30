@@ -17,22 +17,27 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.sql;
 
+import org.eclipse.core.runtime.jobs.Job;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Collection;
 
 /**
  * Script progress listener
  */
 public interface SQLScriptProgressListener<T extends DBSObject> {
 
-    void beginScriptProcessing(int objectCount);
+    void beginScriptProcessing(Job job, Collection<T> objects);
 
     void endScriptProcessing();
 
     void beginObjectProcessing(T object, int objectNumber);
 
-    void endObjectProcessing(T object);
+    void endObjectProcessing(T object, Exception error);
 
-    void processObjectResults(T object, DBCResultSet resultSet);
+    void processObjectResults(T object, DBCResultSet resultSet) throws DBCException;
 
 }

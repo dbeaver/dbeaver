@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 
@@ -32,6 +33,9 @@ public interface DBCResultSet extends DBPObject
     DBCStatement getSourceStatement();
 
     Object getColumnValue(int index) throws DBCException;
+
+    @Nullable
+    Object getColumnValue(String name) throws DBCException;
 
     DBDValueMeta getColumnValueMeta(int index) throws DBCException;
 
