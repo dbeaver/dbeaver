@@ -133,7 +133,7 @@ public class BrowseObjectDialog extends Dialog {
                     DBNNode node = (DBNNode) iter.next();
                     if (node instanceof DBSWrapper) {
                         DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
-                        if (matchesType(object.getClass(), true)) {
+                        if (object != null && matchesType(object.getClass(), true)) {
                             selectedObjects.add(node);
                         }
                     }
