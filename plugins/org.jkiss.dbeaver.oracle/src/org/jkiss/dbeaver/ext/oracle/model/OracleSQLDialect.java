@@ -39,6 +39,8 @@ class OracleSQLDialect extends JDBCSQLDialect {
         addSQLKeyword("ANALYZE");
         addSQLKeyword("VALIDATE");
         addSQLKeyword("STRUCTURE");
+        addSQLKeyword("COMPUTE");
+        addSQLKeyword("STATISTICS");
     }
 
     @NotNull
