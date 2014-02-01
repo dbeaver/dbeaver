@@ -22,64 +22,58 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Gather statistics
+ * Validate structure
  */
-public class OracleToolGatherStatistics implements IExternalTool
+public class OracleToolValidateStructure implements IExternalTool
 {
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        if (!objects.isEmpty()) {
-            SQLDialog dialog = new SQLDialog(activePart.getSite(), objects);
+        List<OracleTable> tables = CommonUtils.filterCollection(objects, OracleTable.class);
+        if (!tables.isEmpty()) {
+            SQLDialog dialog = new SQLDialog(activePart.getSite(), tables);
             dialog.open();
         }
     }
 
-    static class SQLDialog extends OracleMaintenanceDialog<DBSObject> {
+    static class SQLDialog extends OracleMaintenanceDialog<OracleTable> {
 
-        private Spinner samplePercent;
+        private Button cascadeCheck;
 
-        public SQLDialog(IWorkbenchPartSite partSite, Collection<DBSObject> selectedTables)
+        public SQLDialog(IWorkbenchPartSite partSite, Collection<OracleTable> selectedTables)
         {
-            super(partSite, "Gather statistics", selectedTables);
+            super(partSite, "Validate table(s) structure", selectedTables);
         }
 
         @Override
-        protected void generateObjectCommand(List<String> lines, DBSObject object) {
-            if (object instanceof OracleTable) {
-                OracleTable table = (OracleTable)object;
-                String sql = "BEGIN \n" +
-                    " DBMS_STATS.GATHER_TABLE_STATS (\n" +
-                    " OWNNAME => '" + DBUtils.getQuotedIdentifier(table.getSchema()) + "',\n" +
-                    " TABNAME => '" + DBUtils.getQuotedIdentifier(table) + "',\n" +
-                    " estimate_percent => " + samplePercent.getSelection() + "\n" +
-                    " );\n" +
-                    "END;";
-                lines.add(sql);
+        protected void generateObjectCommand(List<String> lines, OracleTable object) {
+            String sql = "ANALYZE TABLE " + object.getFullQualifiedName() + " VALIDATE STRUCTURE";
+            if (cascadeCheck.getSelection()) {
+                sql += " CASCADE";
             }
+            lines.add(sql);
         }
 
         @Override
         protected void createControls(Composite parent) {
             Group optionsGroup = UIUtils.createControlGroup(parent, "Options", 1, 0, 0);
             optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            samplePercent = UIUtils.createLabelSpinner(optionsGroup, "Sample Percent", 5, 0, 100);
-            samplePercent .addSelectionListener(SQL_CHANGE_LISTENER);
+            cascadeCheck = UIUtils.createCheckbox(optionsGroup, "Cascade", false);
+            cascadeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
 
             createObjectsSelector(parent);
         }
