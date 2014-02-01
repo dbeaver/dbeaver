@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
@@ -70,6 +71,10 @@ public class OracleToolGatherStatistics implements IExternalTool
                     " estimate_percent => " + samplePercent.getSelection() + "\n" +
                     " );\n" +
                     "END;";
+                lines.add(sql);
+            } else if (object instanceof OracleTableIndex) {
+                OracleTableIndex index = (OracleTableIndex)object;
+                String sql = "ALTER INDEX " + index.getFullQualifiedName() + " COMPUTE STATISTICS";
                 lines.add(sql);
             }
         }
