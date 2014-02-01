@@ -11,6 +11,7 @@ Performance profile (RSV, tab switch, connections props dialog)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 SSL
 Secure-storage for passwords
+Vertical/horizontal value view panel in RSV
 
 1. Browse data by foreign keys. Table history (back/forward)
 2. Tree-like grid
