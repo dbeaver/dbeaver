@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
- * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
+ * Copyright (C) 2010-2014 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
