@@ -36,6 +36,9 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     public OracleSQLDialect(OracleDataSource oracleDataSource, JDBCDatabaseMetaData metaData) {
         super(oracleDataSource, "Oracle", metaData);
+        addSQLKeyword("ANALYZE");
+        addSQLKeyword("VALIDATE");
+        addSQLKeyword("STRUCTURE");
     }
 
     @NotNull

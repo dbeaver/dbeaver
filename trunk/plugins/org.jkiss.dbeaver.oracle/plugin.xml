@@ -328,10 +328,10 @@
                     <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
                 </tool>
                 <tool
-                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
-                    description="Truncate table"
+                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolValidateStructure"
+                    description="Validate Structure"
                     id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
-                    label="Truncate"
+                    label="Validate Structure"
                     singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
                 </tool>
@@ -339,11 +339,19 @@
                     class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
                     description="Gather statistics"
                     id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
-                    label="Gather statistics"
+                    label="Gather Statistics"
                     singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
                     <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
                     <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+                </tool>
+                <tool
+                        class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
+                        description="Truncate table"
+                        id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
+                        label="Truncate"
+                        singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
                 </tool>
             </tools>
             <templates>
