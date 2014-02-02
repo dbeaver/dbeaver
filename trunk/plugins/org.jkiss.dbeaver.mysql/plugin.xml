@@ -199,7 +199,6 @@
                     description="Analyse table(s)"
                     id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
                     label="Analyse"
-                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                     singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
                 </tool>
@@ -208,7 +207,6 @@
                     description="Check table(s)"
                     id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
                     label="Check"
-                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                     singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
                 </tool>
@@ -217,7 +215,6 @@
                     description="Optimize table(s)"
                     id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
                     label="Optimize"
-                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                     singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
                 </tool>
@@ -226,7 +223,6 @@
                     description="Repair table(s)"
                     id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
                     label="Repair"
-                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                     singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
                 </tool>
@@ -235,7 +231,6 @@
                     description="Truncate table(s)"
                     id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
                     label="Truncate"
-                    group="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
                     singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
                 </tool>
