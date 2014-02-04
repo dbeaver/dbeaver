@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -320,8 +321,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 try {
                     final DatabaseConsumerSettings settings = getWizard().getPageSettings(DatabaseConsumerPageMapping.this, DatabaseConsumerSettings.class);
                     String name = CommonUtils.toString(value);
-                    if (!name.equals(TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE)) {
-                        name = DBObjectNameCaseTransformer.transformName(settings.getTargetDataSource((DatabaseMappingObject) element), name);
+                    DBPDataSource dataSource = settings.getTargetDataSource((DatabaseMappingObject) element);
+                    if (!name.equals(TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
+                        name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
                     setMappingTarget((DatabaseMappingObject) element, name);
                     mappingViewer.refresh();
