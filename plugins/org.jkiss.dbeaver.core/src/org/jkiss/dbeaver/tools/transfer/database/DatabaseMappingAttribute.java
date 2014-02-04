@@ -118,14 +118,14 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
             {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
+                    if (CommonUtils.isEmpty(targetName)) {
+                        targetName = source.getName();
+                    }
                     target = DBUtils.findObject(
-                        ((DBSEntity) parent.getTarget()).getAttributes(monitor), source.getName());
+                        ((DBSEntity) parent.getTarget()).getAttributes(monitor), targetName);
                     if (target != null) {
                         mappingType = DatabaseMappingType.existing;
                     } else {
-                        if (CommonUtils.isEmpty(targetName)) {
-                            targetName = source.getName();
-                        }
                         mappingType = DatabaseMappingType.create;
                     }
                 }
