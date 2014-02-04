@@ -27,10 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
@@ -100,7 +97,7 @@ public class BrowseObjectDialog extends Dialog {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
-                if (element instanceof TreeLoadNode) {
+                if (element instanceof TreeLoadNode || element instanceof DBNLocalFolder) {
                     return true;
                 }
                 if (element instanceof DBNNode) {
