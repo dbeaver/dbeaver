@@ -40,7 +40,7 @@ public class OracleToolScript implements IExternalTool
             if (object.getDataSource() instanceof OracleDataSource) {
                 ToolWizardDialog dialog = new ToolWizardDialog(
                     window,
-                    new OracleScriptExecuteWizard((OracleDataSource)((DBSObject) objects).getDataSource()));
+                    new OracleScriptExecuteWizard((OracleDataSource)object.getDataSource()));
                 dialog.open();
             }
         }
