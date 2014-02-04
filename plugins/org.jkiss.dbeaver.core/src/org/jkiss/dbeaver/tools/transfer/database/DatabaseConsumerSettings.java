@@ -152,8 +152,10 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         DBSObjectContainer container = getContainer();
         if (container != null) {
             return container.getDataSource();
-        } else {
+        } else if (attrMapping.getTarget() != null) {
             return attrMapping.getTarget().getDataSource();
+        } else {
+            return null;
         }
     }
 
