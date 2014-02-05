@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -61,6 +62,7 @@ public abstract class JDBCColumn extends AbstractAttribute implements DBSObject,
         return columnImage;
     }
 
+    @Nullable
     protected JDBCColumnKeyType getKeyType()
     {
         return null;

@@ -91,6 +91,7 @@ public class JDBCConstants
     public static final String PAGES = "PAGES"; //$NON-NLS-1$
     public static final String FILTER_CONDITION = "FILTER_CONDITION"; //$NON-NLS-1$
     public static final String IS_AUTOINCREMENT = "IS_AUTOINCREMENT"; //$NON-NLS-1$
+    public static final String IS_GENERATEDCOLUMN = "IS_GENERATEDCOLUMN"; //$NON-NLS-1$
 
     public static final String KEY_SEQ = "KEY_SEQ"; //$NON-NLS-1$
     public static final String PK_NAME = "PK_NAME"; //$NON-NLS-1$
