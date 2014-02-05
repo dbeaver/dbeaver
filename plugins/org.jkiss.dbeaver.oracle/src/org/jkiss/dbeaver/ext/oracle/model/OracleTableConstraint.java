@@ -39,7 +39,7 @@ public class OracleTableConstraint extends OracleTableConstraintBase {
 
     public OracleTableConstraint(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, String searchCondition, OracleObjectStatus status)
     {
-        super(oracleTable, name, constraintType, status);
+        super(oracleTable, name, constraintType, status, false);
         this.searchCondition = searchCondition;
     }
 
@@ -51,7 +51,8 @@ public class OracleTableConstraint extends OracleTableConstraintBase {
             getConstraintType(JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TYPE")),
             CommonUtils.notNull(
                 CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS")),
-                OracleObjectStatus.ENABLED));
+                OracleObjectStatus.ENABLED),
+            true);
         this.searchCondition = JDBCUtils.safeGetString(dbResult, "SEARCH_CONDITION");
     }
 
