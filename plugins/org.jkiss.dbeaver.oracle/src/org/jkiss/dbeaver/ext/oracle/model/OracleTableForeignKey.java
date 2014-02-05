@@ -47,7 +47,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         OracleTableConstraint referencedKey,
         DBSForeignKeyModifyRule deleteRule)
     {
-        super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, status);
+        super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, status, false);
         this.referencedKey = referencedKey;
         this.deleteRule = deleteRule;
     }
@@ -64,7 +64,8 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
             DBSEntityConstraintType.FOREIGN_KEY,
             CommonUtils.notNull(
                 CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS")),
-                OracleObjectStatus.ENABLED));
+                OracleObjectStatus.ENABLED),
+            true);
 
         String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
         String refOwnerName = JDBCUtils.safeGetString(dbResult, "R_OWNER");

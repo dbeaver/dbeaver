@@ -40,9 +40,9 @@ public abstract class OracleTableConstraintBase extends JDBCTableConstraint<Orac
     private OracleObjectStatus status;
     private List<OracleTableConstraintColumn> columns;
 
-    public OracleTableConstraintBase(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, OracleObjectStatus status)
+    public OracleTableConstraintBase(OracleTableBase oracleTable, String name, DBSEntityConstraintType constraintType, OracleObjectStatus status, boolean persisted)
     {
-        super(oracleTable, name, null, constraintType, false);
+        super(oracleTable, name, null, constraintType, persisted);
         this.status = status;
     }
 
