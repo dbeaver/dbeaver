@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2013-2014 Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2014 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.actions;
+package org.jkiss.dbeaver.ext.db2.tools.maintenance;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
@@ -41,17 +42,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 
 /**
- * Manage the Dialog to enter Reorg option
- * 
- * @author Denis Forveille
- * @author Serge Rieder
- * 
+ * DB2 Table reorg dialog
  */
-public class DB2TableReorgDialog extends DB2TableToolDialog {
+public class DB2ReorgDialog extends DB2BaseTableToolDialog {
 
     private String indexName; // From a list of table indexes
     private String tempTablespace; // From a list of temp tablespaces
@@ -76,9 +73,9 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
     private final List<String> listTempTsNames = new ArrayList<String>();
     private final List<String> listIndexNames = new ArrayList<String>();
 
-    public DB2TableReorgDialog(IWorkbenchPartSite partSite, final DB2DataSource dataSource, final DB2Table selectedDB2Table)
+    public DB2ReorgDialog(IWorkbenchPartSite partSite, final Collection<DB2Table> selectedTables)
     {
-        super(partSite, DB2Messages.dialog_table_tools_reorg_title, dataSource, Collections.singleton(selectedDB2Table));
+        super(partSite, DB2Messages.dialog_table_tools_reorg_title, selectedTables);
 
         // Read TS and indexes
         try {
@@ -86,10 +83,12 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
+                    DB2Table db2Table = selectedTables.iterator().next();
+                    DB2DataSource db2DataSource = db2Table.getDataSource();
                     try {
                         monitor.beginTask("Read system info", 2);
 
-                        for (DB2Tablespace db2Tablespace : dataSource.getTablespaces(monitor)) {
+                        for (DB2Tablespace db2Tablespace : db2DataSource.getTablespaces(monitor)) {
                             if (db2Tablespace.getDataType().equals(DB2TablespaceDataType.T)) {
                                 listTempTsNames.add(db2Tablespace.getName());
                             }
@@ -97,7 +96,7 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
 
                         monitor.worked(1);
 
-                        for (DB2Index db2Index : selectedDB2Table.getIndexes(monitor)) {
+                        for (DB2Index db2Index : db2Table.getIndexes(monitor)) {
                             listIndexNames.add(db2Index.getFullQualifiedName());
                         }
 
@@ -117,7 +116,10 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
     @Override
     protected void createControls(Composite parent)
     {
-        Composite composite = new Composite(parent, 2);
+        Group optionsGroup = UIUtils.createControlGroup(parent, DB2Messages.dialog_table_tools_options, 1, 0, 0);
+        optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        Composite composite = new Composite(optionsGroup, 2);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -269,6 +271,9 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
         indexName = listIndexNames.isEmpty() ? null : listIndexNames.get(0);
         tempTablespace = listTempTsNames.isEmpty() ? null : listTempTsNames.get(0);
         lobsTablespace = listTempTsNames.isEmpty() ? null : listTempTsNames.get(0);
+
+        // Object Selector
+        createObjectsSelector(parent);
     }
 
     private Combo createIndexesCombo(Composite parent)
@@ -337,9 +342,12 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
     }
 
     @Override
-    protected StringBuilder generateTableCommand(DB2Table db2Table)
+    protected void generateObjectCommand(List<String> lines, DB2Table db2Table)
     {
         StringBuilder sb = new StringBuilder();
+
+        sb.append("CALL SYSPROC.ADMIN_CMD('");
+
         sb.append("REORG TABLE ").append(db2Table.getFullQualifiedName());
 
         if (dlgUseIndex.getSelection() && indexName != null) {
@@ -375,7 +383,10 @@ public class DB2TableReorgDialog extends DB2TableToolDialog {
                 sb.append(" RESETDICTIONARY");
             }
         }
-        return sb;
+
+        sb.append("')");
+
+        lines.add(sb.toString());
     }
 
 }

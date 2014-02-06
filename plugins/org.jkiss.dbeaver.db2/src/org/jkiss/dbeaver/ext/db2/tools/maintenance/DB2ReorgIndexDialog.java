@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2013-2014 Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2014 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.actions;
+package org.jkiss.dbeaver.ext.db2.tools.maintenance;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -24,20 +24,19 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
- * Manage the Dialog to enter Reorg Table's Index Options
- * 
- * @author Denis Forveille
+ * DB2 Table reorg index dialog
  */
-public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
+public class DB2ReorgIndexDialog extends DB2BaseTableToolDialog {
 
     private Button dlgAccessNo;
     private Button dlgAccessReadOnly;
@@ -46,15 +45,18 @@ public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
     private Button dlgCleanupKeysAndpages;
     private Button dlgCleanupPagesOnly;
 
-    public DB2TableReorgIndexDialog(IWorkbenchPartSite partSite, DB2DataSource dataSource, Collection<DB2Table> selectedDB2Tables)
+    public DB2ReorgIndexDialog(IWorkbenchPartSite partSite, Collection<DB2Table> selectedTables)
     {
-        super(partSite, DB2Messages.dialog_table_tools_reorgix_title, dataSource, selectedDB2Tables);
+        super(partSite, DB2Messages.dialog_table_tools_runstats_title, selectedTables);
     }
 
     @Override
     protected void createControls(Composite parent)
     {
-        Composite composite = new Composite(parent, 2);
+        Group optionsGroup = UIUtils.createControlGroup(parent, DB2Messages.dialog_table_tools_options, 1, 0, 0);
+        optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        Composite composite = new Composite(optionsGroup, 2);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -91,12 +93,17 @@ public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
         dlgCleanupPagesOnly = new Button(groupCleanup, SWT.RADIO);
         dlgCleanupPagesOnly.setText(DB2Messages.dialog_table_tools_reorgix_options_cleanup_pages);
         dlgCleanupPagesOnly.addSelectionListener(SQL_CHANGE_LISTENER);
+
+        // Object Selector
+        createObjectsSelector(parent);
     }
 
     @Override
-    protected StringBuilder generateTableCommand(DB2Table db2Table)
+    protected void generateObjectCommand(List<String> lines, DB2Table db2Table)
     {
         StringBuilder sb = new StringBuilder(256);
+        sb.append("CALL SYSPROC.ADMIN_CMD('");
+
         sb.append("REORG INDEXES ALL FOR TABLE ").append(db2Table.getFullQualifiedName());
 
         if (dlgAccessNo.getSelection()) {
@@ -114,7 +121,9 @@ public class DB2TableReorgIndexDialog extends DB2TableToolDialog {
         if (dlgCleanupPagesOnly.getSelection()) {
             sb.append(" CLEANUP PAGES");
         }
-        return sb;
-    }
 
+        sb.append("')");
+
+        lines.add(sb.toString());
+    }
 }

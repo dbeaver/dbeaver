@@ -94,6 +94,9 @@ public class DB2Messages extends NLS {
     public static String editors_db2_application_editor_confirm_action;
 
     public static String dialog_table_tools_success_title;
+    public static String dialog_table_tools_options;
+    public static String dialog_table_tools_result;
+    public static String dialog_table_tools_progress;
 
     public static String dialog_table_tools_runstats_title;
     public static String dialog_table_tools_runstats_cols_title;
@@ -105,7 +108,6 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_runstats_indexes_all;
     public static String dialog_table_tools_runstats_indexes_no;
     public static String dialog_table_tools_runstats_stats_title;
-    public static String dialog_table_tools_runstats_success;
 
     public static String dialog_table_tools_reorg_title;
     public static String dialog_table_tools_reorg_inplace;
@@ -120,7 +122,6 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_reorg_access_no;
     public static String dialog_table_tools_reorg_access_read;
     public static String dialog_table_tools_reorg_access_readwrite;
-    public static String dialog_table_tools_reorg_success;
 
     public static String dialog_table_tools_reorgix_title;
     public static String dialog_table_tools_reorgix_access_title;
@@ -132,7 +133,6 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_reorgix_options_full;
     public static String dialog_table_tools_reorgix_options_cleanup_keys;
     public static String dialog_table_tools_reorgix_options_cleanup_pages;
-    public static String dialog_table_tools_reorgix_success;
 
     public static String dialog_table_tools_truncate_title;
     public static String dialog_table_tools_truncate_storage_title;
@@ -141,7 +141,6 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_truncate_triggers_title;
     public static String dialog_table_tools_truncate_triggers_ignore;
     public static String dialog_table_tools_truncate_triggers_restrict;
-    public static String dialog_table_tools_truncate_success;
 
     public static String no_ddl_for_system_tables;
     public static String no_ddl_for_nicknames;
