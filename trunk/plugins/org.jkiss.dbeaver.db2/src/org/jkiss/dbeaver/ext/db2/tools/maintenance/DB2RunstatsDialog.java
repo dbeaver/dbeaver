@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2013-2014 Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2014 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.actions;
+package org.jkiss.dbeaver.ext.db2.tools.maintenance;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,22 +27,20 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
- * Dialog that manages Options for Runstats
- * 
- * @author Denis Forveille
- * @author Serge Rieder
+ * DB2 Table runstats dialog
  */
-public class DB2TableRunstatsDialog extends DB2TableToolDialog {
+public class DB2RunstatsDialog extends DB2BaseTableToolDialog {
 
     private Button dlgColsAllAndDistribution;
     private Button dlgColsAll;
@@ -53,15 +51,18 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
     private Button dlgIndexesDetailed;
     private Button dlgIndexesAll;
 
-    public DB2TableRunstatsDialog(IWorkbenchPartSite partSite, DB2DataSource dataSource, Collection<DB2Table> selectedDB2Tables)
+    public DB2RunstatsDialog(IWorkbenchPartSite partSite, Collection<DB2Table> selectedTables)
     {
-        super(partSite, DB2Messages.dialog_table_tools_runstats_title, dataSource, selectedDB2Tables);
+        super(partSite, DB2Messages.dialog_table_tools_runstats_title, selectedTables);
     }
 
     @Override
     protected void createControls(Composite parent)
     {
-        Composite composite = new Composite(parent, 2);
+        Group optionsGroup = UIUtils.createControlGroup(parent, DB2Messages.dialog_table_tools_options, 1, 0, 0);
+        optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        Composite composite = new Composite(optionsGroup, 2);
         composite.setLayout(new GridLayout(2, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -115,24 +116,22 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
         dlgSampleValue.pack();
         dlgSampleValue.addSelectionListener(SQL_CHANGE_LISTENER);
 
-        // Read only Resulting RUNSTATS Command
-        GridData gd = new GridData();
-        gd.verticalAlignment = GridData.FILL;
-        gd.horizontalAlignment = GridData.FILL;
-        gd.horizontalSpan = 2;
-        gd.grabExcessHorizontalSpace = true;
-
         // Initial setup
         dlgColsAllAndDistribution.setSelection(true);
         dlgIndexesDetailed.setSelection(true);
         dlgSampleValue.setSelection(0);
         dlgSampleValue.setEnabled(false);
+
+        // Object Selector
+        createObjectsSelector(parent);
     }
 
     @Override
-    protected StringBuilder generateTableCommand(DB2Table db2Table)
+    protected void generateObjectCommand(List<String> lines, DB2Table db2Table)
     {
         StringBuilder sb = new StringBuilder(256);
+        sb.append("CALL SYSPROC.ADMIN_CMD('");
+
         sb.append("RUNSTATS ON TABLE ").append(db2Table.getFullQualifiedName());
 
         if (dlgColsAllAndDistribution.getSelection()) {
@@ -151,7 +150,8 @@ public class DB2TableRunstatsDialog extends DB2TableToolDialog {
             sb.append(" TABLESAMPLE SYSTEM(").append(dlgSampleValue.getSelection()).append(")");
         }
 
-        return sb;
-    }
+        sb.append("')");
 
+        lines.add(sb.toString());
+    }
 }
