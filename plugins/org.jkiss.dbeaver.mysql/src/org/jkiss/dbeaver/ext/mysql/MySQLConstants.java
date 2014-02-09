@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 public class MySQLConstants {
 
     public static final int DEFAULT_PORT = 3306;
+    public static final String DEFAULT_HOST = "localhost";
 
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 
