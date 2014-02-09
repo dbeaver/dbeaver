@@ -1,7 +1,8 @@
 Major:
 
 Unclosed sessions (test connection)
-Generate SQL - escape strings
+Generate SQL - escape strings. Add notification about clipboard.
+MariaDB driver
 
 Process scripts with external native tool (SQLPlus + mysql)
 Process SQL blocks (begin/end/final delimiter)
