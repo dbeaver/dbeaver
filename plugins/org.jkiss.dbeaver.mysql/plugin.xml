@@ -147,6 +147,17 @@
                     description="MySQL standard driver">
                     <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.mysql/LICENSE.txt"/>
                 </driver>
+                <driver
+                    id="mariaDB"
+                    label="MariaDB"
+                    icon="icons/mariadb_icon.png"
+                    class="com.mysql.jdbc.Driver"
+                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                    defaultPort="3306"
+                    webURL="http://www.mysql.com/products/connector/"
+                    description="MySQL standard driver">
+                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.mysql/LICENSE.txt"/>
+                </driver>
             </drivers>
             <views>
                 <view

@@ -161,7 +161,11 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
         if (hostText != null) {
-            hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
+            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
+                hostText.setText(connectionInfo.getHostName());
+            } else {
+                hostText.setText(MySQLConstants.DEFAULT_HOST);
+            }
         }
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
@@ -209,6 +213,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
 
     private void evaluateURL()
     {
+        saveSettings(site.getActiveDataSource());
         site.updateButtons();
     }
 
