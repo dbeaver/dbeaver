@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <!--
- * Copyright (C) 2010-2014 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013-2014 Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2014 Serge Rieder    serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -387,7 +387,7 @@
                 </tool>
                 <tool
                     class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2RunstatsTool"
-                    description="Truncate table"
+                    description="Runstats"
                     id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2RunstatsTool"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.runstats.name"
                     singleton="false">
@@ -395,7 +395,7 @@
                 </tool>
                 <tool
                     class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgTool"
-                    description="Truncate table"
+                    description="Reorg table"
                     id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgTool"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.reorg.name"
                     singleton="true">
@@ -403,7 +403,7 @@
                 </tool>
                 <tool
                     class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgIndexTool"
-                    description="Truncate table"
+                    description="Reorg index"
                     id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgIndexTool"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgix.name"
                     singleton="false">
