@@ -49,6 +49,12 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
 
+
+    public NewConnectionWizard()
+    {
+        super(DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry());
+    }
+
     /**
      * Constructor for SampleNewWizard.
      */
