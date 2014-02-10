@@ -267,6 +267,10 @@ public abstract class JDBCCompositeCache<
                             if (CommonUtils.isEmpty(objectName)) {
                                 objectName = object.getName();
                             }
+                            if (CommonUtils.isEmpty(objectName)) {
+                                // TODO: that's wrong. Dunno how to handle it
+                                objectName = "UNDEFINED";
+                            }
                             objectInfo = new ObjectInfo(object);
                             objectMap.put(objectName, objectInfo);
                         }
