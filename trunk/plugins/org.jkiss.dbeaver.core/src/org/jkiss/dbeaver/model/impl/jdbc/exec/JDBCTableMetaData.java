@@ -152,7 +152,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                                     }
                                 }
                             }
-                        } catch (DBException e) {
+                        } catch (Exception e) {
                             // Indexes are not supported or not available
                             // Just skip them
                             log.debug(e);
