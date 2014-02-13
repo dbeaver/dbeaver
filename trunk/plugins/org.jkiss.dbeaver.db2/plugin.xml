@@ -356,7 +356,7 @@
                     <property name="progressiveStreaming" value="2"/>
                     <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
                     
-                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.SSSSSS"/>
+                    <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
                 </driver>
             </drivers>
 
