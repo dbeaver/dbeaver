@@ -146,10 +146,13 @@ public class ExtendedDateFormat extends SimpleDateFormat {
 
     public static void main(String[] args)
     {
-        test("yyyy-mm-dd Z hh:mm:ss[.fffffffff]");
-        test("yyyy-mm-dd Z hh:mm:ss.fffffffff");
-        test("yyyy-mm-dd Z hh:mm:ss");
-        test("yyyy-mm-dd Z hh:mm:ss[.fffffffff nanos]");
+        test("yyyy-MM-dd Z hh:mm:ss[.fffffffff]");
+        test("yyyy-MM-dd Z hh:mm:ss.fffffffff");
+        test("yyyy-MM-dd Z hh:mm:ss");
+        test("yyyy-MM-dd Z hh:mm:ss[.fffffffff nanos]");
+        test("yyyy-MM-dd Z hh:mm:ss[.ffffff micros]");
+        test("yyyy-MM-dd Z hh:mm:ss.ffffff");
+        test("yyyy-MM-dd Z hh:mm:ss.f"); // 1/10 secs = 'S'
     }
 
     private static void test(String pattern)
