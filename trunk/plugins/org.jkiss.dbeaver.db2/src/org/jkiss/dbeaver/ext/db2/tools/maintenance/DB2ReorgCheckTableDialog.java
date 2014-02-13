@@ -18,29 +18,39 @@
  */
 package org.jkiss.dbeaver.ext.db2.tools.maintenance;
 
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
 
 /**
- * DB2 table reorg action
+ * DB2 Table Reorg Check dialog
  */
-public class DB2ReorgTool implements IExternalTool {
+public class DB2ReorgCheckTableDialog extends DB2BaseTableToolDialog {
+
+    public DB2ReorgCheckTableDialog(IWorkbenchPartSite partSite, final Collection<DB2Table> selectedTables)
+    {
+        super(partSite, DB2Messages.dialog_table_tools_reorgcheck_title, selectedTables);
+    }
 
     @Override
-    public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
+    protected void createControls(Composite parent)
     {
-        List<DB2Table> tables = CommonUtils.filterCollection(objects, DB2Table.class);
-        if (!tables.isEmpty()) {
-            DB2ReorgDialog dialog = new DB2ReorgDialog(activePart.getSite(), tables);
-            dialog.open();
-        }
+        // Object Selector
+        createObjectsSelector(parent);
+    }
+
+    @Override
+    protected void generateObjectCommand(List<String> lines, DB2Table db2Table)
+    {
+        StringBuilder sb = new StringBuilder(128);
+        sb.append("CALL SYSPROC.REORGCHK_TB_STATS('T','");
+        sb.append(db2Table.getFullQualifiedName());
+        sb.append("')");
+
+        lines.add(sb.toString());
     }
 }
