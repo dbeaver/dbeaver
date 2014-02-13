@@ -48,7 +48,7 @@ import java.util.List;
 /**
  * DB2 Table reorg dialog
  */
-public class DB2ReorgDialog extends DB2BaseTableToolDialog {
+public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
 
     private String indexName; // From a list of table indexes
     private String tempTablespace; // From a list of temp tablespaces
@@ -73,7 +73,7 @@ public class DB2ReorgDialog extends DB2BaseTableToolDialog {
     private final List<String> listTempTsNames = new ArrayList<String>();
     private final List<String> listIndexNames = new ArrayList<String>();
 
-    public DB2ReorgDialog(IWorkbenchPartSite partSite, final Collection<DB2Table> selectedTables)
+    public DB2ReorgTableDialog(IWorkbenchPartSite partSite, final Collection<DB2Table> selectedTables)
     {
         super(partSite, DB2Messages.dialog_table_tools_reorg_title, selectedTables);
 
@@ -344,7 +344,7 @@ public class DB2ReorgDialog extends DB2BaseTableToolDialog {
     @Override
     protected void generateObjectCommand(List<String> lines, DB2Table db2Table)
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(256);
 
         sb.append("CALL SYSPROC.ADMIN_CMD('");
 

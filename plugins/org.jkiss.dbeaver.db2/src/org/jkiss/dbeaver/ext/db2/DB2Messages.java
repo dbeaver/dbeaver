@@ -134,6 +134,10 @@ public class DB2Messages extends NLS {
     public static String dialog_table_tools_reorgix_options_cleanup_keys;
     public static String dialog_table_tools_reorgix_options_cleanup_pages;
 
+    public static String dialog_table_tools_reorgcheck_title;
+
+    public static String dialog_table_tools_reorgcheckix_title;
+
     public static String dialog_table_tools_truncate_title;
     public static String dialog_table_tools_truncate_storage_title;
     public static String dialog_table_tools_truncate_storage_reuse;
