@@ -643,6 +643,9 @@ public class DB2Utils {
         // Remove some CRs
         result = result.replaceAll("SET\\r\\n", "SET ");
         result = result.replaceAll("INTO\\r\\n", "INTO ");
+        result = result.replaceAll("FROM\\r\\n", "FROM ");
+        result = result.replaceAll("FETCH\\r\\n", "FETCH ");
+        result = result.replaceAll("WHERE\\r\\n", "WHERE ");
 
         return result;
     }
