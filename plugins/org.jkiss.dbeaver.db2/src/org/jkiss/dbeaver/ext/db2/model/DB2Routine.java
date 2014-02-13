@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2013-2014 Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2014 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineParmsCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -208,7 +208,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         if ((language != null) && (language.equals(DB2RoutineLanguage.SQL))) {
-            return SQLUtils.formatSQL(getDataSource(), text);
+            return DB2Utils.formatSQLProcedureDDL(getDataSource(), text);
         } else {
             return DB2Messages.no_ddl_for_nonsql_routines;
         }
