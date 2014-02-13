@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.text.SimpleDateFormat;
 
@@ -32,12 +33,9 @@ import java.text.SimpleDateFormat;
  */
 public class DB2DateTimeValueHandler extends JDBCDateTimeValueHandler {
 
-    // FIXME DF: format is right. Unfortunately the "value" for Timestamps does not include micro/nanos seconds..
-    // It must have been "stripped" somewhere..
-    private static final String FMT_TIMESTAMP = "''yyyy-MM-dd-HH.mm.ss.SSS000''";
-    // private static final String FMT_TIMESTAMP = "''yyyy-MM-dd-HH.mm.ss.SSSSSS''";
     private static final String FMT_DATE = "''yyyy-MM-dd''";
     private static final String FMT_TIME = "''HH.mm.ss''";
+    private static final String FMT_TIMESTAMP = "yyyy-MM-dd-HH.mm.ss.ffffff";
 
     public DB2DateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
     {
@@ -59,8 +57,8 @@ public class DB2DateTimeValueHandler extends JDBCDateTimeValueHandler {
                 sdf = new SimpleDateFormat(FMT_TIME);
                 return sdf.format(value);
             case java.sql.Types.TIMESTAMP:
-                sdf = new SimpleDateFormat(FMT_TIMESTAMP);
-                return sdf.format(value);
+                sdf = new ExtendedDateFormat(FMT_TIMESTAMP);
+                return "'" + sdf.format(value) + "'";
             }
         }
 
