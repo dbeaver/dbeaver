@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2013-2014 Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2014 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.Clob;
@@ -598,6 +599,52 @@ public class DB2Utils {
             }
         }
         return null;
+    }
+
+    public static String formatSQLProcedureDDL(DB2DataSource db2DataSource, String rawText)
+    {
+
+        // First let the defaut SQL formater operate
+        String result = SQLUtils.formatSQL(db2DataSource, rawText);
+
+        // Put some kwywords on the same line
+        result = result.replace("CREATE\r\n    PROCEDURE", "CREATE PROCEDURE");
+        result = result.replace("\r\nOR REPLACE", " OR REPLACE");
+
+        // Put each definition keywords on one line
+        result = result.replace(" LANGUAGE ", "\r\nLANGUAGE ");
+        result = result.replace(" SPECIFIC ", "\r\nSPECIFIC ");
+        result = result.replace(" DYNAMIC RESULT ", "\r\nDYNAMIC RESULT ");
+        result = result.replace(" MODIFIES SQL ", "\r\nMODIFIES SQL ");
+        result = result.replace(" CONTAINS SQL ", "\r\nCONTAINS SQL ");
+        result = result.replace(" READS SQL DATA ", "\r\nREADS SQL DATA ");
+        result = result.replace(" NOT DETERMINISTIC ", "\r\nNOT DETERMINISTIC ");
+        result = result.replace(" DETERMINISTIC ", "\r\nDETERMINISTIC ");
+        result = result.replace(" CALLED ON NULL INPUT ", "\r\nCALLED ON NULL INPUT ");
+        result = result.replace(" COMMIT ON RETURN ", "\r\nCOMMIT ON RETURN ");
+        result = result.replace(" AUTONOMOUS ", "\r\nAUTONOMOUS ");
+        result = result.replace(" INHERIT SPECIAL ", "\r\nINHERIT SPECIAL ");
+        result = result.replace(" OLD SAVEPOINT ", "\r\nOLD SAVEPOINT ");
+        result = result.replace(" NEW SAVEPOINT ", "\r\nNEW SAVEPOINT ");
+        result = result.replace(" EXTERNAL ACTION ", "\r\nEXTERNAL ACTION ");
+        result = result.replace(" NO EXTERNAL ", "\r\nNO EXTERNAL ");
+        result = result.replace(" PARAMETER CCSID ", "\r\nPARAMETER CCSID ");
+        result = result.replace(" BEGIN ", "\r\nBEGIN\r\n");
+
+        // Put a CR after ";"
+        result = result.replaceAll(";", ";\r\n");
+
+        // Suppress the CRs before ";"
+        result = result.replaceAll("\\r\\n;", ";");
+
+        // Remove CR space
+        result = result.replaceAll("\\r\\n ", "\r\n");
+
+        // Remove some CRs
+        result = result.replaceAll("SET\\r\\n", "SET ");
+        result = result.replaceAll("INTO\\r\\n", "INTO ");
+
+        return result;
     }
 
     private DB2Utils()
