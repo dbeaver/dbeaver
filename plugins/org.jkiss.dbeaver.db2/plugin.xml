@@ -394,9 +394,9 @@
                     <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
                 </tool>
                 <tool
-                    class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgTool"
+                    class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgTableTool"
                     description="Reorg table"
-                    id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgTool"
+                    id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgTableTool"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.reorg.name"
                     singleton="true">
                     <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
@@ -406,6 +406,14 @@
                     description="Reorg index"
                     id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgIndexTool"
                     label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgix.name"
+                    singleton="false">
+                    <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+                </tool>
+                <tool
+                    class="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgCheckTableTool"
+                    description="Reorg check table"
+                    id="org.jkiss.dbeaver.ext.db2.tools.maintenance.DB2ReorgCheckTableTool"
+                    label="%tool.org.jkiss.dbeaver.ext.db2.table.reorgcheck.name"
                     singleton="false">
                     <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
                 </tool>
@@ -465,6 +473,21 @@
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2WrapperManager"      objectType="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper"/>
         <manager class="org.jkiss.dbeaver.ext.db2.manager.DB2XMLSchemaManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema"/>
         
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+       <provider
+            class="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
+            description="DB2 data types provider"
+            id="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
+            label="DB2 data types provider">
+
+            <datasource id="db2"/>
+
+            <type name="DATE"/>
+            <type name="DATETIME"/>
+            <type name="TIMESTAMP"/>
+        </provider>
     </extension>
 
     <extension point="org.eclipse.ui.editors">

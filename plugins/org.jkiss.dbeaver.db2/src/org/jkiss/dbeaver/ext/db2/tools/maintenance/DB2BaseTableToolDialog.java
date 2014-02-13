@@ -19,17 +19,23 @@
 package org.jkiss.dbeaver.ext.db2.tools.maintenance;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptStatusDialog;
+import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
 import java.util.Collection;
 
 /**
@@ -51,6 +57,10 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
             {
                 TreeColumn msgColumn = new TreeColumn(objectTree, SWT.NONE);
                 msgColumn.setText(DB2Messages.dialog_table_tools_result);
+
+                for (int i = 0; i < 20; i++) {
+                    new TreeColumn(objectTree, SWT.NONE);
+                }
             }
 
             @Override
@@ -63,6 +73,43 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
                     treeItem.setText(1, exception.getMessage());
                 }
                 UIUtils.packColumns(treeItem.getParent(), false, null);
+            }
+
+            // DF: This method is for tools that return resultsets
+            @Override
+            public void processObjectResults(DB2Table db2Table, DBCResultSet resultSet) throws DBCException
+            {
+                // Retrive column names
+                JDBCResultSetMetaData rsMetaData = (JDBCResultSetMetaData) resultSet.getResultSetMetaData();
+
+                try {
+
+                    TreeItem treeItem = getTreeItem(db2Table);
+                    Font f = UIUtils.makeBoldFont(treeItem.getFont());
+                    if (treeItem != null) {
+
+                        // Display the column names
+                        TreeItem subItem = null;
+                        subItem = new TreeItem(treeItem, SWT.NONE);
+                        subItem.setFont(f);
+                        for (int i = 0; i < rsMetaData.getColumnCount(); i++) {
+                            subItem.setText(i, rsMetaData.getColumnName(i + 1));
+                            subItem.setGrayed(true);
+                        }
+
+                        // Display the data for each row
+                        while (resultSet.nextRow()) {
+                            subItem = new TreeItem(treeItem, SWT.NONE);
+                            for (int i = 0; i < rsMetaData.getColumnCount(); i++) {
+                                subItem.setText(i, CommonUtils.toString(resultSet.getColumnValue(i + 1)));
+                            }
+                        }
+                        treeItem.setExpanded(true);
+                    }
+                } catch (SQLException e) {
+                    throw new DBCException(e.getMessage());
+                }
+
             }
         };
     }
