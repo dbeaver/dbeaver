@@ -32,7 +32,10 @@ import java.text.SimpleDateFormat;
  */
 public class DB2DateTimeValueHandler extends JDBCDateTimeValueHandler {
 
-    private static final String FMT_TIMESTAMP = "''yyyy-MM-dd-HH.mm.ss.SSSSSS''";
+    // FIXME DF: format is right. Unfortunately the "value" for Timestamps does not include micro/nanos seconds..
+    // It must have been "stripped" somewhere..
+    private static final String FMT_TIMESTAMP = "''yyyy-MM-dd-HH.mm.ss.SSS000''";
+    // private static final String FMT_TIMESTAMP = "''yyyy-MM-dd-HH.mm.ss.SSSSSS''";
     private static final String FMT_DATE = "''yyyy-MM-dd''";
     private static final String FMT_TIME = "''HH.mm.ss''";
 
@@ -56,8 +59,6 @@ public class DB2DateTimeValueHandler extends JDBCDateTimeValueHandler {
                 sdf = new SimpleDateFormat(FMT_TIME);
                 return sdf.format(value);
             case java.sql.Types.TIMESTAMP:
-                // FIXME DF: format is right. Unfortunately the "value" for Timestamps does not include micro/nanos seconds..
-                // It must have been "stripped" somewhere..
                 sdf = new SimpleDateFormat(FMT_TIMESTAMP);
                 return sdf.format(value);
             }
