@@ -109,18 +109,16 @@ public class DataExporterSQL extends StreamExporterAbstract {
             throw new DBException("SQL export may be done only from table object");
         }
         rowCount = 0;
-        // do nothing
     }
 
     @Override
     public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
     {
         int columnsSize = columns.size();
-        boolean firstRow = false;
         if (rowCount % rowsInStatement == 0) {
             sqlBuffer.setLength(0);
             if (rowCount > 0) {
-                sqlBuffer.append(");").append(rowDelimiter);
+                sqlBuffer.append(";").append(rowDelimiter);
             }
             sqlBuffer.append("INSERT INTO ").append(tableName).append(" (");
             for (int i = 0; i < columnsSize; i++) {
@@ -130,16 +128,17 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 }
                 sqlBuffer.append(column.getMetaAttribute().getName());
             }
-            sqlBuffer.append(") VALUES (");
+            sqlBuffer.append(") VALUES ");
             if (rowsInStatement > 1) {
                 sqlBuffer.append(rowDelimiter);
             }
             out.write(sqlBuffer.toString());
-            firstRow = true;
         }
+        
+        out.write("(");
         rowCount++;
         for (int i = 0; i < columnsSize; i++) {
-            if (!firstRow || i > 0) {
+            if (i > 0) {
                 out.write(',');
             }
             Object value = row[i];
@@ -174,15 +173,15 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 out.write(super.getValueDisplayString(column, row[i]));
             }
         }
+        out.write(")");
         out.write(rowDelimiter);
     }
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException
     {
-        // do nothing
         if (rowCount > 0) {
-            out.write(");");
+            out.write(";");
         }
     }
 
