@@ -93,8 +93,14 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                     result.append(nanoPrefix);
                 }
                 String nanoStr = String.valueOf(nanos);
-                for (int i = 0; i < nanoLength - nanoStr.length(); i++) {
-                    result.append("0");
+                if (nanoLength < nanoStr.length()) {
+                    // Truncate nanos string to fit in the pattern
+                    nanoStr = nanoStr.substring(0, nanoLength);
+                } else {
+                    // Pad with 0s
+                    for (int i = 0; i < nanoLength - nanoStr.length(); i++) {
+                        result.append("0");
+                    }
                 }
                 result.append(nanoStr);
                 if (nanoPostfix != null) {
