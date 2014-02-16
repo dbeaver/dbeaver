@@ -239,6 +239,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public MultiValueInsertMode getMultiValueInsertMode() {
+        return MultiValueInsertMode.NOT_SUPPORTED;
+    }
+
+    @Override
     public boolean supportsSubqueries()
     {
         return true;
