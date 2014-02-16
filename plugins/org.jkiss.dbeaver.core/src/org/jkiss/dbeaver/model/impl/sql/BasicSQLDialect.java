@@ -234,6 +234,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public String escapeString(String string) {
+        return string.replace("'", "''");
+    }
+
+    @Override
     public boolean supportsSubqueries()
     {
         return true;

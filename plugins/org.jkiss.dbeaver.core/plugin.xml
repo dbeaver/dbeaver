@@ -2238,7 +2238,6 @@
                 <propertyGroup label="General">
                     <property id="extension" label="File extension" defaultValue="sql"/>
                     <property id="format" label="Dates/numbers format" defaultValue="native" validValues="ui,edit,native"/>
-                    <property id="escape" label="%dataTransfer.processor.sql.property.escape.name" type="string" description="%dataTransfer.processor.sql.property.escape.description" required="true"/>
                     <property id="omitSchema" label="%dataTransfer.processor.sql.property.omitSchema.name" type="boolean" description="%dataTransfer.processor.sql.property.omitSchema.description" required="false" defaultValue="false"/>
                     <property id="rowsInStatement" label="%dataTransfer.processor.sql.property.rowsInStatement.name" type="integer" description="%dataTransfer.processor.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
                 </propertyGroup>

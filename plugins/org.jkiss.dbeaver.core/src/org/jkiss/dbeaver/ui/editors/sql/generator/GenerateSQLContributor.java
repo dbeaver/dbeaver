@@ -36,6 +36,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -46,6 +47,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -389,6 +392,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
         protected void appendAttributeValue(StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row)
         {
+            SQLDialect dialect = SQLUtils.getDialectFromObject(binding.getAttribute());
             Object value = row.getValue(binding.getAttribute());
             if (DBUtils.isNullValue(value)) {
                 sql.append("NULL");
@@ -399,7 +403,11 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     value,
                     DBDDisplayFormat.NATIVE);
                 if (isString) sql.append('\'');
-                sql.append(displayString);
+                if (dialect != null) {
+                    sql.append(dialect.escapeString(displayString));
+                } else {
+                    sql.append(displayString);
+                }
                 if (isString) sql.append('\'');
             }
         }
@@ -432,6 +440,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         });
     }
 
+    @Nullable
     static IStructuredSelection getSelectionFromPart(IWorkbenchPart part)
     {
         if (part == null) {

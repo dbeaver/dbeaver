@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -41,13 +43,10 @@ import java.util.List;
  */
 public class DataExporterSQL extends StreamExporterAbstract {
 
-    private static final String PROP_ESCAPE = "escape";
     private static final String PROP_OMIT_SCHEMA = "omitSchema";
     private static final String PROP_ROWS_IN_STATEMENT = "rowsInStatement";
-    private static final char DEF_ESCAPE_CHAR = '\\';
     private static final char STRING_QUOTE = '\'';
 
-    private char escapeChar = DEF_ESCAPE_CHAR;
     private String rowDelimiter;
     private boolean omitSchema;
     private int rowsInStatement;
@@ -57,26 +56,12 @@ public class DataExporterSQL extends StreamExporterAbstract {
 
     private transient StringBuilder sqlBuffer = new StringBuilder(100);
     private transient long rowCount;
+    private SQLDialect dialect;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        String escapeString = String.valueOf(site.getProperties().get(PROP_ESCAPE));
-        if (escapeString == null || escapeString.isEmpty()) {
-            escapeChar = DEF_ESCAPE_CHAR;
-        } else if (escapeString.length() == 1) {
-            escapeChar = escapeString.charAt(0);
-        } else if (escapeString.charAt(0) == DEF_ESCAPE_CHAR) {
-            switch (escapeString.charAt(1)) {
-                case 't': escapeChar = '\t'; break;
-                case 'n': escapeChar = '\n'; break;
-                case 'r': escapeChar = '\r'; break;
-                default: escapeChar = DEF_ESCAPE_CHAR;
-            }
-        } else {
-            escapeChar = DEF_ESCAPE_CHAR;
-        }
         if (site.getProperties().containsKey(PROP_OMIT_SCHEMA)) {
             omitSchema = CommonUtils.toBoolean(site.getProperties().get(PROP_OMIT_SCHEMA));
         }
@@ -87,6 +72,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
         }
         out = site.getWriter();
         rowDelimiter = ContentUtils.getDefaultLineSeparator();
+        dialect = SQLUtils.getDialectFromObject(site.getSource());
     }
 
     @Override
@@ -187,21 +173,12 @@ public class DataExporterSQL extends StreamExporterAbstract {
 
     private void writeStringValue(String value)
     {
-        // check for needed quote
-        if (value.indexOf(STRING_QUOTE) != -1) {
-            // escape quotes with double quotes
-            StringBuilder buf = new StringBuilder(value.length() + 5);
-            for (int i = 0; i <value.length(); i++) {
-                char c = value.charAt(i);
-                if (c == STRING_QUOTE) {
-                    buf.append(escapeChar);
-                }
-                buf.append(c);
-            }
-            value = buf.toString();
-        }
         out.write(STRING_QUOTE);
-        out.write(value);
+        if (dialect != null) {
+            out.write(dialect.escapeString(value));
+        } else {
+            out.write(value);
+        }
         out.write(STRING_QUOTE);
     }
 
@@ -216,11 +193,10 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 if (count <= 0) {
                     break;
                 }
-                for (int i = 0; i < count; i++) {
-                    if (buffer[i] == STRING_QUOTE) {
-                        out.write(escapeChar);
-                    }
-                    out.write(buffer[i]);
+                if (dialect != null) {
+                    out.write(dialect.escapeString(String.valueOf(buffer, 0, count)));
+                } else {
+                    out.write(buffer, 0, count);
                 }
             }
             out.write(STRING_QUOTE);
