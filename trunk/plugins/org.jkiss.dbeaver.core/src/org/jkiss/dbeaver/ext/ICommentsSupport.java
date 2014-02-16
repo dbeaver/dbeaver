@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ext;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.Pair;
 
 /**
@@ -31,6 +32,7 @@ public interface ICommentsSupport {
      * Two-item array containing begin and end of multi-line comments.
      * @return string array or null if multi-line comments are not supported
      */
+    @Nullable
     Pair<String, String> getMultiLineComments();
 
     /**

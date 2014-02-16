@@ -172,4 +172,11 @@ public interface SQLDialect extends ICommentsSupport {
     @NotNull
     DBPIdentifierCase storesQuotedCase();
 
+    /**
+     * Escapes string to make usable inside of SQL queries.
+     * Basically it has to escape only ' character which delimits strings.
+     * @param string
+     * @return
+     */
+    String escapeString(String string);
 }

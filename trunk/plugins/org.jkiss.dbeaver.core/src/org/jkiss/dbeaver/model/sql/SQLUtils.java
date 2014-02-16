@@ -18,8 +18,12 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
@@ -74,7 +78,7 @@ public final class SQLUtils {
             dialect.getSingleLineComments());
     }
 
-    public static String stripComments(String query, String mlCommentStart, String mlCommentEnd, String[] slComments)
+    public static String stripComments(String query, @Nullable String mlCommentStart, @Nullable String mlCommentEnd, String[] slComments)
     {
         query = query.trim();
         if (mlCommentStart != null && mlCommentEnd != null) {
@@ -165,6 +169,7 @@ public final class SQLUtils {
         return query.substring(startPos, endPos);
     }
 
+    @Nullable
     public static String getQueryOutputParameter(DBCSession session, String query)
     {
         final Matcher matcher = PATTERN_OUT_PARAM.matcher(query);
@@ -240,4 +245,17 @@ public final class SQLUtils {
         }
         return sql;
     }
+
+    @Nullable
+    public static SQLDialect getDialectFromObject(DBPObject object)
+    {
+        if (object instanceof DBSObject) {
+            DBPDataSource dataSource = ((DBSObject)object).getDataSource();
+            if (dataSource instanceof SQLDataSource) {
+                return ((SQLDataSource) dataSource).getSQLDialect();
+            }
+        }
+        return null;
+    }
+
 }
