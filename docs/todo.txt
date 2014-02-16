@@ -1,11 +1,6 @@
-Major:
 
-Generate SQL - escape strings. Add notification about clipboard
-PK/FK icons for columns (lazy mode)
 Dialect-dependent SQL generator
 Browse data by foreign keys. Table history (back/forward)
-
-Unclosed sessions (test connection)
 Transaction state in status bar
 
 Process scripts with external native tool (SQLPlus + mysql)

@@ -145,8 +145,9 @@ public class QMMCollector extends DefaultExecutionHandler {
         sessionMap.put(contextId, session);
 
         if (session.getPrevious() != null && !session.getPrevious().isClosed()) {
-            log.warn("Previous '" + contextId + "' session wasn't closed");
-            session.getPrevious().close();
+            // Is it really a problem? Maybe better to remove warning at all
+            // Happens when we have open connection and perform another connection test
+            log.debug("Previous '" + contextId + "' session wasn't closed");
         }
         fireMetaEvent(session, QMMetaEvent.Action.BEGIN);
     }
