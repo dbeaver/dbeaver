@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -193,6 +194,12 @@ public class WMIDialect implements SQLDialect {
         return DBPIdentifierCase.MIXED;
     }
 
+    @Override
+    public String escapeString(String string) {
+        return string;
+    }
+
+    @Nullable
     @Override
     public Pair<String, String> getMultiLineComments() {
         return null;
