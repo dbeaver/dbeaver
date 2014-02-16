@@ -43,6 +43,13 @@ import java.util.List;
  */
 public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTableColumn, OracleTableBase> {
 
+    protected final ColumnModifier<OracleTableColumn> OracleNotNullModifier = new ColumnModifier<OracleTableColumn>() {
+        @Override
+        public void appendModifier(OracleTableColumn column, StringBuilder sql) {
+            sql.append(column.isRequired() ? " NOT NULL" : " NULL");
+        }
+    };
+
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableColumn> getObjectsCache(OracleTableColumn object)
     {
@@ -51,7 +58,7 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
 
     protected ColumnModifier<OracleTableColumn>[] getSupportedModifiers()
     {
-        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NotNullModifier};
+        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, OracleNotNullModifier};
     }
 
     @Override
