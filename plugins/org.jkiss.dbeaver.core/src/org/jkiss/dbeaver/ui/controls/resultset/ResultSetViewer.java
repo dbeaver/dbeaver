@@ -753,6 +753,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         //updateEditControls();
     }
 
+    @NotNull
     public Spreadsheet getSpreadsheet()
     {
         return spreadsheet;
