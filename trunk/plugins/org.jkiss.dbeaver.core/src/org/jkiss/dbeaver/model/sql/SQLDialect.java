@@ -41,6 +41,12 @@ public interface SQLDialect extends ICommentsSupport {
     int USAGE_PRIV = 8;
     int USAGE_ALL = 256;
 
+    enum MultiValueInsertMode {
+        NOT_SUPPORTED,
+        GROUP_ROWS,
+        PLAIN
+    }
+
     /**
      * Dialect name
      * @return SQL dialect name
@@ -179,4 +185,7 @@ public interface SQLDialect extends ICommentsSupport {
      * @return
      */
     String escapeString(String string);
+
+    MultiValueInsertMode getMultiValueInsertMode();
+
 }

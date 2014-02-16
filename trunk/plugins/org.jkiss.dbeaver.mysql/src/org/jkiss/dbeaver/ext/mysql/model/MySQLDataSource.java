@@ -41,7 +41,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -64,7 +66,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLCharset> charsets;
     private Map<String, MySQLCollation> collations;
     private String activeCatalogName;
-    //private List<MySQLInformationFolder> informationFolders;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
@@ -77,6 +78,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     protected Map<String, String> getInternalConnectionProperties()
     {
         return MySQLDataSourceProvider.getConnectionsProps();
+    }
+
+    @Override
+    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData) {
+        return new MySQLDialect(this, metaData);
     }
 
     public String[] getTableTypes()

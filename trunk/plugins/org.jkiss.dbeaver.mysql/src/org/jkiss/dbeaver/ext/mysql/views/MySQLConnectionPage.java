@@ -53,6 +53,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     private Text usernameText;
     private Text passwordText;
     private ClientHomesSelector homesSelector;
+    private boolean activated = false;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/mysql_logo.png");
 
@@ -75,7 +76,10 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             @Override
             public void modifyText(ModifyEvent e)
             {
-                evaluateURL();
+                if (activated) {
+                    saveSettings(site.getActiveDataSource());
+                    site.updateButtons();
+                }
             }
         };
 
@@ -184,6 +188,8 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
+
+        activated = true;
     }
 
     @Override
@@ -209,12 +215,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
         super.saveSettings(dataSource);
-    }
-
-    private void evaluateURL()
-    {
-        saveSettings(site.getActiveDataSource());
-        site.updateButtons();
     }
 
     @Override

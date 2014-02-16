@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.utils.Pair;
@@ -34,7 +35,7 @@ import java.util.Set;
 /**
  * Info
  */
-public class WMIDialect implements SQLDialect {
+public class WMIDialect extends BasicSQLDialect {
 
     public WMIDialect()
     {
@@ -55,158 +56,9 @@ public class WMIDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public Collection<String> getExecuteKeywords()
-    {
-        return Collections.emptyList();
-    }
-
-    @NotNull
-    @Override
-    public Set<String> getReservedWords() {
-        return Collections.emptySet();
-    }
-
-    @NotNull
-    @Override
-    public Set<String> getFunctions() {
-        return Collections.emptySet();
-    }
-
-    @NotNull
-    @Override
-    public Set<String> getTypes() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public DBPKeywordType getKeywordType(@NotNull String word) {
-        return null;
-    }
-
-    @NotNull
-    @Override
-    public List<String> getMatchedKeywords(@NotNull String word) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public boolean isKeywordStart(@NotNull String word) {
-        return false;
-    }
-
-    @Override
-    public boolean isEntityQueryWord(@NotNull String word) {
-        return false;
-    }
-
-    @Override
-    public boolean isAttributeQueryWord(@NotNull String word) {
-        return false;
-    }
-
-    @NotNull
-    @Override
-    public String getSearchStringEscape()
-    {
-        return "%";
-    }
-
-    @Override
-    public int getCatalogUsage()
-    {
-        return 0;
-    }
-
-    @Override
-    public int getSchemaUsage()
-    {
-        return 0;
-    }
-
-    @NotNull
-    @Override
-    public String getCatalogSeparator()
-    {
-        return ".";
-    }
-
-    @Override
-    public char getStructSeparator()
-    {
-        return '.';
-    }
-
-    @Override
-    public boolean isCatalogAtStart()
-    {
-        return true;
-    }
-
-    @NotNull
-    @Override
     public SQLStateType getSQLStateType()
     {
         return SQLStateType.UNKNOWN;
     }
 
-    @NotNull
-    @Override
-    public String getScriptDelimiter()
-    {
-        return ";";
-    }
-
-    @Override
-    public boolean validUnquotedCharacter(char c)
-    {
-        return Character.isLetter(c) || Character.isDigit(c) || c == '_';
-    }
-
-    @Override
-    public boolean supportsUnquotedMixedCase()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean supportsQuotedMixedCase()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean supportsSubqueries()
-    {
-        return false;
-    }
-
-    @NotNull
-    @Override
-    public DBPIdentifierCase storesUnquotedCase()
-    {
-        return DBPIdentifierCase.MIXED;
-    }
-
-    @NotNull
-    @Override
-    public DBPIdentifierCase storesQuotedCase()
-    {
-        return DBPIdentifierCase.MIXED;
-    }
-
-    @Override
-    public String escapeString(String string) {
-        return string;
-    }
-
-    @Nullable
-    @Override
-    public Pair<String, String> getMultiLineComments() {
-        return null;
-    }
-
-    @Override
-    public String[] getSingleLineComments() {
-        return new String[] { "--" };
-    }
 }

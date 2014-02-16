@@ -100,11 +100,17 @@ public class DataExporterSQL extends StreamExporterAbstract {
     @Override
     public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
     {
+        SQLDialect.MultiValueInsertMode insertMode = getMultiValueInsertMode();
         int columnsSize = columns.size();
-        if (rowCount % rowsInStatement == 0) {
+        boolean firstRow = false;
+        if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED || rowCount % rowsInStatement == 0) {
             sqlBuffer.setLength(0);
             if (rowCount > 0) {
-                sqlBuffer.append(";").append(rowDelimiter);
+                if (insertMode == SQLDialect.MultiValueInsertMode.PLAIN) {
+                    sqlBuffer.append(");").append(rowDelimiter);
+                } else if (insertMode == SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
+                    sqlBuffer.append(";").append(rowDelimiter);
+                }
             }
             sqlBuffer.append("INSERT INTO ").append(tableName).append(" (");
             for (int i = 0; i < columnsSize; i++) {
@@ -115,13 +121,21 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 sqlBuffer.append(column.getMetaAttribute().getName());
             }
             sqlBuffer.append(") VALUES ");
+            if (insertMode != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
+                sqlBuffer.append("(");
+            }
             if (rowsInStatement > 1) {
                 sqlBuffer.append(rowDelimiter);
             }
             out.write(sqlBuffer.toString());
+            firstRow = true;
         }
-        
-        out.write("(");
+        if (insertMode != SQLDialect.MultiValueInsertMode.NOT_SUPPORTED && !firstRow) {
+            out.write(",");
+        }
+        if (insertMode == SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
+            out.write("(");
+        }
         rowCount++;
         for (int i = 0; i < columnsSize; i++) {
             if (i > 0) {
@@ -159,15 +173,31 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 out.write(super.getValueDisplayString(column, row[i]));
             }
         }
-        out.write(")");
+        if (insertMode != SQLDialect.MultiValueInsertMode.PLAIN) {
+            out.write(")");
+        }
+        if (insertMode == SQLDialect.MultiValueInsertMode.NOT_SUPPORTED) {
+            out.write(";");
+        }
         out.write(rowDelimiter);
     }
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException
     {
-        if (rowCount > 0) {
-            out.write(";");
+        switch (getMultiValueInsertMode()) {
+            case GROUP_ROWS:
+                if (rowCount > 0) {
+                    out.write(";");
+                }
+                break;
+            case PLAIN:
+                if (rowCount > 0) {
+                    out.write(");");
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -203,6 +233,14 @@ public class DataExporterSQL extends StreamExporterAbstract {
         } finally {
             ContentUtils.close(reader);
         }
+    }
+
+    private SQLDialect.MultiValueInsertMode getMultiValueInsertMode() {
+        SQLDialect.MultiValueInsertMode insertMode = SQLDialect.MultiValueInsertMode.NOT_SUPPORTED;
+        if (dialect != null) {
+            insertMode = dialect.getMultiValueInsertMode();
+        }
+        return insertMode;
     }
 
 }
