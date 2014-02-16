@@ -36,7 +36,7 @@ public class ViewSQLDialog extends BaseSQLDialog {
     private boolean enlargeViewPanel = true;
     private boolean wordWrap = false;
 
-    public ViewSQLDialog(final IWorkbenchPartSite parentSite, @Nullable DBPDataSource dataSource, String title, Image image, String text)
+    public ViewSQLDialog(final IWorkbenchPartSite parentSite, @Nullable DBPDataSource dataSource, String title, @Nullable Image image, String text)
     {
         super(parentSite, title, image);
         this.dataSource = dataSource;
