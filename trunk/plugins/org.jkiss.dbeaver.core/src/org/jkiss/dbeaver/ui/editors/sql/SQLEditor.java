@@ -315,16 +315,28 @@ public class SQLEditor extends SQLEditorBase
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
         resultTabs.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 Object data = e.item.getData();
                 if (data instanceof QueryResultsProvider) {
                     QueryResultsProvider resultsProvider = (QueryResultsProvider) data;
                     curQueryProcessor = resultsProvider.queryProcessor;
                     resultsProvider.getResultSetViewer().getSpreadsheet().setFocus();
                 } else if (data == outputViewer) {
-                    ((CTabItem)e.item).setImage(IMG_OUTPUT);
+                    ((CTabItem) e.item).setImage(IMG_OUTPUT);
                     outputViewer.resetNewOutput();
+                }
+            }
+        });
+        getTextViewer().getTextWidget().addTraverseListener(new TraverseListener() {
+            @Override
+            public void keyTraversed(TraverseEvent e) {
+                if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                    ResultSetViewer viewer = getResultSetViewer();
+                    if (viewer != null && viewer.getSpreadsheet().isVisible()) {
+                        viewer.getSpreadsheet().setFocus();
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
+                    }
                 }
             }
         });
