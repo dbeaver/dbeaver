@@ -153,7 +153,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             }
         }
         if (CommonUtils.isEmpty(fkName)) {
-            // [JDBC: SQLite] Some drivers return empty foreign key names
+            // [JDBC] Some drivers return empty foreign key names
             fkName = parent.getName().toUpperCase() + "_FK" + keySeq;
         }
         return new GenericTableForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
