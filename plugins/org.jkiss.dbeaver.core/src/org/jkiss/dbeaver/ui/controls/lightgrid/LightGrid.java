@@ -449,7 +449,7 @@ public abstract class LightGrid extends Canvas {
 
         initListeners();
 
-        itemHeight = sizingGC.getFontMetrics().getHeight() + 3;
+        recalculateSizes();
 
         RGB cellSel = blend(
             getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB(),
@@ -2094,6 +2094,11 @@ public abstract class LightGrid extends Canvas {
         }
 
         footerHeight = colFooterHeight;
+    }
+
+    private void computeItemHeight()
+    {
+        itemHeight = sizingGC.getFontMetrics().getHeight() + 3;
     }
 
     /**
@@ -3974,13 +3979,18 @@ public abstract class LightGrid extends Canvas {
             }
         }
 
-        computeHeaderHeight();
-        computeFooterHeight();
+        recalculateSizes();
 
         scrollValuesObsolete = true;
         redraw();
 
         return columns.size() - 1;
+    }
+
+    public void recalculateSizes() {
+        computeHeaderHeight();
+        computeFooterHeight();
+        computeItemHeight();
     }
 
     /**
