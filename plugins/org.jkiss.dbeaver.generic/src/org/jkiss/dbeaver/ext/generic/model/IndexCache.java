@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -91,6 +92,10 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
             case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
             default: indexType = DBSIndexType.UNKNOWN; break;
+        }
+        if (CommonUtils.isEmpty(indexName)) {
+            // [JDBC] Some drivers return empty index names
+            indexName = parent.getName().toUpperCase() + "_INDEX";
         }
 
         return new GenericTableIndex(

@@ -113,7 +113,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         }
 
         // Skip "recycled" tables (Oracle)
-        if (tableName.startsWith("BIN$")) {
+        if (CommonUtils.isEmpty(tableName) || tableName.startsWith("BIN$")) {
             return null;
         }
 /*

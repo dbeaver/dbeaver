@@ -76,7 +76,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         throws SQLException, DBException
     {
         if (CommonUtils.isEmpty(pkName)) {
-            // [JDBC: SQLite] Some drivers return empty foreign key names
+            // [JDBC] Some drivers return empty foreign key names
             pkName = parent.getName().toUpperCase() + "_PK";
         }
         return new GenericPrimaryKey(
