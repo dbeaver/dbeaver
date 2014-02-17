@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -32,7 +33,6 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -62,6 +62,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     {
     }
 
+    @Nullable
     public DBSObjectContainer getContainer()
     {
         if (containerNode == null) {
@@ -147,6 +148,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         this.commitAfterRows = commitAfterRows;
     }
 
+    @Nullable
     DBPDataSource getTargetDataSource(DatabaseMappingObject attrMapping)
     {
         DBSObjectContainer container = getContainer();
@@ -213,6 +215,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("openTableOnFinish", openTableOnFinish);
     }
 
+    @Nullable
     public String getContainerFullName()
     {
         DBSObjectContainer container = getContainer();
