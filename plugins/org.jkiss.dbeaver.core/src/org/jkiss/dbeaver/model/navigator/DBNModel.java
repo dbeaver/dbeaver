@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -138,6 +139,7 @@ public class DBNModel implements IResourceChangeListener {
         return root;
     }
 
+    @Nullable
     public DBNDatabaseNode findNode(DBSObject object)
     {
         if (object instanceof DBNDatabaseNode) {
@@ -147,6 +149,7 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
+    @Nullable
     public DBNDatabaseNode getNodeByObject(DBSObject object)
     {
         if (object instanceof DBNDatabaseNode) {
@@ -187,6 +190,7 @@ public class DBNModel implements IResourceChangeListener {
 */
     }
 
+    @Nullable
     public DBNDatabaseNode getNodeByObject(DBRProgressMonitor monitor, DBSObject object, boolean addFiltered)
     {
         DBNDatabaseNode node = getNodeByObject(object);
@@ -215,6 +219,7 @@ public class DBNModel implements IResourceChangeListener {
         return getNodeByObject(object);
     }
 
+    @Nullable
     public DBNNode getNodeByPath(DBRProgressMonitor monitor, String path) throws DBException
     {
         DBNProject project = getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
@@ -276,6 +281,7 @@ public class DBNModel implements IResourceChangeListener {
         return false;
     }
 
+    @Nullable
     public DBNDatabaseNode getParentNode(DBSObject object)
     {
         DBNDatabaseNode node = getNodeByObject(object);
