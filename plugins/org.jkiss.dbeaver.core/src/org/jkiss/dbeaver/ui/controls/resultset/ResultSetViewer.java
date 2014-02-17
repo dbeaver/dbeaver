@@ -945,6 +945,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
         this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
         this.backgroundOdd = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+
+        this.spreadsheet.recalculateSizes();
     }
 
     @Override
