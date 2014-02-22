@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.standalone"
       label="%featureName"
-      version="2.3.7"
+      version="2.3.8"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.core">
 
