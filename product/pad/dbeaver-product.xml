@@ -52,7 +52,11 @@
             <date>24.02.2014</date>
 
             <release-notes>
-                -
+                - SQLite driver has been fixed
+                - DB2 metadata read was fixed
+                - Generic driver metadata read was improved
+                - Data export was improved (SQL format)
+                - Result set navigation was improved
             </release-notes>
         </version>
 
