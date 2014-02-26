@@ -330,7 +330,7 @@ public class SQLEditor extends SQLEditorBase
         getTextViewer().getTextWidget().addTraverseListener(new TraverseListener() {
             @Override
             public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_TAB_NEXT) {
+                if (e.detail == SWT.TRAVERSE_PAGE_NEXT) {
                     ResultSetViewer viewer = getResultSetViewer();
                     if (viewer != null && viewer.getSpreadsheet().isVisible()) {
                         viewer.getSpreadsheet().setFocus();
