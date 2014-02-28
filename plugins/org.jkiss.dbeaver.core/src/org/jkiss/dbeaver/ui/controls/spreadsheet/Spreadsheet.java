@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -48,7 +46,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.*;
  * ResultSetControl
  */
 public class Spreadsheet extends LightGrid implements Listener {
-    static final Log log = LogFactory.getLog(Spreadsheet.class);
+    //static final Log log = LogFactory.getLog(Spreadsheet.class);
 
     public enum DoubleClickBehavior {
         NONE,
@@ -419,7 +417,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case LightGrid.Event_ChangeSort:
-                spreadsheetController.changeSorting((GridColumn) event.data, event.stateMask);
+                spreadsheetController.changeSorting(((GridColumn) event.data).getIndex(), event.stateMask);
                 break;
         }
     }

@@ -37,15 +37,8 @@ import java.util.*;
 import java.util.List;
 
 /**
- * </p>
- * Instances of this class implement a selectable user interface object that
- * displays a list of images and strings and issue notification when selected.
- * <dl>
- * <dt><b>Styles:</b></dt>
- * <dd>SWT.SINGLE, SWT.MULTI, SWT.NO_FOCUS, SWT.CHECK, SWT.VIRTUAL</dd>
- * <dt><b>Events:</b></dt>
- * <dd>Selection, DefaultSelection</dd>
- * </dl>
+ * LighGrid
+ * initially based on Nebula grid. Refactored and mostly redone.
  *
  * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
@@ -96,9 +89,9 @@ public abstract class LightGrid extends Canvas {
     private List<GridColumn> selectedColumns = new ArrayList<GridColumn>();
     private IntKeyMap<Boolean> selectedRows = new IntKeyMap<Boolean>();
 
-    private boolean cellDragSelectionOccuring = false;
-    private boolean cellRowDragSelectionOccuring = false;
-    private boolean cellColumnDragSelectionOccuring = false;
+    private boolean cellDragSelectionOccurring = false;
+    private boolean cellRowDragSelectionOccurring = false;
+    private boolean cellColumnDragSelectionOccurring = false;
     private boolean cellDragCTRL = false;
     private boolean followupCellSelectionEventOwed = false;
 
@@ -119,10 +112,8 @@ public abstract class LightGrid extends Canvas {
     private int maxColumnDefWidth = 1000;
 
     private IGridRenderer topLeftRenderer;
-    private IGridRenderer bottomLeftRenderer;
     private IGridRenderer rowHeaderRenderer;
     private IGridRenderer emptyColumnHeaderRenderer;
-    private IGridRenderer emptyColumnFooterRenderer;
     private GridCellRenderer emptyCellRenderer;
     private IGridRenderer emptyRowHeaderRenderer;
 
@@ -395,10 +386,8 @@ public abstract class LightGrid extends Canvas {
 
         sizingGC = new GC(this);
         topLeftRenderer = new DefaultTopLeftRenderer(this);
-        bottomLeftRenderer = new DefaultBottomLeftRenderer(this);
         rowHeaderRenderer = new DefaultRowHeaderRenderer(this);
         emptyColumnHeaderRenderer = new DefaultEmptyColumnHeaderRenderer(this);
-        emptyColumnFooterRenderer = new DefaultEmptyColumnFooterRenderer(this);
         emptyCellRenderer = new DefaultEmptyCellRenderer(this);
         emptyRowHeaderRenderer = new DefaultEmptyRowHeaderRenderer(this);
 
@@ -486,7 +475,7 @@ public abstract class LightGrid extends Canvas {
                 if (labelProvider instanceof ITooltipProvider) {
                     column.setHeaderTooltip(((ITooltipProvider) labelProvider).getTooltip(i));
                 }
-                contentProvider.updateColumn(column);
+                column.setSort(contentProvider.getColumnSortOrder(i));
             }
 
             if (getColumnCount() == 1) {
@@ -746,6 +735,7 @@ public abstract class LightGrid extends Canvas {
      * @param point the point used to locate the column
      * @return the column at the given point
      */
+    @Nullable
     public GridColumn getColumn(Point point)
     {
         checkWidget();
@@ -806,50 +796,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Returns the empty cell renderer.
-     *
-     * @return Returns the emptyCellRenderer.
-     */
-    public GridCellRenderer getEmptyCellRenderer()
-    {
-        checkWidget();
-        return emptyCellRenderer;
-    }
-
-    /**
-     * Returns the empty column header renderer.
-     *
-     * @return Returns the emptyColumnHeaderRenderer.
-     */
-    public IGridRenderer getEmptyColumnHeaderRenderer()
-    {
-        checkWidget();
-        return emptyColumnHeaderRenderer;
-    }
-
-    /**
-     * Returns the empty column footer renderer.
-     *
-     * @return Returns the emptyColumnFooterRenderer.
-     */
-    public IGridRenderer getEmptyColumnFooterRenderer()
-    {
-        checkWidget();
-        return emptyColumnFooterRenderer;
-    }
-
-    /**
-     * Returns the empty row header renderer.
-     *
-     * @return Returns the emptyRowHeaderRenderer.
-     */
-    public IGridRenderer getEmptyRowHeaderRenderer()
-    {
-        checkWidget();
-        return emptyRowHeaderRenderer;
-    }
-
-    /**
      * Returns the externally managed horizontal scrollbar.
      *
      * @return the external horizontal scrollbar.
@@ -865,7 +811,7 @@ public abstract class LightGrid extends Canvas {
      * Returns the externally managed vertical scrollbar.
      *
      * @return the external vertical scrollbar.
-     * @see #setlVerticalScrollBarProxy( org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar)
+     * @see #setVerticalScrollBarProxy( org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar)
      */
     protected IGridScrollBar getVerticalScrollBarProxy()
     {
@@ -1038,6 +984,7 @@ public abstract class LightGrid extends Canvas {
      * @param column column
      * @return previous visible column or null
      */
+    @Nullable
     public GridColumn getPreviousVisibleColumn(GridColumn column)
     {
         checkWidget();
@@ -1056,6 +1003,7 @@ public abstract class LightGrid extends Canvas {
      * @param column column
      * @return next visible column or null
      */
+    @Nullable
     public GridColumn getNextVisibleColumn(GridColumn column)
     {
         checkWidget();
@@ -1066,17 +1014,6 @@ public abstract class LightGrid extends Canvas {
             return null;
 
         return columns.get(index + 1);
-    }
-
-    /**
-     * Gets the row header renderer.
-     *
-     * @return Returns the rowHeaderRenderer.
-     */
-    public IGridRenderer getRowHeaderRenderer()
-    {
-        checkWidget();
-        return rowHeaderRenderer;
     }
 
     /**
@@ -1126,14 +1063,6 @@ public abstract class LightGrid extends Canvas {
         } else {
             // figure out first visible row and last visible row
             topIndex = vScroll.getSelection();
-
-            /*
-             *  MOPR  here lies more potential for increasing performance
-             *  for the case (isTree || hasDifferingHeights)
-             *  the topIndex could be derived from the previous value
-             *  depending on a delta of the vScroll.getSelection()
-             *  instead of being calculated completely anew
-             */
         }
 
         return topIndex;
@@ -1186,12 +1115,13 @@ public abstract class LightGrid extends Canvas {
      * @param endIndex   index of the last item in the range or -1 to use the last visible item in this grid
      * @return
      */
+    @Nullable
     private RowRange getRowRange(int startIndex, int endIndex)
     {
 
         // parameter preparation
         if (startIndex == -1) {
-            // search frist visible item
+            // search first visible item
             startIndex = 0;
             if (startIndex == getItemCount()) return null;
         }
@@ -1243,7 +1173,7 @@ public abstract class LightGrid extends Canvas {
         // parameter preparation
         if (startIndex == -1) {
             if (!inverse) {
-                // search frist visible item
+                // search first visible item
                 startIndex = 0;
             } else {
                 // search last visible item
@@ -1302,15 +1232,6 @@ public abstract class LightGrid extends Canvas {
     {
         RowRange range = getRowRange(-1, -1);
         return range != null ? range.height : 0;
-        /*
-         *  MOPR  currently this method is only used in #getTableSize() ;
-         *  if it will be used for more important things in the future
-         *  (e.g. the max value for vScroll.setValues() when doing pixel-by-pixel
-         *  vertical scrolling) then this value should at least be cached or
-         *  even updated incrementally when grid items are added/removed or
-         *  expaned/collapsed (similar as #currentVisibleItems).
-         *  (this is only necessary in the case (isTree || hasDifferingHeights))
-         */
     }
 
     /**
@@ -1333,28 +1254,6 @@ public abstract class LightGrid extends Canvas {
     int getVisibleGridWidth()
     {
         return getClientArea().width - (rowHeaderVisible ? rowHeaderWidth : 0);
-    }
-
-    /**
-     * Gets the top left renderer.
-     *
-     * @return Returns the topLeftRenderer.
-     */
-    public IGridRenderer getTopLeftRenderer()
-    {
-        checkWidget();
-        return topLeftRenderer;
-    }
-
-    /**
-     * Gets the bottom left renderer.
-     *
-     * @return Returns the bottomLeftRenderer.
-     */
-    public IGridRenderer getBottomLeftRenderer()
-    {
-        checkWidget();
-        return bottomLeftRenderer;
     }
 
     /**
@@ -1552,50 +1451,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Sets the empty cell renderer.
-     *
-     * @param emptyCellRenderer The emptyCellRenderer to set.
-     */
-    public void setEmptyCellRenderer(GridCellRenderer emptyCellRenderer)
-    {
-        checkWidget();
-        this.emptyCellRenderer = emptyCellRenderer;
-    }
-
-    /**
-     * Sets the empty column header renderer.
-     *
-     * @param emptyColumnHeaderRenderer The emptyColumnHeaderRenderer to set.
-     */
-    public void setEmptyColumnHeaderRenderer(IGridRenderer emptyColumnHeaderRenderer)
-    {
-        checkWidget();
-        this.emptyColumnHeaderRenderer = emptyColumnHeaderRenderer;
-    }
-
-    /**
-     * Sets the empty column footer renderer.
-     *
-     * @param emptyColumnFooterRenderer The emptyColumnFooterRenderer to set.
-     */
-    public void setEmptyColumnFooterRenderer(IGridRenderer emptyColumnFooterRenderer)
-    {
-        checkWidget();
-        this.emptyColumnFooterRenderer = emptyColumnFooterRenderer;
-    }
-
-    /**
-     * Sets the empty row header renderer.
-     *
-     * @param emptyRowHeaderRenderer The emptyRowHeaderRenderer to set.
-     */
-    public void setEmptyRowHeaderRenderer(IGridRenderer emptyRowHeaderRenderer)
-    {
-        checkWidget();
-        this.emptyRowHeaderRenderer = emptyRowHeaderRenderer;
-    }
-
-    /**
      * Sets the external horizontal scrollbar. Allows the scrolling to be
      * managed externally from the table. This functionality is only intended
      * when SWT.H_SCROLL is not given.
@@ -1635,7 +1490,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param scroll The vertical scrollbar to set.
      */
-    protected void setlVerticalScrollBarProxy(IGridScrollBar scroll)
+    protected void setVerticalScrollBarProxy(IGridScrollBar scroll)
     {
         checkWidget();
         if (getVerticalBar() != null) {
@@ -1689,17 +1544,6 @@ public abstract class LightGrid extends Canvas {
         checkWidget();
         this.linesVisible = linesVisible;
         redraw();
-    }
-
-    /**
-     * Sets the row header renderer.
-     *
-     * @param rowHeaderRenderer The rowHeaderRenderer to set.
-     */
-    public void setRowHeaderRenderer(IGridRenderer rowHeaderRenderer)
-    {
-        checkWidget();
-        this.rowHeaderRenderer = rowHeaderRenderer;
     }
 
     /**
@@ -1843,17 +1687,6 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
         this.topLeftRenderer = topLeftRenderer;
-    }
-
-    /**
-     * Sets the bottom left renderer.
-     *
-     * @param bottomLeftRenderer The topLeftRenderer to set.
-     */
-    public void setBottomLeftRenderer(IGridRenderer bottomLeftRenderer)
-    {
-        checkWidget();
-        this.bottomLeftRenderer = bottomLeftRenderer;
     }
 
     /**
@@ -2487,7 +2320,7 @@ public abstract class LightGrid extends Canvas {
 
         // Turn the scrollbars on if necessary and do it all over again if
         // necessary. This ensures
-        // that if a scrollbar is turned on/off, the other scrollbar's
+        // that if a scrollbar is turned on/off, the other scrollbars
         // visibility may be affected (more
         // area may have been added/removed.
         for (int doublePass = 1; doublePass <= 2; doublePass++) {
@@ -2575,11 +2408,12 @@ public abstract class LightGrid extends Canvas {
      * Updates cell selection.
      *
      * @param newCell                    newly clicked, navigated to cell.
-     * @param stateMask                  statemask during preceeding mouse or key event.
+     * @param stateMask                  state mask during preceeding mouse or key event.
      * @param dragging                   true if the user is dragging.
      * @param reverseDuplicateSelections true if the user is reversing selection rather than adding to.
      * @return selection event that will need to be fired or null.
      */
+    @Nullable
     public Event updateCellSelection(
         GridPos newCell,
         int stateMask,
@@ -2596,7 +2430,7 @@ public abstract class LightGrid extends Canvas {
      * Updates cell selection.
      *
      * @param newCells                    newly clicked, navigated to cells.
-     * @param stateMask                  statemask during preceeding mouse or key event.
+     * @param stateMask                  state mask during preceeding mouse or key event.
      * @param dragging                   true if the user is dragging.
      * @param reverseDuplicateSelections true if the user is reversing selection rather than adding to.
      * @return selection event that will need to be fired or null.
@@ -3179,10 +3013,10 @@ public abstract class LightGrid extends Canvas {
             return;
         }
 
-        if (cellDragSelectionOccuring || cellRowDragSelectionOccuring || cellColumnDragSelectionOccuring) {
-            cellDragSelectionOccuring = false;
-            cellRowDragSelectionOccuring = false;
-            cellColumnDragSelectionOccuring = false;
+        if (cellDragSelectionOccurring || cellRowDragSelectionOccurring || cellColumnDragSelectionOccurring) {
+            cellDragSelectionOccurring = false;
+            cellRowDragSelectionOccurring = false;
+            cellColumnDragSelectionOccurring = false;
             setCursor(null);
 
             if (followupCellSelectionEventOwed) {
@@ -3222,8 +3056,8 @@ public abstract class LightGrid extends Canvas {
                 return;
             }
             {
-                if (!cellDragSelectionOccuring && cellSelectedOnLastMouseDown) {
-                    cellDragSelectionOccuring = true;
+                if (!cellDragSelectionOccurring && cellSelectedOnLastMouseDown) {
+                    cellDragSelectionOccurring = true;
                     //XXX: make this user definable
                     setCursor(getDisplay().getSystemCursor(SWT.CURSOR_CROSS));
                     cellDragCTRL = ((e.stateMask & SWT.MOD1) != 0);
@@ -3232,8 +3066,8 @@ public abstract class LightGrid extends Canvas {
                         selectedCellsBeforeRangeSelect.addAll(selectedCells);
                     }
                 }
-                if (!cellRowDragSelectionOccuring && cellRowSelectedOnLastMouseDown) {
-                    cellRowDragSelectionOccuring = true;
+                if (!cellRowDragSelectionOccurring && cellRowSelectedOnLastMouseDown) {
+                    cellRowDragSelectionOccurring = true;
                     setCursor(getDisplay().getSystemCursor(SWT.CURSOR_CROSS));
                     cellDragCTRL = ((e.stateMask & SWT.MOD1) != 0);
                     if (cellDragCTRL) {
@@ -3242,8 +3076,8 @@ public abstract class LightGrid extends Canvas {
                     }
                 }
 
-                if (!cellColumnDragSelectionOccuring && cellColumnSelectedOnLastMouseDown) {
-                    cellColumnDragSelectionOccuring = true;
+                if (!cellColumnDragSelectionOccurring && cellColumnSelectedOnLastMouseDown) {
+                    cellColumnDragSelectionOccurring = true;
                     setCursor(getDisplay().getSystemCursor(SWT.CURSOR_CROSS));
                     cellDragCTRL = ((e.stateMask & SWT.MOD1) != 0);
                     if (cellDragCTRL) {
@@ -3254,7 +3088,7 @@ public abstract class LightGrid extends Canvas {
 
                 int ctrlFlag = (cellDragCTRL ? SWT.MOD1 : SWT.NONE);
 
-                if (cellDragSelectionOccuring && handleCellHover(e.x, e.y)) {
+                if (cellDragSelectionOccurring && handleCellHover(e.x, e.y)) {
                     GridColumn intentColumn = hoveringColumn;
                     int intentItem = hoveringItem;
 
@@ -3282,7 +3116,7 @@ public abstract class LightGrid extends Canvas {
                     selectionEvent = updateCellSelection(new GridPos(intentColumn.getIndex(), intentItem),
                                                          ctrlFlag | SWT.MOD2, true, false, EventSource.MOUSE);
                 }
-                if (cellRowDragSelectionOccuring && handleCellHover(e.x, e.y)) {
+                if (cellRowDragSelectionOccurring && handleCellHover(e.x, e.y)) {
                     int intentItem = hoveringItem;
 
                     if (hoveringItem < 0) {
@@ -3305,7 +3139,7 @@ public abstract class LightGrid extends Canvas {
                     showItem(intentItem);
                     selectionEvent = updateCellSelection(cells, ctrlFlag, true, false, EventSource.MOUSE);
                 }
-                if (cellColumnDragSelectionOccuring && handleCellHover(e.x, e.y)) {
+                if (cellColumnDragSelectionOccurring && handleCellHover(e.x, e.y)) {
                     GridColumn intentCol = hoveringColumn;
 
                     if (intentCol == null) {
@@ -3821,7 +3655,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param text
      */
-    protected void updateToolTipText(String text)
+    protected void updateToolTipText(@Nullable String text)
     {
         super.setToolTipText(text);
     }
@@ -4078,7 +3912,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param cell point whose x values is a column index and y value is an item index
      */
-    public void selectCell(GridPos cell)
+    public void selectCell(@NotNull GridPos cell)
     {
         checkWidget();
 
@@ -4179,12 +4013,9 @@ public abstract class LightGrid extends Canvas {
      *
      * @param cell point whose x values is a column index and y value is an item index
      */
-    public void setCellSelection(GridPos cell)
+    public void setCellSelection(@NotNull GridPos cell)
     {
         checkWidget();
-
-        if (cell == null)
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
 
         if (!isValidCell(cell))
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
@@ -4211,9 +4042,6 @@ public abstract class LightGrid extends Canvas {
         }
 
         for (GridPos cell : cells) {
-            if (cell == null)
-                SWT.error(SWT.ERROR_NULL_ARGUMENT);
-
             if (!isValidCell(cell))
                 SWT.error(SWT.ERROR_INVALID_ARGUMENT);
         }
@@ -4484,7 +4312,7 @@ public abstract class LightGrid extends Canvas {
      * <p/>
      * Note:  The 'selection drag area' is that part of the selection,
      * on which a drag event can be initiated.  This is either the border
-     * of the selection (i.e. a cell border between a slected and a non-selected
+     * of the selection (i.e. a cell border between a selected and a non-selected
      * cell) or the complete selection (i.e. anywhere on a selected cell).
      *
      * @param x
