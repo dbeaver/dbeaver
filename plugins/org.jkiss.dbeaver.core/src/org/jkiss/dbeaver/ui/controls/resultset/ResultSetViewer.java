@@ -84,8 +84,10 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultRowHeaderRenderer;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
@@ -1579,7 +1581,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
-    public void changeSorting(final GridColumn column, final int state)
+    public void changeSorting(int column, final int state)
     {
         DBDDataFilter dataFilter = model.getDataFilter();
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
@@ -1587,7 +1589,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (ctrlPressed) {
             dataFilter.resetOrderBy();
         }
-        DBDAttributeBinding metaColumn = model.getVisibleColumn(column.getIndex());
+        DBDAttributeBinding metaColumn = model.getVisibleColumn(column);
         DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
         //int newSort;
         if (constraint.getOrderPosition() == 0) {
@@ -2546,8 +2548,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public void updateColumn(@NotNull GridColumn column)
+        public int getColumnSortOrder(int column)
         {
+            if (gridMode == GridMode.RECORD) {
+                return SWT.NONE;
+            } else {
+                DBDAttributeConstraint co = model.getDataFilter().getConstraint(model.getVisibleColumn(column));
+                if (co.getOrderPosition() > 0) {
+                    DBDAttributeBinding binding = co.getAttribute();
+                    if (model.getVisibleColumns().indexOf(binding) == column) {
+                        return co.isOrderDescending() ? SWT.UP : SWT.DOWN;
+                    }
+                }
+                return SWT.DEFAULT;
+            }
+/*
             if (gridMode == GridMode.RECORD) {
                 column.setSort(SWT.NONE);
             } else {
@@ -2560,8 +2575,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         column.setSort(co.isOrderDescending() ? SWT.UP : SWT.DOWN);
                     }
                 }
-                column.setSortRenderer(new SortRenderer(column));
             }
+*/
         }
 
         @Override
@@ -2649,6 +2664,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
+        @NotNull
         @Override
         public String getCellText(int col, int row)
         {
@@ -3143,65 +3159,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    /**
-     * The column header sort arrow renderer.
-     */
-    static class SortRenderer extends AbstractRenderer {
-        private Image asterisk;
-        private Image arrowUp;
-        private Image arrowDown;
-        private GridColumn column;
-        private Cursor hoverCursor;
-
-        SortRenderer(GridColumn column)
-        {
-            super(column.getParent());
-            this.column = column;
-            this.asterisk = DBIcon.SORT_UNKNOWN.getImage();
-            this.arrowUp = DBIcon.SORT_DECREASE.getImage();
-            this.arrowDown = DBIcon.SORT_INCREASE.getImage();
-            this.hoverCursor = getDisplay().getSystemCursor(SWT.CURSOR_HAND);
-            Rectangle imgBounds = arrowUp.getBounds();
-            setSize(imgBounds.width, imgBounds.height);
-        }
-
-        @Override
-        public void paint(GC gc)
-        {
-            Rectangle bounds = getBounds();
-            switch (column.getSort()) {
-                case SWT.DEFAULT:
-                    gc.drawImage(asterisk, bounds.x, bounds.y);
-                    break;
-                case SWT.UP:
-                    gc.drawImage(arrowUp, bounds.x, bounds.y);
-                    break;
-                case SWT.DOWN:
-                    gc.drawImage(arrowDown, bounds.x, bounds.y);
-                    break;
-            }
     /*
-            if (isSelected()) {
-                gc.drawLine(bounds.x, bounds.y, bounds.x + 6, bounds.y);
-                gc.drawLine(bounds.x + 1, bounds.y + 1, bounds.x + 5, bounds.y + 1);
-                gc.drawLine(bounds.x + 2, bounds.y + 2, bounds.x + 4, bounds.y + 2);
-                gc.drawPoint(bounds.x + 3, bounds.y + 3);
-            } else {
-                gc.drawPoint(bounds.x + 3, bounds.y);
-                gc.drawLine(bounds.x + 2, bounds.y + 1, bounds.x + 4, bounds.y + 1);
-                gc.drawLine(bounds.x + 1, bounds.y + 2, bounds.x + 5, bounds.y + 2);
-                gc.drawLine(bounds.x, bounds.y + 3, bounds.x + 6, bounds.y + 3);
-            }
-    */
-        }
-
-        @Override
-        public Cursor getHoverCursor() {
-            return hoverCursor;
-        }
-    }
-
-/*
     static class TopLeftRenderer extends AbstractRenderer {
         private Button cfgButton;
 
