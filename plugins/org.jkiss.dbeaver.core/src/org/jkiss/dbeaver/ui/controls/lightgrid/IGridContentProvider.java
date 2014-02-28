@@ -20,6 +20,8 @@
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
@@ -28,47 +30,32 @@ public interface IGridContentProvider extends IContentProvider {
     /**
      * Row count
      */
-    public int getRowCount();
+    int getRowCount();
 
     /**
      * Column count
      */
-    public int getColumnCount();
+    int getColumnCount();
 
-    /**
-     * Get parent row index of specified row
-     * @param row
-     */
-    //public void getRowInfo(int row, GridAxisInfo info);
 
-    /**
-     * Get parent column index of specified column
-     * @param column column index
-     * @return parent column index of -1
-     */
-    //public int getColumnParent(int column);
-
-    /**
-     * Gets raw element value by position
-     * @param pos grid position
-     * @return element (may be null)
-     */
-    @Nullable
-    public Object getElement(@NotNull GridPos pos);
-
-    /**
-     * Gets element string representation. Returns string in native format
-     * @param pos grid position
-     * @return string representation (never null)
-     */
-    @NotNull
-    public String getElementText(@NotNull GridPos pos);
 
     /**
      * Updates grid column properties.
      * Invoked once right after grid columns initialization.
      * @param column grid column
      */
-    public void updateColumn(@NotNull GridColumn column);
+    void updateColumn(@NotNull GridColumn column);
+
+    @Nullable
+    String getCellText(int col, int row);
+
+    @Nullable
+    Image getCellImage(int col, int row);
+
+    @Nullable
+    Color getCellForeground(int col, int row);
+
+    @Nullable
+    Color getCellBackground(int col, int row);
 
 }
