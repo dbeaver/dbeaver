@@ -212,7 +212,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 site,
                 this,
                 new ContentProvider(),
-                new ContentLabelProvider(),
                 new ColumnLabelProvider(),
                 new RowLabelProvider());
             this.spreadsheet.setTopLeftRenderer(new TopLeftRenderer(this.spreadsheet));
@@ -2547,26 +2546,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public Object getElement(@NotNull GridPos pos)
-        {
-            pos = translateVisualPos(pos);
-            if (gridMode == GridMode.RECORD) {
-                return model.getRowData(curRowNum)[pos.row];
-            } else {
-                return model.getRowData(pos.row)[pos.col];
-            }
-        }
-
-        @NotNull
-        @Override
-        public String getElementText(@NotNull GridPos pos)
-        {
-            Object value = getElement(pos);
-            DBDAttributeBinding column = model.getColumn(translateVisualPos(pos).col);
-            return column.getValueHandler().getValueDisplayString(column.getAttribute(), value, DBDDisplayFormat.EDIT);
-        }
-
-        @Override
         public void updateColumn(@NotNull GridColumn column)
         {
             if (gridMode == GridMode.RECORD) {
@@ -2594,9 +2573,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
         {
         }
-    }
-
-    private class ContentLabelProvider implements IGridLabelProvider {
 
         @Nullable
         private Object getValue(int col, int row, boolean formatString)
@@ -2649,7 +2625,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Nullable
         @Override
-        public Image getImage(int col, int row)
+        public Image getCellImage(int col, int row)
         {
             if (!showCelIcons) {
                 return null;
@@ -2674,14 +2650,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public String getText(int col, int row)
+        public String getCellText(int col, int row)
         {
             return String.valueOf(getValue(col, row, true));
         }
 
         @Nullable
         @Override
-        public Color getForeground(int col, int row)
+        public Color getCellForeground(int col, int row)
         {
             Object value = getValue(col, row, false);
             if (DBUtils.isNullValue(value)) {
@@ -2693,7 +2669,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Nullable
         @Override
-        public Color getBackground(int col, int row)
+        public Color getCellBackground(int col, int row)
         {
             if (gridMode == GridMode.RECORD) {
                 col = row;

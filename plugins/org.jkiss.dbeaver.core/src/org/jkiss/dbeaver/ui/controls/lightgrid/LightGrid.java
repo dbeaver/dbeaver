@@ -24,6 +24,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
@@ -136,11 +137,6 @@ public abstract class LightGrid extends Canvas {
     private boolean columnHeadersVisible = false;
 
     /**
-     * Are column footers visible?
-     */
-    private boolean columnFootersVisible = false;
-
-    /**
      * Type of selection behavior. Valid values are SWT.SINGLE and SWT.MULTI.
      */
     private int selectionType = SWT.SINGLE;
@@ -156,26 +152,9 @@ public abstract class LightGrid extends Canvas {
     private int rowHeaderWidth = 0;
 
     /**
-     * The row header width is variable. The row header width gets larger as
-     * more rows are added to the table to ensure that the row header has enough
-     * room to display the longest string of numbers that display in the row
-     * header. This determination of how wide to make the row header is rather
-     * slow and therefore is only done at every 1000 items (or so). This
-     * variable remembers how many items were last computed and therefore when
-     * the number of items is greater than this value, we need to recalculate
-     * the row header width. See newItem().
-     */
-//    private int lastRowHeaderWidthCalculationAt = 0;
-
-    /**
      * Height of each column header.
      */
     private int headerHeight = 0;
-
-    /**
-     * Height of each column footer
-     */
-    private int footerHeight = 0;
 
     /**
      * True if mouse is hover on a column boundary and can resize the column.
@@ -303,7 +282,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @see #bottomIndex
      */
-    int topIndex = -1;
+    private int topIndex = -1;
     /**
      * Index of last visible item.  The value must never be read directly.  It is cached and
      * updated when appropriate.  #getBottomIndex() should be called for every client (even internal
@@ -315,17 +294,17 @@ public abstract class LightGrid extends Canvas {
      *
      * @see #topIndex
      */
-    int bottomIndex = -1;
+    private int bottomIndex = -1;
 
     /**
      * Index of the first visible column. A value of -1 indicates that the value is old and will be recomputed.
      */
-    int startColumnIndex = -1;
+    private int startColumnIndex = -1;
 
     /**
      * Index of the the last visible column. A value of -1 indicates that the value is old and will be recomputed.
      */
-    int endColumnIndex = -1;
+    private int endColumnIndex = -1;
 
     /**
      * True if the last visible item is completely visible.  The value must never be read directly.  It is cached and
@@ -463,12 +442,13 @@ public abstract class LightGrid extends Canvas {
         setDragDetect(false);
     }
 
+    @NotNull
     public abstract IGridContentProvider getContentProvider();
 
-    public abstract IGridLabelProvider getContentLabelProvider();
-
+    @NotNull
     public abstract ILabelProvider getColumnLabelProvider();
 
+    @NotNull
     public abstract ILabelProvider getRowLabelProvider();
 
     public int getMaxColumnDefWidth() {
@@ -488,9 +468,6 @@ public abstract class LightGrid extends Canvas {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
-        if (contentProvider == null) {
-            return;
-        }
         this.currentVisibleItems = contentProvider.getRowCount();
 
         if (clearData) {
@@ -909,17 +886,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Returns the height of the column footers.
-     *
-     * @return height of the column footer row
-     */
-    public int getFooterHeight()
-    {
-        checkWidget();
-        return footerHeight;
-    }
-
-    /**
      * Returns {@code true} if the receiver's header is visible, and
      * {@code false} otherwise.
      *
@@ -929,17 +895,6 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
         return columnHeadersVisible;
-    }
-
-    /**
-     * Returns {@code true} if the receiver's footer is visible, and {@code false} otherwise
-     *
-     * @return the receiver's footer's visibility state
-     */
-    public boolean getFooterVisible()
-    {
-        checkWidget();
-        return columnFootersVisible;
     }
 
     public int getRow(Point point)
@@ -1367,7 +1322,7 @@ public abstract class LightGrid extends Canvas {
      */
     int getVisibleGridHeight()
     {
-        return getClientArea().height - (columnHeadersVisible ? headerHeight : 0) - (columnFootersVisible ? footerHeight : 0);
+        return getClientArea().height - (columnHeadersVisible ? headerHeight : 0);
     }
 
     /**
@@ -1660,14 +1615,12 @@ public abstract class LightGrid extends Canvas {
 
         hScroll.addSelectionListener(new SelectionListener() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 onScrollSelection();
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
     }
@@ -1692,14 +1645,12 @@ public abstract class LightGrid extends Canvas {
 
         vScroll.addSelectionListener(new SelectionListener() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 onScrollSelection();
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
+            public void widgetDefaultSelected(SelectionEvent e) {
             }
         });
     }
@@ -1714,19 +1665,6 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
         this.columnHeadersVisible = show;
-        redraw();
-    }
-
-    /**
-     * Marks the receiver's footer as visible if the argument is {@code true},
-     * and marks it invisible otherwise.
-     *
-     * @param show the new visibility state
-     */
-    public void setFooterVisible(boolean show)
-    {
-        checkWidget();
-        this.columnFootersVisible = show;
         redraw();
     }
 
@@ -2086,16 +2024,6 @@ public abstract class LightGrid extends Canvas {
         headerHeight = colHeaderHeight;
     }
 
-    private void computeFooterHeight()
-    {
-        int colFooterHeight = 0;
-        for (GridColumn column : columns) {
-            colFooterHeight = Math.max(column.computeFooterHeight(), colFooterHeight);
-        }
-
-        footerHeight = colFooterHeight;
-    }
-
     private void computeItemHeight()
     {
         itemHeight = sizingGC.getFontMetrics().getHeight() + 3;
@@ -2159,10 +2087,6 @@ public abstract class LightGrid extends Canvas {
 
         if (columnHeadersVisible) {
             y += headerHeight;
-        }
-
-        if (columnFootersVisible) {
-            y += footerHeight;
         }
 
         y += getGridHeight();
@@ -2285,6 +2209,7 @@ public abstract class LightGrid extends Canvas {
      * @param point the point used to locate the item
      * @return the cell at the given point
      */
+    @Nullable
     public GridPos getCell(Point point)
     {
         checkWidget();
@@ -2485,10 +2410,6 @@ public abstract class LightGrid extends Canvas {
 
             row++;
         }
-
-        if (columnFootersVisible) {
-            paintFooter(gc);
-        }
     }
 
     /**
@@ -2544,52 +2465,6 @@ public abstract class LightGrid extends Canvas {
             // paint left corner
             topLeftRenderer.setBounds(0, 0, rowHeaderWidth, headerHeight);
             topLeftRenderer.paint(gc);
-            x += rowHeaderWidth;
-        }
-    }
-
-    private void paintFooter(GC gc)
-    {
-        int x = 0;
-        int y;
-
-        x -= getHScrollSelectionInPixels();
-
-        if (rowHeaderVisible) {
-            // paint left corner
-            // topLeftRenderer.setBounds(0, y, rowHeaderWidth, headerHeight);
-            // topLeftRenderer.paint(gc, null);
-            x += rowHeaderWidth;
-        }
-
-        for (GridColumn column : columns) {
-            if (x > getClientArea().width)
-                break;
-
-            int height;
-
-            height = footerHeight;
-            y = getClientArea().height - height;
-
-            column.getFooterRenderer().setBounds(x, y, column.getWidth(), height);
-            column.getFooterRenderer().setColumn(column.getIndex());
-            if (x + column.getWidth() >= 0) {
-                column.getFooterRenderer().paint(gc);
-            }
-
-            x += column.getWidth();
-        }
-
-        if (x < getClientArea().width) {
-            emptyColumnFooterRenderer.setBounds(x, getClientArea().height - footerHeight, getClientArea().width - x,
-                footerHeight);
-            emptyColumnFooterRenderer.paint(gc);
-        }
-
-        if (rowHeaderVisible) {
-            // paint left corner
-            bottomLeftRenderer.setBounds(0, getClientArea().height - footerHeight, rowHeaderWidth, footerHeight);
-            bottomLeftRenderer.paint(gc);
             x += rowHeaderWidth;
         }
     }
@@ -2726,6 +2601,7 @@ public abstract class LightGrid extends Canvas {
      * @param reverseDuplicateSelections true if the user is reversing selection rather than adding to.
      * @return selection event that will need to be fired or null.
      */
+    @Nullable
     private Event updateCellSelection(
         List<GridPos> newCells,
         int stateMask,
@@ -3873,7 +3749,7 @@ public abstract class LightGrid extends Canvas {
 
         if (col != null) {
             if (row >= 0) {
-                if (y < getClientArea().height - footerHeight) {
+                if (y < getClientArea().height) {
                     col.getCellRenderer().setBounds(getCellBounds(columns.indexOf(col), row));
 
                     if (col.getCellRenderer().notify(IGridWidget.MouseMove, new Point(x, y), row)) {
@@ -3989,7 +3865,6 @@ public abstract class LightGrid extends Canvas {
 
     public void recalculateSizes() {
         computeHeaderHeight();
-        computeFooterHeight();
         computeItemHeight();
     }
 
@@ -4256,6 +4131,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return An Event object
      */
+    @Nullable
     private Event selectAllCellsInternal(int stateMask)
     {
         if (columns.size() == 0)
@@ -4724,75 +4600,63 @@ public abstract class LightGrid extends Canvas {
 
     public String getCellText(int column, int row)
     {
-        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
-        if (contentLabelProvider != null) {
-            String text = contentLabelProvider.getText(column, row);
-            // Truncate too long texts (they are really bad for performance)
-            if (text.length() > MAX_TOOLTIP_LENGTH) {
-                text = text.substring(0, MAX_TOOLTIP_LENGTH) + " ...";
-            }
-
-            return text;
+        String text = getContentProvider().getCellText(column, row);
+        // Truncate too long texts (they are really bad for performance)
+        if (text.length() > MAX_TOOLTIP_LENGTH) {
+            text = text.substring(0, MAX_TOOLTIP_LENGTH) + " ...";
         }
-        return null;
+
+        return text;
     }
 
+    @Nullable
     public String getCellToolTip(int column, int row)
     {
-        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
-        if (contentLabelProvider != null) {
-            String toolTip = getCellText(column, row);
-            if (toolTip == null) {
-                return null;
-            }
-            // Show tooltip only if it's larger than column width
-            Point ttSize = sizingGC.textExtent(toolTip);
-            GridColumn itemColumn = getColumn(column);
-            if (ttSize.x > itemColumn.getWidth() || ttSize.y > getItemHeight()) {
-                int gridHeight = getBounds().height;
-                if (ttSize.y > gridHeight) {
-                    // Too big tool tip - larger than entire grid
-                    // Lets chop it
-                    StringBuilder newToolTip = new StringBuilder();
-                    StringTokenizer st = new StringTokenizer(toolTip, "'\n");
-                    int maxLineNumbers = gridHeight / getItemHeight(), lineNumber = 0;
-                    while (st.hasMoreTokens()) {
-                        newToolTip.append(st.nextToken()).append('\n');
-                        lineNumber++;
-                        if (lineNumber >= maxLineNumbers) {
-                            break;
-                        }
-                    }
-                    toolTip = newToolTip.toString();
-                }
-                return toolTip;
-            } else {
-                return null;
-            }
+        String toolTip = getCellText(column, row);
+        if (toolTip == null) {
+            return null;
         }
-        return null;
+        // Show tooltip only if it's larger than column width
+        Point ttSize = sizingGC.textExtent(toolTip);
+        GridColumn itemColumn = getColumn(column);
+        if (ttSize.x > itemColumn.getWidth() || ttSize.y > getItemHeight()) {
+            int gridHeight = getBounds().height;
+            if (ttSize.y > gridHeight) {
+                // Too big tool tip - larger than entire grid
+                // Lets chop it
+                StringBuilder newToolTip = new StringBuilder();
+                StringTokenizer st = new StringTokenizer(toolTip, "'\n");
+                int maxLineNumbers = gridHeight / getItemHeight(), lineNumber = 0;
+                while (st.hasMoreTokens()) {
+                    newToolTip.append(st.nextToken()).append('\n');
+                    lineNumber++;
+                    if (lineNumber >= maxLineNumbers) {
+                        break;
+                    }
+                }
+                toolTip = newToolTip.toString();
+            }
+            return toolTip;
+        } else {
+            return null;
+        }
     }
 
+    @Nullable
     public Image getCellImage(int column, int row)
     {
-        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
-        if (contentLabelProvider != null) {
-            return contentLabelProvider.getImage(column,  row);
-        }
-        return null;
+        return getContentProvider().getCellImage(column,  row);
     }
 
     public Color getCellBackground(int column, int row)
     {
-        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
-        Color color = contentLabelProvider.getBackground(column,  row);
+        Color color = getContentProvider().getCellBackground(column, row);
         return color != null ? color : getBackground();
     }
 
     public Color getCellForeground(int column, int row)
     {
-        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
-        Color color = contentLabelProvider.getForeground(column,  row);
+        Color color = getContentProvider().getCellForeground(column, row);
         return color != null ? color : getForeground();
     }
 

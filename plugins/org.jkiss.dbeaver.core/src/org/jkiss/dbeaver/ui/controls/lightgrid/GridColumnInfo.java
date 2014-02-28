@@ -25,11 +25,20 @@ import java.util.List;
 /**
  * Grid axis information
  */
-public class GridAxisInfo {
+public class GridColumnInfo {
 
     public String name;
     public String tooltip;
     public Image icon;
-    public List<GridAxisInfo> children;
+    public int sortOrder;
+    public int position;
+    public List<GridColumnInfo> children;
 
+    public GridColumnInfo(String name, String tooltip, Image icon, int position, List<GridColumnInfo> children) {
+        this.name = name;
+        this.tooltip = tooltip;
+        this.icon = icon;
+        this.position = position;
+        this.children = children;
+    }
 }
