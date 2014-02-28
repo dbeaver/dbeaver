@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Listener;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 
 /**
@@ -57,7 +58,7 @@ public class GridColumn extends Item {
 	/**
 	 * Parent table.
 	 */
-	private LightGrid parent;
+	private final LightGrid parent;
 
 	/**
 	 * Header renderer.
@@ -89,10 +90,6 @@ public class GridColumn extends Item {
 	private boolean resizeable = true;
 
 	private boolean cellSelectionEnabled = true;
-
-	private Image footerImage;
-
-	private String footerText = "";
 
 	private int minimumWidth = 0;
 
@@ -130,31 +127,20 @@ public class GridColumn extends Item {
 	public GridColumn(LightGrid parent, int style, int index) {
 		super(parent, style, index);
 
-		init(parent, index);
+        this.parent = parent;
+        this.sortRenderer = new SortArrowRenderer(parent);
+        this.headerRenderer = new DefaultColumnHeaderRenderer(parent);
+        this.footerRenderer = new DefaultColumnFooterRenderer(parent);
+        this.cellRenderer = new DefaultCellRenderer(parent);
+        parent.newColumn(this, index);
+
+        initCellRenderer();
 	}
 
     public int getIndex()
     {
         return getParent().indexOf(this);
     }
-
-	private void init(LightGrid grid, int index) {
-		this.parent = grid;
-        sortRenderer = new SortArrowRenderer(grid);
-        headerRenderer = new DefaultColumnHeaderRenderer(grid);
-        footerRenderer = new DefaultColumnFooterRenderer(grid);
-        cellRenderer = new DefaultCellRenderer(grid);
-		grid.newColumn(this, index);
-
-		initCellRenderer();
-
-/*
-        Button btn = new Button(grid, SWT.PUSH | SWT.NO_FOCUS);
-        btn.setText("xxx");
-
-        setHeaderControl(btn);
-*/
-	}
 
     public AbstractRenderer getSortRenderer()
     {
@@ -166,9 +152,6 @@ public class GridColumn extends Item {
         this.sortRenderer = sortRenderer;
     }
 
-    /**
-	 * {@inheritDoc}
-	 */
 	@Override
     public void dispose() {
 		if (!parent.isDisposing()) {
@@ -284,21 +267,6 @@ public class GridColumn extends Item {
         return x;
     }
 
-    public int computeFooterHeight()
-    {
-        int y = topMargin;
-
-        y += parent.sizingGC.getFontMetrics().getHeight();
-
-        y += bottomMargin;
-
-        if (getFooterImage() != null) {
-            y = Math.max(y, topMargin + getFooterImage().getBounds().height + bottomMargin);
-        }
-
-        return y;
-    }
-
 	/**
 	 * Sets the sort indicator style for the column. This method does not actual
 	 * sort the data in the table. Valid values include: SWT.UP, SWT.DOWN,
@@ -381,17 +349,16 @@ public class GridColumn extends Item {
 		checkWidget();
 
 		int newWidth = computeHeaderWidth();
-        if (parent.getContentLabelProvider() != null) {
-            int columnIndex = getIndex();
-            int topIndex = parent.getTopIndex();
-            int bottomIndex = parent.getBottomIndex();
-            if (topIndex >= 0 && bottomIndex >= topIndex) {
-                int itemCount = parent.getItemCount();
-                for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                    newWidth = Math.max(newWidth, computeCellWidth(columnIndex, i));
-                }
+        int columnIndex = getIndex();
+        int topIndex = parent.getTopIndex();
+        int bottomIndex = parent.getBottomIndex();
+        if (topIndex >= 0 && bottomIndex >= topIndex) {
+            int itemCount = parent.getItemCount();
+            for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
+                newWidth = Math.max(newWidth, computeCellWidth(columnIndex, i));
             }
         }
+
 		setWidth(newWidth);
 		parent.redraw();
 	}
@@ -640,7 +607,8 @@ public class GridColumn extends Item {
 	/**
 	 * @return the current header control
 	 */
-	public Control getHeaderControl() {
+	@Nullable
+    public Control getHeaderControl() {
 		if (this.controlEditor != null) {
 			return this.controlEditor.getEditor();
 		}
@@ -653,7 +621,8 @@ public class GridColumn extends Item {
 	 *
 	 * @return the tooltip text
 	 */
-	public String getHeaderTooltip() {
+	@Nullable
+    public String getHeaderTooltip() {
 		checkWidget();
         if (headerTooltip != null) {
             return headerTooltip;
@@ -675,55 +644,6 @@ public class GridColumn extends Item {
 	public void setHeaderTooltip(String tooltip) {
 		checkWidget();
 		this.headerTooltip = tooltip;
-	}
-
-	/**
-	 * Sets the receiver's footer image to the argument, which may be null
-	 * indicating that no image should be displayed.
-	 *
-	 * @param image
-	 *            the image to display on the receiver (may be null)
-	 */
-	public void setFooterImage(Image image) {
-		checkWidget();
-		if (image != null && image.isDisposed())
-			SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-		this.footerImage = image;
-	}
-
-	/**
-	 * Sets the receiver's footer text.
-	 *
-	 * @param string
-	 *            the new text
-	 */
-	public void setFooterText(String string) {
-		checkWidget();
-		if (string == null)
-			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		this.footerText = string;
-	}
-
-	/**
-	 * Returns the receiver's footer image if it has one, or null if it does
-	 * not.
-	 *
-	 * @return the receiver's image
-	 */
-	public Image getFooterImage() {
-		checkWidget();
-		return footerImage;
-	}
-
-	/**
-	 * Returns the receiver's footer text, which will be an empty string if it
-	 * has never been set.
-	 *
-	 * @return the receiver's text
-	 */
-	public String getFooterText() {
-		checkWidget();
-		return footerText;
 	}
 
 	/**

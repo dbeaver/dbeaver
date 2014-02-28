@@ -28,7 +28,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.regex.Matcher;
@@ -79,7 +78,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         if (selection == null) {
             return "";
         }
-        String value = resultSet.getSpreadsheet().getContentProvider().getElementText(selection);
+        String value = resultSet.getSpreadsheet().getContentProvider().getCellText(selection.col, selection.row);
         return CommonUtils.toString(value);
     }
 
@@ -147,7 +146,6 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     {
         searchPattern = null;
 
-        IGridContentProvider contentProvider = resultSet.getSpreadsheet().getContentProvider();
         ResultSetModel model = resultSet.getModel();
         if (model.isEmpty()) {
             return -1;
@@ -199,7 +197,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                     return -1;
                 }
             }
-            String cellText = contentProvider.getElementText(curPosition);
+            String cellText = resultSet.getSpreadsheet().getContentProvider().getCellText(curPosition.col, curPosition.row);
             Matcher matcher = findPattern.matcher(cellText);
             if (wholeWord ? matcher.matches() : matcher.find()) {
                 resultSet.setSelection(
@@ -217,7 +215,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         if (selection == null || !resultSet.isValidCell(selection)) {
             return;
         }
-        String oldValue = resultSet.getSpreadsheet().getContentProvider().getElementText(selection);
+        String oldValue = resultSet.getSpreadsheet().getContentProvider().getCellText(selection.col, selection.row);
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);

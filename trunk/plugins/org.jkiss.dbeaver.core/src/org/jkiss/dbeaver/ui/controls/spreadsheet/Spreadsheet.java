@@ -39,6 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
@@ -63,12 +64,16 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     private GridEditor tableEditor;
 
-    private IWorkbenchPartSite site;
-    private ISpreadsheetController spreadsheetController;
-    private IGridContentProvider contentProvider;
-    private IGridLabelProvider contentLabelProvider;
-    private ILabelProvider columnLabelProvider;
-    private ILabelProvider rowLabelProvider;
+    @NotNull
+    private final IWorkbenchPartSite site;
+    @NotNull
+    private final ISpreadsheetController spreadsheetController;
+    @NotNull
+    private final IGridContentProvider contentProvider;
+    @NotNull
+    private final ILabelProvider columnLabelProvider;
+    @NotNull
+    private final ILabelProvider rowLabelProvider;
 
     private SpreadsheetSelectionProvider selectionProvider;
 
@@ -84,14 +89,13 @@ public class Spreadsheet extends LightGrid implements Listener {
     private SelectionListener gridSelectionListener;
 
     public Spreadsheet(
-        final Composite parent,
+        @NotNull final Composite parent,
         final int style,
-        final IWorkbenchPartSite site,
-        final ISpreadsheetController spreadsheetController,
-        final IGridContentProvider contentProvider,
-        final IGridLabelProvider contentLabelProvider,
-        final ILabelProvider columnLabelProvider,
-        final ILabelProvider rowLabelProvider
+        @NotNull final IWorkbenchPartSite site,
+        @NotNull final ISpreadsheetController spreadsheetController,
+        @NotNull final IGridContentProvider contentProvider,
+        @NotNull final ILabelProvider columnLabelProvider,
+        @NotNull final ILabelProvider rowLabelProvider
         )
     {
         super(parent, style);
@@ -105,7 +109,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         this.site = site;
         this.spreadsheetController = spreadsheetController;
         this.contentProvider = contentProvider;
-        this.contentLabelProvider = contentLabelProvider;
         this.columnLabelProvider = columnLabelProvider;
         this.rowLabelProvider = rowLabelProvider;
         this.selectionProvider = new SpreadsheetSelectionProvider(this);
@@ -504,24 +507,21 @@ public class Spreadsheet extends LightGrid implements Listener {
         }
     }
 
+    @NotNull
     @Override
     public IGridContentProvider getContentProvider()
     {
         return contentProvider;
     }
 
-    @Override
-    public IGridLabelProvider getContentLabelProvider()
-    {
-        return contentLabelProvider;
-    }
-
+    @NotNull
     @Override
     public ILabelProvider getColumnLabelProvider()
     {
         return columnLabelProvider;
     }
 
+    @NotNull
     @Override
     public ILabelProvider getRowLabelProvider()
     {
