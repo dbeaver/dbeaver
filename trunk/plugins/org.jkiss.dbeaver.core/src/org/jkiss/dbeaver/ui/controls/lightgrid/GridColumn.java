@@ -65,8 +65,6 @@ public class GridColumn extends Item {
 	 */
 	private GridColumnRenderer headerRenderer;
 
-	private GridColumnRenderer footerRenderer;
-
     private AbstractRenderer sortRenderer;
 	/**
 	 * Cell renderer.
@@ -130,8 +128,8 @@ public class GridColumn extends Item {
         this.parent = parent;
         this.sortRenderer = new SortArrowRenderer(parent);
         this.headerRenderer = new DefaultColumnHeaderRenderer(parent);
-        this.footerRenderer = new DefaultColumnFooterRenderer(parent);
         this.cellRenderer = new DefaultCellRenderer(parent);
+        this.sortRenderer = new DefaultSortRenderer(this);
         parent.newColumn(this, index);
 
         initCellRenderer();
@@ -183,10 +181,6 @@ public class GridColumn extends Item {
 	 */
 	public GridColumnRenderer getHeaderRenderer() {
 		return headerRenderer;
-	}
-
-	GridColumnRenderer getFooterRenderer() {
-		return footerRenderer;
 	}
 
 	/**
@@ -399,17 +393,6 @@ public class GridColumn extends Item {
 	public void setHeaderRenderer(GridColumnRenderer headerRenderer) {
 		checkWidget();
 		this.headerRenderer = headerRenderer;
-	}
-
-	/**
-	 * Sets the header renderer.
-	 *
-	 * @param footerRenderer
-	 *            The footerRenderer to set.
-	 */
-	public void setFooterRenderer(GridColumnRenderer footerRenderer) {
-		checkWidget();
-		this.footerRenderer = footerRenderer;
 	}
 
 	/**
@@ -641,7 +624,7 @@ public class GridColumn extends Item {
 	 *
 	 * @param tooltip the tooltip text
 	 */
-	public void setHeaderTooltip(String tooltip) {
+	public void setHeaderTooltip(@Nullable String tooltip) {
 		checkWidget();
 		this.headerTooltip = tooltip;
 	}

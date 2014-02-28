@@ -37,16 +37,9 @@ public interface IGridContentProvider extends IContentProvider {
      */
     int getColumnCount();
 
+    int getColumnSortOrder(int column);
 
-
-    /**
-     * Updates grid column properties.
-     * Invoked once right after grid columns initialization.
-     * @param column grid column
-     */
-    void updateColumn(@NotNull GridColumn column);
-
-    @Nullable
+    @NotNull
     String getCellText(int col, int row);
 
     @Nullable

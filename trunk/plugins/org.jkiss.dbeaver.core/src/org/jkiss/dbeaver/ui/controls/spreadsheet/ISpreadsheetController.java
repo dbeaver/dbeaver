@@ -46,7 +46,7 @@ public interface ISpreadsheetController {
 
     void fillContextMenu(GridPos cell, IMenuManager manager);
 
-    void changeSorting(GridColumn column, int state);
+    void changeSorting(int column, int state);
 
     IPreferenceStore getPreferenceStore();
 }
