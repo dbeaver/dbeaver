@@ -87,7 +87,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultRowHeaderRenderer;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -215,7 +214,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 new ContentProvider(),
                 new ColumnLabelProvider(),
                 new RowLabelProvider());
-            this.spreadsheet.setTopLeftRenderer(new TopLeftRenderer(this.spreadsheet));
             this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             this.previewPane = new ViewValuePanel(resultsSash) {
@@ -2829,14 +2827,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (rowNumber < 0) return "#";
                 return String.valueOf(rowNumber + 1);
             }
-        }
-    }
-
-    private class TopLeftRenderer extends DefaultRowHeaderRenderer {
-
-        public TopLeftRenderer(LightGrid grid)
-        {
-            super(grid);
         }
     }
 

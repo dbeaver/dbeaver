@@ -111,7 +111,7 @@ public abstract class LightGrid extends Canvas {
 
     private int maxColumnDefWidth = 1000;
 
-    private IGridRenderer topLeftRenderer;
+    private IGridRenderer columnHeaderRenderer;
     private IGridRenderer rowHeaderRenderer;
 
     /**
@@ -376,8 +376,8 @@ public abstract class LightGrid extends Canvas {
         super(parent, checkStyle(style));
 
         sizingGC = new GC(this);
-        topLeftRenderer = new DefaultTopLeftRenderer(this);
-        rowHeaderRenderer = new DefaultRowHeaderRenderer(this);
+        columnHeaderRenderer = new GridColumnRenderer(this);
+        rowHeaderRenderer = new GridRowRenderer(this);
 
         setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         setLineColor(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -456,7 +456,7 @@ public abstract class LightGrid extends Canvas {
 
             // Add columns
             for (Integer i = 0; i < columnElements.length; i++) {
-                GridColumn column = new GridColumn(this, columnElements[i]);
+                GridColumn column = new GridColumn(this);
                 IGridLabelProvider labelProvider = getColumnLabelProvider();
                 column.setText(labelProvider.getText(columnElements[i]));
                 column.setImage(labelProvider.getImage(columnElements[i]));
@@ -1664,17 +1664,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Sets the top left renderer.
-     *
-     * @param topLeftRenderer The topLeftRenderer to set.
-     */
-    public void setTopLeftRenderer(IGridRenderer topLeftRenderer)
-    {
-        checkWidget();
-        this.topLeftRenderer = topLeftRenderer;
-    }
-
-    /**
      * Shows the column. If the column is already showing in the receiver, this
      * method simply returns. Otherwise, the columns are scrolled until the
      * column is visible.
@@ -2218,9 +2207,7 @@ public abstract class LightGrid extends Canvas {
         x -= getHScrollSelectionInPixels();
 
         if (rowHeaderVisible) {
-            // paint left corner
-            // topLeftRenderer.setBounds(0, y, rowHeaderWidth, headerHeight);
-            // topLeftRenderer.paint(gc, null);
+            // skip left corner
             x += rowHeaderWidth;
         }
 
@@ -2232,15 +2219,15 @@ public abstract class LightGrid extends Canvas {
             int height = headerHeight;
             y = 0;
 
-            final GridColumnRenderer headerRenderer = column.getHeaderRenderer();
-            headerRenderer.setHover(hoveringColumnHeader == column);
+            columnHeaderRenderer.setHover(hoveringColumnHeader == column);
 
-            headerRenderer.setColumn(column.getIndex());
-            headerRenderer.setBounds(x, y, column.getWidth(), height);
-            headerRenderer.setSelected(selectedColumns.contains(column));
+            columnHeaderRenderer.setColumn(column.getIndex());
+            columnHeaderRenderer.setElement(columnElements[i]);
+            columnHeaderRenderer.setBounds(x, y, column.getWidth(), height);
+            columnHeaderRenderer.setSelected(selectedColumns.contains(column));
 
             if (x + column.getWidth() >= 0) {
-                headerRenderer.paint(gc);
+                columnHeaderRenderer.paint(gc);
             }
 
             x += column.getWidth();
@@ -2254,8 +2241,7 @@ public abstract class LightGrid extends Canvas {
 
         if (rowHeaderVisible) {
             // paint left corner
-            topLeftRenderer.setBounds(0, 0, rowHeaderWidth, headerHeight);
-            topLeftRenderer.paint(gc);
+            drawTopLeftCell(gc, new Rectangle(0, 0, rowHeaderWidth, headerHeight));
             x += rowHeaderWidth;
         }
     }
@@ -4494,6 +4480,33 @@ public abstract class LightGrid extends Canvas {
                 bounds.x + bounds.width - 1,
                 bounds.y + bounds.height);
         }
+    }
+
+    private void drawTopLeftCell(GC gc, Rectangle bounds) {
+        gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+
+        gc.fillRectangle(
+            bounds.x,
+            bounds.y,
+            bounds.width - 1,
+            bounds.height + 1);
+
+        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+
+        gc.drawLine(
+            bounds.x + bounds.width - 1,
+            bounds.y,
+            bounds.x + bounds.width - 1,
+            bounds.y + bounds.height);
+
+        gc.drawLine(
+            bounds.x,
+            bounds.y + bounds.height - 1,
+            bounds.x + bounds.width,
+            bounds.y + bounds.height - 1);
+
+        //cfgButton.redraw();
+
     }
 
 }
