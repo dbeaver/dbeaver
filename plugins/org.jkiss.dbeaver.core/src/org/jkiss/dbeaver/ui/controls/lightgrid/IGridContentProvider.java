@@ -37,6 +37,12 @@ public interface IGridContentProvider extends IContentProvider {
      */
     int getColumnCount();
 
+    @NotNull
+    Object[] getElements(boolean horizontal);
+
+    @Nullable
+    Object[] getChildren(Object element);
+
     int getColumnSortOrder(int column);
 
     @NotNull

@@ -145,10 +145,6 @@ class ResultSetPersister {
     {
         prepareUpdateRows();
 
-        if (updatedRows == null) {
-            return;
-        }
-
         // Make statements
         for (Integer rowNum : updatedRows.keySet()) {
             Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = updatedRows.get(rowNum);
