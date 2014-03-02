@@ -2532,20 +2532,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private class ContentProvider implements IGridContentProvider {
 
-        @Override
-        public int getRowCount()
-        {
-            return (gridMode == GridMode.RECORD) ?
-                    model.getVisibleColumnCount() : model.getRowCount();
-        }
-
-        @Override
-        public int getColumnCount()
-        {
-            return (gridMode == GridMode.RECORD) ?
-                    1: model.getVisibleColumnCount();
-        }
-
         @NotNull
         @Override
         public Object[] getElements(boolean horizontal) {
@@ -2559,7 +2545,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             } else {
                 // rows
                 if (gridMode == GridMode.GRID) {
-                    return model.getAllRows().toArray();
+                    int rowCount = model.getRowCount();
+                    Object[] rows = new Object[rowCount];
+                    for (int i = 0; i < rowCount; i++) {
+                        rows[i] = i;
+                    }
+                    return rows;
                 } else {
                     return getModel().getVisibleColumns().toArray();
                 }
@@ -2697,6 +2688,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Color getCellBackground(int col, int row)
         {
+            boolean odd = row % 2 == 0;
             if (gridMode == GridMode.RECORD) {
                 col = row;
                 row = curRowNum;
@@ -2713,7 +2705,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             {
                 return backgroundModified;
             }
-            if (row % 2 == 0 && showOddRows) {
+            if (odd && showOddRows) {
                 return backgroundOdd;
             }
             return null;
@@ -2725,9 +2717,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Image getImage(Object element)
         {
-            if (gridMode == GridMode.GRID) {
-                int colNumber = ((Number)element).intValue();
-                return getTypeImage(model.getVisibleColumn(colNumber).getMetaAttribute());
+            if (element instanceof DBDAttributeBinding) {
+                return getTypeImage(((DBDAttributeBinding)element).getMetaAttribute());
             }
             return null;
         }
@@ -2748,22 +2739,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public String getText(Object element)
         {
-            int colNumber = ((Number)element).intValue();
-            if (gridMode == GridMode.RECORD) {
-                if (colNumber == 0) {
-                    return CoreMessages.controls_resultset_viewer_value;
-                } else {
-                    log.warn("Bad column index: " + colNumber);
-                    return null;
-                }
-            } else {
-                DBDAttributeBinding metaColumn = model.getVisibleColumn(colNumber);
-                DBCAttributeMetaData attribute = metaColumn.getMetaAttribute();
+            if (element instanceof DBDAttributeBinding) {
+                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
+                DBCAttributeMetaData attribute = attributeBinding.getMetaAttribute();
                 if (CommonUtils.isEmpty(attribute.getLabel())) {
-                    return metaColumn.getAttributeName();
+                    return attributeBinding.getAttributeName();
                 } else {
                     return attribute.getLabel();
                 }
+            } else {
+                return String.valueOf(element);
             }
         }
 
@@ -2771,9 +2756,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Font getFont(Object element)
         {
-            int colNumber = ((Number)element).intValue();
-            if (gridMode == GridMode.GRID) {
-                DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(model.getVisibleColumn(colNumber));
+            if (element instanceof DBDAttributeBinding) {
+                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
+                DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(attributeBinding);
                 if (constraint != null && constraint.hasFilter()) {
                     return boldFont;
                 }
@@ -2785,11 +2770,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public String getTooltip(Object element)
         {
-            int colNumber = ((Number)element).intValue();
-            if (gridMode == GridMode.GRID) {
-                DBDAttributeBinding metaColumn = model.getVisibleColumn(colNumber);
-                String name = metaColumn.getAttributeName();
-                String typeName = DBUtils.getFullTypeName(metaColumn.getMetaAttribute());
+            if (element instanceof DBDAttributeBinding) {
+                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
+                String name = attributeBinding.getAttributeName();
+                String typeName = DBUtils.getFullTypeName(attributeBinding.getMetaAttribute());
                 return name + ": " + typeName;
             }
             return null;

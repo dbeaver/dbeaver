@@ -106,6 +106,8 @@ public abstract class LightGrid extends Canvas {
      * List of table columns in creation/index order.
      */
     private List<GridColumn> columns = new ArrayList<GridColumn>();
+    private Object[] columnElements = new Object[0];
+    private Object[] rowElements = new Object[0];
 
     private int maxColumnDefWidth = 1000;
 
@@ -449,6 +451,8 @@ public abstract class LightGrid extends Canvas {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
+        this.columnElements = contentProvider.getElements(true);
+        this.rowElements = contentProvider.getElements(false);
 
         if (clearData) {
             this.topIndex = -1;
@@ -457,13 +461,12 @@ public abstract class LightGrid extends Canvas {
             this.endColumnIndex = -1;
 
             // Add columns
-            int columnCount = contentProvider.getColumnCount();
-            for (Integer i = 0; i < columnCount; i++) {
-                GridColumn column = new GridColumn(this, SWT.NONE);
+            for (Integer i = 0; i < columnElements.length; i++) {
+                GridColumn column = new GridColumn(this, columnElements[i]);
                 IGridLabelProvider labelProvider = getColumnLabelProvider();
-                column.setText(labelProvider.getText(i));
-                column.setImage(labelProvider.getImage(i));
-                column.setHeaderTooltip(labelProvider.getTooltip(i));
+                column.setText(labelProvider.getText(columnElements[i]));
+                column.setImage(labelProvider.getImage(columnElements[i]));
+                column.setHeaderTooltip(labelProvider.getTooltip(columnElements[i]));
                 column.setSort(contentProvider.getColumnSortOrder(i));
             }
 
@@ -878,7 +881,7 @@ public abstract class LightGrid extends Canvas {
      */
     public int getItemCount()
     {
-        return getContentProvider().getRowCount();
+        return rowElements.length;
     }
 
     /**
@@ -2068,9 +2071,6 @@ public abstract class LightGrid extends Canvas {
             scrollValuesObsolete = false;
         }
         IGridContentProvider contentProvider = getContentProvider();
-        if (contentProvider.getColumnCount() != columns.size()) {
-            return;
-        }
 
         int x;
         int y = 0;
