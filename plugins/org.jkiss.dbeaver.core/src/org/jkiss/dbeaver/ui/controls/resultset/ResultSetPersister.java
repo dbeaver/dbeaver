@@ -106,7 +106,7 @@ class ResultSetPersister {
         throws DBException
     {
         // Make delete statements
-        for (RowInfo rowNum : model.getRemovedRows()) {
+        for (Integer rowNum : model.getRemovedRows()) {
             DBSEntity table = columns[0].getRowIdentifier().getEntity();
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
             Collection<? extends DBSEntityAttribute> keyColumns = columns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
@@ -118,7 +118,7 @@ class ResultSetPersister {
                 statement.keyAttributes.add(
                     new DBDAttributeValue(
                         column,
-                        model.getRowData(rowNum.row)[binding.getAttributeIndex()]));
+                        model.getRowData(rowNum)[binding.getAttributeIndex()]));
             }
             deleteStatements.add(statement);
         }
@@ -128,8 +128,8 @@ class ResultSetPersister {
         throws DBException
     {
         // Make insert statements
-        for (RowInfo rowNum : model.getAddedRows()) {
-            Object[] cellValues = model.getRowData(rowNum.row);
+        for (Integer rowNum : model.getAddedRows()) {
+            Object[] cellValues = model.getRowData(rowNum);
             DBSEntity table = columns[0].getRowIdentifier().getEntity();
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
             for (int i = 0; i < columns.length; i++) {
@@ -154,7 +154,7 @@ class ResultSetPersister {
             Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = updatedRows.get(rowNum);
             for (DBSEntity table : tableMap.keySet()) {
                 ResultSetViewer.TableRowInfo rowInfo = tableMap.get(table);
-                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, new RowInfo(rowNum), table);
+                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, rowNum, table);
                 // Updated columns
                 for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                     GridPos cell = rowInfo.tableCells.get(i);
@@ -183,7 +183,7 @@ class ResultSetPersister {
         }
     }
 
-    private void execute(DBRProgressMonitor monitor, final DataUpdateListener listener)
+    private void execute(@Nullable DBRProgressMonitor monitor, @Nullable final DataUpdateListener listener)
         throws DBException
     {
         DataUpdaterJob job = new DataUpdaterJob(listener);
@@ -221,28 +221,28 @@ class ResultSetPersister {
         for (Iterator<Map.Entry<GridPos, Object>> iter = model.getEditedValues().entrySet().iterator(); iter.hasNext(); ) {
             Map.Entry<GridPos, Object> entry = iter.next();
             for (DataStatementInfo stat : updateStatements) {
-                if (stat.executed && stat.row.row == entry.getKey().row && stat.hasUpdateColumn(columns[entry.getKey().col])) {
+                if (stat.executed && stat.row == entry.getKey().row && stat.hasUpdateColumn(columns[entry.getKey().col])) {
                     reflectKeysUpdate(stat);
                     iter.remove();
                     break;
                 }
             }
         }
-        for (Iterator<RowInfo> iter = model.getAddedRows().iterator(); iter.hasNext(); ) {
-            RowInfo row = iter.next();
+        for (Iterator<Integer> iter = model.getAddedRows().iterator(); iter.hasNext(); ) {
+            Integer row = iter.next();
             for (DataStatementInfo stat : insertStatements) {
-                if (stat.executed && stat.row.equals(row)) {
+                if (stat.executed && stat.row == row) {
                     reflectKeysUpdate(stat);
                     iter.remove();
                     break;
                 }
             }
         }
-        for (Iterator<RowInfo> iter = model.getRemovedRows().iterator(); iter.hasNext(); ) {
-            RowInfo row = iter.next();
+        for (Iterator<Integer> iter = model.getRemovedRows().iterator(); iter.hasNext(); ) {
+            Integer row = iter.next();
             for (DataStatementInfo stat : deleteStatements) {
-                if (stat.executed && stat.row.equals(row)) {
-                    model.cleanupRow(row.row);
+                if (stat.executed && stat.row == row) {
+                    model.cleanupRow(row);
                     iter.remove();
                     rowsChanged = true;
                     break;
@@ -257,7 +257,7 @@ class ResultSetPersister {
         // Update keys
         if (!stat.updatedCells.isEmpty()) {
             for (Map.Entry<Integer, Object> entry : stat.updatedCells.entrySet()) {
-                Object[] row = model.getRowData(stat.row.row);
+                Object[] row = model.getRowData(stat.row);
                 ResultSetModel.releaseValue(row[entry.getKey()]);
                 row[entry.getKey()] = entry.getValue();
             }
@@ -576,14 +576,14 @@ class ResultSetPersister {
     */
     static class DataStatementInfo {
         DBSManipulationType type;
-        RowInfo row;
+        int row;
         DBSEntity entity;
         List<DBDAttributeValue> keyAttributes = new ArrayList<DBDAttributeValue>();
         List<DBDAttributeValue> updateAttributes = new ArrayList<DBDAttributeValue>();
         boolean executed = false;
         Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
 
-        DataStatementInfo(DBSManipulationType type, RowInfo row, DBSEntity entity)
+        DataStatementInfo(DBSManipulationType type, Integer row, DBSEntity entity)
         {
             this.type = type;
             this.row = row;
