@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
  */
-public abstract class GridCellRenderer extends AbstractGridWidget
+public abstract class GridCellRenderer extends AbstractRenderer
 {
     private int alignment = SWT.LEFT;
 
@@ -149,22 +149,6 @@ public abstract class GridCellRenderer extends AbstractGridWidget
     public void setCellSelected(boolean cellSelected)
     {
         this.cellSelected = cellSelected;
-    }
-
-    /**
-     * Returns the bounds of the text in the cell.  This is used when displaying in-place tooltips.
-     * If <code>null</code> is returned here, in-place tooltips will not be displayed.  If the 
-     * <code>preferred</code> argument is <code>true</code> then the returned bounds should be large
-     * enough to show the entire text.  If <code>preferred</code> is <code>false</code> then the 
-     * returned bounds should be be relative to the current bounds.
-     * 
-     * @param row item to calculate text bounds.
-     * @param preferred true if the preferred width of the text should be returned.
-     * @return bounds of the text.
-     */
-    public Rectangle getTextBounds(int row, boolean preferred)
-    {
-        return null;
     }
 
     /**
