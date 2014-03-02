@@ -179,41 +179,5 @@ public class DefaultCellRenderer extends GridCellRenderer {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean notify(int event, Point point, Object value)
-    {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Rectangle getTextBounds(int row, boolean preferred)
-    {
-        int x = leftMargin;
-
-        Image image = grid.getCellImage(row, column);
-        if (image != null) {
-            x += image.getBounds().width + insideMargin;
-        }
-
-        Rectangle bounds = new Rectangle(x, topMargin + textTopMargin, 0, 0);
-
-        Point size = grid.sizingGC.stringExtent(grid.getCellText(column, row));
-
-        bounds.height = size.y;
-
-        if (preferred) {
-            bounds.width = size.x - 1;
-        } else {
-            bounds.width = bounds.width - x - rightMargin;
-        }
-
-        return bounds;
-    }
 
 }

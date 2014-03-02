@@ -214,51 +214,6 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean notify(int event, Point point, Object value) {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Rectangle getTextBounds(Object value, boolean preferred) {
-        GridColumn column = (GridColumn) value;
-
-        int x = leftMargin;
-
-        if (column.getImage() != null) {
-            x += column.getImage().getBounds().width + imageSpacing;
-        }
-
-
-        int y = getBounds().height - bottomMargin - grid.sizingGC.getFontMetrics().getHeight();
-
-        Rectangle bounds = new Rectangle(x, y, 0, 0);
-
-        Point p = grid.sizingGC.stringExtent(column.getText());
-
-        bounds.height = p.y;
-
-        if (preferred) {
-            bounds.width = p.x;
-        } else {
-            int width = getBounds().width - x;
-            if (!column.isSortable()) {
-                width -= rightMargin;
-            } else {
-                width -= arrowMargin + column.getSortRenderer().getSize().x + arrowMargin;
-            }
-            bounds.width = width;
-        }
-
-        return bounds;
-    }
-
-    /**
      * @return the bounds reserved for the control
      */
     @Override

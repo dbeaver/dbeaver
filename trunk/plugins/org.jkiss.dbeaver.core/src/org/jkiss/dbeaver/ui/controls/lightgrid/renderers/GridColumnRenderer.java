@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  *
  * @author serge@jkiss.org
  */
-public abstract class GridColumnRenderer extends AbstractGridWidget
+public abstract class GridColumnRenderer extends AbstractRenderer
 {
     protected final Object element;
     protected GridColumnRenderer(LightGrid grid, Object element) {
@@ -40,14 +40,7 @@ public abstract class GridColumnRenderer extends AbstractGridWidget
         this.element = element;
     }
 
-    public Rectangle getControlBounds(Object value, boolean preferred)
-    {
-        return null;
-    }
-
-    public Rectangle getTextBounds(Object value, boolean preferred) {
-        return null;
-    }
+    public abstract Rectangle getControlBounds(Object value, boolean preferred);
 
     @Nullable
     protected Image getColumnImage() {
