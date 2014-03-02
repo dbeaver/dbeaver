@@ -24,10 +24,12 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridColumnRenderer;
 
 /**
  * Manager for a Control that appears below the grid column header. Based on
@@ -127,15 +129,17 @@ class GridHeaderEditor extends ControlEditor {
 		// initColumn();
 	}
 
-	/**
-	 * Returns the bounds of the editor.
-	 * 
-	 * @return bounds of the editor.
-	 */
-	protected Rectangle internalComputeBounds() {
-		column.getHeaderRenderer().setBounds(column.getBounds());
-		return column.getHeaderRenderer().getControlBounds(column, true);
-	}
+    /**
+     * @return the bounds reserved for the control
+     */
+    public Rectangle getControlBounds() {
+        Rectangle bounds = column.getBounds();
+        Point controlSize = GridColumnRenderer.computeControlSize(column);
+
+        int y = bounds.y + bounds.height - GridColumnRenderer.bottomMargin - controlSize.y;
+
+        return new Rectangle(bounds.x + 3, y, bounds.width - 6, controlSize.y);
+    }
 
 	/**
 	 * Removes all associations between the TableEditor and the cell in the
@@ -192,7 +196,7 @@ class GridHeaderEditor extends ControlEditor {
 			hadFocus = getEditor().isFocusControl();
 		}
 
-		Rectangle rect = internalComputeBounds();
+		Rectangle rect = getControlBounds();
 		if (rect == null || rect.x < 0) {
 			getEditor().setVisible(false);
 			return;

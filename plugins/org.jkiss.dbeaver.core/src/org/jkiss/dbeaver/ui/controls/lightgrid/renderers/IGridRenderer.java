@@ -119,5 +119,5 @@ public interface IGridRenderer
 
     public void setColumn(int column);
     public void setRow(int row);
-    
+    public void setElement(Object element);
 }

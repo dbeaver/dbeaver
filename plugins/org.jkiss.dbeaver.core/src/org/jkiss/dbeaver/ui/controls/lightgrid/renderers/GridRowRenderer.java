@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
-import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -27,20 +26,16 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
- * The row header renderer.
- *
- * @author serge@jkiss.org
- * @author chris.gross@us.ibm.com
- * @since 2.0.0
+ * Grid row header renderer.
  */
-public class DefaultRowHeaderRenderer extends AbstractRenderer {
+public class GridRowRenderer extends AbstractRenderer {
     private static final int leftMargin = 6;
     private static final int rightMargin = 8;
     private final Color DEFAULT_BACKGROUND;
     private final Color DEFAULT_FOREGROUND;
     private final Color DEFAULT_FOREGROUND_TEXT;
 
-    public DefaultRowHeaderRenderer(LightGrid grid) {
+    public GridRowRenderer(LightGrid grid) {
         super(grid);
         DEFAULT_BACKGROUND = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         DEFAULT_FOREGROUND = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
