@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
  */
 public class GridColumn extends Item {
 
-	private GridHeaderEditor controlEditor;
+    private GridHeaderEditor controlEditor;
 
 	/**
 	 * Default width of the column.
@@ -59,6 +59,7 @@ public class GridColumn extends Item {
 	 * Parent table.
 	 */
 	private final LightGrid parent;
+    private final Object element;
 
 	/**
 	 * Header renderer.
@@ -98,15 +99,9 @@ public class GridColumn extends Item {
 	 * <code>Grid</code>) and a style value describing its behavior and
 	 * appearance. The item is added to the end of the items maintained by its
 	 * parent.
-	 *
-	 * @param parent
-	 *            an Grid control which will be the parent of the new instance
-	 *            (cannot be null)
-	 * @param style
-	 *            the style of control to construct
 	 */
-	public GridColumn(LightGrid parent, int style) {
-		this(parent, style, -1);
+	public GridColumn(LightGrid parent, Object element) {
+		this(parent, element, -1);
 	}
 
 	/**
@@ -117,17 +112,16 @@ public class GridColumn extends Item {
 	 * @param parent
 	 *            an Grid control which will be the parent of the new instance
 	 *            (cannot be null)
-	 * @param style
-	 *            the style of control to construct
 	 * @param index
 	 *            the index to store the receiver in its parent
 	 */
-	public GridColumn(LightGrid parent, int style, int index) {
-		super(parent, style, index);
+	public GridColumn(LightGrid parent, Object element, int index) {
+		super(parent, SWT.NONE, index);
 
         this.parent = parent;
+        this.element = element;
         this.sortRenderer = new SortArrowRenderer(parent);
-        this.headerRenderer = new DefaultColumnHeaderRenderer(parent);
+        this.headerRenderer = new DefaultColumnHeaderRenderer(parent, element);
         this.cellRenderer = new DefaultCellRenderer(parent);
         this.sortRenderer = new DefaultSortRenderer(this);
         parent.newColumn(this, index);
@@ -230,8 +224,9 @@ public class GridColumn extends Item {
             y = Math.max(y, topMargin + getImage().getBounds().height + bottomMargin);
         }
 
-        if( getHeaderControl() != null ) {
-            y += getHeaderControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        Control headerControl = getHeaderControl();
+        if( headerControl != null ) {
+            y += headerControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
         }
 
 		return y;

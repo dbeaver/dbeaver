@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -33,8 +34,10 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  */
 public abstract class GridColumnRenderer extends AbstractGridWidget
 {
-    protected GridColumnRenderer(LightGrid grid) {
+    protected final Object element;
+    protected GridColumnRenderer(LightGrid grid, Object element) {
         super(grid);
+        this.element = element;
     }
 
     public Rectangle getControlBounds(Object value, boolean preferred)
@@ -46,41 +49,31 @@ public abstract class GridColumnRenderer extends AbstractGridWidget
         return null;
     }
 
+    @Nullable
     protected Image getColumnImage() {
-        return grid.getColumnLabelProvider() == null ? null : grid.getColumnLabelProvider().getImage(getColumn());
+        return grid.getColumnLabelProvider().getImage(element);
     }
 
     protected String getColumnText()
     {
-        String text = grid.getColumnLabelProvider() == null ? null : grid.getColumnLabelProvider().getText(getColumn());
+        String text = grid.getColumnLabelProvider().getText(element);
         if (text == null)
         {
-            text = String.valueOf(getColumn());
+            text = String.valueOf(element);
         }
         return text;
     }
     
     protected Color getColumnBackground() {
-        if (grid.getColumnLabelProvider() instanceof IColorProvider) {
-    	    return ((IColorProvider)grid.getColumnLabelProvider()).getBackground(getColumn());
-        } else {
-            return null;
-        }
+        return grid.getColumnLabelProvider().getBackground(element);
     }
     
     protected Color getColumnForeground() {
-        if (grid.getColumnLabelProvider() instanceof IColorProvider) {
-    	    return ((IColorProvider)grid.getColumnLabelProvider()).getForeground(getColumn());
-        } else {
-            return null;
-        }
+        return grid.getColumnLabelProvider().getForeground(element);
     }
 
     protected Font getColumnFont() {
-        Font font = null;
-        if (grid.getColumnLabelProvider() instanceof IFontProvider) {
-            font = ((IFontProvider) grid.getColumnLabelProvider()).getFont(getColumn());
-        }
+        Font font = grid.getColumnLabelProvider().getFont(element);
         return font != null ? font : grid.getFont();
     }
 }

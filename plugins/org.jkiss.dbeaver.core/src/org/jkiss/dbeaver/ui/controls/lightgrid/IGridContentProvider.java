@@ -27,16 +27,6 @@ import org.jkiss.code.Nullable;
 
 public interface IGridContentProvider extends IContentProvider {
 
-    /**
-     * Row count
-     */
-    int getRowCount();
-
-    /**
-     * Column count
-     */
-    int getColumnCount();
-
     @NotNull
     Object[] getElements(boolean horizontal);
 

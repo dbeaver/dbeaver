@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
@@ -38,8 +39,8 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
     private static final int arrowMargin = 6;
     private static final int imageSpacing = 3;
 
-    public DefaultColumnHeaderRenderer(LightGrid grid) {
-        super(grid);
+    public DefaultColumnHeaderRenderer(LightGrid grid, Object element) {
+        super(grid, element);
 
     }
 
@@ -272,8 +273,9 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
     }
 
     private Point computeControlSize(GridColumn column) {
-        if (column.getHeaderControl() != null) {
-            return column.getHeaderControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        Control headerControl = column.getHeaderControl();
+        if (headerControl != null) {
+            return headerControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         }
         return new Point(0, 0);
     }
