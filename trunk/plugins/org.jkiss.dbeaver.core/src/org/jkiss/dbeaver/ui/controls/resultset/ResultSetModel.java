@@ -44,14 +44,13 @@ public class ResultSetModel {
     private List<Object[]> origRows = new ArrayList<Object[]>();
     private List<Object[]> curRows = new ArrayList<Object[]>();
 
-    // Current row number (for record mode)
     private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
     private volatile boolean updateInProgress = false;
 
     // Edited rows and cells
-    private final Set<RowInfo> addedRows = new TreeSet<RowInfo>();
-    private final Set<RowInfo> removedRows = new TreeSet<RowInfo>();
+    private final List<Integer> addedRows = new ArrayList<Integer>();
+    private final List<Integer> removedRows = new ArrayList<Integer>();
     private final Map<GridPos, Object> editedValues = new HashMap<GridPos, Object>();
     private DBCStatistics statistics;
 
@@ -356,12 +355,12 @@ public class ResultSetModel {
         return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
     }
 
-    Set<RowInfo> getAddedRows()
+    List<Integer> getAddedRows()
     {
         return addedRows;
     }
 
-    Set<RowInfo> getRemovedRows()
+    List<Integer> getRemovedRows()
     {
         return removedRows;
     }
@@ -383,19 +382,19 @@ public class ResultSetModel {
 
     boolean isRowAdded(int row)
     {
-        return !addedRows.isEmpty() && addedRows.contains(new RowInfo(row));
+        return !addedRows.isEmpty() && addedRows.contains(row);
     }
 
     void addNewRow(int rowNum, Object[] data)
     {
         curRows.add(rowNum, data);
 
-        addedRows.add(new RowInfo(rowNum));
+        addedRows.add(rowNum);
     }
 
     boolean isRowDeleted(int row)
     {
-        return !removedRows.isEmpty() && removedRows.contains(new RowInfo(row));
+        return !removedRows.isEmpty() && removedRows.contains(row);
     }
 
     /**
@@ -406,15 +405,14 @@ public class ResultSetModel {
      */
     boolean deleteRow(int rowNum)
     {
-        RowInfo rowInfo = new RowInfo(rowNum);
-        if (addedRows.contains(rowInfo)) {
+        if (addedRows.contains(rowNum)) {
             // Remove just added row
-            addedRows.remove(rowInfo);
+            addedRows.remove(rowNum);
             cleanupRow(rowNum);
             return true;
         } else {
             // Mark row as deleted
-            removedRows.add(rowInfo);
+            removedRows.add(rowNum);
             return false;
         }
     }
@@ -426,13 +424,13 @@ public class ResultSetModel {
         this.shiftRows(rowNum, -1);
     }
 
-    boolean cleanupRows(Set<RowInfo> rows)
+    boolean cleanupRows(Collection<Integer> rows)
     {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
             int[] rowsToRemove = new int[rows.size()];
             int i = 0;
-            for (RowInfo rowNum : rows) rowsToRemove[i++] = rowNum.row;
+            for (Integer rowNum : rows) rowsToRemove[i++] = rowNum;
             Arrays.sort(rowsToRemove);
             for (i = rowsToRemove.length; i > 0; i--) {
                 cleanupRow(rowsToRemove[i - 1]);
@@ -450,11 +448,13 @@ public class ResultSetModel {
         for (GridPos cell : editedValues.keySet()) {
             if (cell.row >= rowNum) cell.row += delta;
         }
-        for (RowInfo row : addedRows) {
-            if (row.row >= rowNum) row.row += delta;
+        for (int i = 0; i < addedRows.size(); i++) {
+            if (addedRows.get(i) >= rowNum)
+                addedRows.set(i, addedRows.get(i) + delta);
         }
-        for (RowInfo row : removedRows) {
-            if (row.row >= rowNum) row.row += delta;
+        for (int i = 0; i < removedRows.size(); i++) {
+            if (removedRows.get(i) >= rowNum)
+                removedRows.set(i, removedRows.get(i) + delta);
         }
     }
 
