@@ -19,38 +19,37 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
+import org.jkiss.utils.CommonUtils;
+
 /**
  * GridPos
  */
 public class GridPos
 {
-    private static long count = 0;
     public int col;
     public int row;
+    public GridPos next;
 
     public GridPos(int col, int row)
     {
         this.col = col;
         this.row = row;
-//        measureCount();
+    }
+
+    public GridPos(int col, int row, GridPos next) {
+        this.col = col;
+        this.row = row;
+        this.next = next;
     }
 
     public GridPos(GridPos copy)
     {
         this.col = copy.col;
         this.row = copy.row;
-//        measureCount();
+        this.next = copy.next == null ? null : new GridPos(copy.next);
     }
 
-//    private static void measureCount()
-//    {
-//        count++;
-//        if (count % 1000 == 0) {
-//            System.out.println(count);
-//        }
-//    }
-
-    public boolean isValid()
+   public boolean isValid()
     {
         return col >= 0 && row >= 0;
     }
@@ -67,16 +66,16 @@ public class GridPos
 
     public boolean equalsTo(GridPos pos)
     {
-        return this.col == pos.col && this.row == pos.row;
+        return this.col == pos.col && this.row == pos.row && CommonUtils.equalObjects(this.next, pos.next);
     }
 
     public String toString()
     {
-        return col + ":" + row;
+        return col + ":" + row + (next == null ? "" : "->" + next);
     }
 
     public int hashCode()
     {
-        return col ^ row;
+        return col ^ row ^ (next == null ? 0 : next.hashCode());
     }
 }
