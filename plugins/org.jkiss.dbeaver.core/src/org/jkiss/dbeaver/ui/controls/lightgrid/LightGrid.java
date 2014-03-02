@@ -2149,11 +2149,6 @@ public abstract class LightGrid extends Canvas {
                             cellRenderer.setCellSelected(false);
                         }
 
-                        if (hoveringItem == row && hoveringColumn == column) {
-                            cellRenderer.setHoverDetail(hoveringDetail);
-                        } else {
-                            cellRenderer.setHoverDetail("");
-                        }
                         cellRenderer.setRow(row);
                         cellRenderer.paint(gc);
 
@@ -2241,7 +2236,6 @@ public abstract class LightGrid extends Canvas {
             headerRenderer.setHover(hoveringColumnHeader == column);
 
             headerRenderer.setColumn(column.getIndex());
-            headerRenderer.setHoverDetail(hoveringDetail);
             headerRenderer.setBounds(x, y, column.getWidth(), height);
             headerRenderer.setSelected(selectedColumns.contains(column));
 
@@ -2789,10 +2783,6 @@ public abstract class LightGrid extends Canvas {
         }
 
         int row = getRow(new Point(e.x, e.y));
-
-        if (e.button == 1 && row >= 0 && handleCellClick(row, e.x, e.y)) {
-            return;
-        }
 
         if (isListening(SWT.DragDetect)) {
             if (hoveringOnSelectionDragArea) {
@@ -3499,33 +3489,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Determines (which cell/if a cell) has been clicked (mouse down really)
-     * and notifies the appropriate renderer. Returns true when a cell has
-     * responded to this event in some way and prevents the event from
-     * triggering an action further down the chain (like a selection).
-     *
-     * @param row item clicked
-     * @param x    mouse x
-     * @param y    mouse y
-     * @return true if this event has been consumed.
-     */
-    private boolean handleCellClick(int row, int x, int y)
-    {
-
-        // if(!isTree)
-        // return false;
-
-        GridColumn col = getColumn(new Point(x, y));
-        if (col == null) {
-            return false;
-        }
-
-        col.getCellRenderer().setBounds(getCellBounds(col.getIndex(), row));
-        return col.getCellRenderer().notify(IGridWidget.LeftMouseButtonDown, new Point(x, y), row);
-
-    }
-
-    /**
      * Sets the hovering variables (hoverItem,hoveringColumn) as well as
      * hoverDetail by talking to the cell renderers. Triggers a redraw if
      * necessary.
@@ -3544,28 +3507,6 @@ public abstract class LightGrid extends Canvas {
         final int row = getRow(point);
 
         GridColumn hoverColHeader = null;
-
-        if (col != null) {
-            if (row >= 0) {
-                if (y < getClientArea().height) {
-                    col.getCellRenderer().setBounds(getCellBounds(columns.indexOf(col), row));
-
-                    if (col.getCellRenderer().notify(IGridWidget.MouseMove, new Point(x, y), row)) {
-                        detail = col.getCellRenderer().getHoverDetail();
-                    }
-                }
-            } else {
-                if (y < headerHeight) {
-                    // on col header
-                    hoverColHeader = col;
-
-                    col.getHeaderRenderer().setBounds(col.getBounds());
-                    if (col.getHeaderRenderer().notify(IGridWidget.MouseMove, new Point(x, y), col)) {
-                        detail = col.getHeaderRenderer().getHoverDetail();
-                    }
-                }
-            }
-        }
 
         boolean hoverChange = false;
 

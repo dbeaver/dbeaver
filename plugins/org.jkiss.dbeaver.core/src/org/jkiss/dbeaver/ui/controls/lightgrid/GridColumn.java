@@ -120,7 +120,6 @@ public class GridColumn extends Item {
 
         this.parent = parent;
         this.element = element;
-        this.sortRenderer = new SortArrowRenderer(parent);
         this.headerRenderer = new DefaultColumnHeaderRenderer(parent, element);
         this.cellRenderer = new DefaultCellRenderer(parent);
         this.sortRenderer = new DefaultSortRenderer(this);
@@ -224,9 +223,8 @@ public class GridColumn extends Item {
             y = Math.max(y, topMargin + getImage().getBounds().height + bottomMargin);
         }
 
-        Control headerControl = getHeaderControl();
-        if( headerControl != null ) {
-            y += headerControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+        if( getHeaderControl() != null ) {
+            y += getHeaderControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
         }
 
 		return y;
