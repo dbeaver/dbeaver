@@ -25,23 +25,15 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
- * <p>
- * NOTE:  THIS WIDGET AND ITS API ARE STILL UNDER DEVELOPMENT.  THIS IS A PRE-RELEASE ALPHA 
- * VERSION.  USERS SHOULD EXPECT API CHANGES IN FUTURE VERSIONS.
- * </p> 
- * Base implementation of IRenderer. Provides management of a few values.
- *
- * @author serge@jkiss.org
- * @author chris.gross@us.ibm.com
+ * Abstract grid renderer
  */
 public abstract class AbstractRenderer implements IGridRenderer
 {
     protected final LightGrid grid;
-    /** Display used to create GC to perform painting. */
-    private final Display display;
 
     protected int column = -1;
     protected int row = -1;
+    protected Object element;
 
     /** Hover state. */
     private boolean hover;
@@ -60,7 +52,6 @@ public abstract class AbstractRenderer implements IGridRenderer
 
     protected AbstractRenderer(LightGrid grid) {
         this.grid = grid;
-        this.display = grid.getDisplay();
     }
 
     public int getColumn()
@@ -81,6 +72,11 @@ public abstract class AbstractRenderer implements IGridRenderer
     @Override
     public void setRow(int row) {
         this.row = row;
+    }
+
+    @Override
+    public void setElement(Object element) {
+        this.element = element;
     }
 
     /**
@@ -242,7 +238,7 @@ public abstract class AbstractRenderer implements IGridRenderer
      */
     public Display getDisplay()
     {
-        return display;
+        return grid.getDisplay();
     }
 
     public Cursor getHoverCursor() {

@@ -59,12 +59,6 @@ public class GridColumn extends Item {
 	 * Parent table.
 	 */
 	private final LightGrid parent;
-    private final Object element;
-
-	/**
-	 * Header renderer.
-	 */
-	private GridColumnRenderer headerRenderer;
 
     private AbstractRenderer sortRenderer;
 	/**
@@ -100,8 +94,8 @@ public class GridColumn extends Item {
 	 * appearance. The item is added to the end of the items maintained by its
 	 * parent.
 	 */
-	public GridColumn(LightGrid parent, Object element) {
-		this(parent, element, -1);
+	public GridColumn(LightGrid parent) {
+		this(parent, -1);
 	}
 
 	/**
@@ -115,13 +109,11 @@ public class GridColumn extends Item {
 	 * @param index
 	 *            the index to store the receiver in its parent
 	 */
-	public GridColumn(LightGrid parent, Object element, int index) {
+	public GridColumn(LightGrid parent, int index) {
 		super(parent, SWT.NONE, index);
 
         this.parent = parent;
-        this.element = element;
-        this.headerRenderer = new DefaultColumnHeaderRenderer(parent, element);
-        this.cellRenderer = new DefaultCellRenderer(parent);
+        this.cellRenderer = new GridCellRenderer(parent);
         this.sortRenderer = new DefaultSortRenderer(this);
         parent.newColumn(this, index);
 
@@ -165,15 +157,6 @@ public class GridColumn extends Item {
 			cellRenderer.setAlignment(SWT.CENTER);
 		}
 
-	}
-
-	/**
-	 * Returns the header renderer.
-	 *
-	 * @return header renderer
-	 */
-	public GridColumnRenderer getHeaderRenderer() {
-		return headerRenderer;
 	}
 
 	/**
@@ -363,30 +346,6 @@ public class GridColumn extends Item {
         x += parent.sizingGC.textExtent(parent.getCellText(column, row)).x + rightMargin;
         return x;
     }
-
-    /**
-	 * Sets the cell renderer.
-	 *
-	 * @param cellRenderer
-	 *            The cellRenderer to set.
-	 */
-	public void setCellRenderer(GridCellRenderer cellRenderer) {
-		checkWidget();
-
-		this.cellRenderer = cellRenderer;
-		initCellRenderer();
-	}
-
-	/**
-	 * Sets the header renderer.
-	 *
-	 * @param headerRenderer
-	 *            The headerRenderer to set.
-	 */
-	public void setHeaderRenderer(GridColumnRenderer headerRenderer) {
-		checkWidget();
-		this.headerRenderer = headerRenderer;
-	}
 
 	/**
 	 * Adds a listener to the list of listeners notified when the column is
