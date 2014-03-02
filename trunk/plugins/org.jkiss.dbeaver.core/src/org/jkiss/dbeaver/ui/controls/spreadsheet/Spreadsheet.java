@@ -69,9 +69,9 @@ public class Spreadsheet extends LightGrid implements Listener {
     @NotNull
     private final IGridContentProvider contentProvider;
     @NotNull
-    private final ILabelProvider columnLabelProvider;
+    private final IGridLabelProvider columnLabelProvider;
     @NotNull
-    private final ILabelProvider rowLabelProvider;
+    private final IGridLabelProvider rowLabelProvider;
 
     private SpreadsheetSelectionProvider selectionProvider;
 
@@ -92,8 +92,8 @@ public class Spreadsheet extends LightGrid implements Listener {
         @NotNull final IWorkbenchPartSite site,
         @NotNull final ISpreadsheetController spreadsheetController,
         @NotNull final IGridContentProvider contentProvider,
-        @NotNull final ILabelProvider columnLabelProvider,
-        @NotNull final ILabelProvider rowLabelProvider
+        @NotNull final IGridLabelProvider columnLabelProvider,
+        @NotNull final IGridLabelProvider rowLabelProvider
         )
     {
         super(parent, style);
@@ -514,14 +514,14 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     @NotNull
     @Override
-    public ILabelProvider getColumnLabelProvider()
+    public IGridLabelProvider getColumnLabelProvider()
     {
         return columnLabelProvider;
     }
 
     @NotNull
     @Override
-    public ILabelProvider getRowLabelProvider()
+    public IGridLabelProvider getRowLabelProvider()
     {
         return rowLabelProvider;
     }

@@ -182,6 +182,10 @@ public class ResultSetModel {
         return curRows.size();
     }
 
+    public List<Object[]> getAllRows() {
+        return curRows;
+    }
+
     public Object[] getRowData(int index)
     {
         return curRows.get(index);

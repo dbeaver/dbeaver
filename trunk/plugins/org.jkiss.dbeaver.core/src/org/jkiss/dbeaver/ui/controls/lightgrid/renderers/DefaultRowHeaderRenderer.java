@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -111,32 +112,27 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
         gc.drawString(org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
     }
 
+    @Nullable
     private Image getHeaderImage() {
-        return grid.getRowLabelProvider() == null ? null : grid.getRowLabelProvider().getImage(getRow());
+        return grid.getRowLabelProvider().getImage(getRow());
     }
 
     protected String getHeaderText() {
-        String text = grid.getRowLabelProvider() == null ? null : grid.getRowLabelProvider().getText(getRow());
+        String text = grid.getRowLabelProvider().getText(getRow());
         if (text == null) {
             text = String.valueOf(getRow());
         }
         return text;
     }
 
+    @Nullable
     protected Color getHeaderBackground() {
-        if (grid.getRowLabelProvider() instanceof IColorProvider) {
-            return ((IColorProvider) grid.getRowLabelProvider()).getBackground(getRow());
-        } else {
-            return null;
-        }
+        return grid.getRowLabelProvider().getBackground(getRow());
     }
 
+    @Nullable
     protected Color getHeaderForeground() {
-        if (grid.getRowLabelProvider() instanceof IColorProvider) {
-            return ((IColorProvider) grid.getRowLabelProvider()).getForeground(getRow());
-        } else {
-            return null;
-        }
+        return grid.getRowLabelProvider().getForeground(getRow());
     }
 
 }

@@ -34,7 +34,10 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -66,7 +69,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -84,10 +86,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultRowHeaderRenderer;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
@@ -1950,7 +1949,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 colsSelected.add(pos.col);
             }
         }
-        ILabelProvider rowLabelProvider = this.spreadsheet.getRowLabelProvider();
+        IGridLabelProvider rowLabelProvider = this.spreadsheet.getRowLabelProvider();
         int rowNumber = 0;
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
@@ -2547,6 +2546,32 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     1: model.getVisibleColumnCount();
         }
 
+        @NotNull
+        @Override
+        public Object[] getElements(boolean horizontal) {
+            if (horizontal) {
+                // columns
+                if (gridMode == GridMode.GRID) {
+                    return getModel().getVisibleColumns().toArray();
+                } else {
+                    return new Object[] {CoreMessages.controls_resultset_viewer_value};
+                }
+            } else {
+                // rows
+                if (gridMode == GridMode.GRID) {
+                    return model.getAllRows().toArray();
+                } else {
+                    return getModel().getVisibleColumns().toArray();
+                }
+            }
+        }
+
+        @Nullable
+        @Override
+        public Object[] getChildren(Object element) {
+            return null;
+        }
+
         @Override
         public int getColumnSortOrder(int column)
         {
@@ -2562,21 +2587,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
                 return SWT.DEFAULT;
             }
-/*
-            if (gridMode == GridMode.RECORD) {
-                column.setSort(SWT.NONE);
-            } else {
-                column.setSort(SWT.DEFAULT);
-                int index = column.getIndex();
-                DBDAttributeConstraint co = model.getDataFilter().getConstraint(model.getVisibleColumn(index));
-                if (co.getOrderPosition() > 0) {
-                    DBDAttributeBinding binding = co.getAttribute();
-                    if (model.getVisibleColumns().indexOf(binding) == index) {
-                        column.setSort(co.isOrderDescending() ? SWT.UP : SWT.DOWN);
-                    }
-                }
-            }
-*/
         }
 
         @Override
@@ -2710,7 +2720,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private class ColumnLabelProvider extends LabelProvider implements IFontProvider, ITooltipProvider {
+    private class ColumnLabelProvider implements IGridLabelProvider {
         @Nullable
         @Override
         public Image getImage(Object element)
@@ -2719,6 +2729,18 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 int colNumber = ((Number)element).intValue();
                 return getTypeImage(model.getVisibleColumn(colNumber).getMetaAttribute());
             }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Color getForeground(Object element) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Color getBackground(Object element) {
             return null;
         }
 
@@ -2742,11 +2764,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 } else {
                     return attribute.getLabel();
                 }
-/*
-                return CommonUtils.isEmpty(metaColumn.getMetaData().getEntityName()) ?
-                    metaColumn.getMetaData().getName() :
-                    metaColumn.getMetaData().getEntityName() + "." + metaColumn.getMetaData().getName();
-*/
             }
         }
 
@@ -2779,7 +2796,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private class RowLabelProvider extends LabelProvider {
+    private class RowLabelProvider implements IGridLabelProvider {
         @Nullable
         @Override
         public Image getImage(Object element)
@@ -2789,6 +2806,30 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (rowNumber < 0) return null;
                 return getTypeImage(model.getVisibleColumn(rowNumber).getMetaAttribute());
             }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Color getForeground(Object element) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Color getBackground(Object element) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Font getFont(Object element) {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public String getTooltip(Object element) {
             return null;
         }
 

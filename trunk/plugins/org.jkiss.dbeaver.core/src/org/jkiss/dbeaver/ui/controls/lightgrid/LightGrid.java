@@ -18,14 +18,12 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
@@ -37,7 +35,7 @@ import java.util.*;
 import java.util.List;
 
 /**
- * LighGrid
+ * LightGrid
  * initially based on Nebula grid. Refactored and mostly redone.
  *
  * @author serge@jkiss.org
@@ -235,12 +233,6 @@ public abstract class LightGrid extends Canvas {
     private IGridScrollBar hScroll;
 
     /**
-     * The number of visible items. Maintained for
-     * performance reasons (rather than iterating over all items).
-     */
-    private int currentVisibleItems = 0;
-
-    /**
      * Item selected when a multiple selection using shift+click first occurs.
      * This item anchors all further shift+click selections.
      */
@@ -435,10 +427,10 @@ public abstract class LightGrid extends Canvas {
     public abstract IGridContentProvider getContentProvider();
 
     @NotNull
-    public abstract ILabelProvider getColumnLabelProvider();
+    public abstract IGridLabelProvider getColumnLabelProvider();
 
     @NotNull
-    public abstract ILabelProvider getRowLabelProvider();
+    public abstract IGridLabelProvider getRowLabelProvider();
 
     public int getMaxColumnDefWidth() {
         return maxColumnDefWidth;
@@ -457,7 +449,6 @@ public abstract class LightGrid extends Canvas {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
-        this.currentVisibleItems = contentProvider.getRowCount();
 
         if (clearData) {
             this.topIndex = -1;
@@ -469,12 +460,10 @@ public abstract class LightGrid extends Canvas {
             int columnCount = contentProvider.getColumnCount();
             for (Integer i = 0; i < columnCount; i++) {
                 GridColumn column = new GridColumn(this, SWT.NONE);
-                ILabelProvider labelProvider = getColumnLabelProvider();
+                IGridLabelProvider labelProvider = getColumnLabelProvider();
                 column.setText(labelProvider.getText(i));
                 column.setImage(labelProvider.getImage(i));
-                if (labelProvider instanceof ITooltipProvider) {
-                    column.setHeaderTooltip(((ITooltipProvider) labelProvider).getTooltip(i));
-                }
+                column.setHeaderTooltip(labelProvider.getTooltip(i));
                 column.setSort(contentProvider.getColumnSortOrder(i));
             }
 
@@ -1315,7 +1304,6 @@ public abstract class LightGrid extends Canvas {
         checkWidget();
         deselectAll();
 
-        currentVisibleItems = 0;
         focusItem = -1;
         focusColumn = null;
         topIndex = -1;
@@ -2080,7 +2068,7 @@ public abstract class LightGrid extends Canvas {
             scrollValuesObsolete = false;
         }
         IGridContentProvider contentProvider = getContentProvider();
-        if (contentProvider == null || contentProvider.getColumnCount() != columns.size()) {
+        if (contentProvider.getColumnCount() != columns.size()) {
             return;
         }
 
@@ -2345,7 +2333,7 @@ public abstract class LightGrid extends Canvas {
 
         // if the scrollbar is visible set its values
         if (vScroll.getVisible()) {
-            int max = currentVisibleItems;
+            int max = getItemCount();
             int thumb = (getVisibleGridHeight() + 1) / (getItemHeight() + 1);
 
             // if possible, remember selection, if selection is too large, just
