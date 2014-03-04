@@ -45,7 +45,7 @@ public class JDBCDataType implements DBSDataType
         DBSObject owner,
         int valueType,
         String name,
-        String remarks,
+        @Nullable String remarks,
         boolean unsigned,
         boolean searchable,
         int precision,
