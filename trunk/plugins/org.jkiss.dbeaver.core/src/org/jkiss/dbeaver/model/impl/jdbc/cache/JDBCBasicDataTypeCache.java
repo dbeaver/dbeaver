@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,10 +52,14 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
     @Override
     protected JDBCDataType fetchObject(JDBCSession session, JDBCDataSource owner, ResultSet dbResult) throws SQLException, DBException
     {
+        String name = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
+        if (CommonUtils.isEmpty(name)) {
+            return null;
+        }
         return new JDBCDataType(
             this.owner,
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE),
-            JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME),
+            name,
             JDBCUtils.safeGetString(dbResult, JDBCConstants.LOCAL_TYPE_NAME),
             JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.UNSIGNED_ATTRIBUTE),
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.SEARCHABLE) != 0,
