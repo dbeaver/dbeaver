@@ -1948,7 +1948,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
         IGridLabelProvider rowLabelProvider = this.spreadsheet.getRowLabelProvider();
-        int rowNumber = 0;
+        int rowNumber = firstRow;
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
             if (copyRowNumbers) {
