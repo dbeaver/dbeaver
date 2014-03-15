@@ -109,25 +109,25 @@ public class GridRowRenderer extends AbstractRenderer {
 
     @Nullable
     private Image getHeaderImage() {
-        return grid.getRowLabelProvider().getImage(getRow());
+        return grid.getRowLabelProvider().getImage(cell.row);
     }
 
     protected String getHeaderText() {
-        String text = grid.getRowLabelProvider().getText(getRow());
+        String text = grid.getRowLabelProvider().getText(cell.row);
         if (text == null) {
-            text = String.valueOf(getRow());
+            text = String.valueOf(cell.row);
         }
         return text;
     }
 
     @Nullable
     protected Color getHeaderBackground() {
-        return grid.getRowLabelProvider().getBackground(getRow());
+        return grid.getRowLabelProvider().getBackground(cell.row);
     }
 
     @Nullable
     protected Color getHeaderForeground() {
-        return grid.getRowLabelProvider().getForeground(getRow());
+        return grid.getRowLabelProvider().getForeground(cell.row);
     }
 
 }

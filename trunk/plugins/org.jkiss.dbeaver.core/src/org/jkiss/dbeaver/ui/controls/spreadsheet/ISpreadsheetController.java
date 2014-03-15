@@ -23,6 +23,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 
@@ -35,16 +36,14 @@ public interface ISpreadsheetController {
 
     boolean isReadOnly();
 
-    boolean isValidCell(GridPos pos);
-
     boolean isInsertable();
 
     @Nullable
     Control showCellEditor(boolean inline);
 
-    void resetCellValue(GridPos cell, boolean delete);
+    void resetCellValue(GridCell cell, boolean delete);
 
-    void fillContextMenu(GridPos cell, IMenuManager manager);
+    void fillContextMenu(GridCell cell, IMenuManager manager);
 
     void changeSorting(int column, int state);
 

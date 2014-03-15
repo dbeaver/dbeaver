@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,17 +42,13 @@ public class ResultSetModel {
     private boolean singleSourceCells;
 
     // Data
-    private List<Object[]> origRows = new ArrayList<Object[]>();
-    private List<Object[]> curRows = new ArrayList<Object[]>();
-
+    private List<RowData> curRows = new ArrayList<RowData>();
+    private int changesCount = 0;
     private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
     private volatile boolean updateInProgress = false;
 
     // Edited rows and cells
-    private final List<Integer> addedRows = new ArrayList<Integer>();
-    private final List<Integer> removedRows = new ArrayList<Integer>();
-    private final Map<GridPos, Object> editedValues = new HashMap<GridPos, Object>();
     private DBCStatistics statistics;
 
     public ResultSetModel()
@@ -91,18 +88,31 @@ public class ResultSetModel {
         return columns[0].getRowIdentifier().getEntity();
     }
 
-    public boolean isCellModified(GridPos pos)
+    public void resetCellValue(GridCell cell, boolean delete)
     {
-        return !editedValues.isEmpty() && editedValues.containsKey(pos);
+        RowData row = (RowData) cell.row;
+        int columnIndex = ((DBDAttributeBinding) cell.col).getAttributeIndex();
+        if (columnIndex >= 0 && row.oldValues != null && row.changedValues != null && row.changedValues[columnIndex]) {
+            resetValue(row.values[columnIndex]);
+            row.values[columnIndex] = row.oldValues[columnIndex];
+            row.changedValues[columnIndex] = false;
+            if (row.state == RowData.STATE_NORMAL) {
+                changesCount--;
+            }
+        }
     }
 
-    public void resetCellValue(GridPos cell, boolean delete)
+    public void refreshChangeCount()
     {
-        if (editedValues.containsKey(cell)) {
-            Object[] row = this.curRows.get(cell.row);
-            resetValue(row[cell.col]);
-            row[cell.col] = this.editedValues.get(cell);
-            this.editedValues.remove(cell);
+        changesCount = 0;
+        for (RowData row : curRows) {
+            if (row.state != RowData.STATE_NORMAL) {
+                changesCount++;
+            } else if (row.changedValues != null) {
+                for (boolean cv : row.changedValues) {
+                    if (cv) changesCount++;
+                }
+            }
         }
     }
 
@@ -119,6 +129,11 @@ public class ResultSetModel {
     public DBDAttributeBinding getColumn(int index)
     {
         return columns[index];
+    }
+
+    public int getVisibleColumnIndex(DBDAttributeBinding column)
+    {
+        return visibleColumns.indexOf(column);
     }
 
     public List<DBDAttributeBinding> getVisibleColumns()
@@ -182,11 +197,16 @@ public class ResultSetModel {
         return curRows.size();
     }
 
-    public List<Object[]> getAllRows() {
+    public List<RowData> getAllRows() {
         return curRows;
     }
 
     public Object[] getRowData(int index)
+    {
+        return curRows.get(index).values;
+    }
+
+    public RowData getRow(int index)
     {
         return curRows.get(index);
     }
@@ -199,23 +219,20 @@ public class ResultSetModel {
      */
     public Object getCellValue(int row, int column)
     {
-        return curRows.get(row)[column];
+        return curRows.get(row).values[column];
     }
 
     /**
      * Updates cell value. Saves previous value.
      * @param row row index
-     * @param column column index. Note: not visual column but real column index
+     * @param attr Attribute
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(int row, int column, Object value)
+    public boolean updateCellValue(RowData row, DBDAttributeBinding attr, Object value)
     {
-        if (row < 0) {
-            return false;
-        }
-        Object[] curRow = getRowData(row);
-        Object oldValue = curRow[column];
+        int column = attr.getAttributeIndex();
+        Object oldValue = row.values[column];
         if ((value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {
             // If DBDValue was updated (kind of LOB?) or actual value was changed
             if (DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
@@ -223,19 +240,26 @@ public class ResultSetModel {
                 return false;
             }
             // Do not add edited cell for new/deleted rows
-            if (!isRowAdded(row) && !isRowDeleted(row)) {
+            if (row.state == RowData.STATE_NORMAL) {
                 // Save old value
-                GridPos cell = new GridPos(column, row);
-                boolean cellWasEdited = editedValues.containsKey(cell); // use "contains" cos' old value may be "null".
-                Object oldOldValue = editedValues.get(cell);
+                boolean cellWasEdited = row.oldValues != null && row.changedValues != null && row.changedValues[column];
+                Object oldOldValue = !cellWasEdited ? null : row.oldValues[column];
                 if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
                     // Value rewrite - release previous stored old value
                     releaseValue(oldValue);
                 } else {
-                    editedValues.put(cell, oldValue);
+                    if (row.oldValues == null || row.changedValues == null) {
+                        row.oldValues = new Object[row.values.length];
+                        row.changedValues = new boolean[row.values.length];
+                    }
+                    row.oldValues[column] = oldValue;
+                    row.changedValues[column] = true;
+                }
+                if (row.state == RowData.STATE_NORMAL && !cellWasEdited) {
+                    changesCount++;
                 }
             }
-            curRow[column] = value;
+            row.values[column] = value;
             return true;
         }
         return false;
@@ -290,8 +314,7 @@ public class ResultSetModel {
         this.clearData();
 
         // Add new data
-        this.origRows.addAll(rows);
-        this.curRows.addAll(rows);
+        appendData(rows);
 
         if (updateMetaData) {
             // Check single source flag
@@ -316,24 +339,23 @@ public class ResultSetModel {
 
     public void appendData(List<Object[]> rows)
     {
-        origRows.addAll(rows);
-        curRows.addAll(rows);
+        int rowCount = rows.size();
+        List<RowData> newRows = new ArrayList<RowData>(rowCount);
+        for (int i = 0; i < rowCount; i++) {
+            newRows.add(
+                new RowData(curRows.size() + i, rows.get(i), null));
+        }
+        curRows.addAll(newRows);
     }
 
     void clearData()
     {
         // Refresh all rows
         this.releaseAll();
-        this.origRows = new ArrayList<Object[]>();
-        this.curRows = new ArrayList<Object[]>();
-
-        this.editedValues.clear();
-        this.addedRows.clear();
-        this.removedRows.clear();
+        this.curRows = new ArrayList<RowData>();
 
         hasData = false;
     }
-
 
     public boolean hasData()
     {
@@ -342,7 +364,7 @@ public class ResultSetModel {
 
     public boolean isDirty()
     {
-        return !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
+        return changesCount != 0;
     }
 
     boolean isColumnReadOnly(int column)
@@ -359,21 +381,6 @@ public class ResultSetModel {
         return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
     }
 
-    List<Integer> getAddedRows()
-    {
-        return addedRows;
-    }
-
-    List<Integer> getRemovedRows()
-    {
-        return removedRows;
-    }
-
-    Map<GridPos, Object> getEditedValues()
-    {
-        return editedValues;
-    }
-
     public boolean isUpdateInProgress()
     {
         return updateInProgress;
@@ -384,100 +391,87 @@ public class ResultSetModel {
         this.updateInProgress = updateInProgress;
     }
 
-    boolean isRowAdded(int row)
-    {
-        return !addedRows.isEmpty() && addedRows.contains(row);
-    }
-
     void addNewRow(int rowNum, Object[] data)
     {
-        curRows.add(rowNum, data);
-
-        addedRows.add(rowNum);
-    }
-
-    boolean isRowDeleted(int row)
-    {
-        return !removedRows.isEmpty() && removedRows.contains(row);
+        RowData newRow = new RowData(curRows.size(), data, null);
+        newRow.visualNumber = rowNum;
+        newRow.state = RowData.STATE_ADDED;
+        shiftRows(newRow, 1);
+        curRows.add(rowNum, newRow);
     }
 
     /**
      * Removes row with specified index from data
-     * @param rowNum row number
+     * @param row row
      * @return true if row was physically removed (only in case if this row was previously added)
      * or false if it just marked as deleted
      */
-    boolean deleteRow(int rowNum)
+    boolean deleteRow(RowData row)
     {
-        if (addedRows.contains(rowNum)) {
-            // Remove just added row
-            addedRows.remove(rowNum);
-            cleanupRow(rowNum);
+        if (row.state == RowData.STATE_ADDED) {
+            cleanupRow(row);
             return true;
         } else {
             // Mark row as deleted
-            removedRows.add(rowNum);
+            row.state = RowData.STATE_REMOVED;
             return false;
         }
     }
 
-    void cleanupRow(int rowNum)
+    private void cleanupRow(RowData row)
     {
-        releaseRow(this.curRows.get(rowNum));
-        this.curRows.remove(rowNum);
-        this.shiftRows(rowNum, -1);
+        releaseRow(row);
+        this.curRows.remove(row.visualNumber);
+        this.shiftRows(row, -1);
     }
 
-    boolean cleanupRows(Collection<Integer> rows)
+    boolean cleanupRows(Collection<RowData> rows)
     {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
-            int[] rowsToRemove = new int[rows.size()];
-            int i = 0;
-            for (Integer rowNum : rows) rowsToRemove[i++] = rowNum;
-            Arrays.sort(rowsToRemove);
-            for (i = rowsToRemove.length; i > 0; i--) {
-                cleanupRow(rowsToRemove[i - 1]);
+            List<RowData> rowsToRemove = new ArrayList<RowData>(rows);
+            Collections.sort(rowsToRemove, new Comparator<RowData>() {
+                @Override
+                public int compare(RowData o1, RowData o2) {
+                    return o1.visualNumber - o2.visualNumber;
+                }
+            });
+            for (RowData row : rowsToRemove) {
+                cleanupRow(row);
             }
-            rows.clear();
             return true;
         } else {
             return false;
         }
     }
 
-    void shiftRows(int rowNum, int delta)
+    private void shiftRows(RowData relative, int delta)
     {
-        // Slide all existing edited rows/cells down
-        for (GridPos cell : editedValues.keySet()) {
-            if (cell.row >= rowNum) cell.row += delta;
-        }
-        for (int i = 0; i < addedRows.size(); i++) {
-            if (addedRows.get(i) >= rowNum)
-                addedRows.set(i, addedRows.get(i) + delta);
-        }
-        for (int i = 0; i < removedRows.size(); i++) {
-            if (removedRows.get(i) >= rowNum)
-                removedRows.set(i, removedRows.get(i) + delta);
+        for (RowData row : curRows) {
+            if (row.visualNumber >= relative.visualNumber) {
+                row.visualNumber += delta;
+            }
+            if (row.rowNumber >= relative.rowNumber) {
+                row.rowNumber += delta;
+            }
         }
     }
 
     private void releaseAll()
     {
-        for (Object[] row : curRows) {
+        for (RowData row : curRows) {
             releaseRow(row);
-        }
-        // Release edited values
-        for (Object oldValue : editedValues.values()) {
-            releaseValue(oldValue);
         }
     }
 
-    private static void releaseRow(Object[] values)
+    private static void releaseRow(RowData row)
     {
-        for (Object value : values) {
-            if (value instanceof DBDValue) {
-                ((DBDValue)value).release();
+        for (Object value : row.values) {
+            releaseValue(value);
+        }
+        if (row.oldValues != null) {
+            for (Object oldValue : row.oldValues) {
+                releaseValue(oldValue);
             }
         }
     }
@@ -519,24 +513,24 @@ public class ResultSetModel {
 
     void resetOrdering()
     {
+        final boolean hasOrdering = dataFilter.hasOrdering();
         // Sort locally
-        curRows = new ArrayList<Object[]>(this.origRows);
-        if (!dataFilter.hasOrdering()) {
-            return;
-        }
         final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
-        Collections.sort(curRows, new Comparator<Object[]>() {
+        Collections.sort(curRows, new Comparator<RowData>() {
             @Override
-            public int compare(Object[] row1, Object[] row2)
+            public int compare(RowData row1, RowData row2)
             {
+                if (!hasOrdering) {
+                    return row1.rowNumber - row2.rowNumber;
+                }
                 int result = 0;
                 for (DBDAttributeConstraint co : orderConstraints) {
                     final DBDAttributeBinding binding = co.getAttribute();
                     if (binding == null) {
                         continue;
                     }
-                    Object cell1 = row1[binding.getAttributeIndex()];
-                    Object cell2 = row2[binding.getAttributeIndex()];
+                    Object cell1 = row1.values[binding.getAttributeIndex()];
+                    Object cell2 = row2.values[binding.getAttributeIndex()];
                     if (cell1 == cell2) {
                         result = 0;
                     } else if (DBUtils.isNullValue(cell1)) {
@@ -560,6 +554,9 @@ public class ResultSetModel {
                 return result;
             }
         });
+        for (int i = 0; i < curRows.size(); i++) {
+            curRows.get(i).visualNumber = i;
+        }
     }
 
     public DBCStatistics getStatistics()

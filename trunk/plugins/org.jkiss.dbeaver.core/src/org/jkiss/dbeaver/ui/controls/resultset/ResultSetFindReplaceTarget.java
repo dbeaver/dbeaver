@@ -27,9 +27,11 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -67,18 +69,24 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public Point getSelection()
     {
-        GridPos selection = resultSet.getSelection().getFirstElement();
-        return selection == null ? new Point(-1, -1) : new Point(selection.col, selection.row);
+        Collection<GridPos> selection = resultSet.getSpreadsheet().getSelection();
+        //GridCell selection = resultSet.getSelection().getFirstElement();
+        if (selection.isEmpty()) {
+            return new Point(-1, -1);
+        } else {
+            GridPos pos = selection.iterator().next();
+            return new Point(pos.col, pos.row);
+        }
     }
 
     @Override
     public String getSelectionText()
     {
-        GridPos selection = resultSet.getSelection().getFirstElement();
+        GridCell selection = resultSet.getSelection().getFirstElement();
         if (selection == null) {
             return "";
         }
-        String value = resultSet.getSpreadsheet().getContentProvider().getCellText(selection.col, selection.row);
+        String value = resultSet.getSpreadsheet().getContentProvider().getCellText(selection);
         return CommonUtils.toString(value);
     }
 
@@ -144,6 +152,9 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
+        // TODO: revert
+        return -1;
+/*
         searchPattern = null;
 
         ResultSetModel model = resultSet.getModel();
@@ -152,7 +163,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         }
         int rowCount = model.getRowCount();
         int columnCount = model.getVisibleColumnCount();
-        GridPos startPosition = resultSet.getSelection().getFirstElement();
+        GridCell startPosition = resultSet.getSelection().getFirstElement();
         if (startPosition == null) {
             // From the beginning
             startPosition = new GridPos(0, 0);
@@ -197,7 +208,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                     return -1;
                 }
             }
-            String cellText = resultSet.getSpreadsheet().getContentProvider().getCellText(curPosition.col, curPosition.row);
+            String cellText = resultSet.getSpreadsheet().getContentProvider().getCellText(curPosition.col);
             Matcher matcher = findPattern.matcher(cellText);
             if (wholeWord ? matcher.matches() : matcher.find()) {
                 resultSet.setSelection(
@@ -206,16 +217,19 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                 return curPosition.row;
             }
         }
+*/
     }
 
     @Override
     public void replaceSelection(String text, boolean regExReplace)
     {
-        GridPos selection = resultSet.getSelection().getFirstElement();
-        if (selection == null || !resultSet.isValidCell(selection)) {
+        // TODO: revert
+/*
+        GridCell selection = resultSet.getSelection().getFirstElement();
+        if (selection == null) {
             return;
         }
-        String oldValue = resultSet.getSpreadsheet().getContentProvider().getCellText(selection.col, selection.row);
+        String oldValue = resultSet.getSpreadsheet().getContentProvider().getCellText(selection);
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
@@ -228,6 +242,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         resultSet.updateEditControls();
         resultSet.getSpreadsheet().redrawGrid();
         resultSet.previewValue();
+*/
     }
 
     @Override

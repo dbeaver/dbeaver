@@ -22,6 +22,7 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 
 public interface IGridRenderer
 {
@@ -117,7 +118,6 @@ public interface IGridRenderer
      */
     void setSize(Point size);
 
-    public void setColumn(int column);
-    public void setRow(int row);
-    public void setElement(Object element);
+    public void setCell(GridCell cell);
+
 }
