@@ -48,7 +48,7 @@ import java.util.*;
 */
 class ResultSetPersister {
 
-    private final Map<Integer, Map<DBSEntity, ResultSetViewer.TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSEntity, ResultSetViewer.TableRowInfo>>();
+    private final Map<RowData, Map<DBSEntity, ResultSetViewer.TableRowInfo>> updatedRows = new TreeMap<RowData, Map<DBSEntity, ResultSetViewer.TableRowInfo>>();
 
     private final ResultSetViewer viewer;
     private final ResultSetModel model;
@@ -74,18 +74,38 @@ class ResultSetPersister {
     void applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable DataUpdateListener listener)
         throws DBException
     {
-        prepareDeleteStatements();
-        prepareInsertStatements();
-        prepareUpdateStatements();
-        execute(monitor, listener);
+        List<RowData> deletedRows = new ArrayList<RowData>();
+        List<RowData> addedRows = new ArrayList<RowData>();
+        List<RowData> changedRows = new ArrayList<RowData>();
+        for (RowData row : model.getAllRows()) {
+            switch (row.state) {
+                case RowData.STATE_NORMAL:
+                    if (row.isChanged()) {
+                        changedRows.add(row);
+                    }
+                    break;
+                case RowData.STATE_ADDED:
+                    addedRows.add(row);
+                    break;
+                case RowData.STATE_REMOVED:
+                    deletedRows.add(row);
+                    break;
+            }
+        }
+        // TODO: revert
+//        prepareDeleteStatements(deletedRows);
+//        prepareInsertStatements(addedRows);
+//        prepareUpdateStatements(changedRows);
+//        execute(monitor, listener);
     }
-
-    private void prepareUpdateRows()
+// TODO: revert
+/*
+    private void prepareUpdateRows(List<RowData> changedRows)
         throws DBException
     {
         // Prepare rows
-        for (GridPos cell : model.getEditedValues().keySet()) {
-            Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = updatedRows.get(cell.row);
+        for (RowData row : changedRows) {
+            Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = updatedRows.get(row);
             if (tableMap == null) {
                 tableMap = new HashMap<DBSEntity, ResultSetViewer.TableRowInfo>();
                 updatedRows.put(cell.row, tableMap);
@@ -102,13 +122,13 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareDeleteStatements()
+    private void prepareDeleteStatements(List<RowData> deletedRows)
         throws DBException
     {
         // Make delete statements
-        for (Integer rowNum : model.getRemovedRows()) {
+        for (RowData row : deletedRows) {
             DBSEntity table = columns[0].getRowIdentifier().getEntity();
-            DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
+            DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, row, table);
             Collection<? extends DBSEntityAttribute> keyColumns = columns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
             for (DBSEntityAttribute column : keyColumns) {
                 DBDAttributeBinding binding = model.getAttributeBinding(column);
@@ -118,20 +138,20 @@ class ResultSetPersister {
                 statement.keyAttributes.add(
                     new DBDAttributeValue(
                         column,
-                        model.getRowData(rowNum)[binding.getAttributeIndex()]));
+                        row.values[binding.getAttributeIndex()]));
             }
             deleteStatements.add(statement);
         }
     }
 
-    private void prepareInsertStatements()
+    private void prepareInsertStatements(List<RowData> addedRows)
         throws DBException
     {
         // Make insert statements
-        for (Integer rowNum : model.getAddedRows()) {
-            Object[] cellValues = model.getRowData(rowNum);
+        for (RowData row : addedRows) {
+            Object[] cellValues = row.values;
             DBSEntity table = columns[0].getRowIdentifier().getEntity();
-            DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
+            DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, row, table);
             for (int i = 0; i < columns.length; i++) {
                 DBDAttributeBinding column = columns[i];
                 statement.keyAttributes.add(new DBDAttributeValue(column.getAttribute(), cellValues[i]));
@@ -140,14 +160,14 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareUpdateStatements()
+    private void prepareUpdateStatements(List<RowData> changedRows)
         throws DBException
     {
-        prepareUpdateRows();
+        prepareUpdateRows(changedRows);
 
         // Make statements
-        for (Integer rowNum : updatedRows.keySet()) {
-            Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = updatedRows.get(rowNum);
+        for (Integer rowNum : this.updatedRows.keySet()) {
+            Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = this.updatedRows.get(rowNum);
             for (DBSEntity table : tableMap.keySet()) {
                 ResultSetViewer.TableRowInfo rowInfo = tableMap.get(table);
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, rowNum, table);
@@ -189,9 +209,12 @@ class ResultSetPersister {
             job.run(monitor);
         }
     }
+*/
 
     public void rejectChanges()
     {
+// TODO: revert
+/*
         for (Map.Entry<GridPos, Object> cell : model.getEditedValues().entrySet()) {
             Object[] row = model.getRowData(cell.getKey().row);
             ResultSetModel.releaseValue(row[cell.getKey().col]);
@@ -202,13 +225,16 @@ class ResultSetPersister {
         boolean rowsChanged = model.cleanupRows(model.getAddedRows());
         // Remove deleted rows
         model.getRemovedRows().clear();
+        model.refreshChangeCount();
 
         viewer.refreshSpreadsheet(false, rowsChanged);
         viewer.fireResultSetChange();
         viewer.updateEditControls();
         viewer.previewValue();
+*/
     }
-
+// TODO: revert
+/*
     // Reflect data changes in viewer
     // Changes affects only rows which statements executed successfully
     private boolean reflectChanges()
@@ -245,6 +271,7 @@ class ResultSetPersister {
                 }
             }
         }
+        model.refreshChangeCount();
         return rowsChanged;
     }
 
@@ -259,22 +286,10 @@ class ResultSetPersister {
             }
         }
     }
-
-/*
-    private void releaseStatements()
-    {
-        for (DataStatementInfo stat : updateStatements) releaseStatement(stat);
-        for (DataStatementInfo stat : insertStatements) releaseStatement(stat);
-        for (DataStatementInfo stat : deleteStatements) releaseStatement(stat);
-    }
-
-    private void releaseStatement(DataStatementInfo stat)
-    {
-        for (DBDColumnValue value : stat.keyColumns) releaseValue(value.getValue());
-        for (DBDColumnValue value : stat.updateColumns) releaseValue(value.getValue());
-    }
-
 */
+
+// TODO: revert
+/*
     private class DataUpdaterJob extends DataSourceJob {
         private final DataUpdateListener listener;
         private boolean autocommit;
@@ -477,6 +492,7 @@ class ResultSetPersister {
         }
 
     }
+*/
 
     private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException
     {
@@ -572,14 +588,14 @@ class ResultSetPersister {
     */
     static class DataStatementInfo {
         DBSManipulationType type;
-        int row;
+        RowData row;
         DBSEntity entity;
         List<DBDAttributeValue> keyAttributes = new ArrayList<DBDAttributeValue>();
         List<DBDAttributeValue> updateAttributes = new ArrayList<DBDAttributeValue>();
         boolean executed = false;
         Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
 
-        DataStatementInfo(DBSManipulationType type, Integer row, DBSEntity entity)
+        DataStatementInfo(DBSManipulationType type, RowData row, DBSEntity entity)
         {
             this.type = type;
             this.row = row;

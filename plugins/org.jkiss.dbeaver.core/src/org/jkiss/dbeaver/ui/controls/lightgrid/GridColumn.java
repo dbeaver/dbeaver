@@ -59,6 +59,7 @@ public class GridColumn extends Item {
 	 * Parent table.
 	 */
 	private final LightGrid parent;
+    private final Object element;
 
     private AbstractRenderer sortRenderer;
 	/**
@@ -94,8 +95,8 @@ public class GridColumn extends Item {
 	 * appearance. The item is added to the end of the items maintained by its
 	 * parent.
 	 */
-	public GridColumn(LightGrid parent) {
-		this(parent, -1);
+	public GridColumn(LightGrid parent, Object element) {
+		this(parent, -1, element);
 	}
 
 	/**
@@ -109,16 +110,21 @@ public class GridColumn extends Item {
 	 * @param index
 	 *            the index to store the receiver in its parent
 	 */
-	public GridColumn(LightGrid parent, int index) {
+	public GridColumn(LightGrid parent, int index, Object element) {
 		super(parent, SWT.NONE, index);
 
         this.parent = parent;
         this.cellRenderer = new GridCellRenderer(parent);
         this.sortRenderer = new DefaultSortRenderer(this);
+        this.element = element;
         parent.newColumn(this, index);
 
         initCellRenderer();
 	}
+
+    public Object getElement() {
+        return element;
+    }
 
     public int getIndex()
     {
@@ -147,8 +153,6 @@ public class GridColumn extends Item {
 	 * Initialize cell renderer.
 	 */
 	private void initCellRenderer() {
-		cellRenderer.setColumn(getIndex());
-
 		if ((getStyle() & SWT.RIGHT) == SWT.RIGHT) {
 			cellRenderer.setAlignment(SWT.RIGHT);
 		}
@@ -324,8 +328,10 @@ public class GridColumn extends Item {
         int bottomIndex = parent.getBottomIndex();
         if (topIndex >= 0 && bottomIndex >= topIndex) {
             int itemCount = parent.getItemCount();
+            GridCell cell = new GridCell(element, element);
             for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                newWidth = Math.max(newWidth, computeCellWidth(columnIndex, i));
+                cell.row = parent.getRowElement(i);
+                newWidth = Math.max(newWidth, computeCellWidth(cell));
             }
         }
 
@@ -333,17 +339,17 @@ public class GridColumn extends Item {
 		parent.redraw();
 	}
 
-    private int computeCellWidth(int column, int row) {
+    private int computeCellWidth(GridCell cell) {
         int x = 0;
 
         x += leftMargin;
 
-        Image image = parent.getCellImage(column, row);
+        Image image = parent.getContentProvider().getCellImage(cell);
         if (image != null) {
             x += image.getBounds().width + insideMargin;
         }
 
-        x += parent.sizingGC.textExtent(parent.getCellText(column, row)).x + rightMargin;
+        x += parent.sizingGC.textExtent(parent.getCellText(cell)).x + rightMargin;
         return x;
     }
 
@@ -500,10 +506,6 @@ public class GridColumn extends Item {
 	public LightGrid getParent() {
 		checkWidget();
 		return parent;
-	}
-
-	void setColumnIndex(int newIndex) {
-		cellRenderer.setColumn(newIndex);
 	}
 
 	/**

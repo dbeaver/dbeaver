@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
@@ -31,9 +32,7 @@ public abstract class AbstractRenderer implements IGridRenderer
 {
     protected final LightGrid grid;
 
-    protected int column = -1;
-    protected int row = -1;
-    protected Object element;
+    protected GridCell cell;
 
     /** Hover state. */
     private boolean hover;
@@ -54,29 +53,15 @@ public abstract class AbstractRenderer implements IGridRenderer
         this.grid = grid;
     }
 
-    public int getColumn()
+    public GridCell getCell()
     {
-        return column;
+        return cell;
     }
 
     @Override
-    public void setColumn(int column)
+    public void setCell(GridCell cell)
     {
-        this.column = column;
-    }
-
-    public int getRow() {
-        return row;
-    }
-
-    @Override
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    @Override
-    public void setElement(Object element) {
-        this.element = element;
+        this.cell = cell;
     }
 
     /**
