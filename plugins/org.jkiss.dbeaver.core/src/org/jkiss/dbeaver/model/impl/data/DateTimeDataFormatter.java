@@ -23,6 +23,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.text.DateFormat;
+import java.text.FieldPosition;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
@@ -33,6 +34,8 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
 
     private String pattern;
     private DateFormat dateFormat;
+    private StringBuffer buffer;
+    private FieldPosition position;
 
     @Override
     public void init(Locale locale, Map<Object, Object> properties)
@@ -41,6 +44,8 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
         dateFormat = new ExtendedDateFormat(
             pattern,
             locale);
+        buffer = new StringBuffer();
+        position = new FieldPosition(0);
     }
 
     @Override
@@ -52,7 +57,10 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     @Override
     public String formatValue(Object value)
     {
-        return value == null ? null : dateFormat.format(value);
+        synchronized (dateFormat) {
+            buffer.setLength(0);
+            return value == null ? null : dateFormat.format(value, buffer, position).toString();
+        }
     }
 
     @Override

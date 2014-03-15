@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.Nullable;
+
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
@@ -32,6 +34,7 @@ public interface DBDDataFormatter {
 
     String getPattern();
 
+    @Nullable
     String formatValue(Object value);
 
     Object parseValue(String value) throws ParseException;

@@ -27,6 +27,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -87,6 +88,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
+    @Nullable
     @Override
     public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format) {
         return DBUtils.getDefaultValueDisplayString(value, format);
