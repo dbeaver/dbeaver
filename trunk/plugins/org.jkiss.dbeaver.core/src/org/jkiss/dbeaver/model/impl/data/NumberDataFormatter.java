@@ -18,10 +18,13 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -29,12 +32,14 @@ import java.util.Map;
 
 public class NumberDataFormatter implements DBDDataFormatter {
 
-    private NumberFormat numberFormat;
+    private DecimalFormat numberFormat;
+    private StringBuffer buffer;
+    private FieldPosition position;
 
     @Override
     public void init(Locale locale, Map<Object, Object> properties)
     {
-        numberFormat = NumberFormat.getNumberInstance(locale);
+        numberFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
         Boolean useGrouping = (Boolean)properties.get(NumberFormatSample.PROP_USE_GROUPING);
         if (useGrouping != null) {
             numberFormat.setGroupingUsed(useGrouping);
@@ -63,6 +68,8 @@ public class NumberDataFormatter implements DBDDataFormatter {
                 // just skip it
             }
         }
+        buffer = new StringBuffer();
+        position = new FieldPosition(0);
     }
 
     @Override
@@ -71,6 +78,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         return null;
     }
 
+    @Nullable
     @Override
     public String formatValue(Object value)
     {
@@ -79,7 +87,8 @@ public class NumberDataFormatter implements DBDDataFormatter {
         }
         try {
             synchronized (numberFormat) {
-                return numberFormat.format(value);
+                buffer.setLength(0);
+                return numberFormat.format(value, buffer, position).toString();
             }
         } catch (Exception e) {
             return value.toString();
