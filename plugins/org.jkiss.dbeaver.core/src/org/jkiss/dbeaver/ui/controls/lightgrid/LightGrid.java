@@ -3943,35 +3943,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Selects the selection to the given set of cell.  The existing selection is cleared before
-     * selecting the given cells.
-     *
-     * @param cells point array whose x values is a column index and y value is an item index
-     */
-    public void setCellSelection(Collection<GridPos> cells)
-    {
-        checkWidget();
-
-        if (cells == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return;
-        }
-
-        for (GridPos cell : cells) {
-            if (!isValidCell(cell))
-                SWT.error(SWT.ERROR_INVALID_ARGUMENT);
-        }
-
-        selectedCells.clear();
-        for (GridPos cell : cells) {
-            addToCellSelection(cell);
-        }
-
-        updateSelectionCache();
-        redraw();
-    }
-
-    /**
      * Returns an array of cells that are currently selected in the
      * receiver. The order of the items is unspecified. An empty array indicates
      * that no items are selected.

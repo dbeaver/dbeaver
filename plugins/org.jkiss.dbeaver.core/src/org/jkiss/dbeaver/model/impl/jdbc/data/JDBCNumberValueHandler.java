@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -70,6 +71,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
      */
+    @Nullable
     @Override
     public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {

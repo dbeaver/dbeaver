@@ -28,7 +28,6 @@ public class GridPos
 {
     public int col;
     public int row;
-    public GridPos next;
 
     public GridPos(int col, int row)
     {
@@ -36,17 +35,10 @@ public class GridPos
         this.row = row;
     }
 
-    public GridPos(int col, int row, GridPos next) {
-        this.col = col;
-        this.row = row;
-        this.next = next;
-    }
-
     public GridPos(GridPos copy)
     {
         this.col = copy.col;
         this.row = copy.row;
-        this.next = copy.next == null ? null : new GridPos(copy.next);
     }
 
    public boolean isValid()
@@ -66,16 +58,16 @@ public class GridPos
 
     public boolean equalsTo(GridPos pos)
     {
-        return this.col == pos.col && this.row == pos.row && CommonUtils.equalObjects(this.next, pos.next);
+        return this.col == pos.col && this.row == pos.row;
     }
 
     public String toString()
     {
-        return col + ":" + row + (next == null ? "" : "->" + next);
+        return col + ":" + row;
     }
 
     public int hashCode()
     {
-        return col ^ row ^ (next == null ? 0 : next.hashCode());
+        return col ^ row;
     }
 }
