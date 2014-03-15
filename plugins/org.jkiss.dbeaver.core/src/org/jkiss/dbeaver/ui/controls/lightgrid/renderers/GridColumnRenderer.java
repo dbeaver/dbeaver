@@ -43,35 +43,35 @@ public class GridColumnRenderer extends AbstractRenderer
 
     @Nullable
     protected Image getColumnImage() {
-        return grid.getColumnLabelProvider().getImage(element);
+        return grid.getColumnLabelProvider().getImage(cell.col);
     }
 
     protected String getColumnText()
     {
-        String text = grid.getColumnLabelProvider().getText(element);
+        String text = grid.getColumnLabelProvider().getText(cell.col);
         if (text == null)
         {
-            text = String.valueOf(element);
+            text = String.valueOf(cell.col);
         }
         return text;
     }
     
     protected Color getColumnBackground() {
-        return grid.getColumnLabelProvider().getBackground(element);
+        return grid.getColumnLabelProvider().getBackground(cell.col);
     }
     
     protected Color getColumnForeground() {
-        return grid.getColumnLabelProvider().getForeground(element);
+        return grid.getColumnLabelProvider().getForeground(cell.col);
     }
 
     protected Font getColumnFont() {
-        Font font = grid.getColumnLabelProvider().getFont(element);
+        Font font = grid.getColumnLabelProvider().getFont(cell.col);
         return font != null ? font : grid.getFont();
     }
 
     @Override
     public void paint(GC gc) {
-        GridColumn col = grid.getColumn(getColumn());
+        GridColumn col = grid.getColumnByElement(cell.col);
         AbstractRenderer arrowRenderer = col.getSortRenderer();
 
         // set the font to be used to display the text.

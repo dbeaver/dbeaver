@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 
 /**
@@ -45,7 +45,7 @@ public class ResultSetPropertyTester extends PropertyTester
             return false;
         }
         ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
-        return rsv != null && checkResultSetProperty(rsv, property, expectedValue);
+        return checkResultSetProperty(rsv, property, expectedValue);
     }
 
     private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
@@ -53,11 +53,11 @@ public class ResultSetPropertyTester extends PropertyTester
         if (PROP_HAS_DATA.equals(property)) {
             return rsv.getModel().getRowCount() > 0;
         } else if (PROP_CAN_COPY.equals(property)) {
-            final GridPos currentPosition = rsv.getCurrentPosition();
-            return rsv.isValidCell(currentPosition);
+            final GridCell currentPosition = rsv.getCurrentPosition();
+            return currentPosition != null;
         } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
-            final GridPos currentPosition = rsv.getCurrentPosition();
-            return rsv.isValidCell(currentPosition) && !rsv.isColumnReadOnly(currentPosition);
+            final GridCell currentPosition = rsv.getCurrentPosition();
+            return currentPosition != null && !rsv.isColumnReadOnly(currentPosition);
         } else if (PROP_CAN_MOVE.equals(property)) {
             int currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {
@@ -70,8 +70,8 @@ public class ResultSetPropertyTester extends PropertyTester
                 return false;
             }
             if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
-                GridPos pos = rsv.getCurrentPosition();
-                if (pos == null || !rsv.isValidCell(pos)) {
+                GridCell pos = rsv.getCurrentPosition();
+                if (pos == null) {
                     return false;
                 }
                 if ("inline".equals(expectedValue)) {

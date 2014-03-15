@@ -31,7 +31,6 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
@@ -57,9 +56,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.RowData;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -237,13 +236,13 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             entity = rsv.getModel().getSingleSource();
         }
         if (entity != null) {
-            final Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
+            final Collection<RowData> selectedRows = rss.getSelectedRows();
             if (!CommonUtils.isEmpty(selectedRows)) {
                 menu.add(makeAction("SELECT by Unique Key", new TableAnalysisRunner(entity) {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
                     {
-                        for (ResultSetRow firstRow : selectedRows) {
+                        for (RowData firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
                             sql.append("SELECT ");
@@ -275,7 +274,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
                     {
-                        for (ResultSetRow firstRow : selectedRows) {
+                        for (RowData firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> allAttributes = getAllAttributes(monitor);
                             sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(entity));
@@ -307,7 +306,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
                     {
-                        for (ResultSetRow firstRow : selectedRows) {
+                        for (RowData firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
                             sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(entity));
@@ -398,10 +397,10 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             }
         }
 
-        protected void appendAttributeValue(StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row)
+        protected void appendAttributeValue(StringBuilder sql, DBDAttributeBinding binding, RowData row)
         {
             SQLDialect dialect = SQLUtils.getDialectFromObject(binding.getAttribute());
-            Object value = row.getValue(binding.getAttribute());
+            Object value = row.values[binding.getAttributeIndex()];
             if (DBUtils.isNullValue(value)) {
                 sql.append("NULL");
             } else {

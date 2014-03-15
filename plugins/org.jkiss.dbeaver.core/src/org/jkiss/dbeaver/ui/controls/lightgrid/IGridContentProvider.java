@@ -33,18 +33,20 @@ public interface IGridContentProvider extends IContentProvider {
     @Nullable
     Object[] getChildren(Object element);
 
-    int getColumnSortOrder(int column);
+    int getColumnSortOrder(Object column);
+
+    Object getCellValue(GridCell cell, boolean formatString);
 
     @NotNull
-    String getCellText(int col, int row);
+    String getCellText(GridCell cell);
 
     @Nullable
-    Image getCellImage(int col, int row);
+    Image getCellImage(GridCell cell);
 
     @Nullable
-    Color getCellForeground(int col, int row);
+    Color getCellForeground(GridCell cell);
 
     @Nullable
-    Color getCellBackground(int col, int row);
+    Color getCellBackground(GridCell cell);
 
 }

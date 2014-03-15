@@ -359,7 +359,7 @@ public class SQLQueryJob extends DataSourceJob
                                     curStatement,
                                     param,
                                     param.getIndex(),
-                                    param.getValue());
+                                    param.getCellValue());
                             }
                         }
                     }

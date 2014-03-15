@@ -20,7 +20,10 @@
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -198,7 +201,7 @@ public class GridCellRenderer extends AbstractRenderer
         }
 
         if (drawAsSelected) {
-            Color cellBackground = grid.getCellBackground(column, row);
+            Color cellBackground = grid.getCellBackground(cell);
             if (cellBackground.equals(grid.getBackground())) {
                 gc.setBackground(colorSelected);
             } else {
@@ -212,7 +215,7 @@ public class GridCellRenderer extends AbstractRenderer
             gc.setForeground(colorSelectedText);
         } else {
             if (grid.isEnabled()) {
-                Color back = grid.getCellBackground(column, row);
+                Color back = grid.getCellBackground(cell);
 
                 if (back != null) {
                     gc.setBackground(back);
@@ -222,7 +225,7 @@ public class GridCellRenderer extends AbstractRenderer
             } else {
                 gc.setBackground(colorBackgroundDisabled);
             }
-            gc.setForeground(grid.getCellForeground(column, row));
+            gc.setForeground(grid.getCellForeground(cell));
         }
 
         if (drawBackground)
@@ -232,7 +235,7 @@ public class GridCellRenderer extends AbstractRenderer
 
         int x = leftMargin;
 
-        Image image = grid.getCellImage(column, row);
+        Image image = grid.getCellImage(cell);
         if (image != null) {
             int y = bounds.y;
 
@@ -245,14 +248,14 @@ public class GridCellRenderer extends AbstractRenderer
 
         int width = bounds.width - x - rightMargin;
 
-        if (drawAsSelected) {
-            gc.setForeground(colorSelectedText);
-        } else {
-            gc.setForeground(grid.getCellForeground(column, row));
-        }
+//        if (drawAsSelected) {
+//            gc.setForeground(colorSelectedText);
+//        } else {
+//            gc.setForeground(grid.getCellForeground(cell));
+//        }
 
         // Get cell text
-        String text = grid.getCellText(column, row);
+        String text = grid.getCellText(cell);
         if (text != null && !text.isEmpty()) {
             // Get shortern version of string
             text = TextUtils.getShortString(gc, text, width);

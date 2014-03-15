@@ -910,7 +910,7 @@ public final class DBUtils {
         });
     }
 
-    public static String getDefaultValueDisplayString(Object value, DBDDisplayFormat format)
+    public static String getDefaultValueDisplayString(@Nullable Object value, DBDDisplayFormat format)
     {
         if (isNullValue(value)) {
             if (format == DBDDisplayFormat.UI) {

@@ -22,7 +22,6 @@ import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.DisposeEvent;
@@ -38,6 +37,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
@@ -246,6 +246,15 @@ public class Spreadsheet extends LightGrid implements Listener {
         if (super.isDisposed()) {
             return new GridPos(-1, -1);
         }
+        return super.getFocusPos();
+    }
+
+    @Nullable
+    public GridCell getCursorCell()
+    {
+        if (super.isDisposed()) {
+            return null;
+        }
         return super.getFocusCell();
     }
 
@@ -387,15 +396,13 @@ public class Spreadsheet extends LightGrid implements Listener {
                     }
                 } else if (event.keyCode == SWT.ESC) {
                     // Reset cell value
-                    if (spreadsheetController != null) {
-                        spreadsheetController.resetCellValue(super.getFocusCell(), false);
-                    }
+                    spreadsheetController.resetCellValue(posToCell(super.getFocusPos()), false);
                 }
                 break;
             case SWT.MouseDoubleClick:
                 GridPos pos = super.getCell(new Point(event.x, event.y));
-                GridPos focusPos = super.getFocusCell();
-                if (pos != null && focusPos != null && pos.equals(super.getFocusCell())) {
+                GridPos focusPos = super.getFocusPos();
+                if (pos != null && focusPos != null && pos.equals(super.getFocusPos())) {
                     DoubleClickBehavior doubleClickBehavior = DoubleClickBehavior.valueOf(
                         getController().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK));
 
@@ -487,7 +494,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Let controller to provide it's own menu items
-                spreadsheetController.fillContextMenu(getFocusCell(), manager);
+                spreadsheetController.fillContextMenu(posToCell(getFocusPos()), manager);
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
@@ -542,7 +549,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         return rowNum >= super.getTopIndex() && rowNum <= super.getBottomIndex();
     }
 
-    public void showCellEditor(GridPos cell, Composite editor)
+    public void showCellEditor(Composite editor)
     {
         int minHeight, minWidth;
         Point editorSize = editor.computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -560,7 +567,8 @@ public class Spreadsheet extends LightGrid implements Listener {
                     tableEditor.verticalAlignment = SWT.CENTER;
                 }
 */
-        tableEditor.setEditor(editor, cell.col, cell.row);
+        GridPos pos = getFocusPos();
+        tableEditor.setEditor(editor, pos.col, pos.row);
     }
 
 }
