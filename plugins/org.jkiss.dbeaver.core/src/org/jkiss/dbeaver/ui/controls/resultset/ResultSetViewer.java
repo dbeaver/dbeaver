@@ -1928,7 +1928,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (prevCell != null && prevCell.col != cell.col) {
                     // Fill empty row tail
                     int prevColIndex = selectedColumns.indexOf(prevCell.col);
-                    for (int i = prevColIndex; i < selectedColumns.size(); i++) {
+                    for (int i = prevColIndex; i < selectedColumns.size() - 1; i++) {
                         tdt.append(delimiter);
                     }
                 }
