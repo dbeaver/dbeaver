@@ -1251,7 +1251,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         // The control that will be the editor must be a child of the Table
         final GridCell focusCell = spreadsheet.getFocusCell();
-        //GridPos pos = getPosFromPoint(event.x, event.y);
         if (focusCell == null) {
             return null;
         }
@@ -1504,7 +1503,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
         {
-            final List<Object> selectedColumns = getSpreadsheet().getSelectedColumns();
+            final List<Object> selectedColumns = getSpreadsheet().getColumnSelection();
             if (getGridMode() == GridMode.GRID && !selectedColumns.isEmpty()) {
                 String hideTitle;
                 if (selectedColumns.size() == 1) {
@@ -1899,46 +1898,77 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         String delimiter,
         DBDDisplayFormat format)
     {
-        // TODO: revert
-/*
         if (delimiter == null) {
             delimiter = "\t";
         }
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
-        List<Integer> colsSelected = new ArrayList<Integer>();
-        int firstCol = Integer.MAX_VALUE, lastCol = Integer.MIN_VALUE;
-        int firstRow = Integer.MAX_VALUE;
-        Collection<GridPos> selection = spreadsheet.getSelection();
-        for (GridPos pos : selection) {
-            if (firstCol > pos.col) {
-                firstCol = pos.col;
-            }
-            if (lastCol < pos.col) {
-                lastCol = pos.col;
-            }
-            if (firstRow > pos.row) {
-                firstRow = pos.row;
-            }
-            if (!colsSelected.contains(pos.col)) {
-                colsSelected.add(pos.col);
-            }
-        }
-        IGridLabelProvider rowLabelProvider = this.spreadsheet.getRowLabelProvider();
-        int rowNumber = firstRow;
+        List<Object> selectedColumns = spreadsheet.getColumnSelection();
+        IGridLabelProvider rowLabelProvider = spreadsheet.getRowLabelProvider();
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
+            IGridLabelProvider colLabelProvider = spreadsheet.getColumnLabelProvider();
             if (copyRowNumbers) {
-                tdt.append(rowLabelProvider.getText(-1));
+                tdt.append("#");
             }
-            for (int colIndex : colsSelected) {
-                GridColumn column = spreadsheet.getColumn(colIndex);
+            for (Object column : selectedColumns) {
                 if (tdt.length() > 0) {
                     tdt.append(delimiter);
                 }
-                tdt.append(column.getText());
+                tdt.append(colLabelProvider.getText(column));
             }
             tdt.append(lineSeparator);
         }
+
+        List<GridCell> selectedCells = spreadsheet.getCellSelection();
+
+        GridCell prevCell = null;
+        for (GridCell cell : selectedCells) {
+            if (prevCell == null || cell.row != prevCell.row) {
+                // Next row
+                if (prevCell != null && prevCell.col != cell.col) {
+                    // Fill empty row tail
+                    int prevColIndex = selectedColumns.indexOf(prevCell.col);
+                    for (int i = prevColIndex; i < selectedColumns.size(); i++) {
+                        tdt.append(delimiter);
+                    }
+                }
+                if (prevCell != null) {
+                    tdt.append(lineSeparator);
+                }
+                if (copyRowNumbers) {
+                    tdt.append(rowLabelProvider.getText(cell.row)).append(delimiter);
+                }
+            }
+            if (prevCell != null && prevCell.col != cell.col) {
+                int prevColIndex = selectedColumns.indexOf(prevCell.col);
+                int curColIndex = selectedColumns.indexOf(cell.col);
+                for (int i = prevColIndex; i < curColIndex; i++) {
+                    tdt.append(delimiter);
+                }
+            }
+
+            DBDAttributeBinding column = (DBDAttributeBinding)(getGridMode() == GridMode.GRID ?  cell.col : cell.row);
+            RowData row = (RowData) (getGridMode() == GridMode.GRID ?  cell.row : cell.col);
+            Object value = row.values[column.getAttributeIndex()];
+            String cellText = column.getValueHandler().getValueDisplayString(
+                column.getMetaAttribute(),
+                value,
+                format);
+            if (cellText != null) {
+                tdt.append(cellText);
+            }
+
+            if (cut) {
+                DBDValueController valueController = new ResultSetValueController(
+                    cell, DBDValueController.EditType.NONE, null);
+                if (!valueController.isReadOnly()) {
+                    valueController.updateValue(DBUtils.makeNullValue(valueController));
+                }
+            }
+
+            prevCell = cell;
+        }
+/*
         if (copyRowNumbers) {
             tdt.append(rowLabelProvider.getText(rowNumber++)).append(delimiter);
         }
@@ -1988,13 +2018,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
         }
+*/
         if (tdt.length() > 0) {
             TextTransfer textTransfer = TextTransfer.getInstance();
             getSpreadsheet().getClipboard().setContents(
                 new Object[]{tdt.toString()},
                 new Transfer[]{textTransfer});
         }
-*/
     }
 
     public void pasteCellValue()
@@ -2125,13 +2155,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     void deleteSelectedRows()
     {
-        GridPos curPos = spreadsheet.getCursorPosition();
-        List<RowData> rowsToDelete = new ArrayList<RowData>();
+        GridCell curCell = spreadsheet.getCursorCell();
+        Set<RowData> rowsToDelete = new LinkedHashSet<RowData>();
         if (gridMode == GridMode.RECORD) {
-            rowsToDelete.add(model.getRow(this.curRowNum));
+            rowsToDelete.add(model.getRow(curRowNum));
         } else {
-            for (GridPos pos : spreadsheet.getSelection()) {
-                rowsToDelete.add(model.getRow(pos.row));
+            for (GridCell cell : spreadsheet.getCellSelection()) {
+                rowsToDelete.add((RowData) cell.row);
             }
         }
         if (rowsToDelete.isEmpty()) {
@@ -2144,11 +2174,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (model.deleteRow(row)) {
                 rowsRemoved++;
             }
+            lastRowNum = row.visualNumber;
         }
         // Move one row down (if we are in grid mode)
         if (gridMode == GridMode.GRID && lastRowNum < spreadsheet.getItemCount() - 1) {
-            curPos.row = lastRowNum - rowsRemoved + 1;
-            spreadsheet.setCursor(curPos, false);
+            GridPos newPos = new GridPos(curColNum, lastRowNum - rowsRemoved + 1);
+            spreadsheet.setCursor(newPos, false);
         }
         if (rowsRemoved > 0) {
             refreshSpreadsheet(false, true);
@@ -2617,8 +2648,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (row.state == RowData.STATE_REMOVED) {
                 return backgroundDeleted;
             }
-            if (row.isChanged()) {
-                return backgroundModified;
+            if (row.changedValues != null) {
+                DBDAttributeBinding column = (DBDAttributeBinding)(getGridMode() == GridMode.GRID ?  cell.col : cell.row);
+                if (row.changedValues[column.getAttributeIndex()]) {
+                    return backgroundModified;
+                }
             }
             if (odd && showOddRows) {
                 return backgroundOdd;
@@ -2701,7 +2735,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding) {
-                return getTypeImage(((DBDAttributeBinding)element).getMetaAttribute());
+                return getTypeImage(((DBDAttributeBinding) element).getMetaAttribute());
             }
             return null;
         }
