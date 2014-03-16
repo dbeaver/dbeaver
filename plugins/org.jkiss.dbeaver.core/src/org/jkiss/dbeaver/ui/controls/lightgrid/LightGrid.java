@@ -2571,8 +2571,14 @@ public abstract class LightGrid extends Canvas {
             selectedRows.put(cell.row, Boolean.TRUE);
         }
         for (Integer columnIndex : columnIndices.keySet()) {
-            selectedColumns.add(getColumn(columnIndex));
+            selectedColumns.add(columns.get(columnIndex));
         }
+        Collections.sort(selectedColumns, new Comparator<GridColumn>() {
+            @Override
+            public int compare(GridColumn o1, GridColumn o2) {
+                return o1.getIndex() - o2.getIndex();
+            }
+        });
     }
 
     /**
@@ -3962,7 +3968,7 @@ public abstract class LightGrid extends Canvas {
         return Collections.unmodifiableCollection(selectedCells);
     }
 
-    public Collection<GridCell> getCellSelection()
+    public List<GridCell> getCellSelection()
     {
         if (isDisposed() || selectedCells.isEmpty()) {
             return Collections.emptyList();
@@ -3975,7 +3981,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     @NotNull
-    public List<Object> getSelectedColumns()
+    public List<Object> getColumnSelection()
     {
         if (selectedColumns.isEmpty()) {
             return Collections.emptyList();
