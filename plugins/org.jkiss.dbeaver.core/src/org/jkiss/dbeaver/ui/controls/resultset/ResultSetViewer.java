@@ -2155,7 +2155,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     void deleteSelectedRows()
     {
-        GridCell curCell = spreadsheet.getCursorCell();
         Set<RowData> rowsToDelete = new LinkedHashSet<RowData>();
         if (gridMode == GridMode.RECORD) {
             rowsToDelete.add(model.getRow(curRowNum));
@@ -2771,7 +2770,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (element instanceof DBDAttributeBinding) {
                 return ((DBDAttributeBinding) element).getAttributeName();
             } else {
-                return String.valueOf(((RowData)element).rowNumber + 1);
+                return String.valueOf(((RowData)element).visualNumber + 1);
             }
         }
     }
