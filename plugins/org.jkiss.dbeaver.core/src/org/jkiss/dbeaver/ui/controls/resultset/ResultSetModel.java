@@ -398,6 +398,7 @@ public class ResultSetModel {
         newRow.state = RowData.STATE_ADDED;
         shiftRows(newRow, 1);
         curRows.add(rowNum, newRow);
+        changesCount++;
     }
 
     /**
@@ -414,11 +415,12 @@ public class ResultSetModel {
         } else {
             // Mark row as deleted
             row.state = RowData.STATE_REMOVED;
+            changesCount++;
             return false;
         }
     }
 
-    private void cleanupRow(RowData row)
+    void cleanupRow(RowData row)
     {
         releaseRow(row);
         this.curRows.remove(row.visualNumber);
