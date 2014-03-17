@@ -21,14 +21,13 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeValue;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -38,7 +37,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -48,11 +46,13 @@ import java.util.*;
 */
 class ResultSetPersister {
 
-    private final Map<RowData, Map<DBSEntity, ResultSetViewer.TableRowInfo>> updatedRows = new TreeMap<RowData, Map<DBSEntity, ResultSetViewer.TableRowInfo>>();
-
     private final ResultSetViewer viewer;
     private final ResultSetModel model;
 
+    private final List<RowData> deletedRows = new ArrayList<RowData>();
+    private final List<RowData> addedRows = new ArrayList<RowData>();
+    private final List<RowData> changedRows = new ArrayList<RowData>();
+    private final Map<RowData, DBDRowIdentifier> rowIdentifiers = new LinkedHashMap<RowData, DBDRowIdentifier>();
     private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> updateStatements = new ArrayList<DataStatementInfo>();
@@ -74,9 +74,18 @@ class ResultSetPersister {
     void applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable DataUpdateListener listener)
         throws DBException
     {
-        List<RowData> deletedRows = new ArrayList<RowData>();
-        List<RowData> addedRows = new ArrayList<RowData>();
-        List<RowData> changedRows = new ArrayList<RowData>();
+        collectChanges();
+
+        prepareDeleteStatements();
+        prepareInsertStatements();
+        prepareUpdateStatements();
+        execute(monitor, listener);
+    }
+
+    private void collectChanges() {
+        deletedRows.clear();
+        addedRows.clear();
+        changedRows.clear();
         for (RowData row : model.getAllRows()) {
             switch (row.state) {
                 case RowData.STATE_NORMAL:
@@ -92,37 +101,23 @@ class ResultSetPersister {
                     break;
             }
         }
-        // TODO: revert
-//        prepareDeleteStatements(deletedRows);
-//        prepareInsertStatements(addedRows);
-//        prepareUpdateStatements(changedRows);
-//        execute(monitor, listener);
-    }
-// TODO: revert
-/*
-    private void prepareUpdateRows(List<RowData> changedRows)
-        throws DBException
-    {
+
         // Prepare rows
         for (RowData row : changedRows) {
-            Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = updatedRows.get(row);
-            if (tableMap == null) {
-                tableMap = new HashMap<DBSEntity, ResultSetViewer.TableRowInfo>();
-                updatedRows.put(cell.row, tableMap);
+            if (row.changedValues == null) {
+                continue;
             }
-
-            DBDAttributeBinding metaColumn = columns[cell.col];
-            DBSEntity metaTable = metaColumn.getRowIdentifier().getEntity();
-            ResultSetViewer.TableRowInfo tableRowInfo = tableMap.get(metaTable);
-            if (tableRowInfo == null) {
-                tableRowInfo = new ResultSetViewer.TableRowInfo(metaTable, metaColumn.getRowIdentifier().getEntityIdentifier());
-                tableMap.put(metaTable, tableRowInfo);
+            for (int i = 0; i < row.changedValues.length; i++) {
+                if (row.changedValues[i]) {
+                    DBDAttributeBinding metaColumn = viewer.getModel().getColumn(i);
+                    rowIdentifiers.put(row, metaColumn.getRowIdentifier());
+                    break;
+                }
             }
-            tableRowInfo.tableCells.add(cell);
         }
     }
 
-    private void prepareDeleteStatements(List<RowData> deletedRows)
+    private void prepareDeleteStatements()
         throws DBException
     {
         // Make delete statements
@@ -144,7 +139,7 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareInsertStatements(List<RowData> addedRows)
+    private void prepareInsertStatements()
         throws DBException
     {
         // Make insert statements
@@ -160,37 +155,38 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareUpdateStatements(List<RowData> changedRows)
+    private void prepareUpdateStatements()
         throws DBException
     {
-        prepareUpdateRows(changedRows);
-
         // Make statements
-        for (Integer rowNum : this.updatedRows.keySet()) {
-            Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = this.updatedRows.get(rowNum);
-            for (DBSEntity table : tableMap.keySet()) {
-                ResultSetViewer.TableRowInfo rowInfo = tableMap.get(table);
-                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, rowNum, table);
+        for (RowData row : this.rowIdentifiers.keySet()) {
+            if (row.changedValues == null) continue;
+
+            DBDRowIdentifier rowIdentifier = this.rowIdentifiers.get(row);
+            DBSEntity table = rowIdentifier.getEntity();
+            {
+                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, row, table);
                 // Updated columns
-                for (int i = 0; i < rowInfo.tableCells.size(); i++) {
-                    GridPos cell = rowInfo.tableCells.get(i);
-                    DBDAttributeBinding metaColumn = columns[cell.col];
-                    statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getAttribute(), model.getRowData(rowNum)[cell.col]));
+                for (int i = 0; i < row.changedValues.length; i++) {
+                    if (row.changedValues[i]) {
+                        DBDAttributeBinding metaColumn = viewer.getModel().getColumn(i);
+                        statement.updateAttributes.add(
+                            new DBDAttributeValue(metaColumn.getAttribute(), row.values[i]));
+                    }
                 }
                 // Key columns
-                Collection<? extends DBCAttributeMetaData> idColumns = rowInfo.id.getResultSetColumns();
+                Collection<? extends DBCAttributeMetaData> idColumns = rowIdentifier.getEntityIdentifier().getResultSetColumns();
                 for (DBCAttributeMetaData idAttribute : idColumns) {
                     // Find meta column and add statement parameter
                     DBDAttributeBinding metaColumn = model.getAttributeBinding(idAttribute);
                     if (metaColumn == null) {
                         throw new DBCException("Can't find meta column for ID column " + idAttribute.getName());
                     }
-                    Object keyValue = model.getCellValue(rowNum, metaColumn.getAttributeIndex());
+                    int attributeIndex = metaColumn.getAttributeIndex();
+                    Object keyValue = row.values[attributeIndex];
                     // Try to find old key oldValue
-                    for (Map.Entry<GridPos, Object> cell : model.getEditedValues().entrySet()) {
-                        if (cell.getKey().equals(metaColumn.getAttributeIndex(), rowNum)) {
-                            keyValue = cell.getValue();
-                        }
+                    if (row.oldValues != null && row.oldValues[attributeIndex] != null) {
+                        keyValue = row.oldValues[attributeIndex];
                     }
                     statement.keyAttributes.add(new DBDAttributeValue(metaColumn.getAttribute(), keyValue));
                 }
@@ -202,70 +198,76 @@ class ResultSetPersister {
     private void execute(@Nullable DBRProgressMonitor monitor, @Nullable final DataUpdateListener listener)
         throws DBException
     {
-        DataUpdaterJob job = new DataUpdaterJob(listener);
+        DBPDataSource dataSource = viewer.getDataSource();
+        if (dataSource == null) {
+            throw new DBCException("Not connected to data source");
+        }
+        DataUpdaterJob job = new DataUpdaterJob(listener, dataSource);
         if (monitor == null) {
             job.schedule();
         } else {
             job.run(monitor);
         }
     }
-*/
 
     public void rejectChanges()
     {
-// TODO: revert
-/*
-        for (Map.Entry<GridPos, Object> cell : model.getEditedValues().entrySet()) {
-            Object[] row = model.getRowData(cell.getKey().row);
-            ResultSetModel.releaseValue(row[cell.getKey().col]);
-            row[cell.getKey().col] = cell.getValue();
+        collectChanges();
+        for (RowData row : changedRows) {
+            if (row.changedValues != null && row.oldValues != null) {
+                boolean[] changedValues = row.changedValues;
+                for (int i = 0; i < changedValues.length; i++) {
+                    if (changedValues[i]) {
+                        ResultSetModel.releaseValue(row.values[i]);
+                        row.values[i] = row.oldValues[i];
+                    }
+                }
+                row.changedValues = null;
+                row.oldValues = null;
+            }
         }
-        model.getEditedValues().clear();
 
-        boolean rowsChanged = model.cleanupRows(model.getAddedRows());
+        boolean rowsChanged = model.cleanupRows(addedRows);
         // Remove deleted rows
-        model.getRemovedRows().clear();
+        for (RowData row : deletedRows) {
+            row.state = RowData.STATE_NORMAL;
+        }
         model.refreshChangeCount();
 
         viewer.refreshSpreadsheet(false, rowsChanged);
         viewer.fireResultSetChange();
         viewer.updateEditControls();
         viewer.previewValue();
-*/
     }
-// TODO: revert
-/*
+
     // Reflect data changes in viewer
     // Changes affects only rows which statements executed successfully
     private boolean reflectChanges()
     {
         boolean rowsChanged = false;
-        for (Iterator<Map.Entry<GridPos, Object>> iter = model.getEditedValues().entrySet().iterator(); iter.hasNext(); ) {
-            Map.Entry<GridPos, Object> entry = iter.next();
+        for (RowData row : changedRows) {
             for (DataStatementInfo stat : updateStatements) {
-                if (stat.executed && stat.row == entry.getKey().row && stat.hasUpdateColumn(columns[entry.getKey().col])) {
+                if (stat.executed && stat.row == row) {
                     reflectKeysUpdate(stat);
-                    iter.remove();
+                    row.changedValues = null;
+                    row.oldValues = null;
                     break;
                 }
             }
         }
-        for (Iterator<Integer> iter = model.getAddedRows().iterator(); iter.hasNext(); ) {
-            Integer row = iter.next();
+        for (RowData row : addedRows) {
             for (DataStatementInfo stat : insertStatements) {
                 if (stat.executed && stat.row == row) {
                     reflectKeysUpdate(stat);
-                    iter.remove();
+                    row.state = RowData.STATE_NORMAL;
                     break;
                 }
             }
         }
-        for (Iterator<Integer> iter = model.getRemovedRows().iterator(); iter.hasNext(); ) {
-            Integer row = iter.next();
+        for (RowData row : deletedRows) {
             for (DataStatementInfo stat : deleteStatements) {
                 if (stat.executed && stat.row == row) {
                     model.cleanupRow(row);
-                    iter.remove();
                     rowsChanged = true;
                     break;
                 }
@@ -280,25 +282,22 @@ class ResultSetPersister {
         // Update keys
         if (!stat.updatedCells.isEmpty()) {
             for (Map.Entry<Integer, Object> entry : stat.updatedCells.entrySet()) {
-                Object[] row = model.getRowData(stat.row);
-                ResultSetModel.releaseValue(row[entry.getKey()]);
-                row[entry.getKey()] = entry.getValue();
+                RowData row = stat.row;
+                ResultSetModel.releaseValue(row.values[entry.getKey()]);
+                row.values[entry.getKey()] = entry.getValue();
             }
         }
     }
-*/
 
-// TODO: revert
-/*
     private class DataUpdaterJob extends DataSourceJob {
         private final DataUpdateListener listener;
         private boolean autocommit;
         private DBCStatistics updateStats, insertStats, deleteStats;
         private DBCSavepoint savepoint;
 
-        protected DataUpdaterJob(DataUpdateListener listener)
+        protected DataUpdaterJob(@Nullable DataUpdateListener listener, @NotNull DBPDataSource dataSource)
         {
-            super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), viewer.getDataSource());
+            super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), dataSource);
             this.listener = listener;
         }
 
@@ -492,7 +491,6 @@ class ResultSetPersister {
         }
 
     }
-*/
 
     private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException
     {
@@ -605,15 +603,6 @@ class ResultSetPersister {
         {
             for (DBDAttributeValue col : keyAttributes) {
                 if (col.getAttribute().isAutoGenerated() && DBUtils.isNullValue(col.getValue())) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        boolean hasUpdateColumn(DBDAttributeBinding column)
-        {
-            for (DBDAttributeValue col : updateAttributes) {
-                if (col.getAttribute() == column.getMetaAttribute() || col.getAttribute() == column.getEntityAttribute()) {
                     return true;
                 }
             }
