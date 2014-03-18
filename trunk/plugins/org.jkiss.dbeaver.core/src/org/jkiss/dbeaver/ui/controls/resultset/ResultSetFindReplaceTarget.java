@@ -27,6 +27,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.utils.CommonUtils;
@@ -152,9 +153,6 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
-        // TODO: revert
-        return -1;
-/*
         searchPattern = null;
 
         ResultSetModel model = resultSet.getModel();
@@ -163,12 +161,13 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         }
         int rowCount = model.getRowCount();
         int columnCount = model.getVisibleColumnCount();
-        GridCell startPosition = resultSet.getSelection().getFirstElement();
+        Collection<GridPos> selection = resultSet.getSpreadsheet().getSelection();
+        GridPos startPosition = selection.isEmpty() ? null : selection.iterator().next();
         if (startPosition == null) {
             // From the beginning
             startPosition = new GridPos(0, 0);
         }
-        Pattern findPattern = null;
+        Pattern findPattern;
         if (regExSearch) {
             try {
                 findPattern = Pattern.compile(findString, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
@@ -208,23 +207,21 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                     return -1;
                 }
             }
-            String cellText = resultSet.getSpreadsheet().getContentProvider().getCellText(curPosition.col);
+            GridCell cell = resultSet.getSpreadsheet().posToCell(curPosition);
+            String cellText = resultSet.getSpreadsheet().getContentProvider().getCellText(cell);
             Matcher matcher = findPattern.matcher(cellText);
             if (wholeWord ? matcher.matches() : matcher.find()) {
-                resultSet.setSelection(
-                    new StructuredSelection(curPosition), true);
+                resultSet.getSpreadsheet().setCellSelection(curPosition);
+                resultSet.getSpreadsheet().showSelection();
                 searchPattern = findPattern;
                 return curPosition.row;
             }
         }
-*/
     }
 
     @Override
     public void replaceSelection(String text, boolean regExReplace)
     {
-        // TODO: revert
-/*
         GridCell selection = resultSet.getSelection().getFirstElement();
         if (selection == null) {
             return;
@@ -236,13 +233,11 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         }
 
         selection = resultSet.translateVisualPos(selection);
-        resultSet.getModel().getCellValue(selection.row, selection.col);
-        resultSet.getModel().updateCellValue(selection.row, selection.col, newValue);
+        resultSet.getModel().updateCellValue((RowData) selection.row, (DBDAttributeBinding) selection.col, newValue);
 
         resultSet.updateEditControls();
         resultSet.getSpreadsheet().redrawGrid();
         resultSet.previewValue();
-*/
     }
 
     @Override
