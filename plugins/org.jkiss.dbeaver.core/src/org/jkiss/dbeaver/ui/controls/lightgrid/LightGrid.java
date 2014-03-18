@@ -445,6 +445,7 @@ public abstract class LightGrid extends Canvas {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
+        IGridLabelProvider labelProvider = getColumnLabelProvider();
         this.columnElements = contentProvider.getElements(true);
         this.rowElements = contentProvider.getElements(false);
 
@@ -455,13 +456,12 @@ public abstract class LightGrid extends Canvas {
             this.endColumnIndex = -1;
 
             // Add columns
-            for (Integer i = 0; i < columnElements.length; i++) {
+            for (int i = 0; i < columnElements.length; i++) {
                 GridColumn column = new GridColumn(this, columnElements[i]);
-                IGridLabelProvider labelProvider = getColumnLabelProvider();
                 column.setText(labelProvider.getText(columnElements[i]));
                 column.setImage(labelProvider.getImage(columnElements[i]));
                 column.setHeaderTooltip(labelProvider.getTooltip(columnElements[i]));
-                column.setSort(contentProvider.getColumnSortOrder(i));
+                column.setSort(contentProvider.getColumnSortOrder(columnElements[i]));
             }
 
             if (getColumnCount() == 1) {
@@ -503,6 +503,15 @@ public abstract class LightGrid extends Canvas {
                         }
                     }
                 }
+            }
+        } else {
+            // Update column properties
+            for (int i = 0; i < columns.size(); i++) {
+                GridColumn column = columns.get(i);
+                column.setText(labelProvider.getText(columnElements[i]));
+                column.setImage(labelProvider.getImage(columnElements[i]));
+                column.setHeaderTooltip(labelProvider.getTooltip(columnElements[i]));
+                column.setSort(contentProvider.getColumnSortOrder(columnElements[i]));
             }
         }
 

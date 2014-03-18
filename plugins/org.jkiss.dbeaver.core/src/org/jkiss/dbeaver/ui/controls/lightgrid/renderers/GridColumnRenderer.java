@@ -158,7 +158,7 @@ public class GridColumnRenderer extends AbstractRenderer
                     + 1;
             }
 
-            arrowRenderer.setSelected(col.getSort() == SWT.UP);
+//            arrowRenderer.setSelected(col.getSort() == SWT.UP);
             if (drawSelected) {
                 arrowRenderer
                     .setLocation(
