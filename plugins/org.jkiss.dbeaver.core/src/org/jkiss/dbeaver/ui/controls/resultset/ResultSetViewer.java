@@ -2847,10 +2847,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             @Override
             String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
             {
-                Object value = viewer.model.getCellValue(
-                    viewer.getCurrentRow(),
-                    column.getAttributeIndex());
-                return column.getValueHandler().getValueDisplayString(column.getMetaAttribute(), value, format);
+                GridCell focusCell = viewer.getSpreadsheet().getFocusCell();
+                return focusCell == null ? "" : viewer.getSpreadsheet().getContentProvider().getCellText(focusCell);
             }
         },
         INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {

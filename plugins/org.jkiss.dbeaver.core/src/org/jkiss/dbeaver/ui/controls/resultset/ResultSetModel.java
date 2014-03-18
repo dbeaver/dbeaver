@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -209,18 +208,6 @@ public class ResultSetModel {
     public RowData getRow(int index)
     {
         return curRows.get(index);
-    }
-
-    /**
-     * Gets cell value
-     * @param row row index
-     * @param column column index. Note: not visual column but real column index
-     * @return value or null
-     */
-    @Deprecated
-    public Object getCellValue(int row, int column)
-    {
-        return curRows.get(row).values[column];
     }
 
     /**
