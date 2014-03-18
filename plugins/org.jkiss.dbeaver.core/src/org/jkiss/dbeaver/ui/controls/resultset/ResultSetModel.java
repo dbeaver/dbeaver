@@ -217,6 +217,7 @@ public class ResultSetModel {
      * @param column column index. Note: not visual column but real column index
      * @return value or null
      */
+    @Deprecated
     public Object getCellValue(int row, int column)
     {
         return curRows.get(row).values[column];
