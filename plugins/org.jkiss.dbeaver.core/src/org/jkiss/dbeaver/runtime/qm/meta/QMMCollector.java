@@ -102,6 +102,9 @@ public class QMMCollector extends DefaultExecutionHandler {
         if (listeners.isEmpty()) {
             return Collections.emptyList();
         }
+        if (listeners.size() == 1) {
+            return Collections.singletonList(listeners.get(0));
+        }
         return new ArrayList<QMMetaListener>(listeners);
     }
 
@@ -112,6 +115,9 @@ public class QMMCollector extends DefaultExecutionHandler {
 
     private synchronized List<QMMetaEvent> obtainEvents()
     {
+        if (eventPool.isEmpty()) {
+            return Collections.emptyList();
+        }
         List<QMMetaEvent> events = eventPool;
         eventPool = new ArrayList<QMMetaEvent>();
         return events;
@@ -290,7 +296,7 @@ public class QMMCollector extends DefaultExecutionHandler {
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            final List<QMMetaEvent> events = Collections.unmodifiableList(obtainEvents());
+            final List<QMMetaEvent> events = obtainEvents();
             final List<QMMetaListener> listeners = getListeners();
             if (!listeners.isEmpty() && !events.isEmpty()) {
                 // Dispatch all events

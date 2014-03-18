@@ -3011,16 +3011,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Nullable
         @Override
-        public GridCell getFirstElement()
+        public GridPos getFirstElement()
         {
-            Collection<GridCell> ssSelection = spreadsheet.getCellSelection();
-            return ssSelection.isEmpty() ? null : ssSelection.iterator().next();
+            Collection<GridPos> ssSelection = spreadsheet.getSelection();
+            if (ssSelection.isEmpty()) {
+                return null;
+            }
+            return ssSelection.iterator().next();
         }
 
         @Override
         public Iterator iterator()
         {
-            return spreadsheet.getCellSelection().iterator();
+            return spreadsheet.getSelection().iterator();
         }
 
         @Override
@@ -3032,13 +3035,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Object[] toArray()
         {
-            return spreadsheet.getCellSelection().toArray();
+            return spreadsheet.getSelection().toArray();
         }
 
         @Override
         public List toList()
         {
-            return new ArrayList<GridCell>(spreadsheet.getCellSelection());
+            return new ArrayList<GridPos>(spreadsheet.getSelection());
         }
 
         @Override
