@@ -1408,7 +1408,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
-        if (curCell.col instanceof DBDAttributeBinding && model.getVisibleColumnCount() > 0 && !model.isUpdateInProgress()) {
+        if (model.getVisibleColumnCount() > 0 && !model.isUpdateInProgress()) {
             // Export and other utility methods
             manager.add(new Separator());
             MenuManager filtersMenu = new MenuManager(
@@ -1446,9 +1446,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void fillFiltersMenu(IMenuManager filtersMenu)
     {
         GridCell currentPosition = translateVisualPos(getCurrentPosition());
-        int columnIndex = ((DBDAttributeBinding) currentPosition.col).getAttributeIndex();
-        if (supportsDataFilter() && columnIndex >= 0) {
-            DBDAttributeBinding column = model.getColumn(columnIndex);
+        DBDAttributeBinding column = (DBDAttributeBinding)(currentPosition.col instanceof DBDAttributeBinding ? currentPosition.col : currentPosition.row);
+        if (supportsDataFilter()) {
             DBPDataKind dataKind = column.getMetaAttribute().getDataKind();
             if (!column.getMetaAttribute().isRequired()) {
                 filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.NONE, column));
@@ -2537,8 +2536,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Object getCellValue(GridCell cell, boolean formatString)
         {
-            DBDAttributeBinding column = (DBDAttributeBinding)(getGridMode() == GridMode.GRID ?  cell.col : cell.row);
-            RowData row = (RowData) (getGridMode() == GridMode.GRID ?  cell.row : cell.col);
+            DBDAttributeBinding column = (DBDAttributeBinding)(cell.col instanceof DBDAttributeBinding ? cell.col : cell.row);
+            RowData row = (RowData)(cell.col instanceof RowData ? cell.col : cell.row);
             int rowNum = row.visualNumber;
             Object value = row.values[column.getAttributeIndex()];
 
