@@ -30,6 +30,7 @@ import org.eclipse.swt.graphics.Point;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -83,11 +84,13 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public String getSelectionText()
     {
-        GridCell selection = resultSet.getSelection().getFirstElement();
+        GridPos selection = resultSet.getSelection().getFirstElement();
         if (selection == null) {
             return "";
         }
-        String value = resultSet.getSpreadsheet().getContentProvider().getCellText(selection);
+        Spreadsheet spreadsheet = resultSet.getSpreadsheet();
+        GridCell cell = spreadsheet.posToCell(selection);
+        String value = cell == null ? "" : spreadsheet.getContentProvider().getCellText(cell);
         return CommonUtils.toString(value);
     }
 
@@ -222,18 +225,22 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public void replaceSelection(String text, boolean regExReplace)
     {
-        GridCell selection = resultSet.getSelection().getFirstElement();
+        GridPos selection = resultSet.getSelection().getFirstElement();
         if (selection == null) {
             return;
         }
-        String oldValue = resultSet.getSpreadsheet().getContentProvider().getCellText(selection);
+        GridCell cell = resultSet.getSpreadsheet().posToCell(selection);
+        if (cell == null) {
+            return;
+        }
+        String oldValue = resultSet.getSpreadsheet().getContentProvider().getCellText(cell);
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
 
-        selection = resultSet.translateVisualPos(selection);
-        resultSet.getModel().updateCellValue((RowData) selection.row, (DBDAttributeBinding) selection.col, newValue);
+        cell = resultSet.translateVisualPos(cell);
+        resultSet.getModel().updateCellValue((RowData) cell.row, (DBDAttributeBinding) cell.col, newValue);
 
         resultSet.updateEditControls();
         resultSet.getSpreadsheet().redrawGrid();
