@@ -37,6 +37,6 @@ public interface ResultSetSelection extends IStructuredSelection {
 
     @Nullable
     @Override
-    GridCell getFirstElement();
+    GridPos getFirstElement();
 
 }
