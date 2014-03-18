@@ -24,8 +24,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 
 /**
  * GridDataProvider
@@ -45,7 +43,7 @@ public interface ISpreadsheetController {
 
     void fillContextMenu(GridCell cell, IMenuManager manager);
 
-    void changeSorting(int column, int state);
+    void changeSorting(Object columnElement, int state);
 
     IPreferenceStore getPreferenceStore();
 }

@@ -396,7 +396,10 @@ public class Spreadsheet extends LightGrid implements Listener {
                     }
                 } else if (event.keyCode == SWT.ESC) {
                     // Reset cell value
-                    spreadsheetController.resetCellValue(posToCell(super.getFocusPos()), false);
+                    GridCell cell = posToCell(super.getFocusPos());
+                    if (cell != null) {
+                        spreadsheetController.resetCellValue(cell, false);
+                    }
                 }
                 break;
             case SWT.MouseDoubleClick:
@@ -424,7 +427,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case LightGrid.Event_ChangeSort:
-                spreadsheetController.changeSorting(((GridColumn) event.data).getIndex(), event.stateMask);
+                spreadsheetController.changeSorting(((GridColumn) event.data).getElement(), event.stateMask);
                 break;
         }
     }
@@ -456,13 +459,10 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 */
 
-    public void reinitState(boolean clearData)
-    {
+    @Override
+    public void refreshData(boolean clearData) {
         cancelInlineEditor();
-        // Repack columns
         super.refreshData(clearData);
-
-        //setCursor(new GridPos(-1, -1), false);
     }
 
     public int getVisibleRowsCount()
@@ -494,7 +494,10 @@ public class Spreadsheet extends LightGrid implements Listener {
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Let controller to provide it's own menu items
-                spreadsheetController.fillContextMenu(posToCell(getFocusPos()), manager);
+                GridCell cell = posToCell(getFocusPos());
+                if (cell != null) {
+                    spreadsheetController.fillContextMenu(cell, manager);
+                }
             }
         });
         menuMgr.setRemoveAllWhenShown(true);

@@ -519,7 +519,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     @Override
                     public void run()
                     {
-                        resetColumnOrdering();
+                        if (gridMode == GridMode.GRID) {
+                            spreadsheet.refreshData(false);
+                        }
                     }
                 });
             }
@@ -664,7 +666,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
 
-            this.spreadsheet.reinitState(true);
+            this.spreadsheet.refreshData(true);
 
             // Set cursor on new row
             if (gridMode == GridMode.GRID) {
@@ -758,25 +760,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public DBSDataContainer getDataContainer()
     {
         return resultSetProvider.getDataContainer();
-    }
-
-    // Update all columns ordering
-    private void resetColumnOrdering()
-    {
-        if (!spreadsheet.isDisposed() && gridMode == GridMode.GRID) {
-            List<DBDAttributeBinding> visibleColumns = model.getVisibleColumns();
-            for (int i = 0, metaColumnsLength = visibleColumns.size(); i < metaColumnsLength; i++) {
-                DBDAttributeBinding column = visibleColumns.get(i);
-                DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
-                GridColumn gridColumn = spreadsheet.getColumn(i);
-                if (constraint == null || constraint.getOrderPosition() == 0) {
-                    gridColumn.setSort(SWT.DEFAULT);
-                } else {
-                    gridColumn.setSort(constraint.isOrderDescending() ? SWT.UP : SWT.DOWN);
-                }
-            }
-            spreadsheet.redrawGrid();
-        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -1132,7 +1115,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 this.resetRecordHeaderWidth();
             }
 
-            spreadsheet.reinitState(true);
+            spreadsheet.refreshData(true);
         } finally {
             spreadsheet.setRedraw(true);
         }
@@ -1544,7 +1527,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
-    public void changeSorting(int column, final int state)
+    public void changeSorting(Object columnElement, final int state)
     {
         DBDDataFilter dataFilter = model.getDataFilter();
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
@@ -1552,7 +1535,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (ctrlPressed) {
             dataFilter.resetOrderBy();
         }
-        DBDAttributeBinding metaColumn = model.getVisibleColumn(column);
+        DBDAttributeBinding metaColumn = (DBDAttributeBinding)columnElement;
         DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
         //int newSort;
         if (constraint.getOrderPosition() == 0) {
@@ -1585,7 +1568,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             @Override
             public void run()
             {
-                resetColumnOrdering();
+                if (gridMode == GridMode.GRID) {
+                    spreadsheet.refreshData(false);
+                }
             }
         });
     }
@@ -3096,42 +3081,4 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    /*
-    static class TopLeftRenderer extends AbstractRenderer {
-        private Button cfgButton;
-
-        public TopLeftRenderer(final ResultSetViewer resultSetViewer) {
-            super(resultSetViewer.getSpreadsheet());
-
-            cfgButton = new Button(grid, SWT.FLAT | SWT.NO_FOCUS);
-            cfgButton.setImage(DBIcon.FILTER.getImage());
-            cfgButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    new ResultSetFilterDialog(resultSetViewer).open();
-                }
-            });
-            ControlEditor controlEditor = new ControlEditor(grid);
-            controlEditor.setEditor(cfgButton);
-            //cfgButton.setText("...");
-        }
-
-        @Override
-        public void setBounds(Rectangle bounds) {
-
-            Rectangle cfgBounds = new Rectangle(bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height - 2);
-            cfgButton.setBounds(bounds);
-
-            super.setBounds(bounds);
-        }
-
-        @Override
-        public void paint(GC gc) {
-            //cfgButton.redraw();
-            //gc.drawImage(DBIcon.FILTER.getImage(), 0, 0);
-        }
-
-    }
-*/
 }
