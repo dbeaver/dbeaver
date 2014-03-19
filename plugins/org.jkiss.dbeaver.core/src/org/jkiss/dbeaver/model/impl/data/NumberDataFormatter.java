@@ -72,6 +72,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         position = new FieldPosition(0);
     }
 
+    @Nullable
     @Override
     public String getPattern()
     {
@@ -86,7 +87,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
             return null;
         }
         try {
-            synchronized (numberFormat) {
+            synchronized (this) {
                 buffer.setLength(0);
                 return numberFormat.format(value, buffer, position).toString();
             }
@@ -98,7 +99,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
     @Override
     public Object parseValue(String value) throws ParseException
     {
-        synchronized (numberFormat) {
+        synchronized (this) {
             return numberFormat.parse(value);
         }
     }

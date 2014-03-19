@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
  *
  * @author serge@jkiss.org
  */
-public class GridColumn extends Item {
+public class GridColumn {
 
     private GridHeaderEditor controlEditor;
 
@@ -89,7 +89,11 @@ public class GridColumn extends Item {
 
 	private String headerTooltip = null;
 
-	/**
+    private String text;
+    private Image image;
+    private int style = SWT.NONE;
+
+    /**
 	 * Constructs a new instance of this class given its parent (which must be a
 	 * <code>Grid</code>) and a style value describing its behavior and
 	 * appearance. The item is added to the end of the items maintained by its
@@ -111,8 +115,6 @@ public class GridColumn extends Item {
 	 *            the index to store the receiver in its parent
 	 */
 	public GridColumn(LightGrid parent, int index, Object element) {
-		super(parent, SWT.NONE, index);
-
         this.parent = parent;
         this.cellRenderer = new GridCellRenderer(parent);
         this.sortRenderer = new DefaultSortRenderer(this);
@@ -121,6 +123,26 @@ public class GridColumn extends Item {
 
         initCellRenderer();
 	}
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
+    public int getStyle() {
+        return style;
+    }
 
     public Object getElement() {
         return element;
@@ -141,12 +163,10 @@ public class GridColumn extends Item {
         this.sortRenderer = sortRenderer;
     }
 
-	@Override
     public void dispose() {
 		if (!parent.isDisposing()) {
 			parent.removeColumn(this);
 		}
-		super.dispose();
 	}
 
 	/**
@@ -178,7 +198,6 @@ public class GridColumn extends Item {
 	 * @return width of column
 	 */
 	public int getWidth() {
-		checkWidget();
 		return width;
 	}
 
@@ -189,7 +208,6 @@ public class GridColumn extends Item {
 	 *            new width
 	 */
 	public void setWidth(int width) {
-		checkWidget();
 		setWidth(width, true);
 	}
 
@@ -250,7 +268,6 @@ public class GridColumn extends Item {
 	 *            SWT.UP, SWT.DOWN, SWT.NONE
 	 */
 	public void setSort(int style) {
-		checkWidget();
 		sortStyle = style;
 		parent.redraw();
 	}
@@ -261,7 +278,6 @@ public class GridColumn extends Item {
 	 * @return SWT.UP, SWT.DOWN, SWT.NONE
 	 */
 	public int getSort() {
-		checkWidget();
 		return sortStyle;
 	}
 
@@ -271,57 +287,10 @@ public class GridColumn extends Item {
     }
 
 	/**
-	 * Adds the listener to the collection of listeners who will be notified
-	 * when the receiver's is pushed, by sending it one of the messages defined
-	 * in the <code>SelectionListener</code> interface.
-	 *
-	 * @param listener
-	 *            the listener which should be notified
-	 */
-	public void addSelectionListener(final SelectionListener listener) {
-		checkWidget();
-		this.addListener(SWT.Selection, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                listener.widgetSelected(new SelectionEvent(event));
-            }
-        });
-	}
-
-	/**
-	 * Removes the listener from the collection of listeners who will be
-	 * notified when the receiver's selection changes.
-	 *
-	 * @param listener
-	 *            the listener which should no longer be notified
-	 * @see SelectionListener
-	 * @see #addSelectionListener(SelectionListener)
-	 */
-	public void removeSelectionListener(SelectionListener listener) {
-		checkWidget();
-		this.removeListener(SWT.Selection, listener);
-	}
-
-	/**
-	 * Fires selection listeners.
-	 */
-	void fireListeners() {
-		Event e = new Event();
-		e.display = this.getDisplay();
-		e.item = this;
-		e.widget = parent;
-
-		this.notifyListeners(SWT.Selection, e);
-	}
-
-	/**
 	 * Causes the receiver to be resized to its preferred size.
 	 *
 	 */
 	public void pack() {
-		checkWidget();
-
 		int newWidth = computeHeaderWidth();
         int columnIndex = getIndex();
         int topIndex = parent.getTopIndex();
@@ -354,76 +323,11 @@ public class GridColumn extends Item {
     }
 
 	/**
-	 * Adds a listener to the list of listeners notified when the column is
-	 * moved or resized.
-	 *
-	 * @param listener
-	 *            listener
-	 */
-	public void addControlListener(final ControlListener listener) {
-		checkWidget();
-		addListener(SWT.Resize, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                listener.controlResized(new ControlEvent(event));
-            }
-        });
-		addListener(SWT.Move, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                listener.controlMoved(new ControlEvent(event));
-            }
-        });
-	}
-
-	/**
-	 * Removes the given control listener.
-	 *
-	 * @param listener
-	 *            listener.
-	 */
-	public void removeControlListener(ControlListener listener) {
-		checkWidget();
-		if (listener == null) {
-			SWT.error(SWT.ERROR_NULL_ARGUMENT);
-		}
-		removeListener(SWT.Resize, listener);
-		removeListener(SWT.Move, listener);
-	}
-
-	/**
-	 * Fires moved event.
-	 */
-	void fireMoved() {
-		Event e = new Event();
-		e.display = this.getDisplay();
-		e.item = this;
-		e.widget = parent;
-
-		this.notifyListeners(SWT.Move, e);
-	}
-
-	/**
-	 * Fires resized event.
-	 */
-	void fireResized() {
-		Event e = new Event();
-		e.display = this.getDisplay();
-		e.item = this;
-		e.widget = parent;
-
-		this.notifyListeners(SWT.Resize, e);
-	}
-
-	/**
 	 * Returns the column alignment.
 	 *
 	 * @return SWT.LEFT, SWT.RIGHT, SWT.CENTER
 	 */
 	public int getAlignment() {
-		checkWidget();
 		return cellRenderer.getAlignment();
 	}
 
@@ -434,7 +338,6 @@ public class GridColumn extends Item {
 	 *            SWT.LEFT, SWT.RIGHT, SWT.CENTER
 	 */
 	public void setAlignment(int alignment) {
-		checkWidget();
 		cellRenderer.setAlignment(alignment);
 	}
 
@@ -444,7 +347,6 @@ public class GridColumn extends Item {
 	 * @return true if the column is resizeable.
 	 */
 	public boolean getResizeable() {
-		checkWidget();
 		return resizeable;
 	}
 
@@ -455,7 +357,6 @@ public class GridColumn extends Item {
 	 *            true to make the column resizeable
 	 */
 	public void setResizeable(boolean resizeable) {
-		checkWidget();
 		this.resizeable = resizeable;
 	}
 
@@ -483,7 +384,6 @@ public class GridColumn extends Item {
 	 * @return the cellSelectionEnabled
 	 */
 	public boolean getCellSelectionEnabled() {
-		checkWidget();
 		return cellSelectionEnabled;
 	}
 
@@ -494,7 +394,6 @@ public class GridColumn extends Item {
 	 *            the cellSelectionEnabled to set
 	 */
 	public void setCellSelectionEnabled(boolean cellSelectionEnabled) {
-		checkWidget();
 		this.cellSelectionEnabled = cellSelectionEnabled;
 	}
 
@@ -504,7 +403,6 @@ public class GridColumn extends Item {
 	 * @return the parent grid.
 	 */
 	public LightGrid getParent() {
-		checkWidget();
 		return parent;
 	}
 
@@ -560,7 +458,6 @@ public class GridColumn extends Item {
 	 */
 	@Nullable
     public String getHeaderTooltip() {
-		checkWidget();
         if (headerTooltip != null) {
             return headerTooltip;
         }
@@ -579,7 +476,6 @@ public class GridColumn extends Item {
 	 * @param tooltip the tooltip text
 	 */
 	public void setHeaderTooltip(@Nullable String tooltip) {
-		checkWidget();
 		this.headerTooltip = tooltip;
 	}
 

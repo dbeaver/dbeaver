@@ -100,6 +100,7 @@ public interface DBDValueHandler
      * @return initial object value
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
+    @Nullable
     Object getValueFromObject(DBCSession session, DBSTypedObject type, @Nullable Object object, boolean copy)
         throws DBCException;
 
@@ -151,6 +152,7 @@ public interface DBDValueHandler
      * @return true on success
      * @throws org.jkiss.dbeaver.DBException on error
      */
+    @Nullable
     DBDValueEditor createEditor(DBDValueController controller)
         throws DBException;
 
