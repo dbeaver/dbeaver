@@ -260,7 +260,7 @@ public class GridCellRenderer extends AbstractRenderer
             // Get shortern version of string
             text = TextUtils.getShortString(gc, text, width);
             // Replace linefeeds with space
-            text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ');
+            text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ').replace((char)0, ' ');
 
             if (getAlignment() == SWT.RIGHT) {
                 int len = gc.stringExtent(text).x;
