@@ -51,7 +51,7 @@ public class DefaultDataFormatter implements DBDDataFormatter {
     }
 
     @Override
-    public Object parseValue(String value) throws ParseException
+    public Object parseValue(String value, Class<?> typeHint) throws ParseException
     {
         return DateFormat.getInstance().parse(value);
     }
