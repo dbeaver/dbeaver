@@ -245,7 +245,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof String) {
             String strValue = (String)object;
             try {
-                return getFormatter(type).parseValue(strValue);
+                return getFormatter(type).parseValue(strValue, null);
             } catch (ParseException e) {
                 // Try to parse with standard date/time formats
 

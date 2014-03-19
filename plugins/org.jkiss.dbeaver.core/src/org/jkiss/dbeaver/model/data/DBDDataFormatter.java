@@ -38,6 +38,7 @@ public interface DBDDataFormatter {
     @Nullable
     String formatValue(Object value);
 
-    Object parseValue(String value) throws ParseException;
+    @Nullable
+    Object parseValue(String value, @Nullable Class<?> typeHint) throws ParseException;
     
 }
