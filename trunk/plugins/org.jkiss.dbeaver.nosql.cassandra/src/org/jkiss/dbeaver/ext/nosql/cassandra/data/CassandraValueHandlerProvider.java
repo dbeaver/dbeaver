@@ -39,9 +39,9 @@ public class CassandraValueHandlerProvider implements DBDValueHandlerProvider {
     }
 
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
+    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        if (valueType == Types.STRUCT) {
+        if (typedObject.getTypeID() == Types.STRUCT) {
             return CassandraStructValueHandler.INSTANCE;
         } else {
             return null;

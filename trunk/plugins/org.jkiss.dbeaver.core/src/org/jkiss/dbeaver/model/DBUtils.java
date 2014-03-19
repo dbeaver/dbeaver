@@ -79,7 +79,7 @@ public final class DBUtils {
     {
         if (dataSource instanceof SQLDataSource) {
             final String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
-            return quote != null && str.startsWith(quote) && str.endsWith(quote);
+            return str.startsWith(quote) && str.endsWith(quote);
         } else {
             return false;
         }
@@ -98,9 +98,6 @@ public final class DBUtils {
     {
         final SQLDialect sqlDialect = dataSource.getSQLDialect();
         String quoteString = sqlDialect.getIdentifierQuoteString();
-        if (quoteString == null) {
-            return str;
-        }
         if (str.startsWith(quoteString) && str.endsWith(quoteString)) {
             // Already quoted
             return str;
@@ -369,7 +366,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static <T> T getAdapter(Class<T> adapterType, DBPObject object)
+    public static <T> T getAdapter(Class<T> adapterType, @Nullable DBPObject object)
     {
         if (object instanceof DBSDataSourceContainer) {
             // Root object's parent is data source container (not datasource)
@@ -467,21 +464,21 @@ public final class DBUtils {
 
     public static DBDValueHandler findValueHandler(DBCSession session, DBSTypedObject column)
     {
-        return findValueHandler(session.getDataSource(), session, column.getTypeName(), column.getTypeID());
+        return findValueHandler(session.getDataSource(), session, column);
     }
 
     public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBSTypedObject column)
     {
-        return findValueHandler(dataSource, dataSource.getContainer(), column.getTypeName(), column.getTypeID());
+        return findValueHandler(dataSource, dataSource.getContainer(), column);
     }
 
-    public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, String typeName, int valueType)
+    public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
         DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(
-            dataSource, typeName, valueType);
+            dataSource, column);
         if (typeProvider != null) {
-            typeHandler = typeProvider.getInstance().getHandler(preferences, typeName, valueType);
+            typeHandler = typeProvider.getInstance().getHandler(preferences, column);
         }
         if (typeHandler == null) {
             if (preferences == null) {

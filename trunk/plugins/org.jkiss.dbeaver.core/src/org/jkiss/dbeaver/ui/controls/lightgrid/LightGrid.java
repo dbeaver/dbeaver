@@ -240,7 +240,6 @@ public abstract class LightGrid extends Canvas {
     private boolean columnScrolling = false;
 
     private Color cellHeaderSelectionBackground;
-    private Color cellHeaderSelectionForeground;
 
     /**
      * Dispose listener.  This listener is removed during the dispose event to allow re-firing of
@@ -277,16 +276,6 @@ public abstract class LightGrid extends Canvas {
      * @see #topIndex
      */
     private int bottomIndex = -1;
-
-    /**
-     * Index of the first visible column. A value of -1 indicates that the value is old and will be recomputed.
-     */
-    private int startColumnIndex = -1;
-
-    /**
-     * Index of the the last visible column. A value of -1 indicates that the value is old and will be recomputed.
-     */
-    private int endColumnIndex = -1;
 
     /**
      * True if the last visible item is completely visible.  The value must never be read directly.  It is cached and
@@ -413,7 +402,6 @@ public abstract class LightGrid extends Canvas {
             50);
 
         cellHeaderSelectionBackground = new Color(getDisplay(), cellSel);// = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
-        cellHeaderSelectionForeground = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
 
 
         setDragDetect(false);
@@ -427,10 +415,6 @@ public abstract class LightGrid extends Canvas {
 
     @NotNull
     public abstract IGridLabelProvider getRowLabelProvider();
-
-    public int getMaxColumnDefWidth() {
-        return maxColumnDefWidth;
-    }
 
     public void setMaxColumnDefWidth(int maxColumnDefWidth) {
         this.maxColumnDefWidth = maxColumnDefWidth;
@@ -452,8 +436,6 @@ public abstract class LightGrid extends Canvas {
         if (clearData) {
             this.topIndex = -1;
             this.bottomIndex = -1;
-            this.startColumnIndex = -1;
-            this.endColumnIndex = -1;
 
             // Add columns
             for (int i = 0; i < columnElements.length; i++) {
@@ -562,11 +544,6 @@ public abstract class LightGrid extends Canvas {
         return cellHeaderSelectionBackground;
     }
 
-    public Color getCellHeaderSelectionForeground()
-    {
-        return cellHeaderSelectionForeground;
-    }
-
     /**
      * Adds the listener to the collection of listeners who will be notified
      * when the receiver's selection changes, by sending it one of the messages
@@ -586,6 +563,21 @@ public abstract class LightGrid extends Canvas {
         }
         addListener(SWT.Selection, new TypedListener(listener));
         addListener(SWT.DefaultSelection, new TypedListener(listener));
+    }
+
+    /**
+     * Removes the listener from the collection of listeners who will be
+     * notified when the receiver's selection changes.
+     *
+     * @param listener the listener which should no longer be notified
+     * @see SelectionListener
+     * @see #addSelectionListener(SelectionListener)
+     */
+    public void removeSelectionListener(SelectionListener listener)
+    {
+        checkWidget();
+        removeListener(SWT.Selection, listener);
+        removeListener(SWT.DefaultSelection, listener);
     }
 
     /**
@@ -628,83 +620,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Deselects the item at the given zero-relative index in the receiver. If
-     * the item at the index was already deselected, it remains deselected.
-     * Indices that are out of range are ignored.
-     * <p/>
-     * If cell selection is enabled, all cells in the specified item are deselected.
-     *
-     * @param index the index of the item to deselect
-     */
-    public void deselect(int index)
-    {
-        checkWidget();
-
-        if (index < 0 || index > getItemCount() - 1) {
-            return;
-        }
-
-        deselectCells(getCells(index));
-
-        redraw();
-    }
-
-    /**
-     * Deselects the items at the given zero-relative indices in the receiver.
-     * If the item at the given zero-relative index in the receiver is selected,
-     * it is deselected. If the item at the index was not selected, it remains
-     * deselected. The range of the indices is inclusive. Indices that are out
-     * of range are ignored.
-     * <p/>
-     * If cell selection is enabled, all cells in the given range are deselected.
-     *
-     * @param start the start index of the items to deselect
-     * @param end   the end index of the items to deselect
-     */
-    public void deselect(int start, int end)
-    {
-        checkWidget();
-
-        for (int i = start; i <= end; i++) {
-            if (i < 0) {
-                continue;
-            }
-            if (i > getItemCount() - 1) {
-                break;
-            }
-            deselectCells(getCells(i));
-        }
-        redraw();
-    }
-
-    /**
-     * Deselects the items at the given zero-relative indices in the receiver.
-     * If the item at the given zero-relative index in the receiver is selected,
-     * it is deselected. If the item at the index was not selected, it remains
-     * deselected. Indices that are out of range and duplicate indices are
-     * ignored.
-     * <p/>
-     * If cell selection is enabled, all cells in the given items are deselected.
-     *
-     * @param indices the array of indices for the items to deselect
-     */
-    public void deselect(int[] indices)
-    {
-        checkWidget();
-        if (indices == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return;
-        }
-
-        for (int j : indices) {
-            if (j >= 0 && j < getItemCount()) {
-                deselectCells(getCells(j));
-            }
-        }
-        redraw();
-    }
-
-    /**
      * Deselects all selected items in the receiver.  If cell selection is enabled,
      * all cells are deselected.
      */
@@ -737,6 +652,7 @@ public abstract class LightGrid extends Canvas {
         return columns.get(index);
     }
 
+    @Nullable
     public GridColumn getColumnByElement(Object element)
     {
         checkWidget();
@@ -849,18 +765,6 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
         return headerHeight;
-    }
-
-    /**
-     * Returns {@code true} if the receiver's header is visible, and
-     * {@code false} otherwise.
-     *
-     * @return the receiver's header's visibility state
-     */
-    public boolean getHeaderVisible()
-    {
-        checkWidget();
-        return columnHeadersVisible;
     }
 
     Object getRowElement(int row) {
@@ -1271,16 +1175,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Returns the height of the screen area that is available for showing the grid columns
-     *
-     * @return
-     */
-    int getVisibleGridWidth()
-    {
-        return getClientArea().width - (rowHeaderVisible ? rowHeaderWidth : 0);
-    }
-
-    /**
      * Searches the receiver's list starting at the first column (index 0) until
      * a column is found that is equal to the argument, and returns the index of
      * that column. If no column is found, returns -1.
@@ -1349,21 +1243,6 @@ public abstract class LightGrid extends Canvas {
             column.dispose();
         }
         redraw();
-    }
-
-    /**
-     * Removes the listener from the collection of listeners who will be
-     * notified when the receiver's selection changes.
-     *
-     * @param listener the listener which should no longer be notified
-     * @see SelectionListener
-     * @see #addSelectionListener(SelectionListener)
-     */
-    public void removeSelectionListener(SelectionListener listener)
-    {
-        checkWidget();
-        removeListener(SWT.Selection, listener);
-        removeListener(SWT.DefaultSelection, listener);
     }
 
     /**
@@ -2746,7 +2625,6 @@ public abstract class LightGrid extends Canvas {
         disposing = true;
 
         UIUtils.dispose(cellHeaderSelectionBackground);
-        UIUtils.dispose(cellHeaderSelectionForeground);
 
         for (GridColumn col : columns) {
             col.dispose();
@@ -3127,14 +3005,6 @@ public abstract class LightGrid extends Canvas {
                 }
                 if (cellColumnDragSelectionOccurring && handleCellHover(e.x, e.y)) {
                     GridColumn intentCol = hoveringColumn;
-
-                    if (intentCol == null) {
-                        if (e.y < rowHeaderWidth) {
-                            //TODO: get the first col to the left
-                        } else {
-                            //TODO: get the first col to the right
-                        }
-                    }
 
                     if (intentCol == null) return;  //temporary
 
@@ -3716,6 +3586,7 @@ public abstract class LightGrid extends Canvas {
         return focusCell;
     }
 
+    @Nullable
     public GridCell getFocusCell()
     {
         return posToCell(getFocusPos());
@@ -3782,52 +3653,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Deselects the given cell in the receiver.  If the given cell is already
-     * deselected it remains deselected.  Invalid cells are ignored.
-     *
-     * @param cell cell to deselect.
-     */
-    public void deselectCell(GridPos cell)
-    {
-        checkWidget();
-
-        if (cell == null)
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-
-        selectedCells.remove(cell);
-        updateSelectionCache();
-        redraw();
-    }
-
-    /**
-     * Deselects the given cells.  Invalid cells are ignored.
-     *
-     * @param cells the cells to deselect.
-     */
-    public void deselectCells(Collection<GridPos> cells)
-    {
-        checkWidget();
-
-        if (cells == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return;
-        }
-
-        for (GridPos cell : cells) {
-            if (cell == null)
-                SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
-
-        for (GridPos cell : cells) {
-            selectedCells.remove(cell);
-        }
-
-        updateSelectionCache();
-
-        redraw();
-    }
-
-    /**
      * Deselects all selected cells in the receiver.
      */
     public void deselectAllCells()
@@ -3847,9 +3672,6 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
 
-        if (cell == null)
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-
         addToCellSelection(cell);
         updateSelectionCache();
         redraw();
@@ -3858,21 +3680,11 @@ public abstract class LightGrid extends Canvas {
     /**
      * Selects the given cells.  Invalid cells are ignored.
      *
-     * @param cells an arry of points whose x value is a column index and y value is an item index
+     * @param cells an array of points whose x value is a column index and y value is an item index
      */
-    public void selectCells(Collection<GridPos> cells)
+    public void selectCells(@NotNull Collection<GridPos> cells)
     {
         checkWidget();
-
-        if (cells == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return;
-        }
-
-        for (GridPos cell : cells) {
-            if (cell == null)
-                SWT.error(SWT.ERROR_NULL_ARGUMENT);
-        }
 
         for (GridPos cell : cells) {
             addToCellSelection(cell);
@@ -3923,19 +3735,6 @@ public abstract class LightGrid extends Canvas {
         redraw();
 
         return selectionEvent;
-    }
-
-    /**
-     * Selects all cells in the given column in the receiver.
-     *
-     * @param col
-     */
-    public void selectColumn(int col)
-    {
-        checkWidget();
-        List<GridPos> cells = new ArrayList<GridPos>();
-        getCells(getColumn(col), cells);
-        selectCells(cells);
     }
 
     /**
@@ -4276,64 +4075,6 @@ public abstract class LightGrid extends Canvas {
             scrollValuesObsolete = true;
             redraw();
         }
-    }
-
-    int getStartColumnIndex()
-    {
-        checkWidget();
-
-        if (startColumnIndex != -1) {
-            return startColumnIndex;
-        }
-
-        if (!hScroll.getVisible()) {
-            startColumnIndex = 0;
-        }
-
-        startColumnIndex = hScroll.getSelection();
-
-        return startColumnIndex;
-    }
-
-    int getEndColumnIndex()
-    {
-        checkWidget();
-
-        if (endColumnIndex != -1) {
-            return endColumnIndex;
-        }
-
-        if (columns.isEmpty()) {
-            endColumnIndex = 0;
-        } else if (getVisibleGridWidth() < 1) {
-            endColumnIndex = getStartColumnIndex();
-        } else {
-            int x = 0;
-            x -= getHScrollSelectionInPixels();
-
-            if (rowHeaderVisible) {
-                //row header is actually painted later
-                x += rowHeaderWidth;
-            }
-
-            int startIndex = getStartColumnIndex();
-
-            for (int i = startIndex; i < columns.size(); i++) {
-                endColumnIndex = i;
-                GridColumn column = columns.get(i);
-                x += column.getWidth();
-
-                if (x > getClientArea().width) {
-
-                    break;
-                }
-            }
-
-        }
-
-        endColumnIndex = Math.max(0, endColumnIndex);
-
-        return endColumnIndex;
     }
 
     /**

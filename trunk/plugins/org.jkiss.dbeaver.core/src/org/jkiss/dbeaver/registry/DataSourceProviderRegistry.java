@@ -23,11 +23,13 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.jface.resource.StringConverter;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionType;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -146,6 +148,7 @@ public class DataSourceProviderRegistry
         this.resourceContributions.clear();
     }
 
+    @Nullable
     public DataSourceProviderDescriptor getDataSourceProvider(String id)
     {
         for (DataSourceProviderDescriptor provider : dataSourceProviders) {
@@ -164,7 +167,8 @@ public class DataSourceProviderRegistry
     ////////////////////////////////////////////////////
     // DataType providers
 
-    public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, String typeName, int valueType)
+    @Nullable
+    public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject typedObject)
     {
         DBPDriver driver = dataSource.getContainer().getDriver();
         if (!(driver instanceof DriverDescriptor)) {
@@ -175,14 +179,14 @@ public class DataSourceProviderRegistry
 
         // First try to find type provider for specific datasource type
         for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (!dtProvider.isDefault() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(typeName, valueType)) {
+            if (!dtProvider.isDefault() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(typedObject)) {
                 return dtProvider;
             }
         }
 
         // Find in default providers
         for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (dtProvider.isDefault() && dtProvider.supportsType(typeName, valueType)) {
+            if (dtProvider.isDefault() && dtProvider.supportsType(typedObject)) {
                 return dtProvider;
             }
         }

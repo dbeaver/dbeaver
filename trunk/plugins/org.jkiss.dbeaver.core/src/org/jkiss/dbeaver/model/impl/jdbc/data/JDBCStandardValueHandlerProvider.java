@@ -39,9 +39,10 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
     }
 
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
+    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        DBPDataKind dataKind = JDBCUtils.resolveDataKind(null, typeName, valueType);
+        int valueType = typedObject.getTypeID();
+        DBPDataKind dataKind = JDBCUtils.resolveDataKind(null, typedObject.getTypeName(), valueType);
         switch (dataKind) {
             case BOOLEAN:
                 return new JDBCBooleanValueHandler();

@@ -78,11 +78,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     private Clipboard clipboard;
 
     private Color foregroundNormal;
-    private Color foregroundLines;
-    private Color foregroundSelected;
-    private Color backgroundNormal;
-    private Color backgroundControl;
-    private Color backgroundSelected;
 
     private SelectionListener gridSelectionListener;
 
@@ -112,11 +107,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         this.selectionProvider = new SpreadsheetSelectionProvider(this);
 
         this.foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
-        this.foregroundLines = getDisplay().getSystemColor(SWT.COLOR_GRAY);
-        this.foregroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
-        this.backgroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-        this.backgroundSelected = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
-        this.backgroundControl = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
         this.clipboard = new Clipboard(getDisplay());
 
@@ -189,43 +179,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     public Color getForegroundNormal()
     {
         return foregroundNormal;
-    }
-
-    public Color getForegroundLines()
-    {
-        return foregroundLines;
-    }
-
-    public Color getForegroundSelected()
-    {
-        return foregroundSelected;
-    }
-
-    public void setForegroundSelected(Color foregroundSelected)
-    {
-        this.foregroundSelected = foregroundSelected;
-        super.redraw();
-    }
-
-    public Color getBackgroundNormal()
-    {
-        return backgroundNormal;
-    }
-
-    public Color getBackgroundControl()
-    {
-        return backgroundControl;
-    }
-
-    public Color getBackgroundSelected()
-    {
-        return backgroundSelected;
-    }
-
-    public void setBackgroundSelected(Color backgroundSelected)
-    {
-        this.backgroundSelected = backgroundSelected;
-        super.redraw();
     }
 
     public int getCurrentRow()
@@ -331,48 +284,10 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.addListener(Event_ChangeCursor, listener);
     }
 
-    public void removeCursorChangeListener(Listener listener)
-    {
-        super.removeListener(Event_ChangeCursor, listener);
-    }
-
-
-/*
-    private void initContextHandling() {
-        ((IContextService) site.getService(IContextService.class)).activateContext("org.jkiss.dbeaver.ui.spreadsheet.super.context", new Expression() {
-            @Override
-            public void collectExpressionInfo(ExpressionInfo info) {
-                super.collectExpressionInfo(info);
-                info.addVariableNameAccess(ISources.ACTIVE_FOCUS_CONTROL_NAME);
-            }
-
-            @Override
-            public EvaluationResult evaluate(IEvaluationContext context)
-                throws CoreException {
-                if (context.getVariable(ISources.ACTIVE_FOCUS_CONTROL_NAME) == grid) {
-                    return EvaluationResult.TRUE;
-                }
-                return EvaluationResult.FALSE;
-            }
-
-        });
-    }
-*/
-
     @Override
     public void handleEvent(Event event)
     {
         switch (event.type) {
-/*
-            case SWT.SetData: {
-                lazyRow.item = (GridItem) event.data;
-                lazyRow.index = event.index;
-                if (dataProvider != null) {
-                    dataProvider.fillRowData(lazyRow);
-                }
-                break;
-            }
-*/
             case SWT.KeyDown:
                 if (event.keyCode == SWT.CR ||
                     (event.keyCode >= SWT.KEYPAD_0 && event.keyCode <= SWT.KEYPAD_9) ||
@@ -463,17 +378,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     public void refreshData(boolean clearData) {
         cancelInlineEditor();
         super.refreshData(clearData);
-    }
-
-    public int getVisibleRowsCount()
-    {
-        Rectangle clientArea = super.getClientArea();
-        int itemHeight = super.getItemHeight();
-        int count = (clientArea.height - super.getHeaderHeight() + itemHeight - 1) / itemHeight;
-        if (count == 0) {
-            count = 1;
-        }
-        return count;
     }
 
     public void clearGrid()

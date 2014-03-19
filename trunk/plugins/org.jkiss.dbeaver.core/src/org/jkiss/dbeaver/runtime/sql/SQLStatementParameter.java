@@ -54,8 +54,7 @@ public class SQLStatementParameter implements DBSAttributeBase {
         this.valueHandler = DBUtils.findValueHandler(
             paramType.getDataSource(),
             paramType.getDataSource().getContainer(),
-            paramType.getName(),
-            paramType.getTypeID());
+            paramType);
     }
 
     public DBDValueHandler getValueHandler()
