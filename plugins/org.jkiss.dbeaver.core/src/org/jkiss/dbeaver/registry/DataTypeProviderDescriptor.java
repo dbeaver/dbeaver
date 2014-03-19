@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -120,10 +121,11 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    public boolean supportsType(String typeName, int valueType)
+    public boolean supportsType(DBSTypedObject typedObject)
     {
+        String typeName = typedObject.getTypeName();
         return
-            supportedTypes.contains(valueType) ||
+            supportedTypes.contains(typedObject.getTypeID()) ||
             (typeName != null && supportedTypes.contains(typeName.toLowerCase())) ||
             supportedTypes.contains(ALL_TYPES_PATTERN);
     }

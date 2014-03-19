@@ -217,7 +217,7 @@ public class ResultSetModel {
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(RowData row, DBDAttributeBinding attr, Object value)
+    public boolean updateCellValue(RowData row, DBDAttributeBinding attr, @Nullable Object value)
     {
         int column = attr.getAttributeIndex();
         Object oldValue = row.values[column];

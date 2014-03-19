@@ -38,13 +38,13 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
     }
 
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
+    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        if (OracleConstants.TYPE_NAME_XML.equals(typeName) || OracleConstants.TYPE_FQ_XML.equals(typeName)) {
+        if (OracleConstants.TYPE_NAME_XML.equals(typedObject.getTypeName()) || OracleConstants.TYPE_FQ_XML.equals(typedObject.getTypeName())) {
             return OracleXMLValueHandler.INSTANCE;
-        } else if (valueType == java.sql.Types.STRUCT) {
+        } else if (typedObject.getTypeID() == java.sql.Types.STRUCT) {
             return OracleObjectValueHandler.INSTANCE;
-        } else if (typeName.contains("TIMESTAMP")) {
+        } else if (typedObject.getTypeName().contains("TIMESTAMP")) {
             return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;

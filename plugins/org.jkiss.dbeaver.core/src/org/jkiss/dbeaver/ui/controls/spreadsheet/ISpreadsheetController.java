@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui.controls.spreadsheet;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 
@@ -39,11 +40,12 @@ public interface ISpreadsheetController {
     @Nullable
     Control showCellEditor(boolean inline);
 
-    void resetCellValue(GridCell cell, boolean delete);
+    void resetCellValue(@NotNull GridCell cell, boolean delete);
 
-    void fillContextMenu(GridCell cell, IMenuManager manager);
+    void fillContextMenu(@NotNull GridCell cell, @NotNull IMenuManager manager);
 
-    void changeSorting(Object columnElement, int state);
+    void changeSorting(@NotNull Object columnElement, int state);
 
+    @NotNull
     IPreferenceStore getPreferenceStore();
 }

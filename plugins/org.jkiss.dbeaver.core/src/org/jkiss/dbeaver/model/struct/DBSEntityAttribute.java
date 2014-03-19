@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
+
 /**
  * DBSEntityAttribute
  */
@@ -25,6 +27,7 @@ public interface DBSEntityAttribute extends DBSEntityElement, DBSAttributeBase {
 
     int getOrdinalPosition();
 
+    @Nullable
     String getDefaultValue();
 
 }

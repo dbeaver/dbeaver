@@ -85,6 +85,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
         return new FakeEntityAttribute(owner, attribute);
     }
 
+    @Nullable
     public static DBDPseudoAttribute getAttribute(DBDPseudoAttribute[] attributes, DBDPseudoAttributeType type)
     {
         if (attributes == null || attributes.length == 0) {
@@ -125,12 +126,14 @@ public class DBDPseudoAttribute implements DBPNamedObject {
             return attribute.getIndex();
         }
 
+        @Nullable
         @Override
         public String getDefaultValue()
         {
             return null;
         }
 
+        @NotNull
         @Override
         public DBSEntity getParentObject()
         {

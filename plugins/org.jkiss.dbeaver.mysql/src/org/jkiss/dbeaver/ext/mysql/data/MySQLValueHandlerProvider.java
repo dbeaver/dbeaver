@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -39,17 +40,21 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
         return DBUtils.getDataIcon(type).getImage();
     }
 
+    @Nullable
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
+    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        if (MySQLConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typeName)) {
+        if (MySQLConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typedObject.getTypeName())) {
             return MySQLEnumValueHandler.INSTANCE;
-        } else if (MySQLConstants.TYPE_NAME_SET.equalsIgnoreCase(typeName)) {
+        } else if (MySQLConstants.TYPE_NAME_SET.equalsIgnoreCase(typedObject.getTypeName())) {
             return MySQLSetValueHandler.INSTANCE;
-        } else if (valueType == Types.DATE || valueType == Types.TIME || valueType == Types.TIMESTAMP) {
-            return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
         } else {
-            return null;
+            int typeID = typedObject.getTypeID();
+            if (typeID == Types.DATE || typeID == Types.TIME || typeID == Types.TIMESTAMP) {
+                return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
+            } else {
+                return null;
+            }
         }
     }
 
