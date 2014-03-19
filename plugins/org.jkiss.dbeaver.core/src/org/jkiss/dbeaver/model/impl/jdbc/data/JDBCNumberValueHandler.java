@@ -332,28 +332,38 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         if (text == null || text.length() == 0) {
             return null;
         }
+        Class<?> hintType = null;
         try {
             if (originalValue instanceof Number) {
                 if (originalValue instanceof Long) {
+                    hintType = Long.class;
                     return Long.valueOf(text);
                 } else if (originalValue instanceof Integer) {
+                    hintType = Integer.class;
                     return Integer.valueOf(text);
                 } else if (originalValue instanceof Short) {
+                    hintType = Short.class;
                     return Short.valueOf(text);
                 } else if (originalValue instanceof Byte) {
+                    hintType = Byte.class;
                     return Byte.valueOf(text);
                 } else if (originalValue instanceof Float) {
+                    hintType = Float.class;
                     return Float.valueOf(text);
                 } else if (originalValue instanceof Double) {
+                    hintType = Double.class;
                     return Double.valueOf(text);
                 } else if (originalValue instanceof BigInteger) {
+                    hintType = BigInteger.class;
                     return new BigInteger(text);
                 } else {
+                    hintType = BigDecimal.class;
                     return new BigDecimal(text);
                 }
             } else {
                 switch (type.getTypeID()) {
                     case java.sql.Types.BIGINT:
+                        hintType = Long.class;
                         try {
                             return Long.parseLong(text);
                         } catch (NumberFormatException e) {
@@ -362,21 +372,27 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     case java.sql.Types.DECIMAL:
                     case java.sql.Types.DOUBLE:
                     case java.sql.Types.REAL:
+                        hintType = Double.class;
                         return toDouble(text);
                     case java.sql.Types.FLOAT:
+                        hintType = Float.class;
                         return Float.valueOf(text);
                     case java.sql.Types.INTEGER:
+                        hintType = Integer.class;
                         return Integer.valueOf(text);
                     case java.sql.Types.SMALLINT:
-                        return Short.valueOf(text);
                     case java.sql.Types.TINYINT:
+                        hintType = Short.class;
                         return Short.valueOf(text);
                     case java.sql.Types.NUMERIC:
+                        hintType = BigDecimal.class;
                         return new BigDecimal(text);
                     default:
                         if (type.getScale() > 0) {
+                            hintType = Double.class;
                             return toDouble(text);
                         } else {
+                            hintType = Long.class;
                             return Long.valueOf(text);
                         }
                 }
@@ -384,7 +400,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         } catch (NumberFormatException e) {
             log.debug("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
             try {
-                return (Number)formatter.parseValue(text);
+                return (Number)formatter.parseValue(text, hintType);
             } catch (ParseException e1) {
                 log.debug("Can't parse numeric value [" + text + "] using formatter", e);
                 return null;

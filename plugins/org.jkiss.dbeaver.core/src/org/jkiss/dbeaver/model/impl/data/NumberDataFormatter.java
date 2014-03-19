@@ -22,6 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.FieldPosition;
@@ -97,10 +99,27 @@ public class NumberDataFormatter implements DBDDataFormatter {
     }
 
     @Override
-    public Object parseValue(String value) throws ParseException
+    public Object parseValue(String value, @Nullable Class<?> typeHint) throws ParseException
     {
         synchronized (this) {
-            return numberFormat.parse(value);
+            numberFormat.setParseBigDecimal(typeHint == BigDecimal.class || typeHint == BigInteger.class);
+            Number number = numberFormat.parse(value);
+            if (number != null && typeHint != null) {
+                if (typeHint == Byte.class) {
+                    return number.byteValue();
+                } else if (typeHint == Short.class) {
+                    return number.shortValue();
+                } else if (typeHint == Integer.class) {
+                    return number.intValue();
+                } else if (typeHint == Long.class) {
+                    return number.longValue();
+                } else if (typeHint == Float.class) {
+                    return number.floatValue();
+                } else if (typeHint == Double.class) {
+                    return number.doubleValue();
+                }
+            }
+            return number;
         }
     }
 
