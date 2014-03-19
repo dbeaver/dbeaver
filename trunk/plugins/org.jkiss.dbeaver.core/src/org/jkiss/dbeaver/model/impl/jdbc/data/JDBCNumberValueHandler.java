@@ -84,6 +84,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return formatter.formatValue(value);
     }
 
+    @Nullable
     @Override
     protected Object fetchColumnValue(
         DBCSession session,
@@ -209,6 +210,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Nullable
     @Override
     public DBDValueEditor createEditor(DBDValueController controller)
         throws DBException
@@ -277,6 +279,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                                 control.selectAll();
                             }
                         }
+                        @Nullable
                         @Override
                         public Object extractEditorValue()
                         {
@@ -307,6 +310,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return Number.class;
     }
 
+    @Nullable
     @Override
     public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
@@ -322,6 +326,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Nullable
     public static Number convertStringToNumber(DBDDataFormatter formatter, String text, Object originalValue, DBSTypedObject type)
     {
         if (text == null || text.length() == 0) {
@@ -381,7 +386,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             try {
                 return (Number)formatter.parseValue(text);
             } catch (ParseException e1) {
-                log.debug("Can't parse numeric value using formatter", e);
+                log.debug("Can't parse numeric value [" + text + "] using formatter", e);
                 return null;
             }
         }

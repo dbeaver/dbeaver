@@ -32,6 +32,7 @@ public interface DBDDataFormatter {
 
     void init(Locale locale, Map<Object, Object> properties);
 
+    @Nullable
     String getPattern();
 
     @Nullable

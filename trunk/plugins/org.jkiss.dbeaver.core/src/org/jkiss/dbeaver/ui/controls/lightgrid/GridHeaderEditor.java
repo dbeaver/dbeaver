@@ -147,10 +147,6 @@ class GridHeaderEditor extends ControlEditor {
 	 */
 	@Override
     public void dispose() {
-		if (!grid.isDisposed() && !column.isDisposed()) {
-			column.removeControlListener(columnListener);
-		}
-
 		if (!grid.isDisposed()) {
 			grid.removeListener(SWT.Resize, resizeListener);
 
@@ -174,8 +170,6 @@ class GridHeaderEditor extends ControlEditor {
 	 * editor.
 	 */
 	void initColumn() {
-
-		column.addControlListener(columnListener);
 		layout();
 	}
 

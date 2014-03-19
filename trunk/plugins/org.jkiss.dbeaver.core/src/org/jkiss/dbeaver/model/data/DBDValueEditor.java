@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 /**
@@ -39,6 +40,7 @@ public interface DBDValueEditor
      * @return value. Possibly NULL
      * @throws DBException on any error
      */
+    @Nullable
     Object extractEditorValue()
         throws DBException;
 
