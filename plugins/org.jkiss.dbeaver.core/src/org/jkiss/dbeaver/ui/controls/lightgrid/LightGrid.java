@@ -1856,13 +1856,6 @@ public abstract class LightGrid extends Canvas {
 
         Rectangle clientArea = getClientArea();
         redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
-
-        columnBeingResized.fireResized();
-
-        for (int index = columns.indexOf(columnBeingResized) + 1; index < columns.size(); index++) {
-            GridColumn col = columns.get(index);
-            col.fireMoved();
-        }
     }
 
     /**
@@ -2823,11 +2816,6 @@ public abstract class LightGrid extends Canvas {
 
             if (hoveringOnColumnResizer) {
                 columnBeingResized.pack();
-                columnBeingResized.fireResized();
-                for (int index = columns.indexOf(columnBeingResized) + 1; index < columns.size(); index++) {
-                    GridColumn col = columns.get(index);
-                    col.fireMoved();
-                }
                 resizingColumn = false;
                 handleHoverOnColumnHeader(e.x, e.y);
                 return;
@@ -3612,7 +3600,7 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
         GridColumn column = getColumn(col);
-        if (column == null || column.isDisposed() || column.getParent() != this) {
+        if (column == null || column.getParent() != this) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
             return;
         }

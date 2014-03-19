@@ -106,6 +106,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     {
     }
 
+    @Nullable
     protected abstract Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException, SQLException;
 

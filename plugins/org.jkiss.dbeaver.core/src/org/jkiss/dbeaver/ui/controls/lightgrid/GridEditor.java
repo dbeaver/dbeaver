@@ -190,12 +190,6 @@ public class GridEditor extends ControlEditor
     @Override
     public void dispose()
     {
-        if (!grid.isDisposed() && this.column > -1 && this.column < grid.getColumnCount())
-        {
-            GridColumn tableColumn = grid.getColumn(this.column);
-            tableColumn.removeControlListener(columnListener);
-        }
-        
         if (!grid.isDisposed())
         {
             grid.removeListener(SWT.Resize, resizeListener);
@@ -264,8 +258,6 @@ public class GridEditor extends ControlEditor
         }
         if (this.column > -1 && this.column < columnCount)
         {
-            GridColumn tableColumn = grid.getColumn(this.column);
-            tableColumn.removeControlListener(columnListener);
             this.column = -1;
         }
 
@@ -273,8 +265,6 @@ public class GridEditor extends ControlEditor
             return;
 
         this.column = column;
-        GridColumn tableColumn = grid.getColumn(this.column);
-        tableColumn.addControlListener(columnListener);
         layout();
     }
 
