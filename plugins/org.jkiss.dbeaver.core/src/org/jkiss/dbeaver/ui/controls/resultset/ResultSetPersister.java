@@ -234,7 +234,7 @@ class ResultSetPersister {
         }
         model.refreshChangeCount();
 
-        viewer.refreshSpreadsheet(false, rowsChanged);
+        viewer.refreshSpreadsheet(rowsChanged);
         viewer.fireResultSetChange();
         viewer.updateEditControls();
         viewer.previewValue();
@@ -327,7 +327,7 @@ class ResultSetPersister {
                     }
                     if (!viewer.getControl().isDisposed()) {
                         //releaseStatements();
-                        viewer.refreshSpreadsheet(false, rowsChanged);
+                        viewer.refreshSpreadsheet(rowsChanged);
                         viewer.updateEditControls();
                         if (error == null) {
                             viewer.setStatus(

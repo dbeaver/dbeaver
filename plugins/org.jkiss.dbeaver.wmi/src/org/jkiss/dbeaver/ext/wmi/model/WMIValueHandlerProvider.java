@@ -37,7 +37,7 @@ public class WMIValueHandlerProvider implements DBDValueHandlerProvider {
     }
 
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
+    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
     {
         return DBCDefaultValueHandler.INSTANCE;
     }

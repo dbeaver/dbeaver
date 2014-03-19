@@ -41,9 +41,9 @@ public class DB2ValueHandlerProvider implements DBDValueHandlerProvider {
     }
 
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
+    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        switch (valueType) {
+        switch (typedObject.getTypeID()) {
         case Types.DATE:
         case Types.TIME:
         case Types.TIMESTAMP:

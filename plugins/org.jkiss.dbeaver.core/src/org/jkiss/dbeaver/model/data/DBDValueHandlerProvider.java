@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
@@ -29,6 +30,7 @@ public interface DBDValueHandlerProvider
 {
     Image getTypeImage(DBSTypedObject type);
 
-    DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType);
+    @Nullable
+    DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject);
 
 }

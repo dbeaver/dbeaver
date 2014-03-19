@@ -512,7 +512,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         if (!CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
             if (model.setDataFilter(dataFilter)) {
-                refreshSpreadsheet(true, true);
+                refreshSpreadsheet(true);
             }
             if (refreshData) {
                 reorderResultSet(true, new Runnable() {
@@ -650,7 +650,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    void refreshSpreadsheet(boolean columnsChanged, boolean rowsChanged)
+    void refreshSpreadsheet(boolean rowsChanged)
     {
         if (spreadsheet.isDisposed()) {
             return;
@@ -857,10 +857,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     void previewValue()
     {
-        if (!isPreviewVisible()) {
+        GridCell currentPosition = getCurrentPosition();
+        if (!isPreviewVisible() || currentPosition == null) {
             return;
         }
-        GridCell cell = translateVisualPos(getCurrentPosition());
+        GridCell cell = translateVisualPos(currentPosition);
         if (panelValueController == null || panelValueController.pos.col != cell.col) {
             panelValueController = new ResultSetValueController(
                 cell,
@@ -899,14 +900,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
         if (rsFont != null) {
             this.spreadsheet.setFont(rsFont);
-        }
-        Color selBackColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK);
-        if (selBackColor != null) {
-            this.spreadsheet.setBackgroundSelected(selBackColor);
-        }
-        Color selForeColor = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
-        if (selForeColor != null) {
-            this.spreadsheet.setForegroundSelected(selForeColor);
         }
         Color previewBack = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_PREVIEW_BACK);
         if (previewBack != null) {
@@ -990,6 +983,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return gridMode == GridMode.GRID ? spreadsheet.getCurrentRow() : curRowNum;
     }
 
+    @Nullable
     public GridCell getCurrentPosition()
     {
         return spreadsheet.getCursorCell();
@@ -1079,7 +1073,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
             this.initResultSet();
         } else {
-            this.refreshSpreadsheet(updateMetaData, true);
+            this.refreshSpreadsheet(true);
         }
         updateEditControls();
     }
@@ -1202,7 +1196,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
      * @param pos visual position
      * @return model position
      */
-    GridCell translateVisualPos(GridCell pos)
+    @NotNull GridCell translateVisualPos(@NotNull GridCell pos)
     {
         if (gridMode == GridMode.GRID) {
             return pos;
@@ -1344,7 +1338,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
-    public void resetCellValue(GridCell cell, boolean delete)
+    public void resetCellValue(@NotNull GridCell cell, boolean delete)
     {
         cell = translateVisualPos(cell);
         model.resetCellValue(cell, delete);
@@ -1354,7 +1348,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
-    public void fillContextMenu(GridCell curCell, IMenuManager manager)
+    public void fillContextMenu(@NotNull final GridCell curCell, @NotNull IMenuManager manager)
     {
         // Custom oldValue items
         {
@@ -1420,7 +1414,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 @Override
                 public void menuAboutToShow(IMenuManager manager)
                 {
-                    fillFiltersMenu(manager);
+                    fillFiltersMenu(curCell, manager);
                 }
             });
             manager.add(filtersMenu);
@@ -1443,9 +1437,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
     }
 
-    private void fillFiltersMenu(IMenuManager filtersMenu)
+    private void fillFiltersMenu(@NotNull GridCell currentPosition, @NotNull IMenuManager filtersMenu)
     {
-        GridCell currentPosition = translateVisualPos(getCurrentPosition());
         DBDAttributeBinding column = (DBDAttributeBinding)(currentPosition.col instanceof DBDAttributeBinding ? currentPosition.col : currentPosition.row);
         if (supportsDataFilter()) {
             DBPDataKind dataKind = column.getMetaAttribute().getDataKind();
@@ -1509,7 +1502,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             for (int i = columnIndexes.length; i > 0; i--) {
                                 getModel().setColumnVisibility(getModel().getVisibleColumn(columnIndexes[i - 1]), false);
                             }
-                            refreshSpreadsheet(true, true);
+                            refreshSpreadsheet(true);
                         }
                     }
                 });
@@ -1526,7 +1519,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
-    public void changeSorting(Object columnElement, final int state)
+    public void changeSorting(@NotNull Object columnElement, final int state)
     {
         DBDDataFilter dataFilter = model.getDataFilter();
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
@@ -1580,11 +1573,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return this.viewerPanel;
     }
 
+    @NotNull
     public IWorkbenchPartSite getSite()
     {
         return site;
     }
 
+    @NotNull
     public ResultSetModel getModel()
     {
         return model;
@@ -1603,6 +1598,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
+    @NotNull
     public ResultSetSelection getSelection()
     {
         return new ResultSetSelectionImpl();
@@ -1634,6 +1630,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         fireSelectionChanged(new SelectionChangedEvent(this, selection));
     }
 
+    @NotNull
     public DBDDataReceiver getDataReceiver() {
         return dataReceiver;
     }
@@ -1701,7 +1698,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             (dataReceiver.isHasMoreData() || !CommonUtils.isEmpty(model.getDataFilter().getOrder()));
     }
 
-    private void reorderResultSet(boolean force, Runnable onSuccess)
+    private void reorderResultSet(boolean force, @Nullable Runnable onSuccess)
     {
         if (force || isServerSideFiltering() && supportsDataFilter()) {
             if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
@@ -1750,6 +1747,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS);
     }
 
+    @NotNull
     public IPreferenceStore getPreferenceStore()
     {
         DBPDataSource dataSource = getDataSource();
@@ -2119,7 +2117,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             session.close();
         }
         model.addNewRow(rowNum, cells);
-        refreshSpreadsheet(false, true);
+        refreshSpreadsheet(true);
         updateEditControls();
         fireResultSetChange();
     }
@@ -2152,7 +2150,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             spreadsheet.setCursor(newPos, false);
         }
         if (rowsRemoved > 0) {
-            refreshSpreadsheet(false, true);
+            refreshSpreadsheet(true);
         } else {
             spreadsheet.redrawGrid();
         }
@@ -2337,7 +2335,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public void updateValue(Object value)
+        public void updateValue(@Nullable Object value)
         {
             if (model.updateCellValue(curRow, column, value)) {
                 // Update controls
@@ -2505,6 +2503,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Nullable
         @Override
         public Object[] getChildren(Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                ((DBDAttributeBinding) element).getEntityAttribute();
+            }
             return null;
         }
 
