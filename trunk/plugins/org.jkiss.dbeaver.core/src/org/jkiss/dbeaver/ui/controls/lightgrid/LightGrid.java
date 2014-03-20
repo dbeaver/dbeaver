@@ -25,10 +25,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
-import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
-import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.ScrollBarAdapter;
 import org.jkiss.utils.IntKeyMap;
 
 import java.util.*;
@@ -63,6 +59,12 @@ public abstract class LightGrid extends Canvas {
      * The minimum width of a column header.
      */
     private static final int MIN_COLUMN_HEADER_WIDTH = 32;
+
+    /**
+     * Threshold for the selection border used for drag n drop
+     * in mode.
+     */
+    private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
 
     public enum EventSource {
         MOUSE,
@@ -207,27 +209,10 @@ public abstract class LightGrid extends Canvas {
      */
     private boolean linesVisible = true;
 
-    /**
-     * Grid line color.
-     */
-    private Color lineColor;
-
-    /**
-     * Vertical scrollbar proxy.
-     * <p/>
-     * Note:
-     * <ul>
-     * <li>{@link LightGrid#getTopIndex()} is the only method allowed to call vScroll.getSelection()
-     * (except #updateScrollbars() of course)</li>
-     * <li>{@link LightGrid#setTopIndex(int)} is the only method allowed to call vScroll.setSelection(int)</li>
-     * </ul>
-     */
-    private IGridScrollBar vScroll;
-
-    /**
-     * Horizontal scrollbar proxy.
-     */
-    private IGridScrollBar hScroll;
+    @NotNull
+    private final IGridScrollBar vScroll;
+    @NotNull
+    private final IGridScrollBar hScroll;
 
     /**
      * Item selected when a multiple selection using shift+click first occurs.
@@ -247,7 +232,11 @@ public abstract class LightGrid extends Canvas {
 
     public GC sizingGC;
 
+    @NotNull
+    private Color lineColor;
+    @NotNull
     private Color backgroundColor;
+    @NotNull
     private Cursor sortCursor;
 
 
@@ -296,12 +285,6 @@ public abstract class LightGrid extends Canvas {
      * hovered cell, or the general grid tooltip.  See handleCellHover.
      */
     private String displayedToolTipText;
-
-    /**
-     * Threshold for the selection border used for drag n drop
-     * in mode.
-     */
-    private static final int SELECTION_DRAG_BORDER_THRESHOLD = 2;
 
     private boolean hoveringOnSelectionDragArea = false;
 
@@ -475,7 +458,7 @@ public abstract class LightGrid extends Canvas {
                     }
                     if (!fatColumns.isEmpty()) {
                         // Narrow fat columns on decWidth
-                        int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - (vScroll.getControl() == null ? 0 : vScroll.getControl().getSize().x))
+                        int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - vScroll.getWidth())
                             / fatColumns.size();
                         int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
                         for (GridColumn curColumn : fatColumns) {
@@ -503,18 +486,16 @@ public abstract class LightGrid extends Canvas {
         return new GridCell(columnElements[col], rowElements[row]);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public Color getBackground()
     {
         return backgroundColor;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public void setBackground(Color color)
     {
@@ -569,9 +550,8 @@ public abstract class LightGrid extends Canvas {
         removeListener(SWT.DefaultSelection, listener);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public Point computeSize(int wHint, int hHint, boolean changed)
     {
@@ -724,7 +704,7 @@ public abstract class LightGrid extends Canvas {
      * Returns the externally managed horizontal scrollbar.
      *
      * @return the external horizontal scrollbar.
-     * @see #setHorizontalScrollBarProxy( org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar)
+     * @see #setHorizontalScrollBarProxy(IGridScrollBar)
      */
     protected IGridScrollBar getHorizontalScrollBarProxy()
     {
@@ -736,7 +716,7 @@ public abstract class LightGrid extends Canvas {
      * Returns the externally managed vertical scrollbar.
      *
      * @return the external vertical scrollbar.
-     * @see #setVerticalScrollBarProxy( org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar)
+     * @see #setVerticalScrollBarProxy(IGridScrollBar)
      */
     protected IGridScrollBar getVerticalScrollBarProxy()
     {
@@ -1339,66 +1319,6 @@ public abstract class LightGrid extends Canvas {
         if (selectionType == SWT.SINGLE) return;
 
         selectAllCells();
-    }
-
-    /**
-     * Sets the external horizontal scrollbar. Allows the scrolling to be
-     * managed externally from the table. This functionality is only intended
-     * when SWT.H_SCROLL is not given.
-     * <p/>
-     * Using this feature, a ScrollBar could be instantiated outside the table,
-     * wrapped in IScrollBar and thus be 'connected' to the table.
-     *
-     * @param scroll The horizontal scrollbar to set.
-     */
-    protected void setHorizontalScrollBarProxy(IGridScrollBar scroll)
-    {
-        checkWidget();
-        if (getHorizontalBar() != null) {
-            return;
-        }
-        hScroll = scroll;
-
-        hScroll.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                onScrollSelection();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
-    }
-
-    /**
-     * Sets the external vertical scrollbar. Allows the scrolling to be managed
-     * externally from the table. This functionality is only intended when
-     * SWT.V_SCROLL is not given.
-     * <p/>
-     * Using this feature, a ScrollBar could be instantiated outside the table,
-     * wrapped in IScrollBar and thus be 'connected' to the table.
-     *
-     * @param scroll The vertical scrollbar to set.
-     */
-    protected void setVerticalScrollBarProxy(IGridScrollBar scroll)
-    {
-        checkWidget();
-        if (getVerticalBar() != null) {
-            return;
-        }
-        vScroll = scroll;
-
-        vScroll.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                onScrollSelection();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
     }
 
     /**
@@ -3909,9 +3829,8 @@ public abstract class LightGrid extends Canvas {
         return true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public void setFont(Font font)
     {
