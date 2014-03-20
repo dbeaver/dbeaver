@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridColumnRenderer;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Instances of this class represent a column in a grid widget.
@@ -58,8 +59,6 @@ public class GridColumn {
 	private boolean cellSelectionEnabled = true;
 
 	private int minimumWidth = 0;
-
-	private String headerTooltip = null;
 
     private String text;
     private Image image;
@@ -287,25 +286,20 @@ public class GridColumn {
 	 */
 	@Nullable
     public String getHeaderTooltip() {
-        if (headerTooltip != null) {
-            return headerTooltip;
+        String tip = parent.getColumnLabelProvider().getTooltip(element);
+        String text = parent.getColumnLabelProvider().getText(element);
+        if (tip == null) {
+            tip = text;
         }
-        String tip = getText();
+        if (!CommonUtils.equalObjects(tip, text)) {
+            return tip;
+        }
         Point ttSize = getParent().sizingGC.textExtent(tip);
         if (ttSize.x > getWidth()) {
             return tip;
         }
 
 		return null;
-	}
-
-	/**
-	 * Sets the tooltip text of the column header.
-	 *
-	 * @param tooltip the tooltip text
-	 */
-	public void setHeaderTooltip(@Nullable String tooltip) {
-		this.headerTooltip = tooltip;
 	}
 
 	/**
