@@ -181,4 +181,9 @@ public abstract class AbstractAttribute implements DBSAttributeBase
         return true;
     }
 
+    @Override
+    public String toString() {
+        return name + ", type=" + typeName + ", pos=" + ordinalPosition;
+    }
+
 }
