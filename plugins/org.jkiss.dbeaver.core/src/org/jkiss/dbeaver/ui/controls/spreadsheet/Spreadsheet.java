@@ -60,7 +60,7 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     private static final int Event_ChangeCursor = 2000;
 
-    private GridEditor tableEditor;
+    private SpreadsheetCellEditor tableEditor;
 
     @NotNull
     private final IWorkbenchPartSite site;
@@ -142,7 +142,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         };
         super.addSelectionListener(gridSelectionListener);
 
-        tableEditor = new GridEditor(this);
+        tableEditor = new SpreadsheetCellEditor(this);
         tableEditor.horizontalAlignment = SWT.LEFT;
         tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.grabHorizontal = true;
@@ -342,37 +342,10 @@ public class Spreadsheet extends LightGrid implements Listener {
                 }
                 break;
             case LightGrid.Event_ChangeSort:
-                spreadsheetController.changeSorting(((GridColumn) event.data).getElement(), event.stateMask);
+                spreadsheetController.changeSorting(event.data, event.stateMask);
                 break;
         }
     }
-
-/*
-    public GridColumn getColumn(int index)
-    {
-        return curColumns.get(index);
-    }
-
-    public int getColumnsNum()
-    {
-        return curColumns.size();
-    }
-
-    public GridColumn addColumn(String text, String toolTipText, Image image)
-    {
-        GridColumn column = new GridColumn(grid, SWT.NONE);
-        column.setText(text);
-        if (toolTipText != null) {
-            column.setHeaderTooltip(toolTipText);
-        }
-        if (image != null) {
-            column.setImage(image);
-        }
-
-        curColumns.add(column);
-        return column;
-    }
-*/
 
     @Override
     public void refreshData(boolean clearData) {

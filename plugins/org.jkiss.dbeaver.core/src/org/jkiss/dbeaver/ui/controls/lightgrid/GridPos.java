@@ -19,10 +19,11 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.jkiss.utils.CommonUtils;
+import java.util.Comparator;
 
 /**
- * GridPos
+ * Grid position. Tuple of x/y coordinates.
+ * Pos comparator orders positions in tree in natural order (first ordered by rows then by columns).
  */
 public class GridPos
 {
@@ -69,5 +70,14 @@ public class GridPos
     public int hashCode()
     {
         return col ^ row;
+    }
+
+    public static class PosComparator implements Comparator<GridPos> {
+        @Override
+        public int compare(GridPos pos1, GridPos pos2)
+        {
+            int res = pos1.row - pos2.row;
+            return res != 0 ? res : pos1.col - pos2.col;
+        }
     }
 }
