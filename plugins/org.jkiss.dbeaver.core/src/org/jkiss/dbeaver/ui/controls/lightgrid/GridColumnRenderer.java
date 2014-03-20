@@ -17,20 +17,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * Grid column renderer
  */
-public class GridColumnRenderer extends AbstractRenderer
+class GridColumnRenderer extends AbstractRenderer
 {
     public static final int leftMargin = 6;
     public static final int rightMargin = 6;

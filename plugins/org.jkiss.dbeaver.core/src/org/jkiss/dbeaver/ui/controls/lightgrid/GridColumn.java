@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridColumnRenderer;
 import org.jkiss.utils.CommonUtils;
 
 /**

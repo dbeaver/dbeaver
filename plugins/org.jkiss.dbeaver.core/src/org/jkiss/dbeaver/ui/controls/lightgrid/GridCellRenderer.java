@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -27,12 +27,11 @@ import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * Grid cell renderer
  */
-public class GridCellRenderer extends AbstractRenderer
+class GridCellRenderer extends AbstractRenderer
 {
     private static final int leftMargin = 4;
     private static final int rightMargin = 4;
@@ -186,9 +185,8 @@ public class GridCellRenderer extends AbstractRenderer
     	this.dragging = dragging;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public void paint(GC gc)
     {

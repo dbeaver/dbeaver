@@ -289,9 +289,6 @@ public class GridEditor extends ControlEditor
         layout();
     }
 
-    /** 
-     * {@inheritDoc}
-     */
     @Override
     public void layout()
     {

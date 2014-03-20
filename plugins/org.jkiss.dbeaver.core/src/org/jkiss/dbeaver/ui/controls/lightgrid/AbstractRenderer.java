@@ -16,14 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * Abstract grid renderer
@@ -74,9 +71,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return bounds;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void setBounds(int x, int y, int width, int height)
     {
@@ -84,9 +78,6 @@ public abstract class AbstractRenderer implements IGridRenderer
     }
 
 
-    /** 
-     * {@inheritDoc}
-     */
     @Override
     public void setBounds(Rectangle bounds)
     {
@@ -103,36 +94,32 @@ public abstract class AbstractRenderer implements IGridRenderer
         return new Point(bounds.width, bounds.height);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public void setLocation(int x, int y)
     {
         setBounds(new Rectangle(x, y, bounds.width, bounds.height));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public void setLocation(Point location)
     {
         setBounds(new Rectangle(location.x, location.y, bounds.width, bounds.height));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public void setSize(int width, int height)
     {
         setBounds(new Rectangle(bounds.x, bounds.y, width, height));
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public void setSize(Point size)
     {
@@ -149,9 +136,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return focus;
     }
 
-    /** 
-     * {@inheritDoc}
-     */
     @Override
     public void setFocus(boolean focus)
     {
@@ -168,9 +152,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return hover;
     }
 
-    /** 
-     * {@inheritDoc}
-     */
     @Override
     public void setHover(boolean hover)
     {
@@ -188,9 +169,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return mouseDown;
     }
 
-    /** 
-     * {@inheritDoc}
-     */
     @Override
     public void setMouseDown(boolean mouseDown)
     {
@@ -207,9 +185,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return selected;
     }
 
-    /** 
-     * {@inheritDoc}
-     */
     @Override
     public void setSelected(boolean selected)
     {
