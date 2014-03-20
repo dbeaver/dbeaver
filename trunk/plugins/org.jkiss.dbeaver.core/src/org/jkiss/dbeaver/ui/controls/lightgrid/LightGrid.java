@@ -189,8 +189,6 @@ public abstract class LightGrid extends Canvas {
      */
     private GridColumn hoveringColumn;
 
-    private GridColumn hoveringColumnHeader;
-
     /**
      * String-based detail of what is being hovered over in a cell. This allows
      * a renderer to differentiate between hovering over different parts of the
@@ -446,7 +444,6 @@ public abstract class LightGrid extends Canvas {
                 GridColumn column = new GridColumn(this, columnElements[i]);
                 column.setText(labelProvider.getText(columnElements[i]));
                 column.setImage(labelProvider.getImage(columnElements[i]));
-                column.setHeaderTooltip(labelProvider.getTooltip(columnElements[i]));
             }
 
             if (getColumnCount() == 1) {
@@ -495,7 +492,6 @@ public abstract class LightGrid extends Canvas {
                 GridColumn column = columns.get(i);
                 column.setText(labelProvider.getText(columnElements[i]));
                 column.setImage(labelProvider.getImage(columnElements[i]));
-                column.setHeaderTooltip(labelProvider.getTooltip(columnElements[i]));
             }
         }
 
@@ -2132,7 +2128,7 @@ public abstract class LightGrid extends Canvas {
 
             int height = headerHeight;
             y = 0;
-            columnHeaderRenderer.setHover(hoveringColumnHeader == column);
+            columnHeaderRenderer.setHover(hoveringColumn == column);
             cell.col = columnElements[i];
             columnHeaderRenderer.setCell(cell);
             columnHeaderRenderer.setBounds(x, y, column.getWidth(), height);
@@ -3044,26 +3040,10 @@ public abstract class LightGrid extends Canvas {
      */
     private void handleHovering(int x, int y)
     {
-        // TODO: need to clean up and refactor hover code
         handleCellHover(x, y);
 
         if (columnHeadersVisible) {
             handleHoverOnColumnHeader(x, y);
-            //if (handleHoverOnColumnHeader(x, y)) {
-//                if (hoveringItem != null || !hoveringDetail.equals("") || hoveringColumn != null
-//                    || hoveringColumnHeader != null || hoverColumnGroupHeader != null)
-//                {
-//                    hoveringItem = null;
-//                    hoveringDetail = "";
-//                    hoveringColumn = null;
-//                    hoveringColumnHeader = null;
-//                    hoverColumnGroupHeader = null;
-//
-//                    Rectangle clientArea = getClientArea();
-//                    redraw(clientArea.x,clientArea.y,clientArea.width,clientArea.height,false);
-//                }
-                //return;
-            //}
         }
     }
 
@@ -3396,16 +3376,12 @@ public abstract class LightGrid extends Canvas {
         final GridColumn col = getColumn(point);
         final int row = getRow(point);
 
-        GridColumn hoverColHeader = null;
-
         boolean hoverChange = false;
 
-        if (hoveringItem != row || !hoveringDetail.equals(detail) || hoveringColumn != col
-            || hoverColHeader != hoveringColumnHeader) {
+        if (hoveringItem != row || !hoveringDetail.equals(detail) || hoveringColumn != col) {
             hoveringItem = row;
             hoveringDetail = detail;
             hoveringColumn = col;
-            hoveringColumnHeader = hoverColHeader;
 
             // TODO: guess why did they put redraw on mouse move??? It took fucking much memory and processor
             //Rectangle clientArea = getClientArea();
@@ -3420,7 +3396,7 @@ public abstract class LightGrid extends Canvas {
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 // get cell specific tooltip
                 newTip = getCellToolTip(hoveringColumn.getIndex(), hoveringItem);
-            } else if ((hoveringColumn != null) && (hoveringColumnHeader != null)) {
+            } else if (hoveringColumn != null) {
                 // get column header specific tooltip
                 newTip = hoveringColumn.getHeaderTooltip();
             }
