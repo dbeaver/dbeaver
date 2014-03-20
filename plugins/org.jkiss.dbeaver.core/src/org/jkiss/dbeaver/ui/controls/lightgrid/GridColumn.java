@@ -23,13 +23,12 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridColumnRenderer;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * Instances of this class represent a column in a grid widget.
- * For grid internal use.
+ * Grid column info.
+ * Holds information about column width and other UI properties
  *
  * @author serge@jkiss.org
  */
@@ -50,62 +49,20 @@ public class GridColumn {
 	/**
 	 * Parent table.
 	 */
-	private final LightGrid parent;
+	private final LightGrid grid;
     private final Object element;
 
-	private GridCellRenderer cellRenderer;
 	private int width = DEFAULT_WIDTH;
 
-	private boolean cellSelectionEnabled = true;
-
-	private int minimumWidth = 0;
-
-    private String text;
-    private Image image;
-
-    /**
-	 * Constructs a new instance of this class given its parent (which must be a
-	 * <code>Grid</code>) and a style value describing its behavior and
-	 * appearance. The item is added to the end of the items maintained by its
-	 * parent.
-	 */
-	public GridColumn(LightGrid parent, Object element) {
-		this(parent, -1, element);
+	public GridColumn(LightGrid grid, Object element) {
+		this(grid, -1, element);
 	}
 
-	/**
-	 * Constructs a new instance of this class given its parent (which must be a
-	 * <code>Grid</code>), a style value describing its behavior and appearance,
-	 * and the index at which to place it in the items maintained by its parent.
-	 *
-	 * @param parent
-	 *            an Grid control which will be the parent of the new instance
-	 *            (cannot be null)
-	 * @param index
-	 *            the index to store the receiver in its parent
-	 */
-	public GridColumn(LightGrid parent, int index, Object element) {
-        this.parent = parent;
-        this.cellRenderer = new GridCellRenderer(parent);
+	public GridColumn(LightGrid grid, int index, Object element) {
+        this.grid = grid;
         this.element = element;
-        parent.newColumn(this, index);
+        grid.newColumn(this, index);
 	}
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public Image getImage() {
-        return image;
-    }
-
-    public void setImage(Image image) {
-        this.image = image;
-    }
 
     public Object getElement() {
         return element;
@@ -113,22 +70,13 @@ public class GridColumn {
 
     public int getIndex()
     {
-        return getParent().indexOf(this);
+        return getGrid().indexOf(this);
     }
 
     public void dispose() {
-		if (!parent.isDisposing()) {
-			parent.removeColumn(this);
+		if (!grid.isDisposing()) {
+			grid.removeColumn(this);
 		}
-	}
-
-	/**
-	 * Returns the cell renderer.
-	 *
-	 * @return cell renderer.
-	 */
-	public GridCellRenderer getCellRenderer() {
-		return cellRenderer;
 	}
 
 	/**
@@ -151,19 +99,19 @@ public class GridColumn {
 	}
 
 	void setWidth(int width, boolean redraw) {
-		this.width = Math.max(minimumWidth, width);
+		this.width = width;
 		if (redraw) {
-			parent.setScrollValuesObsolete();
-			parent.redraw();
+			grid.setScrollValuesObsolete();
+			grid.redraw();
 		}
 	}
 
     public int computeHeaderHeight()
     {
-        int y = topMargin + parent.sizingGC.getFontMetrics().getHeight() + bottomMargin;
-
-        if (getImage() != null) {
-            y = Math.max(y, topMargin + getImage().getBounds().height + bottomMargin);
+        int y = topMargin + grid.sizingGC.getFontMetrics().getHeight() + bottomMargin;
+        Image image = grid.getColumnLabelProvider().getImage(element);
+        if (image != null) {
+            y = Math.max(y, topMargin + image.getBounds().height + bottomMargin);
         }
 
 		return y;
@@ -182,10 +130,12 @@ public class GridColumn {
     public int computeHeaderWidth()
     {
         int x = leftMargin;
-        if (getImage() != null) {
-            x += getImage().getBounds().width + imageSpacing;
+        Image image = grid.getColumnLabelProvider().getImage(element);
+        String text = grid.getColumnLabelProvider().getText(element);
+        if (image != null) {
+            x += image.getBounds().width + imageSpacing;
         }
-        x += parent.sizingGC.stringExtent(getText()).x + rightMargin;
+        x += grid.sizingGC.stringExtent(text).x + rightMargin;
         if (isSortable()) {
             x += rightMargin + GridColumnRenderer.getSortControlBounds().width;
         }
@@ -195,7 +145,7 @@ public class GridColumn {
 
     public boolean isSortable()
     {
-        return parent.getContentProvider().getColumnSortOrder(element) != SWT.NONE;
+        return grid.getContentProvider().getColumnSortOrder(element) != SWT.NONE;
     }
 
 	/**
@@ -205,19 +155,18 @@ public class GridColumn {
 	public void pack() {
 		int newWidth = computeHeaderWidth();
         //int columnIndex = getIndex();
-        int topIndex = parent.getTopIndex();
-        int bottomIndex = parent.getBottomIndex();
+        int topIndex = grid.getTopIndex();
+        int bottomIndex = grid.getBottomIndex();
         if (topIndex >= 0 && bottomIndex >= topIndex) {
-            int itemCount = parent.getItemCount();
+            int itemCount = grid.getItemCount();
             GridCell cell = new GridCell(element, element);
             for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                cell.row = parent.getRowElement(i);
+                cell.row = grid.getRowElement(i);
                 newWidth = Math.max(newWidth, computeCellWidth(cell));
             }
         }
 
 		setWidth(newWidth);
-		parent.redraw();
 	}
 
     private int computeCellWidth(GridCell cell) {
@@ -225,12 +174,12 @@ public class GridColumn {
 
         x += leftMargin;
 
-        Image image = parent.getContentProvider().getCellImage(cell);
+        Image image = grid.getContentProvider().getCellImage(cell);
         if (image != null) {
             x += image.getBounds().width + insideMargin;
         }
 
-        x += parent.sizingGC.textExtent(parent.getCellText(cell)).x + rightMargin;
+        x += grid.sizingGC.textExtent(grid.getCellText(cell)).x + rightMargin;
         return x;
     }
 
@@ -242,32 +191,13 @@ public class GridColumn {
 	Rectangle getBounds() {
 		Rectangle bounds = new Rectangle(0, 0, 0, 0);
 
-		Point loc = parent.getOrigin(this, -1);
+		Point loc = grid.getOrigin(this, -1);
 		bounds.x = loc.x;
 		bounds.y = loc.y;
 		bounds.width = getWidth();
-		bounds.height = parent.getHeaderHeight();
+		bounds.height = grid.getHeaderHeight();
 
 		return bounds;
-	}
-
-	/**
-	 * Returns true if cells in the receiver can be selected.
-	 *
-	 * @return the cellSelectionEnabled
-	 */
-	public boolean getCellSelectionEnabled() {
-		return cellSelectionEnabled;
-	}
-
-	/**
-	 * Sets whether cells in the receiver can be selected.
-	 *
-	 * @param cellSelectionEnabled
-	 *            the cellSelectionEnabled to set
-	 */
-	public void setCellSelectionEnabled(boolean cellSelectionEnabled) {
-		this.cellSelectionEnabled = cellSelectionEnabled;
 	}
 
 	/**
@@ -275,8 +205,8 @@ public class GridColumn {
 	 *
 	 * @return the parent grid.
 	 */
-	public LightGrid getParent() {
-		return parent;
+	public LightGrid getGrid() {
+		return grid;
 	}
 
 	/**
@@ -286,15 +216,15 @@ public class GridColumn {
 	 */
 	@Nullable
     public String getHeaderTooltip() {
-        String tip = parent.getColumnLabelProvider().getTooltip(element);
-        String text = parent.getColumnLabelProvider().getText(element);
+        String tip = grid.getColumnLabelProvider().getTooltip(element);
+        String text = grid.getColumnLabelProvider().getText(element);
         if (tip == null) {
             tip = text;
         }
         if (!CommonUtils.equalObjects(tip, text)) {
             return tip;
         }
-        Point ttSize = getParent().sizingGC.textExtent(tip);
+        Point ttSize = getGrid().sizingGC.textExtent(tip);
         if (ttSize.x > getWidth()) {
             return tip;
         }
@@ -302,23 +232,4 @@ public class GridColumn {
 		return null;
 	}
 
-	/**
-	 * @return the minimum width
-	 */
-	public int getMinimumWidth() {
-		return minimumWidth;
-	}
-
-	/**
-	 * Set the minimum width of the column
-	 *
-	 * @param minimumWidth
-	 *            the minimum width
-	 */
-	public void setMinimumWidth(int minimumWidth) {
-		this.minimumWidth = Math.max(0, minimumWidth);
-		if( minimumWidth > getWidth() ) {
-			setWidth(minimumWidth, true);
-		}
-	}
 }
