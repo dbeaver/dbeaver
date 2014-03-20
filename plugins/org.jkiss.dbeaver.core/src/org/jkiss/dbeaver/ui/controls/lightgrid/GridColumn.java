@@ -19,19 +19,12 @@
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Item;
-import org.eclipse.swt.widgets.Listener;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridCellRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.GridColumnRenderer;
 
 /**
  * Instances of this class represent a column in a grid widget.
@@ -40,8 +33,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
  * @author serge@jkiss.org
  */
 public class GridColumn {
-
-    private GridHeaderEditor controlEditor;
 
 	/**
 	 * Default width of the column.
@@ -61,27 +52,8 @@ public class GridColumn {
 	private final LightGrid parent;
     private final Object element;
 
-    private AbstractRenderer sortRenderer;
-	/**
-	 * Cell renderer.
-	 */
 	private GridCellRenderer cellRenderer;
-
-	/**
-	 * Width of column.
-	 */
 	private int width = DEFAULT_WIDTH;
-
-	/**
-	 * Sort style of column. Only used to draw indicator, does not actually sort
-	 * data.
-	 */
-	private int sortStyle = SWT.UP;
-
-	/**
-	 * Is this column resizable?
-	 */
-	private boolean resizeable = true;
 
 	private boolean cellSelectionEnabled = true;
 
@@ -91,7 +63,6 @@ public class GridColumn {
 
     private String text;
     private Image image;
-    private int style = SWT.NONE;
 
     /**
 	 * Constructs a new instance of this class given its parent (which must be a
@@ -117,11 +88,8 @@ public class GridColumn {
 	public GridColumn(LightGrid parent, int index, Object element) {
         this.parent = parent;
         this.cellRenderer = new GridCellRenderer(parent);
-        this.sortRenderer = new DefaultSortRenderer(this);
         this.element = element;
         parent.newColumn(this, index);
-
-        initCellRenderer();
 	}
 
     public String getText() {
@@ -140,10 +108,6 @@ public class GridColumn {
         this.image = image;
     }
 
-    public int getStyle() {
-        return style;
-    }
-
     public Object getElement() {
         return element;
     }
@@ -153,34 +117,10 @@ public class GridColumn {
         return getParent().indexOf(this);
     }
 
-    public AbstractRenderer getSortRenderer()
-    {
-        return sortRenderer;
-    }
-
-    public void setSortRenderer(AbstractRenderer sortRenderer)
-    {
-        this.sortRenderer = sortRenderer;
-    }
-
     public void dispose() {
 		if (!parent.isDisposing()) {
 			parent.removeColumn(this);
 		}
-	}
-
-	/**
-	 * Initialize cell renderer.
-	 */
-	private void initCellRenderer() {
-		if ((getStyle() & SWT.RIGHT) == SWT.RIGHT) {
-			cellRenderer.setAlignment(SWT.RIGHT);
-		}
-
-		if ((getStyle() & SWT.CENTER) == SWT.CENTER) {
-			cellRenderer.setAlignment(SWT.CENTER);
-		}
-
 	}
 
 	/**
@@ -223,13 +163,8 @@ public class GridColumn {
     {
         int y = topMargin + parent.sizingGC.getFontMetrics().getHeight() + bottomMargin;
 
-
         if (getImage() != null) {
             y = Math.max(y, topMargin + getImage().getBounds().height + bottomMargin);
-        }
-
-        if( getHeaderControl() != null ) {
-            y += getHeaderControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
         }
 
 		return y;
@@ -241,7 +176,7 @@ public class GridColumn {
             return false;
         }
         int arrowEnd = getBounds().width - rightMargin;
-        int arrowBegin = arrowEnd - sortRenderer.getBounds().width;
+        int arrowBegin = arrowEnd - GridColumnRenderer.getSortControlBounds().width;
         return x >= arrowBegin && x <= arrowEnd;
     }
 
@@ -253,37 +188,15 @@ public class GridColumn {
         }
         x += parent.sizingGC.stringExtent(getText()).x + rightMargin;
         if (isSortable()) {
-            x += rightMargin + sortRenderer.getBounds().width;
+            x += rightMargin + GridColumnRenderer.getSortControlBounds().width;
         }
 
         return x;
     }
 
-	/**
-	 * Sets the sort indicator style for the column. This method does not actual
-	 * sort the data in the table. Valid values include: SWT.UP, SWT.DOWN,
-	 * SWT.NONE.
-	 *
-	 * @param style
-	 *            SWT.UP, SWT.DOWN, SWT.NONE
-	 */
-	public void setSort(int style) {
-		sortStyle = style;
-		parent.redraw();
-	}
-
-	/**
-	 * Returns the sort indicator value.
-	 *
-	 * @return SWT.UP, SWT.DOWN, SWT.NONE
-	 */
-	public int getSort() {
-		return sortStyle;
-	}
-
     public boolean isSortable()
     {
-        return sortStyle != SWT.NONE;
+        return parent.getContentProvider().getColumnSortOrder(element) != SWT.NONE;
     }
 
 	/**
@@ -292,7 +205,7 @@ public class GridColumn {
 	 */
 	public void pack() {
 		int newWidth = computeHeaderWidth();
-        int columnIndex = getIndex();
+        //int columnIndex = getIndex();
         int topIndex = parent.getTopIndex();
         int bottomIndex = parent.getBottomIndex();
         if (topIndex >= 0 && bottomIndex >= topIndex) {
@@ -321,45 +234,6 @@ public class GridColumn {
         x += parent.sizingGC.textExtent(parent.getCellText(cell)).x + rightMargin;
         return x;
     }
-
-	/**
-	 * Returns the column alignment.
-	 *
-	 * @return SWT.LEFT, SWT.RIGHT, SWT.CENTER
-	 */
-	public int getAlignment() {
-		return cellRenderer.getAlignment();
-	}
-
-	/**
-	 * Sets the column alignment.
-	 *
-	 * @param alignment
-	 *            SWT.LEFT, SWT.RIGHT, SWT.CENTER
-	 */
-	public void setAlignment(int alignment) {
-		cellRenderer.setAlignment(alignment);
-	}
-
-	/**
-	 * Returns true if the column is resizeable.
-	 *
-	 * @return true if the column is resizeable.
-	 */
-	public boolean getResizeable() {
-		return resizeable;
-	}
-
-	/**
-	 * Sets the column resizeable.
-	 *
-	 * @param resizeable
-	 *            true to make the column resizeable
-	 */
-	public void setResizeable(boolean resizeable) {
-		this.resizeable = resizeable;
-	}
-
 
 	/**
 	 * Returns the bounds of this column's header.
@@ -405,51 +279,6 @@ public class GridColumn {
 	public LightGrid getParent() {
 		return parent;
 	}
-
-	/**
-	 * Set a new editor at the top of the control. If there's an editor already
-	 * set it is disposed.
-	 *
-	 * @param control
-	 *            the control to be displayed in the header
-	 */
-	public void setHeaderControl(Control control) {
-		if (this.controlEditor == null) {
-			this.controlEditor = new GridHeaderEditor(this);
-			this.controlEditor.initColumn();
-		}
-		this.controlEditor.setEditor(control);
-		getParent().recalculateHeader();
-
-		if (control != null) {
-			// We need to realign if multiple editors are set it is possible
-			// that
-			// a later one needs more space
-			control.getDisplay().asyncExec(new Runnable() {
-
-				@Override
-                public void run() {
-					if (GridColumn.this.controlEditor != null
-							&& GridColumn.this.controlEditor.getEditor() != null) {
-						GridColumn.this.controlEditor.layout();
-					}
-				}
-
-			});
-		}
-	}
-
-	/**
-	 * @return the current header control
-	 */
-	@Nullable
-    public Control getHeaderControl() {
-		if (this.controlEditor != null) {
-			return this.controlEditor.getEditor();
-		}
-		return null;
-	}
-
 
 	/**
 	 * Returns the tooltip of the column header.

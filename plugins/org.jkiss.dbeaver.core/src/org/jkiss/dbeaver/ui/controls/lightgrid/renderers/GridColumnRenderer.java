@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
@@ -37,8 +38,16 @@ public class GridColumnRenderer extends AbstractRenderer
     public static final int arrowMargin = 6;
     public static final int imageSpacing = 3;
 
+    private static Image asterisk = DBIcon.SORT_UNKNOWN.getImage();
+    private static Image arrowUp = DBIcon.SORT_DECREASE.getImage();
+    private static Image arrowDown = DBIcon.SORT_INCREASE.getImage();
+
     public  GridColumnRenderer(LightGrid grid) {
         super(grid);
+    }
+
+    public static Rectangle getSortControlBounds() {
+        return arrowUp.getBounds();
     }
 
     @Nullable
@@ -49,21 +58,12 @@ public class GridColumnRenderer extends AbstractRenderer
     protected String getColumnText()
     {
         String text = grid.getColumnLabelProvider().getText(cell.col);
-        if (text == null)
-        {
+        if (text == null) {
             text = String.valueOf(cell.col);
         }
         return text;
     }
     
-    protected Color getColumnBackground() {
-        return grid.getColumnLabelProvider().getBackground(cell.col);
-    }
-    
-    protected Color getColumnForeground() {
-        return grid.getColumnLabelProvider().getForeground(cell.col);
-    }
-
     protected Font getColumnFont() {
         Font font = grid.getColumnLabelProvider().getFont(cell.col);
         return font != null ? font : grid.getFont();
@@ -71,8 +71,10 @@ public class GridColumnRenderer extends AbstractRenderer
 
     @Override
     public void paint(GC gc) {
-        GridColumn col = grid.getColumnByElement(cell.col);
-        AbstractRenderer arrowRenderer = col.getSortRenderer();
+        //GridColumn col = grid.getColumnByElement(cell.col);
+        //AbstractRenderer arrowRenderer = col.getSortRenderer();
+        int sortOrder = grid.getContentProvider().getColumnSortOrder(cell.col);
+        Rectangle sortBounds = getSortControlBounds();
 
         // set the font to be used to display the text.
         gc.setFont(getColumnFont());
@@ -90,7 +92,8 @@ public class GridColumnRenderer extends AbstractRenderer
         }
         gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
 
-        gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width, getBounds().height);
+        final Rectangle bounds = getBounds();
+        gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
         int pushedDrawingOffset = 0;
         if (drawSelected) {
@@ -103,82 +106,42 @@ public class GridColumnRenderer extends AbstractRenderer
         if (columnImage != null) {
             int y = bottomMargin;
 
-            if (col.getHeaderControl() == null) {
-                y = getBounds().y + pushedDrawingOffset + getBounds().height - bottomMargin - columnImage.getBounds().height;
-            }
+            y = bounds.y + pushedDrawingOffset + bounds.height - bottomMargin - columnImage.getBounds().height;
 
-            gc.drawImage(columnImage, getBounds().x + x + pushedDrawingOffset, y);
+            gc.drawImage(columnImage, bounds.x + x + pushedDrawingOffset, y);
             x += columnImage.getBounds().width + imageSpacing;
         }
 
-        int width = getBounds().width - x;
+        int width = bounds.width - x;
 
-        if (!col.isSortable()) {
+        if (sortOrder == SWT.NONE) {
             width -= rightMargin;
         } else {
-            width -= arrowMargin + arrowRenderer.getSize().x + arrowMargin;
+            width -= arrowMargin + sortBounds.width + arrowMargin;
         }
 
         //gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 
-        int y;
-
-        if (col.getHeaderControl() == null) {
-            y = getBounds().y + getBounds().height - bottomMargin - gc.getFontMetrics().getHeight();
-        } else {
-            y = getBounds().y + getBounds().height - bottomMargin - gc.getFontMetrics().getHeight() - computeControlSize(col).y;
-        }
+        int y = bounds.y + bounds.height - bottomMargin - gc.getFontMetrics().getHeight();
 
         String text = getColumnText();
 
         text = org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, text, width);
 
-        if (col.getAlignment() == SWT.RIGHT) {
-            int len = gc.stringExtent(text).x;
-            if (len < width) {
-                x += width - len;
-            }
-        } else if (col.getAlignment() == SWT.CENTER) {
-            int len = gc.stringExtent(text).x;
-            if (len < width) {
-                x += (width - len) / 2;
-            }
-        }
+        gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
 
-        gc.drawString(text, getBounds().x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
+        if (sortOrder != SWT.NONE) {
+            y = bounds.y + ((bounds.height - sortBounds.height) / 2) + 1;
 
-        if (col.isSortable()) {
-            if (col.getHeaderControl() == null) {
-                y = getBounds().y
-                    + ((getBounds().height - arrowRenderer.getBounds().height) / 2)
-                    + 1;
-            } else {
-                y = getBounds().y
-                    + ((getBounds().height - computeControlSize(col).y - arrowRenderer.getBounds().height) / 2)
-                    + 1;
-            }
-
-//            arrowRenderer.setSelected(col.getSort() == SWT.UP);
             if (drawSelected) {
-                arrowRenderer
-                    .setLocation(
-                        getBounds().x + getBounds().width - arrowMargin
-                            - arrowRenderer.getBounds().width + 1, y
-                    );
+                sortBounds.x = bounds.x + bounds.width - arrowMargin - sortBounds.width + 1;
+                sortBounds.y = y;
             } else {
-                if (col.getHeaderControl() == null) {
-                    y = getBounds().y
-                        + ((getBounds().height - arrowRenderer.getBounds().height) / 2);
-                } else {
-                    y = getBounds().y
-                        + ((getBounds().height - computeControlSize(col).y - arrowRenderer.getBounds().height) / 2);
-                }
-                arrowRenderer
-                    .setLocation(
-                        getBounds().x + getBounds().width - arrowMargin
-                            - arrowRenderer.getBounds().width, y);
+                y = bounds.y + ((bounds.height - sortBounds.height) / 2);
+                sortBounds.x = bounds.x + bounds.width - arrowMargin - sortBounds.width;
+                sortBounds.y = y;
             }
-            arrowRenderer.paint(gc);
+            paintSort(gc, sortBounds, sortOrder);
         }
 
         if (!flat) {
@@ -189,17 +152,17 @@ public class GridColumnRenderer extends AbstractRenderer
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
             }
 
-            gc.drawLine(getBounds().x, getBounds().y, getBounds().x + getBounds().width - 1,
-                getBounds().y);
-            gc.drawLine(getBounds().x, getBounds().y, getBounds().x, getBounds().y + getBounds().height
+            gc.drawLine(bounds.x, bounds.y, bounds.x + bounds.width - 1,
+                bounds.y);
+            gc.drawLine(bounds.x, bounds.y, bounds.x, bounds.y + bounds.height
                 - 1);
 
             if (!drawSelected) {
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-                gc.drawLine(getBounds().x + 1, getBounds().y + 1,
-                    getBounds().x + getBounds().width - 2, getBounds().y + 1);
-                gc.drawLine(getBounds().x + 1, getBounds().y + 1, getBounds().x + 1,
-                    getBounds().y + getBounds().height - 2);
+                gc.drawLine(bounds.x + 1, bounds.y + 1,
+                    bounds.x + bounds.width - 2, bounds.y + 1);
+                gc.drawLine(bounds.x + 1, bounds.y + 1, bounds.x + 1,
+                    bounds.y + bounds.height - 2);
             }
 
             if (drawSelected) {
@@ -207,42 +170,63 @@ public class GridColumnRenderer extends AbstractRenderer
             } else {
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
             }
-            gc.drawLine(getBounds().x + getBounds().width - 1, getBounds().y, getBounds().x
-                + getBounds().width - 1,
-                getBounds().y + getBounds().height - 1);
-            gc.drawLine(getBounds().x, getBounds().y + getBounds().height - 1, getBounds().x
-                + getBounds().width - 1,
-                getBounds().y + getBounds().height - 1);
+            gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x
+                + bounds.width - 1,
+                bounds.y + bounds.height - 1);
+            gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x
+                + bounds.width - 1,
+                bounds.y + bounds.height - 1);
 
             if (!drawSelected) {
                 gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-                gc.drawLine(getBounds().x + getBounds().width - 2, getBounds().y + 1,
-                    getBounds().x + getBounds().width - 2, getBounds().y + getBounds().height
+                gc.drawLine(bounds.x + bounds.width - 2, bounds.y + 1,
+                    bounds.x + bounds.width - 2, bounds.y + bounds.height
                         - 2);
-                gc.drawLine(getBounds().x + 1, getBounds().y + getBounds().height - 2,
-                    getBounds().x + getBounds().width - 2, getBounds().y + getBounds().height
+                gc.drawLine(bounds.x + 1, bounds.y + bounds.height - 2,
+                    bounds.x + bounds.width - 2, bounds.y + bounds.height
                         - 2);
             }
 
         } else {
             gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
 
-            gc.drawLine(getBounds().x + getBounds().width - 1, getBounds().y, getBounds().x
-                + getBounds().width - 1,
-                getBounds().y + getBounds().height - 1);
-            gc.drawLine(getBounds().x, getBounds().y + getBounds().height - 1, getBounds().x
-                + getBounds().width - 1,
-                getBounds().y + getBounds().height - 1);
+            gc.drawLine(bounds.x + bounds.width - 1, bounds.y, bounds.x
+                + bounds.width - 1,
+                bounds.y + bounds.height - 1);
+            gc.drawLine(bounds.x, bounds.y + bounds.height - 1, bounds.x
+                + bounds.width - 1,
+                bounds.y + bounds.height - 1);
         }
 
         gc.setFont(grid.getFont());
     }
 
-    public static Point computeControlSize(GridColumn column) {
-        Control headerControl = column.getHeaderControl();
-        if (headerControl != null) {
-            return headerControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+    private void paintSort(GC gc, Rectangle bounds, int sort)
+    {
+        switch (sort) {
+            case SWT.DEFAULT:
+                gc.drawImage(asterisk, bounds.x, bounds.y);
+                break;
+            case SWT.UP:
+                gc.drawImage(arrowUp, bounds.x, bounds.y);
+                break;
+            case SWT.DOWN:
+                gc.drawImage(arrowDown, bounds.x, bounds.y);
+                break;
         }
-        return new Point(0, 0);
+/*
+        if (isSelected()) {
+            gc.drawLine(bounds.x, bounds.y, bounds.x + 6, bounds.y);
+            gc.drawLine(bounds.x + 1, bounds.y + 1, bounds.x + 5, bounds.y + 1);
+            gc.drawLine(bounds.x + 2, bounds.y + 2, bounds.x + 4, bounds.y + 2);
+            gc.drawPoint(bounds.x + 3, bounds.y + 3);
+        } else {
+            gc.drawPoint(bounds.x + 3, bounds.y);
+            gc.drawLine(bounds.x + 2, bounds.y + 1, bounds.x + 4, bounds.y + 1);
+            gc.drawLine(bounds.x + 1, bounds.y + 2, bounds.x + 5, bounds.y + 2);
+            gc.drawLine(bounds.x, bounds.y + 3, bounds.x + 6, bounds.y + 3);
+        }
+*/
     }
+
 }
