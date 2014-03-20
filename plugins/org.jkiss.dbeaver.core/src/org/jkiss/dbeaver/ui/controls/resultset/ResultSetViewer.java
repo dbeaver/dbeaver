@@ -2515,7 +2515,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (column instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) column;
                 DBDAttributeConstraint co = model.getDataFilter().getConstraint(binding);
-                if (co.getOrderPosition() > 0) {
+                if (co != null && co.getOrderPosition() > 0) {
                     return co.isOrderDescending() ? SWT.UP : SWT.DOWN;
                 }
                 return SWT.DEFAULT;

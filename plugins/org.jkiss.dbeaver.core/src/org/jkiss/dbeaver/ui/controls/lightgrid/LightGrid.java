@@ -250,6 +250,8 @@ public abstract class LightGrid extends Canvas {
     public GC sizingGC;
 
     private Color backgroundColor;
+    private Cursor sortCursor;
+
 
     /**
      * True if the widget is being disposed.  When true, events are not fired.
@@ -368,9 +370,11 @@ public abstract class LightGrid extends Canvas {
         columnHeaderRenderer = new GridColumnRenderer(this);
         rowHeaderRenderer = new GridRowRenderer(this);
 
-        setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
-        setLineColor(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-        backgroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        final Display display = getDisplay();
+        setForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+        setLineColor(display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        backgroundColor = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        sortCursor = display.getSystemCursor(SWT.CURSOR_HAND);
 
         if ((style & SWT.MULTI) != 0) {
             selectionType = SWT.MULTI;
@@ -397,11 +401,11 @@ public abstract class LightGrid extends Canvas {
         recalculateSizes();
 
         RGB cellSel = blend(
-            getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB(),
+            display.getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB(),
             new RGB(255, 255, 255),
             50);
 
-        cellHeaderSelectionBackground = new Color(getDisplay(), cellSel);// = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        cellHeaderSelectionBackground = new Color(display, cellSel);// = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
 
 
         setDragDetect(false);
@@ -443,7 +447,6 @@ public abstract class LightGrid extends Canvas {
                 column.setText(labelProvider.getText(columnElements[i]));
                 column.setImage(labelProvider.getImage(columnElements[i]));
                 column.setHeaderTooltip(labelProvider.getTooltip(columnElements[i]));
-                column.setSort(contentProvider.getColumnSortOrder(columnElements[i]));
             }
 
             if (getColumnCount() == 1) {
@@ -493,7 +496,6 @@ public abstract class LightGrid extends Canvas {
                 column.setText(labelProvider.getText(columnElements[i]));
                 column.setImage(labelProvider.getImage(columnElements[i]));
                 column.setHeaderTooltip(labelProvider.getTooltip(columnElements[i]));
-                column.setSort(contentProvider.getColumnSortOrder(columnElements[i]));
             }
         }
 
@@ -1886,10 +1888,8 @@ public abstract class LightGrid extends Canvas {
                 }
                 x2 += column.getWidth();
                 if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
-                    if (column.getResizeable()) {
-                        overResizer = true;
-                        columnBeingResized = column;
-                    }
+                    overResizer = true;
+                    columnBeingResized = column;
                     break;
                 }
             }
@@ -1899,7 +1899,7 @@ public abstract class LightGrid extends Canvas {
         }
         if (overSorter != hoveringOnColumnSorter) {
             if (overSorter) {
-                setCursor(columnBeingSorted.getSortRenderer().getHoverCursor());
+                setCursor(sortCursor);
             } else {
                 columnBeingSorted = null;
                 setCursor(null);
