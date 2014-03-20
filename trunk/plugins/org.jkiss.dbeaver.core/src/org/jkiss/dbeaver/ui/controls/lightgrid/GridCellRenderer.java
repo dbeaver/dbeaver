@@ -45,18 +45,12 @@ class GridCellRenderer extends AbstractRenderer
     protected Color colorBackgroundDisabled;
     protected Color colorLineForeground;
     protected Color colorLineFocused;
-    private int alignment = SWT.LEFT;
 
     private boolean rowHover = false;
-
     private boolean columnHover = false;
-
     private boolean rowFocus = false;
-
     private boolean cellFocus = false;
-
     private boolean cellSelected = false;
-
     private boolean dragging = false;
 
     public GridCellRenderer(LightGrid grid)
@@ -67,22 +61,6 @@ class GridCellRenderer extends AbstractRenderer
         colorSelected = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
         colorLineForeground = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         colorBackgroundDisabled = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
-    }
-
-    /**
-     * @return Returns the alignment.
-     */
-    public int getAlignment()
-    {
-        return alignment;
-    }
-
-    /**
-     * @param alignment The alignment to set.
-     */
-    public void setAlignment(int alignment)
-    {
-        this.alignment = alignment;
     }
 
     /**
@@ -259,18 +237,6 @@ class GridCellRenderer extends AbstractRenderer
             text = TextUtils.getShortString(gc, text, width);
             // Replace linefeeds with space
             text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ').replace((char)0, ' ');
-
-            if (getAlignment() == SWT.RIGHT) {
-                int len = gc.stringExtent(text).x;
-                if (len < width) {
-                    x += width - len;
-                }
-            } else if (getAlignment() == SWT.CENTER) {
-                int len = gc.stringExtent(text).x;
-                if (len < width) {
-                    x += (width - len) / 2;
-                }
-            }
 
             gc.setFont(grid.getFont());
             gc.drawString(
