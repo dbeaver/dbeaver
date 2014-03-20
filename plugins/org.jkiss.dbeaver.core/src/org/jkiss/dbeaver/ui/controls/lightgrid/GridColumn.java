@@ -31,7 +31,7 @@ import org.jkiss.utils.CommonUtils;
  *
  * @author serge@jkiss.org
  */
-public class GridColumn {
+class GridColumn {
 
 	/**
 	 * Default width of the column.

@@ -84,8 +84,8 @@ public abstract class LightGrid extends Canvas {
      */
     private int focusItem = -1;
 
-    private final Set<GridPos> selectedCells = new TreeSet<GridPos>(new CellComparator());
-    private final Set<GridPos> selectedCellsBeforeRangeSelect = new TreeSet<GridPos>(new CellComparator());
+    private final Set<GridPos> selectedCells = new TreeSet<GridPos>(new GridPos.PosComparator());
+    private final Set<GridPos> selectedCellsBeforeRangeSelect = new TreeSet<GridPos>(new GridPos.PosComparator());
     private final List<GridColumn> selectedColumns = new ArrayList<GridColumn>();
     private final IntKeyMap<Boolean> selectedRows = new IntKeyMap<Boolean>();
 
@@ -115,6 +115,7 @@ public abstract class LightGrid extends Canvas {
 
     private IGridRenderer columnHeaderRenderer;
     private IGridRenderer rowHeaderRenderer;
+    private GridCellRenderer cellRenderer;
 
     /**
      * Are row headers visible?
@@ -350,6 +351,7 @@ public abstract class LightGrid extends Canvas {
         sizingGC = new GC(this);
         columnHeaderRenderer = new GridColumnRenderer(this);
         rowHeaderRenderer = new GridRowRenderer(this);
+        cellRenderer = new GridCellRenderer(this);
 
         final Display display = getDisplay();
         setForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
@@ -706,7 +708,7 @@ public abstract class LightGrid extends Canvas {
      * @return the external horizontal scrollbar.
      * @see #setHorizontalScrollBarProxy(IGridScrollBar)
      */
-    protected IGridScrollBar getHorizontalScrollBarProxy()
+    public IGridScrollBar getHorizontalScrollBarProxy()
     {
         checkWidget();
         return hScroll;
@@ -718,7 +720,7 @@ public abstract class LightGrid extends Canvas {
      * @return the external vertical scrollbar.
      * @see #setVerticalScrollBarProxy(IGridScrollBar)
      */
-    protected IGridScrollBar getVerticalScrollBarProxy()
+    public IGridScrollBar getVerticalScrollBarProxy()
     {
         checkWidget();
         return vScroll;
@@ -1922,7 +1924,6 @@ public abstract class LightGrid extends Canvas {
 
                     if (x + width >= 0 && x < getClientArea().width) {
 
-                        final GridCellRenderer cellRenderer = new GridCellRenderer(this);
                         cellRenderer.setCell(testCell);
                         cellRenderer.setBounds(x, y, width, getItemHeight());
                         int cellInHeaderDelta = headerHeight - y;
@@ -2757,7 +2758,7 @@ public abstract class LightGrid extends Canvas {
                     //event.data = e.data;
                     event.x = e.x;
                     event.y = e.y;
-                    event.data = columnBeingSorted;
+                    event.data = columnBeingSorted.getElement();
                     event.stateMask = e.stateMask;
                     notifyListeners(Event_ChangeSort, event);
                     return;
@@ -4024,19 +4025,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     public Rectangle getCellBounds(int columnIndex, int rowIndex) {
-        // HACK: The -1000,-1000 xy coordinates below are a hack to deal with
-        // GridEditor issues. In
-        // normal SWT Table, when an editor is created on Table and its
-        // positioned in the header area
-        // the header overlays the editor. Because Grid (header and everything)
-        // is drawn on one
-        // composite, when an editor is positioned in the header area the editor
-        // overlays the header.
-        // So to fix this, when the editor is anywhere its not supposed to be
-        // seen (the editor
-        // coordinates are determined by this getBounds) we position it out in
-        // timbuktu.
-
         if (!isShown(rowIndex))
             return new Rectangle(-1000, -1000, 0, 0);
 
@@ -4047,15 +4035,6 @@ public abstract class LightGrid extends Canvas {
             return new Rectangle(-1000, -1000, 0, 0);
 
         return new Rectangle(origin.x, origin.y, column.getWidth(), getItemHeight());
-    }
-
-    private static class CellComparator implements Comparator<GridPos> {
-        @Override
-        public int compare(GridPos pos1, GridPos pos2)
-        {
-            int res = pos1.row - pos2.row;
-            return res != 0 ? res : pos1.col - pos2.col;
-        }
     }
 
     private void drawEmptyColumnHeader(GC gc, int x, int y, int width, int height)

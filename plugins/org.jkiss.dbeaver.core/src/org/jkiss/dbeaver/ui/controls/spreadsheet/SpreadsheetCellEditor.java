@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package  org.jkiss.dbeaver.ui.controls.lightgrid;
+package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ControlEditor;
@@ -28,28 +28,16 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
- * <p>
- * NOTE:  THIS WIDGET AND ITS API ARE STILL UNDER DEVELOPMENT.  THIS IS A PRE-RELEASE ALPHA 
- * VERSION.  USERS SHOULD EXPECT API CHANGES IN FUTURE VERSIONS.
- * </p> 
- * 
- * A GridEditor is a manager for a Control that appears above a cell in a Grid
- * and tracks with the moving and resizing of that cell. It can be used to
- * display a text widget above a cell in a Grid so that the user can edit the
- * contents of that cell. It can also be used to display a button that can
- * launch a dialog for modifying the contents of the associated cell.
- * <p>
- * @see org.eclipse.swt.custom.TableEditor
+ * Spreadsheet cell editor
  *
  * @author serge@jkiss.org
  */
-public class GridEditor extends ControlEditor
+public class SpreadsheetCellEditor extends ControlEditor
 {
     private LightGrid grid;
-
-    //GridItem item;
 
     private int column = -1;
     private int row = -1;
@@ -63,7 +51,7 @@ public class GridEditor extends ControlEditor
      * 
      * @param grid the Table Control above which this editor will be displayed
      */
-    public GridEditor(final LightGrid grid)
+    public SpreadsheetCellEditor(final LightGrid grid)
     {
         super(grid);
         this.grid = grid;
