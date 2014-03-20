@@ -226,7 +226,4 @@ public abstract class AbstractRenderer implements IGridRenderer
         return grid.getDisplay();
     }
 
-    public Cursor getHoverCursor() {
-        return null;
-    }
 }
