@@ -17,11 +17,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package  org.jkiss.dbeaver.ui.controls.lightgrid.scroll;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.ScrollBar;
 
 /**
  * Used by Grid to externalize the scrollbars from the table itself.
@@ -32,33 +31,14 @@ import org.eclipse.swt.widgets.ScrollBar;
 public interface IGridScrollBar
 {
 
-    public ScrollBar getControl();
-    /**
-     * Returns the scrollbar's visibility.
-     * 
-     * @return true if the scrollbar is visible.
-     */
+    public int getWidth();
+
     public boolean getVisible();
 
-    /**
-     * Sets the scrollbar's visibility.
-     * 
-     * @param visible visibilty
-     */
     public void setVisible(boolean visible);
 
-    /**
-     * Returns the selection.
-     * 
-     * @return the selection.
-     */
     public int getSelection();
 
-    /**
-     * Sets the selection.
-     * 
-     * @param selection selection to set
-     */
     public void setSelection(int selection);
 
     /**
@@ -72,72 +52,31 @@ public interface IGridScrollBar
      * @param increment increment
      * @param pageIncrement page increment
      */
-    public void setValues(int selection, int min, int max, int thumb, int increment,
-                          int pageIncrement);
+    public void setValues(int selection, int min, int max, int thumb, int increment, int pageIncrement);
 
-
-    /**
-     * @param e
-     */
     public void handleMouseWheel(Event e);
     
-    /**
-     * @param min
-     */
     public void setMinimum(int min);
     
-    /**
-     * @return min
-     */
     public int getMinimum();
     
-    /**
-     * @param max
-     */
     public void setMaximum(int max);
     
-    /**
-     * @return max
-     */
     public int getMaximum();
     
-    /**
-     * @param thumb
-     */
     public void setThumb(int thumb);
     
-    /**
-     * @return thumb
-     */
     public int getThumb();
     
-    /**
-     * @param increment
-     */
     public void setIncrement(int increment);
     
-    /**
-     * @return increment
-     */
     public int getIncrement();
     
-    /**
-     * @param page
-     */
     public void setPageIncrement(int page);
     
-    /**
-     * @return page increment
-     */
     public int getPageIncrement();
     
-    /**
-     * @param listener
-     */
     public void addSelectionListener(SelectionListener listener);
     
-    /**
-     * @param listener
-     */
     public void removeSelectionListener(SelectionListener listener);
 }

@@ -16,19 +16,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
+package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * Grid row header renderer.
  */
-public class GridRowRenderer extends AbstractRenderer {
+class GridRowRenderer extends AbstractRenderer {
     private static final int leftMargin = 6;
     private static final int rightMargin = 8;
     private final Color DEFAULT_BACKGROUND;
@@ -42,9 +41,8 @@ public class GridRowRenderer extends AbstractRenderer {
         DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+
+
     @Override
     public void paint(GC gc) {
         String text = getHeaderText();
