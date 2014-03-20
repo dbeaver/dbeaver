@@ -93,4 +93,9 @@ public class DBDAttributeBinding {
         this.entityAttribute = entityAttribute;
         this.rowIdentifier = rowIdentifier;
     }
+
+    @Override
+    public String toString() {
+        return getAttributeName() + " [" + getAttributeIndex() + "]";
+    }
 }
