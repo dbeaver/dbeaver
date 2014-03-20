@@ -62,7 +62,7 @@ public abstract class LightGrid extends Canvas {
     /**
      * The minimum width of a column header.
      */
-    private static final int MIN_COLUMN_HEADER_WIDTH = 20;
+    private static final int MIN_COLUMN_HEADER_WIDTH = 32;
 
     public enum EventSource {
         MOUSE,
@@ -441,9 +441,7 @@ public abstract class LightGrid extends Canvas {
 
             // Add columns
             for (int i = 0; i < columnElements.length; i++) {
-                GridColumn column = new GridColumn(this, columnElements[i]);
-                column.setText(labelProvider.getText(columnElements[i]));
-                column.setImage(labelProvider.getImage(columnElements[i]));
+                new GridColumn(this, columnElements[i]);
             }
 
             if (getColumnCount() == 1) {
@@ -485,13 +483,6 @@ public abstract class LightGrid extends Canvas {
                         }
                     }
                 }
-            }
-        } else {
-            // Update column properties
-            for (int i = 0; i < columns.size(); i++) {
-                GridColumn column = columns.get(i);
-                column.setText(labelProvider.getText(columnElements[i]));
-                column.setImage(labelProvider.getImage(columnElements[i]));
             }
         }
 
@@ -1189,7 +1180,7 @@ public abstract class LightGrid extends Canvas {
             return -1;
         }
 
-        if (column.getParent() != this) return -1;
+        if (column.getGrid() != this) return -1;
 
         return columns.indexOf(column);
     }
@@ -2011,7 +2002,7 @@ public abstract class LightGrid extends Canvas {
 
                     if (x + width >= 0 && x < getClientArea().width) {
 
-                        final GridCellRenderer cellRenderer = column.getCellRenderer();
+                        final GridCellRenderer cellRenderer = new GridCellRenderer(this);
                         cellRenderer.setCell(testCell);
                         cellRenderer.setBounds(x, y, width, getItemHeight());
                         int cellInHeaderDelta = headerHeight - y;
@@ -2431,9 +2422,7 @@ public abstract class LightGrid extends Canvas {
         if (newCell.row < 0 || newCell.row >= getItemCount())
             return;
 
-        if (getColumn(newCell.col).getCellSelectionEnabled()) {
-            selectedCells.add(newCell);
-        }
+        selectedCells.add(newCell);
     }
 
     void updateSelectionCache()
@@ -2814,6 +2803,7 @@ public abstract class LightGrid extends Canvas {
                 columnBeingResized.pack();
                 resizingColumn = false;
                 handleHoverOnColumnHeader(e.x, e.y);
+                redraw();
                 return;
             }
 
@@ -3576,7 +3566,7 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
         GridColumn column = getColumn(col);
-        if (column == null || column.getParent() != this) {
+        if (column == null || column.getGrid() != this) {
             SWT.error(SWT.ERROR_INVALID_ARGUMENT);
             return;
         }
