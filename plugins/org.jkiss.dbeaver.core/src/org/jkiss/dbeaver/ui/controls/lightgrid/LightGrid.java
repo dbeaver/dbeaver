@@ -109,6 +109,7 @@ public abstract class LightGrid extends Canvas {
      * List of table columns in creation/index order.
      */
     private final List<GridColumn> columns = new ArrayList<GridColumn>();
+    private int maxColumnDepth = 0;
     private Object[] columnElements = new Object[0];
     private Object[] rowElements = new Object[0];
 
@@ -416,6 +417,7 @@ public abstract class LightGrid extends Canvas {
         if (clearData) {
             this.topIndex = -1;
             this.bottomIndex = -1;
+            this.maxColumnDepth = 0;
 
             // Add columns
             for (Object columnElement : columnElements) {
@@ -476,6 +478,7 @@ public abstract class LightGrid extends Canvas {
                 createChildColumns(column);
             }
         }
+        this.maxColumnDepth = Math.max(this.maxColumnDepth, parent.getLevel());
     }
 
     @Nullable
@@ -1611,7 +1614,7 @@ public abstract class LightGrid extends Canvas {
 
         int colHeaderHeight = 0;
         for (GridColumn column : columns) {
-            colHeaderHeight = Math.max(column.computeHeaderHeight(), colHeaderHeight);
+            colHeaderHeight = Math.max(column.computeHeaderHeight(true), colHeaderHeight);
         }
 
         headerHeight = colHeaderHeight;
@@ -1996,16 +1999,16 @@ public abstract class LightGrid extends Canvas {
             if (x > getClientArea().width)
                 break;
 
-            int height = headerHeight;
+            int height = column.computeHeaderHeight(false);
             y = 0;
             columnHeaderRenderer.setHover(hoveringColumn == column);
-            cell.col = columnElements[i];
+            cell.col = column.getElement();
             columnHeaderRenderer.setCell(cell);
             columnHeaderRenderer.setBounds(x, y, column.getWidth(), height);
             columnHeaderRenderer.setSelected(selectedColumns.contains(column));
 
             if (x + column.getWidth() >= 0) {
-                columnHeaderRenderer.paint(gc);
+                paintColumnsHeader(gc, column, cell, x, y, 0);
             }
 
             x += column.getWidth();
@@ -2021,6 +2024,27 @@ public abstract class LightGrid extends Canvas {
             // paint left corner
             drawTopLeftCell(gc, 0, 0, rowHeaderWidth, headerHeight);
             x += rowHeaderWidth;
+        }
+    }
+
+    private void paintColumnsHeader(GC gc, GridColumn column, GridCell cell, int x, int y, int level) {
+        cell.col = column.getElement();
+        columnHeaderRenderer.paint(gc);
+        level++;
+        if (level > maxColumnDepth) {
+            return;
+        }
+        List<GridColumn> children = column.getChildren();
+        if (CommonUtils.isEmpty(children)) {
+            Rectangle parentBounds = column.getBounds();
+            drawEmptyColumnHeader(gc, x, y, parentBounds.width, parentBounds.height);
+        } else {
+            // Sraw child columns
+            int childX = x;
+            for (GridColumn child : children) {
+                paintColumnsHeader(gc, child, cell, childX, y + column.computeHeaderHeight(false), level);
+                childX += child.computeHeaderWidth();
+            }
         }
     }
 
@@ -3330,8 +3354,12 @@ public abstract class LightGrid extends Canvas {
     }
 
     public void recalculateSizes() {
+        int oldHeaderHeight = headerHeight;
         computeHeaderHeight();
         computeItemHeight();
+        if (oldHeaderHeight != headerHeight) {
+            scrollValuesObsolete = true;
+        }
     }
 
     /**
@@ -3862,20 +3890,6 @@ public abstract class LightGrid extends Canvas {
             hoveringOnSelectionDragArea = over;
         }
         return over;
-    }
-
-    /**
-     * Recalculate the height of the header
-     */
-    public void recalculateHeader()
-    {
-        int previous = getHeaderHeight();
-        computeHeaderHeight();
-
-        if (previous != getHeaderHeight()) {
-            scrollValuesObsolete = true;
-            redraw();
-        }
     }
 
     /**

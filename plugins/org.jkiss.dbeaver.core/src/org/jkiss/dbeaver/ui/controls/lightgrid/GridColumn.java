@@ -81,7 +81,7 @@ class GridColumn {
         return getGrid().indexOf(this);
     }
 
-    public void dispose() {
+    void dispose() {
 		if (!grid.isDisposing()) {
             if (parent == null) {
 			    grid.removeColumn(this);
@@ -118,22 +118,6 @@ class GridColumn {
 		}
 	}
 
-    public int computeHeaderHeight()
-    {
-        int y = topMargin + grid.sizingGC.getFontMetrics().getHeight() + bottomMargin;
-        Image image = grid.getLabelProvider().getImage(element);
-        if (image != null) {
-            y = Math.max(y, topMargin + image.getBounds().height + bottomMargin);
-        }
-        int childHeight = 0;
-        if (!CommonUtils.isEmpty(children)) {
-            for (GridColumn child : children) {
-                childHeight = Math.max(childHeight, child.computeHeaderHeight());
-            }
-        }
-		return y;
-    }
-
     public boolean isOverSortArrow(int x)
     {
         if (!isSortable()) {
@@ -144,7 +128,23 @@ class GridColumn {
         return x >= arrowBegin && x <= arrowEnd;
     }
 
-    public int computeHeaderWidth()
+    int computeHeaderHeight(boolean includeChildren)
+    {
+        int y = topMargin + grid.sizingGC.getFontMetrics().getHeight() + bottomMargin;
+        Image image = grid.getLabelProvider().getImage(element);
+        if (image != null) {
+            y = Math.max(y, topMargin + image.getBounds().height + bottomMargin);
+        }
+        int childHeight = 0;
+        if (includeChildren && !CommonUtils.isEmpty(children)) {
+            for (GridColumn child : children) {
+                childHeight = Math.max(childHeight, child.computeHeaderHeight(true));
+            }
+        }
+        return y + childHeight;
+    }
+
+    int computeHeaderWidth()
     {
         int x = leftMargin;
         Image image = grid.getLabelProvider().getImage(element);
@@ -155,6 +155,14 @@ class GridColumn {
         x += grid.sizingGC.stringExtent(text).x + rightMargin;
         if (isSortable()) {
             x += rightMargin + GridColumnRenderer.getSortControlBounds().width;
+        }
+
+        if (!CommonUtils.isEmpty(children)) {
+            int childWidth = 0;
+            for (GridColumn child : children) {
+                childWidth += child.computeHeaderWidth();
+            }
+            return Math.max(x, childWidth);
         }
 
         return x;
@@ -169,7 +177,7 @@ class GridColumn {
 	 * Causes the receiver to be resized to its preferred size.
 	 *
 	 */
-	public void pack() {
+	void pack() {
 		int newWidth = computeHeaderWidth();
         //int columnIndex = getIndex();
         int topIndex = grid.getTopIndex();
@@ -268,4 +276,7 @@ class GridColumn {
         children.remove(column);
     }
 
+    public int getLevel() {
+        return level;
+    }
 }
