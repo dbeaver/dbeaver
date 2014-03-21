@@ -491,7 +491,7 @@ public final class DBUtils {
     }
 
     public static void findValueLocators(
-        DBRProgressMonitor monitor,
+        DBCSession session,
         DBDAttributeBinding[] bindings)
     {
         Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<DBSEntity, DBDRowIdentifier>();
@@ -501,15 +501,15 @@ public final class DBUtils {
                 if (meta.getEntity() == null) {
                     continue;
                 }
-                DBSEntityAttribute tableColumn = meta.getAttribute(monitor);
+                DBSEntityAttribute tableColumn = meta.getAttribute(session.getProgressMonitor());
                 // We got table name and column name
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
-                DBSEntity ownerEntity = meta.getEntity().getEntity(monitor);
+                DBSEntity ownerEntity = meta.getEntity().getEntity(session.getProgressMonitor());
                 if (ownerEntity != null) {
                     DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
                     if (rowIdentifier == null) {
-                        DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(monitor);
+                        DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(session.getProgressMonitor());
                         if (entityIdentifier == null) {
                             continue;
                         }
@@ -520,6 +520,8 @@ public final class DBUtils {
                     }
                     column.initValueLocator(tableColumn, rowIdentifier);
                 }
+
+                column.readNestedBindings(session);
             }
         }
         catch (DBException e) {

@@ -130,6 +130,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         LAST
     }
 
+    @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
     private Composite filtersPanel;
@@ -141,8 +142,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private final Spreadsheet spreadsheet;
     private final ViewValuePanel previewPane;
 
+    @NotNull
     private final ResultSetProvider resultSetProvider;
+    @NotNull
     private final ResultSetDataReceiver dataReceiver;
+    @NotNull
     private final IThemeManager themeManager;
     private ToolBarManager toolBarManager;
 
@@ -172,7 +176,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
 
-    public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
+    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull ResultSetProvider resultSetProvider)
     {
         super();
 
@@ -2515,12 +2519,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         break;
                     case STRUCT:
                     case OBJECT:
-                        try {
-                            DBSDataType dataType = DBUtils.resolveDataType(VoidProgressMonitor.INSTANCE, getDataSource(), attribute.getTypeName());
-                            System.out.println(dataType);
-                        } catch (DBException e) {
-                            log.warn("Can't get element structure info", e);
-                        }
                         break;
                     case ANY:
                         break;
