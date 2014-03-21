@@ -2503,9 +2503,28 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Nullable
         @Override
         public Object[] getChildren(Object element) {
-            if (element instanceof DBDAttributeBinding) {
-                ((DBDAttributeBinding) element).getEntityAttribute();
+/*
+            if (!(element instanceof DBDAttributeBinding)) {
+                final DBSAttributeBase attribute = ((DBDAttributeBinding) element).getAttribute();
+                try {
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                            try {
+                                DBSDataType dataType = DBUtils.resolveDataType(monitor, getDataSource(), attribute.getTypeName());
+                                System.out.println(dataType);
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+*/
             return null;
         }
 
