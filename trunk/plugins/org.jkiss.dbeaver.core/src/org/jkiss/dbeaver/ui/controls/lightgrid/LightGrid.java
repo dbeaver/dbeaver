@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
 import java.util.*;
@@ -416,7 +417,6 @@ public abstract class LightGrid extends Canvas {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
-        IGridLabelProvider labelProvider = getColumnLabelProvider();
         this.columnElements = contentProvider.getElements(true);
         this.rowElements = contentProvider.getElements(false);
 
@@ -425,8 +425,9 @@ public abstract class LightGrid extends Canvas {
             this.bottomIndex = -1;
 
             // Add columns
-            for (int i = 0; i < columnElements.length; i++) {
-                new GridColumn(this, columnElements[i]);
+            for (Object columnElement : columnElements) {
+                GridColumn column = new GridColumn(this, columnElement);
+                createChildColumns(column);
             }
 
             if (getColumnCount() == 1) {
@@ -472,6 +473,16 @@ public abstract class LightGrid extends Canvas {
         }
 
         updateScrollbars();
+    }
+
+    private void createChildColumns(GridColumn parent) {
+        Object[] children = getContentProvider().getChildren(parent.getElement());
+        if (!CommonUtils.isEmpty(children)) {
+            for (Object child : children) {
+                GridColumn column = new GridColumn(parent, child);
+                createChildColumns(column);
+            }
+        }
     }
 
     @Nullable
@@ -601,38 +612,9 @@ public abstract class LightGrid extends Canvas {
         deselectAllCells();
     }
 
-    /**
-     * Returns the column at the given, zero-relative index in the receiver.
-     * Throws an exception if the index is out of range. If no
-     * {@code GridColumn}s were created by the programmer, this method will
-     * throw {@code ERROR_INVALID_RANGE} despite the fact that a single column
-     * of data may be visible in the table. This occurs when the programmer uses
-     * the table like a list, adding items but never creating a column.
-     *
-     * @param index the index of the column to return
-     * @return the column at the given index
-     */
     public GridColumn getColumn(int index)
     {
-        checkWidget();
-
-        if (index < 0 || index > getColumnCount() - 1) {
-            SWT.error(SWT.ERROR_INVALID_RANGE);
-        }
-
         return columns.get(index);
-    }
-
-    @Nullable
-    public GridColumn getColumnByElement(Object element)
-    {
-        checkWidget();
-        for (GridColumn col : columns) {
-            if (col.getElement() == element) {
-                return col;
-            }
-        }
-        return null;
     }
 
     /**
@@ -692,37 +674,21 @@ public abstract class LightGrid extends Canvas {
      */
     public int getColumnCount()
     {
-        checkWidget();
         return columns.size();
     }
 
     public Collection<GridColumn> getColumns()
     {
-        checkWidget();
         return columns;
     }
 
-    /**
-     * Returns the externally managed horizontal scrollbar.
-     *
-     * @return the external horizontal scrollbar.
-     * @see #setHorizontalScrollBarProxy(IGridScrollBar)
-     */
     public IGridScrollBar getHorizontalScrollBarProxy()
     {
-        checkWidget();
         return hScroll;
     }
 
-    /**
-     * Returns the externally managed vertical scrollbar.
-     *
-     * @return the external vertical scrollbar.
-     * @see #setVerticalScrollBarProxy(IGridScrollBar)
-     */
     public IGridScrollBar getVerticalScrollBarProxy()
     {
-        checkWidget();
         return vScroll;
     }
 
@@ -734,7 +700,6 @@ public abstract class LightGrid extends Canvas {
      */
     public int getHeaderHeight()
     {
-        checkWidget();
         return headerHeight;
     }
 

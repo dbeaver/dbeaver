@@ -25,6 +25,9 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Grid column info.
  * Holds information about column width and other UI properties
@@ -45,23 +48,26 @@ class GridColumn {
     private static final int imageSpacing = 3;
     private static final int insideMargin = 3;
 
-	/**
-	 * Parent table.
-	 */
 	private final LightGrid grid;
     private final Object element;
+    private final GridColumn parent;
+    private List<GridColumn> children;
 
-	private int width = DEFAULT_WIDTH;
+    private int width = DEFAULT_WIDTH;
 
 	public GridColumn(LightGrid grid, Object element) {
-		this(grid, -1, element);
-	}
-
-	public GridColumn(LightGrid grid, int index, Object element) {
         this.grid = grid;
         this.element = element;
-        grid.newColumn(this, index);
+        this.parent = null;
+        grid.newColumn(this, -1);
 	}
+
+    public GridColumn(GridColumn parent, Object element) {
+        this.grid = parent.grid;
+        this.element = element;
+        this.parent = parent;
+        parent.addChild(this);
+    }
 
     public Object getElement() {
         return element;
@@ -74,11 +80,15 @@ class GridColumn {
 
     public void dispose() {
 		if (!grid.isDisposing()) {
-			grid.removeColumn(this);
+            if (parent == null) {
+			    grid.removeColumn(this);
+            } else {
+                parent.removeChild(this);
+            }
 		}
 	}
 
-	/**
+    /**
 	 * Returns the width of the column.
 	 *
 	 * @return width of column
@@ -230,5 +240,24 @@ class GridColumn {
 
 		return null;
 	}
+
+    public GridColumn getParent() {
+        return parent;
+    }
+
+    public List<GridColumn> getChildren() {
+        return children;
+    }
+
+    private void addChild(GridColumn gridColumn) {
+        if (children == null) {
+            children = new ArrayList<GridColumn>();
+        }
+        children.add(gridColumn);
+    }
+
+    private void removeChild(GridColumn column) {
+        children.remove(column);
+    }
 
 }
