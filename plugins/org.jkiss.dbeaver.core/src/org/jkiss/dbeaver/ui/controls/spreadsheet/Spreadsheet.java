@@ -69,9 +69,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     @NotNull
     private final IGridContentProvider contentProvider;
     @NotNull
-    private final IGridLabelProvider columnLabelProvider;
-    @NotNull
-    private final IGridLabelProvider rowLabelProvider;
+    private final IGridLabelProvider labelProvider;
 
     private SpreadsheetSelectionProvider selectionProvider;
 
@@ -87,9 +85,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         @NotNull final IWorkbenchPartSite site,
         @NotNull final ISpreadsheetController spreadsheetController,
         @NotNull final IGridContentProvider contentProvider,
-        @NotNull final IGridLabelProvider columnLabelProvider,
-        @NotNull final IGridLabelProvider rowLabelProvider
-        )
+        @NotNull final IGridLabelProvider labelProvider)
     {
         super(parent, style);
         GridLayout layout = new GridLayout(1, true);
@@ -102,8 +98,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         this.site = site;
         this.spreadsheetController = spreadsheetController;
         this.contentProvider = contentProvider;
-        this.columnLabelProvider = columnLabelProvider;
-        this.rowLabelProvider = rowLabelProvider;
+        this.labelProvider = labelProvider;
         this.selectionProvider = new SpreadsheetSelectionProvider(this);
 
         this.foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
@@ -401,16 +396,9 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     @NotNull
     @Override
-    public IGridLabelProvider getColumnLabelProvider()
+    public IGridLabelProvider getLabelProvider()
     {
-        return columnLabelProvider;
-    }
-
-    @NotNull
-    @Override
-    public IGridLabelProvider getRowLabelProvider()
-    {
-        return rowLabelProvider;
+        return labelProvider;
     }
 
     public int getColumnsCount()
