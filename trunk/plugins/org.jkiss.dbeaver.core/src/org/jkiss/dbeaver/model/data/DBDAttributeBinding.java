@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCNestedAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -30,7 +31,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Attribute value binding info
@@ -46,7 +49,7 @@ public class DBDAttributeBinding {
     @Nullable
     private DBDRowIdentifier rowIdentifier;
     @Nullable
-    private DBDAttributeBinding nestedBindings;
+    private List<DBDAttributeBinding> nestedBindings;
 
     public DBDAttributeBinding(@NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int attributeIndex) {
         this.metaAttribute = metaAttribute;
@@ -110,6 +113,11 @@ public class DBDAttributeBinding {
         return entityAttribute == null ? metaAttribute : entityAttribute;
     }
 
+    @Nullable
+    public List<DBDAttributeBinding> getNestedBindings() {
+        return nestedBindings;
+    }
+
     public void initValueLocator(DBSEntityAttribute entityAttribute, DBDRowIdentifier rowIdentifier) {
         this.entityAttribute = entityAttribute;
         this.rowIdentifier = rowIdentifier;
@@ -124,16 +132,25 @@ public class DBDAttributeBinding {
                 if (dataType instanceof DBSEntity) {
                     Collection<? extends DBSEntityAttribute> nestedAttributes = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
                     if (!CommonUtils.isEmpty(nestedAttributes)) {
-                        int nestedIndex = 0;
-                        for (DBSEntityAttribute nestedAttr : nestedAttributes) {
-
-                        }
+                        createNestedBindings(session, nestedAttributes);
                     }
                 }
-                System.out.println(dataType);
                 break;
         }
 
+    }
+
+    private void createNestedBindings(DBCSession session, Collection<? extends DBSEntityAttribute> nestedAttributes) throws DBException {
+        nestedBindings = new ArrayList<DBDAttributeBinding>();
+        int nestedIndex = 0;
+        for (DBSEntityAttribute nestedAttr : nestedAttributes) {
+            DBCAttributeMetaData nestedMeta = new DBCNestedAttributeMetaData(nestedAttr, nestedIndex, metaAttribute);
+            DBDValueHandler nestedHandler = DBUtils.findValueHandler(session, nestedAttr);
+            DBDAttributeBinding nestedBinding = new DBDAttributeBinding(nestedMeta, nestedHandler, nestedIndex);
+            nestedBinding.readNestedBindings(session);
+            nestedBindings.add(nestedBinding);
+            nestedIndex++;
+        }
     }
 
     @Override

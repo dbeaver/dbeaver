@@ -2507,21 +2507,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Object[] getChildren(Object element) {
             if (element instanceof DBDAttributeBinding) {
-                final DBSAttributeBase attribute = ((DBDAttributeBinding) element).getAttribute();
-                switch (attribute.getDataKind()) {
-                    case ARRAY:
-                        if (getGridMode() != GridMode.RECORD) {
-                            // Do not make structure for arrays in grid mode
-                            return null;
-                        }
-                        break;
-                    case STRUCT:
-                    case OBJECT:
-                        break;
-                    case ANY:
-                        break;
-                    default:
-                        return null;
+                DBDAttributeBinding binding = (DBDAttributeBinding) element;
+                if (binding.getNestedBindings() != null) {
+                    return binding.getNestedBindings().toArray();
+                }
+                final DBSAttributeBase attribute = binding.getAttribute();
+                if (attribute.getDataKind() == DBPDataKind.ARRAY && getGridMode() == GridMode.RECORD) {
+
                 }
             }
 
