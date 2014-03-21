@@ -278,11 +278,6 @@ public abstract class LightGrid extends Canvas {
     private boolean bottomIndexShownCompletely = false;
 
     /**
-     * Tooltip text - overriden because we have cell specific tooltips
-     */
-    private String toolTipText = null;
-
-    /**
      * This is the tooltip text currently used.  This could be the tooltip text for the currently
      * hovered cell, or the general grid tooltip.  See handleCellHover.
      */
@@ -416,6 +411,7 @@ public abstract class LightGrid extends Canvas {
         IGridContentProvider contentProvider = getContentProvider();
         this.columnElements = contentProvider.getElements(true);
         this.rowElements = contentProvider.getElements(false);
+        this.displayedToolTipText = null;
 
         if (clearData) {
             this.topIndex = -1;
@@ -3265,7 +3261,7 @@ public abstract class LightGrid extends Canvas {
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 // get cell specific tooltip
                 newTip = getCellToolTip(hoveringColumn, hoveringItem);
-            } else if (hoveringColumn != null) {
+            } else if (hoveringColumn != null && y <= getHeaderHeight()) {
                 // get column header specific tooltip
                 newTip = hoveringColumn.getHeaderTooltip();
             }
@@ -3274,13 +3270,11 @@ public abstract class LightGrid extends Canvas {
                 newTip = getToolTipText();
             }
 
-            if (hoveringColumn != null && (hoveringItem >= 0 || y <= getHeaderHeight())) {
-                //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
-                if (newTip != null && !newTip.equals(displayedToolTipText)) {
-                    updateToolTipText(newTip);
-                } else if (newTip == null && displayedToolTipText != null) {
-                    updateToolTipText(null);
-                }
+            //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
+            if (newTip != null && !newTip.equals(displayedToolTipText)) {
+                updateToolTipText(newTip);
+            } else if (newTip == null && displayedToolTipText != null) {
+                updateToolTipText(null);
             }
             displayedToolTipText = newTip;
         }
@@ -3831,33 +3825,6 @@ public abstract class LightGrid extends Canvas {
     boolean isDisposing()
     {
         return disposing;
-    }
-
-    /**
-     * Returns the receiver's tool tip text, or null if it has
-     * not been set.
-     *
-     * @return the receiver's tool tip text
-     */
-    @Override
-    public String getToolTipText()
-    {
-        checkWidget();
-        return toolTipText;
-    }
-
-
-    /**
-     * Sets the receiver's tool tip text to the argument, which
-     * may be null indicating that no tool tip text should be shown.
-     *
-     * @param string the new tool tip text (or null)
-     */
-    @Override
-    public void setToolTipText(String string)
-    {
-        checkWidget();
-        toolTipText = string;
     }
 
     /**
