@@ -53,12 +53,14 @@ class GridColumn {
     private final GridColumn parent;
     private List<GridColumn> children;
 
+    private int level;
     private int width = DEFAULT_WIDTH;
 
 	public GridColumn(LightGrid grid, Object element) {
         this.grid = grid;
         this.element = element;
         this.parent = null;
+        this.level = 0;
         grid.newColumn(this, -1);
 	}
 
@@ -66,6 +68,7 @@ class GridColumn {
         this.grid = parent.grid;
         this.element = element;
         this.parent = parent;
+        this.level = parent.level + 1;
         parent.addChild(this);
     }
 
@@ -122,7 +125,12 @@ class GridColumn {
         if (image != null) {
             y = Math.max(y, topMargin + image.getBounds().height + bottomMargin);
         }
-
+        int childHeight = 0;
+        if (!CommonUtils.isEmpty(children)) {
+            for (GridColumn child : children) {
+                childHeight = Math.max(childHeight, child.computeHeaderHeight());
+            }
+        }
 		return y;
     }
 
