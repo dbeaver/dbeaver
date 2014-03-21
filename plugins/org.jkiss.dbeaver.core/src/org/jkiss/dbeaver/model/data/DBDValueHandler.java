@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -65,13 +66,14 @@ public interface DBDValueHandler
     /**
      * Extracts object from result set
      *
-     * @param session
+     * @param session session
      * @param resultSet result set
-     * @param type
-     *@param index @return value or null
+     * @param type attribute type
+     * @param index @return value or null
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    Object fetchValueObject(DBCSession session, DBCResultSet resultSet, DBSTypedObject type, int index)
+    @Nullable
+    Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index)
         throws DBCException;
 
     /**
@@ -84,7 +86,7 @@ public interface DBDValueHandler
      * @param value parameter value (can be null). Value is get from fetchValueObject function or from
      * object set by editor (editValue function).  @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    void bindValueObject(DBCSession session, DBCStatement statement, DBSTypedObject type, int index, Object value)
+    void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, @Nullable Object value)
         throws DBCException;
 
     /**
@@ -101,7 +103,7 @@ public interface DBDValueHandler
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
     @Nullable
-    Object getValueFromObject(DBCSession session, DBSTypedObject type, @Nullable Object object, boolean copy)
+    Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy)
         throws DBCException;
 
     /**
@@ -109,17 +111,18 @@ public interface DBDValueHandler
      * This method is called after value binding and statement execution/close.
      * @param value value
      */
-    void releaseValueObject(Object value);
+    void releaseValueObject(@Nullable Object value);
 
     /**
      * Converts value to human readable format
      *
      * @param column column
      * @param value value
-     * @param format
+     * @param format string format
      * @return formatted string
      */
-    String getValueDisplayString(DBSTypedObject column, @Nullable Object value, DBDDisplayFormat format);
+    @NotNull
+    String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format);
 
     /**
      * Fills context menu for certain value
@@ -128,7 +131,7 @@ public interface DBDValueHandler
      * @param controller value controller
      * @throws DBCException on error
      */
-    void contributeActions(IContributionManager manager, DBDValueController controller)
+    void contributeActions(@NotNull IContributionManager manager, @NotNull DBDValueController controller)
         throws DBCException;
 
     /**
@@ -136,7 +139,7 @@ public interface DBDValueHandler
      * @param propertySource property source
      * @param controller value controller
      */
-    void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller);
+    void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller);
 
     /**
      * Creates value editor.
@@ -153,7 +156,7 @@ public interface DBDValueHandler
      * @throws org.jkiss.dbeaver.DBException on error
      */
     @Nullable
-    DBDValueEditor createEditor(DBDValueController controller)
+    DBDValueEditor createEditor(@NotNull DBDValueController controller)
         throws DBException;
 
 }

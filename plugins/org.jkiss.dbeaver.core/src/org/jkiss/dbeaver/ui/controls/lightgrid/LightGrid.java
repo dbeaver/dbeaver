@@ -3256,10 +3256,6 @@ public abstract class LightGrid extends Canvas {
             hoveringDetail = detail;
             hoveringColumn = col;
 
-            // TODO: guess why did they put redraw on mouse move??? It took fucking much memory and processor
-            //Rectangle clientArea = getClientArea();
-            //redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
-
             hoverChange = true;
         }
 
@@ -3268,7 +3264,7 @@ public abstract class LightGrid extends Canvas {
             String newTip = null;
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 // get cell specific tooltip
-                newTip = getCellToolTip(hoveringColumn.getIndex(), hoveringItem);
+                newTip = getCellToolTip(hoveringColumn, hoveringItem);
             } else if (hoveringColumn != null) {
                 // get column header specific tooltip
                 newTip = hoveringColumn.getHeaderTooltip();
@@ -3278,11 +3274,13 @@ public abstract class LightGrid extends Canvas {
                 newTip = getToolTipText();
             }
 
-            //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
-            if (newTip != null && !newTip.equals(displayedToolTipText)) {
-                updateToolTipText(newTip);
-            } else if (newTip == null && displayedToolTipText != null) {
-                updateToolTipText(null);
+            if (hoveringColumn != null && (hoveringItem >= 0 || y <= getHeaderHeight())) {
+                //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
+                if (newTip != null && !newTip.equals(displayedToolTipText)) {
+                    updateToolTipText(newTip);
+                } else if (newTip == null && displayedToolTipText != null) {
+                    updateToolTipText(null);
+                }
             }
             displayedToolTipText = newTip;
         }
@@ -3936,16 +3934,15 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
-    public String getCellToolTip(int col, int row)
+    public String getCellToolTip(GridColumn col, int row)
     {
-        String toolTip = getCellText(posToCell(col, row));
+        String toolTip = getCellText(posToCell(col.getIndex(), row));
         if (toolTip == null) {
             return null;
         }
         // Show tooltip only if it's larger than column width
         Point ttSize = sizingGC.textExtent(toolTip);
-        GridColumn itemColumn = getColumn(col);
-        if (ttSize.x > itemColumn.getWidth() || ttSize.y > getItemHeight()) {
+        if (ttSize.x > col.getWidth() || ttSize.y > getItemHeight()) {
             int gridHeight = getBounds().height;
             if (ttSize.y > gridHeight) {
                 // Too big tool tip - larger than entire grid
