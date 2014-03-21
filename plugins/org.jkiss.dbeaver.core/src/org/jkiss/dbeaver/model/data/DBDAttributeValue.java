@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
@@ -28,18 +30,22 @@ import java.util.List;
  */
 public class DBDAttributeValue {
 
+    @NotNull
     private final DBSAttributeBase attribute;
+    @Nullable
     private final Object value;
 
-    public DBDAttributeValue(DBSAttributeBase attribute, Object value) {
+    public DBDAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) {
         this.attribute = attribute;
         this.value = value;
     }
 
+    @NotNull
     public DBSAttributeBase getAttribute() {
         return attribute;
     }
 
+    @Nullable
     public Object getValue() {
         return value;
     }

@@ -18,21 +18,37 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
 
 /**
  * Attribute value binding info
  */
 public class DBDAttributeBinding {
+    @NotNull
     private final DBCAttributeMetaData metaAttribute;
+    @NotNull
     private final DBDValueHandler valueHandler;
     private final int attributeIndex;
+    @Nullable
     private DBSEntityAttribute entityAttribute;
+    @Nullable
     private DBDRowIdentifier rowIdentifier;
+    @Nullable
+    private DBDAttributeBinding nestedBindings;
 
-    public DBDAttributeBinding(DBCAttributeMetaData metaAttribute, DBDValueHandler valueHandler, int attributeIndex) {
+    public DBDAttributeBinding(@NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int attributeIndex) {
         this.metaAttribute = metaAttribute;
         this.valueHandler = valueHandler;
         this.attributeIndex = attributeIndex;
@@ -50,6 +66,7 @@ public class DBDAttributeBinding {
     /**
      * Attribute name
      */
+    @NotNull
     public String getAttributeName()
     {
         return metaAttribute.getName();
@@ -58,6 +75,7 @@ public class DBDAttributeBinding {
     /**
      * Meta attribute (obtained from result set)
      */
+    @NotNull
     public DBCAttributeMetaData getMetaAttribute() {
         return metaAttribute;
     }
@@ -65,6 +83,7 @@ public class DBDAttributeBinding {
     /**
      * Attribute value handler
      */
+    @NotNull
     public DBDValueHandler getValueHandler() {
         return valueHandler;
     }
@@ -80,10 +99,12 @@ public class DBDAttributeBinding {
     /**
      * Row identifier (may be null)
      */
+    @Nullable
     public DBDRowIdentifier getRowIdentifier() {
         return rowIdentifier;
     }
 
+    @NotNull
     public DBSAttributeBase getAttribute()
     {
         return entityAttribute == null ? metaAttribute : entityAttribute;
@@ -94,8 +115,30 @@ public class DBDAttributeBinding {
         this.rowIdentifier = rowIdentifier;
     }
 
+    public void readNestedBindings(@NotNull DBCSession session) throws DBException {
+        DBSAttributeBase attribute = getAttribute();
+        switch (attribute.getDataKind()) {
+            case STRUCT:
+            case OBJECT:
+                DBSDataType dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
+                if (dataType instanceof DBSEntity) {
+                    Collection<? extends DBSEntityAttribute> nestedAttributes = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
+                    if (!CommonUtils.isEmpty(nestedAttributes)) {
+                        int nestedIndex = 0;
+                        for (DBSEntityAttribute nestedAttr : nestedAttributes) {
+
+                        }
+                    }
+                }
+                System.out.println(dataType);
+                break;
+        }
+
+    }
+
     @Override
     public String toString() {
         return getAttributeName() + " [" + getAttributeIndex() + "]";
     }
+
 }
