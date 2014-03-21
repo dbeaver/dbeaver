@@ -49,12 +49,12 @@ class GridColumnRenderer extends AbstractRenderer
 
     @Nullable
     protected Image getColumnImage() {
-        return grid.getColumnLabelProvider().getImage(cell.col);
+        return grid.getLabelProvider().getImage(cell.col);
     }
 
     protected String getColumnText()
     {
-        String text = grid.getColumnLabelProvider().getText(cell.col);
+        String text = grid.getLabelProvider().getText(cell.col);
         if (text == null) {
             text = String.valueOf(cell.col);
         }
@@ -62,7 +62,7 @@ class GridColumnRenderer extends AbstractRenderer
     }
     
     protected Font getColumnFont() {
-        Font font = grid.getColumnLabelProvider().getFont(cell.col);
+        Font font = grid.getLabelProvider().getFont(cell.col);
         return font != null ? font : grid.getFont();
     }
 

@@ -118,7 +118,7 @@ class GridColumn {
     public int computeHeaderHeight()
     {
         int y = topMargin + grid.sizingGC.getFontMetrics().getHeight() + bottomMargin;
-        Image image = grid.getColumnLabelProvider().getImage(element);
+        Image image = grid.getLabelProvider().getImage(element);
         if (image != null) {
             y = Math.max(y, topMargin + image.getBounds().height + bottomMargin);
         }
@@ -139,8 +139,8 @@ class GridColumn {
     public int computeHeaderWidth()
     {
         int x = leftMargin;
-        Image image = grid.getColumnLabelProvider().getImage(element);
-        String text = grid.getColumnLabelProvider().getText(element);
+        Image image = grid.getLabelProvider().getImage(element);
+        String text = grid.getLabelProvider().getText(element);
         if (image != null) {
             x += image.getBounds().width + imageSpacing;
         }
@@ -225,8 +225,8 @@ class GridColumn {
 	 */
 	@Nullable
     public String getHeaderTooltip() {
-        String tip = grid.getColumnLabelProvider().getTooltip(element);
-        String text = grid.getColumnLabelProvider().getText(element);
+        String tip = grid.getLabelProvider().getTooltip(element);
+        String text = grid.getLabelProvider().getText(element);
         if (tip == null) {
             tip = text;
         }
