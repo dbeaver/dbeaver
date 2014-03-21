@@ -27,26 +27,34 @@ import org.jkiss.code.Nullable;
 
 public interface IGridContentProvider extends IContentProvider {
 
+    enum ElementState {
+        NONE,
+        EXPANDED,
+        COLLAPSED
+    }
+
     @NotNull
     Object[] getElements(boolean horizontal);
 
     @Nullable
     Object[] getChildren(Object element);
 
-    int getColumnSortOrder(Object column);
+    int getSortOrder(@NotNull Object element);
 
-    Object getCellValue(GridCell cell, boolean formatString);
+    ElementState getDefaultState(@NotNull Object element);
+
+    Object getCellValue(@NotNull GridCell cell, boolean formatString);
 
     @NotNull
-    String getCellText(GridCell cell);
+    String getCellText(@NotNull GridCell cell);
 
     @Nullable
-    Image getCellImage(GridCell cell);
+    Image getCellImage(@NotNull GridCell cell);
 
     @Nullable
-    Color getCellForeground(GridCell cell);
+    Color getCellForeground(@NotNull GridCell cell);
 
     @Nullable
-    Color getCellBackground(GridCell cell);
+    Color getCellBackground(@NotNull GridCell cell);
 
 }
