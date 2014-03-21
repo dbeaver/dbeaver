@@ -1,4 +1,5 @@
 
+Paste into multiple cells
 Dialect-dependent SQL generator
 Browse data by foreign keys. Table history (back/forward)
 Transaction state in status bar
