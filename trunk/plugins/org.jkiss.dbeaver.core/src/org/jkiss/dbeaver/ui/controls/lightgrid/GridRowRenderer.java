@@ -107,11 +107,11 @@ class GridRowRenderer extends AbstractRenderer {
 
     @Nullable
     private Image getHeaderImage() {
-        return grid.getRowLabelProvider().getImage(cell.row);
+        return grid.getLabelProvider().getImage(cell.row);
     }
 
     protected String getHeaderText() {
-        String text = grid.getRowLabelProvider().getText(cell.row);
+        String text = grid.getLabelProvider().getText(cell.row);
         if (text == null) {
             text = String.valueOf(cell.row);
         }
@@ -120,12 +120,12 @@ class GridRowRenderer extends AbstractRenderer {
 
     @Nullable
     protected Color getHeaderBackground() {
-        return grid.getRowLabelProvider().getBackground(cell.row);
+        return grid.getLabelProvider().getBackground(cell.row);
     }
 
     @Nullable
     protected Color getHeaderForeground() {
-        return grid.getRowLabelProvider().getForeground(cell.row);
+        return grid.getLabelProvider().getForeground(cell.row);
     }
 
 }

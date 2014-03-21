@@ -216,8 +216,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 site,
                 this,
                 new ContentProvider(),
-                new ColumnLabelProvider(),
-                new RowLabelProvider());
+                new GridLabelProvider());
             this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             this.previewPane = new ViewValuePanel(resultsSash) {
@@ -1889,10 +1888,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
-        IGridLabelProvider rowLabelProvider = spreadsheet.getRowLabelProvider();
+        IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
-            IGridLabelProvider colLabelProvider = spreadsheet.getColumnLabelProvider();
             if (copyRowNumbers) {
                 tdt.append("#");
             }
@@ -1900,7 +1898,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (tdt.length() > 0) {
                     tdt.append(delimiter);
                 }
-                tdt.append(colLabelProvider.getText(column));
+                tdt.append(labelProvider.getText(column));
             }
             tdt.append(lineSeparator);
         }
@@ -1922,7 +1920,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     tdt.append(lineSeparator);
                 }
                 if (copyRowNumbers) {
-                    tdt.append(rowLabelProvider.getText(cell.row)).append(delimiter);
+                    tdt.append(labelProvider.getText(cell.row)).append(delimiter);
                 }
             }
             if (prevCell != null && prevCell.col != cell.col) {
@@ -2647,7 +2645,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private class ColumnLabelProvider implements IGridLabelProvider {
+    private class GridLabelProvider implements IGridLabelProvider {
         @Nullable
         @Override
         public Image getImage(Object element)
@@ -2683,7 +2681,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return attribute.getLabel();
                 }
             } else {
-                return CoreMessages.controls_resultset_viewer_value;
+                if (getGridMode() == GridMode.GRID) {
+                    return String.valueOf(((RowData)element).visualNumber + 1);
+                } else {
+                    return CoreMessages.controls_resultset_viewer_value;
+                }
             }
         }
 
@@ -2712,53 +2714,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 return name + ": " + typeName;
             }
             return null;
-        }
-    }
-
-    private class RowLabelProvider implements IGridLabelProvider {
-        @Nullable
-        @Override
-        public Image getImage(Object element)
-        {
-            if (element instanceof DBDAttributeBinding) {
-                return getTypeImage(((DBDAttributeBinding) element).getMetaAttribute());
-            }
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public Color getForeground(Object element) {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public Color getBackground(Object element) {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public Font getFont(Object element) {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public String getTooltip(Object element) {
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public String getText(Object element)
-        {
-            if (element instanceof DBDAttributeBinding) {
-                return ((DBDAttributeBinding) element).getAttributeName();
-            } else {
-                return String.valueOf(((RowData)element).visualNumber + 1);
-            }
         }
     }
 

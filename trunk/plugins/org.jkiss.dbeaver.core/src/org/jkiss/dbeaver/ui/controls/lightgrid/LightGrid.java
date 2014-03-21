@@ -399,10 +399,7 @@ public abstract class LightGrid extends Canvas {
     public abstract IGridContentProvider getContentProvider();
 
     @NotNull
-    public abstract IGridLabelProvider getColumnLabelProvider();
-
-    @NotNull
-    public abstract IGridLabelProvider getRowLabelProvider();
+    public abstract IGridLabelProvider getLabelProvider();
 
     public void setMaxColumnDefWidth(int maxColumnDefWidth) {
         this.maxColumnDefWidth = maxColumnDefWidth;
