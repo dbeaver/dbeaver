@@ -1036,6 +1036,7 @@ public final class DBUtils {
             case STRUCT:
                 return DBIcon.TYPE_STRUCT;
             case OBJECT:
+            case ANY:
                 return DBIcon.TYPE_OBJECT;
             default:
                 return DBIcon.TYPE_UNKNOWN;

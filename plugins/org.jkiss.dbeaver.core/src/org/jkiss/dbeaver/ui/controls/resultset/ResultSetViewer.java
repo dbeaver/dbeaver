@@ -2287,6 +2287,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         void setCurRow(RowData curRow)
         {
             this.curRow = curRow;
+            this.pos.row = curRow;
         }
 
         @Nullable
@@ -2503,33 +2504,36 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Nullable
         @Override
         public Object[] getChildren(Object element) {
-/*
-            if (!(element instanceof DBDAttributeBinding)) {
+            if (element instanceof DBDAttributeBinding) {
                 final DBSAttributeBase attribute = ((DBDAttributeBinding) element).getAttribute();
-                try {
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            try {
-                                DBSDataType dataType = DBUtils.resolveDataType(monitor, getDataSource(), attribute.getTypeName());
-                                System.out.println(dataType);
-                            } catch (DBException e) {
-                                throw new InvocationTargetException(e);
-                            }
+                switch (attribute.getDataKind()) {
+                    case ARRAY:
+                        if (getGridMode() != GridMode.RECORD) {
+                            // Do not make structure for arrays in grid mode
+                            return null;
                         }
-                    });
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                        break;
+                    case STRUCT:
+                    case OBJECT:
+                        try {
+                            DBSDataType dataType = DBUtils.resolveDataType(VoidProgressMonitor.INSTANCE, getDataSource(), attribute.getTypeName());
+                            System.out.println(dataType);
+                        } catch (DBException e) {
+                            log.warn("Can't get element structure info", e);
+                        }
+                        break;
+                    case ANY:
+                        break;
+                    default:
+                        return null;
                 }
             }
-*/
+
             return null;
         }
 
         @Override
-        public int getColumnSortOrder(Object column)
+        public int getSortOrder(@NotNull Object column)
         {
             if (column instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) column;
@@ -2540,6 +2544,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 return SWT.DEFAULT;
             }
             return SWT.NONE;
+        }
+
+        @Override
+        public ElementState getDefaultState(@NotNull Object element) {
+            return ElementState.NONE;
         }
 
         @Override
@@ -2554,7 +2563,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Nullable
         @Override
-        public Object getCellValue(GridCell cell, boolean formatString)
+        public Object getCellValue(@NotNull GridCell cell, boolean formatString)
         {
             DBDAttributeBinding column = (DBDAttributeBinding)(cell.col instanceof DBDAttributeBinding ? cell.col : cell.row);
             RowData row = (RowData)(cell.col instanceof RowData ? cell.col : cell.row);
@@ -2577,7 +2586,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Nullable
         @Override
-        public Image getCellImage(GridCell cell)
+        public Image getCellImage(@NotNull GridCell cell)
         {
             if (!showCelIcons) {
                 return null;
@@ -2597,14 +2606,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @NotNull
         @Override
-        public String getCellText(GridCell cell)
+        public String getCellText(@NotNull GridCell cell)
         {
             return String.valueOf(getCellValue(cell, true));
         }
 
         @Nullable
         @Override
-        public Color getCellForeground(GridCell cell)
+        public Color getCellForeground(@NotNull GridCell cell)
         {
             Object value = getCellValue(cell, false);
             if (DBUtils.isNullValue(value)) {
@@ -2616,7 +2625,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Nullable
         @Override
-        public Color getCellBackground(GridCell cell)
+        public Color getCellBackground(@NotNull GridCell cell)
         {
             RowData row = (RowData) (getGridMode() == GridMode.GRID ?  cell.row : cell.col);
             boolean odd = row.visualNumber % 2 == 0;

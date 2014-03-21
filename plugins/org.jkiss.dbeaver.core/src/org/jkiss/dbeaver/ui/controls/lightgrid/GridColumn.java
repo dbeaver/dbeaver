@@ -154,7 +154,7 @@ class GridColumn {
 
     public boolean isSortable()
     {
-        return grid.getContentProvider().getColumnSortOrder(element) != SWT.NONE;
+        return grid.getContentProvider().getSortOrder(element) != SWT.NONE;
     }
 
 	/**

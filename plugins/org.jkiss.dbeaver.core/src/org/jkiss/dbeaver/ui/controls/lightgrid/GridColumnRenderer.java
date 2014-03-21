@@ -70,7 +70,7 @@ class GridColumnRenderer extends AbstractRenderer
     public void paint(GC gc) {
         //GridColumn col = grid.getColumnByElement(cell.col);
         //AbstractRenderer arrowRenderer = col.getSortRenderer();
-        int sortOrder = grid.getContentProvider().getColumnSortOrder(cell.col);
+        int sortOrder = grid.getContentProvider().getSortOrder(cell.col);
         Rectangle sortBounds = getSortControlBounds();
 
         // set the font to be used to display the text.
