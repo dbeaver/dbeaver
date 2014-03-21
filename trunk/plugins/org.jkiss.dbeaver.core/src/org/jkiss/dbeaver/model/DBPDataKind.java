@@ -35,6 +35,7 @@ public enum DBPDataKind
     OBJECT,
     REFERENCE,
     ROWID,
-    UNKNOWN;
+    ANY,
+    UNKNOWN
 
 }

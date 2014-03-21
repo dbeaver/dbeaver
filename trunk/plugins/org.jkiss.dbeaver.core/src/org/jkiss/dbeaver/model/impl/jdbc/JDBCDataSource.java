@@ -433,6 +433,7 @@ public abstract class JDBCDataSource
             case OBJECT: return "VARCHAR";
             case REFERENCE: return "VARCHAR";
             case ROWID: return "ROWID";
+            case ANY: return "VARCHAR";
             default: return "VARCHAR";
         }
     }
