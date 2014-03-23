@@ -425,6 +425,10 @@ public abstract class LightGrid extends Canvas {
                 createChildColumns(column);
             }
 
+            recalculateSizes();
+
+            scrollValuesObsolete = true;
+
             if (getColumnCount() == 1) {
                 // Here we going to maximize single column to entire grid's width
                 // Sometimes (when new grid created and filled with data very fast our client area size is zero
@@ -3334,7 +3338,7 @@ public abstract class LightGrid extends Canvas {
      * @param index  index to insert new column
      * @return current number of columns
      */
-    int newColumn(GridColumn column, int index)
+    void newColumn(GridColumn column, int index)
     {
 
         if (index == -1) {
@@ -3342,13 +3346,6 @@ public abstract class LightGrid extends Canvas {
         } else {
             columns.add(index, column);
         }
-
-        recalculateSizes();
-
-        scrollValuesObsolete = true;
-        redraw();
-
-        return columns.size() - 1;
     }
 
     public void recalculateSizes() {
