@@ -70,6 +70,7 @@ class GridColumn {
         this.parent = parent;
         this.level = parent.level + 1;
         parent.addChild(this);
+        grid.newColumn(this, -1);
     }
 
     public Object getElement() {
@@ -80,16 +81,6 @@ class GridColumn {
     {
         return getGrid().indexOf(this);
     }
-
-    void dispose() {
-		if (!grid.isDisposing()) {
-            if (parent == null) {
-			    grid.removeColumn(this);
-            } else {
-                parent.removeChild(this);
-            }
-		}
-	}
 
     /**
 	 * Returns the width of the column.
@@ -111,7 +102,11 @@ class GridColumn {
 	}
 
 	void setWidth(int width, boolean redraw) {
+        int delta = width - this.width;
 		this.width = width;
+        if (parent != null) {
+            parent.width += delta;
+        }
 		if (redraw) {
 			grid.setScrollValuesObsolete();
 			grid.redraw();
@@ -200,7 +195,7 @@ class GridColumn {
             newWidth = Math.max(newWidth, childrenWidth);
         }
 
-		setWidth(newWidth);
+		this.width = newWidth;
 	}
 
     private int computeCellWidth(GridCell cell) {
