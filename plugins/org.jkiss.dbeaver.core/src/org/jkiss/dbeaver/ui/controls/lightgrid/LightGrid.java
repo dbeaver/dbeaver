@@ -48,6 +48,8 @@ public abstract class LightGrid extends Canvas {
 
     public static final int Event_ChangeSort = 1000;
 
+    private static final Object NULL_ELEMENT = new Object();
+
     /**
      * Horizontal scrolling increment, in pixels.
      */
@@ -246,12 +248,6 @@ public abstract class LightGrid extends Canvas {
     private Color backgroundColor;
     @NotNull
     private Cursor sortCursor;
-
-
-    /**
-     * True if the widget is being disposed.  When true, events are not fired.
-     */
-    private boolean disposing = false;
 
     /**
      * Index of first visible item.  The value must never be read directly.  It is cached and
@@ -1325,7 +1321,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param lineColor The lineColor to set.
      */
-    public void setLineColor(Color lineColor)
+    public void setLineColor(@NotNull Color lineColor)
     {
         checkWidget();
         this.lineColor = lineColor;
@@ -1774,7 +1770,7 @@ public abstract class LightGrid extends Canvas {
             x2 -= getHScrollSelectionInPixels();
 
             for (GridColumn column : columns) {
-                if (column.isOverSortArrow(x - x2)) {
+                if (column.isOverSortArrow(x - x2, y)) {
                     overSorter = true;
                     columnBeingSorted = column;
                     break;
@@ -1880,7 +1876,7 @@ public abstract class LightGrid extends Canvas {
         int row = firstVisibleIndex;
         final int hScrollSelectionInPixels = getHScrollSelectionInPixels();
         final GridPos testPos = new GridPos(-1, -1);
-        final GridCell testCell = new GridCell(null, null);
+        final GridCell testCell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
         final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
 
         for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
@@ -2011,7 +2007,7 @@ public abstract class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
 
-        GridCell cell = new GridCell(null, null);
+        GridCell cell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
         for (int i = 0, columnsSize = topColumns.size(); i < columnsSize; i++) {
             GridColumn column = topColumns.get(i);
             if (x > getClientArea().width)
@@ -2519,8 +2515,6 @@ public abstract class LightGrid extends Canvas {
         removeListener(SWT.Dispose, disposeListener);
         notifyListeners(SWT.Dispose, event);
         event.type = SWT.None;
-
-        disposing = true;
 
         UIUtils.dispose(cellHeaderSelectionBackground);
     }
@@ -3229,7 +3223,8 @@ public abstract class LightGrid extends Canvas {
 
         x -= getHScrollSelectionInPixels();
 
-        for (GridColumn colIter : columns) {
+        for (int i = 0; i < columns.size(); i++) {
+            GridColumn colIter = columns.get(i);
             if (colIter == column) {
                 break;
             }
@@ -3256,6 +3251,10 @@ public abstract class LightGrid extends Canvas {
                     currIndex--;
                     y -= getItemHeight() + 1;
                 }
+            }
+        } else if (column.getParent() != null) {
+            for (GridColumn parent = column.getParent(); parent != null; parent = parent.getParent()) {
+                y += parent.computeHeaderHeight(false);
             }
         }
 
@@ -3797,14 +3796,6 @@ public abstract class LightGrid extends Canvas {
         checkWidget();
         rowHeaderWidth = width;
         redraw();
-    }
-
-    /**
-     * @return the disposing
-     */
-    boolean isDisposing()
-    {
-        return disposing;
     }
 
     /**
