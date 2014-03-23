@@ -2598,10 +2598,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (DBUtils.isNullValue(curValue)) {
                     break;
                 }
-                DBDValueHandler ownerHandler = path[i - 1].getValueHandler();
-                if (ownerHandler instanceof DBDValueHandlerStruct) {
+                if (curValue instanceof DBDStructure) {
                     try {
-                        curValue = ((DBDValueHandlerStruct) ownerHandler).getFieldValue(curValue, path[i].getAttribute(), path[i].getAttributeIndex());
+                        curValue = ((DBDStructure) curValue).getAttributeValue(path[i].getAttribute());
                     } catch (DBCException e) {
                         log.warn("Error getting field [" + path[i].getAttributeName() + "] value", e);
                         curValue = null;
