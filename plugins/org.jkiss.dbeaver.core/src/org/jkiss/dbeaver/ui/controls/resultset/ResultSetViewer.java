@@ -2595,7 +2595,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             Object curValue = row.values[path[0].getAttributeIndex()];
 
             for (int i = 1; i < depth; i++) {
-                if (DBUtils.isNullValue(curValue)) {
+                if (curValue == null) {
                     break;
                 }
                 if (curValue instanceof DBDStructure) {

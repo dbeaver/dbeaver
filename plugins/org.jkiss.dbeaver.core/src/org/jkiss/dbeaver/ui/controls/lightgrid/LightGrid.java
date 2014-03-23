@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -39,6 +41,8 @@ import java.util.List;
  * @author chris.gross@us.ibm.com
  */
 public abstract class LightGrid extends Canvas {
+
+    static final Log log = LogFactory.getLog(LightGrid.class);
 
     public static final int MAX_TOOLTIP_LENGTH = 1000;
 
@@ -108,6 +112,7 @@ public abstract class LightGrid extends Canvas {
     /**
      * List of table columns in creation/index order.
      */
+    private final List<GridColumn> topColumns = new ArrayList<GridColumn>();
     private final List<GridColumn> columns = new ArrayList<GridColumn>();
     private int maxColumnDepth = 0;
     private Object[] columnElements = new Object[0];
@@ -404,27 +409,46 @@ public abstract class LightGrid extends Canvas {
     /**
      * Refresh grid data
      */
-    public void refreshData(boolean clearData)
+    public void refreshData(boolean refreshColumns)
     {
-        if (clearData) {
+        if (refreshColumns) {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
-        this.columnElements = contentProvider.getElements(true);
         this.rowElements = contentProvider.getElements(false);
         this.displayedToolTipText = null;
 
-        if (clearData) {
+        if (refreshColumns) {
             this.topIndex = -1;
             this.bottomIndex = -1;
             this.maxColumnDepth = 0;
 
             // Add columns
+            this.columnElements = contentProvider.getElements(true);
             for (Object columnElement : columnElements) {
                 GridColumn column = new GridColumn(this, columnElement);
                 createChildColumns(column);
             }
-
+            // Invalidate columns structure
+            boolean hasChildColumns = false;
+            for (Iterator<GridColumn> iter = columns.iterator(); iter.hasNext(); ) {
+                GridColumn column = iter.next();
+                if (column.getParent() == null) {
+                    topColumns.add(column);
+                } else {
+                    hasChildColumns = true;
+                }
+                if (column.getChildren() != null) {
+                    iter.remove();
+                }
+            }
+            if (hasChildColumns) {
+                // Rebuild columns model
+                columnElements = new Object[columns.size()];
+                for (int i = 0; i < columns.size(); i++) {
+                    columnElements[i] = columns.get(i).getElement();
+                }
+            }
             recalculateSizes();
 
             scrollValuesObsolete = true;
@@ -442,7 +466,7 @@ public abstract class LightGrid extends Canvas {
                 column.setWidth(columnWidth);
             } else {
                 int totalWidth = 0;
-                for (GridColumn curColumn : columns) {
+                for (GridColumn curColumn : topColumns) {
                     curColumn.pack();
                     totalWidth += curColumn.getWidth();
                 }
@@ -1120,16 +1144,11 @@ public abstract class LightGrid extends Canvas {
      */
     int indexOf(GridColumn column)
     {
-        checkWidget();
-
-        if (column == null) {
-            SWT.error(SWT.ERROR_NULL_ARGUMENT);
-            return -1;
+        int index = columns.indexOf(column);
+        if (index < 0) {
+            log.warn("Bad column [" + column.getElement() + "]");
         }
-
-        if (column.getGrid() != this) return -1;
-
-        return columns.indexOf(column);
+        return index;
     }
 
     /**
@@ -1174,10 +1193,10 @@ public abstract class LightGrid extends Canvas {
         topIndex = -1;
         bottomIndex = -1;
 
-        List<GridColumn> columnsCopy = new ArrayList<GridColumn>(columns);
-        for (GridColumn column : columnsCopy) {
-            column.dispose();
-        }
+        topColumns.clear();
+        columns.clear();
+        columnElements = new Object[0];
+        rowElements = new Object[0];
         redraw();
     }
 
@@ -1617,7 +1636,7 @@ public abstract class LightGrid extends Canvas {
     {
 
         int colHeaderHeight = 0;
-        for (GridColumn column : columns) {
+        for (GridColumn column : topColumns) {
             colHeaderHeight = Math.max(column.computeHeaderHeight(true), colHeaderHeight);
         }
 
@@ -1914,16 +1933,11 @@ public abstract class LightGrid extends Canvas {
                         cellRenderer.setRowHover(hoveringItem == row);
                         cellRenderer.setColumnHover(hoveringColumn == column);
 
-                        testPos.col = column.getIndex();
+                        testPos.col = k;
                         testPos.row = row;
-                        if (selectedCells.contains(testPos)) {
-                            cellRenderer.setCellSelected(true);
-                            //cellInRowSelected = true;
-                        } else {
-                            cellRenderer.setCellSelected(false);
-                        }
+                        cellRenderer.setCellSelected(selectedCells.contains(testPos));
                         testCell.row = rowElements[row];
-                        testCell.col = columnElements[column.getIndex()];
+                        testCell.col = column.getElement();
                         cellRenderer.paint(gc);
 
                         gc.setClipping((Rectangle) null);
@@ -1998,8 +2012,8 @@ public abstract class LightGrid extends Canvas {
         }
 
         GridCell cell = new GridCell(null, null);
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            GridColumn column = columns.get(i);
+        for (int i = 0, columnsSize = topColumns.size(); i < columnsSize; i++) {
+            GridColumn column = topColumns.get(i);
             if (x > getClientArea().width)
                 break;
 
@@ -2008,7 +2022,6 @@ public abstract class LightGrid extends Canvas {
             columnHeaderRenderer.setHover(hoveringColumn == column);
             cell.col = column.getElement();
             columnHeaderRenderer.setCell(cell);
-            columnHeaderRenderer.setSelected(selectedColumns.contains(column));
 
             if (x + column.getWidth() >= 0) {
                 paintColumnsHeader(gc, column, cell, x, y, columnHeight, 0);
@@ -2037,6 +2050,7 @@ public abstract class LightGrid extends Canvas {
         if (CommonUtils.isEmpty(children)) {
             paintHeight = columnHeight * (maxColumnDepth - level + 1);
         }
+        columnHeaderRenderer.setSelected(selectedColumns.contains(column));
         columnHeaderRenderer.setBounds(x, y, column.getWidth(), paintHeight);
         columnHeaderRenderer.paint(gc);
         if (!CommonUtils.isEmpty(children)) {
@@ -2499,6 +2513,7 @@ public abstract class LightGrid extends Canvas {
 
     private void onDispose(Event event)
     {
+        removeAll();
         //We only want to dispose of our items and such *after* anybody else who may have been
         //listening to the dispose has had a chance to do whatever.
         removeListener(SWT.Dispose, disposeListener);
@@ -2508,12 +2523,6 @@ public abstract class LightGrid extends Canvas {
         disposing = true;
 
         UIUtils.dispose(cellHeaderSelectionBackground);
-
-        for (GridColumn col : columns) {
-            col.dispose();
-        }
-
-//        UIUtils.dispose(sizingGC);
     }
 
     /**
@@ -3355,58 +3364,6 @@ public abstract class LightGrid extends Canvas {
         if (oldHeaderHeight != headerHeight) {
             scrollValuesObsolete = true;
         }
-    }
-
-    /**
-     * Removes the given column from the table.
-     *
-     * @param column column to remove
-     */
-    void removeColumn(GridColumn column)
-    {
-        boolean selectionModified = false;
-
-        int index = column.getIndex();
-
-        {
-            List<GridPos> removeSelectedCells = new ArrayList<GridPos>();
-
-            for (GridPos cell : selectedCells) {
-                if (cell.col == index) {
-                    removeSelectedCells.add(cell);
-                }
-            }
-
-            if (removeSelectedCells.size() > 0) {
-                selectedCells.removeAll(removeSelectedCells);
-                selectionModified = true;
-            }
-
-            for (GridPos cell : selectedCells) {
-                if (cell.col >= index) {
-                    cell.col--;
-                    selectionModified = true;
-                }
-            }
-        }
-
-        columns.remove(column);
-
-        // Check focus column
-        if (column == focusColumn) {
-            focusColumn = null;
-        }
-        if (column == shiftSelectionAnchorColumn) {
-            shiftSelectionAnchorColumn = null;
-        }
-
-        scrollValuesObsolete = true;
-        redraw();
-
-        if (selectionModified && !disposing) {
-            updateSelectionCache();
-        }
-
     }
 
     /**
