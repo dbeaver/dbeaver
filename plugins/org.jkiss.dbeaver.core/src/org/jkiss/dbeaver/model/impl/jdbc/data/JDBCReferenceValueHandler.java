@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -50,8 +51,9 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
      */
+    @NotNull
     @Override
-    public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
+    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         return DBUtils.getDefaultValueDisplayString(value, format);
     }
@@ -76,7 +78,7 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public JDBCReference getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public JDBCReference getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         String typeName;
         try {

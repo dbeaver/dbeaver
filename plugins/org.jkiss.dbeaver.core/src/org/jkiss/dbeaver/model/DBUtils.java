@@ -419,6 +419,7 @@ public final class DBUtils {
         return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));
     }
 
+    @Nullable
     public static Object makeNullValue(DBCSession session, DBDValueHandler valueHandler, DBSTypedObject type) throws DBCException
     {
         return valueHandler.getValueFromObject(session, type, null, false);
@@ -498,16 +499,17 @@ public final class DBUtils {
         try {
             for (DBDAttributeBinding column : bindings) {
                 DBCAttributeMetaData meta = column.getMetaAttribute();
-                if (meta.getEntity() != null) {
+                DBCEntityMetaData entity = meta.getEntity();
+                if (entity != null) {
                     DBSEntityAttribute tableColumn = meta.getAttribute(session.getProgressMonitor());
                     // We got table name and column name
                     // To be editable we need this result   set contain set of columns from the same table
                     // which construct any unique key
-                    DBSEntity ownerEntity = meta.getEntity().getEntity(session.getProgressMonitor());
+                    DBSEntity ownerEntity = entity.getEntity(session.getProgressMonitor());
                     if (ownerEntity != null) {
                         DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
                         if (rowIdentifier == null) {
-                            DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(session.getProgressMonitor());
+                            DBCEntityIdentifier entityIdentifier = entity.getBestIdentifier(session.getProgressMonitor());
                             if (entityIdentifier == null) {
                                 continue;
                             }

@@ -27,6 +27,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -54,7 +55,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
 
     @Override
-    public final Object fetchValueObject(DBCSession session, DBCResultSet resultSet, DBSTypedObject type, int index)
+    public final Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index)
         throws DBCException
     {
         try {
@@ -70,7 +71,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public final void bindValueObject(DBCSession session, DBCStatement statement, DBSTypedObject columnMetaData,
+    public final void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject columnMetaData,
                                       int index, Object value) throws DBCException {
         try {
             this.bindParameter((JDBCSession) session, (JDBCPreparedStatement) statement, columnMetaData, index + 1, value);
@@ -88,21 +89,21 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
-    @Nullable
+    @NotNull
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format) {
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         return DBUtils.getDefaultValueDisplayString(value, format);
     }
 
     @Override
-    public void contributeActions(IContributionManager manager, DBDValueController controller)
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull DBDValueController controller)
         throws DBCException
     {
 
     }
 
     @Override
-    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller)
     {
     }
 

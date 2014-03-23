@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.nosql.cassandra.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStruct;
@@ -38,7 +39,7 @@ public class CassandraStructValueHandler extends JDBCStructValueHandler {
     public static final CassandraStructValueHandler INSTANCE = new CassandraStructValueHandler();
 
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             return new JDBCStruct(session, makeEmptyType(session), null);

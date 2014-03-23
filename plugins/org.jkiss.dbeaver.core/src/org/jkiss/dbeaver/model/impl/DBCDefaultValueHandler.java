@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -51,9 +52,9 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     @Override
     public Object fetchValueObject(
-        DBCSession session,
-        DBCResultSet resultSet,
-        DBSTypedObject type,
+        @NotNull DBCSession session,
+        @NotNull DBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
         int index) throws DBCException
     {
         return resultSet.getColumnValue(index + 1);
@@ -61,9 +62,9 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     @Override
     public void bindValueObject(
-        DBCSession session,
-        DBCStatement statement,
-        DBSTypedObject type,
+        @NotNull DBCSession session,
+        @NotNull DBCStatement statement,
+        @NotNull DBSTypedObject type,
         int index,
         Object value) throws DBCException
     {
@@ -71,7 +72,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         return object;
     }
@@ -83,21 +84,22 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         }
     }
 
+    @NotNull
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format) {
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         return DBUtils.getDefaultValueDisplayString(value, format);
     }
 
     @Override
-    public void contributeActions(IContributionManager manager, DBDValueController controller) throws DBCException {
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull DBDValueController controller) throws DBCException {
     }
 
     @Override
-    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller) {
+    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller) {
     }
 
     @Override
-    public DBDValueEditor createEditor(DBDValueController controller) throws DBException {
+    public DBDValueEditor createEditor(@NotNull DBDValueController controller) throws DBException {
         return new TextViewDialog(controller);
     }
 

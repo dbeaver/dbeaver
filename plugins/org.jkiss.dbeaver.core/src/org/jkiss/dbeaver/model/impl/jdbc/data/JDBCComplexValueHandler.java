@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDComplexType;
@@ -83,7 +84,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller)
     {
         super.contributeProperties(propertySource, controller);
         try {
@@ -101,7 +102,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
+    public DBDValueEditor createEditor(@NotNull final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {

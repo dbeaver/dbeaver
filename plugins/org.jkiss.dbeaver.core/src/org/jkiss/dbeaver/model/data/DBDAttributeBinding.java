@@ -134,7 +134,18 @@ public class DBDAttributeBinding {
         return parent;
     }
 
-    public void initValueLocator(DBSEntityAttribute entityAttribute, DBDRowIdentifier rowIdentifier) {
+    public int getDepth() {
+        if (parent == null) {
+            return 1;
+        }
+        int depth = 0;
+        for (DBDAttributeBinding binding = this; binding != null; binding = binding.getParent()) {
+            depth++;
+        }
+        return depth;
+    }
+
+    public void initValueLocator(@Nullable DBSEntityAttribute entityAttribute, @Nullable DBDRowIdentifier rowIdentifier) {
         this.entityAttribute = entityAttribute;
         this.rowIdentifier = rowIdentifier;
     }
@@ -163,6 +174,7 @@ public class DBDAttributeBinding {
             DBCAttributeMetaData nestedMeta = new DBCNestedAttributeMetaData(nestedAttr, nestedIndex, metaAttribute);
             DBDValueHandler nestedHandler = DBUtils.findValueHandler(session, nestedAttr);
             DBDAttributeBinding nestedBinding = new DBDAttributeBinding(this, nestedMeta, nestedHandler, nestedIndex);
+            nestedBinding.initValueLocator(nestedAttr, rowIdentifier);
             nestedBinding.readNestedBindings(session);
             nestedBindings.add(nestedBinding);
             nestedIndex++;

@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -71,9 +72,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
      */
-    @Nullable
+    @NotNull
     @Override
-    public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
+    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value == null) {
             return DBUtils.getDefaultValueDisplayString(null, format);
@@ -212,7 +213,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     @Nullable
     @Override
-    public DBDValueEditor createEditor(DBDValueController controller)
+    public DBDValueEditor createEditor(@NotNull DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
@@ -312,7 +313,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     @Nullable
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             return null;

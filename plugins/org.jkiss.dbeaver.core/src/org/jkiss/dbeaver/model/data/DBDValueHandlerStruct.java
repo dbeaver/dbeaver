@@ -16,6 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
@@ -23,20 +24,24 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
-import java.util.Collection;
-
 /**
- * Structured data record.
- * Consists of primitive values or other records
+ * Structured values handler.
  */
-public interface DBDStructure extends DBDComplexType {
-
-    Collection<DBSAttributeBase> getAttributes();
-
-    Object getAttributeValue(@NotNull DBSAttributeBase attribute)
+public interface DBDValueHandlerStruct extends DBDValueHandler
+{
+    /**
+     * Extracts struct field value
+     *
+     * @throws org.jkiss.dbeaver.model.exec.DBCException on error
+     */
+    @Nullable
+    Object getFieldValue(@NotNull Object owner, @NotNull DBSAttributeBase attribute, int attributeIndex)
         throws DBCException;
 
-    void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value)
+    /**
+     * Sets struct field value
+     */
+    void setFieldValue(@NotNull Object owner, @NotNull DBSAttributeBase attribute, int attributeIndex, @Nullable Object value)
         throws DBCException;
 
 }
