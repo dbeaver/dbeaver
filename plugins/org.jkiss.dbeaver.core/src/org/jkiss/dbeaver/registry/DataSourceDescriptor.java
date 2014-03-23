@@ -984,6 +984,7 @@ public class DataSourceDescriptor
         return null;
     }
 
+    @Nullable
     @Override
     public Image getObjectImage()
     {

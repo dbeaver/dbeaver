@@ -18,8 +18,12 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -31,7 +35,7 @@ import java.util.List;
 /**
  * Result set attribute meta data
  */
-public class DBCNestedAttributeMetaData implements DBCAttributeMetaData
+public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObjectImageProvider
 {
     private final DBSEntityAttribute attribute;
     private final int index;
@@ -141,5 +145,14 @@ public class DBCNestedAttributeMetaData implements DBCAttributeMetaData
     @Override
     public long getMaxLength() {
         return attribute.getMaxLength();
+    }
+
+    @Nullable
+    @Override
+    public Image getObjectImage() {
+        if (attribute instanceof IObjectImageProvider) {
+            return ((IObjectImageProvider) attribute).getObjectImage();
+        }
+        return DBUtils.getDataIcon(this).getImage();
     }
 }

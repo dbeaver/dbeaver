@@ -32,6 +32,7 @@ class GridColumnRenderer extends AbstractRenderer
     public static final int leftMargin = 6;
     public static final int rightMargin = 6;
     public static final int bottomMargin = 3;
+    public static final int topMargin = 3;
     public static final int arrowMargin = 6;
     public static final int imageSpacing = 3;
 
@@ -101,9 +102,7 @@ class GridColumnRenderer extends AbstractRenderer
 
         Image columnImage = getColumnImage();
         if (columnImage != null) {
-            int y = bottomMargin;
-
-            y = bounds.y + pushedDrawingOffset + bounds.height - bottomMargin - columnImage.getBounds().height;
+            int y = bounds.y + pushedDrawingOffset + topMargin;
 
             gc.drawImage(columnImage, bounds.x + x + pushedDrawingOffset, y);
             x += columnImage.getBounds().width + imageSpacing;
@@ -119,7 +118,7 @@ class GridColumnRenderer extends AbstractRenderer
 
         //gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 
-        int y = bounds.y + bounds.height - bottomMargin - gc.getFontMetrics().getHeight();
+        int y = bounds.y + topMargin;
 
         String text = getColumnText();
 
@@ -128,13 +127,12 @@ class GridColumnRenderer extends AbstractRenderer
         gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
 
         if (sortOrder != SWT.NONE) {
-            y = bounds.y + ((bounds.height - sortBounds.height) / 2) + 1;
+            y = bounds.y + topMargin;
 
             if (drawSelected) {
                 sortBounds.x = bounds.x + bounds.width - arrowMargin - sortBounds.width + 1;
                 sortBounds.y = y;
             } else {
-                y = bounds.y + ((bounds.height - sortBounds.height) / 2);
                 sortBounds.x = bounds.x + bounds.width - arrowMargin - sortBounds.width;
                 sortBounds.y = y;
             }

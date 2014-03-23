@@ -20,12 +20,14 @@
 package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 
 /**
  * Image provider
  */
 public interface IObjectImageProvider {
 
+    @Nullable
     Image getObjectImage();
 
 }

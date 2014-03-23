@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +38,8 @@ import java.util.List;
  * Attribute value binding info
  */
 public class DBDAttributeBinding {
+    @Nullable
+    private final DBDAttributeBinding parent;
     @NotNull
     private final DBCAttributeMetaData metaAttribute;
     @NotNull
@@ -52,6 +53,11 @@ public class DBDAttributeBinding {
     private List<DBDAttributeBinding> nestedBindings;
 
     public DBDAttributeBinding(@NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int attributeIndex) {
+        this(null, metaAttribute, valueHandler, attributeIndex);
+    }
+
+    public DBDAttributeBinding(@Nullable DBDAttributeBinding parent, @NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int attributeIndex) {
+        this.parent = parent;
         this.metaAttribute = metaAttribute;
         this.valueHandler = valueHandler;
         this.attributeIndex = attributeIndex;
@@ -94,6 +100,7 @@ public class DBDAttributeBinding {
     /**
      * Entity attribute (may be null)
      */
+    @Nullable
     public DBSEntityAttribute getEntityAttribute()
     {
         return entityAttribute;
@@ -118,6 +125,15 @@ public class DBDAttributeBinding {
         return nestedBindings;
     }
 
+    public boolean hasNestedBindings() {
+        return nestedBindings != null;
+    }
+
+    @Nullable
+    public DBDAttributeBinding getParent() {
+        return parent;
+    }
+
     public void initValueLocator(DBSEntityAttribute entityAttribute, DBDRowIdentifier rowIdentifier) {
         this.entityAttribute = entityAttribute;
         this.rowIdentifier = rowIdentifier;
@@ -131,7 +147,7 @@ public class DBDAttributeBinding {
                 DBSDataType dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
                 if (dataType instanceof DBSEntity) {
                     Collection<? extends DBSEntityAttribute> nestedAttributes = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
-                    if (!CommonUtils.isEmpty(nestedAttributes)) {
+                    if (nestedAttributes != null && !nestedAttributes.isEmpty()) {
                         createNestedBindings(session, nestedAttributes);
                     }
                 }
@@ -146,7 +162,7 @@ public class DBDAttributeBinding {
         for (DBSEntityAttribute nestedAttr : nestedAttributes) {
             DBCAttributeMetaData nestedMeta = new DBCNestedAttributeMetaData(nestedAttr, nestedIndex, metaAttribute);
             DBDValueHandler nestedHandler = DBUtils.findValueHandler(session, nestedAttr);
-            DBDAttributeBinding nestedBinding = new DBDAttributeBinding(nestedMeta, nestedHandler, nestedIndex);
+            DBDAttributeBinding nestedBinding = new DBDAttributeBinding(this, nestedMeta, nestedHandler, nestedIndex);
             nestedBinding.readNestedBindings(session);
             nestedBindings.add(nestedBinding);
             nestedIndex++;
