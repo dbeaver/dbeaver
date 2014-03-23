@@ -32,8 +32,6 @@ public class GridCell
     public Object col;
     @NotNull
     public Object row;
-    @Nullable
-    public GridCell next;
 
     public GridCell(@NotNull Object col, @NotNull Object row)
     {
@@ -41,17 +39,10 @@ public class GridCell
         this.row = row;
     }
 
-    public GridCell(@NotNull Object col, @NotNull Object row, @Nullable GridCell next) {
-        this.col = col;
-        this.row = row;
-        this.next = next;
-    }
-
     public GridCell(GridCell copy)
     {
         this.col = copy.col;
         this.row = copy.row;
-        this.next = copy.next == null ? null : new GridCell(copy.next);
     }
 
     public boolean equals(Object object)
@@ -62,17 +53,16 @@ public class GridCell
     public boolean equalsTo(GridCell pos)
     {
         return CommonUtils.equalObjects(this.col, pos.col) &&
-            CommonUtils.equalObjects(this.row, pos.row) &&
-            CommonUtils.equalObjects(this.next, pos.next);
+            CommonUtils.equalObjects(this.row, pos.row);
     }
 
     public String toString()
     {
-        return col + ":" + row + (next == null ? "" : "->" + next);
+        return col + ":" + row;
     }
 
     public int hashCode()
     {
-        return col.hashCode() ^ row.hashCode() ^ (next == null ? 0 : next.hashCode());
+        return col.hashCode() ^ row.hashCode();
     }
 }

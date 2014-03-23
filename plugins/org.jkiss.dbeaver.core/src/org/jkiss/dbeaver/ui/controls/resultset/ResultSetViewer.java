@@ -1210,10 +1210,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (gridMode == GridMode.GRID) {
             return pos;
         } else {
-            return new GridCell(
-                pos.row,
-                pos.col,
-                pos.next == null ? null :translateVisualPos(pos.next));
+            return new GridCell(pos.row, pos.col);
         }
     }
 

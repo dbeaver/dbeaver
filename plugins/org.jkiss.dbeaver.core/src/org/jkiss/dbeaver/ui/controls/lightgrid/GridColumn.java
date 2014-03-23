@@ -79,7 +79,7 @@ class GridColumn {
 
     public int getIndex()
     {
-        return getGrid().indexOf(this);
+        return grid.indexOf(this);
     }
 
     /**
@@ -113,12 +113,16 @@ class GridColumn {
 		}
 	}
 
-    public boolean isOverSortArrow(int x)
+    public boolean isOverSortArrow(int x, int y)
     {
         if (!isSortable()) {
             return false;
         }
-        int arrowEnd = getBounds().width - rightMargin;
+        Rectangle bounds = getBounds();
+        if (y < bounds.y || y > bounds.y + bounds.height) {
+            return false;
+        }
+        int arrowEnd = bounds.width - rightMargin;
         int arrowBegin = arrowEnd - GridColumnRenderer.getSortControlBounds().width;
         return x >= arrowBegin && x <= arrowEnd;
     }
