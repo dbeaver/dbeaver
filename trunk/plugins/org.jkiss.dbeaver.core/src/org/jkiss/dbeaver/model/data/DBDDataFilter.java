@@ -186,10 +186,19 @@ public class DBDDataFilter {
         boolean hasOrder = false;
         for (DBDAttributeConstraint co : getOrderConstraints()) {
             if (hasOrder) query.append(',');
+            boolean hasPrevIdentifier = false;
             if (conditionTable != null) {
-                query.append(conditionTable).append('.');
+                query.append(conditionTable);
+                hasPrevIdentifier = true;
             }
-            query.append(DBUtils.getQuotedIdentifier(dataSource, co.getAttribute().getAttributeName()));
+            int insertPos = query.length();
+            for (DBDAttributeBinding attribute = co.getAttribute(); attribute != null; attribute = attribute.getParent()) {
+                query.insert(insertPos, DBUtils.getQuotedIdentifier(dataSource, attribute.getAttributeName()));
+                if (hasPrevIdentifier) {
+                    query.insert(insertPos, '.');
+                }
+                hasPrevIdentifier = true;
+            }
             if (co.isOrderDescending()) {
                 query.append(" DESC"); //$NON-NLS-1$
             }

@@ -59,11 +59,21 @@ public class ResultSetModel {
     {
         List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>(columns.length);
         for (DBDAttributeBinding binding : columns) {
-            DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding);
-            constraint.setVisible(visibleColumns.contains(binding));
-            constraints.add(constraint);
+            addConstraints(constraints, binding);
         }
         return new DBDDataFilter(constraints);
+    }
+
+    private void addConstraints(List<DBDAttributeConstraint> constraints, DBDAttributeBinding binding) {
+        DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding);
+        constraint.setVisible(visibleColumns.contains(binding));
+        constraints.add(constraint);
+        List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
+        if (nestedBindings != null) {
+            for (DBDAttributeBinding nested : nestedBindings) {
+                addConstraints(constraints, nested);
+            }
+        }
     }
 
     public boolean isSingleSource()
@@ -291,7 +301,6 @@ public class ResultSetModel {
                     this.visibleColumns.add(binding);
                 }
             }
-            this.dataFilter = createDataFilter();
         }
         return update;
     }
@@ -305,6 +314,8 @@ public class ResultSetModel {
         appendData(rows);
 
         if (updateMetaData) {
+            this.dataFilter = createDataFilter();
+
             // Check single source flag
             this.singleSourceCells = true;
             DBSEntity sourceTable = null;
