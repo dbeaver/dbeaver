@@ -76,7 +76,10 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
@@ -86,7 +89,10 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.*;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -1677,7 +1683,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         int oldRowNum = curRowNum;
         int oldColNum = curColNum;
 
-        if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
+        if (resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
             if (oldRowNum >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRowNum / segmentSize + 1) * segmentSize;
@@ -2160,6 +2166,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         fireResultSetChange();
     }
 
+    @Nullable
     static Image getTypeImage(DBSTypedObject column)
     {
         if (column instanceof IObjectImageProvider) {
@@ -2558,7 +2565,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             DBDAttributeBinding column = (DBDAttributeBinding)(cell.col instanceof DBDAttributeBinding ? cell.col : cell.row);
             RowData row = (RowData)(cell.col instanceof RowData ? cell.col : cell.row);
             int rowNum = row.visualNumber;
-            Object value = row.values[column.getAttributeIndex()];
+            Object value = extractColumnValue(row, column);
 
             if (rowNum > 0 && rowNum == model.getRowCount() - 1 && (gridMode == GridMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
                 readNextSegment();
@@ -2572,6 +2579,42 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             } else {
                 return value;
             }
+        }
+
+        @Nullable
+        private Object extractColumnValue(@NotNull RowData row, @NotNull DBDAttributeBinding column) {
+            int depth = column.getDepth();
+            if (depth == 1) {
+                return row.values[column.getAttributeIndex()];
+            }
+            DBDAttributeBinding[] path = new DBDAttributeBinding[depth];
+            for (int i = depth - 1; i >= 0; i--) {
+                path[i] = column;
+                column = column.getParent();
+            }
+            Object curValue = row.values[path[0].getAttributeIndex()];
+
+            for (int i = 1; i < depth; i++) {
+                if (DBUtils.isNullValue(curValue)) {
+                    break;
+                }
+                DBDValueHandler ownerHandler = path[i - 1].getValueHandler();
+                if (ownerHandler instanceof DBDValueHandlerStruct) {
+                    try {
+                        curValue = ((DBDValueHandlerStruct) ownerHandler).getFieldValue(curValue, path[i].getAttribute(), path[i].getAttributeIndex());
+                    } catch (DBCException e) {
+                        log.warn("Error getting field [" + path[i].getAttributeName() + "] value", e);
+                        curValue = null;
+                        break;
+                    }
+                } else {
+                    log.debug("No struct value handler while trying to read nested attribute [" + path[i].getAttributeName() + "]");
+                    curValue = null;
+                    break;
+                }
+            }
+
+            return curValue;
         }
 
         @Nullable

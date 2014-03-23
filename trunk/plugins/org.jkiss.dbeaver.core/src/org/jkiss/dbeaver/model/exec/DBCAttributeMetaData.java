@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -42,12 +44,14 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
      * Attribute label in result set
      * @return label
      */
+    @NotNull
     String getLabel();
 
     /**
      * Owner entity name
      * @return entity name
      */
+    @Nullable
     String getEntityName();
 
     /**
@@ -60,6 +64,7 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
      * Pseudo attribute information. Null for non-pseudo attributes
      * @return pseudo attribute information or null
      */
+    @Nullable
     DBDPseudoAttribute getPseudoAttribute();
 
     /**
@@ -74,12 +79,14 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
      * @throws DBCException on any DB error
      * @param monitor progress monitor
      */
+    @Nullable
     DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Owner table metadata
      * @return table metadata
      */
+    @Nullable
     DBCEntityMetaData getEntity();
 
     /**

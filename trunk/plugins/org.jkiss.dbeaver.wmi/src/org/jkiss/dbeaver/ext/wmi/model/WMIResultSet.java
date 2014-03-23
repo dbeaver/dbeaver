@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
@@ -275,12 +276,14 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return index;
         }
 
+        @NotNull
         @Override
         public String getLabel()
         {
             return attribute.getName();
         }
 
+        @Nullable
         @Override
         public String getEntityName()
         {
@@ -293,6 +296,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return false;
         }
 
+        @Nullable
         @Override
         public DBDPseudoAttribute getPseudoAttribute()
         {
@@ -305,12 +309,14 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             // ignore
         }
 
+        @Nullable
         @Override
         public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException
         {
             return classObject == null ? null : classObject.getAttribute(monitor, getName());
         }
 
+        @Nullable
         @Override
         public DBCEntityMetaData getEntity()
         {

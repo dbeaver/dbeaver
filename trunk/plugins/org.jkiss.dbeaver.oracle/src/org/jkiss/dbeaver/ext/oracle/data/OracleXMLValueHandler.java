@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import oracle.xdb.XMLType;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -80,7 +81,7 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
     }
 
     @Override
-    public DBDContent getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public DBDContent getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             return new OracleContentXML(session.getDataSource(), null);

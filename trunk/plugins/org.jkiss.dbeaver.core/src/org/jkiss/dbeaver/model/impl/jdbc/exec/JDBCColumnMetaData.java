@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
@@ -203,12 +204,14 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     }
 
     //@Property(category = PROP_CATEGORY_COLUMN, order = 3)
+    @NotNull
     @Override
     public String getLabel()
     {
         return label;
     }
 
+    @Nullable
     @Property(category = PROP_CATEGORY_COLUMN, order = 4)
     @Override
     public String getEntityName()
@@ -279,6 +282,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         return readOnly;
     }
 
+    @Nullable
     @Override
     public DBDPseudoAttribute getPseudoAttribute()
     {
@@ -290,12 +294,14 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         this.pseudoAttribute = pseudoAttribute;
     }
 
+    @Nullable
     @Override
     public JDBCTableMetaData getEntity()
     {
         return tableMetaData;
     }
 
+    @Nullable
     @Override
     public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor)
         throws DBException
