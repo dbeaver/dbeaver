@@ -55,6 +55,7 @@ class GridColumn {
 
     private int level;
     private int width = DEFAULT_WIDTH;
+    private int height = -1;
 
 	public GridColumn(LightGrid grid, Object element) {
         this.grid = grid;
@@ -127,20 +128,22 @@ class GridColumn {
         return x >= arrowBegin && x <= arrowEnd;
     }
 
-    int computeHeaderHeight(boolean includeChildren)
+    int getHeaderHeight(boolean includeChildren)
     {
-        int y = topMargin + grid.sizingGC.getFontMetrics().getHeight() + bottomMargin;
-        Image image = grid.getLabelProvider().getImage(element);
-        if (image != null) {
-            y = Math.max(y, topMargin + image.getBounds().height + bottomMargin);
+        if (height < 0) {
+            height = topMargin + grid.sizingGC.getFontMetrics().getHeight() + bottomMargin;
+            Image image = grid.getLabelProvider().getImage(element);
+            if (image != null) {
+                height = Math.max(height, topMargin + image.getBounds().height + bottomMargin);
+            }
         }
         int childHeight = 0;
         if (includeChildren && !CommonUtils.isEmpty(children)) {
             for (GridColumn child : children) {
-                childHeight = Math.max(childHeight, child.computeHeaderHeight(true));
+                childHeight = Math.max(childHeight, child.getHeaderHeight(true));
             }
         }
-        return y + childHeight;
+        return height + childHeight;
     }
 
     int computeHeaderWidth()

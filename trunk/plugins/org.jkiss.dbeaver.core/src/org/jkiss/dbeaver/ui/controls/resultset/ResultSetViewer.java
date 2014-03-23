@@ -112,6 +112,13 @@ import java.util.List;
 
 /**
  * ResultSetViewer
+ *
+ * TODO: replace curRowNum and curColNum with elements (mode switcher is broken now)
+ * TODO: calculate column bounds correctly
+ * TODO: select child columns on parent click
+ * TODO: fix content copy
+ * TODO: fix cell editor
+ * TODO: structured rows support
  */
 public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable
 {
