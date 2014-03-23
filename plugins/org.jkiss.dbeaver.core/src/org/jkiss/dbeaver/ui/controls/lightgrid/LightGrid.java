@@ -1633,7 +1633,7 @@ public abstract class LightGrid extends Canvas {
 
         int colHeaderHeight = 0;
         for (GridColumn column : topColumns) {
-            colHeaderHeight = Math.max(column.computeHeaderHeight(true), colHeaderHeight);
+            colHeaderHeight = Math.max(column.getHeaderHeight(true), colHeaderHeight);
         }
 
         headerHeight = colHeaderHeight;
@@ -2013,7 +2013,7 @@ public abstract class LightGrid extends Canvas {
             if (x > getClientArea().width)
                 break;
 
-            int columnHeight = column.computeHeaderHeight(false);
+            int columnHeight = column.getHeaderHeight(false);
             y = 0;
             columnHeaderRenderer.setHover(hoveringColumn == column);
             cell.col = column.getElement();
@@ -3254,7 +3254,7 @@ public abstract class LightGrid extends Canvas {
             }
         } else if (column.getParent() != null) {
             for (GridColumn parent = column.getParent(); parent != null; parent = parent.getParent()) {
-                y += parent.computeHeaderHeight(false);
+                y += parent.getHeaderHeight(false);
             }
         }
 
