@@ -498,27 +498,26 @@ public final class DBUtils {
         try {
             for (DBDAttributeBinding column : bindings) {
                 DBCAttributeMetaData meta = column.getMetaAttribute();
-                if (meta.getEntity() == null) {
-                    continue;
-                }
-                DBSEntityAttribute tableColumn = meta.getAttribute(session.getProgressMonitor());
-                // We got table name and column name
-                // To be editable we need this result   set contain set of columns from the same table
-                // which construct any unique key
-                DBSEntity ownerEntity = meta.getEntity().getEntity(session.getProgressMonitor());
-                if (ownerEntity != null) {
-                    DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
-                    if (rowIdentifier == null) {
-                        DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(session.getProgressMonitor());
-                        if (entityIdentifier == null) {
-                            continue;
+                if (meta.getEntity() != null) {
+                    DBSEntityAttribute tableColumn = meta.getAttribute(session.getProgressMonitor());
+                    // We got table name and column name
+                    // To be editable we need this result   set contain set of columns from the same table
+                    // which construct any unique key
+                    DBSEntity ownerEntity = meta.getEntity().getEntity(session.getProgressMonitor());
+                    if (ownerEntity != null) {
+                        DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
+                        if (rowIdentifier == null) {
+                            DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(session.getProgressMonitor());
+                            if (entityIdentifier == null) {
+                                continue;
+                            }
+                            rowIdentifier = new DBDRowIdentifier(
+                                ownerEntity,
+                                entityIdentifier);
+                            locatorMap.put(ownerEntity, rowIdentifier);
                         }
-                        rowIdentifier = new DBDRowIdentifier(
-                            ownerEntity,
-                            entityIdentifier);
-                        locatorMap.put(ownerEntity, rowIdentifier);
+                        column.initValueLocator(tableColumn, rowIdentifier);
                     }
-                    column.initValueLocator(tableColumn, rowIdentifier);
                 }
 
                 column.readNestedBindings(session);

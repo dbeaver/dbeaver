@@ -329,6 +329,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return null;
         }
 
+        @Nullable
         @Override
         public Image getObjectImage()
         {

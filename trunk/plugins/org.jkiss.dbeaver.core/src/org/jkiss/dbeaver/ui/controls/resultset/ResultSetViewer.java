@@ -2525,11 +2525,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (column instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) column;
-                DBDAttributeConstraint co = model.getDataFilter().getConstraint(binding);
-                if (co != null && co.getOrderPosition() > 0) {
-                    return co.isOrderDescending() ? SWT.UP : SWT.DOWN;
+                if (!binding.hasNestedBindings()) {
+                    DBDAttributeConstraint co = model.getDataFilter().getConstraint(binding);
+                    if (co != null && co.getOrderPosition() > 0) {
+                        return co.isOrderDescending() ? SWT.UP : SWT.DOWN;
+                    }
+                    return SWT.DEFAULT;
                 }
-                return SWT.DEFAULT;
             }
             return SWT.NONE;
         }

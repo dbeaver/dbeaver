@@ -51,6 +51,7 @@ public abstract class JDBCColumn extends AbstractAttribute implements DBSObject,
         super(name, typeName, valueType, ordinalPosition, maxLength, scale, precision, required, sequence);
     }
 
+    @Nullable
     @Override
     public Image getObjectImage()
     {

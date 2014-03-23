@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.*;
@@ -364,6 +365,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         return refs;
     }
 
+    @Nullable
     @Override
     public Image getObjectImage()
     {

@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
  */
 public abstract class AbstractTableConstraintColumn implements DBSTableConstraintColumn, IObjectImageProvider
 {
+    @Nullable
     @Override
     public Image getObjectImage()
     {
