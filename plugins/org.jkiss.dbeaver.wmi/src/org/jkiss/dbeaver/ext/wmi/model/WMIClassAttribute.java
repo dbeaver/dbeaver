@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -120,6 +121,7 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         return CommonUtils.toString(element.getValue());
     }
 
+    @Nullable
     @Override
     public Image getObjectImage()
     {

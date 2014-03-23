@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
@@ -36,6 +37,7 @@ public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, I
         return true;
     }
 
+    @Nullable
     @Override
     public Image getObjectImage()
     {

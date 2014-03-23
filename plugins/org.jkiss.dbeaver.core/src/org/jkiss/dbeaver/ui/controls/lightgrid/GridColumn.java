@@ -179,16 +179,25 @@ class GridColumn {
 	 */
 	void pack() {
 		int newWidth = computeHeaderWidth();
-        //int columnIndex = getIndex();
-        int topIndex = grid.getTopIndex();
-        int bottomIndex = grid.getBottomIndex();
-        if (topIndex >= 0 && bottomIndex >= topIndex) {
-            int itemCount = grid.getItemCount();
-            GridCell cell = new GridCell(element, element);
-            for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                cell.row = grid.getRowElement(i);
-                newWidth = Math.max(newWidth, computeCellWidth(cell));
+        if (CommonUtils.isEmpty(children)) {
+            // Calculate width of visible cells
+            int topIndex = grid.getTopIndex();
+            int bottomIndex = grid.getBottomIndex();
+            if (topIndex >= 0 && bottomIndex >= topIndex) {
+                int itemCount = grid.getItemCount();
+                GridCell cell = new GridCell(element, element);
+                for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
+                    cell.row = grid.getRowElement(i);
+                    newWidth = Math.max(newWidth, computeCellWidth(cell));
+                }
             }
+        } else {
+            int childrenWidth = 0;
+            for (GridColumn child : children) {
+                child.pack();
+                childrenWidth += child.getWidth();
+            }
+            newWidth = Math.max(newWidth, childrenWidth);
         }
 
 		setWidth(newWidth);

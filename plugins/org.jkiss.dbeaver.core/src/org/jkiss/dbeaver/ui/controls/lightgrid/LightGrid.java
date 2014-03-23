@@ -1999,16 +1999,15 @@ public abstract class LightGrid extends Canvas {
             if (x > getClientArea().width)
                 break;
 
-            int height = column.computeHeaderHeight(false);
+            int columnHeight = column.computeHeaderHeight(false);
             y = 0;
             columnHeaderRenderer.setHover(hoveringColumn == column);
             cell.col = column.getElement();
             columnHeaderRenderer.setCell(cell);
-            columnHeaderRenderer.setBounds(x, y, column.getWidth(), height);
             columnHeaderRenderer.setSelected(selectedColumns.contains(column));
 
             if (x + column.getWidth() >= 0) {
-                paintColumnsHeader(gc, column, cell, x, y, 0);
+                paintColumnsHeader(gc, column, cell, x, y, columnHeight, 0);
             }
 
             x += column.getWidth();
@@ -2027,23 +2026,22 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    private void paintColumnsHeader(GC gc, GridColumn column, GridCell cell, int x, int y, int level) {
+    private void paintColumnsHeader(GC gc, GridColumn column, GridCell cell, int x, int y, int columnHeight, int level) {
         cell.col = column.getElement();
-        columnHeaderRenderer.paint(gc);
-        level++;
-        if (level > maxColumnDepth) {
-            return;
-        }
         List<GridColumn> children = column.getChildren();
+        int paintHeight = columnHeight;
         if (CommonUtils.isEmpty(children)) {
-            Rectangle parentBounds = column.getBounds();
-            drawEmptyColumnHeader(gc, x, y, parentBounds.width, parentBounds.height);
-        } else {
-            // Sraw child columns
+            paintHeight = columnHeight * (maxColumnDepth - level + 1);
+        }
+        columnHeaderRenderer.setBounds(x, y, column.getWidth(), paintHeight);
+        columnHeaderRenderer.paint(gc);
+        if (!CommonUtils.isEmpty(children)) {
+            // Draw child columns
+            level++;
             int childX = x;
             for (GridColumn child : children) {
-                paintColumnsHeader(gc, child, cell, childX, y + column.computeHeaderHeight(false), level);
-                childX += child.computeHeaderWidth();
+                paintColumnsHeader(gc, child, cell, childX, y + columnHeight, columnHeight, level);
+                childX += child.getWidth();
             }
         }
     }

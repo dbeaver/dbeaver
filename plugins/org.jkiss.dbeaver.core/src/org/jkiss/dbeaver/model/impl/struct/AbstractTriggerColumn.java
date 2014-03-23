@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTriggerColumn;
@@ -35,6 +36,7 @@ public abstract class AbstractTriggerColumn implements DBSTriggerColumn, IObject
         return true;
     }
 
+    @Nullable
     @Override
     public Image getObjectImage()
     {
