@@ -343,9 +343,9 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     @Override
-    public void refreshData(boolean clearData) {
+    public void refreshData(boolean refreshColumns) {
         cancelInlineEditor();
-        super.refreshData(clearData);
+        super.refreshData(refreshColumns);
     }
 
     public void clearGrid()
