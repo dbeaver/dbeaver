@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -216,13 +218,13 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     }
 
     @Override
-    public Object getAttributeValue(DBSAttributeBase attribute) throws DBCException
+    public Object getAttributeValue(@NotNull DBSAttributeBase attribute) throws DBCException
     {
         return values.get(attribute);
     }
 
     @Override
-    public void setAttributeValue(DBSAttributeBase attribute, Object value) throws DBCException
+    public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
     {
         throw new DBCException("Not Implemented");
     }

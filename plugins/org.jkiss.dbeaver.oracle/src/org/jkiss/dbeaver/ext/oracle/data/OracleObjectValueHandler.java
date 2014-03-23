@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -39,8 +40,9 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
 
     public static final OracleObjectValueHandler INSTANCE = new OracleObjectValueHandler();
 
+    @NotNull
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value != null) {
             return "[OBJECT]";
@@ -76,7 +78,7 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public OracleObjectValue getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public OracleObjectValue getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             return new OracleObjectValue(null);
@@ -88,7 +90,7 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(DBDValueController controller) throws DBException
+    public DBDValueEditor createEditor(@NotNull DBDValueController controller) throws DBException
     {
         return null;
     }

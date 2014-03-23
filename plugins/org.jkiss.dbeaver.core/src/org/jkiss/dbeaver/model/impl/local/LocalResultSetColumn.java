@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.impl.local;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -56,12 +58,14 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return index;
     }
 
+    @NotNull
     @Override
     public String getLabel()
     {
         return label;
     }
 
+    @Nullable
     @Override
     public String getEntityName()
     {
@@ -74,6 +78,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return true;
     }
 
+    @Nullable
     @Override
     public DBDPseudoAttribute getPseudoAttribute()
     {
@@ -86,12 +91,14 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         this.pseudoAttribute = pseudoAttribute;
     }
 
+    @Nullable
     @Override
     public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Nullable
     @Override
     public DBCEntityMetaData getEntity()
     {

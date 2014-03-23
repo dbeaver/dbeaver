@@ -20,12 +20,16 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerStruct;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -39,7 +43,7 @@ import java.sql.Types;
  *
  * @author Serge Rider
  */
-public class JDBCStructValueHandler extends JDBCComplexValueHandler {
+public class JDBCStructValueHandler extends JDBCComplexValueHandler implements DBDValueHandlerStruct {
 
     static final Log log = LogFactory.getLog(JDBCStructValueHandler.class);
 
@@ -48,8 +52,9 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
      */
+    @NotNull
     @Override
-    public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
+    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         JDBCStruct struct = (JDBCStruct) value;
         return DBUtils.isNullValue(struct) ?
@@ -64,7 +69,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         String typeName;
         try {
@@ -101,4 +106,31 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
         }
     }
 
+    @Nullable
+    @Override
+    public Object getFieldValue(@NotNull Object owner, @NotNull DBSAttributeBase attribute, int attributeIndex) throws DBCException {
+        if (owner instanceof JDBCStruct) {
+            try {
+                return ((JDBCStruct) owner).getAttributeValue(attribute);
+            } catch (Exception e) {
+                throw new DBCException("Error reading structure attributes", e);
+            }
+        } else {
+            log.error("Unsupported struct value: " + owner);
+            return null;
+        }
+    }
+
+    @Override
+    public void setFieldValue(@NotNull Object owner, @NotNull DBSAttributeBase attribute, int attributeIndex, @Nullable Object value) throws DBCException {
+        if (owner instanceof JDBCStruct) {
+            try {
+                ((JDBCStruct) owner).setAttributeValue(attribute, value);
+            } catch (Exception e) {
+                log.error("Error setting structure attribute", e);
+            }
+        } else {
+            log.error("Unsupported struct value: " + owner);
+        }
+    }
 }

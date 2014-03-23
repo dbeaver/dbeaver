@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.*;
@@ -116,7 +117,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(DBDValueController controller)
+    public DBDValueEditor createEditor(@NotNull DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
@@ -193,8 +194,9 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @NotNull
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value == null) {
             return super.getValueDisplayString(column, value, format);
@@ -236,7 +238,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
             return null;
@@ -267,7 +269,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void contributeActions(IContributionManager manager, final DBDValueController controller)
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final DBDValueController controller)
         throws DBCException
     {
         manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time) {
@@ -280,7 +282,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller)
     {
         super.contributeProperties(propertySource, controller);
         propertySource.addProperty(

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -39,7 +40,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
     public static final MySQLSetValueHandler INSTANCE = new MySQLSetValueHandler();
 
     @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
+    public DBDValueEditor createEditor(@NotNull final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
