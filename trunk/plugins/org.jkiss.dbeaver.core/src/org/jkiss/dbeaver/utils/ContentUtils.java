@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
@@ -538,6 +539,15 @@ public class ContentUtils {
     @Nullable
     public static IFile getFileFromEditorInput(IEditorInput editorInput)
     {
+        try {
+            Method getFileMethod = editorInput.getClass().getMethod("getFile");
+            if (IFile.class.isAssignableFrom(getFileMethod.getReturnType())) {
+                return IFile.class.cast(getFileMethod.invoke(editorInput));
+            }
+        } catch (Exception e) {
+            log.debug("Error getting file from editor input with reflection", e);
+            // Just ignore
+        }
         if (editorInput instanceof IPathEditorInput && ((IPathEditorInput) editorInput).getPath() != null) {
             return convertPathToWorkspaceFile(((IPathEditorInput) editorInput).getPath());
         } else {

@@ -18,6 +18,12 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -41,10 +47,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
+import org.jkiss.dbeaver.model.impl.resources.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -311,8 +319,8 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     public void saveToExternalFile()
     {
         IEditorInput editorInput = getEditorInput();
-        String fileName = (editorInput instanceof ProjectFileEditorInput ?
-            ((ProjectFileEditorInput)getEditorInput()).getFile().getName() : null);
+        IFile curFile = ContentUtils.getFileFromEditorInput(editorInput);
+        String fileName = curFile == null ? null : curFile.getName();
 
         final Document document = getDocument();
         final File saveFile = ContentUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[] { "*.sql", "*.txt", "*.*"}, fileName);
@@ -344,6 +352,21 @@ public abstract class BaseTextEditor extends StatusTextEditor {
             // do nothing
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(getSite().getShell(), "Save failed", null, e.getTargetException());
+        }
+
+        if (curFile != null) {
+            try {
+                // TODO: change to EFS
+                IPath location = new Path(saveFile.getAbsolutePath());
+                IFolder scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(curFile.getProject(), true);
+                IFile newFile = scriptsFolder.getFile(location.lastSegment());
+                newFile.createLink(location, IResource.NONE, null);
+
+                SQLEditorInput newInput = new SQLEditorInput(newFile);
+                init(getEditorSite(), newInput);
+            } catch (CoreException e) {
+                UIUtils.showErrorDialog(getSite().getShell(), "File link", "Can't link SQL editor with external file", e);
+            }
         }
     }
 

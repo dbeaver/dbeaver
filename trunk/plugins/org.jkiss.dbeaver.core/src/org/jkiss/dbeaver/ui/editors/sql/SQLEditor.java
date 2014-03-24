@@ -153,7 +153,7 @@ public class SQLEditor extends SQLEditorBase
     @Nullable
     public IProject getProject()
     {
-        IFile file = ContentUtils.convertPathToWorkspaceFile(getEditorInput().getPath());
+        IFile file = ContentUtils.getFileFromEditorInput(getEditorInput());
         return file == null ? null : file.getProject();
     }
 
@@ -214,7 +214,7 @@ public class SQLEditor extends SQLEditorBase
         if (input == null) {
             return false;
         }
-        IFile file = ContentUtils.convertPathToWorkspaceFile(input.getPath());
+        IFile file = ContentUtils.getFileFromEditorInput(input);
         if (file == null || !file.exists()) {
             log.warn("File '" + input.getPath() + "' doesn't exists");
             return false;
@@ -468,14 +468,13 @@ public class SQLEditor extends SQLEditorBase
         if (!(editorInput instanceof IPathEditorInput)) {
             throw new PartInitException("Invalid Input: Must be " + IPathEditorInput.class.getSimpleName());
         }
-        IPathEditorInput input = (IPathEditorInput)editorInput;
-        IFile file = ContentUtils.convertPathToWorkspaceFile(input.getPath());
+        IFile file = ContentUtils.getFileFromEditorInput(editorInput);
         if (file == null || !file.exists()) {
-            throw new PartInitException("File '" + input.getPath() + "' doesn't exists");
+            throw new PartInitException("File '" + ((IPathEditorInput) editorInput).getPath() + "' doesn't exists");
         }
         dataSourceContainer = SQLEditorInput.getScriptDataSource(file);
 
-        super.doSetInput(input);
+        super.doSetInput(editorInput);
     }
 
     @Override
