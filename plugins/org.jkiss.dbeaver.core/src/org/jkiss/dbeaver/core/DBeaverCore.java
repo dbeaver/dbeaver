@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
@@ -56,9 +57,8 @@ public class DBeaverCore implements DBPApplication {
 
     static final Log log = LogFactory.getLog(DBeaverCore.class);
 
-    //private static final String AUTOSAVE_DIR = ".autosave";
     private static final String LOB_DIR = ".lob"; //$NON-NLS-1$
-    public static final String TEMP_PROJECT_NAME = "org.jkiss.dbeaver.temp"; //$NON-NLS-1$
+    public static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
 
     static DBeaverCore instance;
     private static boolean standalone = false;
@@ -214,10 +214,6 @@ public class DBeaverCore implements DBPApplication {
         try {
             // Temp project
             tempProject = workspace.getRoot().getProject(TEMP_PROJECT_NAME);
-            File systemTempFolder = new File(System.getProperty("java.io.tmpdir"));
-            File dbeaverTempFolder = new File(
-                systemTempFolder,
-                TEMP_PROJECT_NAME + "." + CommonUtils.escapeIdentifier(workspace.getRoot().getLocation().toString()));
             if (tempProject.exists()) {
                 try {
                     tempProject.delete(true, true, monitor);
@@ -225,13 +221,7 @@ public class DBeaverCore implements DBPApplication {
                     log.error("Can't delete temp project", e);
                 }
             }
-            if (!dbeaverTempFolder.exists()) {
-                if (!dbeaverTempFolder.mkdirs()) {
-                    log.error("Can't create directory '" + dbeaverTempFolder.getAbsolutePath() + "'");
-                }
-            }
             IProjectDescription description = workspace.newProjectDescription(TEMP_PROJECT_NAME);
-            description.setLocation(new Path(dbeaverTempFolder.getAbsolutePath()));
             description.setName(TEMP_PROJECT_NAME);
             description.setComment("Project for DBeaver temporary content");
             try {
@@ -241,7 +231,6 @@ public class DBeaverCore implements DBPApplication {
             }
 
             tempProject.open(monitor);
-            //tempProject.setHidden(true);
         } catch (Throwable e) {
             log.error("Cannot open temp project", e); //$NON-NLS-1$
         }
