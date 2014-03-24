@@ -448,8 +448,8 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             connectionInfo.setUserPassword(passwordText.getText());
         }
         super.saveSettings(dataSource);
-        if (urlText != null && connectionInfo.getUrl() != null) {
-            urlText.setText(connectionInfo.getUrl());
+        if (urlText != null) {
+            connectionInfo.setUrl(urlText.getText());
         }
     }
 
