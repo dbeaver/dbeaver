@@ -816,7 +816,6 @@ public abstract class LightGrid extends Canvas {
      */
     public Color getLineColor()
     {
-        checkWidget();
         return lineColor;
     }
 
@@ -827,7 +826,6 @@ public abstract class LightGrid extends Canvas {
      */
     public boolean getLinesVisible()
     {
-        checkWidget();
         return linesVisible;
     }
 
@@ -871,8 +869,6 @@ public abstract class LightGrid extends Canvas {
     @Nullable
     public GridColumn getPreviousVisibleColumn(GridColumn column)
     {
-        checkWidget();
-
         int index = columns.indexOf(column);
 
         if (index == 0)
@@ -890,8 +886,6 @@ public abstract class LightGrid extends Canvas {
     @Nullable
     public GridColumn getNextVisibleColumn(GridColumn column)
     {
-        checkWidget();
-
         int index = columns.indexOf(column);
 
         if (index == columns.size() - 1)
@@ -907,7 +901,6 @@ public abstract class LightGrid extends Canvas {
      */
     public int getCellSelectionCount()
     {
-        checkWidget();
         return selectedCells.size();
     }
 
@@ -920,8 +913,6 @@ public abstract class LightGrid extends Canvas {
      */
     public int getSelectionIndex()
     {
-        checkWidget();
-
         if (selectedCells.isEmpty())
             return -1;
 
@@ -937,8 +928,6 @@ public abstract class LightGrid extends Canvas {
      */
     public int getTopIndex()
     {
-        checkWidget();
-
         if (topIndex != -1)
             return topIndex;
 
@@ -968,8 +957,6 @@ public abstract class LightGrid extends Canvas {
      */
     public int getBottomIndex()
     {
-        checkWidget();
-
         if (bottomIndex != -1)
             return bottomIndex;
 
@@ -1156,7 +1143,6 @@ public abstract class LightGrid extends Canvas {
      */
     public boolean isRowHeaderVisible()
     {
-        checkWidget();
         return rowHeaderVisible;
     }
 
@@ -1168,8 +1154,6 @@ public abstract class LightGrid extends Canvas {
      */
     public boolean isCellSelected(GridPos cell)
     {
-        checkWidget();
-
         if (cell == null)
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
 
@@ -1323,7 +1307,6 @@ public abstract class LightGrid extends Canvas {
      */
     public void setLineColor(@NotNull Color lineColor)
     {
-        checkWidget();
         this.lineColor = lineColor;
     }
 
