@@ -521,6 +521,7 @@ public class ContentUtils {
         }
     }
 
+    @Nullable
     public static MimeType getMimeType(String contentType)
     {
         MimeType mimeType = null;
@@ -534,6 +535,7 @@ public class ContentUtils {
         return mimeType;
     }
 
+    @Nullable
     public static IFile getFileFromEditorInput(IEditorInput editorInput)
     {
         if (editorInput instanceof IPathEditorInput && ((IPathEditorInput) editorInput).getPath() != null) {
@@ -543,6 +545,7 @@ public class ContentUtils {
         }
     }
 
+    @Nullable
     public static IFile convertPathToWorkspaceFile(IPath path)
     {
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -561,6 +564,7 @@ public class ContentUtils {
         return file;
     }
 
+    @Nullable
     public static IPath convertPathToWorkspacePath(IPath path)
     {
         IFile wFile = convertPathToWorkspaceFile(path);
