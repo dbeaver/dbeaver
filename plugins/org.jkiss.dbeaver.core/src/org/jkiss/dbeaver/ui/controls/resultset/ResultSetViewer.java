@@ -1568,8 +1568,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         // Reorder
-        // Use forced reorder if we just removed ordering on some column
-        reorderResultSet(constraint.getOrderPosition() == 0, new Runnable() {
+        reorderResultSet(false, new Runnable() {
             @Override
             public void run()
             {
