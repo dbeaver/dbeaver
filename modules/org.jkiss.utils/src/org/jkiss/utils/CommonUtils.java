@@ -590,4 +590,13 @@ public class CommonUtils {
         }
         return result;
     }
+
+    public static <T> int indexOf(T[] array, T element) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == element) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }
