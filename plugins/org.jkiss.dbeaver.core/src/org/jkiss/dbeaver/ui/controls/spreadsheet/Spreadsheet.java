@@ -123,10 +123,8 @@ public class Spreadsheet extends LightGrid implements Listener {
             public void widgetSelected(SelectionEvent e)
             {
                 //Integer row = (Integer) e.data;
-                GridPos pos = (GridPos) e.data;
                 Event event = new Event();
-                event.x = pos.col;
-                event.y = pos.row;
+                event.data = e.data;
                 notifyListeners(Event_ChangeCursor, event);
             }
 
@@ -244,33 +242,39 @@ public class Spreadsheet extends LightGrid implements Listener {
             newPos.col = newCol;
         }
 
-        setCursor(newPos, keepSelection);
+        GridCell newCell = posToCell(newPos);
+        if (newCell != null) {
+            setCursor(newCell, keepSelection);
+        }
         return true;
     }
 
-    public void setCursor(GridPos newPos, boolean keepSelection)
+    public void setCursor(@NotNull GridCell cell, boolean keepSelection)
     {
         Event fakeEvent = new Event();
         fakeEvent.widget = this;
         SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
         // Move row
-        if (newPos.row >= 0 && newPos.row < getItemCount()) {
-            selectionEvent.data = newPos.row;
-            super.setFocusItem(newPos.row);
-            super.showItem(newPos.row);
+        selectionEvent.data = cell;
+        GridPos pos = cellToPos(cell);
+        if (pos.row >= 0) {
+            super.setFocusItem(pos.row);
+            super.showItem(pos.row);
         }
+
         // Move column
-        if (newPos.col >= 0 && newPos.col < getColumnsCount()) {
-            super.setFocusColumn(newPos.col);
-            super.showColumn(newPos.col);
+        if (pos.col >= 0) {
+            super.setFocusColumn(pos.col);
+            super.showColumn(pos.col);
         }
+
         if (!keepSelection) {
             super.deselectAll();
         }
-        super.selectCell(newPos);
+        super.selectCell(pos);
 
         // Change selection event
-        selectionEvent.data = new GridPos(newPos.col, newPos.row);
+        selectionEvent.data = cell;
         gridSelectionListener.widgetSelected(selectionEvent);
     }
 
