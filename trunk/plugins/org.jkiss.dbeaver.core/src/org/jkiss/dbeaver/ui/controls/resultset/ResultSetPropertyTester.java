@@ -59,11 +59,11 @@ public class ResultSetPropertyTester extends PropertyTester
             final GridCell currentPosition = rsv.getCurrentPosition();
             return currentPosition != null && !rsv.isColumnReadOnly(currentPosition);
         } else if (PROP_CAN_MOVE.equals(property)) {
-            int currentRow = rsv.getCurrentRow();
+            RowData currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {
-                return currentRow > 0;
+                return currentRow != null && currentRow.visualNumber > 0;
             } else if ("forward".equals(expectedValue)) {
-                return currentRow < rsv.getModel().getRowCount() - 1;
+                return currentRow != null && currentRow.visualNumber < rsv.getModel().getRowCount() - 1;
             }
         } else if (PROP_EDITABLE.equals(property)) {
             if (!rsv.hasData()) {
@@ -82,8 +82,8 @@ public class ResultSetPropertyTester extends PropertyTester
             } else if ("add".equals(expectedValue)) {
                 return rsv.isInsertable();
             } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
-                int currentRow = rsv.getCurrentRow();
-                return currentRow >= 0 && currentRow < rsv.getModel().getRowCount() && rsv.isInsertable();
+                RowData currentRow = rsv.getCurrentRow();
+                return currentRow != null && rsv.isInsertable();
             } else {
                 return false;
             }

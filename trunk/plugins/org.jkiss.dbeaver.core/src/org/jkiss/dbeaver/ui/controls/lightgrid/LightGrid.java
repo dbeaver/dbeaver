@@ -514,6 +514,14 @@ public abstract class LightGrid extends Canvas {
         return new GridCell(columnElements[pos.col], rowElements[pos.row]);
     }
 
+    @NotNull
+    public GridPos cellToPos(GridCell cell)
+    {
+        int colIndex = CommonUtils.indexOf(columnElements, cell.col);
+        int rowIndex = CommonUtils.indexOf(rowElements, cell.row);
+        return new GridPos(colIndex, rowIndex);
+    }
+
     public GridCell posToCell(int col, int row)
     {
         return new GridCell(columnElements[col], rowElements[row]);
@@ -2162,9 +2170,7 @@ public abstract class LightGrid extends Canvas {
         boolean reverseDuplicateSelections,
         EventSource eventSource)
     {
-        List<GridPos> v = new ArrayList<GridPos>();
-        v.add(newCell);
-        return updateCellSelection(v, stateMask, dragging, reverseDuplicateSelections, eventSource);
+        return updateCellSelection(Collections.singletonList(newCell), stateMask, dragging, reverseDuplicateSelections, eventSource);
     }
 
     /**
@@ -2669,10 +2675,10 @@ public abstract class LightGrid extends Canvas {
             focusColumn = column;
         }
 
-        if (selectionEvent != null) {
+        if (selectionEvent != null && col != null && row >= 0) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.data = new GridPos(col == null ? 0 : col.getIndex(), row);
+            selectionEvent.data = new GridCell(col.getElement(), rowElements[row]);
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -2698,11 +2704,13 @@ public abstract class LightGrid extends Canvas {
                 return;
             }
 
-            int row = getRow(new Point(e.x, e.y));
-            if (row >= 0) {
+            Point point = new Point(e.x, e.y);
+            int row = getRow(point);
+            GridColumn col = getColumn(point);
+            if (row >= 0 && col != null) {
                 if (isListening(SWT.DefaultSelection)) {
                     Event newEvent = new Event();
-                    newEvent.data = row;
+                    newEvent.data = new GridCell(col.getElement(), rowElements[row]);
 
                     notifyListeners(SWT.DefaultSelection, newEvent);
                 }
@@ -2753,7 +2761,10 @@ public abstract class LightGrid extends Canvas {
                 se.button = e.button;
                 Point point = new Point(e.x, e.y);
                 GridColumn column = getColumn(point);
-                se.data = new GridPos(column == null ? 0 : column.getIndex(), getRow(point));
+                int rowIndex = getRow(point);
+                if (column != null && rowIndex >= 0) {
+                    se.data = new GridCell(column.getElement(), rowElements[rowIndex]);
+                }
                 se.stateMask = e.stateMask;
                 se.x = e.x;
                 se.y = e.y;
@@ -2905,7 +2916,10 @@ public abstract class LightGrid extends Canvas {
             selectionEvent.button = e.button;
             Point point = new Point(e.x, e.y);
             GridColumn column = getColumn(point);
-            selectionEvent.data = new GridPos(column == null ? 0 : column.getIndex(), getRow(point));
+            int rowIndex = getRow(point);
+            if (column != null && rowIndex >= 0) {
+                selectionEvent.data = new GridCell(column.getElement(), rowElements[rowIndex]);
+            }
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
@@ -2967,9 +2981,9 @@ public abstract class LightGrid extends Canvas {
             focusColumn = getColumn(0);
         }
 
-        if (e.character == '\r' && focusItem >= 0) {
+        if (e.character == '\r' && focusItem >= 0 && focusColumn != null) {
             Event newEvent = new Event();
-            newEvent.data = focusItem;
+            newEvent.data = new GridCell(focusColumn.getElement(), rowElements[focusItem]);
 
             notifyListeners(SWT.DefaultSelection, newEvent);
             return;
@@ -3116,9 +3130,8 @@ public abstract class LightGrid extends Canvas {
 
         {
             //if (e.stateMask != SWT.MOD1) {
-            GridPos newPos = new GridPos(newColumnFocus.getIndex(), newSelection);
             Event selEvent = updateCellSelection(
-                newPos,
+                new GridPos(newColumnFocus.getIndex(), newSelection),
                 e.stateMask,
                 false,
                 false,
@@ -3138,6 +3151,12 @@ public abstract class LightGrid extends Canvas {
             }
             showItem(newSelection);
 
+            GridCell newPos;
+            if (newColumnFocus != null && newSelection >= 0) {
+                newPos = new GridCell(newColumnFocus.getElement(), rowElements[newSelection]);
+            } else {
+                newPos = null;
+            }
             if (selEvent != null) {
                 selEvent.stateMask = e.stateMask;
                 selEvent.character = e.character;
