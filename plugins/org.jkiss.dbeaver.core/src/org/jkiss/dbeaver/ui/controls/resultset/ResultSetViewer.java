@@ -113,8 +113,6 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
- * TODO: calculate column bounds correctly
- * TODO: select child columns on parent click
  * TODO: fix content copy
  * TODO: fix cell editor
  * TODO: structured rows support
@@ -164,9 +162,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private ToolBarManager toolBarManager;
 
     // Current row/col number
-    private RowData curRow = null;
-    private DBDAttributeBinding curAttribute = null;
+    @Nullable
+    private RowData curRow;
+    @Nullable
+    private DBDAttributeBinding curAttribute;
     // Mode
+    @NotNull
     private GridMode gridMode;
 
     private final Map<ResultSetValueController, DBDValueEditorStandalone> openEditors = new HashMap<ResultSetValueController, DBDValueEditorStandalone>();
@@ -641,7 +642,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         DBDAttributeBinding oldAttr = this.curAttribute;
         this.initResultSet();
         this.curAttribute = oldAttr;
-        spreadsheet.setCursor(new GridCell(curRow, oldAttr), false);
+        if (curRow != null && oldAttr != null) {
+            spreadsheet.setCursor(new GridCell(curRow, oldAttr), false);
+        }
     }
 
     void updateEditControls()
