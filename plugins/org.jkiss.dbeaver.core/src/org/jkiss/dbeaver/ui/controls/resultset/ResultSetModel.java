@@ -18,9 +18,13 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -34,6 +38,9 @@ import java.util.*;
  * Result set model
  */
 public class ResultSetModel {
+
+    static final Log log = LogFactory.getLog(ResultSetModel.class);
+
     // Columns
     private DBDAttributeBinding[] columns = new DBDAttributeBinding[0];
     private List<DBDAttributeBinding> visibleColumns = new ArrayList<DBDAttributeBinding>();
@@ -100,7 +107,7 @@ public class ResultSetModel {
     public void resetCellValue(GridCell cell, boolean delete)
     {
         RowData row = (RowData) cell.row;
-        int columnIndex = ((DBDAttributeBinding) cell.col).getAttributeIndex();
+        int columnIndex = ((DBDAttributeBinding) cell.col).getTopBinding().getAttributeIndex();
         if (columnIndex >= 0 && row.oldValues != null && row.changedValues != null && row.changedValues[columnIndex]) {
             resetValue(row.values[columnIndex]);
             row.values[columnIndex] = row.oldValues[columnIndex];
@@ -220,6 +227,41 @@ public class ResultSetModel {
         return curRows.get(index);
     }
 
+    @Nullable
+    public Object getCellValue(@NotNull RowData row, @NotNull DBDAttributeBinding column) {
+        int depth = column.getDepth();
+        if (depth == 1) {
+            return row.values[column.getAttributeIndex()];
+        }
+        DBDAttributeBinding[] path = new DBDAttributeBinding[depth];
+        for (int i = depth - 1; i >= 0; i--) {
+            path[i] = column;
+            column = column.getParent();
+        }
+        Object curValue = row.values[path[0].getAttributeIndex()];
+
+        for (int i = 1; i < depth; i++) {
+            if (curValue == null) {
+                break;
+            }
+            if (curValue instanceof DBDStructure) {
+                try {
+                    curValue = ((DBDStructure) curValue).getAttributeValue(path[i].getAttribute());
+                } catch (DBCException e) {
+                    log.warn("Error getting field [" + path[i].getAttributeName() + "] value", e);
+                    curValue = null;
+                    break;
+                }
+            } else {
+                log.debug("No struct value handler while trying to read nested attribute [" + path[i].getAttributeName() + "]");
+                curValue = null;
+                break;
+            }
+        }
+
+        return curValue;
+    }
+
     /**
      * Updates cell value. Saves previous value.
      * @param row row index
@@ -229,35 +271,83 @@ public class ResultSetModel {
      */
     public boolean updateCellValue(RowData row, DBDAttributeBinding attr, @Nullable Object value)
     {
-        int column = attr.getAttributeIndex();
-        Object oldValue = row.values[column];
-        if ((value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {
+        int depth = attr.getDepth();
+        int rootIndex;
+        DBDAttributeBinding[] path;
+        if (depth == 1) {
+            path = new DBDAttributeBinding[] {attr};
+            rootIndex = attr.getAttributeIndex();
+        } else {
+            path = new DBDAttributeBinding[depth];
+            DBDAttributeBinding curAttr = attr;
+            for (int i = depth - 1; i >= 0; i--) {
+                path[i] = curAttr;
+                curAttr = curAttr.getParent();
+            }
+            rootIndex = path[0].getAttributeIndex();
+        }
+        Object rootValue = row.values[rootIndex];
+        Object ownerValue = depth > 1 ? rootValue : null;
+        {
+            // Obtain owner value and create all intermediate values
+            for (int i = 1; i < depth; i++) {
+                if (DBUtils.isNullValue(ownerValue)) {
+                    // Create new owner object
+                    log.warn("Null owner value");
+                    return false;
+                }
+                if (i == depth - 1) {
+                    break;
+                }
+                if (ownerValue instanceof DBDStructure) {
+                    try {
+                        ownerValue = ((DBDStructure) ownerValue).getAttributeValue(path[i].getAttribute());
+                    } catch (DBCException e) {
+                        log.warn("Error getting field [" + path[i].getAttributeName() + "] value", e);
+                        return false;
+                    }
+                }
+            }
+        }
+        if (ownerValue != null || (value instanceof DBDValue && value == rootValue) || !CommonUtils.equalObjects(rootValue, value)) {
             // If DBDValue was updated (kind of LOB?) or actual value was changed
-            if (DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
+            if (ownerValue == null && DBUtils.isNullValue(rootValue) && DBUtils.isNullValue(value)) {
                 // Both nulls - nothing to update
                 return false;
             }
             // Do not add edited cell for new/deleted rows
             if (row.state == RowData.STATE_NORMAL) {
                 // Save old value
-                boolean cellWasEdited = row.oldValues != null && row.changedValues != null && row.changedValues[column];
-                Object oldOldValue = !cellWasEdited ? null : row.oldValues[column];
-                if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
+                boolean cellWasEdited = row.oldValues != null && row.changedValues != null && row.changedValues[rootIndex];
+                Object oldOldValue = !cellWasEdited ? null : row.oldValues[rootIndex];
+                if (cellWasEdited && !CommonUtils.equalObjects(rootValue, oldOldValue)) {
                     // Value rewrite - release previous stored old value
-                    releaseValue(oldValue);
+                    releaseValue(rootValue);
                 } else {
                     if (row.oldValues == null || row.changedValues == null) {
                         row.oldValues = new Object[row.values.length];
                         row.changedValues = new boolean[row.values.length];
                     }
-                    row.oldValues[column] = oldValue;
-                    row.changedValues[column] = true;
+                    row.oldValues[rootIndex] = rootValue;
+                    row.changedValues[rootIndex] = true;
                 }
                 if (row.state == RowData.STATE_NORMAL && !cellWasEdited) {
                     changesCount++;
                 }
             }
-            row.values[column] = value;
+            if (ownerValue != null) {
+                if (ownerValue instanceof DBDStructure) {
+                    try {
+                        ((DBDStructure) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                    } catch (DBCException e) {
+                        log.error("Error setting [" + attr.getAttributeName() + "] value", e);
+                    }
+                } else {
+                    log.warn("Value [" + ownerValue + "] edit is not supported");
+                }
+            } else {
+                row.values[rootIndex] = value;
+            }
             return true;
         }
         return false;

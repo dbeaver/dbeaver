@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
@@ -52,6 +53,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
     private Object[] contents;
     private DBSDataType type;
 
+    @Nullable
     public static Object makeArray(JDBCSession session, Array array)
     {
         if (array == null) {
@@ -120,6 +122,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
     }
 
+    @Nullable
     private static Object[] extractDataFromArray(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
     {
         Object arrObject = array.getArray();
@@ -181,12 +184,10 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
     }
 
+    @Nullable
     public String makeArrayString()
     {
         if (isNull()) {
-            return null;
-        }
-        if (contents == null) {
             return null;
         }
         DBDValueHandler valueHandler = DBUtils.findValueHandler(type.getDataSource(), type);

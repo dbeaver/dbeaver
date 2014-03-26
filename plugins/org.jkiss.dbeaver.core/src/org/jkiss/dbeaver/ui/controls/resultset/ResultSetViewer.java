@@ -1904,7 +1904,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
         IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
-        ContentProvider contentProvider = (ContentProvider)spreadsheet.getContentProvider();
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
             if (copyRowNumbers) {
@@ -1949,7 +1948,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
             DBDAttributeBinding column = (DBDAttributeBinding)(getGridMode() == GridMode.GRID ?  cell.col : cell.row);
             RowData row = (RowData) (getGridMode() == GridMode.GRID ?  cell.row : cell.col);
-            Object value = contentProvider.extractColumnValue(row, column);
+            Object value = getModel().getCellValue(row, column);
             String cellText = column.getValueHandler().getValueDisplayString(
                 column.getMetaAttribute(),
                 value,
@@ -2371,6 +2370,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             fireResultSetChange();
         }
 
+        @Nullable
         @Override
         public DBDRowIdentifier getValueLocator()
         {
@@ -2571,7 +2571,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             DBDAttributeBinding column = (DBDAttributeBinding)(cell.col instanceof DBDAttributeBinding ? cell.col : cell.row);
             RowData row = (RowData)(cell.col instanceof RowData ? cell.col : cell.row);
             int rowNum = row.visualNumber;
-            Object value = extractColumnValue(row, column);
+            Object value = getModel().getCellValue(row, column);
 
             if (rowNum > 0 && rowNum == model.getRowCount() - 1 && (gridMode == GridMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
                 readNextSegment();
@@ -2585,41 +2585,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             } else {
                 return value;
             }
-        }
-
-        @Nullable
-        private Object extractColumnValue(@NotNull RowData row, @NotNull DBDAttributeBinding column) {
-            int depth = column.getDepth();
-            if (depth == 1) {
-                return row.values[column.getAttributeIndex()];
-            }
-            DBDAttributeBinding[] path = new DBDAttributeBinding[depth];
-            for (int i = depth - 1; i >= 0; i--) {
-                path[i] = column;
-                column = column.getParent();
-            }
-            Object curValue = row.values[path[0].getAttributeIndex()];
-
-            for (int i = 1; i < depth; i++) {
-                if (curValue == null) {
-                    break;
-                }
-                if (curValue instanceof DBDStructure) {
-                    try {
-                        curValue = ((DBDStructure) curValue).getAttributeValue(path[i].getAttribute());
-                    } catch (DBCException e) {
-                        log.warn("Error getting field [" + path[i].getAttributeName() + "] value", e);
-                        curValue = null;
-                        break;
-                    }
-                } else {
-                    log.debug("No struct value handler while trying to read nested attribute [" + path[i].getAttributeName() + "]");
-                    curValue = null;
-                    break;
-                }
-            }
-
-            return curValue;
         }
 
         @Nullable
@@ -2676,6 +2641,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             if (row.changedValues != null) {
                 DBDAttributeBinding column = (DBDAttributeBinding)(getGridMode() == GridMode.GRID ?  cell.col : cell.row);
+                column = column.getTopBinding();
                 if (row.changedValues[column.getAttributeIndex()]) {
                     return backgroundModified;
                 }

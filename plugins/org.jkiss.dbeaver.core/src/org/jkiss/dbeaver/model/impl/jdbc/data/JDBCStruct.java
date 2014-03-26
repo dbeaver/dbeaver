@@ -75,7 +75,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         this(session, type, contents, null);
     }
 
-    public JDBCStruct(DBCSession session, DBSDataType type, Struct contents, ResultSetMetaData metaData) throws DBCException
+    public JDBCStruct(DBCSession session, DBSDataType type, Struct contents, @Nullable ResultSetMetaData metaData) throws DBCException
     {
         this.type = type;
         this.contents = contents;
@@ -151,14 +151,10 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         values = null;
     }
 
+    @Nullable
     public String getTypeName()
     {
-        try {
-            return contents == null ? null : contents.getSQLTypeName();
-        } catch (SQLException e) {
-            log.error(e);
-            return null;
-        }
+        return type.getTypeName();
     }
 
     public String getStringRepresentation()
@@ -226,7 +222,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
     {
-        throw new DBCException("Not Implemented");
+        values.put(attribute, value);
     }
 
     @Override
