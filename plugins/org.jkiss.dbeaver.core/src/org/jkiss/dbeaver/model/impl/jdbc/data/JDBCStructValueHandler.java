@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -63,6 +65,18 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     public Class getValueObjectType()
     {
         return JDBCStruct.class;
+    }
+
+    @Override
+    protected void bindParameter(
+        JDBCSession session,
+        JDBCPreparedStatement statement,
+        DBSTypedObject paramType,
+        int paramIndex,
+        Object value)
+        throws DBCException, SQLException
+    {
+        throw new DBCException("Struct update not supported");
     }
 
     @Override
