@@ -290,4 +290,22 @@ class GridColumn {
     public int getLevel() {
         return level;
     }
+
+    public boolean isParent(GridColumn col) {
+        for (GridColumn p = parent; p != null; p = p.parent) {
+            if (p == col) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public GridColumn getFirstLeaf() {
+        if (children == null) {
+            return this;
+        } else {
+            return children.get(0).getFirstLeaf();
+        }
+    }
+
 }
