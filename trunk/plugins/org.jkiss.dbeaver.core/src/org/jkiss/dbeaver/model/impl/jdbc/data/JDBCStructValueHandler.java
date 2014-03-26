@@ -62,7 +62,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     @Override
     public Class getValueObjectType()
     {
-        return Struct.class;
+        return JDBCStruct.class;
     }
 
     @Override

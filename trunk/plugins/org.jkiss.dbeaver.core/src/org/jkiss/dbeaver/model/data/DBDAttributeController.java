@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 
 /**
@@ -44,6 +45,7 @@ public interface DBDAttributeController extends DBDValueController
      */
     String getColumnId();
 
+    @Nullable
     DBDRowIdentifier getValueLocator();
 
 }
