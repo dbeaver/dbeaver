@@ -113,7 +113,6 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
- * TODO: fix content copy
  * TODO: fix cell editor
  * TODO: structured rows support
  * TODO: ipatheditorinput issue
@@ -1905,6 +1904,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
         IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
+        ContentProvider contentProvider = (ContentProvider)spreadsheet.getContentProvider();
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
             if (copyRowNumbers) {
@@ -1949,7 +1949,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
             DBDAttributeBinding column = (DBDAttributeBinding)(getGridMode() == GridMode.GRID ?  cell.col : cell.row);
             RowData row = (RowData) (getGridMode() == GridMode.GRID ?  cell.row : cell.col);
-            Object value = row.values[column.getAttributeIndex()];
+            Object value = contentProvider.extractColumnValue(row, column);
             String cellText = column.getValueHandler().getValueDisplayString(
                 column.getMetaAttribute(),
                 value,
