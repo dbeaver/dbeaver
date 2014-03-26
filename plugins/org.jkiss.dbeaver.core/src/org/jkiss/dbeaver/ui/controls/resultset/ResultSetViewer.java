@@ -113,8 +113,8 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
- * TODO: fix cell editor
  * TODO: structured rows support
+ * TODO: fix cell editor. Save each nested attr change separately
  * TODO: ipatheditorinput issue
  */
 public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable
