@@ -2528,10 +2528,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (binding.getNestedBindings() != null) {
                     return binding.getNestedBindings().toArray();
                 }
-                final DBSAttributeBase attribute = binding.getAttribute();
-                if (attribute.getDataKind() == DBPDataKind.ARRAY && getGridMode() == GridMode.RECORD) {
-
-                }
             }
 
             return null;

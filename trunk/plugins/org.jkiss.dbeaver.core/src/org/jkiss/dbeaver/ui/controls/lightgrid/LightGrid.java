@@ -1484,7 +1484,7 @@ public abstract class LightGrid extends Canvas {
         showColumn(col);
     }
 
-    private void showColumn(GridColumn col)
+    private void showColumn(@NotNull GridColumn col)
     {
         checkWidget();
 
@@ -1649,7 +1649,7 @@ public abstract class LightGrid extends Canvas {
      * @param column given column
      * @return x position
      */
-    private int getColumnHeaderXPosition(GridColumn column)
+    private int getColumnHeaderXPosition(@NotNull GridColumn column)
     {
         int x = 0;
 
@@ -1841,7 +1841,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param e paint event
      */
-    private void onPaint(PaintEvent e)
+    private void onPaint(@NotNull PaintEvent e)
     {
         final GC gc = e.gc;
         gc.setBackground(getBackground());
@@ -1994,7 +1994,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @param gc gc from paint event
      */
-    private void paintHeader(GC gc)
+    private void paintHeader(@NotNull GC gc)
     {
         int x = 0;
         int y;
@@ -2038,7 +2038,7 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    private void paintColumnsHeader(GC gc, GridColumn column, GridCell cell, int x, int y, int columnHeight, int level) {
+    private void paintColumnsHeader(GC gc, @NotNull GridColumn column, @NotNull GridCell cell, int x, int y, int columnHeight, int level) {
         cell.col = column.getElement();
         List<GridColumn> children = column.getChildren();
         int paintHeight = columnHeight;
@@ -2172,7 +2172,7 @@ public abstract class LightGrid extends Canvas {
      */
     @Nullable
     public Event updateCellSelection(
-        GridPos newCell,
+        @NotNull GridPos newCell,
         int stateMask,
         boolean dragging,
         boolean reverseDuplicateSelections,
@@ -2192,7 +2192,7 @@ public abstract class LightGrid extends Canvas {
      */
     @Nullable
     private Event updateCellSelection(
-        List<GridPos> newCells,
+        @NotNull List<GridPos> newCells,
         int stateMask,
         boolean dragging,
         boolean reverseDuplicateSelections,
