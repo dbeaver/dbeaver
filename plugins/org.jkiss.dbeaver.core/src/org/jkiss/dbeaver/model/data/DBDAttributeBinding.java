@@ -186,4 +186,15 @@ public class DBDAttributeBinding {
         return getAttributeName() + " [" + getAttributeIndex() + "]";
     }
 
+    @NotNull
+    public DBDAttributeBinding getTopBinding() {
+        if (parent == null) {
+            return this;
+        }
+        for (DBDAttributeBinding binding = parent; ;binding = binding.parent) {
+            if (binding.parent == null) {
+                return binding;
+            }
+        }
+    }
 }
