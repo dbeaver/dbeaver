@@ -672,8 +672,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return;
         }
         if (rowsChanged) {
-            if (curRow.visualNumber >= model.getRowCount()) {
-                curRow = model.getRow(model.getRowCount() - 1);
+            int rowCount = model.getRowCount();
+            if (curRow == null || curRow.visualNumber >= rowCount) {
+                curRow = rowCount == 0 ? null : model.getRow(rowCount - 1);
             }
             GridCell curCell = spreadsheet.getCursorCell();
 
