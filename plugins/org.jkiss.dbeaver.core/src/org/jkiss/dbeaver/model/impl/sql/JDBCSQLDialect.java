@@ -70,13 +70,10 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             this.identifierQuoteString = metaData.getIdentifierQuoteString();
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.identifierQuoteString = null;
+            this.identifierQuoteString = "\"";
         }
         if (identifierQuoteString != null) {
             identifierQuoteString = identifierQuoteString.trim();
-        }
-        if (identifierQuoteString != null && identifierQuoteString.isEmpty()) {
-            identifierQuoteString = null;
         }
 
         try {
