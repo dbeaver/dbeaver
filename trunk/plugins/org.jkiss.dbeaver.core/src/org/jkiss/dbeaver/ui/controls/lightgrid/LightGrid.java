@@ -240,7 +240,8 @@ public abstract class LightGrid extends Canvas {
      */
     private Listener disposeListener;
 
-    public GC sizingGC;
+    GC sizingGC;
+    FontMetrics fontMetrics;
 
     @NotNull
     private Color lineColor;
@@ -347,6 +348,7 @@ public abstract class LightGrid extends Canvas {
         super(parent, checkStyle(style));
 
         sizingGC = new GC(this);
+        fontMetrics = sizingGC.getFontMetrics();
         columnHeaderRenderer = new GridColumnRenderer(this);
         rowHeaderRenderer = new GridRowRenderer(this);
         cellRenderer = new GridCellRenderer(this);
@@ -839,7 +841,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return Returns the linesVisible.
      */
-    public boolean getLinesVisible()
+    public boolean isLinesVisible()
     {
         return linesVisible;
     }
@@ -1639,7 +1641,7 @@ public abstract class LightGrid extends Canvas {
 
     private void computeItemHeight()
     {
-        itemHeight = sizingGC.getFontMetrics().getHeight() + 3;
+        itemHeight = fontMetrics.getHeight() + 3;
     }
 
     /**
@@ -3789,6 +3791,7 @@ public abstract class LightGrid extends Canvas {
     {
         super.setFont(font);
         sizingGC.setFont(font);
+        fontMetrics = sizingGC.getFontMetrics();
     }
 
     /**
@@ -3993,7 +3996,7 @@ public abstract class LightGrid extends Canvas {
                 height);
         }
 
-        if (getLinesVisible()) {
+        if (isLinesVisible()) {
             gc.setForeground(getLineColor());
             gc.drawLine(
                 x,
