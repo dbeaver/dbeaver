@@ -51,6 +51,7 @@ public class DBDAttributeBinding {
     private DBDRowIdentifier rowIdentifier;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
+    private int level;
 
     public DBDAttributeBinding(@NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int attributeIndex) {
         this(null, metaAttribute, valueHandler, attributeIndex);
@@ -61,6 +62,7 @@ public class DBDAttributeBinding {
         this.metaAttribute = metaAttribute;
         this.valueHandler = valueHandler;
         this.attributeIndex = attributeIndex;
+        this.level = (parent == null ? 0 : parent.level + 1);
     }
 
     /**
@@ -134,15 +136,41 @@ public class DBDAttributeBinding {
         return parent;
     }
 
-    public int getDepth() {
+    /**
+     * Get parent by level.
+     * @param grand 0 - self, 1 - direct parent, 2 - grand parent, etc
+     * @return parent or null
+     */
+    @Nullable
+    public DBDAttributeBinding getParent(int grand) {
+        if (grand == 0) {
+            return this;
+        }
+        DBDAttributeBinding p = this;
+        for (int i = 0; i < grand; i++) {
+            p = p.parent;
+        }
+        return p;
+    }
+
+    @NotNull
+    public DBDAttributeBinding getTopParent() {
         if (parent == null) {
-            return 1;
+            return this;
         }
-        int depth = 0;
-        for (DBDAttributeBinding binding = this; binding != null; binding = binding.getParent()) {
-            depth++;
+        for (DBDAttributeBinding binding = parent; ;binding = binding.parent) {
+            if (binding.parent == null) {
+                return binding;
+            }
         }
-        return depth;
+    }
+
+    /**
+     * Attribute level. Zero based
+     * @return attribute level (depth)
+     */
+    public int getLevel() {
+        return level;
     }
 
     public void initValueLocator(@Nullable DBSEntityAttribute entityAttribute, @Nullable DBDRowIdentifier rowIdentifier) {
@@ -186,15 +214,4 @@ public class DBDAttributeBinding {
         return getAttributeName() + " [" + getAttributeIndex() + "]";
     }
 
-    @NotNull
-    public DBDAttributeBinding getTopBinding() {
-        if (parent == null) {
-            return this;
-        }
-        for (DBDAttributeBinding binding = parent; ;binding = binding.parent) {
-            if (binding.parent == null) {
-                return binding;
-            }
-        }
-    }
 }
