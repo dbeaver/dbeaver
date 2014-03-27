@@ -41,8 +41,6 @@ class GridRowRenderer extends AbstractRenderer {
         DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
-
-
     @Override
     public void paint(GC gc) {
         String text = getHeaderText();

@@ -113,6 +113,7 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: calc row header with in grid - @resetRecordHeaderWidth
  * TODO: structured rows support
  * TODO: fix cell editor. Save each nested attr change separately
  * TODO: ipatheditorinput issue
@@ -2547,6 +2548,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         @Override
         public ElementState getDefaultState(@NotNull Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                if (((DBDAttributeBinding) element).getAttribute().getDataKind() == DBPDataKind.STRUCT) {
+                    return ElementState.EXPANDED;
+                }
+            }
             return ElementState.NONE;
         }
 

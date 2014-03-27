@@ -78,6 +78,18 @@ public abstract class LightGrid extends Canvas {
         KEYBOARD,
     }
 
+    private static class NestedRows {
+        Object[] rows;
+        boolean expanded;
+        int level;
+
+        private NestedRows(Object[] rows, boolean expanded, int level) {
+            this.rows = rows;
+            this.expanded = expanded;
+            this.level = level;
+        }
+    }
+
     /**
      * Tracks whether the scroll values are correct. If not they will be
      * recomputed in onPaint. This allows us to get a free ride on top of the
@@ -119,6 +131,7 @@ public abstract class LightGrid extends Canvas {
     private int maxColumnDepth = 0;
     private Object[] columnElements = new Object[0];
     private Object[] rowElements = new Object[0];
+    private Map<Object, NestedRows> nestedRows = new IdentityHashMap<Object, NestedRows>();
 
     private int maxColumnDefWidth = 1000;
 
@@ -406,6 +419,34 @@ public abstract class LightGrid extends Canvas {
         this.maxColumnDefWidth = maxColumnDefWidth;
     }
 
+    Object[] collectRows(IGridContentProvider contentProvider, Object[] rows, int level)
+    {
+        List<Object> rowsExpanded = null;
+        for (int i = 0; i < rows.length; i++) {
+            Object row = rows[i];
+            if (rowsExpanded != null) {
+                rowsExpanded.add(row);
+            }
+            Object[] children = contentProvider.getChildren(row);
+            if (children != null) {
+                IGridContentProvider.ElementState state = contentProvider.getDefaultState(row);
+                boolean expanded = state == IGridContentProvider.ElementState.EXPANDED;
+                nestedRows.put(row, new NestedRows(children, expanded, level + 1));
+                children = collectRows(contentProvider, children, level + 1);
+                if (expanded) {
+                    if (rowsExpanded == null) {
+                        rowsExpanded = new ArrayList<Object>(rows.length + children.length);
+                        for (int k = 0; k <= i; k++) {
+                            rowsExpanded.add(rows[k]);
+                        }
+                    }
+                    Collections.addAll(rowsExpanded, children);
+                }
+            }
+        }
+        return rowsExpanded == null ? rows : rowsExpanded.toArray();
+    }
+
     /**
      * Refresh grid data
      */
@@ -415,7 +456,8 @@ public abstract class LightGrid extends Canvas {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
-        this.rowElements = contentProvider.getElements(false);
+        this.nestedRows.clear();
+        this.rowElements = collectRows(contentProvider, contentProvider.getElements(false), 0);
         this.displayedToolTipText = null;
 
         if (refreshColumns) {
