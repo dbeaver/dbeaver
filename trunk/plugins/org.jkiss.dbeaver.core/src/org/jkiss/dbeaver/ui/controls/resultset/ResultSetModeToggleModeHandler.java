@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.Map;
 
@@ -38,7 +37,7 @@ public class ResultSetModeToggleModeHandler extends ResultSetCommandHandler impl
             if (partSite.getPart() instanceof ResultSetProvider) {
                 ResultSetViewer rsv = ((ResultSetProvider) partSite.getPart()).getResultSetViewer();
                 if (rsv != null) {
-                    if (rsv.getGridMode() == ResultSetViewer.GridMode.GRID) {
+                    if (!rsv.isRecordMode()) {
                         element.setText("Switch to record mode");
                         element.setChecked(true);
                     } else {
