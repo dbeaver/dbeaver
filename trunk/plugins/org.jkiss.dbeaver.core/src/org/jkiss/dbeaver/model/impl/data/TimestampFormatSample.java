@@ -20,10 +20,8 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 public class TimestampFormatSample implements DBDDataFormatterSample {
 
@@ -38,7 +36,9 @@ public class TimestampFormatSample implements DBDDataFormatterSample {
     @Override
     public Object getSampleValue()
     {
-        return new Date();
+        Timestamp ts = new Timestamp(System.currentTimeMillis());
+        ts.setNanos(ts.getNanos() + new Random(System.currentTimeMillis()).nextInt(99999));
+        return ts;
     }
 
 }
