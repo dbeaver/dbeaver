@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
 import org.jkiss.utils.CommonUtils;
 
@@ -102,12 +103,12 @@ public class TextUtils {
      * Text shorten removed due to awful algorithm (it works really slow on long strings).
      * TODO: make something better
      *
-     * @param gc    GC used to perform calculation.
+     * @param fontMetrics    fontMetrics used to perform calculation.
      * @param t     text to modify.
      * @param width Pixels to display.
      * @return shortened string that fits in area specified.
      */
-    public static String getShortString(GC gc, String t, int width) {
+    public static String getShortString(FontMetrics fontMetrics, String t, int width) {
 
 //        return t;
         if (CommonUtils.isEmpty(t)) {
@@ -117,7 +118,7 @@ public class TextUtils {
         if (width <= 0) {
             return ""; //$NON-NLS-1$
         }
-        int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
+        int avgCharWidth = fontMetrics.getAverageCharWidth();
         float length = t.length();
         if (width < length * avgCharWidth) {
             length = (float) width / avgCharWidth;

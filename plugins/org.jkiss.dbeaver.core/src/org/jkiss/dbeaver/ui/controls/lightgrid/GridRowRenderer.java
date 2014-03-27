@@ -102,7 +102,7 @@ class GridRowRenderer extends AbstractRenderer {
         int selectionOffset = 0;
 
         y += (bounds.height - gc.stringExtent(text).y) / 2;
-        gc.drawString(org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
+        gc.drawString(org.jkiss.dbeaver.ui.TextUtils.getShortString(grid.fontMetrics, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
     }
 
     @Nullable
