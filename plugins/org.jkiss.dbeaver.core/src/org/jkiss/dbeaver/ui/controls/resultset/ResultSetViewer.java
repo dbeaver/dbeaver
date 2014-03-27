@@ -276,7 +276,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             @Override
             public void handleEvent(Event event)
             {
-                updateGridCursor((GridCell)event.data);
+                if (event.detail != SWT.DRAG && event.detail != SWT.DROP_DOWN) {
+                    updateGridCursor((GridCell)event.data);
+                }
             }
         });
         //this.spreadsheet.setTopLeftRenderer(new TopLeftRenderer(this));

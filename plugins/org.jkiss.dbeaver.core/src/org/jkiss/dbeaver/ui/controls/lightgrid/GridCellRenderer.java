@@ -20,10 +20,7 @@
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -52,6 +49,7 @@ class GridCellRenderer extends AbstractRenderer
     private boolean cellFocus = false;
     private boolean cellSelected = false;
     private boolean dragging = false;
+    private final RGB colorSelectedRGB;
 
     public GridCellRenderer(LightGrid grid)
     {
@@ -59,6 +57,7 @@ class GridCellRenderer extends AbstractRenderer
         colorLineFocused = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
         colorSelectedText = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
         colorSelected = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        colorSelectedRGB = colorSelected.getRGB();
         colorLineForeground = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         colorBackgroundDisabled = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     }
@@ -183,7 +182,7 @@ class GridCellRenderer extends AbstractRenderer
             } else {
                 RGB cellSel = LightGrid.blend(
                     cellBackground.getRGB(),
-                    colorSelected.getRGB(),
+                    colorSelectedRGB,
                     50);
 
                 gc.setBackground(DBeaverUI.getSharedTextColors().getColor(cellSel));
@@ -213,13 +212,12 @@ class GridCellRenderer extends AbstractRenderer
 
         Image image = grid.getCellImage(cell);
         if (image != null) {
-            int y = bounds.y;
-
-            y += (bounds.height - image.getBounds().height) / 2;
+            Rectangle imageBounds = image.getBounds();
+            int y = bounds.y + (bounds.height - imageBounds.height) / 2;
 
             gc.drawImage(image, bounds.x + x, y);
 
-            x += image.getBounds().width + insideMargin;
+            x += imageBounds.width + insideMargin;
         }
 
         int width = bounds.width - x - rightMargin;
