@@ -104,10 +104,10 @@ public class ResultSetModel {
         return columns[0].getRowIdentifier().getEntity();
     }
 
-    public void resetCellValue(GridCell cell, boolean delete)
+    public void resetCellValue(GridCell cell)
     {
         RowData row = (RowData) cell.row;
-        int columnIndex = ((DBDAttributeBinding) cell.col).getTopBinding().getAttributeIndex();
+        int columnIndex = ((DBDAttributeBinding) cell.col).getTopParent().getAttributeIndex();
         if (columnIndex >= 0 && row.oldValues != null && row.changedValues != null && row.changedValues[columnIndex]) {
             resetValue(row.values[columnIndex]);
             row.values[columnIndex] = row.oldValues[columnIndex];
@@ -229,31 +229,27 @@ public class ResultSetModel {
 
     @Nullable
     public Object getCellValue(@NotNull RowData row, @NotNull DBDAttributeBinding column) {
-        int depth = column.getDepth();
-        if (depth == 1) {
+        int depth = column.getLevel();
+        if (depth == 0) {
             return row.values[column.getAttributeIndex()];
         }
-        DBDAttributeBinding[] path = new DBDAttributeBinding[depth];
-        for (int i = depth - 1; i >= 0; i--) {
-            path[i] = column;
-            column = column.getParent();
-        }
-        Object curValue = row.values[path[0].getAttributeIndex()];
+        Object curValue = row.values[column.getTopParent().getAttributeIndex()];
 
-        for (int i = 1; i < depth; i++) {
+        for (int i = 0; i < depth; i++) {
             if (curValue == null) {
                 break;
             }
+            DBDAttributeBinding attr = column.getParent(depth - i - 1);
             if (curValue instanceof DBDStructure) {
                 try {
-                    curValue = ((DBDStructure) curValue).getAttributeValue(path[i].getAttribute());
+                    curValue = ((DBDStructure) curValue).getAttributeValue(attr.getAttribute());
                 } catch (DBCException e) {
-                    log.warn("Error getting field [" + path[i].getAttributeName() + "] value", e);
+                    log.warn("Error getting field [" + attr.getAttributeName() + "] value", e);
                     curValue = null;
                     break;
                 }
             } else {
-                log.debug("No struct value handler while trying to read nested attribute [" + path[i].getAttributeName() + "]");
+                log.debug("No structure value handler while trying to read nested attribute [" + attr.getAttributeName() + "]");
                 curValue = null;
                 break;
             }
@@ -271,27 +267,19 @@ public class ResultSetModel {
      */
     public boolean updateCellValue(RowData row, DBDAttributeBinding attr, @Nullable Object value)
     {
-        int depth = attr.getDepth();
+        int depth = attr.getLevel();
         int rootIndex;
-        DBDAttributeBinding[] path;
-        if (depth == 1) {
-            path = new DBDAttributeBinding[] {attr};
+        if (depth == 0) {
             rootIndex = attr.getAttributeIndex();
         } else {
-            path = new DBDAttributeBinding[depth];
-            DBDAttributeBinding curAttr = attr;
-            for (int i = depth - 1; i >= 0; i--) {
-                path[i] = curAttr;
-                curAttr = curAttr.getParent();
-            }
-            rootIndex = path[0].getAttributeIndex();
+            rootIndex = attr.getTopParent().getAttributeIndex();
         }
         Object rootValue = row.values[rootIndex];
-        Object ownerValue = depth > 1 ? rootValue : null;
+        Object ownerValue = depth > 0 ? rootValue : null;
         {
             // Obtain owner value and create all intermediate values
-            for (int i = 1; i < depth; i++) {
-                if (DBUtils.isNullValue(ownerValue)) {
+            for (int i = 0; i < depth; i++) {
+                if (ownerValue == null) {
                     // Create new owner object
                     log.warn("Null owner value");
                     return false;
@@ -299,11 +287,12 @@ public class ResultSetModel {
                 if (i == depth - 1) {
                     break;
                 }
+                DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 if (ownerValue instanceof DBDStructure) {
                     try {
-                        ownerValue = ((DBDStructure) ownerValue).getAttributeValue(path[i].getAttribute());
+                        ownerValue = ((DBDStructure) ownerValue).getAttributeValue(ownerAttr.getAttribute());
                     } catch (DBCException e) {
-                        log.warn("Error getting field [" + path[i].getAttributeName() + "] value", e);
+                        log.warn("Error getting field [" + ownerAttr.getAttributeName() + "] value", e);
                         return false;
                     }
                 }

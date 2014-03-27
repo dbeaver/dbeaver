@@ -1356,7 +1356,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public void resetCellValue(@NotNull GridCell cell, boolean delete)
     {
         cell = translateVisualPos(cell);
-        model.resetCellValue(cell, delete);
+        model.resetCellValue(cell);
         spreadsheet.redrawGrid();
         updateEditControls();
         previewValue();
@@ -2635,7 +2635,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             if (row.changedValues != null) {
                 DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
-                column = column.getTopBinding();
+                column = column.getTopParent();
                 if (row.changedValues[column.getAttributeIndex()]) {
                     return backgroundModified;
                 }
