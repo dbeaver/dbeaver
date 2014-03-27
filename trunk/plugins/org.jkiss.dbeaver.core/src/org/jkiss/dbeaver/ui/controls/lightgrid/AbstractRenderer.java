@@ -44,7 +44,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     private boolean selected;
 
     /** The bounds the renderer paints on. */
-    protected Rectangle bounds = new Rectangle(0, 0, 0, 0);
+    protected final Rectangle bounds = new Rectangle(0, 0, 0, 0);
 
     protected AbstractRenderer(LightGrid grid) {
         this.grid = grid;
@@ -74,14 +74,20 @@ public abstract class AbstractRenderer implements IGridRenderer
     @Override
     public void setBounds(int x, int y, int width, int height)
     {
-        setBounds(new Rectangle(x, y, width, height));
+        this.bounds.x = x;
+        this.bounds.y = y;
+        this.bounds.width = width;
+        this.bounds.height = height;
     }
 
 
     @Override
     public void setBounds(Rectangle bounds)
     {
-        this.bounds = bounds;
+        this.bounds.x = bounds.x;
+        this.bounds.y = bounds.y;
+        this.bounds.width = bounds.width;
+        this.bounds.height = bounds.height;
     }
 
     /**
@@ -94,36 +100,28 @@ public abstract class AbstractRenderer implements IGridRenderer
         return new Point(bounds.width, bounds.height);
     }
 
-
-
     @Override
     public void setLocation(int x, int y)
     {
-        setBounds(new Rectangle(x, y, bounds.width, bounds.height));
+        setBounds(x, y, bounds.width, bounds.height);
     }
-
-
 
     @Override
     public void setLocation(Point location)
     {
-        setBounds(new Rectangle(location.x, location.y, bounds.width, bounds.height));
+        setBounds(location.x, location.y, bounds.width, bounds.height);
     }
-
-
 
     @Override
     public void setSize(int width, int height)
     {
-        setBounds(new Rectangle(bounds.x, bounds.y, width, height));
+        setBounds(bounds.x, bounds.y, width, height);
     }
-
-
 
     @Override
     public void setSize(Point size)
     {
-        setBounds(new Rectangle(bounds.x, bounds.y, size.x, size.y));
+        setBounds(bounds.x, bounds.y, size.x, size.y);
     }
 
     /**

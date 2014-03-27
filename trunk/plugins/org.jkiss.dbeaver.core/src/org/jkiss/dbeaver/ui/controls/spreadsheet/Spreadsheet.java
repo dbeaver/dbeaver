@@ -58,8 +58,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
     public static final int MAX_INLINE_EDIT_WITH = 300;
 
-    private static final int Event_ChangeCursor = 2000;
-
     private SpreadsheetCellEditor tableEditor;
 
     @NotNull
@@ -76,8 +74,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     private Clipboard clipboard;
 
     private Color foregroundNormal;
-
-    private SelectionListener gridSelectionListener;
 
     public Spreadsheet(
         @NotNull final Composite parent,
@@ -117,23 +113,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.addListener(SWT.MouseDown, this);
         super.addListener(SWT.KeyDown, this);
         super.addListener(LightGrid.Event_ChangeSort, this);
-        //Event_ChangeSort
-        gridSelectionListener = new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                //Integer row = (Integer) e.data;
-                Event event = new Event();
-                event.data = e.data;
-                notifyListeners(Event_ChangeCursor, event);
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        };
-        super.addSelectionListener(gridSelectionListener);
 
         tableEditor = new SpreadsheetCellEditor(this);
         tableEditor.horizontalAlignment = SWT.LEFT;
@@ -251,9 +230,7 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     public void setCursor(@NotNull GridCell cell, boolean keepSelection)
     {
-        Event fakeEvent = new Event();
-        fakeEvent.widget = this;
-        SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
+        Event selectionEvent = new Event();
         // Move row
         selectionEvent.data = cell;
         GridPos pos = cellToPos(cell);
@@ -275,12 +252,12 @@ public class Spreadsheet extends LightGrid implements Listener {
 
         // Change selection event
         selectionEvent.data = cell;
-        gridSelectionListener.widgetSelected(selectionEvent);
+        notifyListeners(SWT.Selection, selectionEvent);
     }
 
     public void addCursorChangeListener(Listener listener)
     {
-        super.addListener(Event_ChangeCursor, listener);
+        super.addListener(SWT.Selection, listener);
     }
 
     @Override

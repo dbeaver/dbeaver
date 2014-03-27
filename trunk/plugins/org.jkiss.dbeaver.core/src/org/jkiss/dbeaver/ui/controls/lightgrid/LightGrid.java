@@ -248,6 +248,8 @@ public abstract class LightGrid extends Canvas {
     @NotNull
     private Color backgroundColor;
     @NotNull
+    private Color foregroundColor;
+    @NotNull
     private Cursor sortCursor;
 
     /**
@@ -354,9 +356,9 @@ public abstract class LightGrid extends Canvas {
         cellRenderer = new GridCellRenderer(this);
 
         final Display display = getDisplay();
-        setForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         setLineColor(display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-        backgroundColor = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        setForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+        setBackground(display.getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         sortCursor = display.getSystemCursor(SWT.CURSOR_HAND);
 
         if ((style & SWT.MULTI) != 0) {
@@ -388,7 +390,7 @@ public abstract class LightGrid extends Canvas {
             new RGB(255, 255, 255),
             50);
 
-        cellHeaderSelectionBackground = new Color(display, cellSel);// = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        cellHeaderSelectionBackground = new Color(display, cellSel);
 
 
         setDragDetect(false);
@@ -537,14 +539,27 @@ public abstract class LightGrid extends Canvas {
         return backgroundColor;
     }
 
-
-
     @Override
     public void setBackground(Color color)
     {
         backgroundColor = color;
         redraw();
     }
+
+    ///////////////////////////////////
+    // Just caching because native impl creates new objects and called too often
+
+    @Override
+    public Color getForeground() {
+        return foregroundColor;
+    }
+
+    @Override
+    public void setForeground(Color color) {
+        foregroundColor = color;
+        super.setForeground(color);
+    }
+
 
     /**
      * Returns the background color of column and row headers when a cell in
@@ -753,7 +768,8 @@ public abstract class LightGrid extends Canvas {
             return -1;
         }
 
-        if (point.x < 0 || point.x > getClientArea().width) return -1;
+        final Rectangle clientArea = getClientArea();
+        if (point.x < 0 || point.x > clientArea.width) return -1;
 
         Point p = new Point(point.x, point.y);
 
@@ -770,7 +786,7 @@ public abstract class LightGrid extends Canvas {
         int currItemHeight = getItemHeight();
 
         int itemCount = getItemCount();
-        while (row < itemCount && y2 <= getClientArea().height) {
+        while (row < itemCount && y2 <= clientArea.height) {
             if (p.y >= y2 && p.y < y2 + currItemHeight + 1) {
                 return row;
             }
@@ -1502,8 +1518,9 @@ public abstract class LightGrid extends Canvas {
         }
 
         // if its visible just return
+        final Rectangle clientArea = getClientArea();
         if (x >= firstVisibleX
-            && (x + col.getWidth()) <= (firstVisibleX + (getClientArea().width - firstVisibleX))) {
+            && (x + col.getWidth()) <= (firstVisibleX + (clientArea.width - firstVisibleX))) {
             return;
         }
 
@@ -1511,19 +1528,19 @@ public abstract class LightGrid extends Canvas {
             if (x < firstVisibleX) {
                 hScroll.setSelection(getHScrollSelectionInPixels() - (firstVisibleX - x));
             } else {
-                if (col.getWidth() > getClientArea().width - firstVisibleX) {
+                if (col.getWidth() > clientArea.width - firstVisibleX) {
                     hScroll.setSelection(getHScrollSelectionInPixels() + (x - firstVisibleX));
                 } else {
-                    x -= getClientArea().width - firstVisibleX - col.getWidth();
+                    x -= clientArea.width - firstVisibleX - col.getWidth();
                     hScroll.setSelection(getHScrollSelectionInPixels() + (x - firstVisibleX));
                 }
             }
         } else {
-            if (x < firstVisibleX || col.getWidth() > getClientArea().width - firstVisibleX) {
+            if (x < firstVisibleX || col.getWidth() > clientArea.width - firstVisibleX) {
                 int sel = indexOf(col);
                 hScroll.setSelection(sel);
             } else {
-                int availableWidth = getClientArea().width - firstVisibleX - col.getWidth();
+                int availableWidth = clientArea.width - firstVisibleX - col.getWidth();
 
                 GridColumn prevCol = getPreviousVisibleColumn(col);
                 GridColumn currentScrollTo = col;
@@ -1731,8 +1748,9 @@ public abstract class LightGrid extends Canvas {
             newWidth = MIN_COLUMN_HEADER_WIDTH;
         }
 
+        Rectangle clientArea = getClientArea();
         if (columnScrolling) {
-            int maxWidth = getClientArea().width;
+            int maxWidth = clientArea.width;
             if (rowHeaderVisible)
                 maxWidth -= rowHeaderWidth;
             if (newWidth > maxWidth)
@@ -1746,7 +1764,6 @@ public abstract class LightGrid extends Canvas {
         columnBeingResized.setWidth(newWidth, false);
         scrollValuesObsolete = true;
 
-        Rectangle clientArea = getClientArea();
         redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
     }
 
@@ -1862,7 +1879,8 @@ public abstract class LightGrid extends Canvas {
             y += headerHeight;
         }
 
-        int availableHeight = getClientArea().height - y;
+        final Rectangle clientArea = getClientArea();
+        int availableHeight = clientArea.height - y;
         int visibleRows = availableHeight / getItemHeight() + 1;
         if (getItemCount() > 0 && availableHeight > 0) {
             RowRange range = getRowRange(getTopIndex(), availableHeight, false, false);
@@ -1879,6 +1897,7 @@ public abstract class LightGrid extends Canvas {
         final GridPos testPos = new GridPos(-1, -1);
         final GridCell testCell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
         final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
+        boolean isGridInFocus = this.isFocusControl();
 
         for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
 
@@ -1897,29 +1916,28 @@ public abstract class LightGrid extends Canvas {
                 }
 
                 // draw regular cells for each column
-                boolean isGridInFocus = this.isFocusControl();
                 for (int k = 0, columnsSize = columns.size(); k < columnsSize; k++) {
                     GridColumn column = columns.get(k);
 
                     int width = column.getWidth();
 
-                    if (x + width >= 0 && x < getClientArea().width) {
+                    if (x + width >= 0 && x < clientArea.width) {
 
                         cellRenderer.setCell(testCell);
                         cellRenderer.setBounds(x, y, width, getItemHeight());
-                        int cellInHeaderDelta = headerHeight - y;
-                        if (cellInHeaderDelta > 0) {
-                            clipping.x = x - 1;
-                            clipping.y = y + cellInHeaderDelta;
-                            clipping.width = width + 1;
-                            clipping.height = getItemHeight() + 2 - cellInHeaderDelta;
-                        } else {
-                            clipping.x = x - 1;
-                            clipping.y = y - 1;
-                            clipping.width = width + 1;
-                            clipping.height = getItemHeight() + 2;
-                        }
-                        gc.setClipping(clipping);
+//                        int cellInHeaderDelta = headerHeight - y;
+//                        if (cellInHeaderDelta > 0) {
+//                            clipping.x = x - 1;
+//                            clipping.y = y + cellInHeaderDelta;
+//                            clipping.width = width + 1;
+//                            clipping.height = getItemHeight() + 2 - cellInHeaderDelta;
+//                        } else {
+//                            clipping.x = x - 1;
+//                            clipping.y = y - 1;
+//                            clipping.width = width + 1;
+//                            clipping.height = getItemHeight() + 2;
+//                        }
+                        //gc.setClipping(clipping);
 
                         //column.getCellRenderer().setSelected(selectedItems.contains(item));
                         cellRenderer.setFocus(isGridInFocus);
@@ -1937,14 +1955,14 @@ public abstract class LightGrid extends Canvas {
                         testCell.col = column.getElement();
                         cellRenderer.paint(gc);
 
-                        gc.setClipping((Rectangle) null);
+                        //gc.setClipping((Rectangle) null);
                     }
 
                     x += column.getWidth();
                 }
 
-                if (x < getClientArea().width) {
-                    drawEmptyCell(gc, x, y, getClientArea().width - x + 1, getItemHeight(), false);
+                if (x < clientArea.width) {
+                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, getItemHeight(), false);
                 }
 
                 x = 0;
@@ -1973,8 +1991,8 @@ public abstract class LightGrid extends Canvas {
                     drawEmptyCell(gc, x, y, column.getWidth(), getItemHeight(), false);
                     x += column.getWidth();
                 }
-                if (x < getClientArea().width) {
-                    drawEmptyCell(gc, x, y, getClientArea().width - x + 1, getItemHeight(), false);
+                if (x < clientArea.width) {
+                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, getItemHeight(), false);
                 }
 
                 x = 0;
@@ -2008,10 +2026,11 @@ public abstract class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
 
-        GridCell cell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
+        final Rectangle clientArea = getClientArea();
+        final GridCell cell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
         for (int i = 0, columnsSize = topColumns.size(); i < columnsSize; i++) {
             GridColumn column = topColumns.get(i);
-            if (x > getClientArea().width)
+            if (x > clientArea.width)
                 break;
 
             int columnHeight = column.getHeaderHeight(false);
@@ -2027,8 +2046,8 @@ public abstract class LightGrid extends Canvas {
             x += column.getWidth();
         }
 
-        if (x < getClientArea().width) {
-            drawEmptyColumnHeader(gc, x, 0, getClientArea().width - x, headerHeight);
+        if (x < clientArea.width) {
+            drawEmptyColumnHeader(gc, x, 0, clientArea.width - x, headerHeight);
         }
 
         x = 0;
@@ -2778,6 +2797,7 @@ public abstract class LightGrid extends Canvas {
                 se.stateMask = e.stateMask;
                 se.x = e.x;
                 se.y = e.y;
+                se.detail = SWT.DROP_DOWN;
 
                 notifyListeners(SWT.Selection, se);
                 followupCellSelectionEventOwed = false;
@@ -3212,8 +3232,8 @@ public abstract class LightGrid extends Canvas {
         topIndex = -1;
         bottomIndex = -1;
         refreshHoverState();
-        redraw(getClientArea().x, getClientArea().y, getClientArea().width, getClientArea().height,
-               false);
+        final Rectangle clientArea = getClientArea();
+        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
     }
 
     /**
