@@ -234,7 +234,7 @@ class GridCellRenderer extends AbstractRenderer
         String text = grid.getCellText(cell);
         if (text != null && !text.isEmpty()) {
             // Get shortern version of string
-            text = TextUtils.getShortString(gc, text, width);
+            text = TextUtils.getShortString(grid.fontMetrics, text, width);
             // Replace linefeeds with space
             text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ').replace((char)0, ' ');
 
@@ -246,7 +246,7 @@ class GridCellRenderer extends AbstractRenderer
                 true);
         }
 
-        if (grid.getLinesVisible()) {
+        if (grid.isLinesVisible()) {
             if (isCellSelected()) {
                 //XXX: should be user definable?
                 gc.setForeground(colorLineForeground);

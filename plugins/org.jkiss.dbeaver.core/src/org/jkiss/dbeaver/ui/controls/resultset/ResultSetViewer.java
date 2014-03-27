@@ -2573,7 +2573,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
             if (formatString) {
                 return column.getValueHandler().getValueDisplayString(
-                    column.getMetaAttribute(),
+                    column.getAttribute(),
                     value,
                     DBDDisplayFormat.UI);
             } else {

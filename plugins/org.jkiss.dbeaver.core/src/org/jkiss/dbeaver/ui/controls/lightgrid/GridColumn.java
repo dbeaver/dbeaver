@@ -131,7 +131,7 @@ class GridColumn {
     int getHeaderHeight(boolean includeChildren)
     {
         if (height < 0) {
-            height = topMargin + grid.sizingGC.getFontMetrics().getHeight() + bottomMargin;
+            height = topMargin + grid.fontMetrics.getHeight() + bottomMargin;
             Image image = grid.getLabelProvider().getImage(element);
             if (image != null) {
                 height = Math.max(height, topMargin + image.getBounds().height + bottomMargin);

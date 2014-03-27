@@ -122,7 +122,7 @@ class GridColumnRenderer extends AbstractRenderer
 
         String text = getColumnText();
 
-        text = org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, text, width);
+        text = org.jkiss.dbeaver.ui.TextUtils.getShortString(grid.fontMetrics, text, width);
 
         gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
 
