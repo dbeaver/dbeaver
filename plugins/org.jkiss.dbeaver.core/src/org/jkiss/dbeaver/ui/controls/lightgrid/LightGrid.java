@@ -3021,9 +3021,7 @@ public abstract class LightGrid extends Canvas {
                     if (impliedFocusItem >= 0 && impliedFocusColumn != null) {
                         newSelection = impliedFocusItem;
 
-                        int index = indexOf(impliedFocusColumn);
-
-                        index++;
+                        int index = indexOf(impliedFocusColumn) + 1;
 
                         if (index < columns.size()) {
                             newColumnFocus = columns.get(index);
@@ -3040,7 +3038,7 @@ public abstract class LightGrid extends Canvas {
 
                         int index = indexOf(impliedFocusColumn);
 
-                        if (index != 0) {
+                        if (index > 0) {
                             newColumnFocus = columns.get(index - 1);
                         } else {
                             newColumnFocus = impliedFocusColumn;
