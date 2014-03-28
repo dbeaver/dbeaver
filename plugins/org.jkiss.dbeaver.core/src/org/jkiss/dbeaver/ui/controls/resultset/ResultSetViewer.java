@@ -113,7 +113,7 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
- * TODO: calc row header with in grid - @resetRecordHeaderWidth
+ * TODO: keep changes flag/old value in a map to support nested attributes
  * TODO: structured rows support
  * TODO: fix cell editor. Save each nested attr change separately
  * TODO: ipatheditorinput issue

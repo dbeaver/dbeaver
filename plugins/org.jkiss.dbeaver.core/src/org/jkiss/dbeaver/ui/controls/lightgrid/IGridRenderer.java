@@ -90,26 +90,11 @@ public interface IGridRenderer
     void setHover(boolean hover);
 
     /**
-     * Sets the hover state.
-     * 
-     * @param mouseDown Mouse state.
-     */
-    void setMouseDown(boolean mouseDown);
-
-    /**
      * Sets the selected state.
      * 
      * @param selected Selection state.
      */
     void setSelected(boolean selected);
-
-    /**
-     * Sets the area of the drawing.
-     * 
-     * @param width Width.
-     * @param height Height.
-     */
-    void setSize(int width, int height);
 
     /**
      * Sets the area of the drawing.
@@ -120,4 +105,5 @@ public interface IGridRenderer
 
     public void setCell(GridCell cell);
 
+    public void setLevel(int level);
 }
