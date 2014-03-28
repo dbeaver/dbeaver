@@ -122,8 +122,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 {
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
-    private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
-
     private ResultSetValueController panelValueController;
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
@@ -678,10 +676,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             GridCell curCell = spreadsheet.getCursorCell();
 
-            this.spreadsheet.refreshData(true);
-
             // Set cursor on new row
             if (!recordMode) {
+                this.initResultSet();
                 if (curCell != null) {
                     spreadsheet.setCursor(curCell, false);
                 }
@@ -812,10 +809,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         this.recordMode = recordMode;
         if (!this.recordMode) {
-            this.spreadsheet.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
             this.initResultSet();
         } else {
-            this.resetRecordHeaderWidth();
             this.updateRecordMode();
         }
         if (!recordMode) {
@@ -829,23 +824,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         spreadsheet.layout(true, true);
         previewValue();
-    }
-
-    private void resetRecordHeaderWidth()
-    {
-        // Calculate width of spreadsheet panel - use longest column title
-        int defaultWidth = 0;
-        GC gc = new GC(spreadsheet);
-        gc.setFont(spreadsheet.getFont());
-        for (DBDAttributeBinding column : model.getVisibleColumns()) {
-            Point ext = gc.stringExtent(column.getAttributeName());
-            if (ext.x > defaultWidth) {
-                defaultWidth = ext.x;
-            }
-        }
-        defaultWidth += DBIcon.EDIT_COLUMN.getImage().getBounds().width + 2;
-
-        spreadsheet.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1042,7 +1020,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         } else {
             if (recordMode) {
-                this.resetRecordHeaderWidth();
                 setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.visualNumber + 1) + "/" + model.getRowCount() + getExecutionTimeMessage());
             } else {
                 setStatus(String.valueOf(model.getRowCount()) + CoreMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage());
@@ -1081,7 +1058,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         // Clear previous data
         this.closeEditors();
 
-        model.setData(rows, updateMetaData);
+        this.curRow = null;
+        this.model.setData(rows, updateMetaData);
+        this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
 
         if (updateMetaData) {
 
@@ -1126,11 +1105,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         spreadsheet.setRedraw(false);
         try {
-            spreadsheet.clearGrid();
-            if (recordMode) {
-                this.resetRecordHeaderWidth();
-            }
-
             spreadsheet.refreshData(true);
         } finally {
             spreadsheet.setRedraw(true);
@@ -2503,7 +2477,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (!recordMode) {
                     return model.getVisibleColumns().toArray();
                 } else {
-                    return new Object[] {curRow};
+                    return curRow == null ? new Object[0] : new Object[] {curRow};
                 }
             } else {
                 // rows

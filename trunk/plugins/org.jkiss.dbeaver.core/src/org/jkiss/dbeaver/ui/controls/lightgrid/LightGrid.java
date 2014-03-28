@@ -26,6 +26,8 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
@@ -61,6 +63,9 @@ public abstract class LightGrid extends Canvas {
      * *exactly* over the resizer.
      */
     private static final int COLUMN_RESIZER_THRESHOLD = 4;
+    private static final int DEFAULT_ROW_HEADER_WIDTH = 20;
+    private static final int MAX_ROW_HEADER_WIDTH = 400;
+
 
     /**
      * The minimum width of a column header.
@@ -795,6 +800,11 @@ public abstract class LightGrid extends Canvas {
     public int getHeaderHeight()
     {
         return headerHeight;
+    }
+
+    public int getRowHeaderWidth()
+    {
+        return rowHeaderWidth;
     }
 
     Object getRowElement(int row) {
@@ -1687,20 +1697,35 @@ public abstract class LightGrid extends Canvas {
      * Computes and sets the height of the header row. This method will ask for
      * the preferred size of all the column headers and use the max.
      */
-    private void computeHeaderHeight()
+    private void computeHeaderSizes()
     {
+        // Item height
+        itemHeight = fontMetrics.getHeight() + 3;
 
+        // Column header height
         int colHeaderHeight = 0;
         for (GridColumn column : topColumns) {
             colHeaderHeight = Math.max(column.getHeaderHeight(true), colHeaderHeight);
         }
-
         headerHeight = colHeaderHeight;
-    }
 
-    private void computeItemHeight()
-    {
-        itemHeight = fontMetrics.getHeight() + 3;
+        // Row header width
+        rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
+        for (Object row : rowElements) {
+            int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
+            Image rowImage = getLabelProvider().getImage(row);
+            if (rowImage != null) {
+                width += rowImage.getBounds().width;
+                width += GridRowRenderer.IMAGE_SPACING;
+            }
+            String rowText = getLabelProvider().getText(row);
+            Point ext = sizingGC.stringExtent(rowText);
+            width += ext.x;
+            rowHeaderWidth = Math.max(rowHeaderWidth, width);
+        }
+        if (rowHeaderWidth > MAX_ROW_HEADER_WIDTH) {
+            rowHeaderWidth = MAX_ROW_HEADER_WIDTH;
+        }
     }
 
     /**
@@ -1938,7 +1963,7 @@ public abstract class LightGrid extends Canvas {
         final int hScrollSelectionInPixels = getHScrollSelectionInPixels();
         final GridPos testPos = new GridPos(-1, -1);
         final GridCell testCell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
-        final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
+        //final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
         boolean isGridInFocus = this.isFocusControl();
 
         for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
@@ -3430,8 +3455,7 @@ public abstract class LightGrid extends Canvas {
 
     public void recalculateSizes() {
         int oldHeaderHeight = headerHeight;
-        computeHeaderHeight();
-        computeItemHeight();
+        computeHeaderSizes();
         if (oldHeaderHeight != headerHeight) {
             scrollValuesObsolete = true;
         }
@@ -3857,32 +3881,6 @@ public abstract class LightGrid extends Canvas {
     }
 
     /**
-     * Returns the row header width or 0 if row headers are not visible.
-     *
-     * @return the width of the row headers
-     */
-    public int getItemHeaderWidth()
-    {
-        checkWidget();
-        if (!rowHeaderVisible)
-            return 0;
-        return rowHeaderWidth;
-    }
-
-    /**
-     * Sets the row header width to the specified value. This automatically disables the auto width feature of the grid.
-     *
-     * @param width the width of the row header
-     * @see #getItemHeaderWidth()
-     */
-    public void setItemHeaderWidth(int width)
-    {
-        checkWidget();
-        rowHeaderWidth = width;
-        redraw();
-    }
-
-    /**
      * Determines if the mouse is hovering on the selection drag area and changes the
      * pointer and sets field appropriately.
      * <p/>
@@ -3917,17 +3915,6 @@ public abstract class LightGrid extends Canvas {
             hoveringOnSelectionDragArea = over;
         }
         return over;
-    }
-
-    /**
-     * Returns the width of the row headers.
-     *
-     * @return width of the column header row
-     */
-    public int getRowHeaderWidth()
-    {
-        checkWidget();
-        return rowHeaderWidth;
     }
 
     public String getCellText(GridCell cell)

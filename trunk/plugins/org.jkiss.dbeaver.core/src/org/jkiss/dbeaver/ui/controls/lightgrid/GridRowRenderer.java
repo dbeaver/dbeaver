@@ -28,8 +28,10 @@ import org.jkiss.code.Nullable;
  * Grid row header renderer.
  */
 class GridRowRenderer extends AbstractRenderer {
-    private static final int leftMargin = 6;
-    private static final int rightMargin = 8;
+    public static final int LEFT_MARGIN = 6;
+    public static final int RIGHT_MARGIN = 8;
+    public static final int IMAGE_SPACING = 5;
+
     private final Color DEFAULT_BACKGROUND;
     private final Color DEFAULT_FOREGROUND;
     private final Color DEFAULT_FOREGROUND_TEXT;
@@ -75,18 +77,18 @@ class GridRowRenderer extends AbstractRenderer {
                 bounds.y + bounds.height - 1);
         }
 
-        int x = leftMargin;
+        int x = LEFT_MARGIN;
 
         Image image = getHeaderImage();
 
         if (image != null) {
             gc.drawImage(image, x, bounds.y + (bounds.height - image.getBounds().height) / 2);
-            x += image.getBounds().width + 5;
+            x += image.getBounds().width + IMAGE_SPACING;
         }
 
         int width = bounds.width - x;
 
-        width -= rightMargin;
+        width -= RIGHT_MARGIN;
 
         Color foreground = getHeaderForeground();
         if (foreground == null) {
