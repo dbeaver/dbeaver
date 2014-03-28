@@ -550,6 +550,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return DBeaverCore.getGlobalPreferenceStore();
     }
 
+    @Nullable
     @Override
     public DBPDataSource getDataSource()
     {
@@ -1200,12 +1201,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (model.isUpdateInProgress()) {
             return true;
         }
-        DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer == null) {
-            return true;
-        }
-        DBPDataSource dataSource = dataContainer.getDataSource();
+        DBPDataSource dataSource = getDataSource();
         return
+            dataSource == null ||
             !dataSource.isConnected() ||
             dataSource.getContainer().isConnectionReadOnly() ||
             dataSource.getInfo().isReadOnlyData();
