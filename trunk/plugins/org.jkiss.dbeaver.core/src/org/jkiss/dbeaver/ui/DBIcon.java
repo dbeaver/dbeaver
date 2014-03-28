@@ -82,6 +82,9 @@ public enum DBIcon
     TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_RECYCLE_BIN("recycle_bin", "/icons/tree/recycle_bin.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
+    TREE_EXPAND("expand", "/icons/misc/expand.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_COLLAPSE("collapse", "/icons/misc/collapse.png"), //$NON-NLS-1$ //$NON-NLS-2$
+
     PROJECT("project", "icons/project.png"), //$NON-NLS-1$ //$NON-NLS-2$
     PROJECTS("projects", "icons/projects.png"), //$NON-NLS-1$ //$NON-NLS-2$
     CONNECTIONS("connections", "icons/connections.png"), //$NON-NLS-1$ //$NON-NLS-2$

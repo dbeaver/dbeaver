@@ -22,7 +22,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * Grid row header renderer.
@@ -31,6 +33,10 @@ class GridRowRenderer extends AbstractRenderer {
     public static final int LEFT_MARGIN = 6;
     public static final int RIGHT_MARGIN = 8;
     public static final int IMAGE_SPACING = 5;
+    public static final int LEVEL_SPACING = 15;
+
+    private static final Image IMG_EXPAND = DBIcon.TREE_EXPAND.getImage();
+    private static final Image IMG_COLLAPSE = DBIcon.TREE_COLLAPSE.getImage();
 
     private final Color DEFAULT_BACKGROUND;
     private final Color DEFAULT_FOREGROUND;
@@ -78,6 +84,12 @@ class GridRowRenderer extends AbstractRenderer {
         }
 
         int x = LEFT_MARGIN;
+        if (level > 0) {
+//            Rectangle expBounds = IMG_EXPAND.getBounds();
+//            gc.drawImage(IMG_EXPAND, x, bounds.y + (bounds.height - expBounds.height) / 2);
+//            x += expBounds.width + IMAGE_SPACING;
+            x += level * LEVEL_SPACING;
+        }
 
         Image image = getHeaderImage();
 
