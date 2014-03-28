@@ -26,8 +26,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
@@ -83,7 +81,7 @@ public abstract class LightGrid extends Canvas {
         KEYBOARD,
     }
 
-    private static class NestedRows {
+    static class NestedRows {
         Object[] rows;
         boolean expanded;
         int level;
@@ -136,7 +134,7 @@ public abstract class LightGrid extends Canvas {
     private int maxColumnDepth = 0;
     private Object[] columnElements = new Object[0];
     private Object[] rowElements = new Object[0];
-    private Map<Object, NestedRows> nestedRows = new IdentityHashMap<Object, NestedRows>();
+    private final Map<Object, NestedRows> nestedRows = new IdentityHashMap<Object, NestedRows>();
 
     private int maxColumnDefWidth = 1000;
 
@@ -1721,6 +1719,10 @@ public abstract class LightGrid extends Canvas {
             String rowText = getLabelProvider().getText(row);
             Point ext = sizingGC.stringExtent(rowText);
             width += ext.x;
+            NestedRows nr = nestedRows.get(row);
+            if (nr != null) {
+                width += nr.level * GridRowRenderer.LEVEL_SPACING;
+            }
             rowHeaderWidth = Math.max(rowHeaderWidth, width);
         }
         if (rowHeaderWidth > MAX_ROW_HEADER_WIDTH) {
@@ -1938,7 +1940,6 @@ public abstract class LightGrid extends Canvas {
             scrollValuesObsolete = false;
         }
 
-        int x;
         int y = 0;
 
         if (columnHeadersVisible) {
@@ -1965,15 +1966,19 @@ public abstract class LightGrid extends Canvas {
         final GridCell testCell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
         //final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
         boolean isGridInFocus = this.isFocusControl();
+        int curLevel = 0;
+        int nestedRemains = -1;
+        final List<int[]> nestedStack = nestedRows == null ? null : new ArrayList<int[]>();
 
         for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
 
-            x = 0;
+            int x = 0;
 
             x -= hScrollSelectionInPixels;
 
             // get the item to draw
             if (row >= 0 && row < getItemCount()) {
+
                 boolean cellInRowSelected = selectedRows.containsKey(row);
 
                 if (rowHeaderVisible) {
@@ -2041,12 +2046,39 @@ public abstract class LightGrid extends Canvas {
                         testCell.row = rowElements[row];
                         rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, getItemHeight() + 1);
                         rowHeaderRenderer.setCell(testCell);
+                        rowHeaderRenderer.setLevel(curLevel);
                         rowHeaderRenderer.paint(gc);
                     }
                     x += rowHeaderWidth;
                 }
 
                 y += getItemHeight() + 1;
+
+                if (nestedRemains > 0) {
+                    nestedRemains--;
+                    if (nestedRemains == 0) {
+                        if (!nestedStack.isEmpty()) {
+                            int[] nst = nestedStack.remove(nestedStack.size() - 1);
+                            curLevel = nst[0];
+                            nestedRemains = nst[1];
+                        } else {
+                            curLevel = 0;
+                            nestedRemains = -1;
+                        }
+                    }
+                }
+
+                if (!nestedRows.isEmpty()) {
+                    NestedRows nr = nestedRows.get(rowElements[row]);
+                    if (nr != null) {
+                        if (nestedRemains >= 0) {
+                            nestedStack.add(new int[] {curLevel, nestedRemains});
+                        }
+                        curLevel = nr.level;
+                        nestedRemains = nr.rows.length;
+                    }
+                }
+
             } else {
 
                 if (rowHeaderVisible) {
