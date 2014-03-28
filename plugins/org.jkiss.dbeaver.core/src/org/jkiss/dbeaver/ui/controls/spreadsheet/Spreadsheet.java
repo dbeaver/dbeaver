@@ -183,11 +183,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         return super.getFocusCell();
     }
 
-    public void setRowHeaderWidth(int width)
-    {
-        super.setItemHeaderWidth(width);
-    }
-
     public boolean shiftCursor(int xOffset, int yOffset, boolean keepSelection)
     {
         if (xOffset == 0 && yOffset == 0) {

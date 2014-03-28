@@ -29,12 +29,12 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 class GridColumnRenderer extends AbstractRenderer
 {
-    public static final int leftMargin = 6;
-    public static final int rightMargin = 6;
-    public static final int bottomMargin = 3;
-    public static final int topMargin = 3;
-    public static final int arrowMargin = 6;
-    public static final int imageSpacing = 3;
+    public static final int LEFT_MARGIN = 6;
+    public static final int RIGHT_MARGIN = 6;
+    public static final int BOTTOM_MARGIN = 3;
+    public static final int TOP_MARGIN = 3;
+    public static final int ARROW_MARGIN = 6;
+    public static final int IMAGE_SPACING = 3;
 
     private static Image asterisk = DBIcon.SORT_UNKNOWN.getImage();
     private static Image arrowUp = DBIcon.SORT_DECREASE.getImage();
@@ -98,27 +98,27 @@ class GridColumnRenderer extends AbstractRenderer
             pushedDrawingOffset = 1;
         }
 
-        int x = leftMargin;
+        int x = LEFT_MARGIN;
 
         Image columnImage = getColumnImage();
         if (columnImage != null) {
-            int y = bounds.y + pushedDrawingOffset + topMargin;
+            int y = bounds.y + pushedDrawingOffset + TOP_MARGIN;
 
             gc.drawImage(columnImage, bounds.x + x + pushedDrawingOffset, y);
-            x += columnImage.getBounds().width + imageSpacing;
+            x += columnImage.getBounds().width + IMAGE_SPACING;
         }
 
         int width = bounds.width - x;
 
         if (sortOrder == SWT.NONE) {
-            width -= rightMargin;
+            width -= RIGHT_MARGIN;
         } else {
-            width -= arrowMargin + sortBounds.width + arrowMargin;
+            width -= ARROW_MARGIN + sortBounds.width + ARROW_MARGIN;
         }
 
         //gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 
-        int y = bounds.y + topMargin;
+        int y = bounds.y + TOP_MARGIN;
 
         String text = getColumnText();
 
@@ -127,13 +127,13 @@ class GridColumnRenderer extends AbstractRenderer
         gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
 
         if (sortOrder != SWT.NONE) {
-            y = bounds.y + topMargin;
+            y = bounds.y + TOP_MARGIN;
 
             if (drawSelected) {
-                sortBounds.x = bounds.x + bounds.width - arrowMargin - sortBounds.width + 1;
+                sortBounds.x = bounds.x + bounds.width - ARROW_MARGIN - sortBounds.width + 1;
                 sortBounds.y = y;
             } else {
-                sortBounds.x = bounds.x + bounds.width - arrowMargin - sortBounds.width;
+                sortBounds.x = bounds.x + bounds.width - ARROW_MARGIN - sortBounds.width;
                 sortBounds.y = y;
             }
             paintSort(gc, sortBounds, sortOrder);

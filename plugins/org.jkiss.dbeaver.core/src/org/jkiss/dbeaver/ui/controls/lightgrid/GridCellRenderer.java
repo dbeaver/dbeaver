@@ -33,7 +33,7 @@ class GridCellRenderer extends AbstractRenderer
     private static final int leftMargin = 4;
     private static final int rightMargin = 4;
     private static final int topMargin = 0;
-    //private int bottomMargin = 0;
+    //private int BOTTOM_MARGIN = 0;
     private static final int textTopMargin = 1;
     //private int textBottomMargin = 2;
     private static final int insideMargin = 3;
