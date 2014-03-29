@@ -2620,7 +2620,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return backgroundModified;
                 }
             }
-            if (odd && showOddRows) {
+            if (!recordMode && odd && showOddRows) {
                 return backgroundOdd;
             }
             return null;

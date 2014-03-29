@@ -25,11 +25,9 @@ import org.eclipse.swt.widgets.Display;
 /**
  * Abstract grid renderer
  */
-public abstract class AbstractRenderer implements IGridRenderer
+abstract class AbstractRenderer
 {
     protected final LightGrid grid;
-
-    protected GridCell cell;
 
     /** Hover state. */
     private boolean hover;
@@ -50,17 +48,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         this.grid = grid;
     }
 
-    public GridCell getCell()
-    {
-        return cell;
-    }
-
-    @Override
-    public void setCell(GridCell cell)
-    {
-        this.cell = cell;
-    }
-
     /**
      * Returns the bounds.
      * 
@@ -71,7 +58,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return bounds;
     }
 
-    @Override
     public void setBounds(int x, int y, int width, int height)
     {
         this.bounds.x = x;
@@ -81,7 +67,6 @@ public abstract class AbstractRenderer implements IGridRenderer
     }
 
 
-    @Override
     public void setBounds(Rectangle bounds)
     {
         this.bounds.x = bounds.x;
@@ -100,19 +85,16 @@ public abstract class AbstractRenderer implements IGridRenderer
         return new Point(bounds.width, bounds.height);
     }
 
-    @Override
     public void setLocation(int x, int y)
     {
         setBounds(x, y, bounds.width, bounds.height);
     }
 
-    @Override
     public void setLocation(Point location)
     {
         setBounds(location.x, location.y, bounds.width, bounds.height);
     }
 
-    @Override
     public void setSize(Point size)
     {
         setBounds(bounds.x, bounds.y, size.x, size.y);
@@ -128,7 +110,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return focus;
     }
 
-    @Override
     public void setFocus(boolean focus)
     {
         this.focus = focus;
@@ -144,7 +125,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return hover;
     }
 
-    @Override
     public void setHover(boolean hover)
     {
         this.hover = hover;
@@ -171,7 +151,6 @@ public abstract class AbstractRenderer implements IGridRenderer
         return selected;
     }
 
-    @Override
     public void setSelected(boolean selected)
     {
         this.selected = selected;

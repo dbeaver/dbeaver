@@ -50,6 +50,7 @@ class GridCellRenderer extends AbstractRenderer
     private boolean cellSelected = false;
     private boolean dragging = false;
     private final RGB colorSelectedRGB;
+    protected GridCell cell;
 
     public GridCellRenderer(LightGrid grid)
     {
@@ -60,6 +61,10 @@ class GridCellRenderer extends AbstractRenderer
         colorSelectedRGB = colorSelected.getRGB();
         colorLineForeground = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         colorBackgroundDisabled = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+    }
+
+    void setCell(GridCell cell) {
+        this.cell = cell;
     }
 
     /**
@@ -162,9 +167,6 @@ class GridCellRenderer extends AbstractRenderer
     	this.dragging = dragging;
     }
 
-
-
-    @Override
     public void paint(GC gc)
     {
         boolean drawAsSelected = isSelected();
