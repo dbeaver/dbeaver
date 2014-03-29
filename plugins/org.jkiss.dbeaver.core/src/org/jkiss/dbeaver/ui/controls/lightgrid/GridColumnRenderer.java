@@ -40,8 +40,14 @@ class GridColumnRenderer extends AbstractRenderer
     private static Image arrowUp = DBIcon.SORT_DECREASE.getImage();
     private static Image arrowDown = DBIcon.SORT_INCREASE.getImage();
 
+    private Object element;
+
     public  GridColumnRenderer(LightGrid grid) {
         super(grid);
+    }
+
+    void setElement(Object element) {
+        this.element = element;
     }
 
     public static Rectangle getSortControlBounds() {
@@ -50,28 +56,23 @@ class GridColumnRenderer extends AbstractRenderer
 
     @Nullable
     protected Image getColumnImage() {
-        return grid.getLabelProvider().getImage(cell.col);
+        return grid.getLabelProvider().getImage(element);
     }
 
     protected String getColumnText()
     {
-        String text = grid.getLabelProvider().getText(cell.col);
-        if (text == null) {
-            text = String.valueOf(cell.col);
-        }
-        return text;
+        return grid.getLabelProvider().getText(element);
     }
     
     protected Font getColumnFont() {
-        Font font = grid.getLabelProvider().getFont(cell.col);
+        Font font = grid.getLabelProvider().getFont(element);
         return font != null ? font : grid.getFont();
     }
 
-    @Override
     public void paint(GC gc) {
         //GridColumn col = grid.getColumnByElement(cell.col);
         //AbstractRenderer arrowRenderer = col.getSortRenderer();
-        int sortOrder = grid.getContentProvider().getSortOrder(cell.col);
+        int sortOrder = grid.getContentProvider().getSortOrder(element);
         Rectangle sortBounds = getSortControlBounds();
 
         // set the font to be used to display the text.
