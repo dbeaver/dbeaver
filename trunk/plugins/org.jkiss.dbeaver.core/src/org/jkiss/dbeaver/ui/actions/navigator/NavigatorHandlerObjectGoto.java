@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.dialogs.GotoObjectDialog;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,7 +71,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
         GotoObjectDialog dialog = new GotoObjectDialog(HandlerUtil.getActiveShell(event), dataSource, container);
         dialog.open();
         Object[] objectsToOpen = dialog.getResult();
-        if (!CommonUtils.isEmpty(objectsToOpen)) {
+        if (!ArrayUtils.isEmpty(objectsToOpen)) {
             Collection<DBNDatabaseNode> nodes = NavigatorHandlerObjectBase.getNodesByObjects(Arrays.asList(objectsToOpen));
             for (DBNDatabaseNode node : nodes) {
                 NavigatorHandlerObjectOpen.openEntityEditor(node, null, workbenchWindow);

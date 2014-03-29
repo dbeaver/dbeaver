@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -56,7 +57,7 @@ public class EditConstraintDialog extends AttributesSelectorDialog {
     {
         super(shell, title, entity);
         this.constraintTypes = constraintTypes;
-        Assert.isTrue(!CommonUtils.isEmpty(this.constraintTypes));
+        Assert.isTrue(!ArrayUtils.isEmpty(this.constraintTypes));
     }
 
     public EditConstraintDialog(

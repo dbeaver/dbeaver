@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -1006,7 +1007,7 @@ public final class DBUtils {
     {
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         StringBuilder script = new StringBuilder(512);
-        for (IDatabasePersistAction action : CommonUtils.safeArray(persistActions)) {
+        for (IDatabasePersistAction action : ArrayUtils.safeArray(persistActions)) {
             if (script.length() > 0) {
                 script.append(lineSeparator);
             }

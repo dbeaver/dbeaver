@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -106,7 +106,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             // Search all objects
             searchAllObjects(session, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
 
-            if (CommonUtils.contains(objectTypes, OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY) && objects.size() < maxResults) {
+            if (ArrayUtils.contains(objectTypes, OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY) && objects.size() < maxResults) {
                 // Search constraints
                 findConstraintsByMask(session, schema, objectNameMask, objectTypes, maxResults, objects);
             }

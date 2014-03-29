@@ -41,7 +41,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -199,7 +199,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         // Ad sub pages
         if (page instanceof ICompositeDialogPage) {
             IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages();
-            if (!CommonUtils.isEmpty(subPages)) {
+            if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage subPage : subPages) {
                     addPage(item, subPage, maxSize);
                 }
@@ -259,7 +259,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     public IWizardPage getCurrentPage()
     {
         TreeItem[] selection = pagesTree.getSelection();
-        if (CommonUtils.isEmpty(selection)) {
+        if (ArrayUtils.isEmpty(selection)) {
             return null;
         }
         IDialogPage page = (IDialogPage)selection[0].getData();

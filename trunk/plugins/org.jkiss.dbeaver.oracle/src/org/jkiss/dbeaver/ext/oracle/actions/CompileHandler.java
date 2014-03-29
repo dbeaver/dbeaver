@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -219,7 +220,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
     public static boolean compileUnit(DBRProgressMonitor monitor, Log compileLog, OracleSourceObject unit) throws DBCException
     {
         final IDatabasePersistAction[] compileActions = unit.getCompileActions();
-        if (CommonUtils.isEmpty(compileActions)) {
+        if (ArrayUtils.isEmpty(compileActions)) {
             return true;
         }
 

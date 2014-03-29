@@ -24,7 +24,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.Iterator;
 
@@ -76,7 +76,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
     public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
     {
         // Make page refresh if our main object was updated
-        if (!CommonUtils.isEmpty(curSelection) && !getControl().isDisposed()) {
+        if (!ArrayUtils.isEmpty(curSelection) && !getControl().isDisposed()) {
             for (PropertySourceCache cache : curSelection) {
                 if ((cache.propertySource != null && cache.propertySource.getEditableValue() == object) ||
                     cache.object == object)
@@ -123,7 +123,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
         // Seek in cached property sources
         // Without cache we'll fall in infinite recursion when refreshing lazy props
         // (get prop source from adapter, load props, load lazy props -> refresh -> get prop source from adapter, etc).
-        if (!CommonUtils.isEmpty(curSelection)) {
+        if (!ArrayUtils.isEmpty(curSelection)) {
             for (PropertySourceCache cache : curSelection) {
                 if (cache.object == object) {
                     if (!cache.cached) {

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -81,7 +82,7 @@ public class DataTransferSettings {
     public DataTransferSettings(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers)
     {
         dataPipes = new ArrayList<DataTransferPipe>();
-        if (!CommonUtils.isEmpty(producers) && !CommonUtils.isEmpty(consumers)) {
+        if (!ArrayUtils.isEmpty(producers) && !ArrayUtils.isEmpty(consumers)) {
             if (producers.length != consumers.length) {
                 throw new IllegalArgumentException("Producers number must match consumers number");
             }
@@ -90,7 +91,7 @@ public class DataTransferSettings {
                 dataPipes.add(new DataTransferPipe(producers[i], consumers[i]));
             }
             consumerOptional = false;
-        } else if (!CommonUtils.isEmpty(producers)) {
+        } else if (!ArrayUtils.isEmpty(producers)) {
             // Make pipes
             for (IDataTransferProducer source : producers) {
                 dataPipes.add(new DataTransferPipe(source, null));
@@ -104,7 +105,7 @@ public class DataTransferSettings {
             } else {
                 UIUtils.showErrorDialog(null, "Can't find producer", "Can't find data propducer descriptor in registry");
             }
-        } else if (!CommonUtils.isEmpty(consumers)) {
+        } else if (!ArrayUtils.isEmpty(consumers)) {
             // Make pipes
             for (IDataTransferConsumer target : consumers) {
                 dataPipes.add(new DataTransferPipe(null, target));
@@ -125,7 +126,7 @@ public class DataTransferSettings {
         Collection<Class<?>> objectTypes = getObjectTypes();
         List<DataTransferNodeDescriptor> nodes = new ArrayList<DataTransferNodeDescriptor>();
         DataTransferRegistry registry = DBeaverCore.getInstance().getDataTransferRegistry();
-        if (CommonUtils.isEmpty(producers)) {
+        if (ArrayUtils.isEmpty(producers)) {
             nodes.addAll(registry.getAvailableProducers(objectTypes));
         } else {
             for (IDataTransferProducer source : producers) {
@@ -135,7 +136,7 @@ public class DataTransferSettings {
                 }
             }
         }
-        if (CommonUtils.isEmpty(consumers)) {
+        if (ArrayUtils.isEmpty(consumers)) {
             nodes.addAll(registry.getAvailableConsumers(objectTypes));
         } else {
             for (IDataTransferConsumer target : consumers) {
@@ -191,7 +192,7 @@ public class DataTransferSettings {
     private boolean isPageValid(IWizardPage page, DataTransferNodeDescriptor node)
     {
         NodeSettings nodeSettings = node == null ? null : this.nodeSettings.get(node.getNodeClass());
-        return nodeSettings != null && CommonUtils.contains(nodeSettings.pages, page);
+        return nodeSettings != null && ArrayUtils.contains(nodeSettings.pages, page);
     }
 
     public Collection<Class<?>> getObjectTypes()
@@ -365,7 +366,7 @@ public class DataTransferSettings {
         }
         IDialogSettings processorsSection = dialogSettings.getSection("processors");
         if (processorsSection != null) {
-            for (IDialogSettings procSection : CommonUtils.safeArray(processorsSection.getSections())) {
+            for (IDialogSettings procSection : ArrayUtils.safeArray(processorsSection.getSections())) {
                 String processorId = procSection.getName();
                 String nodeId = procSection.get("@node");
                 String propNamesId = procSection.get("@propNames");

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -320,7 +321,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     @Override
     public boolean isSystem()
     {
-        return CommonUtils.contains(OracleConstants.SYSTEM_SCHEMAS, getName());
+        return ArrayUtils.contains(OracleConstants.SYSTEM_SCHEMAS, getName());
     }
 
     @Override

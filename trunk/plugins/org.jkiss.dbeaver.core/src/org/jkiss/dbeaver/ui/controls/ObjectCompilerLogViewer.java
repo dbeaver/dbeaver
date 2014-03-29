@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.StringTokenizer;
@@ -196,7 +197,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     public void copySelectionToClipboard()
     {
         final TableItem[] selection = infoTable.getSelection();
-        if (CommonUtils.isEmpty(selection)) {
+        if (ArrayUtils.isEmpty(selection)) {
             return;
         }
         StringBuilder tdt = new StringBuilder();

@@ -23,7 +23,7 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.text.handlers.AbstractTextHandler;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * DatabaseEditorPropertyTester
@@ -62,7 +62,7 @@ public class TextEditorPropertyTester extends PropertyTester
                 return false;
             }
             if ("single".equals(expectedValue)) {
-                return !CommonUtils.isEmpty(commentsSupport.getSingleLineComments());
+                return !ArrayUtils.isEmpty(commentsSupport.getSingleLineComments());
             } else if ("multi".equals(expectedValue)) {
                 return commentsSupport.getMultiLineComments() != null;
             }

@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class GenericMetaModel {
     {
         this.id = cfg.getAttribute(RegistryConstants.ATTR_ID);
         IConfigurationElement[] objectList = cfg.getChildren("object");
-        if (!CommonUtils.isEmpty(objectList)) {
+        if (!ArrayUtils.isEmpty(objectList)) {
             for (IConfigurationElement childConfig : objectList) {
                 GenericMetaObject metaObject = new GenericMetaObject(childConfig);
                 objects.put(metaObject.getType(), metaObject);
