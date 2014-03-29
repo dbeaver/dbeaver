@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
@@ -435,8 +436,14 @@ public abstract class LightGrid extends Canvas {
             parents.add(parent);
             Object[] children = getContentProvider().getChildren(row);
             if (children != null) {
-                IGridContentProvider.ElementState state = getContentProvider().getDefaultState(row);
-                GridNode node = new GridNode(children, state, level + 1);
+                IGridContentProvider.ElementState state;
+                GridNode node = rowNodes.get(row);
+                if (node == null) {
+                    state = getContentProvider().getDefaultState(row);
+                    node = new GridNode(children, state, level + 1);
+                } else {
+                    state = node.state;
+                }
                 rowNodes.put(row, node);
                 if (state == IGridContentProvider.ElementState.EXPANDED) {
                     collectRows(result, parents, node, children, level + 1);
@@ -548,7 +555,7 @@ public abstract class LightGrid extends Canvas {
 
     private void createChildColumns(GridColumn parent) {
         Object[] children = getContentProvider().getChildren(parent.getElement());
-        if (!CommonUtils.isEmpty(children)) {
+        if (!ArrayUtils.isEmpty(children)) {
             for (Object child : children) {
                 GridColumn column = new GridColumn(parent, child);
                 createChildColumns(column);
@@ -569,8 +576,8 @@ public abstract class LightGrid extends Canvas {
     @NotNull
     public GridPos cellToPos(GridCell cell)
     {
-        int colIndex = CommonUtils.indexOf(columnElements, cell.col);
-        int rowIndex = CommonUtils.indexOf(rowElements, cell.row);
+        int colIndex = ArrayUtils.indexOf(columnElements, cell.col);
+        int rowIndex = ArrayUtils.indexOf(rowElements, cell.row);
         return new GridPos(colIndex, rowIndex);
     }
 
@@ -2707,8 +2714,7 @@ public abstract class LightGrid extends Canvas {
                             if (node != null && node.state != IGridContentProvider.ElementState.NONE) {
                                 if (GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
                                 {
-                                    // Toggle expander
-                                    System.out.println("!!!!");
+                                    toggleRowState(row);
                                     //return;
                                 }
                             }
@@ -2791,6 +2797,36 @@ public abstract class LightGrid extends Canvas {
         }
 
 
+    }
+
+    private void toggleRowState(int row) {
+        GridNode node = rowNodes.get(rowElements[row]);
+        if (node == null || node.state == IGridContentProvider.ElementState.NONE) {
+            log.error("Row [" + row + "] state can't be toggled");
+            return;
+        }
+        if (node.state == IGridContentProvider.ElementState.EXPANDED) {
+            // Collapse node. Remove all elements with different parent
+            GridNode rowParent = parentNodes[row];
+            int deleteTo;
+            for (deleteTo = row + 1; deleteTo < rowElements.length; deleteTo++) {
+                if (parentNodes[deleteTo] == rowParent) {
+                    break;
+                }
+            }
+            rowElements = ArrayUtils.deleteArea(Object.class, rowElements, row + 1, deleteTo - 1);
+            parentNodes = ArrayUtils.deleteArea(GridNode.class, parentNodes, row + 1, deleteTo - 1);
+            node.state = IGridContentProvider.ElementState.COLLAPSED;
+        } else {
+            // Expand node
+            List<Object> result = new ArrayList<Object>();
+            List<GridNode> parents = new ArrayList<GridNode>();
+            collectRows(result, parents, node, node.rows, node.level);
+            rowElements = ArrayUtils.insertArea(Object.class, rowElements, row + 1, result.toArray());
+            parentNodes = ArrayUtils.insertArea(GridNode.class, parentNodes, row + 1, parents.toArray());
+            node.state = IGridContentProvider.ElementState.EXPANDED;
+        }
+        redraw();
     }
 
     /**

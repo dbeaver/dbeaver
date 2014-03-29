@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 public class DataSourceDisconnectHandler extends DataSourceHandler
 {
@@ -45,7 +45,7 @@ public class DataSourceDisconnectHandler extends DataSourceHandler
     public static void execute(DBSDataSourceContainer dataSourceContainer, @Nullable final Runnable onFinish) {
         if (dataSourceContainer instanceof DataSourceDescriptor && dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
-            if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
+            if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
                 // Already connecting/disconnecting - just return
                 return;
             }

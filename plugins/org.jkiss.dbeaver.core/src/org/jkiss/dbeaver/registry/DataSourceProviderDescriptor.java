@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.registry.tree.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
@@ -81,7 +82,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
         // Load tree structure
         IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
-        if (!CommonUtils.isEmpty(trees)) {
+        if (!ArrayUtils.isEmpty(trees)) {
             this.treeDescriptor = this.loadTreeInfo(trees[0]);
         }
 
@@ -327,7 +328,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private void loadTreeChildren(IConfigurationElement config, DBXTreeNode parent)
     {
         IConfigurationElement[] children = config.getChildren();
-        if (!CommonUtils.isEmpty(children)) {
+        if (!ArrayUtils.isEmpty(children)) {
             for (IConfigurationElement child : children) {
                 loadTreeNode(parent, child);
             }
@@ -401,7 +402,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         String defaultIcon = config.getAttribute(RegistryConstants.ATTR_ICON);
         IConfigurationElement[] iconElements = config.getChildren(RegistryConstants.ATTR_ICON);
-        if (!CommonUtils.isEmpty(iconElements)) {
+        if (!ArrayUtils.isEmpty(iconElements)) {
             for (IConfigurationElement iconElement : iconElements) {
                 String icon = iconElement.getAttribute(RegistryConstants.ATTR_ICON);
                 String expr = iconElement.getAttribute(RegistryConstants.ATTR_IF);

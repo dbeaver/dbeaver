@@ -20,6 +20,7 @@ package org.jkiss.tools.ant.driverman;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -356,7 +357,7 @@ public class GenerateFeaturesTask extends Task
     private void searchDrivers(File path)
     {
         File sourcePluginsDir = new File(path, "plugins");
-        for (File pluginDir : CommonUtils.safeArray(sourcePluginsDir.listFiles())) {
+        for (File pluginDir : ArrayUtils.safeArray(sourcePluginsDir.listFiles())) {
             if (pluginDir.isDirectory()) {
                 try {
                     DriverInfo driver = new DriverInfo(pluginDir);
@@ -407,7 +408,7 @@ public class GenerateFeaturesTask extends Task
 
     private void copyDirs(File src, File dest) throws IOException
     {
-        for (File file : CommonUtils.safeArray(src.listFiles())) {
+        for (File file : ArrayUtils.safeArray(src.listFiles())) {
             if (file.isDirectory()) {
                 if (file.getName().equals(".") || file.getName().equals("..")) {
                     continue;

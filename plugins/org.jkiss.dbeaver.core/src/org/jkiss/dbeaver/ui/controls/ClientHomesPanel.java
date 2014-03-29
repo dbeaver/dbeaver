@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -109,7 +110,7 @@ public class ClientHomesPanel extends Composite
             public void widgetSelected(SelectionEvent e)
             {
                 TableItem[] selection = homesTable.getSelection();
-                if (CommonUtils.isEmpty(selection)) {
+                if (ArrayUtils.isEmpty(selection)) {
                     selectHome(null);
                 } else {
                     selectHome((HomeInfo)selection[0].getData());
@@ -137,7 +138,7 @@ public class ClientHomesPanel extends Composite
             public void widgetSelected(SelectionEvent e)
             {
                 TableItem[] selection = homesTable.getSelection();
-                if (!CommonUtils.isEmpty(selection)) {
+                if (!ArrayUtils.isEmpty(selection)) {
                     removeClientHome();
                 }
             }
@@ -265,7 +266,7 @@ public class ClientHomesPanel extends Composite
     private String getSelectedHome()
     {
         TableItem[] selection = homesTable.getSelection();
-        if (CommonUtils.isEmpty(selection)) {
+        if (ArrayUtils.isEmpty(selection)) {
             return null;
         } else {
             return ((HomeInfo)selection[0].getData()).home.getHomeId();

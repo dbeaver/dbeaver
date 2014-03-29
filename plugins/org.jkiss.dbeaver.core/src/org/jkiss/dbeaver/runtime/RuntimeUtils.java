@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -362,7 +363,7 @@ public class RuntimeUtils {
 
     public static boolean isTypeSupported(Class<?> type, Class[] supportedTypes)
     {
-        if (type == null || CommonUtils.isEmpty(supportedTypes)) {
+        if (type == null || ArrayUtils.isEmpty(supportedTypes)) {
             return false;
         }
         for (Class<?> tmp : supportedTypes) {

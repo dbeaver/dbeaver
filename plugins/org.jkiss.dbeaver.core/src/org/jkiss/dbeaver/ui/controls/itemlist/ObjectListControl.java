@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.properties.DataSourcePropertyFilter;
 import org.jkiss.dbeaver.ui.properties.ObjectAttributeDescriptor;
 import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -343,7 +344,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // Collect list of items' classes
                 final List<Class<?>> classList = new ArrayList<Class<?>>();
                 Class<?>[] baseTypes = getListBaseTypes(items);
-                if (!CommonUtils.isEmpty(baseTypes)) {
+                if (!ArrayUtils.isEmpty(baseTypes)) {
                     Collections.addAll(classList, baseTypes);
                 }
                 if (!CommonUtils.isEmpty(items)) {
@@ -473,7 +474,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return;
         }
         Object[] children = contentProvider.getChildren(item);
-        if (!CommonUtils.isEmpty(children)) {
+        if (!ArrayUtils.isEmpty(children)) {
             for (Object child : children) {
                 OBJECT_TYPE childItem = (OBJECT_TYPE)child;
                 Object objectValue = getObjectValue(childItem);

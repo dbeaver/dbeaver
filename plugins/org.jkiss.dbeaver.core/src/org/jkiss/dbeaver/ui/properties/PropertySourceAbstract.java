@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -292,7 +292,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         if (editableValue instanceof IPropertySource) {
             IPropertySource ownPropSource = (IPropertySource) editableValue;
             IPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors();
-            if (!CommonUtils.isEmpty(ownProperties)) {
+            if (!ArrayUtils.isEmpty(ownProperties)) {
                 for (IPropertyDescriptor prop : ownProperties) {
                     props.add(prop);
                     propValues.put(prop.getId(), ownPropSource.getPropertyValue(prop.getId()));

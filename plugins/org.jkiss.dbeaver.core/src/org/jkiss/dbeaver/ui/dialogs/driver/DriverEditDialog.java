@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -401,7 +402,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 if (selected != null) {
                     curFolder = fd.getFilterPath();
                     String[] fileNames = fd.getFileNames();
-                    if (!CommonUtils.isEmpty(fileNames)) {
+                    if (!ArrayUtils.isEmpty(fileNames)) {
                         File folderFile = new File(curFolder);
                         for (String fileName : fileNames) {
                             libList.add(

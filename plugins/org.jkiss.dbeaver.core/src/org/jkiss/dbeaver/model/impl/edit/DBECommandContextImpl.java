@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -113,7 +114,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                         // Persist changes
                         //if (CommonUtils.isEmpty(cmd.persistActions)) {
                             IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
-                            if (!CommonUtils.isEmpty(persistActions)) {
+                            if (!ArrayUtils.isEmpty(persistActions)) {
                                 cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
                                 for (IDatabasePersistAction action : persistActions) {
                                     cmd.persistActions.add(new PersistInfo(action));

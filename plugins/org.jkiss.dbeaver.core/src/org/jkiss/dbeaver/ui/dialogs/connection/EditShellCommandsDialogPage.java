@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.runtime.jobs.EventProcessorJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
@@ -173,7 +174,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
     private DBPConnectionEventType getSelectedEventType()
     {
         TableItem[] selection = eventTypeTable.getSelection();
-        return CommonUtils.isEmpty(selection) ? null : (DBPConnectionEventType) selection[0].getData();
+        return ArrayUtils.isEmpty(selection) ? null : (DBPConnectionEventType) selection[0].getData();
     }
 
     private TableItem getEventItem(DBPConnectionEventType eventType)

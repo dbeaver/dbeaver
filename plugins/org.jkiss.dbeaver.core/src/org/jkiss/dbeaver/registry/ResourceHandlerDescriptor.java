@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
         super(config);
 
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        for (IConfigurationElement contentTypeBinding : CommonUtils.safeArray(config.getChildren("contentTypeBinding"))) {
+        for (IConfigurationElement contentTypeBinding : ArrayUtils.safeArray(config.getChildren("contentTypeBinding"))) {
             String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
             if (!CommonUtils.isEmpty(contentTypeId)) {
                 IContentType contentType = Platform.getContentTypeManager().getContentType(contentTypeId);
@@ -63,13 +64,13 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
                 }
             }
         }
-        for (IConfigurationElement resourceTypeBinding : CommonUtils.safeArray(config.getChildren("resourceTypeBinding"))) {
+        for (IConfigurationElement resourceTypeBinding : ArrayUtils.safeArray(config.getChildren("resourceTypeBinding"))) {
             String resourceType = resourceTypeBinding.getAttribute("resourceType");
             if (!CommonUtils.isEmpty(resourceType)) {
                 resourceTypes.add(new ObjectType(resourceType));
             }
         }
-        for (IConfigurationElement rootConfig : CommonUtils.safeArray(config.getChildren("root"))) {
+        for (IConfigurationElement rootConfig : ArrayUtils.safeArray(config.getChildren("root"))) {
             String folder = rootConfig.getAttribute("folder");
             if (!CommonUtils.isEmpty(folder)) {
                 roots.add(folder);
@@ -123,7 +124,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
             String fileExtension = resource.getFileExtension();
             for (IContentType contentType : contentTypes) {
                 String[] ctExtensions = contentType.getFileSpecs(IContentType.FILE_EXTENSION_SPEC);
-                if (!CommonUtils.isEmpty(ctExtensions)) {
+                if (!ArrayUtils.isEmpty(ctExtensions)) {
                     for (String ext : ctExtensions) {
                         if (ext.equalsIgnoreCase(fileExtension)) {
                             return true;

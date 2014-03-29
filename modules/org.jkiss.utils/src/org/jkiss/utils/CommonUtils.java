@@ -158,11 +158,6 @@ public class CommonUtils {
         return !isEmpty(value);
     }
 
-    public static boolean isEmpty(@Nullable Object[] arr)
-    {
-        return arr == null || arr.length == 0;
-    }
-
     public static boolean isEmpty(@Nullable Collection<?> value)
     {
         return value == null || value.isEmpty();
@@ -250,97 +245,6 @@ public class CommonUtils {
             }
         }
         return rootCause;
-    }
-
-    public static boolean isEmpty(@Nullable short[] array)
-    {
-        return array == null || array.length == 0;
-    }
-
-    public static boolean contains(@Nullable short[] array, short value)
-    {
-        if (array == null)
-            return false;
-        for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
-            if (array[i] == value)
-                return true;
-        }
-        return false;
-    }
-
-    public static boolean contains(@Nullable char[] array, char value)
-    {
-        if (array == null || array.length == 0)
-            return false;
-        for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
-            if (array[i] == value)
-                return true;
-        }
-        return false;
-    }
-
-    public static boolean isEmpty(@Nullable int[] array)
-    {
-        return array == null || array.length == 0;
-    }
-
-    public static boolean contains(@Nullable int[] array, int value)
-    {
-        if (array == null)
-            return false;
-        for (int v : array) {
-            if (v == value)
-                return true;
-        }
-        return false;
-    }
-
-    public static boolean isEmpty(@Nullable long[] array)
-    {
-        return array == null || array.length == 0;
-    }
-
-    public static boolean contains(@Nullable long[] array, long value)
-    {
-        if (array == null)
-            return false;
-        for (long v : array) {
-            if (v == value)
-                return true;
-        }
-        return false;
-    }
-
-    public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE value)
-    {
-        if (isEmpty(array))
-            return false;
-        for (OBJECT_TYPE v : array) {
-            if (equalObjects(value, v))
-                return true;
-        }
-        return false;
-    }
-
-    public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE... values)
-    {
-        if (isEmpty(array))
-            return false;
-        for (OBJECT_TYPE v : array) {
-            for (OBJECT_TYPE v2 : values) {
-                if (equalObjects(v, v2))
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    @NotNull
-    public static <T> T[] concatArrays(@NotNull T[] first, @NotNull T[] second)
-    {
-        T[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
     }
 
     public static boolean equalObjects(@Nullable Object o1, @Nullable Object o2)
@@ -539,16 +443,6 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static <T> Collection<T> safeArray(@Nullable T[] array)
-    {
-        if (array == null) {
-            return Collections.emptyList();
-        } else {
-            return Arrays.asList(array);
-        }
-    }
-
-    @NotNull
     public static <T> T getItem(@NotNull Collection<T> collection, int index)
     {
         if (collection instanceof List) {
@@ -591,12 +485,4 @@ public class CommonUtils {
         return result;
     }
 
-    public static <T> int indexOf(T[] array, T element) {
-        for (int i = 0; i < array.length; i++) {
-            if (array[i] == element) {
-                return i;
-            }
-        }
-        return -1;
-    }
 }

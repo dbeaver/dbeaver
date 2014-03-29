@@ -60,8 +60,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorOutputViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
@@ -121,7 +121,7 @@ public class UIUtils {
             {
                 for (int i = 0; i < e.text.length(); i++) {
                     char ch = e.text.charAt(i);
-                    if (!Character.isDigit(ch) && !CommonUtils.contains(allowedChars, ch) && exponentSeparator.indexOf(ch) == -1) {
+                    if (!Character.isDigit(ch) && !ArrayUtils.contains(allowedChars, ch) && exponentSeparator.indexOf(ch) == -1) {
                         e.doit = false;
                         return;
                     }

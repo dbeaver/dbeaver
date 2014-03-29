@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.code.NotNull;
 
@@ -330,7 +331,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         dbStat.setStatementSource(this);
 
-        DBSAttributeBase[] attributes = CommonUtils.concatArrays(updateAttributes, keyAttributes);
+        DBSAttributeBase[] attributes = ArrayUtils.concatArrays(updateAttributes, keyAttributes);
 
         return new BatchImpl(dbStat, attributes, keysReceiver, false);
     }
@@ -449,7 +450,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @Override
         public void add(@NotNull Object[] attributeValues) throws DBCException
         {
-            if (!CommonUtils.isEmpty(attributes) && CommonUtils.isEmpty(attributeValues)) {
+            if (!ArrayUtils.isEmpty(attributes) && ArrayUtils.isEmpty(attributeValues)) {
                 throw new DBCException("Bad attribute values: " + Arrays.toString(attributeValues));
             }
             values.add(attributeValues);
@@ -509,7 +510,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 long startTime = System.currentTimeMillis();
                 int[] updatedRows = statement.executeStatementBatch();
                 statistics.addExecuteTime(System.currentTimeMillis() - startTime);
-                if (!CommonUtils.isEmpty(updatedRows)) {
+                if (!ArrayUtils.isEmpty(updatedRows)) {
                     for (int rows : updatedRows) {
                         statistics.addRowsUpdated(rows);
                     }

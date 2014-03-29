@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomTextCellEditor;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -336,7 +337,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (property instanceof IPropertyValueListProvider) {
             final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
             final Object[] items = listProvider.getPossibleValues(object);
-            if (!CommonUtils.isEmpty(items)) {
+            if (!ArrayUtils.isEmpty(items)) {
                 final String[] strings = new String[items.length];
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                     strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject)items[i]).getName() : CommonUtils.toString(items[i]);

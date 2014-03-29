@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,13 +69,13 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.nodeType = NodeType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase());
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.settingsType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_SETTINGS));
-        for (IConfigurationElement typeCfg : CommonUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
+        for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
         }
-        for (IConfigurationElement pageConfig : CommonUtils.safeArray(config.getChildren(RegistryConstants.TAG_PAGE))) {
+        for (IConfigurationElement pageConfig : ArrayUtils.safeArray(config.getChildren(RegistryConstants.TAG_PAGE))) {
             pageTypes.add(new ObjectType(pageConfig.getAttribute(RegistryConstants.ATTR_CLASS)));
         }
-        for (IConfigurationElement processorConfig : CommonUtils.safeArray(config.getChildren(RegistryConstants.TAG_PROCESSOR))) {
+        for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren(RegistryConstants.TAG_PROCESSOR))) {
             processors.add(new DataTransferProcessorDescriptor(this, processorConfig));
         }
     }
