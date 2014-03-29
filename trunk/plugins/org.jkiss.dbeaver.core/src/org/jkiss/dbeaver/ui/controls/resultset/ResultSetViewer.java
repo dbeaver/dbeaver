@@ -1600,7 +1600,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // It may occur on simple focus change so we won't do anything
             return;
         }
-        spreadsheet.deselectAllCells();
+        spreadsheet.deselectAll();
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
             List<GridPos> cellSelection = new ArrayList<GridPos>();
             for (Iterator iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
