@@ -134,6 +134,7 @@ public abstract class LightGrid extends Canvas {
     private int maxColumnDepth = 0;
     private Object[] columnElements = new Object[0];
     private Object[] rowElements = new Object[0];
+    private GridNode[] parentNodes = new GridNode[0];
     private final Map<Object, GridNode> rowNodes = new IdentityHashMap<Object, GridNode>();
 
     private int maxColumnDefWidth = 1000;
@@ -426,31 +427,23 @@ public abstract class LightGrid extends Canvas {
         this.maxColumnDefWidth = maxColumnDefWidth;
     }
 
-    Object[] collectRows(IGridContentProvider contentProvider, Object[] rows, int level)
+    void collectRows(List<Object> result, List<GridNode> parents, @Nullable GridNode parent, Object[] rows, int level)
     {
         List<Object> rowsExpanded = null;
         for (int i = 0; i < rows.length; i++) {
             Object row = rows[i];
-            if (rowsExpanded != null) {
-                rowsExpanded.add(row);
-            }
-            Object[] children = contentProvider.getChildren(row);
+            result.add(row);
+            parents.add(parent);
+            Object[] children = getContentProvider().getChildren(row);
             if (children != null) {
-                IGridContentProvider.ElementState state = contentProvider.getDefaultState(row);
-                rowNodes.put(row, new GridNode(children, state, level + 1));
-                children = collectRows(contentProvider, children, level + 1);
+                IGridContentProvider.ElementState state = getContentProvider().getDefaultState(row);
+                GridNode node = new GridNode(children, state, level + 1);
+                rowNodes.put(row, node);
                 if (state == IGridContentProvider.ElementState.EXPANDED) {
-                    if (rowsExpanded == null) {
-                        rowsExpanded = new ArrayList<Object>(rows.length + children.length);
-                        for (int k = 0; k <= i; k++) {
-                            rowsExpanded.add(rows[k]);
-                        }
-                    }
-                    Collections.addAll(rowsExpanded, children);
+                    collectRows(result, parents, node, children, level + 1);
                 }
             }
         }
-        return rowsExpanded == null ? rows : rowsExpanded.toArray();
     }
 
     /**
@@ -462,8 +455,16 @@ public abstract class LightGrid extends Canvas {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
-        this.rowNodes.clear();
-        this.rowElements = collectRows(contentProvider, contentProvider.getElements(false), 0);
+        {
+            // Prepare rows
+            Object[] initialElements = contentProvider.getElements(false);
+            this.rowNodes.clear();
+            List<Object> realRows = new ArrayList<Object>(initialElements.length);
+            List<GridNode> parents = new ArrayList<GridNode>(initialElements.length);
+            collectRows(realRows, parents, null, initialElements, 0);
+            this.rowElements = realRows.toArray();
+            this.parentNodes = parents.toArray(new GridNode[parents.size()]);
+        }
         this.displayedToolTipText = null;
 
         if (refreshColumns) {
@@ -1959,9 +1960,6 @@ public abstract class LightGrid extends Canvas {
         final GridCell testCell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
         //final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
         boolean isGridInFocus = this.isFocusControl();
-        int curLevel = 0;
-        int nestedRemains = -1;
-        final List<int[]> nestedStack = rowNodes == null ? null : new ArrayList<int[]>();
 
         for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
 
@@ -2033,6 +2031,7 @@ public abstract class LightGrid extends Canvas {
                 x = 0;
 
                 GridNode rowNode = this.rowNodes.get(rowElements[row]);
+                GridNode parentNode = this.parentNodes[row];
                 if (rowHeaderVisible) {
 
                     rowHeaderRenderer.setSelected(cellInRowSelected);
@@ -2040,7 +2039,7 @@ public abstract class LightGrid extends Canvas {
                         testCell.row = rowElements[row];
                         rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, getItemHeight() + 1);
                         rowHeaderRenderer.setCell(testCell);
-                        rowHeaderRenderer.setLevel(curLevel);
+                        rowHeaderRenderer.setLevel(parentNode == null ? 0 : parentNode.level);
                         rowHeaderRenderer.setState(rowNode == null ? IGridContentProvider.ElementState.NONE : rowNode.state);
                         rowHeaderRenderer.paint(gc);
                     }
@@ -2048,30 +2047,6 @@ public abstract class LightGrid extends Canvas {
                 }
 
                 y += getItemHeight() + 1;
-
-                if (nestedRemains > 0) {
-                    nestedRemains--;
-                    if (nestedRemains == 0) {
-                        if (!nestedStack.isEmpty()) {
-                            int[] nst = nestedStack.remove(nestedStack.size() - 1);
-                            curLevel = nst[0];
-                            nestedRemains = nst[1];
-                        } else {
-                            curLevel = 0;
-                            nestedRemains = -1;
-                        }
-                    }
-                }
-
-                if (!this.rowNodes.isEmpty()) {
-                    if (rowNode != null) {
-                        if (nestedRemains >= 0) {
-                            nestedStack.add(new int[] {curLevel, nestedRemains});
-                        }
-                        curLevel = rowNode.level;
-                        nestedRemains = rowNode.rows.length;
-                    }
-                }
 
             } else {
 
@@ -2689,7 +2664,8 @@ public abstract class LightGrid extends Canvas {
             return;
         }
 
-        int row = getRow(new Point(e.x, e.y));
+        Point point = new Point(e.x, e.y);
+        int row = getRow(point);
 
         if (isListening(SWT.DragDetect)) {
             if (hoveringOnSelectionDragArea) {
@@ -2701,56 +2677,69 @@ public abstract class LightGrid extends Canvas {
 
         GridColumn col = null;
         if (row >= 0) {
-            {
-                col = getColumn(new Point(e.x, e.y));
-                boolean isSelectedCell = false;
-                if (col != null)
-                    isSelectedCell = selectedCells.contains(new GridPos(col.getIndex(), row));
+            col = getColumn(point);
+            boolean isSelectedCell = false;
+            if (col != null) {
+                isSelectedCell = selectedCells.contains(new GridPos(col.getIndex(), row));
+            }
 
-                if (e.button == 1 || e.button == 2 || (e.button == 3 && col != null && !isSelectedCell)) {
-                    if (col != null) {
-                        selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
-                        cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
+            if (e.button == 1 || e.button == 2 || (e.button == 3 && col != null && !isSelectedCell)) {
+                if (col != null) {
+                    selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
+                    cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
 
-                        if (e.stateMask != SWT.MOD2) {
-                            focusColumn = col;
+                    if (e.stateMask != SWT.MOD2) {
+                        focusColumn = col;
+                        focusItem = row;
+                    }
+                    //showColumn(col);
+                    showItem(row);
+                    redraw();
+                } else if (rowHeaderVisible) {
+                    if (e.x <= rowHeaderWidth) {
+                        boolean shift = ((e.stateMask & SWT.MOD2) != 0);
+                        boolean ctrl = false;
+                        if (!shift) {
+                            ctrl = ((e.stateMask & SWT.MOD1) != 0);
+                        }
+
+                        if (e.button == 1 && !shift && !ctrl) {
+                            GridNode node = rowNodes.get(rowElements[row]);
+                            GridNode parentNode = parentNodes[row];
+                            if (node != null && node.state != IGridContentProvider.ElementState.NONE) {
+                                if (GridRowRenderer.isOverExpander(
+                                    e.x,
+                                    rowElements[row],
+                                    parentNode == null ? 0 : parentNode.level))
+                                {
+                                    // Toggle expander
+                                    System.out.println("!!!!");
+                                    //return;
+                                }
+                            }
+                        }
+                        List<GridPos> cells = new ArrayList<GridPos>();
+
+                        if (shift) {
+                            getCells(row, focusItem, cells);
+                        } else {
+                            getCells(row, cells);
+                        }
+
+                        int newStateMask = SWT.NONE;
+                        if (ctrl) newStateMask = SWT.MOD1;
+
+                        selectionEvent = updateCellSelection(cells, newStateMask, shift, ctrl, EventSource.MOUSE);
+                        cellRowSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
+
+                        if (!shift) {
+                            //set focus back to the first visible column
+                            focusColumn = getColumn(new Point(rowHeaderWidth + 1, e.y));
+
                             focusItem = row;
                         }
-                        //showColumn(col);
                         showItem(row);
                         redraw();
-                    } else if (rowHeaderVisible) {
-                        if (e.x <= rowHeaderWidth) {
-
-                            boolean shift = ((e.stateMask & SWT.MOD2) != 0);
-                            boolean ctrl = false;
-                            if (!shift) {
-                                ctrl = ((e.stateMask & SWT.MOD1) != 0);
-                            }
-
-                            List<GridPos> cells = new ArrayList<GridPos>();
-
-                            if (shift) {
-                                getCells(row, focusItem, cells);
-                            } else {
-                                getCells(row, cells);
-                            }
-
-                            int newStateMask = SWT.NONE;
-                            if (ctrl) newStateMask = SWT.MOD1;
-
-                            selectionEvent = updateCellSelection(cells, newStateMask, shift, ctrl, EventSource.MOUSE);
-                            cellRowSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
-
-                            if (!shift) {
-                                //set focus back to the first visible column
-                                focusColumn = getColumn(new Point(rowHeaderWidth + 1, e.y));
-
-                                focusItem = row;
-                            }
-                            showItem(row);
-                            redraw();
-                        }
                     }
                 }
             }
@@ -2767,7 +2756,7 @@ public abstract class LightGrid extends Canvas {
             focusItem = getTopIndex();
         } else if (e.button == 1 && columnHeadersVisible && e.y <= headerHeight) {
             //column cell selection
-            col = getColumn(new Point(e.x, e.y));
+            col = getColumn(point);
 
             if (col == null) return;
 
@@ -2789,7 +2778,7 @@ public abstract class LightGrid extends Canvas {
             redraw();
         } else {
             // Change focus column anyway
-            GridColumn column = getColumn(new Point(e.x, e.y));
+            GridColumn column = getColumn(point);
             if (column == null) {
                 // Clicked on top-left cell or outside of grid
                 return;
