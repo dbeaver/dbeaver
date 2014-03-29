@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import javax.activation.MimeType;
@@ -567,7 +568,7 @@ public class ContentUtils {
         IPath folderPath = path.removeLastSegments(1);
         URI folderURI = folderPath.toFile().toURI();
         IContainer[] containers = root.findContainersForLocationURI(folderURI);
-        if (!CommonUtils.isEmpty(containers)) {
+        if (!ArrayUtils.isEmpty(containers)) {
             IContainer container = containers[0];
             file = container.getFile(path.removeFirstSegments(path.segmentCount() - 1));
         }

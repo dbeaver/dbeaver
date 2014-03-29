@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -116,7 +117,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             // If value should be a named object then try to obtain it from list provider
             if (value != null && value.getClass() == String.class) {
                 final Object[] items = prop.getPossibleValues(editableValue);
-                if (!CommonUtils.isEmpty(items)) {
+                if (!ArrayUtils.isEmpty(items)) {
                     for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                         if ((items[i] instanceof DBPNamedObject && value.equals(((DBPNamedObject)items[i]).getName())) ||
                             (items[i] instanceof Enum && value.equals(((Enum)items[i]).name()))

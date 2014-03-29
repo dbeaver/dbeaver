@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -141,7 +142,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             // init sub pages (if any)
             getSubPages();
 
-            if (wizard.isNew() && !CommonUtils.isEmpty(subPages)) {
+            if (wizard.isNew() && !ArrayUtils.isEmpty(subPages)) {
                 // Create tab folder
                 List<IDialogPage> allPages = new ArrayList<IDialogPage>();
                 allPages.add(connectionEditor);
@@ -273,7 +274,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
         if (connectionEditor instanceof ICompositeDialogPage) {
             subPages = ((ICompositeDialogPage) connectionEditor).getSubPages();
-            if (!CommonUtils.isEmpty(subPages)) {
+            if (!ArrayUtils.isEmpty(subPages)) {
                 for (IDialogPage page : subPages) {
                     if (page instanceof IDataSourceConnectionEditor) {
                         ((IDataSourceConnectionEditor) page).setSite(this);

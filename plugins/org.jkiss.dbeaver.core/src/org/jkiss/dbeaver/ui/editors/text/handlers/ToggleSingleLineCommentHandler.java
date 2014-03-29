@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ui.editors.text.handlers;
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler {
 
@@ -33,7 +33,7 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
             return;
         }
         String[] singleLineComments = commentsSupport.getSingleLineComments();
-        if (CommonUtils.isEmpty(singleLineComments)) {
+        if (ArrayUtils.isEmpty(singleLineComments)) {
             // Single line comments are not supported
             return;
         }

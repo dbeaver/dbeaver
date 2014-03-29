@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 public class DataSourceInvalidateHandler extends DataSourceHandler
 {
@@ -52,7 +52,7 @@ public class DataSourceInvalidateHandler extends DataSourceHandler
     public static void execute(DBSDataSourceContainer dataSourceContainer) {
         if (dataSourceContainer instanceof DataSourceDescriptor && dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
-            if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
+            if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
                 // Already connecting/disconnecting - just return
                 return;
             }

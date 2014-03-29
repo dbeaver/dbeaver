@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +56,11 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
-        for (IConfigurationElement typeCfg : CommonUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
+        for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
         }
 
-        for (IConfigurationElement prop : CommonUtils.safeArray(config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP))) {
+        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP))) {
             properties.addAll(PropertyDescriptorEx.extractProperties(prop));
         }
     }

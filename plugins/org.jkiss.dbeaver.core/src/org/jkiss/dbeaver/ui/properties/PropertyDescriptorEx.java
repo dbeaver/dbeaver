@@ -26,6 +26,7 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -203,7 +204,7 @@ public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyVal
     @Override
     public boolean allowCustomValue()
     {
-        return CommonUtils.isEmpty(validValues);
+        return ArrayUtils.isEmpty(validValues);
     }
 
     @Override

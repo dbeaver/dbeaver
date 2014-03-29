@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -176,7 +177,7 @@ public class ProjectRegistry implements IResourceChangeListener {
             // Skip not accessible hidden and phantom resources
             return null;
         }
-        if (resource.getParent() instanceof IProject && CommonUtils.contains(IGNORED_FILES, resource.getName())) {
+        if (resource.getParent() instanceof IProject && ArrayUtils.contains(IGNORED_FILES, resource.getName())) {
             // Skip connections settings file
             // TODO: remove in some older version
             return null;

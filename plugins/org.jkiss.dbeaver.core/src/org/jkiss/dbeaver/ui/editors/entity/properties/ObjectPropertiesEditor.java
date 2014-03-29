@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.entity.GlobalContributorManager;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -163,7 +164,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
         for (ITabDescriptor tab : properties.getActiveTabs()) {
             final ISection[] tabSections = properties.getTabSections(tab);
-            if (!CommonUtils.isEmpty(tabSections)) {
+            if (!ArrayUtils.isEmpty(tabSections)) {
                 for (ISection section : tabSections) {
                     if (section instanceof IDatabaseEditorContributorUser) {
                         IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) section).getContributor(contributorManager);
@@ -268,7 +269,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         ITabDescriptor selectedTab = properties.getSelectedTab();
         if (selectedTab != null) {
             final ISection[] tabSections = properties.getTabSections(selectedTab);
-            if (!CommonUtils.isEmpty(tabSections)) {
+            if (!ArrayUtils.isEmpty(tabSections)) {
                 for (ISection section : tabSections) {
                     IEditorActionBarContributor contributor = sectionContributors.get(section);
                     if (contributor != null) {
@@ -366,7 +367,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         TabContents currentTab = properties.getCurrentTab();
         if (currentTab != null) {
             ISection[] sections = currentTab.getSections();
-            if (CommonUtils.isEmpty(sections)) {
+            if (ArrayUtils.isEmpty(sections)) {
                 return null;
             } else if (sections.length == 1) {
                 return sections[0];

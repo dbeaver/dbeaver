@@ -29,7 +29,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 public class NavigateObjectHandler extends AbstractHandler {
 
@@ -60,7 +60,7 @@ public class NavigateObjectHandler extends AbstractHandler {
 
         IRegion curRegion = new Region(selection.getOffset(), 0);
         IHyperlink[] hyperLinks = hyperlinkDetector.detectHyperlinks(editor.getTextViewer(), curRegion, false);
-        return CommonUtils.isEmpty(hyperLinks) ? null : hyperLinks[0];
+        return ArrayUtils.isEmpty(hyperLinks) ? null : hyperLinks[0];
     }
 
 /*

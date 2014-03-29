@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.ArrayUtils;
 
 public class DataSourceConnectHandler extends DataSourceHandler
 {
@@ -66,7 +66,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
     {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
-            if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
+            if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
                 // Already connecting/disconnecting - just return
                 return;
             }
