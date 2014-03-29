@@ -157,4 +157,12 @@ class GridRowRenderer extends AbstractRenderer {
         width += level * GridRowRenderer.LEVEL_SPACING;
         return width;
     }
+
+    public static boolean isOverExpander(
+        int x, Object rowElement, int level)
+    {
+        int expandBegin = LEFT_MARGIN + level * LEVEL_SPACING;
+        int expandEnd = expandBegin + EXPANDED_BOUNDS.width;
+        return x >= expandBegin && x <= expandEnd;
+    }
 }
