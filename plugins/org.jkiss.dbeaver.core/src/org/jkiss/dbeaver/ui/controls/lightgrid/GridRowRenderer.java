@@ -19,10 +19,7 @@
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -30,17 +27,23 @@ import org.jkiss.dbeaver.ui.DBIcon;
  * Grid row header renderer.
  */
 class GridRowRenderer extends AbstractRenderer {
-    public static final int LEFT_MARGIN = 6;
-    public static final int RIGHT_MARGIN = 8;
-    public static final int IMAGE_SPACING = 5;
-    public static final int LEVEL_SPACING = 15;
 
-    private static final Image IMG_EXPAND = DBIcon.TREE_EXPAND.getImage();
-    private static final Image IMG_COLLAPSE = DBIcon.TREE_COLLAPSE.getImage();
+    static final Image IMG_EXPAND = DBIcon.TREE_EXPAND.getImage();
+    static final Image IMG_COLLAPSE = DBIcon.TREE_COLLAPSE.getImage();
+    static final Rectangle EXPANDED_BOUNDS = IMG_EXPAND.getBounds();
+
+    public static final int LEFT_MARGIN = 4;
+    public static final int RIGHT_MARGIN = 4;
+    public static final int IMAGE_SPACING = 5;
+    public static final int EXPANDER_SPACING = 2;
+    public static final int LEVEL_SPACING = EXPANDED_BOUNDS.width;
 
     private final Color DEFAULT_BACKGROUND;
     private final Color DEFAULT_FOREGROUND;
     private final Color DEFAULT_FOREGROUND_TEXT;
+
+    private int level;
+    private IGridContentProvider.ElementState state;
 
     public GridRowRenderer(LightGrid grid) {
         super(grid);
@@ -51,7 +54,7 @@ class GridRowRenderer extends AbstractRenderer {
 
     @Override
     public void paint(GC gc) {
-        String text = getHeaderText();
+        String text = grid.getLabelProvider().getText(cell.row);
 
         gc.setFont(getDisplay().getSystemFont());
 
@@ -85,13 +88,17 @@ class GridRowRenderer extends AbstractRenderer {
 
         int x = LEFT_MARGIN;
         if (level > 0) {
-//            Rectangle expBounds = IMG_EXPAND.getBounds();
-//            gc.drawImage(IMG_EXPAND, x, bounds.y + (bounds.height - expBounds.height) / 2);
-//            x += expBounds.width + IMAGE_SPACING;
             x += level * LEVEL_SPACING;
         }
+        if (state != IGridContentProvider.ElementState.NONE) {
+            Image expandImage = state == IGridContentProvider.ElementState.EXPANDED ? IMG_COLLAPSE : IMG_EXPAND;
+            gc.drawImage(expandImage, x, bounds.y + (bounds.height - EXPANDED_BOUNDS.height) / 2);
+            x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
+        } else if (grid.hasNodes()) {
+            x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
+        }
 
-        Image image = getHeaderImage();
+        Image image = grid.getLabelProvider().getImage(cell.row);
 
         if (image != null) {
             gc.drawImage(image, x, bounds.y + (bounds.height - image.getBounds().height) / 2);
@@ -109,25 +116,11 @@ class GridRowRenderer extends AbstractRenderer {
 
         gc.setForeground(foreground);
 
-
         int y = bounds.y;
         int selectionOffset = 0;
 
         y += (bounds.height - gc.stringExtent(text).y) / 2;
         gc.drawString(org.jkiss.dbeaver.ui.TextUtils.getShortString(grid.fontMetrics, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
-    }
-
-    @Nullable
-    private Image getHeaderImage() {
-        return grid.getLabelProvider().getImage(cell.row);
-    }
-
-    protected String getHeaderText() {
-        String text = grid.getLabelProvider().getText(cell.row);
-        if (text == null) {
-            text = String.valueOf(cell.row);
-        }
-        return text;
     }
 
     @Nullable
@@ -140,4 +133,28 @@ class GridRowRenderer extends AbstractRenderer {
         return grid.getLabelProvider().getForeground(cell.row);
     }
 
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    void setState(IGridContentProvider.ElementState state) {
+        this.state = state;
+    }
+
+    public int computeHeaderWidth(Object element, int level) {
+        int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
+        if (grid.hasNodes()) {
+            width += GridRowRenderer.EXPANDED_BOUNDS.width + EXPANDER_SPACING;
+        }
+        Image rowImage = grid.getLabelProvider().getImage(element);
+        if (rowImage != null) {
+            width += rowImage.getBounds().width;
+            width += GridRowRenderer.IMAGE_SPACING;
+        }
+        String rowText = grid.getLabelProvider().getText(element);
+        Point ext = grid.sizingGC.stringExtent(rowText);
+        width += ext.x;
+        width += level * GridRowRenderer.LEVEL_SPACING;
+        return width;
+    }
 }

@@ -2650,7 +2650,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return null;
         }
 
-        @Nullable
+        @NotNull
         @Override
         public String getText(Object element)
         {

@@ -45,7 +45,6 @@ public abstract class AbstractRenderer implements IGridRenderer
 
     /** The bounds the renderer paints on. */
     protected final Rectangle bounds = new Rectangle(0, 0, 0, 0);
-    protected int level;
 
     protected AbstractRenderer(LightGrid grid) {
         this.grid = grid;
@@ -60,15 +59,6 @@ public abstract class AbstractRenderer implements IGridRenderer
     public void setCell(GridCell cell)
     {
         this.cell = cell;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    @Override
-    public void setLevel(int level) {
-        this.level = level;
     }
 
     /**
