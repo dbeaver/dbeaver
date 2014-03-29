@@ -105,5 +105,4 @@ public interface IGridRenderer
 
     public void setCell(GridCell cell);
 
-    public void setLevel(int level);
 }

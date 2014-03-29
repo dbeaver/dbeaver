@@ -24,12 +24,13 @@ import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 
 public interface IGridLabelProvider extends IColorProvider, IFontProvider, ITooltipProvider {
 
-    @Nullable
+    @NotNull
     public String getText(Object element);
 
     @Nullable

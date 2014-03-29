@@ -61,7 +61,7 @@ public abstract class LightGrid extends Canvas {
      * *exactly* over the resizer.
      */
     private static final int COLUMN_RESIZER_THRESHOLD = 4;
-    private static final int DEFAULT_ROW_HEADER_WIDTH = 20;
+    private static final int DEFAULT_ROW_HEADER_WIDTH = 30;
     private static final int MAX_ROW_HEADER_WIDTH = 400;
 
 
@@ -81,14 +81,14 @@ public abstract class LightGrid extends Canvas {
         KEYBOARD,
     }
 
-    static class NestedRows {
+    static class GridNode {
         Object[] rows;
-        boolean expanded;
+        IGridContentProvider.ElementState state;
         int level;
 
-        private NestedRows(Object[] rows, boolean expanded, int level) {
+        private GridNode(Object[] rows, IGridContentProvider.ElementState state, int level) {
             this.rows = rows;
-            this.expanded = expanded;
+            this.state = state;
             this.level = level;
         }
     }
@@ -134,12 +134,12 @@ public abstract class LightGrid extends Canvas {
     private int maxColumnDepth = 0;
     private Object[] columnElements = new Object[0];
     private Object[] rowElements = new Object[0];
-    private final Map<Object, NestedRows> nestedRows = new IdentityHashMap<Object, NestedRows>();
+    private final Map<Object, GridNode> rowNodes = new IdentityHashMap<Object, GridNode>();
 
     private int maxColumnDefWidth = 1000;
 
-    private IGridRenderer columnHeaderRenderer;
-    private IGridRenderer rowHeaderRenderer;
+    private GridColumnRenderer columnHeaderRenderer;
+    private GridRowRenderer rowHeaderRenderer;
     private GridCellRenderer cellRenderer;
 
     /**
@@ -418,6 +418,10 @@ public abstract class LightGrid extends Canvas {
     @NotNull
     public abstract IGridLabelProvider getLabelProvider();
 
+    public boolean hasNodes() {
+        return !rowNodes.isEmpty();
+    }
+
     public void setMaxColumnDefWidth(int maxColumnDefWidth) {
         this.maxColumnDefWidth = maxColumnDefWidth;
     }
@@ -433,10 +437,9 @@ public abstract class LightGrid extends Canvas {
             Object[] children = contentProvider.getChildren(row);
             if (children != null) {
                 IGridContentProvider.ElementState state = contentProvider.getDefaultState(row);
-                boolean expanded = state == IGridContentProvider.ElementState.EXPANDED;
-                nestedRows.put(row, new NestedRows(children, expanded, level + 1));
+                rowNodes.put(row, new GridNode(children, state, level + 1));
                 children = collectRows(contentProvider, children, level + 1);
-                if (expanded) {
+                if (state == IGridContentProvider.ElementState.EXPANDED) {
                     if (rowsExpanded == null) {
                         rowsExpanded = new ArrayList<Object>(rows.length + children.length);
                         for (int k = 0; k <= i; k++) {
@@ -459,7 +462,7 @@ public abstract class LightGrid extends Canvas {
             this.removeAll();
         }
         IGridContentProvider contentProvider = getContentProvider();
-        this.nestedRows.clear();
+        this.rowNodes.clear();
         this.rowElements = collectRows(contentProvider, contentProvider.getElements(false), 0);
         this.displayedToolTipText = null;
 
@@ -494,7 +497,6 @@ public abstract class LightGrid extends Canvas {
                     columnElements[i] = columns.get(i).getElement();
                 }
             }
-            recalculateSizes();
 
             scrollValuesObsolete = true;
 
@@ -539,6 +541,7 @@ public abstract class LightGrid extends Canvas {
                 }
             }
         }
+        recalculateSizes();
 
         updateScrollbars();
     }
@@ -1710,19 +1713,9 @@ public abstract class LightGrid extends Canvas {
         // Row header width
         rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
         for (Object row : rowElements) {
-            int width = GridRowRenderer.LEFT_MARGIN + GridRowRenderer.RIGHT_MARGIN;
-            Image rowImage = getLabelProvider().getImage(row);
-            if (rowImage != null) {
-                width += rowImage.getBounds().width;
-                width += GridRowRenderer.IMAGE_SPACING;
-            }
-            String rowText = getLabelProvider().getText(row);
-            Point ext = sizingGC.stringExtent(rowText);
-            width += ext.x;
-            NestedRows nr = nestedRows.get(row);
-            if (nr != null) {
-                width += nr.level * GridRowRenderer.LEVEL_SPACING;
-            }
+            GridNode nr = rowNodes.get(row);
+            int width = rowHeaderRenderer.computeHeaderWidth(
+                row, nr == null ? 0 : nr.level);
             rowHeaderWidth = Math.max(rowHeaderWidth, width);
         }
         if (rowHeaderWidth > MAX_ROW_HEADER_WIDTH) {
@@ -1968,7 +1961,7 @@ public abstract class LightGrid extends Canvas {
         boolean isGridInFocus = this.isFocusControl();
         int curLevel = 0;
         int nestedRemains = -1;
-        final List<int[]> nestedStack = nestedRows == null ? null : new ArrayList<int[]>();
+        final List<int[]> nestedStack = rowNodes == null ? null : new ArrayList<int[]>();
 
         for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
 
@@ -2039,6 +2032,7 @@ public abstract class LightGrid extends Canvas {
 
                 x = 0;
 
+                GridNode rowNode = this.rowNodes.get(rowElements[row]);
                 if (rowHeaderVisible) {
 
                     rowHeaderRenderer.setSelected(cellInRowSelected);
@@ -2047,6 +2041,7 @@ public abstract class LightGrid extends Canvas {
                         rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, getItemHeight() + 1);
                         rowHeaderRenderer.setCell(testCell);
                         rowHeaderRenderer.setLevel(curLevel);
+                        rowHeaderRenderer.setState(rowNode == null ? IGridContentProvider.ElementState.NONE : rowNode.state);
                         rowHeaderRenderer.paint(gc);
                     }
                     x += rowHeaderWidth;
@@ -2068,14 +2063,13 @@ public abstract class LightGrid extends Canvas {
                     }
                 }
 
-                if (!nestedRows.isEmpty()) {
-                    NestedRows nr = nestedRows.get(rowElements[row]);
-                    if (nr != null) {
+                if (!this.rowNodes.isEmpty()) {
+                    if (rowNode != null) {
                         if (nestedRemains >= 0) {
                             nestedStack.add(new int[] {curLevel, nestedRemains});
                         }
-                        curLevel = nr.level;
-                        nestedRemains = nr.rows.length;
+                        curLevel = rowNode.level;
+                        nestedRemains = rowNode.rows.length;
                     }
                 }
 
