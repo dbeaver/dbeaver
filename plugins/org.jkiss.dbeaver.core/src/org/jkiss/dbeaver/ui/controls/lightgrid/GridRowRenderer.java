@@ -44,6 +44,7 @@ class GridRowRenderer extends AbstractRenderer {
 
     private int level;
     private IGridContentProvider.ElementState state;
+    private Object element;
 
     public GridRowRenderer(LightGrid grid) {
         super(grid);
@@ -52,9 +53,12 @@ class GridRowRenderer extends AbstractRenderer {
         DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
-    @Override
+    void setElement(Object element) {
+        this.element = element;
+    }
+
     public void paint(GC gc) {
-        String text = grid.getLabelProvider().getText(cell.row);
+        String text = grid.getLabelProvider().getText(element);
 
         gc.setFont(getDisplay().getSystemFont());
 
@@ -98,7 +102,7 @@ class GridRowRenderer extends AbstractRenderer {
             x += EXPANDED_BOUNDS.width + EXPANDER_SPACING;
         }
 
-        Image image = grid.getLabelProvider().getImage(cell.row);
+        Image image = grid.getLabelProvider().getImage(element);
 
         if (image != null) {
             gc.drawImage(image, x, bounds.y + (bounds.height - image.getBounds().height) / 2);
@@ -125,12 +129,12 @@ class GridRowRenderer extends AbstractRenderer {
 
     @Nullable
     protected Color getHeaderBackground() {
-        return grid.getLabelProvider().getBackground(cell.row);
+        return grid.getLabelProvider().getBackground(element);
     }
 
     @Nullable
     protected Color getHeaderForeground() {
-        return grid.getLabelProvider().getForeground(cell.row);
+        return grid.getLabelProvider().getForeground(element);
     }
 
     public void setLevel(int level) {
@@ -158,8 +162,7 @@ class GridRowRenderer extends AbstractRenderer {
         return width;
     }
 
-    public static boolean isOverExpander(
-        int x, Object rowElement, int level)
+    public static boolean isOverExpander(int x, int level)
     {
         int expandBegin = LEFT_MARGIN + level * LEVEL_SPACING;
         int expandEnd = expandBegin + EXPANDED_BOUNDS.width;

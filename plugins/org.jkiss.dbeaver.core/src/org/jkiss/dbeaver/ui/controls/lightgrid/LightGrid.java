@@ -429,7 +429,6 @@ public abstract class LightGrid extends Canvas {
 
     void collectRows(List<Object> result, List<GridNode> parents, @Nullable GridNode parent, Object[] rows, int level)
     {
-        List<Object> rowsExpanded = null;
         for (int i = 0; i < rows.length; i++) {
             Object row = rows[i];
             result.add(row);
@@ -706,6 +705,7 @@ public abstract class LightGrid extends Canvas {
         deselectAllCells();
     }
 
+    @NotNull
     public GridColumn getColumn(int index)
     {
         return columns.get(index);
@@ -901,6 +901,7 @@ public abstract class LightGrid extends Canvas {
      *
      * @return Returns the lineColor.
      */
+    @NotNull
     public Color getLineColor()
     {
         return lineColor;
@@ -2036,9 +2037,8 @@ public abstract class LightGrid extends Canvas {
 
                     rowHeaderRenderer.setSelected(cellInRowSelected);
                     if (y >= headerHeight) {
-                        testCell.row = rowElements[row];
                         rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, getItemHeight() + 1);
-                        rowHeaderRenderer.setCell(testCell);
+                        rowHeaderRenderer.setElement(rowElements[row]);
                         rowHeaderRenderer.setLevel(parentNode == null ? 0 : parentNode.level);
                         rowHeaderRenderer.setState(rowNode == null ? IGridContentProvider.ElementState.NONE : rowNode.state);
                         rowHeaderRenderer.paint(gc);
@@ -2095,7 +2095,6 @@ public abstract class LightGrid extends Canvas {
         }
 
         final Rectangle clientArea = getClientArea();
-        final GridCell cell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
         for (int i = 0, columnsSize = topColumns.size(); i < columnsSize; i++) {
             GridColumn column = topColumns.get(i);
             if (x > clientArea.width)
@@ -2104,11 +2103,10 @@ public abstract class LightGrid extends Canvas {
             int columnHeight = column.getHeaderHeight(false);
             y = 0;
             columnHeaderRenderer.setHover(hoveringColumn == column);
-            cell.col = column.getElement();
-            columnHeaderRenderer.setCell(cell);
+            columnHeaderRenderer.setElement(column.getElement());
 
             if (x + column.getWidth() >= 0) {
-                paintColumnsHeader(gc, column, cell, x, y, columnHeight, 0);
+                paintColumnsHeader(gc, column, x, y, columnHeight, 0);
             }
 
             x += column.getWidth();
@@ -2127,13 +2125,13 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
-    private void paintColumnsHeader(GC gc, @NotNull GridColumn column, @NotNull GridCell cell, int x, int y, int columnHeight, int level) {
-        cell.col = column.getElement();
+    private void paintColumnsHeader(GC gc, @NotNull GridColumn column, int x, int y, int columnHeight, int level) {
         List<GridColumn> children = column.getChildren();
         int paintHeight = columnHeight;
         if (CommonUtils.isEmpty(children)) {
             paintHeight = columnHeight * (maxColumnDepth - level + 1);
         }
+        columnHeaderRenderer.setElement(column.getElement());
         columnHeaderRenderer.setSelected(selectedColumns.contains(column));
         columnHeaderRenderer.setBounds(x, y, column.getWidth(), paintHeight);
         columnHeaderRenderer.paint(gc);
@@ -2142,7 +2140,7 @@ public abstract class LightGrid extends Canvas {
             level++;
             int childX = x;
             for (GridColumn child : children) {
-                paintColumnsHeader(gc, child, cell, childX, y + columnHeight, columnHeight, level);
+                paintColumnsHeader(gc, child, childX, y + columnHeight, columnHeight, level);
                 childX += child.getWidth();
             }
         }
@@ -2707,10 +2705,7 @@ public abstract class LightGrid extends Canvas {
                             GridNode node = rowNodes.get(rowElements[row]);
                             GridNode parentNode = parentNodes[row];
                             if (node != null && node.state != IGridContentProvider.ElementState.NONE) {
-                                if (GridRowRenderer.isOverExpander(
-                                    e.x,
-                                    rowElements[row],
-                                    parentNode == null ? 0 : parentNode.level))
+                                if (GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
                                 {
                                     // Toggle expander
                                     System.out.println("!!!!");
