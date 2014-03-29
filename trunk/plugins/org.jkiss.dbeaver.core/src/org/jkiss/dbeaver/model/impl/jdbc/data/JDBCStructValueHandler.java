@@ -48,6 +48,11 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
 
     public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
 
+    @Override
+    public int getFeatures() {
+        return FEATURE_READ_ONLY;
+    }
+
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
      */
