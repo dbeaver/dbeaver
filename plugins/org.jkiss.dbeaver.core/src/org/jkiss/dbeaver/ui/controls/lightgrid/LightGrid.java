@@ -709,7 +709,9 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
 
-        deselectAllCells();
+        selectedCells.clear();
+        updateSelectionCache();
+        redraw();
     }
 
     @NotNull
@@ -2715,7 +2717,7 @@ public abstract class LightGrid extends Canvas {
                                 if (GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
                                 {
                                     toggleRowState(row);
-                                    //return;
+                                    return;
                                 }
                             }
                         }
@@ -2817,6 +2819,9 @@ public abstract class LightGrid extends Canvas {
             rowElements = ArrayUtils.deleteArea(Object.class, rowElements, row + 1, deleteTo - 1);
             parentNodes = ArrayUtils.deleteArea(GridNode.class, parentNodes, row + 1, deleteTo - 1);
             node.state = IGridContentProvider.ElementState.COLLAPSED;
+            if (focusItem >= rowElements.length) {
+                focusItem = row;
+            }
         } else {
             // Expand node
             List<Object> result = new ArrayList<Object>();
@@ -2826,6 +2831,14 @@ public abstract class LightGrid extends Canvas {
             parentNodes = ArrayUtils.insertArea(GridNode.class, parentNodes, row + 1, parents.toArray());
             node.state = IGridContentProvider.ElementState.EXPANDED;
         }
+
+        for (Iterator<GridPos> iter = selectedCells.iterator(); iter.hasNext(); ) {
+            GridPos pos = iter.next();
+            if (pos.row > row) {
+                iter.remove();
+            }
+        }
+        updateSelectionCache();
         redraw();
     }
 
@@ -3599,17 +3612,6 @@ public abstract class LightGrid extends Canvas {
 
         this.columnScrolling = columnScrolling;
         scrollValuesObsolete = true;
-        redraw();
-    }
-
-    /**
-     * Deselects all selected cells in the receiver.
-     */
-    public void deselectAllCells()
-    {
-        checkWidget();
-        selectedCells.clear();
-        updateSelectionCache();
         redraw();
     }
 
