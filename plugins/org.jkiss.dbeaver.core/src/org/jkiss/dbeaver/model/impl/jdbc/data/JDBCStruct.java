@@ -86,7 +86,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
             Object[] attrValues = contents == null ? null : contents.getAttributes();
             if (type instanceof DBSEntity) {
                 DBSEntity entity = (DBSEntity)type;
-                Collection<? extends DBSEntityAttribute> entityAttributes = entity.getAttributes(session.getProgressMonitor());
+                Collection<? extends DBSEntityAttribute> entityAttributes = CommonUtils.safeCollection(entity.getAttributes(session.getProgressMonitor()));
                 int valueCount = attrValues == null ? 0 : attrValues.length;
                 if (attrValues != null && entityAttributes.size() != valueCount) {
                     log.warn("Number of entity attributes (" + entityAttributes.size() + ") differs from real values (" + valueCount + ")");
@@ -151,7 +151,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         values = null;
     }
 
-    @Nullable
+    @NotNull
     public String getTypeName()
     {
         return type.getTypeName();
@@ -159,17 +159,18 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
 
     public String getStringRepresentation()
     {
-        String str = stringRepresentation != null ? stringRepresentation.get() : null;
-        if (str == null) {
-            try {
-                str = makeStructString();
-                stringRepresentation = new SoftReference<String>(str);
-            } catch (SQLException e) {
-                log.error(e);
-                return contents.toString();
-            }
-        }
-        return str;
+        return getTypeName();
+//        String str = stringRepresentation != null ? stringRepresentation.get() : null;
+//        if (str == null) {
+//            try {
+//                str = makeStructString();
+//                stringRepresentation = new SoftReference<String>(str);
+//            } catch (SQLException e) {
+//                log.error(e);
+//                return contents.toString();
+//            }
+//        }
+//        return str;
     }
 
     private String makeStructString() throws SQLException

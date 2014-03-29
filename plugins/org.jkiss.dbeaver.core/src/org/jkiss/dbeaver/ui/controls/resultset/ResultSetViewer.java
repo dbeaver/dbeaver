@@ -113,8 +113,8 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: not-editable cells (struct owners in record mode)
  * TODO: keep changes flag/old value in a map to support nested attributes
- * TODO: structured rows support
  * TODO: fix cell editor. Save each nested attr change separately
  * TODO: ipatheditorinput issue
  */
@@ -171,6 +171,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private Color backgroundDeleted;
     private Color backgroundModified;
     private Color backgroundOdd;
+    private Color backgroundReadOnly;
     private final Color foregroundNull;
     private final Font boldFont;
 
@@ -908,6 +909,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
         this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
         this.backgroundOdd = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+        this.backgroundReadOnly = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
 
         this.spreadsheet.recalculateSizes();
     }
@@ -2605,6 +2607,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public Color getCellBackground(@NotNull GridCell cell)
         {
             RowData row = (RowData) (!recordMode ?  cell.row : cell.col);
+            DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
             boolean odd = row.visualNumber % 2 == 0;
 
             if (row.state == RowData.STATE_ADDED) {
@@ -2614,11 +2617,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 return backgroundDeleted;
             }
             if (row.changedValues != null) {
-                DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
-                column = column.getTopParent();
-                if (row.changedValues[column.getAttributeIndex()]) {
+                if (row.changedValues[attribute.getTopParent().getAttributeIndex()]) {
                     return backgroundModified;
                 }
+            }
+            if ((attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_READ_ONLY) != 0) {
+                return backgroundReadOnly;
             }
             if (!recordMode && odd && showOddRows) {
                 return backgroundOdd;
