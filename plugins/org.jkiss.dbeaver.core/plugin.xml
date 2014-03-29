@@ -1911,6 +1911,13 @@
                 value="255, 99, 71">
             <description>Deleted row background</description>
         </colorDefinition>
+        <colorDefinition
+                label="Read-only cell background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
+                value="240, 240, 240">
+            <description>Read-only cell background</description>
+        </colorDefinition>
 
         <colorDefinition
                 label="SQL keyword color"
