@@ -20,6 +20,10 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * Row data
@@ -42,6 +46,7 @@ public class RowData {
     public Object[] oldValues;
     @Nullable
     public boolean[] changedValues;
+    //public Map<DBDAttributeBinding, Object> changes = new IdentityHashMap<DBDAttributeBinding, Object>();
     // Use info
     @Nullable
     public Object info;

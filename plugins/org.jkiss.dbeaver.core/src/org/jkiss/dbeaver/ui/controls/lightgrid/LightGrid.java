@@ -2819,7 +2819,6 @@ public abstract class LightGrid extends Canvas {
             rowElements = ArrayUtils.deleteArea(Object.class, rowElements, row + 1, deleteTo - 1);
             parentNodes = ArrayUtils.deleteArea(GridNode.class, parentNodes, row + 1, deleteTo - 1);
             node.state = IGridContentProvider.ElementState.COLLAPSED;
-            focusItem = row;
         } else {
             // Expand node
             List<Object> result = new ArrayList<Object>();
@@ -2830,6 +2829,9 @@ public abstract class LightGrid extends Canvas {
             node.state = IGridContentProvider.ElementState.EXPANDED;
         }
 
+        if (focusItem > row) {
+            focusItem = row;
+        }
         for (Iterator<GridPos> iter = selectedCells.iterator(); iter.hasNext(); ) {
             GridPos pos = iter.next();
             if (pos.row > row) {

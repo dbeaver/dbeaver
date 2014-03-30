@@ -2544,8 +2544,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Object getCellValue(@NotNull GridCell cell, boolean formatString)
         {
-            DBDAttributeBinding column = (DBDAttributeBinding)(cell.col instanceof DBDAttributeBinding ? cell.col : cell.row);
-            RowData row = (RowData)(cell.col instanceof RowData ? cell.col : cell.row);
+            DBDAttributeBinding column = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
+            RowData row = (RowData)(recordMode ? cell.col : cell.row);
             int rowNum = row.visualNumber;
             Object value = getModel().getCellValue(row, column);
 
