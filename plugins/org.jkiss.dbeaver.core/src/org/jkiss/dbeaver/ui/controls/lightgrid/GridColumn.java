@@ -124,8 +124,9 @@ class GridColumn {
             return false;
         }
         int arrowEnd = bounds.width - rightMargin;
-        int arrowBegin = arrowEnd - GridColumnRenderer.getSortControlBounds().width;
-        return x >= arrowBegin && x <= arrowEnd;
+        Rectangle sortBounds = GridColumnRenderer.getSortControlBounds();
+        int arrowBegin = arrowEnd - sortBounds.width;
+        return x >= arrowBegin && x <= arrowEnd && y < bounds.y + sortBounds.height;
     }
 
     int getHeaderHeight(boolean includeChildren)
