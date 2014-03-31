@@ -173,19 +173,23 @@ public interface SQLDialect extends ICommentsSupport {
     boolean supportsQuotedMixedCase();
 
     boolean supportsSubqueries();
+
     @NotNull
     DBPIdentifierCase storesUnquotedCase();
+
     @NotNull
     DBPIdentifierCase storesQuotedCase();
 
     /**
      * Escapes string to make usable inside of SQL queries.
      * Basically it has to escape only ' character which delimits strings.
-     * @param string
-     * @return
+     * @param string string to escape
+     * @return escaped string
      */
+    @NotNull
     String escapeString(String string);
 
+    @NotNull
     MultiValueInsertMode getMultiValueInsertMode();
 
 }

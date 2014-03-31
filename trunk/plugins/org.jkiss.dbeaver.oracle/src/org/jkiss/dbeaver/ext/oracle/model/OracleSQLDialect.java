@@ -50,6 +50,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         return Collections.singleton("call");
     }
 
+    @NotNull
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
         return MultiValueInsertMode.GROUP_ROWS;

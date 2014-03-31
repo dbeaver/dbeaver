@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 
@@ -31,6 +32,7 @@ class MySQLDialect extends JDBCSQLDialect {
         //addSQLKeyword("STATISTICS");
     }
 
+    @NotNull
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
         return MultiValueInsertMode.GROUP_ROWS;
