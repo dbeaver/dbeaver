@@ -114,7 +114,6 @@ import java.util.List;
  * ResultSetViewer
  *
  * TODO: not-editable cells (struct owners in record mode)
- * TODO: keep changes flag/old value in a map to support nested attributes
  * TODO: fix cell editor. Save each nested attr change separately
  * TODO: ipatheditorinput issue
  */
@@ -2616,10 +2615,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (row.state == RowData.STATE_REMOVED) {
                 return backgroundDeleted;
             }
-            if (row.changedValues != null) {
-                if (row.changedValues[attribute.getTopParent().getAttributeIndex()]) {
-                    return backgroundModified;
-                }
+            if (row.changes != null && row.changes.containsKey(attribute)) {
+                return backgroundModified;
             }
             if ((attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_READ_ONLY) != 0) {
                 return backgroundReadOnly;
