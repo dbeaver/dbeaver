@@ -135,7 +135,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     {
         if (updateMetaData) {
             // Read locators' metadata
-            DBUtils.findValueLocators(session, metaColumns);
+            DBUtils.findValueLocators(session, metaColumns, rows);
         }
 
         final List<Object[]> tmpRows = rows;

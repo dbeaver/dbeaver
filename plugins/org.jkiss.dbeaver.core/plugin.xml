@@ -1915,7 +1915,7 @@
                 label="Read-only cell background"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background"
-                value="240, 240, 240">
+                value="245, 245, 245">
             <description>Read-only cell background</description>
         </colorDefinition>
 
