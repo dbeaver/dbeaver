@@ -445,14 +445,10 @@ public class ResultSetModel {
         return changesCount != 0;
     }
 
-    boolean isColumnReadOnly(int column)
-    {
-        return column < 0 || column >= visibleColumns.size() || isColumnReadOnly(visibleColumns.get(column));
-    }
-
     boolean isColumnReadOnly(DBDAttributeBinding column)
     {
-        if (column.getRowIdentifier() == null || !(column.getRowIdentifier().getEntity() instanceof DBSDataManipulator)) {
+        if (column.getRowIdentifier() == null || !(column.getRowIdentifier().getEntity() instanceof DBSDataManipulator) ||
+            (column.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_READ_ONLY) != 0) {
             return true;
         }
         DBSDataManipulator dataContainer = (DBSDataManipulator) column.getRowIdentifier().getEntity();
