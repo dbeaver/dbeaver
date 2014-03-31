@@ -18,10 +18,14 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -258,4 +262,57 @@ public final class SQLUtils {
         return null;
     }
 
+    public static void appendOrderString(@NotNull DBDDataFilter filter, @NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
+    {
+            // Construct ORDER BY
+        boolean hasOrder = false;
+        for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
+            if (hasOrder) query.append(',');
+            if (conditionTable != null) {
+                query.append(conditionTable).append('.');
+            }
+            query.append(DBUtils.getObjectFullName(co.getAttribute()));
+            if (co.isOrderDescending()) {
+                query.append(" DESC"); //$NON-NLS-1$
+            }
+            hasOrder = true;
+        }
+        if (!CommonUtils.isEmpty(filter.getOrder())) {
+            if (hasOrder) query.append(',');
+            query.append(filter.getOrder());
+        }
+    }
+
+    public static void appendConditionString(@NotNull DBDDataFilter filter, @NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
+    {
+        boolean hasWhere = false;
+        for (DBDAttributeConstraint constraint : filter.getConstraints()) {
+            String criteria = constraint.getCriteria();
+            if (CommonUtils.isEmpty(criteria)) {
+                continue;
+            }
+            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
+            hasWhere = true;
+            if (conditionTable != null) {
+                query.append(conditionTable).append('.');
+            }
+            query.append(DBUtils.getQuotedIdentifier(dataSource, constraint.getAttribute().getName()));
+            final char firstChar = criteria.trim().charAt(0);
+            if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
+                query.append('=').append(criteria);
+            } else {
+                query.append(' ').append(criteria);
+            }
+        }
+
+        if (!CommonUtils.isEmpty(filter.getWhere())) {
+            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
+            query.append(filter.getWhere());
+        }
+    }
+
+    public static void appendConditionString(DBDDataFilter filter, DBPDataSource dataSource, StringBuilder query)
+    {
+        appendConditionString(filter, dataSource, null, query);
+    }
 }

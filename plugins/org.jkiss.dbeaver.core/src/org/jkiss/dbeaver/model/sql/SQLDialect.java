@@ -174,6 +174,8 @@ public interface SQLDialect extends ICommentsSupport {
 
     boolean supportsSubqueries();
 
+    boolean supportsAliasInUpdate();
+
     @NotNull
     DBPIdentifierCase storesUnquotedCase();
 
