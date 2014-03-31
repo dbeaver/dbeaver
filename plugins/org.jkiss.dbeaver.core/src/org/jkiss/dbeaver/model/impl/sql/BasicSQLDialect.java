@@ -233,11 +233,13 @@ public class BasicSQLDialect implements SQLDialect {
         return DBPIdentifierCase.MIXED;
     }
 
+    @NotNull
     @Override
     public String escapeString(String string) {
         return string.replace("'", "''");
     }
 
+    @NotNull
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
         return MultiValueInsertMode.NOT_SUPPORTED;

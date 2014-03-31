@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
@@ -38,6 +39,7 @@ public class DB2SQLDialect extends JDBCSQLDialect {
         }
     }
 
+    @NotNull
     @Override
     public MultiValueInsertMode getMultiValueInsertMode()
     {
