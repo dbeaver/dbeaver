@@ -60,4 +60,9 @@ class OracleSQLDialect extends JDBCSQLDialect {
     public String[] getSingleLineComments() {
         return ORACLE_LINE_COMMENTS;
     }
+
+    @Override
+    public boolean supportsAliasInUpdate() {
+        return true;
+    }
 }

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -33,12 +34,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.code.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +55,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     implements DBSDataManipulator, DBPSaveableObject
 {
     static final Log log = LogFactory.getLog(JDBCTable.class);
+    public static final String DEFAULT_TABLE_ALIAS = "x";
 
     private boolean persisted;
 
@@ -123,7 +127,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         StringBuilder query = new StringBuilder(100);
         if (rowIdAttribute != null) {
             // If we have pseudo attributes then query gonna be more complex
-            tableAlias = "x";
+            tableAlias = DEFAULT_TABLE_ALIAS;
             query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
             query.append(",").append(rowIdAttribute.getQueryExpression().replace("$alias", tableAlias));
             if (rowIdAttribute.getAlias() != null) {
@@ -306,15 +310,26 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
-
+        String tableAlias = null;
+        SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
+        if (dialect.supportsAliasInUpdate()) {
+            tableAlias = DEFAULT_TABLE_ALIAS;
+        }
         // Make query
         StringBuilder query = new StringBuilder();
-        query.append("UPDATE ").append(getFullQualifiedName()).append(" SET "); //$NON-NLS-1$ //$NON-NLS-2$
+        query.append("UPDATE ").append(getFullQualifiedName());
+        if (tableAlias != null) {
+            query.append(' ').append(tableAlias);
+        }
+        query.append(" SET "); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
         for (DBSAttributeBase attribute : updateAttributes) {
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
+            if (tableAlias != null) {
+                query.append(tableAlias).append(dialect.getStructSeparator());
+            }
             query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
         }
         query.append(" WHERE "); //$NON-NLS-1$
@@ -322,6 +337,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
+            if (tableAlias != null) {
+                query.append(tableAlias).append(dialect.getStructSeparator());
+            }
             query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
         }
 
@@ -342,14 +360,27 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     {
         readRequiredMeta(session.getProgressMonitor());
 
+        String tableAlias = null;
+        SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
+        if (dialect.supportsAliasInUpdate()) {
+            tableAlias = DEFAULT_TABLE_ALIAS;
+        }
+
         // Make query
         StringBuilder query = new StringBuilder();
-        query.append("DELETE FROM ").append(getFullQualifiedName()).append(" WHERE "); //$NON-NLS-1$ //$NON-NLS-2$
+        query.append("DELETE FROM ").append(getFullQualifiedName());
+        if (tableAlias != null) {
+            query.append(' ').append(tableAlias);
+        }
+        query.append(" WHERE "); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
         for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
+            if (tableAlias != null) {
+                query.append(tableAlias).append(dialect.getStructSeparator());
+            }
             query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
         }
 
@@ -368,7 +399,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     {
         if (dataFilter != null && dataFilter.hasConditions()) {
             query.append(" WHERE "); //$NON-NLS-1$
-            dataFilter.appendConditionString(getDataSource(), tableAlias, query);
+            SQLUtils.appendConditionString(dataFilter, getDataSource(), tableAlias, query);
         }
     }
 
@@ -378,7 +409,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             // Construct ORDER BY
             if (dataFilter.hasOrdering()) {
                 query.append(" ORDER BY "); //$NON-NLS-1$
-                dataFilter.appendOrderString(getDataSource(), tableAlias, query);
+                SQLUtils.appendOrderString(dataFilter, getDataSource(), tableAlias, query);
             }
         }
     }

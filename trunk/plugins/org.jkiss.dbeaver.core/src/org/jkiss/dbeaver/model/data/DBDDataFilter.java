@@ -19,10 +19,6 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -146,75 +142,6 @@ public class DBDDataFilter {
         }
         return false;
     }
-
-    public void appendConditionString(DBPDataSource dataSource, StringBuilder query)
-    {
-        appendConditionString(dataSource, null, query);
-    }
-
-    public void appendConditionString(@NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
-    {
-        boolean hasWhere = false;
-        for (DBDAttributeConstraint constraint : constraints) {
-            String criteria = constraint.getCriteria();
-            if (CommonUtils.isEmpty(criteria)) {
-                continue;
-            }
-            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
-            hasWhere = true;
-            if (conditionTable != null) {
-                query.append(conditionTable).append('.');
-            }
-            query.append(DBUtils.getQuotedIdentifier(dataSource, constraint.getAttribute().getName()));
-            final char firstChar = criteria.trim().charAt(0);
-            if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
-                query.append('=').append(criteria);
-            } else {
-                query.append(' ').append(criteria);
-            }
-        }
-
-        if (!CommonUtils.isEmpty(where)) {
-            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
-            query.append(where);
-        }
-    }
-
-    public void appendOrderString(@NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
-    {
-            // Construct ORDER BY
-        boolean hasOrder = false;
-        for (DBDAttributeConstraint co : getOrderConstraints()) {
-            if (hasOrder) query.append(',');
-            if (conditionTable != null) {
-                query.append(conditionTable).append('.');
-            }
-            query.append(DBUtils.getObjectFullName(co.getAttribute()));
-            if (co.isOrderDescending()) {
-                query.append(" DESC"); //$NON-NLS-1$
-            }
-            hasOrder = true;
-        }
-        if (!CommonUtils.isEmpty(order)) {
-            if (hasOrder) query.append(',');
-            query.append(order);
-        }
-    }
-
-/*
-    public void appendAttributePath(@NotNull DBPDataSource dataSource, @NotNull StringBuilder query)
-    {
-        int insertPos = query.length();
-        boolean hasPrevIdentifier = false;
-        for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParent()) {
-            query.insert(insertPos, DBUtils.getQuotedIdentifier(dataSource, attribute.getName()));
-            if (hasPrevIdentifier) {
-                query.insert(insertPos, '.');
-            }
-            hasPrevIdentifier = true;
-        }
-    }
-*/
 
     public List<DBDAttributeConstraint> getOrderConstraints()
     {
