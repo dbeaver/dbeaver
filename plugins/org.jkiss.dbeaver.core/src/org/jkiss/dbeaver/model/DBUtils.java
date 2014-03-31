@@ -511,13 +511,12 @@ public final class DBUtils {
                         DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
                         if (rowIdentifier == null) {
                             DBCEntityIdentifier entityIdentifier = entity.getBestIdentifier(session.getProgressMonitor());
-                            if (entityIdentifier == null) {
-                                continue;
+                            if (entityIdentifier != null) {
+                                rowIdentifier = new DBDRowIdentifier(
+                                    ownerEntity,
+                                    entityIdentifier);
+                                locatorMap.put(ownerEntity, rowIdentifier);
                             }
-                            rowIdentifier = new DBDRowIdentifier(
-                                ownerEntity,
-                                entityIdentifier);
-                            locatorMap.put(ownerEntity, rowIdentifier);
                         }
                         column.initValueLocator(tableColumn, rowIdentifier);
                     }

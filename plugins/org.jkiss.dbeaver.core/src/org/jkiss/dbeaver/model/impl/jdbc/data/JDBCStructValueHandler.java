@@ -61,9 +61,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         JDBCStruct struct = (JDBCStruct) value;
-        return DBUtils.isNullValue(struct) ?
-                DBUtils.getDefaultValueDisplayString(null, format) :
-                struct.getStringRepresentation();
+        return struct.getStringRepresentation();
     }
 
     @Override

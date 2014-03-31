@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -160,19 +158,9 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     public String getStringRepresentation()
     {
         return getTypeName();
-//        String str = stringRepresentation != null ? stringRepresentation.get() : null;
-//        if (str == null) {
-//            try {
-//                str = makeStructString();
-//                stringRepresentation = new SoftReference<String>(str);
-//            } catch (SQLException e) {
-//                log.error(e);
-//                return contents.toString();
-//            }
-//        }
-//        return str;
     }
 
+/*
     private String makeStructString() throws SQLException
     {
         StringBuilder str = new StringBuilder(200);
@@ -201,6 +189,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         str.append(")");
         return str.toString();
     }
+*/
 
     @Override
     public DBSDataType getObjectDataType()
