@@ -336,7 +336,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         {
             DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
             switch (columnIndex) {
-                case 0: return constraint.getAttribute().getAttributeName();
+                case 0: return constraint.getAttribute().getName();
                 case 1: return String.valueOf(constraint.getAttribute().getAttributeIndex() + 1);
                 case 2: {
                     int orderPosition = constraint.getOrderPosition();

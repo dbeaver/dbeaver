@@ -197,7 +197,7 @@ public class ResultSetModel {
     {
         for (DBDAttributeBinding column : visibleColumns) {
             if ((table == null || column.getRowIdentifier().getEntity() == table) &&
-                column.getAttributeName().equals(columnName)) {
+                column.getName().equals(columnName)) {
                 return column;
             }
         }
@@ -245,12 +245,12 @@ public class ResultSetModel {
                 try {
                     curValue = ((DBDStructure) curValue).getAttributeValue(attr.getAttribute());
                 } catch (DBCException e) {
-                    log.warn("Error getting field [" + attr.getAttributeName() + "] value", e);
+                    log.warn("Error getting field [" + attr.getName() + "] value", e);
                     curValue = null;
                     break;
                 }
             } else {
-                log.debug("No structure value handler while trying to read nested attribute [" + attr.getAttributeName() + "]");
+                log.debug("No structure value handler while trying to read nested attribute [" + attr.getName() + "]");
                 curValue = null;
                 break;
             }
@@ -298,7 +298,7 @@ public class ResultSetModel {
                     try {
                         ownerValue = ((DBDStructure) ownerValue).getAttributeValue(ownerAttr.getAttribute());
                     } catch (DBCException e) {
-                        log.warn("Error getting field [" + ownerAttr.getAttributeName() + "] value", e);
+                        log.warn("Error getting field [" + ownerAttr.getName() + "] value", e);
                         return false;
                     }
                 }
@@ -320,7 +320,7 @@ public class ResultSetModel {
                         try {
                             oldValue = ((DBDStructure) ownerValue).getAttributeValue(attr.getAttribute());
                         } catch (DBCException e) {
-                            log.error("Error getting [" + attr.getAttributeName() + "] value", e);
+                            log.error("Error getting [" + attr.getName() + "] value", e);
                         }
                     } else {
                         log.warn("Value [" + ownerValue + "] edit is not supported");
@@ -347,7 +347,7 @@ public class ResultSetModel {
                     try {
                         ((DBDStructure) ownerValue).setAttributeValue(attr.getAttribute(), value);
                     } catch (DBCException e) {
-                        log.error("Error setting [" + attr.getAttributeName() + "] value", e);
+                        log.error("Error setting [" + attr.getName() + "] value", e);
                     }
                 } else {
                     log.warn("Value [" + ownerValue + "] edit is not supported");
