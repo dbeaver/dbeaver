@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.ref.SoftReference;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -59,21 +58,31 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
 
     public static final int MAX_ITEMS_IN_STRING = 100;
 
+    @NotNull
     private DBSDataType type;
+    @Nullable
     private Struct contents;
+    @NotNull
     private Map<DBSAttributeBase, Object> values;
-    private SoftReference<String> stringRepresentation;
+    @Nullable
+    private Object structData;
 
     private JDBCStruct()
     {
     }
 
-    public JDBCStruct(DBCSession session, DBSDataType type, Struct contents) throws DBCException
+    public JDBCStruct(DBCSession session, @NotNull DBSDataType type, @Nullable Struct contents) throws DBCException
     {
         this(session, type, contents, null);
     }
 
-    public JDBCStruct(DBCSession session, DBSDataType type, Struct contents, @Nullable ResultSetMetaData metaData) throws DBCException
+    public JDBCStruct(DBCSession session, @NotNull DBSDataType type, @Nullable Object data) throws DBCException
+    {
+        this(session, type, null, null);
+        this.structData = data;
+    }
+
+    public JDBCStruct(DBCSession session, @NotNull DBSDataType type, @Nullable Struct contents, @Nullable ResultSetMetaData metaData) throws DBCException
     {
         this.type = type;
         this.contents = contents;
@@ -131,6 +140,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         }
     }
 
+    @Nullable
     public Struct getValue() throws DBCException
     {
         return contents;
@@ -139,7 +149,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     @Override
     public boolean isNull()
     {
-        return contents == null;
+        return contents == null && structData == null;
     }
 
     @Override
@@ -157,6 +167,9 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
 
     public String getStringRepresentation()
     {
+        if (structData != null) {
+            return String.valueOf(structData);
+        }
         return getTypeName();
     }
 

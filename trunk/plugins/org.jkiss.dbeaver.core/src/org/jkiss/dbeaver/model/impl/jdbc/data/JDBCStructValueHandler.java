@@ -60,8 +60,11 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     @Override
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        JDBCStruct struct = (JDBCStruct) value;
-        return struct.getStringRepresentation();
+        if (value instanceof JDBCStruct) {
+            return ((JDBCStruct) value).getStringRepresentation();
+        } else {
+            return String.valueOf(value);
+        }
     }
 
     @Override
@@ -116,7 +119,8 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
         } else if (object instanceof Struct) {
             return new JDBCStruct(session, dataType, (Struct) object);
         } else {
-            throw new DBCException("Unsupported struct type: " + object.getClass().getName());
+//            log.warn("Unsupported struct type: " + object.getClass().getName());
+            return new JDBCStruct(session, dataType, object);
         }
     }
 

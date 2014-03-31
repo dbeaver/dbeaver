@@ -421,11 +421,14 @@ public class ResultSetModel {
 //                    singleSourceCells = false;
 //                    break;
 //                }
-                if (sourceTable == null) {
-                    sourceTable = column.getRowIdentifier().getEntity();
-                } else if (sourceTable != column.getRowIdentifier().getEntity()) {
-                    singleSourceCells = false;
-                    break;
+                DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
+                if (rowIdentifier != null) {
+                    if (sourceTable == null) {
+                        sourceTable = rowIdentifier.getEntity();
+                    } else if (sourceTable != rowIdentifier.getEntity()) {
+                        singleSourceCells = false;
+                        break;
+                    }
                 }
             }
         }

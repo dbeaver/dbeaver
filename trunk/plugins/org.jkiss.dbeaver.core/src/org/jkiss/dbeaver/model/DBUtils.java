@@ -495,7 +495,8 @@ public final class DBUtils {
 
     public static void findValueLocators(
         DBCSession session,
-        DBDAttributeBinding[] bindings)
+        DBDAttributeBinding[] bindings,
+        List<Object[]> rows)
     {
         Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<DBSEntity, DBDRowIdentifier>();
         try {
@@ -523,7 +524,7 @@ public final class DBUtils {
                     }
                 }
 
-                column.readNestedBindings(session);
+                column.readNestedBindings(session, rows);
             }
         }
         catch (DBException e) {
