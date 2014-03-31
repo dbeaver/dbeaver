@@ -139,14 +139,14 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     @Override
     public boolean isNull()
     {
-        return contents == null || CommonUtils.isEmpty(values);
+        return contents == null;
     }
 
     @Override
     public void release()
     {
         contents = null;
-        values = null;
+        values.clear();
     }
 
     @NotNull

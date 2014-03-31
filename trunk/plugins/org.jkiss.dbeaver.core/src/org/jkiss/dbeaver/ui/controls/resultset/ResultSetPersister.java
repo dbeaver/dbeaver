@@ -104,16 +104,11 @@ class ResultSetPersister {
 
         // Prepare rows
         for (RowData row : changedRows) {
-            if (row.changedValues == null) {
+            if (row.changes == null || row.changes.isEmpty()) {
                 continue;
             }
-            for (int i = 0; i < row.changedValues.length; i++) {
-                if (row.changedValues[i]) {
-                    DBDAttributeBinding metaColumn = viewer.getModel().getColumn(i);
-                    rowIdentifiers.put(row, metaColumn.getRowIdentifier());
-                    break;
-                }
-            }
+            DBDAttributeBinding changedAttr = row.changes.keySet().iterator().next();
+            rowIdentifiers.put(row, changedAttr.getRowIdentifier());
         }
     }
 
@@ -160,19 +155,18 @@ class ResultSetPersister {
     {
         // Make statements
         for (RowData row : this.rowIdentifiers.keySet()) {
-            if (row.changedValues == null) continue;
+            if (row.changes == null) continue;
 
             DBDRowIdentifier rowIdentifier = this.rowIdentifiers.get(row);
             DBSEntity table = rowIdentifier.getEntity();
             {
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, row, table);
                 // Updated columns
-                for (int i = 0; i < row.changedValues.length; i++) {
-                    if (row.changedValues[i]) {
-                        DBDAttributeBinding metaColumn = viewer.getModel().getColumn(i);
-                        statement.updateAttributes.add(
-                            new DBDAttributeValue(metaColumn.getAttribute(), row.values[i]));
-                    }
+                for (DBDAttributeBinding changedAttr : row.changes.keySet()) {
+                    statement.updateAttributes.add(
+                        new DBDAttributeValue(
+                            changedAttr.getAttribute(),
+                            model.getCellValue(row, changedAttr)));
                 }
                 // Key columns
                 Collection<? extends DBCAttributeMetaData> idColumns = rowIdentifier.getEntityIdentifier().getResultSetColumns();
@@ -185,8 +179,8 @@ class ResultSetPersister {
                     int attributeIndex = metaColumn.getAttributeIndex();
                     Object keyValue = row.values[attributeIndex];
                     // Try to find old key oldValue
-                    if (row.oldValues != null && row.oldValues[attributeIndex] != null) {
-                        keyValue = row.oldValues[attributeIndex];
+                    if (row.changes != null && row.changes.containsKey(metaColumn)) {
+                        keyValue = row.changes.containsKey(metaColumn);
                     }
                     statement.keyAttributes.add(new DBDAttributeValue(metaColumn.getAttribute(), keyValue));
                 }
@@ -214,16 +208,13 @@ class ResultSetPersister {
     {
         collectChanges();
         for (RowData row : changedRows) {
-            if (row.changedValues != null && row.oldValues != null) {
-                boolean[] changedValues = row.changedValues;
-                for (int i = 0; i < changedValues.length; i++) {
-                    if (changedValues[i]) {
-                        ResultSetModel.releaseValue(row.values[i]);
-                        row.values[i] = row.oldValues[i];
-                    }
+            if (row.changes != null) {
+                for (Map.Entry<DBDAttributeBinding, Object> changedValue : row.changes.entrySet()) {
+                    Object curValue = model.getCellValue(row, changedValue.getKey());
+                    ResultSetModel.releaseValue(curValue);
+                    model.updateCellValue(row, changedValue.getKey(), changedValue.getValue(), false);
                 }
-                row.changedValues = null;
-                row.oldValues = null;
+                row.changes = null;
             }
         }
 
@@ -249,8 +240,7 @@ class ResultSetPersister {
             for (DataStatementInfo stat : updateStatements) {
                 if (stat.executed && stat.row == row) {
                     reflectKeysUpdate(stat);
-                    row.changedValues = null;
-                    row.oldValues = null;
+                    row.changes = null;
                     break;
                 }
             }
