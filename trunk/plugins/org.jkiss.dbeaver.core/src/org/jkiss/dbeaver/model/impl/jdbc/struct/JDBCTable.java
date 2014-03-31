@@ -275,7 +275,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName()));
+            query.append(getAttributeName(attribute));
         }
         query.append(") VALUES ("); //$NON-NLS-1$
         hasKey = false;
@@ -315,15 +315,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBSAttributeBase attribute : updateAttributes) {
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
+            query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
         }
         query.append(" WHERE "); //$NON-NLS-1$
         hasKey = false;
         for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            String attrName = getAttributeName(attribute);
-            query.append(attrName).append("=?"); //$NON-NLS-1$
+            query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
@@ -362,7 +361,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     private String getAttributeName(@NotNull DBSAttributeBase attribute) {
         // Do not quote pseudo attribute name
-        return attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName());
+        return attribute.isPseudoAttribute() ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute);
     }
 
     private void appendQueryConditions(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
@@ -418,7 +417,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     /**
      * Reads and caches metadata which is required for data requests
      * @param monitor progress monitor
-     * @throws DBException on error
+     * @throws DBCException on error
      */
     private void readRequiredMeta(DBRProgressMonitor monitor)
         throws DBCException
