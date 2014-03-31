@@ -50,7 +50,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
 
     @Override
     public int getFeatures() {
-        return FEATURE_READ_ONLY;
+        return FEATURE_COMPOSITE;
     }
 
     /**

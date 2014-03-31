@@ -2619,7 +2619,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (row.changes != null && row.changes.containsKey(attribute)) {
                 return backgroundModified;
             }
-            if ((attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_READ_ONLY) != 0) {
+            if ((attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
                 return backgroundReadOnly;
             }
             if (!recordMode && odd && showOddRows) {
