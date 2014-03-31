@@ -107,11 +107,14 @@ public class ResultSetModel {
     public void resetCellValue(GridCell cell)
     {
         RowData row = (RowData) cell.row;
-        int columnIndex = ((DBDAttributeBinding) cell.col).getTopParent().getAttributeIndex();
-        if (columnIndex >= 0 && row.oldValues != null && row.changedValues != null && row.changedValues[columnIndex]) {
-            resetValue(row.values[columnIndex]);
-            row.values[columnIndex] = row.oldValues[columnIndex];
-            row.changedValues[columnIndex] = false;
+        DBDAttributeBinding attr = ((DBDAttributeBinding) cell.col);
+        if (row.changes != null && row.changes.containsKey(attr)) {
+            resetValue(getCellValue(row, attr));
+            updateCellValue(row, attr, row.changes.get(cell.col), false);
+            row.changes.remove(cell.col);
+            if (row.changes.isEmpty()) {
+                row.changes = null;
+            }
             if (row.state == RowData.STATE_NORMAL) {
                 changesCount--;
             }
@@ -124,10 +127,8 @@ public class ResultSetModel {
         for (RowData row : curRows) {
             if (row.state != RowData.STATE_NORMAL) {
                 changesCount++;
-            } else if (row.changedValues != null) {
-                for (boolean cv : row.changedValues) {
-                    if (cv) changesCount++;
-                }
+            } else if (row.changes != null) {
+                changesCount += row.changes.size();
             }
         }
     }
@@ -267,6 +268,11 @@ public class ResultSetModel {
      */
     public boolean updateCellValue(RowData row, DBDAttributeBinding attr, @Nullable Object value)
     {
+        return updateCellValue(row, attr, value, true);
+    }
+
+    public boolean updateCellValue(RowData row, DBDAttributeBinding attr, @Nullable Object value, boolean updateChanges)
+    {
         int depth = attr.getLevel();
         int rootIndex;
         if (depth == 0) {
@@ -307,20 +313,32 @@ public class ResultSetModel {
             // Do not add edited cell for new/deleted rows
             if (row.state == RowData.STATE_NORMAL) {
                 // Save old value
-                boolean cellWasEdited = row.oldValues != null && row.changedValues != null && row.changedValues[rootIndex];
-                Object oldOldValue = !cellWasEdited ? null : row.oldValues[rootIndex];
+                Object oldValue = rootValue;
+                if (ownerValue != null) {
+                    oldValue = null;
+                    if (ownerValue instanceof DBDStructure) {
+                        try {
+                            oldValue = ((DBDStructure) ownerValue).getAttributeValue(attr.getAttribute());
+                        } catch (DBCException e) {
+                            log.error("Error getting [" + attr.getAttributeName() + "] value", e);
+                        }
+                    } else {
+                        log.warn("Value [" + ownerValue + "] edit is not supported");
+                    }
+                }
+
+                boolean cellWasEdited = row.changes != null && row.changes.containsKey(attr);
+                Object oldOldValue = !cellWasEdited ? null : row.changes.get(attr);
                 if (cellWasEdited && !CommonUtils.equalObjects(rootValue, oldOldValue)) {
                     // Value rewrite - release previous stored old value
-                    releaseValue(rootValue);
-                } else {
-                    if (row.oldValues == null || row.changedValues == null) {
-                        row.oldValues = new Object[row.values.length];
-                        row.changedValues = new boolean[row.values.length];
+                    releaseValue(oldValue);
+                } else if (updateChanges) {
+                    if (row.changes == null) {
+                        row.changes = new IdentityHashMap<DBDAttributeBinding, Object>();
                     }
-                    row.oldValues[rootIndex] = rootValue;
-                    row.changedValues[rootIndex] = true;
+                    row.changes.put(attr, oldValue);
                 }
-                if (row.state == RowData.STATE_NORMAL && !cellWasEdited) {
+                if (updateChanges && row.state == RowData.STATE_NORMAL && !cellWasEdited) {
                     changesCount++;
                 }
             }
@@ -399,10 +417,10 @@ public class ResultSetModel {
             this.singleSourceCells = true;
             DBSEntity sourceTable = null;
             for (DBDAttributeBinding column : visibleColumns) {
-                if (isColumnReadOnly(column)) {
-                    singleSourceCells = false;
-                    break;
-                }
+//                if (isColumnReadOnly(column)) {
+//                    singleSourceCells = false;
+//                    break;
+//                }
                 if (sourceTable == null) {
                     sourceTable = column.getRowIdentifier().getEntity();
                 } else if (sourceTable != column.getRowIdentifier().getEntity()) {
@@ -545,8 +563,8 @@ public class ResultSetModel {
         for (Object value : row.values) {
             releaseValue(value);
         }
-        if (row.oldValues != null) {
-            for (Object oldValue : row.oldValues) {
+        if (row.changes != null) {
+            for (Object oldValue : row.changes.values()) {
                 releaseValue(oldValue);
             }
         }

@@ -42,11 +42,11 @@ public class RowData {
     @NotNull
     public Object[] values;
     // Original column values
+    //public Object[] oldValues;
+    //@Nullable
+    //public boolean[] changedValues;
     @Nullable
-    public Object[] oldValues;
-    @Nullable
-    public boolean[] changedValues;
-    //public Map<DBDAttributeBinding, Object> changes = new IdentityHashMap<DBDAttributeBinding, Object>();
+    public Map<DBDAttributeBinding, Object> changes;
     // Use info
     @Nullable
     public Object info;
@@ -62,13 +62,18 @@ public class RowData {
     }
 
     public boolean isChanged() {
-        if (changedValues != null) {
-            for (boolean cv : changedValues) {
-                if (cv) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return changes != null && !changes.isEmpty();
     }
+
+/*
+    public void updateValue(DBDAttributeBinding attribute, Object newValue) {
+        if (changes == null) {
+            changes = new IdentityHashMap<DBDAttributeBinding, Object>();
+        }
+        if (changes.containsKey(attribute)) {
+            return;
+        }
+    }
+*/
+
 }
