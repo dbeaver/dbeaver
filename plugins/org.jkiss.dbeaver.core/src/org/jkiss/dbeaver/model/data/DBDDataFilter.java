@@ -165,7 +165,7 @@ public class DBDDataFilter {
             if (conditionTable != null) {
                 query.append(conditionTable).append('.');
             }
-            query.append(DBUtils.getQuotedIdentifier(dataSource, constraint.getAttribute().getAttributeName()));
+            query.append(DBUtils.getQuotedIdentifier(dataSource, constraint.getAttribute().getName()));
             final char firstChar = criteria.trim().charAt(0);
             if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
                 query.append('=').append(criteria);
@@ -186,19 +186,10 @@ public class DBDDataFilter {
         boolean hasOrder = false;
         for (DBDAttributeConstraint co : getOrderConstraints()) {
             if (hasOrder) query.append(',');
-            boolean hasPrevIdentifier = false;
             if (conditionTable != null) {
-                query.append(conditionTable);
-                hasPrevIdentifier = true;
+                query.append(conditionTable).append('.');
             }
-            int insertPos = query.length();
-            for (DBDAttributeBinding attribute = co.getAttribute(); attribute != null; attribute = attribute.getParent()) {
-                query.insert(insertPos, DBUtils.getQuotedIdentifier(dataSource, attribute.getAttributeName()));
-                if (hasPrevIdentifier) {
-                    query.insert(insertPos, '.');
-                }
-                hasPrevIdentifier = true;
-            }
+            query.append(DBUtils.getObjectFullName(co.getAttribute()));
             if (co.isOrderDescending()) {
                 query.append(" DESC"); //$NON-NLS-1$
             }
@@ -209,6 +200,21 @@ public class DBDDataFilter {
             query.append(order);
         }
     }
+
+/*
+    public void appendAttributePath(@NotNull DBPDataSource dataSource, @NotNull StringBuilder query)
+    {
+        int insertPos = query.length();
+        boolean hasPrevIdentifier = false;
+        for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParent()) {
+            query.insert(insertPos, DBUtils.getQuotedIdentifier(dataSource, attribute.getName()));
+            if (hasPrevIdentifier) {
+                query.insert(insertPos, '.');
+            }
+            hasPrevIdentifier = true;
+        }
+    }
+*/
 
     public List<DBDAttributeConstraint> getOrderConstraints()
     {

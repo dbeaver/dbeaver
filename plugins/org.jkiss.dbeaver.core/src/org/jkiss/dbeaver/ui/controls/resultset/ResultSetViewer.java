@@ -113,8 +113,9 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: collections and ANY types support
+ * TODO: persist structures
  * TODO: not-editable cells (struct owners in record mode)
- * TODO: fix cell editor. Save each nested attr change separately
  * TODO: ipatheditorinput issue
  */
 public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable
@@ -1474,7 +1475,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 String hideTitle;
                 if (selectedColumns.size() == 1) {
                     DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
-                    hideTitle = "Hide column '" + columnToHide.getAttributeName() + "'";
+                    hideTitle = "Hide column '" + columnToHide.getName() + "'";
                 } else {
                     hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
                 }
@@ -1526,7 +1527,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
                     DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
-                    metaColumn.getAttributeName()))
+                    metaColumn.getName()))
                 {
                     return;
                 }
@@ -2439,7 +2440,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName)
         {
             for (DBDAttributeBinding column : model.getVisibleColumns()) {
-                if (column.getMetaAttribute().getEntity() == entity && column.getAttributeName().equals(columnName)) {
+                if (column.getMetaAttribute().getEntity() == entity && column.getName().equals(columnName)) {
                     return column.getMetaAttribute();
                 }
             }
@@ -2659,7 +2660,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
                 DBCAttributeMetaData attribute = attributeBinding.getMetaAttribute();
                 if (CommonUtils.isEmpty(attribute.getLabel())) {
-                    return attributeBinding.getAttributeName();
+                    return attributeBinding.getName();
                 } else {
                     return attribute.getLabel();
                 }
@@ -2692,7 +2693,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (element instanceof DBDAttributeBinding) {
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
-                String name = attributeBinding.getAttributeName();
+                String name = attributeBinding.getName();
                 String typeName = DBUtils.getFullTypeName(attributeBinding.getMetaAttribute());
                 return name + ": " + typeName;
             }
@@ -2878,7 +2879,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private final DBDAttributeBinding column;
         public FilterByColumnAction(String pattern, FilterByColumnType type, DBDAttributeBinding column)
         {
-            super(column.getAttributeName() + " " + translateFilterPattern(pattern, type, column), type.icon);
+            super(column.getName() + " " + translateFilterPattern(pattern, type, column), type.icon);
             this.pattern = pattern;
             this.type = type;
             this.column = column;
@@ -2903,7 +2904,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private final DBDAttributeBinding column;
         public FilterResetColumnAction(DBDAttributeBinding column)
         {
-            super("Remove filter for '" + column.getAttributeName() + "'", DBIcon.REVERT.getImageDescriptor());
+            super("Remove filter for '" + column.getName() + "'", DBIcon.REVERT.getImageDescriptor());
             this.column = column;
         }
 

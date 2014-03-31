@@ -459,6 +459,7 @@ public final class DBUtils {
     public static DBDAttributeBinding getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta, int attributeIndex)
     {
         return new DBDAttributeBinding(
+            session.getDataSource(),
             attributeMeta,
             findValueHandler(session, attributeMeta),
             attributeIndex);
@@ -986,8 +987,19 @@ public final class DBUtils {
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullQualifiedName();
+        } else if (object instanceof DBSObject) {
+            return getObjectFullName(((DBSObject) object).getDataSource(), object);
         } else {
             return object.getName();
+        }
+    }
+
+    public static String getObjectFullName(@NotNull DBPDataSource dataSource, @NotNull DBPNamedObject object)
+    {
+        if (object instanceof DBPQualifiedObject) {
+            return ((DBPQualifiedObject) object).getFullQualifiedName();
+        } else {
+            return getQuotedIdentifier(dataSource, object.getName());
         }
     }
 
