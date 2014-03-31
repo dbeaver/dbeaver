@@ -252,6 +252,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsAliasInUpdate() {
+        return false;
+    }
+
+    @Override
     public Pair<String, String> getMultiLineComments()
     {
         return multiLineComments;

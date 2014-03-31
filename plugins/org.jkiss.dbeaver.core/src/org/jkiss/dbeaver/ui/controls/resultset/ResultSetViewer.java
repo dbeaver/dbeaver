@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -114,7 +115,6 @@ import java.util.List;
  * ResultSetViewer
  *
  * TODO: collections and ANY types support
- * TODO: persist structures
  * TODO: not-editable cells (struct owners in record mode)
  * TODO: ipatheditorinput issue
  */
@@ -461,7 +461,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         String condition = filtersText.getText();
         StringBuilder currentCondition = new StringBuilder();
-        model.getDataFilter().appendConditionString(dataSource, currentCondition);
+        SQLUtils.appendConditionString(model.getDataFilter(), dataSource, currentCondition);
         if (currentCondition.toString().trim().equals(condition.trim())) {
             // The same
             return;
@@ -478,7 +478,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
             StringBuilder where = new StringBuilder();
-            model.getDataFilter().appendConditionString(dataSource, where);
+            SQLUtils.appendConditionString(model.getDataFilter(), dataSource, where);
             String whereCondition = where.toString().trim();
             filtersText.setText(whereCondition);
             if (!whereCondition.isEmpty()) {

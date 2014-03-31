@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -273,11 +274,11 @@ public class SQLQueryJob extends DataSourceJob
             modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS);
             if (dataFilter.hasConditions()) {
                 modifiedQuery.append(" WHERE ");
-                dataFilter.appendConditionString(getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
+                SQLUtils.appendConditionString(dataFilter, getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
             }
             if (dataFilter.hasOrdering()) {
                 modifiedQuery.append(" ORDER BY "); //$NON-NLS-1$
-                dataFilter.appendOrderString(getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
+                SQLUtils.appendOrderString(dataFilter, getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
             }
             sqlQuery = modifiedQuery.toString();
         }
