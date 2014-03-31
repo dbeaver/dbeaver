@@ -69,6 +69,7 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
         this.level = (parent == null ? 0 : parent.level + 1);
     }
 
+    @NotNull
     public DBPDataSource getDataSource() {
         return dataSource;
     }
@@ -163,14 +164,12 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
 
     @NotNull
     public DBDAttributeBinding getTopParent() {
-        if (parent == null) {
-            return this;
-        }
-        for (DBDAttributeBinding binding = parent; ;binding = binding.parent) {
+        for (DBDAttributeBinding binding = this; binding != null ;binding = binding.parent) {
             if (binding.parent == null) {
                 return binding;
             }
         }
+        return this;
     }
 
     /**
@@ -186,7 +185,7 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
         this.rowIdentifier = rowIdentifier;
     }
 
-    public void readNestedBindings(@NotNull DBCSession session) throws DBException {
+    public void readNestedBindings(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
         DBSAttributeBase attribute = getAttribute();
         switch (attribute.getDataKind()) {
             case STRUCT:
@@ -195,15 +194,23 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
                 if (dataType instanceof DBSEntity) {
                     Collection<? extends DBSEntityAttribute> nestedAttributes = ((DBSEntity) dataType).getAttributes(session.getProgressMonitor());
                     if (nestedAttributes != null && !nestedAttributes.isEmpty()) {
-                        createNestedBindings(session, nestedAttributes);
+                        createNestedBindings(session, nestedAttributes, rows);
+                        return;
                     }
+                }
+                // Data type was not resolved - let's threat it as ANY
+            case ANY:
+                // Nested binding must be resolved for each value
+                if (!rows.isEmpty()) {
+                    // Analyse all read values
+                    System.out.println(getName() + " -> ANY");
                 }
                 break;
         }
 
     }
 
-    private void createNestedBindings(DBCSession session, Collection<? extends DBSEntityAttribute> nestedAttributes) throws DBException {
+    private void createNestedBindings(DBCSession session, Collection<? extends DBSEntityAttribute> nestedAttributes, List<Object[]> rows) throws DBException {
         nestedBindings = new ArrayList<DBDAttributeBinding>();
         int nestedIndex = 0;
         for (DBSEntityAttribute nestedAttr : nestedAttributes) {
@@ -211,7 +218,7 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
             DBDValueHandler nestedHandler = DBUtils.findValueHandler(session, nestedAttr);
             DBDAttributeBinding nestedBinding = new DBDAttributeBinding(dataSource, this, nestedMeta, nestedHandler, nestedIndex);
             nestedBinding.initValueLocator(nestedAttr, rowIdentifier);
-            nestedBinding.readNestedBindings(session);
+            nestedBinding.readNestedBindings(session, rows);
             nestedBindings.add(nestedBinding);
             nestedIndex++;
         }
