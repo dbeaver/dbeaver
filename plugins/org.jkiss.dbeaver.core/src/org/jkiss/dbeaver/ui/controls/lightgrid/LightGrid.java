@@ -260,6 +260,7 @@ public abstract class LightGrid extends Canvas {
 
     GC sizingGC;
     FontMetrics fontMetrics;
+    Font normalFont;
 
     @NotNull
     private Color lineColor;
@@ -369,7 +370,8 @@ public abstract class LightGrid extends Canvas {
 
         sizingGC = new GC(this);
         fontMetrics = sizingGC.getFontMetrics();
-        columnHeaderRenderer = new GridColumnRenderer(this);
+        normalFont = getFont();
+         columnHeaderRenderer = new GridColumnRenderer(this);
         rowHeaderRenderer = new GridRowRenderer(this);
         cellRenderer = new GridCellRenderer(this);
 
@@ -3926,6 +3928,7 @@ public abstract class LightGrid extends Canvas {
         super.setFont(font);
         sizingGC.setFont(font);
         fontMetrics = sizingGC.getFontMetrics();
+        normalFont = font;
     }
 
     /**

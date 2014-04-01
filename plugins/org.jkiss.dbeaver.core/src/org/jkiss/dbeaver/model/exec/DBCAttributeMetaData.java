@@ -103,6 +103,7 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
      * @return list of foreign keys. List can be empty or result can be null if this column is not a reference
      * @throws DBCException on any DB error  @param monitor
      */
-    List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor) throws DBException;
+    @NotNull
+    List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

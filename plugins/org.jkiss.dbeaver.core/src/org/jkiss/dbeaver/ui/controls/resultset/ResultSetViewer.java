@@ -75,10 +75,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
@@ -2565,6 +2562,17 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
+        public int getCellState(@NotNull GridCell cell) {
+            int state = STATE_NONE;
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
+            List<DBSEntityReferrer> referrers = attr.getReferrers();
+            if (referrers != null && !referrers.isEmpty()) {
+                state |= STATE_LINK;
+            }
+            return state;
+        }
+
+        @Override
         public void dispose()
         {
         }
@@ -2578,18 +2586,18 @@ public class ResultSetViewer extends Viewer
         @Override
         public Object getCellValue(@NotNull GridCell cell, boolean formatString)
         {
-            DBDAttributeBinding column = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
             RowData row = (RowData)(recordMode ? cell.col : cell.row);
             int rowNum = row.visualNumber;
-            Object value = getModel().getCellValue(row, column);
+            Object value = getModel().getCellValue(row, attr);
 
             if (rowNum > 0 && rowNum == model.getRowCount() - 1 && (recordMode || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
                 readNextSegment();
             }
 
             if (formatString) {
-                return column.getValueHandler().getValueDisplayString(
-                    column.getAttribute(),
+                return attr.getValueHandler().getValueDisplayString(
+                    attr.getAttribute(),
                     value,
                     DBDDisplayFormat.UI);
             } else {
@@ -2604,12 +2612,7 @@ public class ResultSetViewer extends Viewer
             if (!showCelIcons) {
                 return null;
             }
-            DBDAttributeBinding attr;
-            if (recordMode) {
-                attr = (DBDAttributeBinding) cell.row;
-            } else {
-                attr = (DBDAttributeBinding) cell.col;
-            }
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
                 return getTypeImage(attr.getMetaAttribute());
             } else {

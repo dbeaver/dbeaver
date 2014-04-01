@@ -25,10 +25,8 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCNestedAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +53,7 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
 
     private final int attributeIndex;
     private int level;
+    private List<DBSEntityReferrer> referrers;
 
     public DBDAttributeBinding(@NotNull DBPDataSource dataSource, @NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int attributeIndex) {
         this(dataSource, null, metaAttribute, valueHandler, attributeIndex);
@@ -180,12 +179,17 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
         return level;
     }
 
+    public List<DBSEntityReferrer> getReferrers() {
+        return referrers;
+    }
+
     public void initValueLocator(@Nullable DBSEntityAttribute entityAttribute, @Nullable DBDRowIdentifier rowIdentifier) {
         this.entityAttribute = entityAttribute;
         this.rowIdentifier = rowIdentifier;
     }
 
     public void readNestedBindings(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
+        referrers = metaAttribute.getReferrers(session.getProgressMonitor());
         DBSAttributeBase attribute = getAttribute();
         switch (attribute.getDataKind()) {
             case STRUCT:
