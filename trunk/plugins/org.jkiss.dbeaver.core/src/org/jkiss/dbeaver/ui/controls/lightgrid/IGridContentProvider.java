@@ -33,6 +33,9 @@ public interface IGridContentProvider extends IContentProvider {
         COLLAPSED
     }
 
+    public static final int STATE_NONE  = 0;
+    public static final int STATE_LINK  = 1;
+
     @NotNull
     Object[] getElements(boolean horizontal);
 
@@ -42,6 +45,8 @@ public interface IGridContentProvider extends IContentProvider {
     int getSortOrder(@NotNull Object element);
 
     ElementState getDefaultState(@NotNull Object element);
+
+    int getCellState(@NotNull GridCell cell);
 
     Object getCellValue(@NotNull GridCell cell, boolean formatString);
 

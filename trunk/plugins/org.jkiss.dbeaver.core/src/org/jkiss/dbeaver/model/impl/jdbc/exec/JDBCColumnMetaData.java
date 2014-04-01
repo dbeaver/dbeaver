@@ -41,6 +41,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -347,28 +348,32 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         return false;
     }
 
+    @NotNull
     @Override
-    public List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor)
+    public List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<DBSEntityReferrer> refs = new ArrayList<DBSEntityReferrer>();
         DBSEntityAttribute tableColumn = getAttribute(monitor);
         if (tableColumn == null) {
-            return refs;
+            return Collections.emptyList();
         }
         DBSEntity table = tableMetaData.getEntity(monitor);
         if (table == null) {
-            return refs;
+            return Collections.emptyList();
         }
-        Collection<? extends DBSEntityAssociation> foreignKeys = table.getAssociations(monitor);
-        if (foreignKeys != null) {
-            for (DBSEntityAssociation fk : foreignKeys) {
+        List<DBSEntityReferrer> refs = null;
+        Collection<? extends DBSEntityAssociation> associations = table.getAssociations(monitor);
+        if (associations != null) {
+            for (DBSEntityAssociation fk : associations) {
                 if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintColumn(monitor, (DBSEntityReferrer) fk, tableColumn) != null) {
+                    if (refs == null) {
+                        refs = new ArrayList<DBSEntityReferrer>();
+                    }
                     refs.add((DBSEntityReferrer)fk);
                 }
             }
         }
-        return refs;
+        return refs != null ? refs : Collections.<DBSEntityReferrer>emptyList();
     }
 
     @Nullable
