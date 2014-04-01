@@ -185,28 +185,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     @Override
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
-        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATABASE));
-        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_TXN));
-        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATASOURCE));
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_DATABASE));
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_TXN));
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_DATASOURCE));
 
-/*
-        coolBar.add(new GroupMarker(IIDEActionConstants.GROUP_NAV));
+        coolBar.add(new GroupMarker("nav"));
         { // Navigate group
-            IToolBarManager navToolBar = actionBarConfigurer.createToolBarManager();
-            navToolBar.add(new Separator(
-                IWorkbenchActionConstants.HISTORY_GROUP));
-            navToolBar
-                .add(new GroupMarker(IWorkbenchActionConstants.GROUP_APP));
-            navToolBar.add(backwardHistoryAction);
-            navToolBar.add(forwardHistoryAction);
-            navToolBar.add(new Separator(IWorkbenchActionConstants.PIN_GROUP));
-            navToolBar.add(getPinEditorItem());
+            IToolBarManager navToolBar = new ToolBarManager(SWT.FLAT | SWT.LEFT);
+            navToolBar.add(new Separator(IWorkbenchActionConstants.HISTORY_GROUP));
+            navToolBar.add(new GroupMarker(IWorkbenchActionConstants.GROUP_APP));
+            navToolBar.add(historyBackAction);
+            navToolBar.add(historyForwardAction);
 
             // Add to the cool bar manager
-            coolBar.add(actionBarConfigurer.createToolBarContributionItem(navToolBar,
-                IWorkbenchActionConstants.TOOLBAR_NAVIGATE));
+            coolBar.add(new ToolBarContributionItem(navToolBar, IWorkbenchActionConstants.TOOLBAR_NAVIGATE));
         }
-*/
+
     }
 
 }
