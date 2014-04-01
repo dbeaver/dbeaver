@@ -66,7 +66,7 @@ class GridColumnRenderer extends AbstractRenderer
     
     protected Font getColumnFont() {
         Font font = grid.getLabelProvider().getFont(element);
-        return font != null ? font : grid.getFont();
+        return font != null ? font : grid.normalFont;
     }
 
     public void paint(GC gc) {
@@ -194,7 +194,7 @@ class GridColumnRenderer extends AbstractRenderer
                 bounds.y + bounds.height - 1);
         }
 
-        gc.setFont(grid.getFont());
+        gc.setFont(grid.normalFont);
     }
 
     private void paintSort(GC gc, Rectangle bounds, int sort)

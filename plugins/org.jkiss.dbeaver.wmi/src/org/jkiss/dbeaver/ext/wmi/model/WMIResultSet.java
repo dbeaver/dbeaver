@@ -329,8 +329,9 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return false;
         }
 
+        @NotNull
         @Override
-        public List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor) throws DBException
+        public List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor) throws DBException
         {
             return null;
         }

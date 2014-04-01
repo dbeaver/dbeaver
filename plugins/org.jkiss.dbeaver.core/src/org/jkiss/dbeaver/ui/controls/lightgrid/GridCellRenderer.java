@@ -30,13 +30,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 class GridCellRenderer extends AbstractRenderer
 {
-    private static final int leftMargin = 4;
-    private static final int rightMargin = 4;
-    private static final int topMargin = 0;
-    //private int BOTTOM_MARGIN = 0;
-    private static final int textTopMargin = 1;
-    //private int textBottomMargin = 2;
-    private static final int insideMargin = 3;
+    private static final int LEFT_MARGIN = 4;
+    private static final int RIGHT_MARGIN = 4;
+    private static final int TOP_MARGIN = 0;
+
+    private static final int TEXT_TOP_MARGIN = 1;
+    private static final int INSIDE_MARGIN = 3;
+
     protected Color colorSelected;
     protected Color colorSelectedText;
     protected Color colorBackgroundDisabled;
@@ -210,7 +210,7 @@ class GridCellRenderer extends AbstractRenderer
                 bounds.height);
 
 
-        int x = leftMargin;
+        int x = LEFT_MARGIN;
 
         Image image = grid.getCellImage(cell);
         if (image != null) {
@@ -219,10 +219,10 @@ class GridCellRenderer extends AbstractRenderer
 
             gc.drawImage(image, bounds.x + x, y);
 
-            x += imageBounds.width + insideMargin;
+            x += imageBounds.width + INSIDE_MARGIN;
         }
 
-        int width = bounds.width - x - rightMargin;
+        int width = bounds.width - x - RIGHT_MARGIN;
 
 //        if (drawAsSelected) {
 //            gc.setForeground(colorSelectedText);
@@ -231,6 +231,7 @@ class GridCellRenderer extends AbstractRenderer
 //        }
 
         // Get cell text
+        int state = grid.getContentProvider().getCellState(cell);
         String text = grid.getCellText(cell);
         if (text != null && !text.isEmpty()) {
             // Get shortern version of string
@@ -238,11 +239,19 @@ class GridCellRenderer extends AbstractRenderer
             // Replace linefeeds with space
             text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ').replace((char)0, ' ');
 
-            gc.setFont(grid.getFont());
+            gc.setFont(grid.normalFont);
+            if ((state & IGridContentProvider.STATE_LINK) != 0) {
+                Point textSize = gc.textExtent(text);
+                gc.drawLine(
+                    bounds.x + x,
+                    bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN + textSize.y - 1,
+                    bounds.x + x + textSize.x,
+                    bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN + textSize.y - 1);
+            }
             gc.drawString(
                 text,
                 bounds.x + x,
-                bounds.y + textTopMargin + topMargin,
+                bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                 true);
         }
 

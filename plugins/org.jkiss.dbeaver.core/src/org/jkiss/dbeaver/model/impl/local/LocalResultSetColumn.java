@@ -111,8 +111,9 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return false;
     }
 
+    @NotNull
     @Override
-    public List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor) throws DBException
+    public List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

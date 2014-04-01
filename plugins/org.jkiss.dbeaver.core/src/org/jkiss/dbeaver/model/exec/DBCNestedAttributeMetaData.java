@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -97,9 +98,10 @@ public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObject
         return false;
     }
 
+    @NotNull
     @Override
-    public List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor) throws DBException {
-        return null;
+    public List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return Collections.emptyList();
     }
 
     @Override

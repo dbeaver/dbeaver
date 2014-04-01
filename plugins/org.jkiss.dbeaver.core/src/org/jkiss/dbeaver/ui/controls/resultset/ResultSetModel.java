@@ -62,6 +62,7 @@ public class ResultSetModel {
         dataFilter = createDataFilter();
     }
 
+    @NotNull
     public DBDDataFilter createDataFilter()
     {
         List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>(columns.length);
@@ -101,7 +102,9 @@ public class ResultSetModel {
         if (!singleSourceCells) {
             return null;
         }
-        return columns[0].getRowIdentifier().getEntity();
+        DBDRowIdentifier rowIdentifier = columns[0].getRowIdentifier();
+        assert rowIdentifier != null;
+        return rowIdentifier.getEntity();
     }
 
     public void resetCellValue(GridCell cell)
@@ -133,6 +136,7 @@ public class ResultSetModel {
         }
     }
 
+    @NotNull
     public DBDAttributeBinding[] getColumns()
     {
         return columns;
@@ -143,16 +147,18 @@ public class ResultSetModel {
         return columns.length;
     }
 
+    @NotNull
     public DBDAttributeBinding getColumn(int index)
     {
         return columns[index];
     }
 
-    public int getVisibleColumnIndex(DBDAttributeBinding column)
+    public int getVisibleColumnIndex(@NotNull DBDAttributeBinding column)
     {
         return visibleColumns.indexOf(column);
     }
 
+    @NotNull
     public List<DBDAttributeBinding> getVisibleColumns()
     {
         return visibleColumns;
@@ -163,12 +169,13 @@ public class ResultSetModel {
         return visibleColumns.size();
     }
 
+    @NotNull
     public DBDAttributeBinding getVisibleColumn(int index)
     {
         return visibleColumns.get(index);
     }
 
-    public void setColumnVisibility(DBDAttributeBinding attribute, boolean visible)
+    public void setColumnVisibility(@NotNull DBDAttributeBinding attribute, boolean visible)
     {
         DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
         if (constraint.isVisible() != visible) {
@@ -182,7 +189,7 @@ public class ResultSetModel {
     }
 
     @Nullable
-    public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)
+    public DBDAttributeBinding getAttributeBinding(@NotNull DBSAttributeBase attribute)
     {
         for (DBDAttributeBinding binding : columns) {
             if (binding.getMetaAttribute() == attribute || binding.getEntityAttribute() == attribute) {
@@ -193,10 +200,11 @@ public class ResultSetModel {
     }
 
     @Nullable
-    DBDAttributeBinding getAttributeBinding(DBSEntity table, String columnName)
+    DBDAttributeBinding getAttributeBinding(@Nullable DBSEntity table, @NotNull String columnName)
     {
         for (DBDAttributeBinding column : visibleColumns) {
-            if ((table == null || column.getRowIdentifier().getEntity() == table) &&
+            DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
+            if ((table == null || (rowIdentifier != null && rowIdentifier.getEntity() == table)) &&
                 column.getName().equals(columnName)) {
                 return column;
             }
@@ -214,15 +222,18 @@ public class ResultSetModel {
         return curRows.size();
     }
 
+    @NotNull
     public List<RowData> getAllRows() {
         return curRows;
     }
 
+    @NotNull
     public Object[] getRowData(int index)
     {
         return curRows.get(index).values;
     }
 
+    @NotNull
     public RowData getRow(int index)
     {
         return curRows.get(index);
@@ -241,6 +252,7 @@ public class ResultSetModel {
                 break;
             }
             DBDAttributeBinding attr = column.getParent(depth - i - 1);
+            assert attr != null;
             if (curValue instanceof DBDStructure) {
                 try {
                     curValue = ((DBDStructure) curValue).getAttributeValue(attr.getAttribute());
@@ -266,12 +278,12 @@ public class ResultSetModel {
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(RowData row, DBDAttributeBinding attr, @Nullable Object value)
+    public boolean updateCellValue(@NotNull RowData row, @NotNull DBDAttributeBinding attr, @Nullable Object value)
     {
         return updateCellValue(row, attr, value, true);
     }
 
-    public boolean updateCellValue(RowData row, DBDAttributeBinding attr, @Nullable Object value, boolean updateChanges)
+    public boolean updateCellValue(@NotNull RowData row, @NotNull DBDAttributeBinding attr, @Nullable Object value, boolean updateChanges)
     {
         int depth = attr.getLevel();
         int rootIndex;
@@ -294,6 +306,7 @@ public class ResultSetModel {
                     break;
                 }
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
+                assert ownerAttr != null;
                 if (ownerValue instanceof DBDStructure) {
                     try {
                         ownerValue = ((DBDStructure) ownerValue).getAttributeValue(ownerAttr.getAttribute());
@@ -304,32 +317,32 @@ public class ResultSetModel {
                 }
             }
         }
-        if (ownerValue != null || (value instanceof DBDValue && value == rootValue) || !CommonUtils.equalObjects(rootValue, value)) {
+        // Get old value
+        Object oldValue = rootValue;
+        if (ownerValue != null) {
+            oldValue = null;
+            if (ownerValue instanceof DBDStructure) {
+                try {
+                    oldValue = ((DBDStructure) ownerValue).getAttributeValue(attr.getAttribute());
+                } catch (DBCException e) {
+                    log.error("Error getting [" + attr.getName() + "] value", e);
+                }
+            } else {
+                log.warn("Value [" + ownerValue + "] edit is not supported");
+            }
+        }
+        if (ownerValue != null || (value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {
             // If DBDValue was updated (kind of LOB?) or actual value was changed
-            if (ownerValue == null && DBUtils.isNullValue(rootValue) && DBUtils.isNullValue(value)) {
+            if (ownerValue == null && DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
                 // Both nulls - nothing to update
                 return false;
             }
             // Do not add edited cell for new/deleted rows
             if (row.state == RowData.STATE_NORMAL) {
-                // Save old value
-                Object oldValue = rootValue;
-                if (ownerValue != null) {
-                    oldValue = null;
-                    if (ownerValue instanceof DBDStructure) {
-                        try {
-                            oldValue = ((DBDStructure) ownerValue).getAttributeValue(attr.getAttribute());
-                        } catch (DBCException e) {
-                            log.error("Error getting [" + attr.getName() + "] value", e);
-                        }
-                    } else {
-                        log.warn("Value [" + ownerValue + "] edit is not supported");
-                    }
-                }
 
                 boolean cellWasEdited = row.changes != null && row.changes.containsKey(attr);
                 Object oldOldValue = !cellWasEdited ? null : row.changes.get(attr);
-                if (cellWasEdited && !CommonUtils.equalObjects(rootValue, oldOldValue)) {
+                if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
                     // Value rewrite - release previous stored old value
                     releaseValue(oldValue);
                 } else if (updateChanges) {
@@ -365,7 +378,7 @@ public class ResultSetModel {
      * @param columns columns metadata
      * @return true if new metadata differs from old one, false otherwise
      */
-    public boolean setMetaData(DBDAttributeBinding[] columns)
+    public boolean setMetaData(@NotNull DBDAttributeBinding[] columns)
     {
         boolean update = false;
         if (this.columns == null || this.columns.length != columns.length) {
@@ -402,7 +415,7 @@ public class ResultSetModel {
         return update;
     }
 
-    public void setData(List<Object[]> rows, boolean updateMetaData)
+    public void setData(@NotNull List<Object[]> rows, boolean updateMetaData)
     {
         // Clear previous data
         this.clearData();
@@ -436,7 +449,7 @@ public class ResultSetModel {
         hasData = true;
     }
 
-    public void appendData(List<Object[]> rows)
+    public void appendData(@NotNull List<Object[]> rows)
     {
         int rowCount = rows.size();
         List<RowData> newRows = new ArrayList<RowData>(rowCount);
@@ -466,7 +479,7 @@ public class ResultSetModel {
         return changesCount != 0;
     }
 
-    boolean isColumnReadOnly(DBDAttributeBinding column)
+    boolean isColumnReadOnly(@NotNull DBDAttributeBinding column)
     {
         if (column.getRowIdentifier() == null || !(column.getRowIdentifier().getEntity() instanceof DBSDataManipulator) ||
             (column.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
@@ -486,7 +499,7 @@ public class ResultSetModel {
         this.updateInProgress = updateInProgress;
     }
 
-    void addNewRow(int rowNum, Object[] data)
+    void addNewRow(int rowNum, @NotNull Object[] data)
     {
         RowData newRow = new RowData(curRows.size(), data, null);
         newRow.visualNumber = rowNum;
@@ -502,7 +515,7 @@ public class ResultSetModel {
      * @return true if row was physically removed (only in case if this row was previously added)
      * or false if it just marked as deleted
      */
-    boolean deleteRow(RowData row)
+    boolean deleteRow(@NotNull RowData row)
     {
         if (row.state == RowData.STATE_ADDED) {
             cleanupRow(row);
@@ -515,7 +528,7 @@ public class ResultSetModel {
         }
     }
 
-    void cleanupRow(RowData row)
+    void cleanupRow(@NotNull RowData row)
     {
         releaseRow(row);
         this.curRows.remove(row.visualNumber);
@@ -542,7 +555,7 @@ public class ResultSetModel {
         }
     }
 
-    private void shiftRows(RowData relative, int delta)
+    private void shiftRows(@NotNull RowData relative, int delta)
     {
         for (RowData row : curRows) {
             if (row.visualNumber >= relative.visualNumber) {
@@ -561,7 +574,7 @@ public class ResultSetModel {
         }
     }
 
-    private static void releaseRow(RowData row)
+    private static void releaseRow(@NotNull RowData row)
     {
         for (Object value : row.values) {
             releaseValue(value);
@@ -573,14 +586,14 @@ public class ResultSetModel {
         }
     }
 
-    static void releaseValue(Object value)
+    static void releaseValue(@Nullable Object value)
     {
         if (value instanceof DBDValue) {
             ((DBDValue)value).release();
         }
     }
 
-    static void resetValue(Object value)
+    static void resetValue(@Nullable Object value)
     {
         if (value instanceof DBDContent) {
             ((DBDContent)value).resetContents();
@@ -634,7 +647,7 @@ public class ResultSetModel {
                         result = 1;
                     } else if (DBUtils.isNullValue(cell2)) {
                         result = -1;
-                    } else if (cell1 instanceof Comparable<?>) {
+                    } else if (cell1 instanceof Comparable) {
                         result = ((Comparable)cell1).compareTo(cell2);
                     } else {
                         String str1 = cell1.toString();
