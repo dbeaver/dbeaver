@@ -899,6 +899,15 @@ public class SQLEditor extends SQLEditorBase
         outputViewer.refreshStyles();
     }
 
+    @Override
+    public INavigationLocation createNavigationLocation() {
+        ResultSetViewer rsv = getResultSetViewer();
+        if (rsv != null) {
+            return rsv.createNavigationLocation();
+        }
+        return super.createNavigationLocation();
+    }
+
     private QueryProcessor createQueryProcessor(boolean setSelection)
     {
         final QueryProcessor queryProcessor = new QueryProcessor();

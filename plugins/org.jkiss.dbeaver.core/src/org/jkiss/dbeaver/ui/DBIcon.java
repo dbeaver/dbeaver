@@ -125,6 +125,8 @@ public enum DBIcon
     RS_REFRESH("rs_refresh", "/icons/sql/resultset_refresh.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_GRID("rs_mode_grid", "icons/sql/grid.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_DETAILS("rs_details", "icons/sql/details.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    RS_FORWARD("rs_forward", "icons/sql/forward.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    RS_BACK("rs_back", "icons/sql/back.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     TXN_COMMIT_AUTO("txn_commit_auto", "icons/sql/txn_auto.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TXN_COMMIT_MANUAL("txn_commit_manual", "icons/sql/txn_manual.png"), //$NON-NLS-1$ //$NON-NLS-2$
