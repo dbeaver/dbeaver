@@ -77,7 +77,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements INavigatorModelView, IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderedPart
+    implements INavigatorModelView, IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderedPart, INavigationLocationProvider
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -810,21 +810,35 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
+    public INavigationLocation createEmptyNavigationLocation() {
+        INavigationLocationProvider provider = getNestedAdapter(INavigationLocationProvider.class);
+        return provider == null ? null : provider.createEmptyNavigationLocation();
+    }
+
+    @Override
+    public INavigationLocation createNavigationLocation() {
+        INavigationLocationProvider provider = getNestedAdapter(INavigationLocationProvider.class);
+        return provider == null ? null : provider.createNavigationLocation();
+    }
+
+    @Override
     public Object getAdapter(Class adapter) {
-        if (adapter == IPropertySheetPage.class) {
-            //return new PropertyPageTabbed();
-        }
+        Object activeAdapter = getNestedAdapter(adapter);
+        return activeAdapter == null ? super.getAdapter(adapter) : activeAdapter;
+    }
+
+    public <T> T getNestedAdapter(Class<T> adapter) {
         IEditorPart activeEditor = getActiveEditor();
         if (activeEditor != null) {
             if (adapter.isAssignableFrom(activeEditor.getClass())) {
-                return activeEditor;
+                return adapter.cast(activeEditor);
             }
             Object result = activeEditor.getAdapter(adapter);
             if (result != null) {
-                return result;
+                return adapter.cast(result);
             }
         }
-        return super.getAdapter(adapter);
+        return null;
     }
 
     private class ChangesPreviewer implements Runnable {

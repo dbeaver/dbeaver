@@ -903,9 +903,17 @@ public class SQLEditor extends SQLEditorBase
     public INavigationLocation createNavigationLocation() {
         ResultSetViewer rsv = getResultSetViewer();
         if (rsv != null) {
-            return rsv.createNavigationLocation();
+            INavigationLocation location = rsv.createNavigationLocation();
+            if (location != null) {
+                return location;
+            }
         }
         return super.createNavigationLocation();
+    }
+
+    @Override
+    protected void markInNavigationHistory() {
+        // Do nothing
     }
 
     private QueryProcessor createQueryProcessor(boolean setSelection)

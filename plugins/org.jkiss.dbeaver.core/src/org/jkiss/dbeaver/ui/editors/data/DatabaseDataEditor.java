@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -35,7 +33,8 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 /**
  * DatabaseDataEditor
  */
-public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer> implements ResultSetProvider,ResultSetListener
+public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer>
+    implements ResultSetProvider,ResultSetListener, INavigationLocationProvider
 {
 
     private ResultSetViewer resultSetView;
@@ -173,4 +172,13 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         return super.getAdapter(required);
     }
 
+    @Override
+    public INavigationLocation createEmptyNavigationLocation() {
+        return resultSetView.createEmptyNavigationLocation();
+    }
+
+    @Override
+    public INavigationLocation createNavigationLocation() {
+        return resultSetView.createNavigationLocation();
+    }
 }

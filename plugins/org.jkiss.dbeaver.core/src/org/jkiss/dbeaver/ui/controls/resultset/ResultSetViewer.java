@@ -135,10 +135,16 @@ public class ResultSetViewer extends Viewer
         LAST
     }
 
-    public static class HistoryItem {
+    public static class StateItem {
         DBSDataContainer dataContainer;
         DBDDataFilter filter;
         int rowNumber;
+
+        public StateItem(DBSDataContainer dataContainer, DBDDataFilter filter, int rowNumber) {
+            this.dataContainer = dataContainer;
+            this.filter = filter;
+            this.rowNumber = rowNumber;
+        }
     }
 
     @NotNull
@@ -189,6 +195,7 @@ public class ResultSetViewer extends Viewer
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
+    private boolean isHistoryChanging = false;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull ResultSetProvider resultSetProvider)
     {
@@ -978,6 +985,11 @@ public class ResultSetViewer extends Viewer
         return isReadOnly() || model.isColumnReadOnly(column);
     }
 
+    public StateItem getCurrentState() {
+        return new StateItem(getDataContainer(), model.getDataFilter(), curRow == null ? -1 : curRow.visualNumber);
+    }
+
+    @Nullable
     public RowData getCurrentRow()
     {
         return curRow;
@@ -1185,11 +1197,17 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public INavigationLocation createEmptyNavigationLocation() {
+        if (!isHistoryChanging) {
+            return null;
+        }
         return new ResultSetNavigationLocation(this);
     }
 
     @Override
     public INavigationLocation createNavigationLocation() {
+        if (!isHistoryChanging) {
+            return null;
+        }
         return new ResultSetNavigationLocation(this);
     }
 
@@ -1665,7 +1683,12 @@ public class ResultSetViewer extends Viewer
         }
 
         // Save history location
-        site.getPage().getNavigationHistory().markLocation((IEditorPart) site.getPart());
+        isHistoryChanging = true;
+        try {
+            site.getPage().getNavigationHistory().markLocation((IEditorPart) site.getPart());
+        } finally {
+            isHistoryChanging = false;
+        }
 
         // Cache preferences
         IPreferenceStore preferenceStore = getPreferenceStore();

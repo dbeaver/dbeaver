@@ -27,9 +27,13 @@ import org.eclipse.ui.INavigationLocation;
 public class ResultSetNavigationLocation implements INavigationLocation {
 
     private ResultSetViewer viewer;
+    private final ResultSetViewer.StateItem state;
+    private final String text;
 
     public ResultSetNavigationLocation(ResultSetViewer viewer) {
         this.viewer = viewer;
+        this.state = viewer.getCurrentState();
+        this.text = state.dataContainer.getName();
     }
 
     @Override
@@ -64,12 +68,12 @@ public class ResultSetNavigationLocation implements INavigationLocation {
 
     @Override
     public Object getInput() {
-        return viewer;
+        return this.viewer;
     }
 
     @Override
     public String getText() {
-        return viewer.toString();
+        return this.text;
     }
 
     @Override
