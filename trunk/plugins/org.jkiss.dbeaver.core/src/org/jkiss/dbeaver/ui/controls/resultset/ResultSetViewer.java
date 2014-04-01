@@ -49,9 +49,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
@@ -114,11 +112,14 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: RS navigation, FK and REF links
  * TODO: collections and ANY types support
  * TODO: not-editable cells (struct owners in record mode)
+ * TODO: local/ss ordering switcher in context menu
  * TODO: ipatheditorinput issue
  */
-public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable
+public class ResultSetViewer extends Viewer
+    implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable, INavigationLocationProvider
 {
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
@@ -132,6 +133,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         PREVIOUS,
         NEXT,
         LAST
+    }
+
+    public static class HistoryItem {
+        DBSDataContainer dataContainer;
+        DBDDataFilter filter;
+        int rowNumber;
     }
 
     @NotNull
@@ -716,14 +723,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         });
 
-/*
-        IAction viewMessageAction = new Action("View status message", DBIcon.TREE_INFO.getImageDescriptor()) {
-            public void run()
-            {
-            }
-        };
-*/
-
         toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
 
         // handle own commands
@@ -744,7 +743,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, CommandContributionItem.STYLE_PUSH, DBIcon.FIND_TEXT.getImageDescriptor()));
 
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
-        //toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH, "Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()));
         Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBIcon.RS_REFRESH.getImageDescriptor()) {
             @Override
             public void run()
@@ -1183,6 +1181,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             !dataSource.isConnected() ||
             dataSource.getContainer().isConnectionReadOnly() ||
             dataSource.getInfo().isReadOnlyData();
+    }
+
+    @Override
+    public INavigationLocation createEmptyNavigationLocation() {
+        return new ResultSetNavigationLocation(this);
+    }
+
+    @Override
+    public INavigationLocation createNavigationLocation() {
+        return new ResultSetNavigationLocation(this);
     }
 
     /**
@@ -1655,6 +1663,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     break;
             }
         }
+
+        // Save history location
+        site.getPage().getNavigationHistory().markLocation((IEditorPart) site.getPart());
 
         // Cache preferences
         IPreferenceStore preferenceStore = getPreferenceStore();
