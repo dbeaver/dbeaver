@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -240,19 +241,17 @@ class GridCellRenderer extends AbstractRenderer
             text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ').replace((char)0, ' ');
 
             gc.setFont(grid.normalFont);
-            if ((state & IGridContentProvider.STATE_LINK) != 0) {
-                Point textSize = gc.textExtent(text);
-                gc.drawLine(
-                    bounds.x + x,
-                    bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN + textSize.y - 1,
-                    bounds.x + x + textSize.x,
-                    bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN + textSize.y - 1);
-            }
             gc.drawString(
                 text,
                 bounds.x + x,
                 bounds.y + TEXT_TOP_MARGIN + TOP_MARGIN,
                 true);
+        }
+
+        if ((state & IGridContentProvider.STATE_LINK) != 0) {
+            Image linkImage = DBIcon.TREE_LINK.getImage();
+            Rectangle linkBounds = linkImage.getBounds();
+            gc.drawImage(linkImage, bounds.x + bounds.width - linkBounds.width - RIGHT_MARGIN, bounds.y + (bounds.height - linkBounds.height) / 2);
         }
 
         if (grid.isLinesVisible()) {
