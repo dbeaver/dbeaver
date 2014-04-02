@@ -2565,8 +2565,9 @@ public class ResultSetViewer extends Viewer
         public int getCellState(@NotNull GridCell cell) {
             int state = STATE_NONE;
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-            List<DBSEntityReferrer> referrers = attr.getReferrers();
-            if (referrers != null && !referrers.isEmpty()) {
+            RowData row = (RowData)(recordMode ? cell.col : cell.row);
+            Object value = getModel().getCellValue(row, attr);
+            if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                 state |= STATE_LINK;
             }
             return state;
