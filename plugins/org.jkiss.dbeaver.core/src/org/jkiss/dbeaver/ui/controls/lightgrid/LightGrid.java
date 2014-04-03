@@ -48,6 +48,7 @@ public abstract class LightGrid extends Canvas {
     public static final int MAX_TOOLTIP_LENGTH = 1000;
 
     public static final int Event_ChangeSort = 1000;
+    public static final int Event_NavigateLink = 1001;
 
     private static final Object NULL_ELEMENT = new Object();
 
@@ -2867,6 +2868,19 @@ public abstract class LightGrid extends Canvas {
      */
     private void onMouseUp(MouseEvent e)
     {
+        if (cellSelectedOnLastMouseDown && focusColumn != null && focusItem >= 0) {
+            if (e.button == 1 && cellRenderer.isOverLink(focusColumn, focusItem, e.x, e.y)) {
+                // Navigate link
+                Event event = new Event();
+                event.x = e.x;
+                event.y = e.y;
+                event.stateMask = e.stateMask;
+                event.data = new GridCell(focusColumn.getElement(), rowElements[focusItem]);
+                notifyListeners(Event_NavigateLink, event);
+                return;
+            }
+        }
+
         cellSelectedOnLastMouseDown = false;
 
         if (hoveringOnColumnSorter) {
@@ -2874,8 +2888,6 @@ public abstract class LightGrid extends Canvas {
             if (hoveringOnColumnSorter) {
                 if (e.button == 1) {
                     Event event = new Event();
-                    //event.data = row;
-                    //event.data = e.data;
                     event.x = e.x;
                     event.y = e.y;
                     event.data = columnBeingSorted.getElement();
@@ -2916,6 +2928,7 @@ public abstract class LightGrid extends Canvas {
                 followupCellSelectionEventOwed = false;
             }
         }
+
     }
 
     /**
@@ -3432,14 +3445,22 @@ public abstract class LightGrid extends Canvas {
             hoverChange = true;
         }
 
+        // Check for link
+        boolean overLink = false;
+        if (col != null && row >= 0) {
+            if (cellRenderer.isOverLink(col, row, x, y)) {
+                overLink = true;
+            }
+        }
+
+        if (overLink) {
+            setCursor(sortCursor);
+        } else {
+            setCursor(null);
+        }
+
         //do normal cell specific tooltip stuff
         if (hoverChange) {
-            // Check for link
-            if (col != null && row >= 0) {
-                if (cellRenderer.isOverLink(col, row, x, y)) {
-
-                }
-            }
 
             // Check tooltip
             String newTip = null;

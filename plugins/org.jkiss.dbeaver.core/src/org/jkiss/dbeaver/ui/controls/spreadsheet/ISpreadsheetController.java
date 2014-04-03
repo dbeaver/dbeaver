@@ -46,6 +46,8 @@ public interface ISpreadsheetController {
 
     void changeSorting(@NotNull Object columnElement, int state);
 
+    void navigateLink(@NotNull GridCell cell, int state);
+
     @NotNull
     IPreferenceStore getPreferenceStore();
 }
