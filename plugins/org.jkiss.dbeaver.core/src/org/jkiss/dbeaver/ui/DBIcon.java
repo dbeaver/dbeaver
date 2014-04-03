@@ -96,6 +96,7 @@ public enum DBIcon
     PICTURE_SAVE("picture_save", "icons/picture_save.png"), //$NON-NLS-1$ //$NON-NLS-2$
     PROPERTIES("properties", "icons/properties.png"), //$NON-NLS-1$ //$NON-NLS-2$
     CONFIGURATION("configuration", "icons/configuration.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    LINK("link", "icons/misc/link.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     LOADING1("loading1", "icons/tree/load/loading1.gif"), //$NON-NLS-1$ //$NON-NLS-2$
     LOADING2("loading2", "icons/tree/load/loading2.gif"), //$NON-NLS-1$ //$NON-NLS-2$
