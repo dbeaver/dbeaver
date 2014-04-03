@@ -115,6 +115,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
         return refTable;
     }
 
+    @NotNull
     @Override
     @Property(id = "reference", viewable = false)
     public DB2TableUniqueKey getReferencedConstraint()
@@ -122,6 +123,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
         return referencedKey;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false)
     public DBSForeignKeyModifyRule getUpdateRule()
@@ -129,6 +131,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
         return updateRule.getRule();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false)
     public DBSForeignKeyModifyRule getDeleteRule()

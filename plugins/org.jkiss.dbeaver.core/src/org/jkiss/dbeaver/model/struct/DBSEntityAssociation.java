@@ -18,11 +18,14 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DBSEntityAssociation
  */
 public interface DBSEntityAssociation extends DBSEntityConstraint {
 
+    @NotNull
     DBSEntityConstraint getReferencedConstraint();
 
     DBSEntity getAssociatedEntity();
