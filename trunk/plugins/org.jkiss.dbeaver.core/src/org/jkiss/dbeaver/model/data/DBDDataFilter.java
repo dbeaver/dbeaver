@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -57,14 +58,14 @@ public class DBDDataFilter {
     public DBDAttributeConstraint getConstraint(DBDAttributeBinding binding)
     {
         for (DBDAttributeConstraint co : constraints) {
-            if (co.getAttribute() == binding) {
+            if (co.getAttribute() == binding.getAttribute()) {
                 return co;
             }
         }
         return null;
     }
 
-    public List<DBDAttributeBinding> getOrderedVisibleAttributes()
+    public List<DBSAttributeBase> getOrderedVisibleAttributes()
     {
         List<DBDAttributeConstraint> visibleConstraints = new ArrayList<DBDAttributeConstraint>();
         for (DBDAttributeConstraint constraint : constraints) {
@@ -79,7 +80,7 @@ public class DBDDataFilter {
                 return o1.getVisualPosition() - o2.getVisualPosition();
             }
         });
-        List<DBDAttributeBinding> attributes = new ArrayList<DBDAttributeBinding>(visibleConstraints.size());
+        List<DBSAttributeBase> attributes = new ArrayList<DBSAttributeBase>(visibleConstraints.size());
         for (DBDAttributeConstraint constraint : visibleConstraints) {
             attributes.add(constraint.getAttribute());
         }
@@ -91,7 +92,7 @@ public class DBDDataFilter {
         return order;
     }
 
-    public void setOrder(String order)
+    public void setOrder(@Nullable String order)
     {
         this.order = order;
     }
@@ -101,7 +102,7 @@ public class DBDDataFilter {
         return where;
     }
 
-    public void setWhere(String where)
+    public void setWhere(@Nullable String where)
     {
         this.where = where;
     }

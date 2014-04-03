@@ -810,12 +810,10 @@ public class ResultSetViewer extends Viewer
         } else {
             this.updateRecordMode();
         }
-        if (!recordMode) {
-            if (oldRow != null) {
+        if (oldRow != null && oldAttribute != null) {
+            if (!recordMode) {
                 spreadsheet.setCursor(new GridCell(oldAttribute, oldRow), false);
-            }
-        } else {
-            if (oldAttribute != null) {
+            } else {
                 spreadsheet.setCursor(new GridCell(oldRow, oldAttribute), false);
             }
         }
@@ -1186,6 +1184,7 @@ public class ResultSetViewer extends Viewer
             dataSource.getInfo().isReadOnlyData();
     }
 
+    @Nullable
     @Override
     public INavigationLocation createEmptyNavigationLocation() {
         if (!isHistoryChanging) {
@@ -1194,6 +1193,7 @@ public class ResultSetViewer extends Viewer
         return new ResultSetNavigationLocation(this);
     }
 
+    @Nullable
     @Override
     public INavigationLocation createNavigationLocation() {
         if (!isHistoryChanging) {
@@ -1482,7 +1482,8 @@ public class ResultSetViewer extends Viewer
                 }
             }
             filtersMenu.add(new Separator());
-            if (!CommonUtils.isEmpty(model.getDataFilter().getConstraint(column).getCriteria())) {
+            DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
+            if (constraint != null && !CommonUtils.isEmpty(constraint.getCriteria())) {
                 filtersMenu.add(new FilterResetColumnAction(column));
             }
         }
@@ -1538,6 +1539,7 @@ public class ResultSetViewer extends Viewer
         }
         DBDAttributeBinding metaColumn = (DBDAttributeBinding)columnElement;
         DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
+        assert constraint != null;
         //int newSort;
         if (constraint.getOrderPosition() == 0) {
             if (isServerSideFiltering() && supportsDataFilter()) {
@@ -1987,9 +1989,7 @@ public class ResultSetViewer extends Viewer
                 column.getMetaAttribute(),
                 value,
                 format);
-            if (cellText != null) {
-                tdt.append(cellText);
-            }
+            tdt.append(cellText);
 
             if (cut) {
                 DBDValueController valueController = new ResultSetValueController(
@@ -2964,9 +2964,12 @@ public class ResultSetViewer extends Viewer
             }
             String stringValue = pattern.replace("?", value);
             DBDDataFilter filter = model.getDataFilter();
-            filter.getConstraint(column).setCriteria(stringValue);
-            updateFiltersText();
-            refresh();
+            DBDAttributeConstraint constraint = filter.getConstraint(column);
+            if (constraint != null) {
+                constraint.setCriteria(stringValue);
+                updateFiltersText();
+                refresh();
+            }
         }
     }
 
@@ -2981,9 +2984,12 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            model.getDataFilter().getConstraint(column).setCriteria(null);
-            updateFiltersText();
-            refresh();
+            DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
+            if (constraint != null) {
+                constraint.setCriteria(null);
+                updateFiltersText();
+                refresh();
+            }
         }
     }
 

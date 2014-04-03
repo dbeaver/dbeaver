@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
@@ -316,12 +317,13 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
 
     class ColumnLabelProvider extends LabelProvider implements ITableLabelProvider
     {
+        @Nullable
         @Override
         public Image getColumnImage(Object element, int columnIndex)
         {
             DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
-            if (columnIndex == 0 && constraint.getAttribute().getMetaAttribute() instanceof IObjectImageProvider) {
-                return ((IObjectImageProvider)constraint.getAttribute().getMetaAttribute()).getObjectImage();
+            if (columnIndex == 0 && constraint.getAttribute() instanceof IObjectImageProvider) {
+                return ((IObjectImageProvider)constraint.getAttribute()).getObjectImage();
             }
             if (columnIndex == 2) {
                 if (constraint.getOrderPosition() > 0) {
@@ -337,7 +339,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
             switch (columnIndex) {
                 case 0: return constraint.getAttribute().getName();
-                case 1: return String.valueOf(constraint.getAttribute().getAttributeIndex() + 1);
+                case 1: return String.valueOf(constraint.getOriginalVisualPosition() + 1);
                 case 2: {
                     int orderPosition = constraint.getOrderPosition();
                     if (orderPosition > 0) {

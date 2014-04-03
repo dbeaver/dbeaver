@@ -73,7 +73,7 @@ public class ResultSetModel {
     }
 
     private void addConstraints(List<DBDAttributeConstraint> constraints, DBDAttributeBinding binding) {
-        DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding);
+        DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding.getAttribute(), binding.getAttributeIndex());
         constraint.setVisible(visibleColumns.contains(binding));
         constraints.add(constraint);
         List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
@@ -178,7 +178,7 @@ public class ResultSetModel {
     public void setColumnVisibility(@NotNull DBDAttributeBinding attribute, boolean visible)
     {
         DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
-        if (constraint.isVisible() != visible) {
+        if (constraint != null && constraint.isVisible() != visible) {
             constraint.setVisible(visible);
             if (visible) {
                 visibleColumns.add(attribute);
@@ -613,9 +613,16 @@ public class ResultSetModel {
     boolean setDataFilter(DBDDataFilter dataFilter)
     {
         this.dataFilter = dataFilter;
-        List<DBDAttributeBinding> newColumns = this.dataFilter.getOrderedVisibleAttributes();
-        if (!newColumns.equals(visibleColumns)) {
-            visibleColumns = newColumns;
+        List<DBDAttributeBinding> newBindings = new ArrayList<DBDAttributeBinding>();
+
+        for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
+            DBDAttributeBinding binding = getAttributeBinding(attr);
+            if (binding != null) {
+                newBindings.add(binding);
+            }
+        }
+        if (!newBindings.equals(visibleColumns)) {
+            visibleColumns = newBindings;
             return true;
         }
         return false;
@@ -635,12 +642,12 @@ public class ResultSetModel {
                 }
                 int result = 0;
                 for (DBDAttributeConstraint co : orderConstraints) {
-                    final DBDAttributeBinding binding = co.getAttribute();
+                    final DBDAttributeBinding binding = getAttributeBinding(co.getAttribute());
                     if (binding == null) {
                         continue;
                     }
-                    Object cell1 = row1.values[binding.getAttributeIndex()];
-                    Object cell2 = row2.values[binding.getAttributeIndex()];
+                    Object cell1 = getCellValue(row1, binding);
+                    Object cell2 = getCellValue(row2, binding);
                     if (cell1 == cell2) {
                         result = 0;
                     } else if (DBUtils.isNullValue(cell1)) {
@@ -650,8 +657,8 @@ public class ResultSetModel {
                     } else if (cell1 instanceof Comparable) {
                         result = ((Comparable)cell1).compareTo(cell2);
                     } else {
-                        String str1 = cell1.toString();
-                        String str2 = cell2.toString();
+                        String str1 = String.valueOf(cell1);
+                        String str2 = String.valueOf(cell2);
                         result = str1.compareTo(str2);
                     }
                     if (co.isOrderDescending()) {
