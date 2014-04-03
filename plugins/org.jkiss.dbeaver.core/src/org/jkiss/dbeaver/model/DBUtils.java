@@ -322,7 +322,7 @@ public final class DBUtils {
      * @return object or null
      */
     @Nullable
-    public static <T extends DBPNamedObject> T findObject(Collection<T> theList, String objectName)
+    public static <T extends DBPNamedObject> T findObject(@Nullable Collection<T> theList, String objectName)
     {
         if (theList != null && !theList.isEmpty()) {
             if (theList instanceof List) {

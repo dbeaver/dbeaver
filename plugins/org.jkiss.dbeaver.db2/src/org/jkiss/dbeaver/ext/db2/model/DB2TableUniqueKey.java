@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -111,7 +110,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     // -----------------
 
     @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
     {
         return columns;
     }

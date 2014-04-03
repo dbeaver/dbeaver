@@ -23,13 +23,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Pseudo attribute
@@ -46,9 +44,9 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
     }
 
     @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
     {
-        return Collections.singleton(this);
+        return Collections.singletonList(this);
     }
 
     @Nullable
@@ -58,6 +56,7 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
         return this.entityAttribute.getDescription();
     }
 
+    @NotNull
     @Override
     public DBSEntity getParentObject()
     {

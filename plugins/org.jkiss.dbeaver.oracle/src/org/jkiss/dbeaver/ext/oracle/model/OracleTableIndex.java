@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -113,11 +112,12 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
     }
 
     @Override
-    public Collection<OracleTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<OracleTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
+    @Nullable
     @Association
     public OracleTableIndexColumn getColumn(String columnName)
     {

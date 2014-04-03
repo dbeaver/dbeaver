@@ -58,7 +58,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     }
 
     @Override
-    public Collection<OBJECT> getCachedObjects()
+    public List<OBJECT> getCachedObjects()
     {
         synchronized (this) {
             return objectList == null ? Collections.<OBJECT>emptyList() : objectList;
