@@ -63,7 +63,7 @@ public interface DBDValueController extends IDataSourceProvider
      * Updates value
      * @param value value
      */
-    void updateValue(Object value);
+    void updateValue(@Nullable Object value);
 
     /**
      * Associated value handler
