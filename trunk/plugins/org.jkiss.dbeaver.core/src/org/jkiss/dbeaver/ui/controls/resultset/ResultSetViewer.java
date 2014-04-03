@@ -1582,6 +1582,13 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
+    public void navigateLink(@NotNull GridCell cell, int state) {
+        DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
+        RowData row = (RowData)(recordMode ? cell.col : cell.row);
+        System.out.println("Navigate to [" + model.getCellValue(row, attr));
+    }
+
+    @Override
     public Control getControl()
     {
         return this.viewerPanel;
