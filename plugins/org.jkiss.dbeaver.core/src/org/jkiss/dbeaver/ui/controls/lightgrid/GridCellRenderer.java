@@ -185,7 +185,9 @@ class GridCellRenderer extends AbstractRenderer
 
         if ((state & IGridContentProvider.STATE_LINK) != 0) {
             Point origin = grid.getOrigin(column, row);
-            if (x >= origin.x + LEFT_MARGIN && x <= origin.x + LEFT_MARGIN + LINK_IMAGE_BOUNDS.width) {
+            int verMargin = (grid.getItemHeight() - LINK_IMAGE_BOUNDS.height) / 2;
+            if (x >= origin.x + LEFT_MARGIN && x <= origin.x + LEFT_MARGIN + LINK_IMAGE_BOUNDS.width &&
+                y >= origin.y + verMargin && y <= origin.y + verMargin + LINK_IMAGE_BOUNDS.height) {
                 return true;
             }
 

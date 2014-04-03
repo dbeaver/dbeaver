@@ -113,6 +113,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.addListener(SWT.MouseDown, this);
         super.addListener(SWT.KeyDown, this);
         super.addListener(LightGrid.Event_ChangeSort, this);
+        super.addListener(LightGrid.Event_NavigateLink, this);
 
         tableEditor = new SpreadsheetCellEditor(this);
         tableEditor.horizontalAlignment = SWT.LEFT;
@@ -314,6 +315,9 @@ public class Spreadsheet extends LightGrid implements Listener {
                 break;
             case LightGrid.Event_ChangeSort:
                 spreadsheetController.changeSorting(event.data, event.stateMask);
+                break;
+            case LightGrid.Event_NavigateLink:
+                spreadsheetController.navigateLink((GridCell) event.data, event.stateMask);
                 break;
         }
     }
