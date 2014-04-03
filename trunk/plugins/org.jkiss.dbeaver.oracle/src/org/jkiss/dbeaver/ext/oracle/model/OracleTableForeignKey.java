@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -94,6 +95,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         return referencedKey.getTable();
     }
 
+    @NotNull
     @Override
     @Property(id = "reference", viewable = true, order = 4)
     public OracleTableConstraint getReferencedConstraint()
@@ -101,6 +103,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         return referencedKey;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSForeignKeyModifyRule getDeleteRule()
@@ -109,6 +112,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
     }
 
     // Update rule is not supported by Oracle
+    @NotNull
     @Override
     public DBSForeignKeyModifyRule getUpdateRule()
     {

@@ -189,6 +189,9 @@ public class ResultSetViewer extends Viewer
     private ResultSetFindReplaceTarget findReplaceTarget;
 
     private final ResultSetModel model = new ResultSetModel();
+    private StateItem curState = null;
+    private final List<StateItem> stateHistory = new ArrayList<StateItem>();
+    private int historyPosition = -1;
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
@@ -197,16 +200,6 @@ public class ResultSetViewer extends Viewer
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull ResultSetProvider resultSetProvider)
     {
         super();
-
-/*
-        if (!adapterRegistered) {
-            ResultSetAdapterFactory nodesAdapter = new ResultSetAdapterFactory();
-            IAdapterManager mgr = Platform.getAdapterManager();
-            mgr.registerAdapters(nodesAdapter, ResultSetProvider.class);
-            mgr.registerAdapters(nodesAdapter, IPageChangeProvider.class);
-            adapterRegistered = true;
-        }
-*/
 
         this.site = site;
         this.recordMode = false;
@@ -272,7 +265,6 @@ public class ResultSetViewer extends Viewer
         }
 
         createStatusBar(viewerPanel);
-        changeMode(false);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeManager.addPropertyChangeListener(this);
@@ -316,6 +308,8 @@ public class ResultSetViewer extends Viewer
                 fireSelectionChanged(new SelectionChangedEvent(ResultSetViewer.this, new ResultSetSelectionImpl()));
             }
         });
+
+        changeMode(false);
     }
 
     ////////////////////////////////////////////////////////////
@@ -773,7 +767,7 @@ public class ResultSetViewer extends Viewer
 
     public DBSDataContainer getDataContainer()
     {
-        return resultSetProvider.getDataContainer();
+        return curState != null ? curState.dataContainer : resultSetProvider.getDataContainer();
     }
 
     ////////////////////////////////////////////////////////////
@@ -1585,7 +1579,33 @@ public class ResultSetViewer extends Viewer
     public void navigateLink(@NotNull GridCell cell, int state) {
         DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
         RowData row = (RowData)(recordMode ? cell.col : cell.row);
-        System.out.println("Navigate to [" + model.getCellValue(row, attr));
+
+        Object value = getModel().getCellValue(row, attr);
+        List<DBSEntityReferrer> referrers = attr.getReferrers();
+        if (!CommonUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
+            for (DBSEntityReferrer referrer : referrers) {
+                if (referrer instanceof DBSEntityAssociation) {
+                    DBSEntityAssociation association = (DBSEntityAssociation) referrer;
+                    DBSEntity targetEntity = association.getReferencedConstraint().getParentObject();
+                    if (targetEntity instanceof DBSDataContainer) {
+                        rejectChanges();
+                        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
+                        DBDDataFilter newFilter = new DBDDataFilter(constraints);
+                        StateItem newState = new StateItem((DBSDataContainer) targetEntity, newFilter, -1);
+                        curState = newState;
+                        //model.setDataFilter(newFilter);
+                        while (historyPosition < stateHistory.size() - 1) {
+                            stateHistory.remove(stateHistory.size() - 1);
+                        }
+                        stateHistory.add(newState);
+                        historyPosition = stateHistory.size() - 1;
+                        refresh();
+                    }
+                    System.out.println("Navigate to [" + value + "] using [" + targetEntity.getName() + "]");
+                    return;
+                }
+            }
+        }
     }
 
     @Override
@@ -1689,6 +1709,11 @@ public class ResultSetViewer extends Viewer
         // Save history location
         isHistoryChanging = true;
         try {
+            if (curState == null) {
+                curState = new StateItem(resultSetProvider.getDataContainer(), model.getDataFilter(), curRow == null ? -1 : curRow.visualNumber);
+                stateHistory.add(curState);
+                historyPosition = 0;
+            }
             site.getPage().getNavigationHistory().markLocation((IEditorPart) site.getPart());
         } finally {
             isHistoryChanging = false;

@@ -51,6 +51,7 @@ public class WMIClassReference extends WMIClassAttribute implements DBSEntityAss
         return refClass;
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraint getReferencedConstraint()
     {

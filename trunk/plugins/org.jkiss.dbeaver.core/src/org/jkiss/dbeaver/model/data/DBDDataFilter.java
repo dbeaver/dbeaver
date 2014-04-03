@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -52,6 +53,7 @@ public class DBDDataFilter {
         return constraints;
     }
 
+    @Nullable
     public DBDAttributeConstraint getConstraint(DBDAttributeBinding binding)
     {
         for (DBDAttributeConstraint co : constraints) {

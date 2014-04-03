@@ -104,12 +104,14 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }
 
+    @NotNull
     @Override
     public DBSForeignKeyModifyRule getUpdateRule()
     {
         return db2UpdateRule.getRule();
     }
 
+    @NotNull
     @Override
     public DBSForeignKeyModifyRule getDeleteRule()
     {
@@ -140,6 +142,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         return refTable;
     }
 
+    @NotNull
     @Override
     @Property(id = "reference", viewable = false)
     public DB2TableUniqueKey getReferencedConstraint()
