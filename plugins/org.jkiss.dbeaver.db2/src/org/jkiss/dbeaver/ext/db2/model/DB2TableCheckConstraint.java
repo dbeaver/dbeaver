@@ -38,7 +38,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -109,7 +108,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     // -----------------
 
     @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
     {
         return columns;
     }

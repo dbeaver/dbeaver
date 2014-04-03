@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DBSTableIndex
@@ -44,6 +45,6 @@ public interface DBSTableIndex extends DBSEntityConstraint, DBSEntityReferrer, D
 
     DBSIndexType getIndexType();
 
-    Collection<? extends DBSTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor);
+    List<? extends DBSTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor);
 
 }

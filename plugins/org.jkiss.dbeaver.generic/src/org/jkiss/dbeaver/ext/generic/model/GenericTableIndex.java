@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -108,7 +107,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
     }
 
     @Override
-    public Collection<GenericTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<GenericTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

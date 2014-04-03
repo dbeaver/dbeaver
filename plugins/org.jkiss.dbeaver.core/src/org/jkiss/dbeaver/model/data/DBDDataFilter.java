@@ -65,6 +65,17 @@ public class DBDDataFilter {
         return null;
     }
 
+    @Nullable
+    public DBDAttributeConstraint getConstraint(DBSAttributeBase attribute)
+    {
+        for (DBDAttributeConstraint co : constraints) {
+            if (co.getAttribute() == attribute) {
+                return co;
+            }
+        }
+        return null;
+    }
+
     public List<DBSAttributeBase> getOrderedVisibleAttributes()
     {
         List<DBDAttributeConstraint> visibleConstraints = new ArrayList<DBDAttributeConstraint>();

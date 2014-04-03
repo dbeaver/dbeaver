@@ -36,6 +36,7 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
 
     Collection<OBJECT> getCachedObjects();
 
+    @Nullable
     OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
         throws DBException;
 

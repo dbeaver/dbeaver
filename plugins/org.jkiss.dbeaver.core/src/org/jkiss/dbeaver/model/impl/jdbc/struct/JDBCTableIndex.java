@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndex;
@@ -38,7 +39,7 @@ public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE
     protected DBSIndexType indexType;
     private boolean persisted;
 
-    protected JDBCTableIndex(CONTAINER container, TABLE table, String name, DBSIndexType indexType, boolean persisted) {
+    protected JDBCTableIndex(CONTAINER container, TABLE table, String name, @Nullable DBSIndexType indexType, boolean persisted) {
         this.container = container;
         this.table = table;
         this.name = name;

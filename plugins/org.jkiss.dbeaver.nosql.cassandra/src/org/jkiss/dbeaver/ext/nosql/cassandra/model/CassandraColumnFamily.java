@@ -183,14 +183,15 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
                 {
                     return CassandraConstants.PRIMARY_KEY;
                 }
+                @Nullable
                 @Override
-                public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
+                public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
                 {
                     final CassandraColumn keyColumn = getKeyColumn(monitor);
                     if (keyColumn == null) {
                         return null;
                     }
-                    return Collections.singleton(new DBSEntityAttributeRef() {
+                    return Collections.singletonList(new DBSEntityAttributeRef() {
                         @Override
                         public DBSEntityAttribute getAttribute()
                         {

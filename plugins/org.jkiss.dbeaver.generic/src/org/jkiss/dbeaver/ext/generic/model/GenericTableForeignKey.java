@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -67,7 +66,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
     }
 
     @Override
-    public Collection<GenericTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<GenericTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

@@ -109,6 +109,7 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: fix local ordering
  * TODO: RS navigation, FK and REF links
  * TODO: collections and ANY types support
  * TODO: not-editable cells (struct owners in record mode)
@@ -1579,35 +1580,96 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void navigateLink(@NotNull GridCell cell, int state) {
-        DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-        RowData row = (RowData)(recordMode ? cell.col : cell.row);
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
+        final RowData row = (RowData)(recordMode ? cell.col : cell.row);
 
-        Object value = getModel().getCellValue(row, attr);
         List<DBSEntityReferrer> referrers = attr.getReferrers();
-        if (!CommonUtils.isEmpty(referrers) && !DBUtils.isNullValue(value)) {
-            for (DBSEntityReferrer referrer : referrers) {
+        if (!CommonUtils.isEmpty(referrers)) {
+            for (final DBSEntityReferrer referrer : referrers) {
                 if (referrer instanceof DBSEntityAssociation) {
-                    DBSEntityAssociation association = (DBSEntityAssociation) referrer;
-                    DBSEntity targetEntity = association.getReferencedConstraint().getParentObject();
-                    if (targetEntity instanceof DBSDataContainer) {
-                        rejectChanges();
-                        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
-                        DBDDataFilter newFilter = new DBDDataFilter(constraints);
-                        StateItem newState = new StateItem((DBSDataContainer) targetEntity, newFilter, -1);
-                        curState = newState;
-                        //model.setDataFilter(newFilter);
-                        while (historyPosition < stateHistory.size() - 1) {
-                            stateHistory.remove(stateHistory.size() - 1);
-                        }
-                        stateHistory.add(newState);
-                        historyPosition = stateHistory.size() - 1;
-                        refresh();
+                    try {
+                        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                            @Override
+                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                                try {
+                                    navigateAssociation(monitor, (DBSEntityAssociation) referrer, attr, row);
+                                } catch (DBException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                            }
+                        });
+                    } catch (InvocationTargetException e) {
+                        UIUtils.showErrorDialog(site.getShell(), "Cannot navigate to the reference", null, e.getTargetException());
+                    } catch (InterruptedException e) {
+                        // ignore
                     }
-                    System.out.println("Navigate to [" + value + "] using [" + targetEntity.getName() + "]");
                     return;
                 }
             }
         }
+    }
+
+    private void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull DBDAttributeBinding attr, @NotNull RowData row)
+        throws DBException
+    {
+        Object value = getModel().getCellValue(row, attr);
+        if (DBUtils.isNullValue(value)) {
+            log.warn("Can't navigate to NULL value");
+            return;
+        }
+        DBSEntityConstraint refConstraint = association.getReferencedConstraint();
+        if (!(refConstraint instanceof DBSEntityReferrer)) {
+            log.warn("Referenced constraint [" + refConstraint + "] is no a referrer");
+            return;
+        }
+        DBSEntity targetEntity = refConstraint.getParentObject();
+        if (!(targetEntity instanceof DBSDataContainer)) {
+            log.warn("Entity [" + DBUtils.getObjectFullName(targetEntity) + "] is not a data container");
+            return;
+        }
+
+        // make constraints
+        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
+        int visualPosition = 0;
+        for (DBSEntityAttribute entityAttr : CommonUtils.safeCollection(targetEntity.getAttributes(monitor))) {
+            DBDAttributeConstraint constraint = new DBDAttributeConstraint(entityAttr, visualPosition++);
+            constraints.add(constraint);
+        }
+        DBDDataFilter newFilter = new DBDDataFilter(constraints);
+        // Set conditions
+        List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
+        List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
+        assert ownAttrs.size() == refAttrs.size();
+        for (int i = 0; i < ownAttrs.size(); i++) {
+            DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
+            DBSEntityAttributeRef refAttr = refAttrs.get(i);
+            DBDAttributeBinding ownBinding = model.getAttributeBinding(ownAttr.getAttribute());
+            assert ownBinding != null;
+            DBDAttributeConstraint constraint = newFilter.getConstraint(refAttr.getAttribute());
+            assert constraint != null;
+
+            Object keyValue = getModel().getCellValue(row, ownBinding);
+            constraint.setCriteria("='" + ownBinding.getValueHandler().getValueDisplayString(ownBinding.getAttribute(), keyValue, DBDDisplayFormat.NATIVE) + "'");
+        }
+
+
+        StateItem newState = new StateItem((DBSDataContainer) targetEntity, newFilter, -1);
+        curState = newState;
+        model.setDataFilter(newFilter);
+        while (historyPosition < stateHistory.size() - 1) {
+            stateHistory.remove(stateHistory.size() - 1);
+        }
+        stateHistory.add(newState);
+        historyPosition = stateHistory.size() - 1;
+        getControl().getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                rejectChanges();
+                refresh();
+            }
+        });
+
+        System.out.println("Navigate to [" + value + "] using [" + targetEntity.getName() + "]");
     }
 
     @Override

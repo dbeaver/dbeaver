@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -122,7 +121,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
     // Columns
     // -----------------
     @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
     {
         return columns;
     }

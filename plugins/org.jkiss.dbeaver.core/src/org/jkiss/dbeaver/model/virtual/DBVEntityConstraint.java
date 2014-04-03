@@ -49,7 +49,7 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     }
 
     @Override
-    public Collection<DBVEntityConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
+    public List<DBVEntityConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
     {
         return attributes;
     }
@@ -61,6 +61,7 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         return null;
     }
 
+    @NotNull
     @Override
     public DBVEntity getParentObject()
     {
