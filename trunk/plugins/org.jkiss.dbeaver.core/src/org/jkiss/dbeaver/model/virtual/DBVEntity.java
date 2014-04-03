@@ -64,6 +64,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         this.descriptionColumnNames = descriptionColumnNames;
     }
 
+    @Nullable
     public DBSEntity getRealEntity(DBRProgressMonitor monitor) throws DBException
     {
         DBSObjectContainer realContainer = container.getRealContainer(monitor);
@@ -284,7 +285,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 xml.startElement(RegistryConstants.TAG_CONSTRAINT);
                 xml.addAttribute(RegistryConstants.ATTR_NAME, c.getName());
                 xml.addAttribute(RegistryConstants.ATTR_TYPE, c.getConstraintType().getName());
-                for (DBVEntityConstraintColumn cc : c.getAttributeReferences(null)) {
+                for (DBVEntityConstraintColumn cc : CommonUtils.safeCollection(c.getAttributeReferences(null))) {
                     xml.startElement(RegistryConstants.TAG_ATTRIBUTE);
                     xml.addAttribute(RegistryConstants.ATTR_NAME, cc.getAttributeName());
                     xml.endElement();

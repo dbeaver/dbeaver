@@ -75,6 +75,7 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
         return description;
     }
 
+    @NotNull
     @Override
     public DBSEntity getParentObject()
     {
@@ -101,7 +102,7 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
     }
 
     @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

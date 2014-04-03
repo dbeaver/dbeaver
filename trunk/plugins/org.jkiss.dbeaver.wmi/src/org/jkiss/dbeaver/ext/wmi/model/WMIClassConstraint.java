@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Class constraint
@@ -48,6 +49,7 @@ public class WMIClassConstraint implements DBSEntityConstraint, DBSEntityReferre
         return null;
     }
 
+    @NotNull
     @Override
     public DBSEntity getParentObject()
     {
@@ -81,7 +83,7 @@ public class WMIClassConstraint implements DBSEntityConstraint, DBSEntityReferre
     }
 
     @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return Collections.singletonList(this);
     }

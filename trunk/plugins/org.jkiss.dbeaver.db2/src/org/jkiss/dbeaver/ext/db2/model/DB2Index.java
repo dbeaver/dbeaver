@@ -39,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * DB2 Index
@@ -149,7 +149,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
     // -----------------
 
     @Override
-    public Collection<DB2IndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<DB2IndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         try {
             return getContainer().getIndexCache().getChildren(monitor, getContainer(), this);

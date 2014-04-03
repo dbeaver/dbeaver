@@ -18,16 +18,18 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * DBSEntityReferrer
  */
 public interface DBSEntityReferrer extends DBSEntityConstraint {
 
-    Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException;
+    @Nullable
+    List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException;
 
 }

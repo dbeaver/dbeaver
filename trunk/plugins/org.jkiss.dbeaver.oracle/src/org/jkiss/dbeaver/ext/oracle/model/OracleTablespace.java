@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -310,7 +311,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         }
     }
 
-    static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<OracleDataSource> referrer, Object propertyId) throws DBException
+    static Object resolveTablespaceReference(DBRProgressMonitor monitor, DBSObjectLazy<OracleDataSource> referrer, @Nullable Object propertyId) throws DBException
     {
         final OracleDataSource dataSource = referrer.getDataSource();
         if (!dataSource.isAdmin()) {

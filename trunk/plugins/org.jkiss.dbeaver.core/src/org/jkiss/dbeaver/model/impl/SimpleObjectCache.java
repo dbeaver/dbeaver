@@ -18,10 +18,11 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Simple objects cache.
@@ -30,13 +31,14 @@ import java.util.Collection;
 public class SimpleObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT> {
 
     @Override
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
+    public List<OBJECT> getObjects(DBRProgressMonitor monitor, @Nullable OWNER owner)
     {
         return getCachedObjects();
     }
 
+    @Nullable
     @Override
-    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
+    public OBJECT getObject(DBRProgressMonitor monitor, @Nullable OWNER owner, String name)
     {
         return getCachedObject(name);
     }

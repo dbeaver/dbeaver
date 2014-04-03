@@ -204,7 +204,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Nullable
-    public Collection<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject) throws DBException
+    public List<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject) throws DBException
     {
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {

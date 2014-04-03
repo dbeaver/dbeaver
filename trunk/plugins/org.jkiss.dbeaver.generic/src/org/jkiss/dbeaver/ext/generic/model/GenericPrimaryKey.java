@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * GenericTableConstraint
@@ -53,7 +56,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
     }
 
     @Override
-    public Collection<GenericTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<GenericTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * JDBC constraint manager
@@ -58,7 +59,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exte
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         boolean firstColumn = true;
-        for (DBSTableIndexColumn indexColumn : command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
+        for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE))) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(indexColumn.getName());

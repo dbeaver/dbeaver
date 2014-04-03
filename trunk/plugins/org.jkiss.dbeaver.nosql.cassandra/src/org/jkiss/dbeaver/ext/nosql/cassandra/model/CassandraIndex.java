@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * CassandraIndex
@@ -71,9 +72,9 @@ public class CassandraIndex extends JDBCTableIndex<CassandraKeyspace, CassandraC
     }
 
     @Override
-    public Collection<CassandraIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<CassandraIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
-        return Collections.singleton(column);
+        return Collections.singletonList(column);
     }
 
     @Override
