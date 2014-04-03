@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -27,17 +28,18 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DBDAttributeConstraint {
 
-    private final DBDAttributeBinding attribute;
+    private final DBSAttributeBase attribute;
     private int orderPosition;
     private boolean orderDescending;
     private String criteria;
     private boolean visible;
     private int visualPosition;
+    private final int originalVisualPosition;
 
-    public DBDAttributeConstraint(DBDAttributeBinding attribute)
+    public DBDAttributeConstraint(DBSAttributeBase attribute, int visualPosition)
     {
         this.attribute = attribute;
-        this.visualPosition = attribute.getAttributeIndex();
+        this.originalVisualPosition = this.visualPosition = visualPosition;
     }
 
     public DBDAttributeConstraint(DBDAttributeConstraint source)
@@ -47,10 +49,11 @@ public class DBDAttributeConstraint {
         this.orderDescending = source.orderDescending;
         this.criteria = source.criteria;
         this.visible = source.visible;
+        this.originalVisualPosition = source.originalVisualPosition;
         this.visualPosition = source.visualPosition;
     }
 
-    public DBDAttributeBinding getAttribute()
+    public DBSAttributeBase getAttribute()
     {
         return attribute;
     }
@@ -116,7 +119,7 @@ public class DBDAttributeConstraint {
         this.orderDescending = false;
         this.criteria = null;
         this.visible = true;
-        this.visualPosition = attribute.getAttributeIndex();
+        this.visualPosition = originalVisualPosition;
     }
 
     public boolean equalFilters(DBDAttributeConstraint source)
@@ -150,4 +153,7 @@ public class DBDAttributeConstraint {
             this.visualPosition == source.visualPosition;
     }
 
+    public int getOriginalVisualPosition() {
+        return originalVisualPosition;
+    }
 }

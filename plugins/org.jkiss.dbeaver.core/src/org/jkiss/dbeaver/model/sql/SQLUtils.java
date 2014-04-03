@@ -296,7 +296,7 @@ public final class SQLUtils {
             if (conditionTable != null) {
                 query.append(conditionTable).append('.');
             }
-            query.append(DBUtils.getQuotedIdentifier(dataSource, constraint.getAttribute().getName()));
+            query.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute()));
             final char firstChar = criteria.trim().charAt(0);
             if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
                 query.append('=').append(criteria);
