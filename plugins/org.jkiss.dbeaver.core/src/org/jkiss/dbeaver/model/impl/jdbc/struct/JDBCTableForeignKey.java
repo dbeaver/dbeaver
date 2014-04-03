@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
@@ -58,6 +59,7 @@ public abstract class JDBCTableForeignKey<
         return referencedKey.getTable();
     }
 
+    @NotNull
     @Override
     @Property(id = "reference", viewable = true, order = 4)
     public PRIMARY_KEY getReferencedConstraint()
@@ -65,6 +67,7 @@ public abstract class JDBCTableForeignKey<
         return referencedKey;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSForeignKeyModifyRule getDeleteRule()
@@ -77,6 +80,7 @@ public abstract class JDBCTableForeignKey<
         this.deleteRule = deleteRule;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 6)
     public DBSForeignKeyModifyRule getUpdateRule()

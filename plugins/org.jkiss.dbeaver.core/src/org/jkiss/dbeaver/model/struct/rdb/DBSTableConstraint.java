@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
  */
 public interface DBSTableConstraint extends DBSEntityReferrer, DBPQualifiedObject
 {
+    @NotNull
     DBSTable getParentObject();
 
 }

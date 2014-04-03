@@ -48,6 +48,7 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
         this.pk = pk;
     }
 
+    @NotNull
     @Override
     public DBSEntityConstraint getReferencedConstraint()
     {

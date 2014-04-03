@@ -257,7 +257,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 
     @Override
-    public void handleEvent(Event event)
+    public void handleEvent(final Event event)
     {
         switch (event.type) {
             case SWT.KeyDown:
@@ -317,7 +317,14 @@ public class Spreadsheet extends LightGrid implements Listener {
                 spreadsheetController.changeSorting(event.data, event.stateMask);
                 break;
             case LightGrid.Event_NavigateLink:
-                spreadsheetController.navigateLink((GridCell) event.data, event.stateMask);
+                // Perform navigation async because it may change grid content and
+                // we don't want to mess current grid state
+                getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        spreadsheetController.navigateLink((GridCell) event.data, event.stateMask);
+                    }
+                });
                 break;
         }
     }
