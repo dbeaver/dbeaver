@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
 /**
@@ -29,131 +27,8 @@ abstract class AbstractRenderer
 {
     protected final LightGrid grid;
 
-    /** Hover state. */
-    private boolean hover;
-
-    /** Renderer has focus. */
-    private boolean focus;
-
-    /** Mouse down on the renderer area. */
-    private boolean mouseDown;
-
-    /** Selection state. */
-    private boolean selected;
-
-    /** The bounds the renderer paints on. */
-    protected final Rectangle bounds = new Rectangle(0, 0, 0, 0);
-
     protected AbstractRenderer(LightGrid grid) {
         this.grid = grid;
-    }
-
-    /**
-     * Returns the bounds.
-     * 
-     * @return Rectangle describing the bounds.
-     */
-    public Rectangle getBounds()
-    {
-        return bounds;
-    }
-
-    public void setBounds(int x, int y, int width, int height)
-    {
-        this.bounds.x = x;
-        this.bounds.y = y;
-        this.bounds.width = width;
-        this.bounds.height = height;
-    }
-
-
-    public void setBounds(Rectangle bounds)
-    {
-        this.bounds.x = bounds.x;
-        this.bounds.y = bounds.y;
-        this.bounds.width = bounds.width;
-        this.bounds.height = bounds.height;
-    }
-
-    /**
-     * Returns the size.
-     * 
-     * @return size of the renderer.
-     */
-    public Point getSize()
-    {
-        return new Point(bounds.width, bounds.height);
-    }
-
-    public void setLocation(int x, int y)
-    {
-        setBounds(x, y, bounds.width, bounds.height);
-    }
-
-    public void setLocation(Point location)
-    {
-        setBounds(location.x, location.y, bounds.width, bounds.height);
-    }
-
-    public void setSize(Point size)
-    {
-        setBounds(bounds.x, bounds.y, size.x, size.y);
-    }
-
-    /**
-     * Returns a boolean value indicating if this renderer has focus.
-     * 
-     * @return True/false if has focus.
-     */
-    public boolean isFocus()
-    {
-        return focus;
-    }
-
-    public void setFocus(boolean focus)
-    {
-        this.focus = focus;
-    }
-
-    /**
-     * Returns the hover state.
-     * 
-     * @return Is the renderer in the hover state.
-     */
-    public boolean isHover()
-    {
-        return hover;
-    }
-
-    public void setHover(boolean hover)
-    {
-        this.hover = hover;
-    }
-
-    /**
-     * Returns the boolean value indicating if the renderer has the mouseDown
-     * state.
-     * 
-     * @return mouse down state.
-     */
-    public boolean isMouseDown()
-    {
-        return mouseDown;
-    }
-
-    /**
-     * Returns the boolean state indicating if the selected state is set.
-     * 
-     * @return selected state.
-     */
-    public boolean isSelected()
-    {
-        return selected;
-    }
-
-    public void setSelected(boolean selected)
-    {
-        this.selected = selected;
     }
 
     /**

@@ -1970,6 +1970,7 @@ public abstract class LightGrid extends Canvas {
         final int hScrollSelectionInPixels = getHScrollSelectionInPixels();
         final GridPos testPos = new GridPos(-1, -1);
         final GridCell testCell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
+        final Rectangle cellBounds = new Rectangle(0, 0, 0, 0);
         //final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
         boolean isGridInFocus = this.isFocusControl();
 
@@ -1998,37 +1999,21 @@ public abstract class LightGrid extends Canvas {
 
                     if (x + width >= 0 && x < clientArea.width) {
 
-                        cellRenderer.setCell(testCell);
-                        cellRenderer.setBounds(x, y, width, getItemHeight());
-//                        int cellInHeaderDelta = headerHeight - y;
-//                        if (cellInHeaderDelta > 0) {
-//                            clipping.x = x - 1;
-//                            clipping.y = y + cellInHeaderDelta;
-//                            clipping.width = width + 1;
-//                            clipping.height = getItemHeight() + 2 - cellInHeaderDelta;
-//                        } else {
-//                            clipping.x = x - 1;
-//                            clipping.y = y - 1;
-//                            clipping.width = width + 1;
-//                            clipping.height = getItemHeight() + 2;
-//                        }
-                        //gc.setClipping(clipping);
-
-                        //column.getCellRenderer().setSelected(selectedItems.contains(item));
-                        cellRenderer.setFocus(isGridInFocus);
-                        cellRenderer.setRowFocus(focusItem == row);
-                        cellRenderer.setCellFocus(
-                            focusItem == row && focusColumn == column);
-
-                        cellRenderer.setRowHover(hoveringItem == row);
-                        cellRenderer.setColumnHover(hoveringColumn == column);
+                        cellBounds.x = x;
+                        cellBounds.y = y;
+                        cellBounds.width = width;
+                        cellBounds.height = getItemHeight();
 
                         testPos.col = k;
                         testPos.row = row;
-                        cellRenderer.setCellSelected(selectedCells.contains(testPos));
                         testCell.row = rowElements[row];
                         testCell.col = column.getElement();
-                        cellRenderer.paint(gc);
+                        cellRenderer.paint(
+                            gc,
+                            cellBounds,
+                            selectedCells.contains(testPos),
+                            focusItem == row && focusColumn == column,
+                            testCell);
 
                         //gc.setClipping((Rectangle) null);
                     }
@@ -2046,13 +2031,18 @@ public abstract class LightGrid extends Canvas {
                 GridNode parentNode = this.parentNodes[row];
                 if (rowHeaderVisible) {
 
-                    rowHeaderRenderer.setSelected(cellInRowSelected);
                     if (y >= headerHeight) {
-                        rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, getItemHeight() + 1);
-                        rowHeaderRenderer.setElement(rowElements[row]);
-                        rowHeaderRenderer.setLevel(parentNode == null ? 0 : parentNode.level);
-                        rowHeaderRenderer.setState(rowNode == null ? IGridContentProvider.ElementState.NONE : rowNode.state);
-                        rowHeaderRenderer.paint(gc);
+                        cellBounds.x = 0;
+                        cellBounds.y = y;
+                        cellBounds.width = rowHeaderWidth;
+                        cellBounds.height = getItemHeight() + 1;
+                        rowHeaderRenderer.paint(
+                            gc,
+                            cellBounds,
+                            cellInRowSelected,
+                            parentNode == null ? 0 : parentNode.level,
+                            rowNode == null ? IGridContentProvider.ElementState.NONE : rowNode.state,
+                            rowElements[row]);
                     }
                     x += rowHeaderWidth;
                 }
@@ -2113,9 +2103,6 @@ public abstract class LightGrid extends Canvas {
 
             int columnHeight = column.getHeaderHeight(false);
             y = 0;
-            columnHeaderRenderer.setHover(hoveringColumn == column);
-            columnHeaderRenderer.setElement(column.getElement());
-
             if (x + column.getWidth() >= 0) {
                 paintColumnsHeader(gc, column, x, y, columnHeight, 0);
             }
@@ -2142,10 +2129,8 @@ public abstract class LightGrid extends Canvas {
         if (CommonUtils.isEmpty(children)) {
             paintHeight = columnHeight * (maxColumnDepth - level + 1);
         }
-        columnHeaderRenderer.setElement(column.getElement());
-        columnHeaderRenderer.setSelected(selectedColumns.contains(column));
-        columnHeaderRenderer.setBounds(x, y, column.getWidth(), paintHeight);
-        columnHeaderRenderer.paint(gc);
+        Rectangle bounds = new Rectangle(x, y, column.getWidth(), paintHeight);
+        columnHeaderRenderer.paint(gc, bounds, selectedColumns.contains(column), column.getElement());
         if (!CommonUtils.isEmpty(children)) {
             // Draw child columns
             level++;
@@ -3449,6 +3434,14 @@ public abstract class LightGrid extends Canvas {
 
         //do normal cell specific tooltip stuff
         if (hoverChange) {
+            // Check for link
+            if (col != null && row >= 0) {
+                if (cellRenderer.isOverLink(col, row, x, y)) {
+
+                }
+            }
+
+            // Check tooltip
             String newTip = null;
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 // get cell specific tooltip
