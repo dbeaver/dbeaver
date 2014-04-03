@@ -38,20 +38,16 @@ class GridCellRenderer extends AbstractRenderer
     private static final int TEXT_TOP_MARGIN = 1;
     private static final int INSIDE_MARGIN = 3;
 
+    private static final Image LINK_IMAGE = DBIcon.TREE_LINK.getImage();
+    private static final Rectangle LINK_IMAGE_BOUNDS = LINK_IMAGE.getBounds();
+
     protected Color colorSelected;
     protected Color colorSelectedText;
     protected Color colorBackgroundDisabled;
     protected Color colorLineForeground;
     protected Color colorLineFocused;
 
-    private boolean rowHover = false;
-    private boolean columnHover = false;
-    private boolean rowFocus = false;
-    private boolean cellFocus = false;
-    private boolean cellSelected = false;
-    private boolean dragging = false;
     private final RGB colorSelectedRGB;
-    protected GridCell cell;
 
     public GridCellRenderer(LightGrid grid)
     {
@@ -64,121 +60,11 @@ class GridCellRenderer extends AbstractRenderer
         colorBackgroundDisabled = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     }
 
-    void setCell(GridCell cell) {
-        this.cell = cell;
-    }
-
-    /**
-     * @return Returns the columnHover.
-     */
-    public boolean isColumnHover()
+    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, GridCell cell)
     {
-        return columnHover;
-    }
-
-    /**
-     * @param columnHover The columnHover to set.
-     */
-    public void setColumnHover(boolean columnHover)
-    {
-        this.columnHover = columnHover;
-    }
-
-    /**
-     * @return Returns the rowHover.
-     */
-    public boolean isRowHover()
-    {
-        return rowHover;
-    }
-
-    /**
-     * @param rowHover The rowHover to set.
-     */
-    public void setRowHover(boolean rowHover)
-    {
-        this.rowHover = rowHover;
-    }
-
-    /**
-     * @return Returns the columnFocus.
-     */
-    public boolean isCellFocus()
-    {
-        return cellFocus;
-    }
-
-    /**
-     * @param columnFocus The columnFocus to set.
-     */
-    public void setCellFocus(boolean columnFocus)
-    {
-        this.cellFocus = columnFocus;
-    }
-
-    /**
-     * @return Returns the rowFocus.
-     */
-    public boolean isRowFocus()
-    {
-        return rowFocus;
-    }
-
-    /**
-     * @param rowFocus The rowFocus to set.
-     */
-    public void setRowFocus(boolean rowFocus)
-    {
-        this.rowFocus = rowFocus;
-    }
-
-    /**
-     * @return the cellSelected
-     */
-    public boolean isCellSelected()
-    {
-        return cellSelected;
-    }
-
-    /**
-     * @param cellSelected the cellSelected to set
-     */
-    public void setCellSelected(boolean cellSelected)
-    {
-        this.cellSelected = cellSelected;
-    }
-
-    /**
-     * Gets the dragging state.
-     *
-     * @return Returns the dragging state.
-     */
-    public boolean isDragging()
-    {
-    	return dragging;
-    }
-
-    /**
-     * Sets the dragging state.
-     *
-     * @param dragging The state to set.
-     */
-    public void setDragging(boolean dragging)
-    {
-    	this.dragging = dragging;
-    }
-
-    public void paint(GC gc)
-    {
-        boolean drawAsSelected = isSelected();
-
         boolean drawBackground = true;
 
-        if (isCellSelected()) {
-            drawAsSelected = true;//(!isCellFocus());
-        }
-
-        if (drawAsSelected) {
+        if (selected) {
             Color cellBackground = grid.getCellBackground(cell);
             if (cellBackground.equals(grid.getBackground())) {
                 gc.setBackground(colorSelected);
@@ -211,13 +97,36 @@ class GridCellRenderer extends AbstractRenderer
                 bounds.height);
 
 
+        int state = grid.getContentProvider().getCellState(cell);
         int x = LEFT_MARGIN;
 
+/*
         Image image = grid.getCellImage(cell);
         if (image != null) {
             Rectangle imageBounds = image.getBounds();
             int y = bounds.y + (bounds.height - imageBounds.height) / 2;
 
+            gc.drawImage(image, bounds.x + x, y);
+
+            x += imageBounds.width + INSIDE_MARGIN;
+        }
+*/
+        Image image;
+        Rectangle imageBounds = null;
+
+        if ((state & IGridContentProvider.STATE_LINK) != 0) {
+            image = LINK_IMAGE;
+            imageBounds = LINK_IMAGE_BOUNDS;
+        } else {
+            image = grid.getCellImage(cell);
+            if (image != null) {
+                imageBounds = image.getBounds();
+            }
+        }
+        if (image != null) {
+//            gc.drawImage(image, bounds.x + bounds.width - imageBounds.width - RIGHT_MARGIN, bounds.y + (bounds.height - imageBounds.height) / 2);
+//            x += imageBounds.width + INSIDE_MARGIN;
+            int y = bounds.y + (bounds.height - imageBounds.height) / 2;
             gc.drawImage(image, bounds.x + x, y);
 
             x += imageBounds.width + INSIDE_MARGIN;
@@ -232,7 +141,6 @@ class GridCellRenderer extends AbstractRenderer
 //        }
 
         // Get cell text
-        int state = grid.getContentProvider().getCellState(cell);
         String text = grid.getCellText(cell);
         if (text != null && !text.isEmpty()) {
             // Get shortern version of string
@@ -248,14 +156,8 @@ class GridCellRenderer extends AbstractRenderer
                 true);
         }
 
-        if ((state & IGridContentProvider.STATE_LINK) != 0) {
-            Image linkImage = DBIcon.TREE_LINK.getImage();
-            Rectangle linkBounds = linkImage.getBounds();
-            gc.drawImage(linkImage, bounds.x + bounds.width - linkBounds.width - RIGHT_MARGIN, bounds.y + (bounds.height - linkBounds.height) / 2);
-        }
-
         if (grid.isLinesVisible()) {
-            if (isCellSelected()) {
+            if (selected) {
                 //XXX: should be user definable?
                 gc.setForeground(colorLineForeground);
             } else {
@@ -267,14 +169,28 @@ class GridCellRenderer extends AbstractRenderer
                 bounds.x + bounds.width - 1, bounds.y + bounds.height);
         }
 
-        if (isCellFocus()) {
+        if (focus) {
 
             gc.setForeground(colorLineFocused);
             gc.drawRectangle(bounds.x, bounds.y, bounds.width - 1, bounds.height);
 
-            if (isFocus()) {
+            if (grid.isFocusControl()) {
                 gc.drawRectangle(bounds.x + 1, bounds.y + 1, bounds.width - 3, bounds.height - 2);
             }
         }
     }
+
+    public boolean isOverLink(GridColumn column, int row, int x, int y) {
+        int state = grid.getContentProvider().getCellState(new GridCell(column.getElement(), grid.getRowElement(row)));
+
+        if ((state & IGridContentProvider.STATE_LINK) != 0) {
+            Point origin = grid.getOrigin(column, row);
+            if (x >= origin.x + LEFT_MARGIN && x <= origin.x + LEFT_MARGIN + LINK_IMAGE_BOUNDS.width) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
 }

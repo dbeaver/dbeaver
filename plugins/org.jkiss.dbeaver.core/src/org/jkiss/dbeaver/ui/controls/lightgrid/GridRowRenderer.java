@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
@@ -42,10 +41,6 @@ class GridRowRenderer extends AbstractRenderer {
     private final Color DEFAULT_FOREGROUND;
     private final Color DEFAULT_FOREGROUND_TEXT;
 
-    private int level;
-    private IGridContentProvider.ElementState state;
-    private Object element;
-
     public GridRowRenderer(LightGrid grid) {
         super(grid);
         DEFAULT_BACKGROUND = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
@@ -53,27 +48,22 @@ class GridRowRenderer extends AbstractRenderer {
         DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
-    void setElement(Object element) {
-        this.element = element;
-    }
-
-    public void paint(GC gc) {
+    public void paint(GC gc, Rectangle bounds, boolean selected, int level, IGridContentProvider.ElementState state, Object element) {
         String text = grid.getLabelProvider().getText(element);
 
         gc.setFont(getDisplay().getSystemFont());
 
-        Color background = getHeaderBackground();
+        Color background = grid.getLabelProvider().getBackground(element);
         if (background == null) {
             background = DEFAULT_BACKGROUND;
         }
         gc.setBackground(background);
 
-        if (isSelected()) {
+        if (selected) {
             gc.setBackground(grid.getCellHeaderSelectionBackground());
         }
 
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
-
 
         {
             gc.setForeground(DEFAULT_FOREGROUND);
@@ -113,7 +103,7 @@ class GridRowRenderer extends AbstractRenderer {
 
         width -= RIGHT_MARGIN;
 
-        Color foreground = getHeaderForeground();
+        Color foreground = grid.getLabelProvider().getForeground(element);
         if (foreground == null) {
             foreground = DEFAULT_FOREGROUND_TEXT;
         }
@@ -125,24 +115,6 @@ class GridRowRenderer extends AbstractRenderer {
 
         y += (bounds.height - gc.stringExtent(text).y) / 2;
         gc.drawString(org.jkiss.dbeaver.ui.TextUtils.getShortString(grid.fontMetrics, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
-    }
-
-    @Nullable
-    protected Color getHeaderBackground() {
-        return grid.getLabelProvider().getBackground(element);
-    }
-
-    @Nullable
-    protected Color getHeaderForeground() {
-        return grid.getLabelProvider().getForeground(element);
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
-    void setState(IGridContentProvider.ElementState state) {
-        this.state = state;
     }
 
     public int computeHeaderWidth(Object element, int level) {

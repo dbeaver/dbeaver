@@ -36,53 +36,47 @@ class GridColumnRenderer extends AbstractRenderer
     public static final int ARROW_MARGIN = 6;
     public static final int IMAGE_SPACING = 3;
 
-    private static Image asterisk = DBIcon.SORT_UNKNOWN.getImage();
-    private static Image arrowUp = DBIcon.SORT_DECREASE.getImage();
-    private static Image arrowDown = DBIcon.SORT_INCREASE.getImage();
-
-    private Object element;
+    private static final Image IMAGE_ASTERISK = DBIcon.SORT_UNKNOWN.getImage();
+    private static final Image IMAGE_ARROW_UP = DBIcon.SORT_DECREASE.getImage();
+    private static final Image IMAGE_ARROW_DOWN = DBIcon.SORT_INCREASE.getImage();
 
     public  GridColumnRenderer(LightGrid grid) {
         super(grid);
     }
 
-    void setElement(Object element) {
-        this.element = element;
-    }
-
     public static Rectangle getSortControlBounds() {
-        return arrowUp.getBounds();
+        return IMAGE_ARROW_UP.getBounds();
     }
 
     @Nullable
-    protected Image getColumnImage() {
+    protected Image getColumnImage(Object element) {
         return grid.getLabelProvider().getImage(element);
     }
 
-    protected String getColumnText()
+    protected String getColumnText(Object element)
     {
         return grid.getLabelProvider().getText(element);
     }
     
-    protected Font getColumnFont() {
+    protected Font getColumnFont(Object element) {
         Font font = grid.getLabelProvider().getFont(element);
         return font != null ? font : grid.normalFont;
     }
 
-    public void paint(GC gc) {
+    public void paint(GC gc, Rectangle bounds, boolean selected, Object element) {
         //GridColumn col = grid.getColumnByElement(cell.col);
         //AbstractRenderer arrowRenderer = col.getSortRenderer();
         int sortOrder = grid.getContentProvider().getSortOrder(element);
         Rectangle sortBounds = getSortControlBounds();
 
         // set the font to be used to display the text.
-        gc.setFont(getColumnFont());
+        gc.setFont(getColumnFont(element));
 
         boolean flat = true;
 
-        boolean drawSelected = ((isMouseDown() && isHover()));
+        boolean drawSelected = false;
 
-        if (flat && isSelected()) {
+        if (flat && selected) {
             gc.setBackground(grid.getCellHeaderSelectionBackground());
             //gc.setForeground(grid.getCellHeaderSelectionForeground());
         } else {
@@ -91,7 +85,6 @@ class GridColumnRenderer extends AbstractRenderer
         }
         gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
 
-        final Rectangle bounds = getBounds();
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
         int pushedDrawingOffset = 0;
@@ -101,7 +94,7 @@ class GridColumnRenderer extends AbstractRenderer
 
         int x = LEFT_MARGIN;
 
-        Image columnImage = getColumnImage();
+        Image columnImage = getColumnImage(element);
         if (columnImage != null) {
             int y = bounds.y + pushedDrawingOffset + TOP_MARGIN;
 
@@ -121,7 +114,7 @@ class GridColumnRenderer extends AbstractRenderer
 
         int y = bounds.y + TOP_MARGIN;
 
-        String text = getColumnText();
+        String text = getColumnText(element);
 
         text = org.jkiss.dbeaver.ui.TextUtils.getShortString(grid.fontMetrics, text, width);
 
@@ -201,13 +194,13 @@ class GridColumnRenderer extends AbstractRenderer
     {
         switch (sort) {
             case SWT.DEFAULT:
-                gc.drawImage(asterisk, bounds.x, bounds.y);
+                gc.drawImage(IMAGE_ASTERISK, bounds.x, bounds.y);
                 break;
             case SWT.UP:
-                gc.drawImage(arrowUp, bounds.x, bounds.y);
+                gc.drawImage(IMAGE_ARROW_UP, bounds.x, bounds.y);
                 break;
             case SWT.DOWN:
-                gc.drawImage(arrowDown, bounds.x, bounds.y);
+                gc.drawImage(IMAGE_ARROW_DOWN, bounds.x, bounds.y);
                 break;
         }
 /*
