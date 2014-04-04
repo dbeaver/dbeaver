@@ -94,7 +94,6 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
-import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
@@ -355,7 +354,7 @@ public class ResultSetViewer extends Viewer
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                new ResultSetFilterDialog(ResultSetViewer.this).open();
+                new FilterSettingsDialog(ResultSetViewer.this).open();
             }
         });
 
@@ -2936,7 +2935,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            new ResultSetFilterDialog(ResultSetViewer.this).open();
+            new FilterSettingsDialog(ResultSetViewer.this).open();
         }
     }
 
@@ -2997,7 +2996,7 @@ public class ResultSetViewer extends Viewer
                     if (cell == null) {
                         return null;
                     }
-                    ValueEditDialog dialog = new ValueEditDialog(viewer, cell);
+                    FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, cell, operator);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         return dialog.getValue();
                     } else {
