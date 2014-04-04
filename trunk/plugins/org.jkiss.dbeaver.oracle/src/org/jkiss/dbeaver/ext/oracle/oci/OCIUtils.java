@@ -301,8 +301,8 @@ public class OCIUtils
                 BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains(" =")) {
-                        aliases.add(line.substring(0, line.indexOf(" =")));
+                    if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("#") && line.contains("=")) {
+                        aliases.add(line.substring(0, line.indexOf("=")));
                     }
                 }
             } catch (FileNotFoundException e) {
