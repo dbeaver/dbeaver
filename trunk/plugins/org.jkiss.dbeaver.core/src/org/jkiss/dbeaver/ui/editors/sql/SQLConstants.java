@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.DBeaverConstants;
  */
 public class SQLConstants {
 
+    public static final String NULL_VALUE = "NULL";
+
     public final static String SQL_CONTENT_TYPE = "org.jkiss.dbeaver.sql";
 
     public final static String SQL_COMMENT = "sql_comment";
@@ -340,4 +342,5 @@ public class SQLConstants {
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
     public static final String CONFIG_COLOR_DISABLED = "org.jkiss.dbeaver.sql.editor.color.disabled.background";
     public static final String CONFIG_FONT_OUTPUT = "org.jkiss.dbeaver.sql.editor.font.output";
+
 }

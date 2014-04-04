@@ -650,7 +650,16 @@ public class ResultSetModel {
                 continue;
             }
             filterConstraint.setCriteria(constraint.getCriteria());
+            filterConstraint.setOperator(constraint.getOperator());
+            filterConstraint.setReverseOperator(constraint.isReverseOperator());
+            filterConstraint.setValue(constraint.getValue());
+            if (constraint.getOrderPosition() > 0) {
+                filterConstraint.setOrderPosition(constraint.getOrderPosition());
+                filterConstraint.setOrderDescending(constraint.isOrderDescending());
+            }
         }
+        this.dataFilter.setWhere(filter.getWhere());
+        this.dataFilter.setOrder(filter.getOrder());
     }
 
     void resetOrdering()

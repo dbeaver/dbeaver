@@ -467,7 +467,7 @@ public class ResultSetViewer extends Viewer
         }
         String condition = filtersText.getText();
         StringBuilder currentCondition = new StringBuilder();
-        SQLUtils.appendConditionString(model.getDataFilter(), dataSource, currentCondition);
+        SQLUtils.appendConditionString(model.getDataFilter(), dataSource, null, currentCondition, true);
         if (currentCondition.toString().trim().equals(condition.trim())) {
             // The same
             return;
@@ -484,7 +484,7 @@ public class ResultSetViewer extends Viewer
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
             StringBuilder where = new StringBuilder();
-            SQLUtils.appendConditionString(model.getDataFilter(), dataSource, where);
+            SQLUtils.appendConditionString(model.getDataFilter(), dataSource, null, where, true);
             String whereCondition = where.toString().trim();
             filtersText.setText(whereCondition);
             if (!whereCondition.isEmpty()) {
@@ -535,7 +535,7 @@ public class ResultSetViewer extends Viewer
 
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
-        if (!CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
+        if (!model.getDataFilter().equalFilters(dataFilter)) {
             if (model.setDataFilter(dataFilter)) {
                 refreshSpreadsheet(true);
             }
@@ -1653,7 +1653,9 @@ public class ResultSetViewer extends Viewer
             constraints.add(constraint);
 
             Object keyValue = getModel().getCellValue(row, ownBinding);
-            constraint.setCriteria("='" + ownBinding.getValueHandler().getValueDisplayString(ownBinding.getAttribute(), keyValue, DBDDisplayFormat.NATIVE) + "'");
+            constraint.setOperator(DBCLogicalOperator.EQUALS);
+            constraint.setValue(keyValue);
+            //constraint.setCriteria("='" + ownBinding.getValueHandler().getValueDisplayString(ownBinding.getAttribute(), keyValue, DBDDisplayFormat.NATIVE) + "'");
         }
         DBDDataFilter newFilter = new DBDDataFilter(constraints);
 
