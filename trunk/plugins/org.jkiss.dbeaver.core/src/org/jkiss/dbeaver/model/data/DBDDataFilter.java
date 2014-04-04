@@ -58,7 +58,7 @@ public class DBDDataFilter {
     public DBDAttributeConstraint getConstraint(DBDAttributeBinding binding)
     {
         for (DBDAttributeConstraint co : constraints) {
-            if (co.getAttribute() == binding.getAttribute()) {
+            if (co.getAttribute() == binding) {
                 return co;
             }
         }
@@ -69,7 +69,7 @@ public class DBDDataFilter {
     public DBDAttributeConstraint getConstraint(DBSAttributeBase attribute)
     {
         for (DBDAttributeConstraint co : constraints) {
-            if (co.getAttribute() == attribute) {
+            if (co.matches(attribute)) {
                 return co;
             }
         }
