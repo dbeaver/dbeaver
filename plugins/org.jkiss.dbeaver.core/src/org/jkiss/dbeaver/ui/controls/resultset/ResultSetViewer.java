@@ -498,6 +498,10 @@ public class ResultSetViewer extends Viewer
                 enableFilters = true;
             }
         }
+        enableFilters(enableFilters);
+    }
+
+    private void enableFilters(boolean enableFilters) {
         if (enableFilters) {
             if (filtersEnableState != null) {
                 filtersEnableState.restore();
@@ -1661,13 +1665,7 @@ public class ResultSetViewer extends Viewer
         }
         stateHistory.add(newState);
         historyPosition = stateHistory.size() - 1;
-        getControl().getDisplay().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                rejectChanges();
-                refresh();
-            }
-        });
+        runDataPump(0, getSegmentMaxRows(), null, null, null);
 
         System.out.println("Navigate to [" + value + "] using [" + targetEntity.getName() + "]");
     }
@@ -1886,13 +1884,24 @@ public class ResultSetViewer extends Viewer
             dataPumpJob = new ResultSetDataPumpJob(this);
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
+                public void aboutToRun(IJobChangeEvent event) {
+                    getModel().setUpdateInProgress(true);
+                    getControl().getDisplay().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            enableFilters(false);
+                        }
+                    });
+                }
+
+                @Override
                 public void done(IJobChangeEvent event) {
                     ResultSetDataPumpJob job = (ResultSetDataPumpJob)event.getJob();
                     final Throwable error = job.getError();
                     if (job.getStatistics() != null) {
                         model.setStatistics(job.getStatistics());
                     }
-                    Display.getDefault().asyncExec(new Runnable() {
+                    getControl().getDisplay().asyncExec(new Runnable() {
                         @Override
                         public void run()
                         {
@@ -1911,8 +1920,8 @@ public class ResultSetViewer extends Viewer
                             } else if (selectAttribute != null && selectRow != null) {
                                 // Seems to be refresh
                                 // Restore original position
-                                ResultSetViewer.this.curRow = selectRow;
-                                ResultSetViewer.this.curAttribute = selectAttribute;
+                                curRow = selectRow;
+                                curAttribute = selectAttribute;
                                 GridCell newPos;
                                 if (!recordMode) {
                                     newPos = new GridCell(curAttribute, curRow);
@@ -1925,6 +1934,7 @@ public class ResultSetViewer extends Viewer
                             } else {
                                 spreadsheet.redraw();
                             }
+                            getModel().setUpdateInProgress(false);
                             updateFiltersText();
                             if (finalizer != null) {
                                 finalizer.run();
