@@ -109,7 +109,6 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
- * TODO: filter custom value editor
  * TODO: use binding in filter queries
  * TODO: fix local ordering
  * TODO: collections and ANY types support

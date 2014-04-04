@@ -195,6 +195,10 @@ public class ResultSetModel {
             if (binding.getMetaAttribute() == attribute || binding.getEntityAttribute() == attribute) {
                 return binding;
             }
+            DBDAttributeBinding subBinding = binding.getNestedBinding(attribute);
+            if (subBinding != null) {
+                return subBinding;
+            }
         }
         return null;
     }
