@@ -26,9 +26,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -73,8 +70,6 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     private Clipboard clipboard;
 
-    private Color foregroundNormal;
-
     public Spreadsheet(
         @NotNull final Composite parent,
         final int style,
@@ -96,8 +91,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         this.contentProvider = contentProvider;
         this.labelProvider = labelProvider;
         this.selectionProvider = new SpreadsheetSelectionProvider(this);
-
-        this.foregroundNormal = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
 
         this.clipboard = new Clipboard(getDisplay());
 
@@ -147,19 +140,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     public Clipboard getClipboard()
     {
         return clipboard;
-    }
-
-    public Color getForegroundNormal()
-    {
-        return foregroundNormal;
-    }
-
-    public int getCurrentRow()
-    {
-        if (super.isDisposed()) {
-            return -1;
-        }
-        return super.getFocusItem();
     }
 
     /**
