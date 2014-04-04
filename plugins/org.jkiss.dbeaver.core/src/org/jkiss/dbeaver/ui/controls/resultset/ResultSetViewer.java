@@ -125,6 +125,8 @@ public class ResultSetViewer extends Viewer
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
+    private Button filtersApplyButton;
+    private Button filtersClearButton;
 
     public enum RowPosition {
         FIRST,
@@ -404,28 +406,26 @@ public class ResultSetViewer extends Viewer
         });
 
 
-        final Button applyButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        applyButton.setText("Apply");
-        applyButton.setToolTipText("Apply filter criteria");
-        applyButton.addSelectionListener(new SelectionAdapter() {
+        filtersApplyButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        filtersApplyButton.setText("Apply");
+        filtersApplyButton.setToolTipText("Apply filter criteria");
+        filtersApplyButton.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 setCustomDataFilter();
             }
         });
-        applyButton.setEnabled(false);
-        final Button clearButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        clearButton.setText("X");
-        clearButton.setToolTipText("Remove all filters");
-        clearButton.addSelectionListener(new SelectionAdapter() {
+        filtersApplyButton.setEnabled(false);
+        filtersClearButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        filtersClearButton.setText("X");
+        filtersClearButton.setToolTipText("Remove all filters");
+        filtersClearButton.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 resetDataFilter(true);
             }
         });
-        clearButton.setEnabled(false);
+        filtersClearButton.setEnabled(false);
 
         this.filtersText.addModifyListener(new ModifyListener() {
             @Override
@@ -433,8 +433,8 @@ public class ResultSetViewer extends Viewer
             {
                 if (filtersEnableState == null) {
                     String filterText = filtersText.getText();
-                    applyButton.setEnabled(true);
-                    clearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+                    filtersApplyButton.setEnabled(true);
+                    filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
                 }
             }
         });
@@ -507,6 +507,9 @@ public class ResultSetViewer extends Viewer
                 filtersEnableState.restore();
                 filtersEnableState = null;
             }
+            String filterText = filtersText.getText();
+            filtersApplyButton.setEnabled(true);
+            filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
         } else if (filtersEnableState == null) {
             filtersEnableState = ControlEnableState.disable(filtersPanel);
         }
@@ -1633,10 +1636,12 @@ public class ResultSetViewer extends Viewer
         }
 
         // make constraints
+        // TODO: add nested constraints in case of struct attributes
         List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
         int visualPosition = 0;
         for (DBSEntityAttribute entityAttr : CommonUtils.safeCollection(targetEntity.getAttributes(monitor))) {
             DBDAttributeConstraint constraint = new DBDAttributeConstraint(entityAttr, visualPosition++);
+            constraint.setVisible(true);
             constraints.add(constraint);
         }
         DBDDataFilter newFilter = new DBDDataFilter(constraints);
@@ -1659,13 +1664,12 @@ public class ResultSetViewer extends Viewer
 
         StateItem newState = new StateItem((DBSDataContainer) targetEntity, newFilter, -1);
         curState = newState;
-        model.setDataFilter(newFilter);
         while (historyPosition < stateHistory.size() - 1) {
             stateHistory.remove(stateHistory.size() - 1);
         }
         stateHistory.add(newState);
         historyPosition = stateHistory.size() - 1;
-        runDataPump(0, getSegmentMaxRows(), null, null, null);
+        runDataPump(0, getSegmentMaxRows(), newFilter, null, null, null);
 
         System.out.println("Navigate to [" + value + "] using [" + targetEntity.getName() + "]");
     }
@@ -1795,7 +1799,7 @@ public class ResultSetViewer extends Viewer
             if (oldRow != null && oldRow.visualNumber >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.visualNumber / segmentSize + 1) * segmentSize;
             }
-            runDataPump(0, segmentSize, oldAttribute, oldRow, new Runnable() {
+            runDataPump(0, segmentSize, model.getDataFilter(), oldAttribute, oldRow, new Runnable() {
                 @Override
                 public void run()
                 {
@@ -1822,7 +1826,7 @@ public class ResultSetViewer extends Viewer
                 if (curRow != null && curRow.visualNumber >= segmentSize && segmentSize > 0) {
                     segmentSize = (curRow.visualNumber / segmentSize + 1) * segmentSize;
                 }
-                runDataPump(0, segmentSize, curAttribute, curRow, onSuccess);
+                runDataPump(0, segmentSize, model.getDataFilter(), curAttribute, curRow, onSuccess);
             }
             return;
         }
@@ -1851,7 +1855,7 @@ public class ResultSetViewer extends Viewer
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
 
-            runDataPump(model.getRowCount(), getSegmentMaxRows(), null, null, null);
+            runDataPump(model.getRowCount(), getSegmentMaxRows(), model.getDataFilter(), null, null, null);
         }
     }
 
@@ -1876,12 +1880,14 @@ public class ResultSetViewer extends Viewer
     private synchronized void runDataPump(
         final int offset,
         final int maxRows,
+        @NotNull final DBDDataFilter dataFilter,
         @Nullable final DBDAttributeBinding selectAttribute,
         @Nullable final RowData selectRow,
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob == null) {
-            dataPumpJob = new ResultSetDataPumpJob(this);
+            final boolean updateFilters = dataFilter != model.getDataFilter();
+            dataPumpJob = new ResultSetDataPumpJob(this.getDataContainer(), dataFilter, getDataReceiver(), getSpreadsheet());
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void aboutToRun(IJobChangeEvent event) {
@@ -1935,7 +1941,11 @@ public class ResultSetViewer extends Viewer
                                 spreadsheet.redraw();
                             }
                             getModel().setUpdateInProgress(false);
+                            if (updateFilters) {
+                                model.setDataFilter(dataFilter);
+                            }
                             updateFiltersText();
+
                             if (finalizer != null) {
                                 finalizer.run();
                             }
