@@ -69,7 +69,11 @@ public final class SQLUtils {
     public static boolean isDataModifyQuery(String query)
     {
         query = query.trim().toUpperCase();
-        return query.startsWith("UPDATE") || query.startsWith("INSERT") || query.startsWith("DELETE");
+        return
+            query.startsWith("UPDATE") ||
+            query.startsWith("INSERT") ||
+            query.startsWith("DELETE") ||
+            (query.startsWith("SELECT") && query.contains("INTO"));
     }
 
     public static String stripComments(SQLDataSource dataSource, String query)
