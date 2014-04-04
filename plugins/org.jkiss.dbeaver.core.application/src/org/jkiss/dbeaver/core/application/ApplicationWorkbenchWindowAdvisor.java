@@ -92,10 +92,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     @Override
     public void postWindowCreate()
     {
+/*
+        // Maximize on start
         Shell activeShell = UIUtils.getActiveShell();
         if (activeShell != null) {
             activeShell.setMaximized(true);
         }
+*/
         UIUtils.updateMainWindowTitle(getWindowConfigurer().getWindow());
     }
 
