@@ -26,28 +26,33 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-class ValueEditDialog extends BaseDialog {
+class FilterValueEditDialog extends BaseDialog {
 
-    static final Log log = LogFactory.getLog(ValueEditDialog.class);
+    static final Log log = LogFactory.getLog(FilterValueEditDialog.class);
 
     private final ResultSetViewer viewer;
     private final GridCell cell;
+    private final DBCLogicalOperator operator;
+
     private Object value;
     private DBDValueEditor editor;
     private Text textControl;
 
-    public ValueEditDialog(ResultSetViewer viewer, GridCell cell) {
+    public FilterValueEditDialog(ResultSetViewer viewer, GridCell cell, DBCLogicalOperator operator) {
         super(viewer.getControl().getShell(), "Edit value", null);
         this.viewer = viewer;
         this.cell = cell;
+        this.operator = operator;
     }
 
     @Override
@@ -55,7 +60,10 @@ class ValueEditDialog extends BaseDialog {
     {
         Composite composite = (Composite) super.createDialogArea(parent);
 
+        Label label = new Label(composite, SWT.NONE);
+        label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Composite editorPlaceholder = UIUtils.createPlaceholder(composite, 1);
+
         editorPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         editorPlaceholder.setLayout(new FillLayout());
 
@@ -64,6 +72,8 @@ class ValueEditDialog extends BaseDialog {
             cell,
             DBDValueController.EditType.PANEL,
             editorPlaceholder);
+
+        label.setText(valueController.getAttribute().getName() + " " + operator.getStringValue() + " :");
         try {
             editor = valueController.getValueHandler().createEditor(valueController);
             editor.primeEditorValue(valueController.getValue());
