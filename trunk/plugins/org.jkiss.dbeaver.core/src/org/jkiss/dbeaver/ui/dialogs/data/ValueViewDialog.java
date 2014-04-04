@@ -39,6 +39,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -112,6 +113,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         return getEnumerableConstraint() != null;
     }
 
+    @Nullable
     protected DBDValueEditor createPanelEditor(final Composite placeholder)
         throws DBException
     {

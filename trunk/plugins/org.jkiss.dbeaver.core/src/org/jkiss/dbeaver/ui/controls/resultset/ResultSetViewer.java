@@ -94,6 +94,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
@@ -594,6 +595,7 @@ public class ResultSetViewer extends Viewer
                     if (object instanceof GridCell) {
                         final GridCell cell = translateVisualPos((GridCell) object);
                         final ResultSetValueController valueController = new ResultSetValueController(
+                            ResultSetViewer.this,
                             cell,
                             DBDValueController.EditType.NONE,
                             null);
@@ -864,6 +866,7 @@ public class ResultSetViewer extends Viewer
         GridCell cell = translateVisualPos(currentPosition);
         if (panelValueController == null || panelValueController.pos.col != cell.col) {
             panelValueController = new ResultSetValueController(
+                this,
                 cell,
                 DBDValueController.EditType.PANEL,
                 previewPane.getViewPlaceholder());
@@ -1301,6 +1304,7 @@ public class ResultSetViewer extends Viewer
         }
 
         ResultSetValueController valueController = new ResultSetValueController(
+            this,
             cell,
             inline ? DBDValueController.EditType.INLINE : DBDValueController.EditType.EDITOR,
             placeholder);
@@ -1372,6 +1376,7 @@ public class ResultSetViewer extends Viewer
         {
             final GridCell cell = translateVisualPos(curCell);
             final ResultSetValueController valueController = new ResultSetValueController(
+                this,
                 cell,
                 DBDValueController.EditType.NONE,
                 null);
@@ -2075,7 +2080,7 @@ public class ResultSetViewer extends Viewer
 
             if (cut) {
                 DBDValueController valueController = new ResultSetValueController(
-                    cell, DBDValueController.EditType.NONE, null);
+                    this, cell, DBDValueController.EditType.NONE, null);
                 if (!valueController.isReadOnly()) {
                     valueController.updateValue(DBUtils.makeNullValue(valueController));
                 }
@@ -2160,6 +2165,7 @@ public class ResultSetViewer extends Viewer
                 return;
             }
             new ResultSetValueController(
+                this,
                 cell,
                 DBDValueController.EditType.NONE,
                 null).updateValue(newValue);
@@ -2402,15 +2408,17 @@ public class ResultSetViewer extends Viewer
     /////////////////////////////
     // Value controller
 
-    private class ResultSetValueController implements DBDAttributeController, DBDRowController {
+    static class ResultSetValueController implements DBDAttributeController, DBDRowController {
 
+        private final ResultSetViewer viewer;
         private final GridCell pos;
         private final EditType editType;
         private final Composite inlinePlaceholder;
         private RowData curRow;
         private final DBDAttributeBinding column;
 
-        private ResultSetValueController(GridCell pos, EditType editType, @Nullable Composite inlinePlaceholder) {
+        ResultSetValueController(@NotNull ResultSetViewer viewer, @NotNull GridCell pos, @NotNull EditType editType, @Nullable Composite inlinePlaceholder) {
+            this.viewer = viewer;
             this.curRow = (RowData) pos.row;
             this.column = (DBDAttributeBinding) pos.col;
             this.pos = new GridCell(pos);
@@ -2428,7 +2436,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public DBPDataSource getDataSource()
         {
-            return ResultSetViewer.this.getDataSource();
+            return viewer.getDataSource();
         }
 
         @Override
@@ -2466,24 +2474,24 @@ public class ResultSetViewer extends Viewer
         @Override
         public Object getValue()
         {
-            return spreadsheet.getContentProvider().getCellValue(pos, false);
+            return viewer.spreadsheet.getContentProvider().getCellValue(pos, false);
         }
 
         @Override
         public void updateValue(@Nullable Object value)
         {
-            if (model.updateCellValue(curRow, column, value)) {
+            if (viewer.model.updateCellValue(curRow, column, value)) {
                 // Update controls
-                site.getShell().getDisplay().syncExec(new Runnable() {
+                viewer.site.getShell().getDisplay().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        updateEditControls();
-                        spreadsheet.redrawGrid();
-                        previewValue();
+                        viewer.updateEditControls();
+                        viewer.spreadsheet.redrawGrid();
+                        viewer.previewValue();
                     }
                 });
             }
-            fireResultSetChange();
+            viewer.fireResultSetChange();
         }
 
         @Nullable
@@ -2508,13 +2516,13 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isReadOnly()
         {
-            return isColumnReadOnly(column);
+            return viewer.isColumnReadOnly(column);
         }
 
         @Override
         public IWorkbenchPartSite getValueSite()
         {
-            return site;
+            return viewer.site;
         }
 
         @Nullable
@@ -2528,23 +2536,23 @@ public class ResultSetViewer extends Viewer
         @Override
         public ToolBar getEditToolBar()
         {
-            return isPreviewVisible() ? previewPane.getToolBar() : null;
+            return viewer.isPreviewVisible() ? viewer.previewPane.getToolBar() : null;
         }
 
         @Override
         public void closeInlineEditor()
         {
-            spreadsheet.cancelInlineEditor();
+            viewer.spreadsheet.cancelInlineEditor();
         }
 
         @Override
         public void nextInlineEditor(boolean next) {
-            spreadsheet.cancelInlineEditor();
+            viewer.spreadsheet.cancelInlineEditor();
             int colOffset = next ? 1 : -1;
             int rowOffset = 0;
             //final int rowCount = spreadsheet.getItemCount();
-            final int colCount = spreadsheet.getColumnCount();
-            final GridPos curPosition = spreadsheet.getCursorPosition();
+            final int colCount = viewer.spreadsheet.getColumnCount();
+            final GridPos curPosition = viewer.spreadsheet.getCursorPosition();
             if (colOffset > 0 && curPosition.col + colOffset >= colCount) {
                 colOffset = -colCount;
                 rowOffset = 1;
@@ -2552,29 +2560,29 @@ public class ResultSetViewer extends Viewer
                 colOffset = colCount;
                 rowOffset = -1;
             }
-            spreadsheet.shiftCursor(colOffset, rowOffset, false);
-            showCellEditor(true);
+            viewer.spreadsheet.shiftCursor(colOffset, rowOffset, false);
+            viewer.showCellEditor(true);
         }
 
         public void registerEditor(DBDValueEditorStandalone editor) {
-            openEditors.put(this, editor);
+            viewer.openEditors.put(this, editor);
         }
 
         @Override
         public void unregisterEditor(DBDValueEditorStandalone editor) {
-            openEditors.remove(this);
+            viewer.openEditors.remove(this);
         }
 
         @Override
         public void showMessage(String message, boolean error)
         {
-            setStatus(message, error);
+            viewer.setStatus(message, error);
         }
 
         @Override
         public Collection<DBCAttributeMetaData> getAttributesMetaData() {
             List<DBCAttributeMetaData> attributes = new ArrayList<DBCAttributeMetaData>();
-            for (DBDAttributeBinding column : model.getVisibleColumns()) {
+            for (DBDAttributeBinding column : viewer.model.getVisibleColumns()) {
                 attributes.add(column.getMetaAttribute());
             }
             return attributes;
@@ -2584,7 +2592,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName)
         {
-            for (DBDAttributeBinding column : model.getVisibleColumns()) {
+            for (DBDAttributeBinding column : viewer.model.getVisibleColumns()) {
                 if (column.getMetaAttribute().getEntity() == entity && column.getName().equals(columnName)) {
                     return column.getMetaAttribute();
                 }
@@ -2596,7 +2604,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public Object getAttributeValue(DBCAttributeMetaData attribute)
         {
-            DBDAttributeBinding[] columns = model.getColumns();
+            DBDAttributeBinding[] columns = viewer.model.getColumns();
             for (int i = 0; i < columns.length; i++) {
                 DBDAttributeBinding metaColumn = columns[i];
                 if (metaColumn.getMetaAttribute() == attribute) {
@@ -2980,15 +2988,21 @@ public class ResultSetViewer extends Viewer
         },
         INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
             @Override
-            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
                 if (useDefault) {
                     return "..";
                 } else {
-                    return EditTextDialog.editText(
-                        viewer.getControl().getShell(),
-                        "Enter value",
-                        "");
+                    GridCell cell = viewer.getSpreadsheet().getFocusCell();
+                    if (cell == null) {
+                        return null;
+                    }
+                    ValueEditDialog dialog = new ValueEditDialog(viewer, cell);
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        return dialog.getValue();
+                    } else {
+                        return null;
+                    }
                 }
             }
         },
