@@ -1027,6 +1027,7 @@ public class SQLEditor extends SQLEditorBase
                     curJob = job;
                     ResultSetViewer resultSetViewer = resultsProvider.getResultSetViewer();
                     resultSetViewer.resetDataFilter(false);
+                    resultSetViewer.resetHistory();
                     resultSetViewer.refresh();
                 } else {
                     if (fetchResults) {

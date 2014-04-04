@@ -454,6 +454,12 @@ public class ResultSetViewer extends Viewer
         filtersEnableState = ControlEnableState.disable(filtersPanel);
     }
 
+    public void resetHistory() {
+        curState = null;
+        stateHistory.clear();
+        historyPosition = -1;
+    }
+
     public void resetDataFilter(boolean refresh)
     {
         setDataFilter(model.createDataFilter(), refresh);
@@ -1670,8 +1676,6 @@ public class ResultSetViewer extends Viewer
         stateHistory.add(newState);
         historyPosition = stateHistory.size() - 1;
         runDataPump(0, getSegmentMaxRows(), newFilter, null, null, null);
-
-        System.out.println("Navigate to [" + value + "] using [" + targetEntity.getName() + "]");
     }
 
     @Override
