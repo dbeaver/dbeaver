@@ -141,7 +141,7 @@ public class DBDDataFilter {
             return true;
         }
         for (DBDAttributeConstraint constraint : constraints) {
-            if (!CommonUtils.isEmpty(constraint.getCriteria())) {
+            if (constraint.hasCondition()) {
                 return true;
             }
         }
@@ -245,7 +245,7 @@ public class DBDDataFilter {
         if (constraints.size() != source.constraints.size()) {
             return false;
         }
-        for (int i = 0, orderColumnsSize = source.constraints.size(); i < orderColumnsSize; i++) {
+        for (int i = 0; i < source.constraints.size(); i++) {
             if (!constraints.get(i).equalFilters(source.constraints.get(i))) {
                 return false;
             }

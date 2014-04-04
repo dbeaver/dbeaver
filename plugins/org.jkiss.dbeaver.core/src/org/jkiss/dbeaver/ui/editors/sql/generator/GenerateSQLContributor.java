@@ -40,15 +40,12 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -262,7 +259,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                                 if (binding == null) {
                                     appendDefaultValue(sql, attr);
                                 } else {
-                                    appendAttributeValue(sql, binding, firstRow);
+                                    appendAttributeValue(rsv, sql, binding, firstRow);
                                 }
                                 hasAttr = true;
                             }
@@ -293,7 +290,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                                 if (binding == null) {
                                     appendDefaultValue(sql, attr);
                                 } else {
-                                    appendAttributeValue(sql, binding, firstRow);
+                                    appendAttributeValue(rsv, sql, binding, firstRow);
                                 }
                                 hasAttr = true;
                             }
@@ -319,7 +316,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                                 if (binding == null) {
                                     appendDefaultValue(sql, attr);
                                 } else {
-                                    appendAttributeValue(sql, binding, firstRow);
+                                    appendAttributeValue(rsv, sql, binding, firstRow);
                                 }
                                 hasAttr = true;
                             }
@@ -397,26 +394,11 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             }
         }
 
-        protected void appendAttributeValue(StringBuilder sql, DBDAttributeBinding binding, RowData row)
+        protected void appendAttributeValue(ResultSetViewer rsv, StringBuilder sql, DBDAttributeBinding binding, RowData row)
         {
-            SQLDialect dialect = SQLUtils.getDialectFromObject(binding.getAttribute());
-            Object value = row.values[binding.getAttributeIndex()];
-            if (DBUtils.isNullValue(value)) {
-                sql.append("NULL");
-            } else {
-                boolean isString = binding.getAttribute().getDataKind() == DBPDataKind.STRING;
-                String displayString = binding.getValueHandler().getValueDisplayString(
-                    binding.getAttribute(),
-                    value,
-                    DBDDisplayFormat.NATIVE);
-                if (isString) sql.append('\'');
-                if (dialect != null) {
-                    sql.append(dialect.escapeString(displayString));
-                } else {
-                    sql.append(displayString);
-                }
-                if (isString) sql.append('\'');
-            }
+            Object value = rsv.getModel().getCellValue(row, binding);
+            sql.append(
+                SQLUtils.convertValueToSQL(rsv.getDataSource(), binding.getAttribute(), value));
         }
     }
     

@@ -20,13 +20,14 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
@@ -283,26 +284,27 @@ public final class SQLUtils {
         }
     }
 
-    public static void appendConditionString(@NotNull DBDDataFilter filter, @NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
+    public static void appendConditionString(
+        @NotNull DBDDataFilter filter,
+        @NotNull DBPDataSource dataSource,
+        @Nullable String conditionTable,
+        @NotNull StringBuilder query,
+        boolean inlineCriteria)
     {
         boolean hasWhere = false;
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
-            String criteria = constraint.getCriteria();
-            if (CommonUtils.isEmpty(criteria)) {
+            String condition = getConstraintCondition(dataSource, constraint, inlineCriteria);
+            if (condition == null) {
                 continue;
             }
+
             if (hasWhere) query.append(" AND "); //$NON-NLS-1$
             hasWhere = true;
             if (conditionTable != null) {
                 query.append(conditionTable).append('.');
             }
             query.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute()));
-            final char firstChar = criteria.trim().charAt(0);
-            if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
-                query.append('=').append(criteria);
-            } else {
-                query.append(' ').append(criteria);
-            }
+            query.append(condition);
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
@@ -311,8 +313,70 @@ public final class SQLUtils {
         }
     }
 
-    public static void appendConditionString(DBDDataFilter filter, DBPDataSource dataSource, StringBuilder query)
-    {
-        appendConditionString(filter, dataSource, null, query);
+    @NotNull
+    public static String getConstraintCondition(DBPDataSource dataSource, DBDAttributeConstraint constraint, boolean inlineCriteria) {
+        String criteria = constraint.getCriteria();
+        if (!CommonUtils.isEmpty(criteria)) {
+            final char firstChar = criteria.trim().charAt(0);
+            if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
+                return '=' + criteria;
+            } else {
+                return criteria;
+            }
+        } else if (constraint.getOperator() != null) {
+            DBCLogicalOperator operator = constraint.getOperator();
+            StringBuilder conString = new StringBuilder();
+            if (constraint.isReverseOperator()) {
+                conString.append("NOT ");
+            }
+            conString.append(operator.getStringValue());
+            if (operator.getArgumentCount() > 0) {
+                for (int i = 0; i < operator.getArgumentCount(); i++) {
+                    if (i > 0) {
+                        conString.append(" AND");
+                    }
+                    if (inlineCriteria) {
+                        conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), constraint.getValue()));
+                    } else {
+                        conString.append(" ?");
+                    }
+                }
+            }
+            return conString.toString();
+        } else {
+            return null;
+        }
     }
+
+    public static String convertValueToSQL(DBPDataSource dataSource, DBSAttributeBase attribute, Object value) {
+        String strValue;
+        if (DBUtils.isNullValue(value)) {
+            return SQLConstants.NULL_VALUE;
+        }
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
+        if (valueHandler == null) {
+            strValue = String.valueOf(value);
+        } else {
+            strValue = valueHandler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE);
+        }
+        SQLDialect sqlDialect = null;
+        if (dataSource instanceof SQLDataSource) {
+            sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+        }
+        switch (attribute.getDataKind()) {
+            case BOOLEAN:
+            case NUMERIC:
+            case DATETIME:
+                return strValue;
+            case STRING:
+            case ROWID:
+                if (sqlDialect != null) {
+                    strValue = sqlDialect.escapeString(strValue);
+                }
+                return '\'' + strValue + '\'';
+            default:
+                return strValue;
+        }
+    }
+
 }
