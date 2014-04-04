@@ -1636,15 +1636,8 @@ public class ResultSetViewer extends Viewer
         }
 
         // make constraints
-        // TODO: add nested constraints in case of struct attributes
         List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
         int visualPosition = 0;
-        for (DBSEntityAttribute entityAttr : CommonUtils.safeCollection(targetEntity.getAttributes(monitor))) {
-            DBDAttributeConstraint constraint = new DBDAttributeConstraint(entityAttr, visualPosition++);
-            constraint.setVisible(true);
-            constraints.add(constraint);
-        }
-        DBDDataFilter newFilter = new DBDDataFilter(constraints);
         // Set conditions
         List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
         List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
@@ -1654,13 +1647,15 @@ public class ResultSetViewer extends Viewer
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
             DBDAttributeBinding ownBinding = model.getAttributeBinding(ownAttr.getAttribute());
             assert ownBinding != null;
-            DBDAttributeConstraint constraint = newFilter.getConstraint(refAttr.getAttribute());
-            assert constraint != null;
+
+            DBDAttributeConstraint constraint = new DBDAttributeConstraint(refAttr.getAttribute(), visualPosition++);
+            constraint.setVisible(true);
+            constraints.add(constraint);
 
             Object keyValue = getModel().getCellValue(row, ownBinding);
             constraint.setCriteria("='" + ownBinding.getValueHandler().getValueDisplayString(ownBinding.getAttribute(), keyValue, DBDDisplayFormat.NATIVE) + "'");
         }
-
+        DBDDataFilter newFilter = new DBDDataFilter(constraints);
 
         StateItem newState = new StateItem((DBSDataContainer) targetEntity, newFilter, -1);
         curState = newState;
@@ -1799,7 +1794,7 @@ public class ResultSetViewer extends Viewer
             if (oldRow != null && oldRow.visualNumber >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.visualNumber / segmentSize + 1) * segmentSize;
             }
-            runDataPump(0, segmentSize, model.getDataFilter(), oldAttribute, oldRow, new Runnable() {
+            runDataPump(0, segmentSize, null, oldAttribute, oldRow, new Runnable() {
                 @Override
                 public void run()
                 {
@@ -1826,7 +1821,7 @@ public class ResultSetViewer extends Viewer
                 if (curRow != null && curRow.visualNumber >= segmentSize && segmentSize > 0) {
                     segmentSize = (curRow.visualNumber / segmentSize + 1) * segmentSize;
                 }
-                runDataPump(0, segmentSize, model.getDataFilter(), curAttribute, curRow, onSuccess);
+                runDataPump(0, segmentSize, null, curAttribute, curRow, onSuccess);
             }
             return;
         }
@@ -1855,7 +1850,7 @@ public class ResultSetViewer extends Viewer
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
 
-            runDataPump(model.getRowCount(), getSegmentMaxRows(), model.getDataFilter(), null, null, null);
+            runDataPump(model.getRowCount(), getSegmentMaxRows(), null, null, null, null);
         }
     }
 
@@ -1880,13 +1875,12 @@ public class ResultSetViewer extends Viewer
     private synchronized void runDataPump(
         final int offset,
         final int maxRows,
-        @NotNull final DBDDataFilter dataFilter,
+        @Nullable final DBDDataFilter dataFilter,
         @Nullable final DBDAttributeBinding selectAttribute,
         @Nullable final RowData selectRow,
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob == null) {
-            final boolean updateFilters = dataFilter != model.getDataFilter();
             dataPumpJob = new ResultSetDataPumpJob(this.getDataContainer(), dataFilter, getDataReceiver(), getSpreadsheet());
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
@@ -1941,8 +1935,8 @@ public class ResultSetViewer extends Viewer
                                 spreadsheet.redraw();
                             }
                             getModel().setUpdateInProgress(false);
-                            if (updateFilters) {
-                                model.setDataFilter(dataFilter);
+                            if (dataFilter != null) {
+                                model.updateDataFilter(dataFilter);
                             }
                             updateFiltersText();
 
