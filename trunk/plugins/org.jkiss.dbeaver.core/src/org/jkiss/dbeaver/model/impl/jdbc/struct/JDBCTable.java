@@ -123,6 +123,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 log.warn("Can't get pseudo attributes for '" + getName() + "'", e);
             }
         }
+        // Always use alias. Some criteria doesn't work without alias
+        // (e.g. structured attributes in Oracle requires table alias)
         String tableAlias = DEFAULT_TABLE_ALIAS;
         StringBuilder query = new StringBuilder(100);
         if (rowIdAttribute != null) {
