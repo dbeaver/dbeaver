@@ -175,49 +175,16 @@ public abstract class LightGrid extends Canvas {
      */
     private int headerHeight = 0;
 
-    /**
-     * True if mouse is hover on a column boundary and can resize the column.
-     */
     boolean hoveringOnColumnSorter = false;
+    boolean hoveringOnLink = false;
 
     private GridColumn columnBeingSorted;
-
-    /**
-     * True if mouse is hover on a column boundary and can resize the column.
-     */
     boolean hoveringOnColumnResizer = false;
-
-    /**
-     * Reference to the column being resized.
-     */
     private GridColumn columnBeingResized;
-
-    /**
-     * Is the user currently resizing a column?
-     */
     private boolean resizingColumn = false;
-
-    /**
-     * The mouse X position when the user starts the resize.
-     */
     private int resizingStartX = 0;
-
-    /**
-     * The width of the column when the user starts the resize. This, together
-     * with the resizingStartX determines the current width during resize.
-     */
     private int resizingColumnStartWidth = 0;
-
-    /**
-     * Reference to the currently item that the mouse is currently hovering
-     * over.
-     */
     private int hoveringItem;
-
-    /**
-     * Reference to the column that the mouse is currently hovering over.
-     * Includes the header and all cells (all rows) in this column.
-     */
     private GridColumn hoveringColumn;
 
     /**
@@ -3455,9 +3422,10 @@ public abstract class LightGrid extends Canvas {
 
         if (overLink) {
             setCursor(sortCursor);
-        } else {
+        } else if (hoveringOnLink) {
             setCursor(null);
         }
+        hoveringOnLink = overLink;
 
         //do normal cell specific tooltip stuff
         if (hoverChange) {

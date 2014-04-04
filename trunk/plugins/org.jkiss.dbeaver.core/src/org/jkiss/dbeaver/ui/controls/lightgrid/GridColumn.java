@@ -211,9 +211,16 @@ class GridColumn {
 
         x += leftMargin;
 
-        Image image = grid.getContentProvider().getCellImage(cell);
-        if (image != null) {
-            x += image.getBounds().width + insideMargin;
+        int state = grid.getContentProvider().getCellState(cell);
+        Rectangle imageBounds;
+        if ((state & IGridContentProvider.STATE_LINK) != 0) {
+            imageBounds = GridCellRenderer.LINK_IMAGE_BOUNDS;
+        } else {
+            Image image = grid.getContentProvider().getCellImage(cell);
+            imageBounds = image == null ? null : image.getBounds();
+        }
+        if (imageBounds != null) {
+            x += imageBounds.width + insideMargin;
         }
 
         x += grid.sizingGC.textExtent(grid.getCellText(cell)).x + rightMargin;

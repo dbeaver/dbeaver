@@ -38,8 +38,8 @@ class GridCellRenderer extends AbstractRenderer
     private static final int TEXT_TOP_MARGIN = 1;
     private static final int INSIDE_MARGIN = 3;
 
-    private static final Image LINK_IMAGE = DBIcon.TREE_LINK.getImage();
-    private static final Rectangle LINK_IMAGE_BOUNDS = LINK_IMAGE.getBounds();
+    static final Image LINK_IMAGE = DBIcon.TREE_LINK.getImage();
+    static final Rectangle LINK_IMAGE_BOUNDS = LINK_IMAGE.getBounds();
 
     protected Color colorSelected;
     protected Color colorSelectedText;
