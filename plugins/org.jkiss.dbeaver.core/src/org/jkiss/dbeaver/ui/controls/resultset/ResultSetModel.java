@@ -73,7 +73,7 @@ public class ResultSetModel {
     }
 
     private void addConstraints(List<DBDAttributeConstraint> constraints, DBDAttributeBinding binding) {
-        DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding.getAttribute(), binding.getAttributeIndex());
+        DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding);
         constraint.setVisible(visibleColumns.contains(binding));
         constraints.add(constraint);
         List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
@@ -191,6 +191,9 @@ public class ResultSetModel {
     @Nullable
     public DBDAttributeBinding getAttributeBinding(@NotNull DBSAttributeBase attribute)
     {
+        if (attribute instanceof DBDAttributeBinding) {
+            return (DBDAttributeBinding) attribute;
+        }
         for (DBDAttributeBinding binding : columns) {
             if (binding.getMetaAttribute() == attribute || binding.getEntityAttribute() == attribute) {
                 return binding;

@@ -130,6 +130,10 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
         return entityAttribute == null ? metaAttribute : entityAttribute;
     }
 
+    public boolean matches(DBSAttributeBase attr) {
+        return attr != null && (this == attr || metaAttribute == attr || entityAttribute == attr);
+    }
+
     @Nullable
     public List<DBDAttributeBinding> getNestedBindings() {
         return nestedBindings;

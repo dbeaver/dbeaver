@@ -42,6 +42,12 @@ public class DBDAttributeConstraint {
     private int visualPosition;
     private final int originalVisualPosition;
 
+    public DBDAttributeConstraint(DBDAttributeBinding attribute)
+    {
+        this.attribute = attribute;
+        this.originalVisualPosition = this.visualPosition = attribute.getAttributeIndex();
+    }
+
     public DBDAttributeConstraint(DBSAttributeBase attribute, int visualPosition)
     {
         this.attribute = attribute;
@@ -203,5 +209,10 @@ public class DBDAttributeConstraint {
             (criteria == null ? "" : criteria) :
             (reverseOperator ? "NOT " : "") + operator.getStringValue() + " " + value;
         return attribute.getName() + " " + clause;
+    }
+
+    public boolean matches(DBSAttributeBase attr) {
+        return attribute == attr ||
+            (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr));
     }
 }
