@@ -308,7 +308,7 @@ public final class SQLUtils {
                 query.append(conditionTable).append('.');
             }
             query.append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute()));
-            query.append(condition);
+            query.append(' ').append(condition);
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
@@ -317,7 +317,7 @@ public final class SQLUtils {
         }
     }
 
-    @NotNull
+    @Nullable
     public static String getConstraintCondition(DBPDataSource dataSource, DBDAttributeConstraint constraint, boolean inlineCriteria) {
         String criteria = constraint.getCriteria();
         if (!CommonUtils.isEmpty(criteria)) {
@@ -340,7 +340,7 @@ public final class SQLUtils {
                         conString.append(" AND");
                     }
                     if (inlineCriteria) {
-                        conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), constraint.getValue()));
+                        conString.append(' ').append(convertValueToSQL(dataSource, constraint.getAttribute(), constraint.getValue()));
                     } else {
                         conString.append(" ?");
                     }
@@ -352,7 +352,7 @@ public final class SQLUtils {
         }
     }
 
-    public static String convertValueToSQL(DBPDataSource dataSource, DBSAttributeBase attribute, Object value) {
+    public static String convertValueToSQL(DBPDataSource dataSource, DBSAttributeBase attribute, @Nullable Object value) {
         String strValue;
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
