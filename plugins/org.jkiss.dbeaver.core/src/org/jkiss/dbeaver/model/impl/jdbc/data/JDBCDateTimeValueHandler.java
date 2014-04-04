@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.*;
@@ -221,7 +222,11 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                         "','YYYY-MM-DD HH24:MI:SS')";
             }
         } else {
-            return getFormatter(column).formatValue(value);
+            try {
+                return getFormatter(column).formatValue(value);
+            } catch (Exception e) {
+                return String.valueOf(value);
+            }
         }
     }
 
@@ -316,6 +321,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Nullable
     private static java.sql.Time getTimeValue(Object value)
     {
         if (value instanceof java.sql.Time) {
@@ -329,6 +335,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Nullable
     private static java.sql.Date getDateValue(Object value)
     {
         if (value instanceof java.sql.Date) {
@@ -342,6 +349,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Nullable
     private static java.sql.Timestamp getTimestampValue(Object value)
     {
         if (value instanceof java.sql.Timestamp) {
@@ -364,6 +372,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @NotNull
     protected DBDDataFormatter getFormatter(DBSTypedObject column)
     {
         switch (column.getTypeID()) {
