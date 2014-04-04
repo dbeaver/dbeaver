@@ -641,6 +641,18 @@ public class ResultSetModel {
         return false;
     }
 
+    void updateDataFilter(DBDDataFilter filter)
+    {
+        for (DBDAttributeConstraint constraint : filter.getConstraints()) {
+            DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute());
+            if (filterConstraint == null) {
+                log.warn("Constraint for attribute [" + constraint.getAttribute().getName() + "] not found");
+                continue;
+            }
+            filterConstraint.setCriteria(constraint.getCriteria());
+        }
+    }
+
     void resetOrdering()
     {
         final boolean hasOrdering = dataFilter.hasOrdering();
