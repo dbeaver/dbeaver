@@ -399,7 +399,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     {
         if (dataFilter != null && dataFilter.hasConditions()) {
             query.append(" WHERE "); //$NON-NLS-1$
-            SQLUtils.appendConditionString(dataFilter, getDataSource(), tableAlias, query);
+            SQLUtils.appendConditionString(dataFilter, getDataSource(), tableAlias, query, true);
         }
     }
 

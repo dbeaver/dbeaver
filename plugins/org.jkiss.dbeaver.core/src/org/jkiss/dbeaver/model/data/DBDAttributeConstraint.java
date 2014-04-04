@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,7 +32,12 @@ public class DBDAttributeConstraint {
     private final DBSAttributeBase attribute;
     private int orderPosition;
     private boolean orderDescending;
+
     private String criteria;
+    private DBCLogicalOperator operator;
+    private boolean reverseOperator;
+    private Object value;
+
     private boolean visible;
     private int visualPosition;
     private final int originalVisualPosition;
@@ -48,6 +54,9 @@ public class DBDAttributeConstraint {
         this.orderPosition = source.orderPosition;
         this.orderDescending = source.orderDescending;
         this.criteria = source.criteria;
+        this.operator = source.operator;
+        this.reverseOperator = source.reverseOperator;
+        this.value = source.value;
         this.visible = source.visible;
         this.originalVisualPosition = source.originalVisualPosition;
         this.visualPosition = source.visualPosition;
@@ -88,9 +97,37 @@ public class DBDAttributeConstraint {
         this.criteria = criteria;
     }
 
+    public DBCLogicalOperator getOperator() {
+        return operator;
+    }
+
+    public void setOperator(DBCLogicalOperator operator) {
+        this.operator = operator;
+    }
+
+    public boolean isReverseOperator() {
+        return reverseOperator;
+    }
+
+    public void setReverseOperator(boolean reverseOperator) {
+        this.reverseOperator = reverseOperator;
+    }
+
+    public Object getValue() {
+        return value;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
+    }
+
     public boolean hasFilter()
     {
-        return !CommonUtils.isEmpty(criteria) || orderPosition > 0;
+        return hasCondition() || orderPosition > 0;
+    }
+
+    public boolean hasCondition() {
+        return !CommonUtils.isEmpty(criteria) || operator != null;
     }
 
     public boolean isVisible()
@@ -101,6 +138,10 @@ public class DBDAttributeConstraint {
     public void setVisible(boolean visible)
     {
         this.visible = visible;
+    }
+
+    public int getOriginalVisualPosition() {
+        return originalVisualPosition;
     }
 
     public int getVisualPosition()
@@ -118,6 +159,9 @@ public class DBDAttributeConstraint {
         this.orderPosition = 0;
         this.orderDescending = false;
         this.criteria = null;
+        this.operator = null;
+        this.reverseOperator = false;
+        this.value = null;
         this.visible = true;
         this.visualPosition = originalVisualPosition;
     }
@@ -127,33 +171,30 @@ public class DBDAttributeConstraint {
         return CommonUtils.equalObjects(this.attribute, source.attribute) &&
             this.orderPosition == source.orderPosition &&
             this.orderDescending == source.orderDescending &&
-            CommonUtils.equalObjects(this.criteria, source.criteria);
+            CommonUtils.equalObjects(this.criteria, source.criteria) &&
+            CommonUtils.equalObjects(this.operator, source.operator) &&
+            this.reverseOperator == source.reverseOperator &&
+            CommonUtils.equalObjects(this.value, source.value);
     }
 
     @Override
     public int hashCode()
     {
-        return this.attribute.hashCode() +
-            (this.orderPosition) +
-            (this.orderDescending ? 1 : 0) +
-            (this.criteria == null ? 0 : this.criteria.hashCode()) +
-            (this.visible ? 1 : 0) +
-            (this.visualPosition);
+        return this.attribute.hashCode();
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof DBDAttributeConstraint)) {
-            return false;
-        }
-        DBDAttributeConstraint source = (DBDAttributeConstraint)obj;
-        return equalFilters(source) &&
-            this.visible == source.visible &&
-            this.visualPosition == source.visualPosition;
+        return obj instanceof DBDAttributeConstraint &&
+            CommonUtils.equalObjects(this.attribute, ((DBDAttributeConstraint) obj).attribute);
     }
 
-    public int getOriginalVisualPosition() {
-        return originalVisualPosition;
+    @Override
+    public String toString() {
+        String clause = operator == null ?
+            (criteria == null ? "" : criteria) :
+            (reverseOperator ? "NOT " : "") + operator.getStringValue() + " " + value;
+        return attribute.getName() + " " + clause;
     }
 }

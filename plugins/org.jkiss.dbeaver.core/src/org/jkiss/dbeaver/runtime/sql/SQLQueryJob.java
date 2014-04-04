@@ -55,7 +55,7 @@ import java.util.List;
 public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
-    private static final String NESTED_QUERY_AlIAS = "origdbvr";
+    private static final String NESTED_QUERY_AlIAS = "z_q";
 
     private final List<SQLStatementInfo> queries;
     private final SQLResultsConsumer resultsConsumer;
@@ -274,7 +274,7 @@ public class SQLQueryJob extends DataSourceJob
             modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS);
             if (dataFilter.hasConditions()) {
                 modifiedQuery.append(" WHERE ");
-                SQLUtils.appendConditionString(dataFilter, getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
+                SQLUtils.appendConditionString(dataFilter, getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery, true);
             }
             if (dataFilter.hasOrdering()) {
                 modifiedQuery.append(" ORDER BY "); //$NON-NLS-1$

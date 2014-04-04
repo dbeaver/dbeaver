@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -348,8 +349,9 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                     return ""; //$NON-NLS-1$
                 }
                 case 3: {
-                    if (constraint != null && !CommonUtils.isEmpty(constraint.getCriteria())) {
-                        return constraint.getCriteria();
+                    String condition = SQLUtils.getConstraintCondition(resultSetViewer.getDataSource(), constraint, true);
+                    if (condition != null) {
+                        return condition;
                     } else {
                         return ""; //$NON-NLS-1$
                     }
