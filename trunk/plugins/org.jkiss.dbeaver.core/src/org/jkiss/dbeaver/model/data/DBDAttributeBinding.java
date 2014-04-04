@@ -148,7 +148,7 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
     {
         if (nestedBindings != null) {
             for (DBDAttributeBinding binding : nestedBindings) {
-                if (binding.getMetaAttribute() == attribute || binding.getEntityAttribute() == attribute) {
+                if (binding.matches(attribute)) {
                     return binding;
                 }
                 DBDAttributeBinding subBinding = binding.getNestedBinding(attribute);

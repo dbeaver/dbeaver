@@ -191,11 +191,8 @@ public class ResultSetModel {
     @Nullable
     public DBDAttributeBinding getAttributeBinding(@NotNull DBSAttributeBase attribute)
     {
-        if (attribute instanceof DBDAttributeBinding) {
-            return (DBDAttributeBinding) attribute;
-        }
         for (DBDAttributeBinding binding : columns) {
-            if (binding.getMetaAttribute() == attribute || binding.getEntityAttribute() == attribute) {
+            if (binding.matches(attribute)) {
                 return binding;
             }
             DBDAttributeBinding subBinding = binding.getNestedBinding(attribute);
