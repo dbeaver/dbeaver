@@ -287,7 +287,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
         exportData.archiveStream.closeEntry();
 
         // Export resources
-        for (IResource child : project.members()) {
+        for (IResource child : project.members(IContainer.INCLUDE_HIDDEN)) {
             exportResourceTree(monitor, exportData, projectPath, child);
         }
 
