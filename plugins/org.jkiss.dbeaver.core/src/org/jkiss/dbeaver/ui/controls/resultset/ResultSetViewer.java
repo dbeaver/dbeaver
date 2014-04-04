@@ -1468,8 +1468,8 @@ public class ResultSetViewer extends Viewer
     {
         DBDAttributeBinding column = (DBDAttributeBinding)(currentPosition.col instanceof DBDAttributeBinding ? currentPosition.col : currentPosition.row);
         if (supportsDataFilter()) {
-            DBPDataKind dataKind = column.getMetaAttribute().getDataKind();
-            if (!column.getMetaAttribute().isRequired()) {
+            DBPDataKind dataKind = column.getDataKind();
+            if (!column.isRequired()) {
                 filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.IS_NULL, FilterByColumnType.NONE, column));
                 filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.IS_NOT_NULL, FilterByColumnType.NONE, column));
             }
@@ -2075,7 +2075,7 @@ public class ResultSetViewer extends Viewer
             RowData row = (RowData) (!recordMode ?  cell.row : cell.col);
             Object value = getModel().getCellValue(row, column);
             String cellText = column.getValueHandler().getValueDisplayString(
-                column.getMetaAttribute(),
+                column.getAttribute(),
                 value,
                 format);
             tdt.append(cellText);
@@ -2188,7 +2188,7 @@ public class ResultSetViewer extends Viewer
         try {
             String strValue = (String) getSpreadsheet().getClipboard().getContents(TextTransfer.getInstance());
             return metaColumn.getValueHandler().getValueFromObject(
-                    session, metaColumn.getMetaAttribute(), strValue, true);
+                    session, metaColumn.getAttribute(), strValue, true);
         } finally {
             session.close();
         }
@@ -2739,7 +2739,7 @@ public class ResultSetViewer extends Viewer
             }
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
-                return getTypeImage(attr.getMetaAttribute());
+                return getTypeImage(attr.getAttribute());
             } else {
                 return null;
             }
@@ -2797,7 +2797,7 @@ public class ResultSetViewer extends Viewer
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding) {
-                return getTypeImage(((DBDAttributeBinding)element).getMetaAttribute());
+                return getTypeImage(((DBDAttributeBinding)element).getAttribute());
             }
             return null;
         }
@@ -2856,7 +2856,7 @@ public class ResultSetViewer extends Viewer
             if (element instanceof DBDAttributeBinding) {
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
                 String name = attributeBinding.getName();
-                String typeName = DBUtils.getFullTypeName(attributeBinding.getMetaAttribute());
+                String typeName = DBUtils.getFullTypeName(attributeBinding.getAttribute());
                 return name + ": " + typeName;
             }
             return null;
