@@ -35,9 +35,13 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -60,7 +64,10 @@ class ResultSetDataPumpJob extends DataSourceJob {
     };
     static final Log log = LogFactory.getLog(ResultSetDataPumpJob.class);
 
-    private ResultSetViewer resultSetViewer;
+    private DBSDataContainer dataContainer;
+    private DBDDataFilter dataFilter;
+    private DBDDataReceiver dataReceiver;
+    private Composite progressControl;
     private int offset;
     private int maxRows;
     private Throwable error;
@@ -68,10 +75,13 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private long pumpStartTime;
     private String progressMessage;
 
-    protected ResultSetDataPumpJob(ResultSetViewer resultSetViewer) {
-        super(CoreMessages.controls_rs_pump_job_name, DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
-        this.resultSetViewer = resultSetViewer;
+    protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, DBDDataReceiver dataReceiver, Composite progressControl) {
+        super(CoreMessages.controls_rs_pump_job_name, DBIcon.SQL_EXECUTE.getImageDescriptor(), dataContainer.getDataSource());
         progressMessage = CoreMessages.controls_rs_pump_job_name;
+        this.dataContainer = dataContainer;
+        this.dataFilter = dataFilter;
+        this.dataReceiver = dataReceiver;
+        this.progressControl = progressControl;
         setUser(false);
     }
 
@@ -115,14 +125,14 @@ class ResultSetDataPumpJob extends DataSourceJob {
         DBCSession session = getDataSource().openSession(
             proxyMonitor,
             DBCExecutionPurpose.USER,
-            NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
+            NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.getName()));
         PumpVisualizer visualizer = new PumpVisualizer();
         try {
             visualizer.schedule(PROGRESS_VISUALIZE_PERIOD * 2);
-            statistics = resultSetViewer.getDataContainer().readData(
+            statistics = dataContainer.readData(
                 session,
-                resultSetViewer.getDataReceiver(),
-                resultSetViewer.getModel().getDataFilter(),
+                dataReceiver,
+                dataFilter,
                 offset,
                 maxRows,
                 DBSDataContainer.FLAG_READ_PSEUDO);
@@ -147,32 +157,31 @@ class ResultSetDataPumpJob extends DataSourceJob {
         private PaintListener painListener;
 
         public PumpVisualizer() {
-            super(resultSetViewer.getSite().getShell().getDisplay(), "RSV Pump Visualizer");
+            super(progressControl.getDisplay(), "RSV Pump Visualizer");
             setSystem(true);
         }
 
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
-            final Spreadsheet spreadsheet = resultSetViewer.getSpreadsheet();
-            if (!spreadsheet.isDisposed()) {
+            if (!progressControl.isDisposed()) {
                 if (!finished) {
                     try {
-                        showProgress(spreadsheet);
+                        showProgress(progressControl);
                     } catch (Exception e) {
                         log.error("Internal error during progress visualization", e);
                         // Something went terribly wrong
                         // We shouldn't be here ever. In any case we must finish the job
-                        finishProgress(spreadsheet);
+                        finishProgress(progressControl);
                     }
                 } else {
-                    finishProgress(spreadsheet);
+                    finishProgress(progressControl);
 
                 }
             }
             return Status.OK_STATUS;
         }
 
-        private void showProgress(final Spreadsheet spreadsheet) {
+        private void showProgress(final Composite spreadsheet) {
             if (progressOverlay == null) {
                 // Start progress visualization
                 cancelButton = new Button(spreadsheet, SWT.PUSH);
@@ -215,7 +224,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
 
                         int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
                         int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
-                        e.gc.setForeground(spreadsheet.getForegroundNormal());
+                        e.gc.setForeground(spreadsheet.getForeground());
                         e.gc.setBackground(spreadsheet.getBackground());
                         e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
                         e.gc.drawText(status, statusX, statusY, true);
@@ -240,14 +249,14 @@ class ResultSetDataPumpJob extends DataSourceJob {
             schedule(PROGRESS_VISUALIZE_PERIOD);
         }
 
-        private void finishProgress(Spreadsheet spreadsheet) {
+        private void finishProgress(Composite control) {
             // Last update - remove progress visualization
             if (progressOverlay != null) {
                 progressOverlay.dispose();
                 progressOverlay = null;
                 cancelButton.dispose();
-                spreadsheet.removePaintListener(painListener);
-                spreadsheet.redraw();
+                control.removePaintListener(painListener);
+                control.redraw();
             }
         }
 

@@ -76,6 +76,10 @@ public class DBDDataFilter {
         return null;
     }
 
+    public void addConstraints(List<DBDAttributeConstraint> constraints) {
+        this.constraints.addAll(constraints);
+    }
+
     public List<DBSAttributeBase> getOrderedVisibleAttributes()
     {
         List<DBDAttributeConstraint> visibleConstraints = new ArrayList<DBDAttributeConstraint>();
@@ -249,4 +253,5 @@ public class DBDDataFilter {
         return CommonUtils.equalObjects(this.order, source.order) &&
             CommonUtils.equalObjects(this.where, source.where);
     }
+
 }

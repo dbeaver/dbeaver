@@ -384,6 +384,7 @@ public class ResultSetModel {
         if (this.columns == null || this.columns.length != columns.length) {
             update = true;
         } else {
+/*
             if (dataFilter != null && dataFilter.hasFilters()) {
                 // This is a filtered result set so keep old metadata.
                 // Filtering modifies original query (adds sub-query)
@@ -392,6 +393,7 @@ public class ResultSetModel {
                 // so let's keep old info
                 return false;
             }
+*/
 
             for (int i = 0; i < this.columns.length; i++) {
                 if (!this.columns[i].getMetaAttribute().equals(columns[i].getMetaAttribute())) {
@@ -613,6 +615,17 @@ public class ResultSetModel {
     boolean setDataFilter(DBDDataFilter dataFilter)
     {
         this.dataFilter = dataFilter;
+        // Check if filter misses some columns
+        List<DBDAttributeConstraint> newConstraints = new ArrayList<DBDAttributeConstraint>();
+        for (DBDAttributeBinding binding : columns) {
+            if (dataFilter.getConstraint(binding) == null) {
+                addConstraints(newConstraints, binding);
+            }
+        }
+        if (!newConstraints.isEmpty()) {
+            dataFilter.addConstraints(newConstraints);
+        }
+
         List<DBDAttributeBinding> newBindings = new ArrayList<DBDAttributeBinding>();
 
         for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
