@@ -175,9 +175,6 @@ class ResultSetDataPumpJob extends DataSourceJob {
         private void showProgress(final Spreadsheet spreadsheet) {
             if (progressOverlay == null) {
                 // Start progress visualization
-                resultSetViewer.getModel().setUpdateInProgress(true);
-                resultSetViewer.updateFiltersText();
-
                 cancelButton = new Button(spreadsheet, SWT.PUSH);
                 cancelButton.setText("Cancel");
                 GridData gd = new GridData(GridData.FILL_BOTH);
@@ -252,8 +249,6 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 spreadsheet.removePaintListener(painListener);
                 spreadsheet.redraw();
             }
-            resultSetViewer.getModel().setUpdateInProgress(false);
-            resultSetViewer.updateFiltersText();
         }
 
     }
