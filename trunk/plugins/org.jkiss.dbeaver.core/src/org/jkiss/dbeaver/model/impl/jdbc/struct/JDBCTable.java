@@ -123,20 +123,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 log.warn("Can't get pseudo attributes for '" + getName() + "'", e);
             }
         }
-        String tableAlias = null;
+        String tableAlias = DEFAULT_TABLE_ALIAS;
         StringBuilder query = new StringBuilder(100);
         if (rowIdAttribute != null) {
             // If we have pseudo attributes then query gonna be more complex
-            tableAlias = DEFAULT_TABLE_ALIAS;
             query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
             query.append(",").append(rowIdAttribute.getQueryExpression().replace("$alias", tableAlias));
             if (rowIdAttribute.getAlias() != null) {
                 query.append(" as ").append(rowIdAttribute.getAlias());
             }
-            query.append(" FROM ").append(getFullQualifiedName()).append(" ").append(tableAlias); //$NON-NLS-1$
         } else {
-            query.append("SELECT * FROM ").append(getFullQualifiedName()); //$NON-NLS-1$
+            query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
         }
+        query.append(" FROM ").append(getFullQualifiedName()).append(" ").append(tableAlias); //$NON-NLS-1$
         appendQueryConditions(query, tableAlias, dataFilter);
         appendQueryOrder(query, tableAlias, dataFilter);
 

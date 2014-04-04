@@ -109,8 +109,8 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: editors history navigation
  * TODO: use binding in filter queries
- * TODO: fix local ordering
  * TODO: collections and ANY types support
  * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
