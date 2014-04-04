@@ -454,9 +454,13 @@ public class DBNModel implements IResourceChangeListener {
                             // Project deleted
                             getRoot().removeProject(project);
                         } else {
-                            // Some resource changed within the projectNode
-                            // Let it handle this event itself
-                            projectNode.handleResourceChange(childDelta);
+                            if (childDelta.getFlags() == IResourceDelta.OPEN) {
+                                //projectNode.openProject();
+                            } else {
+                                // Some resource changed within the projectNode
+                                // Let it handle this event itself
+                                projectNode.handleResourceChange(childDelta);
+                            }
                         }
                     }
                 }

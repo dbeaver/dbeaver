@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -349,7 +346,9 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         if (!CommonUtils.isEmpty(projectDescription)) {
             description.setComment(projectDescription);
         }
-        project.create(description, monitor.getNestedMonitor());
+        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        projectRegistry.projectBusy(project, true);
+        project.create(description, 0, monitor.getNestedMonitor());
 
         try {
             // Open project
@@ -368,6 +367,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
             // Update driver references in datasources
             updateDriverReferences(monitor, project, driverMap);
+
         } catch (Exception e) {
             // Cleanup project which was partially imported
             try {
@@ -376,7 +376,10 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 log.error(e1);
             }
             throw new DBException("Error importing project resources", e);
+        } finally {
+            projectRegistry.projectBusy(project, false);
         }
+        projectRegistry.addProject(project);
 
         return project;
     }
