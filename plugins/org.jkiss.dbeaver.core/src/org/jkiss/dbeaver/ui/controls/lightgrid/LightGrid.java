@@ -3421,7 +3421,9 @@ public abstract class LightGrid extends Canvas {
         }
 
         if (overLink) {
-            setCursor(sortCursor);
+            if (!hoveringOnLink) {
+                setCursor(sortCursor);
+            }
         } else if (hoveringOnLink) {
             setCursor(null);
         }

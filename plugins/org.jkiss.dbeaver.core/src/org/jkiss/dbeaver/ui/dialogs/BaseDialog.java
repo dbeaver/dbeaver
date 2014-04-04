@@ -48,6 +48,10 @@ public class BaseDialog extends Dialog
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public Image getImage() {
         return icon;
     }

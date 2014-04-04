@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-class ResultSetFilterDialog extends HelpEnabledDialog {
+class FilterSettingsDialog extends HelpEnabledDialog {
 
     private final ResultSetViewer resultSetViewer;
 
@@ -58,7 +58,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     // Keep constraints in a copy because we use this list as table viewer model
     private java.util.List<DBDAttributeConstraint> constraints;
 
-    public ResultSetFilterDialog(ResultSetViewer resultSetViewer)
+    public FilterSettingsDialog(ResultSetViewer resultSetViewer)
     {
         super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
         this.resultSetViewer = resultSetViewer;
