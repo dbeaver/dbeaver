@@ -95,6 +95,9 @@ public class DBDAttributeConstraint {
     public void setCriteria(@Nullable String criteria)
     {
         this.criteria = criteria;
+        this.operator = null;
+        this.reverseOperator = false;
+        this.value = null;
     }
 
     public DBCLogicalOperator getOperator() {
@@ -102,6 +105,7 @@ public class DBDAttributeConstraint {
     }
 
     public void setOperator(DBCLogicalOperator operator) {
+        this.criteria = null;
         this.operator = operator;
     }
 
@@ -118,6 +122,7 @@ public class DBDAttributeConstraint {
     }
 
     public void setValue(Object value) {
+        this.criteria = null;
         this.value = value;
     }
 
@@ -174,7 +179,9 @@ public class DBDAttributeConstraint {
             CommonUtils.equalObjects(this.criteria, source.criteria) &&
             CommonUtils.equalObjects(this.operator, source.operator) &&
             this.reverseOperator == source.reverseOperator &&
-            CommonUtils.equalObjects(this.value, source.value);
+            CommonUtils.equalObjects(this.value, source.value) &&
+            this.visible == source.visible &&
+            this.visualPosition == source.visualPosition;
     }
 
     @Override

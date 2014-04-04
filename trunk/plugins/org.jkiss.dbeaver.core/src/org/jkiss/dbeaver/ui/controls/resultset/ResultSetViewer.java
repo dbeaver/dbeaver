@@ -109,13 +109,12 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
- * TODO: links in both directions, multiple links support (context menu)
- * TODO: fix filter context menu (use operators)
+ * TODO: filter custom value editor
  * TODO: use binding in filter queries
  * TODO: fix local ordering
  * TODO: collections and ANY types support
+ * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
- * TODO: local/ss ordering switcher in context menu
  * TODO: ipatheditorinput issue
  */
 public class ResultSetViewer extends Viewer
@@ -1462,8 +1461,8 @@ public class ResultSetViewer extends Viewer
         if (supportsDataFilter()) {
             DBPDataKind dataKind = column.getMetaAttribute().getDataKind();
             if (!column.getMetaAttribute().isRequired()) {
-                filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.NONE, column));
-                filtersMenu.add(new FilterByColumnAction("IS NOT NULL", FilterByColumnType.NONE, column));
+                filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.IS_NULL, FilterByColumnType.NONE, column));
+                filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.IS_NOT_NULL, FilterByColumnType.NONE, column));
             }
             for (FilterByColumnType type : FilterByColumnType.values()) {
                 if (type == FilterByColumnType.NONE) {
@@ -1471,29 +1470,28 @@ public class ResultSetViewer extends Viewer
                     continue;
                 }
                 filtersMenu.add(new Separator());
-                if (type.getValue(this, column, true, DBDDisplayFormat.NATIVE) == null) {
+                if (type.getValue(this, column, DBCLogicalOperator.EQUALS, true) == null) {
                     continue;
                 }
                 if (dataKind == DBPDataKind.BOOLEAN) {
-                    filtersMenu.add(new FilterByColumnAction("= ?", type, column));
-                    filtersMenu.add(new FilterByColumnAction("<> ?", type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.EQUALS, type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.NOT_EQUALS, type, column));
                 } else if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
-                    filtersMenu.add(new FilterByColumnAction("= ?", type, column));
-                    filtersMenu.add(new FilterByColumnAction("<> ?", type, column));
-                    filtersMenu.add(new FilterByColumnAction("> ?", type, column));
-                    filtersMenu.add(new FilterByColumnAction("< ?", type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.EQUALS, type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.NOT_EQUALS, type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.GREATER, type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.LESS, type, column));
                 } else if (dataKind == DBPDataKind.STRING) {
-                    filtersMenu.add(new FilterByColumnAction("= '?'", type, column));
-                    filtersMenu.add(new FilterByColumnAction("<> '?'", type, column));
-                    filtersMenu.add(new FilterByColumnAction("> '?'", type, column));
-                    filtersMenu.add(new FilterByColumnAction("< '?'", type, column));
-                    filtersMenu.add(new FilterByColumnAction("LIKE '%?%'", type, column));
-                    filtersMenu.add(new FilterByColumnAction("NOT LIKE '%?%'", type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.EQUALS, type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.NOT_EQUALS, type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.GREATER, type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.LESS, type, column));
+                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.LIKE, type, column));
                 }
             }
             filtersMenu.add(new Separator());
             DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
-            if (constraint != null && !CommonUtils.isEmpty(constraint.getCriteria())) {
+            if (constraint != null && constraint.hasCondition()) {
                 filtersMenu.add(new FilterResetColumnAction(column));
             }
         }
@@ -1885,7 +1883,11 @@ public class ResultSetViewer extends Viewer
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob == null) {
-            dataPumpJob = new ResultSetDataPumpJob(this.getDataContainer(), dataFilter, getDataReceiver(), getSpreadsheet());
+            dataPumpJob = new ResultSetDataPumpJob(
+                this.getDataContainer(),
+                dataFilter != null ? dataFilter : model.getDataFilter(),
+                getDataReceiver(),
+                getSpreadsheet());
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void aboutToRun(IJobChangeEvent event) {
@@ -2961,15 +2963,24 @@ public class ResultSetViewer extends Viewer
     private enum FilterByColumnType {
         VALUE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
             @Override
-            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
-                GridCell focusCell = viewer.getSpreadsheet().getFocusCell();
-                return focusCell == null ? "" : viewer.getSpreadsheet().getContentProvider().getCellText(focusCell);
+                GridCell cell = viewer.getSpreadsheet().getFocusCell();
+                if (cell == null) {
+                    return null;
+                }
+                final DBDAttributeBinding attr = (DBDAttributeBinding)(viewer.recordMode ? cell.row : cell.col);
+                final RowData row = (RowData)(viewer.recordMode ? cell.col : cell.row);
+                Object cellValue = viewer.getModel().getCellValue(row, attr);
+                if (operator == DBCLogicalOperator.LIKE && cellValue != null) {
+                    cellValue = "%" + cellValue + "%";
+                }
+                return cellValue;
             }
         },
         INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
             @Override
-            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
+            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
                 if (useDefault) {
                     return "..";
@@ -2983,13 +2994,10 @@ public class ResultSetViewer extends Viewer
         },
         CLIPBOARD(DBIcon.FILTER_CLIPBOARD.getImageDescriptor()) {
             @Override
-            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
                 try {
-                    return column.getValueHandler().getValueDisplayString(
-                        column.getMetaAttribute(),
-                        viewer.getColumnValueFromClipboard(column),
-                        format);
+                    return viewer.getColumnValueFromClipboard(column);
                 } catch (DBCException e) {
                     log.debug("Error copying from clipboard", e);
                     return null;
@@ -2998,9 +3006,9 @@ public class ResultSetViewer extends Viewer
         },
         NONE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
             @Override
-            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
-                return "";
+                return null;
             }
         };
 
@@ -3011,26 +3019,25 @@ public class ResultSetViewer extends Viewer
             this.icon = icon;
         }
         @Nullable
-        abstract String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format);
+        abstract Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault);
     }
 
-    private String translateFilterPattern(String pattern, FilterByColumnType type, DBDAttributeBinding column)
+    private String translateFilterPattern(DBCLogicalOperator operator, FilterByColumnType type, DBDAttributeBinding column)
     {
-        String value = CommonUtils.truncateString(
-            CommonUtils.toString(
-                type.getValue(this, column, true, DBDDisplayFormat.UI)),
-            30);
-        return pattern.replace("?", value);
+        Object value = type.getValue(this, column, operator, true);
+        DBPDataSource dataSource = getDataSource();
+        String strValue = dataSource == null ? String.valueOf(value) : SQLUtils.convertValueToSQL(dataSource, column, value);
+        return operator.getStringValue() + " " + strValue;
     }
 
     private class FilterByColumnAction extends Action {
-        private final String pattern;
+        private final DBCLogicalOperator operator;
         private final FilterByColumnType type;
         private final DBDAttributeBinding column;
-        public FilterByColumnAction(String pattern, FilterByColumnType type, DBDAttributeBinding column)
+        public FilterByColumnAction(DBCLogicalOperator operator, FilterByColumnType type, DBDAttributeBinding column)
         {
-            super(column.getName() + " " + translateFilterPattern(pattern, type, column), type.icon);
-            this.pattern = pattern;
+            super(column.getName() + " " + translateFilterPattern(operator, type, column), type.icon);
+            this.operator = operator;
             this.type = type;
             this.column = column;
         }
@@ -3038,15 +3045,15 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            String value = type.getValue(ResultSetViewer.this, column, false, DBDDisplayFormat.NATIVE);
+            Object value = type.getValue(ResultSetViewer.this, column, operator, false);
             if (value == null) {
                 return;
             }
-            String stringValue = pattern.replace("?", value);
             DBDDataFilter filter = model.getDataFilter();
             DBDAttributeConstraint constraint = filter.getConstraint(column);
             if (constraint != null) {
-                constraint.setCriteria(stringValue);
+                constraint.setOperator(operator);
+                constraint.setValue(value);
                 updateFiltersText();
                 refresh();
             }
