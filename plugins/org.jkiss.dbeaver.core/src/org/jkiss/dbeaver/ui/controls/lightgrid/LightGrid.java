@@ -134,8 +134,8 @@ public abstract class LightGrid extends Canvas {
     private final List<GridColumn> topColumns = new ArrayList<GridColumn>();
     private final List<GridColumn> columns = new ArrayList<GridColumn>();
     private int maxColumnDepth = 0;
-    private Object[] columnElements = new Object[0];
-    private Object[] rowElements = new Object[0];
+    protected Object[] columnElements = new Object[0];
+    protected Object[] rowElements = new Object[0];
     private GridNode[] parentNodes = new GridNode[0];
     private final Map<Object, GridNode> rowNodes = new IdentityHashMap<Object, GridNode>();
 
