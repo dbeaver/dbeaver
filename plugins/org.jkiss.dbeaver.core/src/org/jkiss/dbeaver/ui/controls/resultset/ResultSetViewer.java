@@ -1444,62 +1444,68 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void fillContextMenu(@NotNull final GridCell curCell, @NotNull IMenuManager manager)
+    public void fillContextMenu(@Nullable Object colObject, @Nullable Object rowObject, @NotNull IMenuManager manager)
     {
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(colObject instanceof DBDAttributeBinding ? colObject : rowObject);
+        final RowData row = (RowData)(colObject instanceof RowData? colObject : rowObject);
         // Custom oldValue items
-        {
-            final GridCell cell = translateVisualPos(curCell);
+        if (attr != null && row != null) {
+            final GridCell cell = new GridCell(attr, row);
             final ResultSetValueController valueController = new ResultSetValueController(
                 this,
                 cell,
                 DBDValueController.EditType.NONE,
                 null);
+
             final Object value = valueController.getValue();
-
-            // Standard items
-            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
-            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
-            manager.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_COPY_SPECIAL));
-            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
-            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE));
-            // Edit items
-            manager.add(new Separator());
-            manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
-            manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
-            if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)) {
-                manager.add(new Action(CoreMessages.controls_resultset_viewer_action_set_to_null) {
-                    @Override
-                    public void run()
-                    {
-                        valueController.updateValue(
-                            DBUtils.makeNullValue(valueController));
-                    }
-                });
-            }
-            if (((RowData)cell.row).isChanged()) {
-                Action resetValueAction = new Action(CoreMessages.controls_resultset_viewer_action_reset_value)
-                {
-                    @Override
-                    public void run()
-                    {
-                        resetCellValue(cell, false);
-                    }
-                };
-                resetValueAction.setAccelerator(SWT.ESC);
-                manager.add(resetValueAction);
-            }
-
-            // Menus from value handler
-            try {
+            {
+                // Standard items
+                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
+                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
+                manager.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_COPY_SPECIAL));
+                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
+                manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE));
+                // Edit items
                 manager.add(new Separator());
-                ((DBDAttributeBinding)cell.col).getValueHandler().contributeActions(manager, valueController);
+                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
+                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
+                if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)) {
+                    manager.add(new Action(CoreMessages.controls_resultset_viewer_action_set_to_null) {
+                        @Override
+                        public void run()
+                        {
+                            valueController.updateValue(
+                                DBUtils.makeNullValue(valueController));
+                        }
+                    });
+                }
+                if (((RowData)cell.row).isChanged()) {
+                    Action resetValueAction = new Action(CoreMessages.controls_resultset_viewer_action_reset_value)
+                    {
+                        @Override
+                        public void run()
+                        {
+                            resetCellValue(cell, false);
+                        }
+                    };
+                    resetValueAction.setAccelerator(SWT.ESC);
+                    manager.add(resetValueAction);
+                }
             }
-            catch (Exception e) {
-                log.error(e);
+
+            if (cell != null) {
+                // Menus from value handler
+                try {
+                    manager.add(new Separator());
+                    ((DBDAttributeBinding)cell.col).getValueHandler().contributeActions(manager, valueController);
+                }
+                catch (Exception e) {
+                    log.error(e);
+                }
             }
         }
 
-        if (model.getVisibleColumnCount() > 0 && !model.isUpdateInProgress()) {
+        if (attr != null && model.getVisibleColumnCount() > 0 && !model.isUpdateInProgress()) {
             // Export and other utility methods
             manager.add(new Separator());
             MenuManager filtersMenu = new MenuManager(
@@ -1511,7 +1517,7 @@ public class ResultSetViewer extends Viewer
                 @Override
                 public void menuAboutToShow(IMenuManager manager)
                 {
-                    fillFiltersMenu(curCell, manager);
+                    fillFiltersMenu(attr, manager);
                 }
             });
             manager.add(filtersMenu);
@@ -1534,9 +1540,8 @@ public class ResultSetViewer extends Viewer
         manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
     }
 
-    private void fillFiltersMenu(@NotNull GridCell currentPosition, @NotNull IMenuManager filtersMenu)
+    private void fillFiltersMenu(@NotNull DBDAttributeBinding column, @NotNull IMenuManager filtersMenu)
     {
-        DBDAttributeBinding column = (DBDAttributeBinding)(currentPosition.col instanceof DBDAttributeBinding ? currentPosition.col : currentPosition.row);
         if (supportsDataFilter()) {
             DBPDataKind dataKind = column.getDataKind();
             if (!column.isRequired()) {
@@ -3105,7 +3110,11 @@ public class ResultSetViewer extends Viewer
         Object value = type.getValue(this, column, operator, true);
         DBPDataSource dataSource = getDataSource();
         String strValue = dataSource == null ? String.valueOf(value) : SQLUtils.convertValueToSQL(dataSource, column, value);
-        return operator.getStringValue() + " " + strValue;
+        if (operator.getArgumentCount() == 0) {
+            return operator.getStringValue();
+        } else {
+            return operator.getStringValue() + " " + strValue;
+        }
     }
 
     private class FilterByColumnAction extends Action {
@@ -3124,9 +3133,6 @@ public class ResultSetViewer extends Viewer
         public void run()
         {
             Object value = type.getValue(ResultSetViewer.this, column, operator, false);
-            if (value == null) {
-                return;
-            }
             DBDDataFilter filter = model.getDataFilter();
             DBDAttributeConstraint constraint = filter.getConstraint(column);
             if (constraint != null) {
