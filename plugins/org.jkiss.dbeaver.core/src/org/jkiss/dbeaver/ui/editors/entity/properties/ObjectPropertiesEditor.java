@@ -323,7 +323,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         return false;
     }
 
-    private void createPathRow(Composite infoGroup, Image image, String label, String value, SelectionListener selectionListener)
+    private void createPathRow(Composite infoGroup, Image image, String label, String value, @Nullable SelectionListener selectionListener)
     {
         UIUtils.createImageLabel(infoGroup, image);
         //UIUtils.createControlLabel(infoGroup, label);
@@ -403,6 +403,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
+    @Nullable
     private ISearchContextProvider getFolderSearch()
     {
         Object activeFolder = getActiveFolder();
