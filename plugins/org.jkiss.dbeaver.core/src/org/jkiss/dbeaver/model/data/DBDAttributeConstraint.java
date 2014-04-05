@@ -127,7 +127,7 @@ public class DBDAttributeConstraint {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(@Nullable Object value) {
         this.criteria = null;
         this.value = value;
     }

@@ -20,12 +20,14 @@
 package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.Nullable;
 
 /**
  * IFolderedPart
  */
 public interface IFolderedPart extends IWorkbenchPart
 {
+    @Nullable
     Object getActiveFolder();
 
     void switchFolder(String folderId);

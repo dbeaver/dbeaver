@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -51,6 +52,7 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         return getEditorInput().getTreeNode();
     }
 
+    @Nullable
     @Override
     public Viewer getNavigatorViewer()
     {

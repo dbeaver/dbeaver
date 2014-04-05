@@ -61,8 +61,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 //    private IWorkbenchAction searchHelpAction;
 //    private IWorkbenchAction dynamicHelpAction;
     private IWorkbenchAction newWindowAction;
-    private IWorkbenchAction historyBackAction;
-    private IWorkbenchAction historyForwardAction;
+//    private IWorkbenchAction historyBackAction;
+//    private IWorkbenchAction historyForwardAction;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
     {
@@ -90,10 +90,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         register(newWindowAction);
 
-        historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
-        register(historyBackAction);
-        historyForwardAction = ActionFactory.FORWARD_HISTORY.create(window);
-        register(historyForwardAction);
+//        historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
+//        register(historyBackAction);
+//        historyForwardAction = ActionFactory.FORWARD_HISTORY.create(window);
+//        register(historyForwardAction);
     }
 
     @Override
@@ -142,8 +142,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         navigateMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_END));
         navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.GROUP_APP));
-        navigateMenu.add(historyBackAction);
-        navigateMenu.add(historyForwardAction);
+//        navigateMenu.add(historyBackAction);
+//        navigateMenu.add(historyForwardAction);
 
         //editMenu.add(ActionFactory.PROPERTIES);
         //editMenu.add(viewPropertiesAction);
@@ -189,6 +189,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_TXN));
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_DATASOURCE));
 
+/*
         coolBar.add(new GroupMarker("nav"));
         { // Navigate group
             IToolBarManager navToolBar = new ToolBarManager(SWT.FLAT | SWT.LEFT);
@@ -200,6 +201,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             // Add to the cool bar manager
             coolBar.add(new ToolBarContributionItem(navToolBar, IWorkbenchActionConstants.TOOLBAR_NAVIGATE));
         }
+*/
 
     }
 

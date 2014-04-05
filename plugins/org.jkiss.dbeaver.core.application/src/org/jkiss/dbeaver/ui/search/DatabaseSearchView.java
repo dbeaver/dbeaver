@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -107,6 +108,7 @@ public class DatabaseSearchView extends ViewPart implements INavigatorModelView 
         return view == null ? null : view.getRootNode();
     }
 
+    @Nullable
     @Override
     public Viewer getNavigatorViewer()
     {

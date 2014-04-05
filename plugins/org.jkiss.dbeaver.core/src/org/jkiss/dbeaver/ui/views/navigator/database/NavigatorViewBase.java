@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
@@ -69,6 +70,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return tree;
     }
 
+    @Nullable
     @Override
     public TreeViewer getNavigatorViewer()
     {
