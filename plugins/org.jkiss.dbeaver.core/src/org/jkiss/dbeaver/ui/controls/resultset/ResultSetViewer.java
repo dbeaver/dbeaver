@@ -2778,8 +2778,8 @@ public class ResultSetViewer extends Viewer
         @Override
         public Object getCellValue(@NotNull GridCell cell, boolean formatString)
         {
-            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-            RowData row = (RowData)(recordMode ? cell.col : cell.row);
+            DBDAttributeBinding attr = (DBDAttributeBinding)(cell.row instanceof DBDAttributeBinding ? cell.row: cell.col);
+            RowData row = (RowData)(cell.col instanceof RowData ? cell.col : cell.row);
             int rowNum = row.visualNumber;
             Object value = getModel().getCellValue(row, attr);
 
