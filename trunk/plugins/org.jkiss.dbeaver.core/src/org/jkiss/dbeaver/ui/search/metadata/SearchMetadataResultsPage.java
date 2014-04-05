@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.part.Page;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
@@ -98,6 +99,7 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
         return itemList.getRootNode();
     }
 
+    @Nullable
     @Override
     public Viewer getNavigatorViewer()
     {

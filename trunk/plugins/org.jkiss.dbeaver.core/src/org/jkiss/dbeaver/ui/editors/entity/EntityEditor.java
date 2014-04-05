@@ -26,6 +26,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.ErrorEditorPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -77,7 +78,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements INavigatorModelView, IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderedPart, INavigationLocationProvider
+    implements INavigatorModelView, IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderedPart
 {
     static final Log log = LogFactory.getLog(EntityEditor.class);
 
@@ -124,6 +125,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         super.handlePropertyChange(propId);
     }
 
+    @Nullable
     @Override
     public ProgressPageControl getProgressControl()
     {
@@ -524,6 +526,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         firePropertyChange(IEditorPart.PROP_DIRTY);
     }
 
+    @Nullable
     private String getEditorPageId(IEditorPart editorPart)
     {
         synchronized (editorMap) {
@@ -536,7 +539,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return null;
     }
 
-    private void updateEditorDefaults(String pageId, String folderId)
+    private void updateEditorDefaults(String pageId, @Nullable String folderId)
     {
         IDatabaseEditorInput editorInput = getEditorInput();
         if (editorInput instanceof DatabaseEditorInput) {
@@ -580,6 +583,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+    @Nullable
     @Override
     public Object getActiveFolder()
     {
@@ -638,8 +642,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         List<TabInfo> tabs = new ArrayList<TabInfo>();
 
         // Add all nested folders as tabs
-        DBNNode node = getEditorInput().getTreeNode();
-        if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
+        DBNDatabaseNode node = getEditorInput().getTreeNode();
+        if (node instanceof DBNDataSource &&
+            (node.getDataSourceContainer() == null || !node.getDataSourceContainer().isConnected()))
+        {
             // Do not add children tabs
         } else if (node != null) {
             try {
@@ -656,20 +662,17 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 log.error("Error initializing entity editor", e); //$NON-NLS-1$
             }
             // Add itself as tab (if it has child items)
-            if (node instanceof DBNDatabaseNode) {
-                DBNDatabaseNode databaseNode = (DBNDatabaseNode)node;
-                List<DBXTreeNode> subNodes = databaseNode.getMeta().getChildren(databaseNode);
-                if (subNodes != null) {
-                    for (DBXTreeNode child : subNodes) {
-                        if (child instanceof DBXTreeItem) {
-                            try {
-                                if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
-                                    monitor.subTask(CoreMessages.editors_entity_monitor_add_node + node.getNodeName() + "'");
-                                    tabs.add(new TabInfo((DBNDatabaseNode)node, child));
-                                }
-                            } catch (DBException e) {
-                                log.debug("Can't add child items tab", e); //$NON-NLS-1$
+            List<DBXTreeNode> subNodes = node.getMeta().getChildren(node);
+            if (subNodes != null) {
+                for (DBXTreeNode child : subNodes) {
+                    if (child instanceof DBXTreeItem) {
+                        try {
+                            if (!((DBXTreeItem)child).isOptional() || node.hasChildren(monitor, child)) {
+                                monitor.subTask(CoreMessages.editors_entity_monitor_add_node + node.getNodeName() + "'");
+                                tabs.add(new TabInfo(node, child));
                             }
+                        } catch (DBException e) {
+                            log.debug("Can't add child items tab", e); //$NON-NLS-1$
                         }
                     }
                 }
@@ -799,6 +802,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return getEditorInput().getTreeNode();
     }
 
+    @Nullable
     @Override
     public Viewer getNavigatorViewer()
     {
@@ -807,18 +811,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return ((INavigatorModelView)activePart).getNavigatorViewer();
         }
         return null;
-    }
-
-    @Override
-    public INavigationLocation createEmptyNavigationLocation() {
-        INavigationLocationProvider provider = getNestedAdapter(INavigationLocationProvider.class);
-        return provider == null ? null : provider.createEmptyNavigationLocation();
-    }
-
-    @Override
-    public INavigationLocation createNavigationLocation() {
-        INavigationLocationProvider provider = getNestedAdapter(INavigationLocationProvider.class);
-        return provider == null ? null : provider.createNavigationLocation();
     }
 
     @Override

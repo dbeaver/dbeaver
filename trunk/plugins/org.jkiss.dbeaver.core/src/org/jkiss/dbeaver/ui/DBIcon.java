@@ -188,6 +188,7 @@ public enum DBIcon
     REFRESH("refresh", "/icons/refresh.png"), //$NON-NLS-1$ //$NON-NLS-2$
     JAR("jar", "/icons/misc/jar.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SOURCES("sources", "/icons/misc/sources.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    CANCEL("cancel", "/icons/misc/cancel.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     ROW_ADD("row_add", "/icons/sql/row_add.png"), //$NON-NLS-1$ //$NON-NLS-2$
     ROW_COPY("row_copy", "/icons/sql/row_copy.png"), //$NON-NLS-1$ //$NON-NLS-2$

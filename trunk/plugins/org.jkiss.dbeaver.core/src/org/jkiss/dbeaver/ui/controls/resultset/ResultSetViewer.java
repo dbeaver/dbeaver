@@ -109,6 +109,11 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: PROBLEM. Multiple occurrences of the same struct type in a single table.
+ * Need to make wrapper over DBSAttributeBase or something. Or maybe it is not a problem
+ * because we search for binding by attribute only in constraints and for unique key columns which are unique?
+ * But what PK has struct type?
+ *
  * TODO: editors history navigation
  * TODO: use binding in filter queries
  * TODO: collections and ANY types support
@@ -117,7 +122,7 @@ import java.util.List;
  * TODO: ipatheditorinput issue
  */
 public class ResultSetViewer extends Viewer
-    implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable, INavigationLocationProvider
+    implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable
 {
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
@@ -140,7 +145,7 @@ public class ResultSetViewer extends Viewer
         DBDDataFilter filter;
         int rowNumber;
 
-        public StateItem(DBSDataContainer dataContainer, DBDDataFilter filter, int rowNumber) {
+        public StateItem(DBSDataContainer dataContainer, @Nullable DBDDataFilter filter, int rowNumber) {
             this.dataContainer = dataContainer;
             this.filter = filter;
             this.rowNumber = rowNumber;
@@ -323,7 +328,7 @@ public class ResultSetViewer extends Viewer
         filtersPanel = new Composite(viewerPanel, SWT.NONE);
         filtersPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        GridLayout gl = new GridLayout(5, false);
+        GridLayout gl = new GridLayout(7, false);
         gl.marginHeight = 3;
         gl.marginWidth = 3;
         filtersPanel.setLayout(gl);
@@ -417,7 +422,7 @@ public class ResultSetViewer extends Viewer
         });
         filtersApplyButton.setEnabled(false);
         filtersClearButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        filtersClearButton.setText("X");
+        filtersClearButton.setImage(DBIcon.CANCEL.getImage());
         filtersClearButton.setToolTipText("Remove all filters");
         filtersClearButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -426,6 +431,14 @@ public class ResultSetViewer extends Viewer
             }
         });
         filtersClearButton.setEnabled(false);
+
+        Button backButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        backButton.setImage(DBIcon.RS_BACK.getImage());
+        backButton.setEnabled(false);
+
+        Button forwardButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        forwardButton.setImage(DBIcon.RS_FORWARD.getImage());
+        forwardButton.setEnabled(false);
 
         this.filtersText.addModifyListener(new ModifyListener() {
             @Override
@@ -991,7 +1004,7 @@ public class ResultSetViewer extends Viewer
     }
 
     public StateItem getCurrentState() {
-        return new StateItem(getDataContainer(), model.getDataFilter(), curRow == null ? -1 : curRow.visualNumber);
+        return curState;
     }
 
     @Nullable
@@ -1198,24 +1211,6 @@ public class ResultSetViewer extends Viewer
             !dataSource.isConnected() ||
             dataSource.getContainer().isConnectionReadOnly() ||
             dataSource.getInfo().isReadOnlyData();
-    }
-
-    @Nullable
-    @Override
-    public INavigationLocation createEmptyNavigationLocation() {
-        if (!isHistoryChanging) {
-            return null;
-        }
-        return new ResultSetNavigationLocation(this);
-    }
-
-    @Nullable
-    @Override
-    public INavigationLocation createNavigationLocation() {
-        if (!isHistoryChanging) {
-            return null;
-        }
-        return new ResultSetNavigationLocation(this);
     }
 
     /**
@@ -1675,7 +1670,7 @@ public class ResultSetViewer extends Viewer
         }
         stateHistory.add(newState);
         historyPosition = stateHistory.size() - 1;
-        runDataPump(0, getSegmentMaxRows(), newFilter, null, null, null);
+        runDataPump(getDataContainer(), newFilter, 0, getSegmentMaxRows(), null, null, null);
     }
 
     @Override
@@ -1776,19 +1771,6 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        // Save history location
-        isHistoryChanging = true;
-        try {
-            if (curState == null) {
-                curState = new StateItem(resultSetProvider.getDataContainer(), model.getDataFilter(), curRow == null ? -1 : curRow.visualNumber);
-                stateHistory.add(curState);
-                historyPosition = 0;
-            }
-            site.getPage().getNavigationHistory().markLocation((IEditorPart) site.getPart());
-        } finally {
-            isHistoryChanging = false;
-        }
-
         // Cache preferences
         IPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
@@ -1803,7 +1785,7 @@ public class ResultSetViewer extends Viewer
             if (oldRow != null && oldRow.visualNumber >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.visualNumber / segmentSize + 1) * segmentSize;
             }
-            runDataPump(0, segmentSize, null, oldAttribute, oldRow, new Runnable() {
+            runDataPump(getDataContainer(), null, 0, segmentSize, oldAttribute, oldRow, new Runnable() {
                 @Override
                 public void run()
                 {
@@ -1830,7 +1812,7 @@ public class ResultSetViewer extends Viewer
                 if (curRow != null && curRow.visualNumber >= segmentSize && segmentSize > 0) {
                     segmentSize = (curRow.visualNumber / segmentSize + 1) * segmentSize;
                 }
-                runDataPump(0, segmentSize, null, curAttribute, curRow, onSuccess);
+                runDataPump(getDataContainer(), null, 0, segmentSize, curAttribute, curRow, onSuccess);
             }
             return;
         }
@@ -1859,7 +1841,7 @@ public class ResultSetViewer extends Viewer
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
 
-            runDataPump(model.getRowCount(), getSegmentMaxRows(), null, null, null, null);
+            runDataPump(getDataContainer(), null, model.getRowCount(), getSegmentMaxRows(), null, null, null);
         }
     }
 
@@ -1881,17 +1863,18 @@ public class ResultSetViewer extends Viewer
         return DBeaverCore.getGlobalPreferenceStore();
     }
 
-    private synchronized void runDataPump(
-        final int offset,
+    synchronized void runDataPump(
+        @NotNull final DBSDataContainer dataContainer, @Nullable final DBDDataFilter dataFilter, final int offset,
         final int maxRows,
-        @Nullable final DBDDataFilter dataFilter,
         @Nullable final DBDAttributeBinding selectAttribute,
         @Nullable final RowData selectRow,
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob == null) {
+
+            // Read data
             dataPumpJob = new ResultSetDataPumpJob(
-                this.getDataContainer(),
+                dataContainer,
                 dataFilter != null ? dataFilter : model.getDataFilter(),
                 getDataReceiver(),
                 getSpreadsheet());
@@ -1947,6 +1930,23 @@ public class ResultSetViewer extends Viewer
                             } else {
                                 spreadsheet.redraw();
                             }
+
+                            if (error == null) {
+                                // Save current state in history
+                                isHistoryChanging = true;
+                                try {
+                                    curState = new StateItem(
+                                        dataContainer,
+                                        dataFilter,
+                                        curRow == null ? -1 : curRow.visualNumber);
+                                    stateHistory.add(curState);
+                                    historyPosition = stateHistory.size() - 1;
+                                    site.getPage().getNavigationHistory().markLocation((IEditorPart) site.getPart());
+                                } finally {
+                                    isHistoryChanging = false;
+                                }
+                            }
+
                             getModel().setUpdateInProgress(false);
                             if (dataFilter != null) {
                                 model.updateDataFilter(dataFilter);
@@ -2600,7 +2600,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
             return null;
-        }
+         }
 
         @Nullable
         @Override

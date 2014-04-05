@@ -37,6 +37,7 @@ import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
 import org.eclipse.ui.views.properties.tabbed.TabContents;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.*;
@@ -355,12 +356,14 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 */
 
+    @Nullable
     @Override
     public ProgressPageControl getProgressControl()
     {
         return pageControl;
     }
 
+    @Nullable
     @Override
     public Object getActiveFolder()
     {

@@ -26,6 +26,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
@@ -110,6 +111,7 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         return node;
     }
 
+    @Nullable
     @Override
     public Viewer getNavigatorViewer()
     {
