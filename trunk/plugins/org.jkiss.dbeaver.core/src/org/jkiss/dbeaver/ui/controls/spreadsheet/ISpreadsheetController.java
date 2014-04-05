@@ -42,7 +42,7 @@ public interface ISpreadsheetController {
 
     void resetCellValue(@NotNull GridCell cell, boolean delete);
 
-    void fillContextMenu(@NotNull GridCell cell, @NotNull IMenuManager manager);
+    void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager);
 
     void changeSorting(@NotNull Object columnElement, int state);
 

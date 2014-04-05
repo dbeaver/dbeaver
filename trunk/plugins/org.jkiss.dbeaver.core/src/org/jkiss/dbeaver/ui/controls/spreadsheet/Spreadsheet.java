@@ -333,10 +333,11 @@ public class Spreadsheet extends LightGrid implements Listener {
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Let controller to provide it's own menu items
-                GridCell cell = posToCell(getFocusPos());
-                if (cell != null) {
-                    spreadsheetController.fillContextMenu(cell, manager);
-                }
+                GridPos focusPos = getFocusPos();
+                spreadsheetController.fillContextMenu(
+                    focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
+                    focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null,
+                    manager);
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
