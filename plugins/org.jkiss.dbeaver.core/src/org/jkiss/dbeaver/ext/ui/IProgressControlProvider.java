@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ext.ui;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
 /**
@@ -26,5 +27,6 @@ import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
  */
 public interface IProgressControlProvider
 {
+    @Nullable
     ProgressPageControl getProgressControl();
 }

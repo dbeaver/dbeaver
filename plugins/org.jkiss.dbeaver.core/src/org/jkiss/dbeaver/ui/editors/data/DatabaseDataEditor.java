@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
  * DatabaseDataEditor
  */
 public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer>
-    implements ResultSetProvider,ResultSetListener, INavigationLocationProvider
+    implements ResultSetProvider,ResultSetListener
 {
 
     private ResultSetViewer resultSetView;
@@ -172,13 +172,4 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         return super.getAdapter(required);
     }
 
-    @Override
-    public INavigationLocation createEmptyNavigationLocation() {
-        return resultSetView.createEmptyNavigationLocation();
-    }
-
-    @Override
-    public INavigationLocation createNavigationLocation() {
-        return resultSetView.createNavigationLocation();
-    }
 }

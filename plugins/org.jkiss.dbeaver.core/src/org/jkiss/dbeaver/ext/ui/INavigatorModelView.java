@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.jface.viewers.Viewer;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 /**
@@ -29,6 +30,7 @@ public interface INavigatorModelView
 {
     DBNNode getRootNode();
     
+    @Nullable
     Viewer getNavigatorViewer();
 
 }

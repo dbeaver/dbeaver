@@ -38,6 +38,8 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * NavigatorUtils
@@ -132,6 +134,7 @@ public class ActionUtils
         return false;
     }
 
+    @Nullable
     public static String findCommandDescription(String commandId, IServiceLocator serviceLocator)
     {
         String commandName = null;
@@ -183,7 +186,13 @@ public class ActionUtils
         }
     }
 
-    public static IAction makeAction(final IActionDelegate actionDelegate, IWorkbenchSite site, ISelection selection, String text, ImageDescriptor image, String toolTip)
+    public static IAction makeAction(
+        @NotNull final IActionDelegate actionDelegate,
+        @Nullable IWorkbenchSite site,
+        @Nullable ISelection selection,
+        @Nullable String text,
+        @Nullable ImageDescriptor image,
+        @Nullable String toolTip)
     {
         Action actionImpl = new Action() {
             @Override

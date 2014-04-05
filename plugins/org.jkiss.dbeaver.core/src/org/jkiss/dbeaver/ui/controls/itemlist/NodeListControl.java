@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -225,6 +226,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
     }
 
+    @Nullable
     @Override
     public Viewer getNavigatorViewer()
     {
