@@ -130,8 +130,6 @@ public class ResultSetViewer extends Viewer
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
-    private Button filtersApplyButton;
-    private Button filtersClearButton;
 
     public enum RowPosition {
         FIRST,
@@ -149,6 +147,16 @@ public class ResultSetViewer extends Viewer
             this.dataContainer = dataContainer;
             this.filter = filter;
             this.rowNumber = rowNumber;
+        }
+
+        public String describeState(DBPDataSource dataSource) {
+            String desc = dataContainer.getName();
+            if (filter != null && filter.hasConditions()) {
+                StringBuilder condBuffer = new StringBuilder();
+                SQLUtils.appendConditionString(filter, dataSource, null, condBuffer, true);
+                desc += " [" + condBuffer + "]";
+            }
+            return desc;
         }
     }
 
@@ -203,7 +211,11 @@ public class ResultSetViewer extends Viewer
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
-    private boolean isHistoryChanging = false;
+
+    private Button filtersApplyButton;
+    private Button filtersClearButton;
+    private Button historyBackButton;
+    private Button historyForwardButton;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull ResultSetProvider resultSetProvider)
     {
@@ -432,13 +444,25 @@ public class ResultSetViewer extends Viewer
         });
         filtersClearButton.setEnabled(false);
 
-        Button backButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        backButton.setImage(DBIcon.RS_BACK.getImage());
-        backButton.setEnabled(false);
+        historyBackButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        historyBackButton.setImage(DBIcon.RS_BACK.getImage());
+        historyBackButton.setEnabled(false);
+        historyBackButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                navigateHistory(historyPosition - 1);
+            }
+        });
 
-        Button forwardButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        forwardButton.setImage(DBIcon.RS_FORWARD.getImage());
-        forwardButton.setEnabled(false);
+        historyForwardButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        historyForwardButton.setImage(DBIcon.RS_FORWARD.getImage());
+        historyForwardButton.setEnabled(false);
+        historyForwardButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                navigateHistory(historyPosition + 1);
+            }
+        });
 
         this.filtersText.addModifyListener(new ModifyListener() {
             @Override
@@ -465,12 +489,6 @@ public class ResultSetViewer extends Viewer
         });
 
         filtersEnableState = ControlEnableState.disable(filtersPanel);
-    }
-
-    public void resetHistory() {
-        curState = null;
-        stateHistory.clear();
-        historyPosition = -1;
     }
 
     public void resetDataFilter(boolean refresh)
@@ -529,6 +547,22 @@ public class ResultSetViewer extends Viewer
             String filterText = filtersText.getText();
             filtersApplyButton.setEnabled(true);
             filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+            // Update history buttons
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource != null) {
+                if (historyPosition > 0) {
+                    historyBackButton.setEnabled(true);
+                    historyBackButton.setToolTipText(stateHistory.get(historyPosition - 1).describeState(dataSource));
+                } else {
+                    historyBackButton.setEnabled(false);
+                }
+                if (historyPosition < stateHistory.size() - 1) {
+                    historyForwardButton.setEnabled(true);
+                    historyForwardButton.setToolTipText(stateHistory.get(historyPosition + 1).describeState(dataSource));
+                } else {
+                    historyForwardButton.setEnabled(false);
+                }
+            }
         } else if (filtersEnableState == null) {
             filtersEnableState = ControlEnableState.disable(filtersPanel);
         }
@@ -1005,6 +1039,39 @@ public class ResultSetViewer extends Viewer
 
     public StateItem getCurrentState() {
         return curState;
+    }
+
+    private void setNewState(DBSDataContainer dataContainer, DBDDataFilter dataFilter) {
+        // Search in history
+        for (int i = 0; i < stateHistory.size(); i++) {
+            StateItem item = stateHistory.get(i);
+            if (item.dataContainer == dataContainer && item.filter == dataFilter) {
+                curState = item;
+                historyPosition = i;
+                return;
+            }
+        }
+        // Save current state in history
+        while (historyPosition < stateHistory.size() - 1) {
+            stateHistory.remove(stateHistory.size() - 1);
+        }
+        curState = new StateItem(
+            dataContainer,
+            dataFilter,
+            curRow == null ? -1 : curRow.visualNumber);
+        stateHistory.add(curState);
+        historyPosition = stateHistory.size() - 1;
+    }
+
+    public void resetHistory() {
+        curState = null;
+        stateHistory.clear();
+        historyPosition = -1;
+    }
+
+    private void navigateHistory(int position) {
+        StateItem state = stateHistory.get(position);
+        runDataPump(state.dataContainer, state.filter, 0, getSegmentMaxRows(), null, null, null);
     }
 
     @Nullable
@@ -1663,14 +1730,7 @@ public class ResultSetViewer extends Viewer
         }
         DBDDataFilter newFilter = new DBDDataFilter(constraints);
 
-        StateItem newState = new StateItem((DBSDataContainer) targetEntity, newFilter, -1);
-        curState = newState;
-        while (historyPosition < stateHistory.size() - 1) {
-            stateHistory.remove(stateHistory.size() - 1);
-        }
-        stateHistory.add(newState);
-        historyPosition = stateHistory.size() - 1;
-        runDataPump(getDataContainer(), newFilter, 0, getSegmentMaxRows(), null, null, null);
+        runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), null, null, null);
     }
 
     @Override
@@ -1932,19 +1992,7 @@ public class ResultSetViewer extends Viewer
                             }
 
                             if (error == null) {
-                                // Save current state in history
-                                isHistoryChanging = true;
-                                try {
-                                    curState = new StateItem(
-                                        dataContainer,
-                                        dataFilter,
-                                        curRow == null ? -1 : curRow.visualNumber);
-                                    stateHistory.add(curState);
-                                    historyPosition = stateHistory.size() - 1;
-                                    site.getPage().getNavigationHistory().markLocation((IEditorPart) site.getPart());
-                                } finally {
-                                    isHistoryChanging = false;
-                                }
+                                setNewState(dataContainer, dataFilter);
                             }
 
                             getModel().setUpdateInProgress(false);
@@ -2739,7 +2787,7 @@ public class ResultSetViewer extends Viewer
             }
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
-                return getTypeImage(attr.getAttribute());
+                return getTypeImage(attr.getMetaAttribute());
             } else {
                 return null;
             }
@@ -2797,7 +2845,7 @@ public class ResultSetViewer extends Viewer
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding) {
-                return getTypeImage(((DBDAttributeBinding)element).getAttribute());
+                return getTypeImage(((DBDAttributeBinding)element).getMetaAttribute());
             }
             return null;
         }
