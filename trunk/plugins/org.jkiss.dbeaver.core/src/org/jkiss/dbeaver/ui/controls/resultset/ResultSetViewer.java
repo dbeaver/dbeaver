@@ -692,6 +692,9 @@ public class ResultSetViewer extends Viewer
             changed = curAttribute != newRow;
             curAttribute = (DBDAttributeBinding) newRow;
         }
+        if (curState != null && curRow != null) {
+            curState.rowNumber = curRow.visualNumber;
+        }
         if (changed) {
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
@@ -1071,7 +1074,12 @@ public class ResultSetViewer extends Viewer
 
     private void navigateHistory(int position) {
         StateItem state = stateHistory.get(position);
-        runDataPump(state.dataContainer, state.filter, 0, getSegmentMaxRows(), null, null, null);
+        int segmentSize = getSegmentMaxRows();
+        if (state.rowNumber >= 0 && state.rowNumber >= segmentSize && segmentSize > 0) {
+            segmentSize = (state.rowNumber / segmentSize + 1) * segmentSize;
+        }
+
+        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, null);
     }
 
     @Nullable
@@ -1730,7 +1738,7 @@ public class ResultSetViewer extends Viewer
         }
         DBDDataFilter newFilter = new DBDDataFilter(constraints);
 
-        runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), null, null, null);
+        runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, null);
     }
 
     @Override
@@ -1838,14 +1846,13 @@ public class ResultSetViewer extends Viewer
 
         // Pump data
         RowData oldRow = curRow;
-        DBDAttributeBinding oldAttribute = curAttribute;
 
         if (resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
             if (oldRow != null && oldRow.visualNumber >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.visualNumber / segmentSize + 1) * segmentSize;
             }
-            runDataPump(getDataContainer(), null, 0, segmentSize, oldAttribute, oldRow, new Runnable() {
+            runDataPump(getDataContainer(), null, 0, segmentSize, oldRow == null ? -1 : oldRow.visualNumber, new Runnable() {
                 @Override
                 public void run()
                 {
@@ -1872,7 +1879,7 @@ public class ResultSetViewer extends Viewer
                 if (curRow != null && curRow.visualNumber >= segmentSize && segmentSize > 0) {
                     segmentSize = (curRow.visualNumber / segmentSize + 1) * segmentSize;
                 }
-                runDataPump(getDataContainer(), null, 0, segmentSize, curAttribute, curRow, onSuccess);
+                runDataPump(getDataContainer(), null, 0, segmentSize, -1, onSuccess);
             }
             return;
         }
@@ -1901,7 +1908,7 @@ public class ResultSetViewer extends Viewer
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
 
-            runDataPump(getDataContainer(), null, model.getRowCount(), getSegmentMaxRows(), null, null, null);
+            runDataPump(getDataContainer(), null, model.getRowCount(), getSegmentMaxRows(), -1, null);
         }
     }
 
@@ -1924,18 +1931,25 @@ public class ResultSetViewer extends Viewer
     }
 
     synchronized void runDataPump(
-        @NotNull final DBSDataContainer dataContainer, @Nullable final DBDDataFilter dataFilter, final int offset,
+        @NotNull final DBSDataContainer dataContainer,
+        @Nullable final DBDDataFilter dataFilter,
+        final int offset,
         final int maxRows,
-        @Nullable final DBDAttributeBinding selectAttribute,
-        @Nullable final RowData selectRow,
+        final int focusRow,
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob == null) {
 
             // Read data
+            DBDDataFilter useDataFilter = dataFilter;
+            if (useDataFilter == null) {
+                if (dataContainer == getDataContainer()) {
+                    useDataFilter = model.getDataFilter();
+                }
+            }
             dataPumpJob = new ResultSetDataPumpJob(
                 dataContainer,
-                dataFilter != null ? dataFilter : model.getDataFilter(),
+                useDataFilter,
                 getDataReceiver(),
                 getSpreadsheet());
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
@@ -1973,11 +1987,11 @@ public class ResultSetViewer extends Viewer
                                     "Error executing query",
                                     "Query execution failed",
                                     error);
-                            } else if (selectAttribute != null && selectRow != null) {
+                            } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleColumnCount() > 0) {
                                 // Seems to be refresh
                                 // Restore original position
-                                curRow = selectRow;
-                                curAttribute = selectAttribute;
+                                curRow = model.getRow(focusRow);
+                                curAttribute = model.getVisibleColumn(0);
                                 GridCell newPos;
                                 if (!recordMode) {
                                     newPos = new GridCell(curAttribute, curRow);
