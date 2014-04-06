@@ -114,8 +114,6 @@ import java.util.List;
  * because we search for binding by attribute only in constraints and for unique key columns which are unique?
  * But what PK has struct type?
  *
- * TODO: editors history navigation
- * TODO: use binding in filter queries
  * TODO: collections and ANY types support
  * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)

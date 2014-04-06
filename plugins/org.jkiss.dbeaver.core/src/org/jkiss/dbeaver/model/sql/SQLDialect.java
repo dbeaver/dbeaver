@@ -174,6 +174,8 @@ public interface SQLDialect extends ICommentsSupport {
 
     boolean supportsSubqueries();
 
+    boolean supportsAliasInSelect();
+
     boolean supportsAliasInUpdate();
 
     @NotNull

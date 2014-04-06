@@ -36,7 +36,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
+import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -68,6 +70,16 @@ public class CassandraDataSource extends JDBCDataSource
     protected JDBCConnectionImpl createConnection(DBRProgressMonitor monitor, JDBCExecutionContext context, DBCExecutionPurpose purpose, String taskTitle)
     {
         return new CasConnection(context, monitor, purpose, taskTitle);
+    }
+
+    @Override
+    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData) {
+        return new JDBCSQLDialect(this, "Cassandra", metaData) {
+            @Override
+            public boolean supportsAliasInSelect() {
+                return false;
+            }
+        };
     }
 
     public Collection<CassandraKeyspace> getKeyspaces()
