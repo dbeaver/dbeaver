@@ -106,6 +106,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBCStatistics statistics = new DBCStatistics();
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
+        DBPDataSource dataSource = session.getDataSource();
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try {
             readRequiredMeta(monitor);
@@ -125,19 +126,36 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         // Always use alias. Some criteria doesn't work without alias
         // (e.g. structured attributes in Oracle requires table alias)
-        String tableAlias = DEFAULT_TABLE_ALIAS;
+        String tableAlias = null;
+        if (dataSource instanceof SQLDataSource) {
+            if (((SQLDataSource )dataSource).getSQLDialect().supportsAliasInSelect()) {
+                tableAlias = DEFAULT_TABLE_ALIAS;
+            }
+        }
         StringBuilder query = new StringBuilder(100);
         if (rowIdAttribute != null) {
-            // If we have pseudo attributes then query gonna be more complex
-            query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
-            query.append(",").append(rowIdAttribute.getQueryExpression().replace("$alias", tableAlias));
-            if (rowIdAttribute.getAlias() != null) {
-                query.append(" as ").append(rowIdAttribute.getAlias());
+            if (tableAlias != null) {
+                // If we have pseudo attributes then query gonna be more complex
+                query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
+                query.append(",").append(rowIdAttribute.getQueryExpression().replace("$alias", tableAlias));
+                if (rowIdAttribute.getAlias() != null) {
+                    query.append(" as ").append(rowIdAttribute.getAlias());
+                }
+            } else {
+                log.warn("Can't query ROWID - table alias not supported");
+                rowIdAttribute = null;
             }
         } else {
-            query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
+            query.append("SELECT ");
+            if (tableAlias != null) {
+                query.append(tableAlias).append(".");
+            }
+            query.append("*"); //$NON-NLS-1$
         }
-        query.append(" FROM ").append(getFullQualifiedName()).append(" ").append(tableAlias); //$NON-NLS-1$
+        query.append(" FROM ").append(getFullQualifiedName());
+        if (tableAlias != null) {
+            query.append(" ").append(tableAlias); //$NON-NLS-1$
+        }
         appendQueryConditions(query, tableAlias, dataFilter);
         appendQueryOrder(query, tableAlias, dataFilter);
 
