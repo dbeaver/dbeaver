@@ -93,8 +93,8 @@ public class ActionUtils
         IServiceLocator serviceLocator,
         String commandId,
         String name,
-        ImageDescriptor imageDescriptor,
-        String toolTip,
+        @Nullable ImageDescriptor imageDescriptor,
+        @Nullable String toolTip,
         boolean showText)
     {
         final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
