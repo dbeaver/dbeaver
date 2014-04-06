@@ -172,6 +172,7 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
         return indexes;
     }
 
+    @Nullable
     @Override
     public synchronized Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException

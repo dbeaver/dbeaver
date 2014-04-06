@@ -45,7 +45,7 @@ public class DBDAttributeConstraint {
     public DBDAttributeConstraint(DBDAttributeBinding attribute)
     {
         this.attribute = attribute;
-        this.originalVisualPosition = this.visualPosition = attribute.getAttributeIndex();
+        this.originalVisualPosition = this.visualPosition = attribute.getOrdinalPosition();
     }
 
     public DBDAttributeConstraint(DBSAttributeBase attribute, int visualPosition)

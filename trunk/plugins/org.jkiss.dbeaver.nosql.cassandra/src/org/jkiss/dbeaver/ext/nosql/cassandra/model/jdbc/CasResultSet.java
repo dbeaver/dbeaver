@@ -35,7 +35,7 @@ public class CasResultSet extends JDBCResultSetImpl {
                     public Integer getTtl() throws SQLException
                     {
                         try {
-                            return (Integer)originalMetaData.getClass().getMethod("getTtl", Integer.TYPE).invoke(originalMetaData, getIndex());
+                            return (Integer)originalMetaData.getClass().getMethod("getTtl", Integer.TYPE).invoke(originalMetaData, getOrdinalPosition());
                         } catch (Throwable e) {
                             // Seems to be not supported
                             return null;
@@ -46,7 +46,7 @@ public class CasResultSet extends JDBCResultSetImpl {
                     public Long getTimestamp() throws SQLException
                     {
                         try {
-                            return (Long)originalMetaData.getClass().getMethod("getTimestamp", Integer.TYPE).invoke(originalMetaData, getIndex());
+                            return (Long)originalMetaData.getClass().getMethod("getTimestamp", Integer.TYPE).invoke(originalMetaData, getOrdinalPosition());
                         } catch (Throwable e) {
                             // Seems to be not supported
                             return null;

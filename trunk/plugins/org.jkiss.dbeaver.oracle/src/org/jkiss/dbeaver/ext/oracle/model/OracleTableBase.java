@@ -204,6 +204,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return null;
     }
 
+    @Nullable
     @Override
     @Association
     public synchronized Collection<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)

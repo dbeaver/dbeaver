@@ -228,6 +228,7 @@ public class WMIClass extends WMIContainer
         return attributes;
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {

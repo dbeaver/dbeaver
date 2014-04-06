@@ -143,6 +143,7 @@ public class MSSQLView extends MSSQLTableBase implements MSSQLSourceObject
         return null;
     }
 
+    @Nullable
     @Override
     public List<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {

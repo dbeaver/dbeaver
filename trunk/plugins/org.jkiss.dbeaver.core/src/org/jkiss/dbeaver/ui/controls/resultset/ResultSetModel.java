@@ -247,9 +247,9 @@ public class ResultSetModel {
     public Object getCellValue(@NotNull RowData row, @NotNull DBDAttributeBinding column) {
         int depth = column.getLevel();
         if (depth == 0) {
-            return row.values[column.getAttributeIndex()];
+            return row.values[column.getOrdinalPosition()];
         }
-        Object curValue = row.values[column.getTopParent().getAttributeIndex()];
+        Object curValue = row.values[column.getTopParent().getOrdinalPosition()];
 
         for (int i = 0; i < depth; i++) {
             if (curValue == null) {
@@ -292,9 +292,9 @@ public class ResultSetModel {
         int depth = attr.getLevel();
         int rootIndex;
         if (depth == 0) {
-            rootIndex = attr.getAttributeIndex();
+            rootIndex = attr.getOrdinalPosition();
         } else {
-            rootIndex = attr.getTopParent().getAttributeIndex();
+            rootIndex = attr.getTopParent().getOrdinalPosition();
         }
         Object rootValue = row.values[rootIndex];
         Object ownerValue = depth > 0 ? rootValue : null;

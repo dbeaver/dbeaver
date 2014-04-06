@@ -112,7 +112,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             // Get values
             for (int i = 0; i < metaColumns.size(); i++) {
                 DBDAttributeBinding column = metaColumns.get(i);
-                Object value = column.getValueHandler().fetchValueObject(session, resultSet, column.getAttribute(), column.getAttributeIndex());
+                Object value = column.getValueHandler().fetchValueObject(session, resultSet, column.getAttribute(), column.getOrdinalPosition());
                 if (value instanceof DBDContent && !settings.isOutputClipboard()) {
                     // Check for binary type export
                     if (!ContentUtils.isTextContent((DBDContent)value)) {

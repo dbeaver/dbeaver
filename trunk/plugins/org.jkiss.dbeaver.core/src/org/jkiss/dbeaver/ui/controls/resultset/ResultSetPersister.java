@@ -128,7 +128,7 @@ class ResultSetPersister {
                 statement.keyAttributes.add(
                     new DBDAttributeValue(
                         binding,
-                        row.values[binding.getAttributeIndex()]));
+                        row.values[binding.getOrdinalPosition()]));
             }
             deleteStatements.add(statement);
         }
@@ -176,7 +176,7 @@ class ResultSetPersister {
                     if (metaColumn == null) {
                         throw new DBCException("Can't find meta column for ID column " + idAttribute.getName());
                     }
-                    int attributeIndex = metaColumn.getAttributeIndex();
+                    int attributeIndex = metaColumn.getOrdinalPosition();
                     Object keyValue = row.values[attributeIndex];
                     // Try to find old key oldValue
                     if (row.changes != null && row.changes.containsKey(metaColumn)) {
@@ -530,7 +530,7 @@ class ResultSetPersister {
                     DBDAttributeBinding binding = model.getAttributeBinding(statement.entity, keyAttribute.getName());
                     if (binding != null) {
                         // Got it. Just update column oldValue
-                        statement.updatedCells.put(binding.getAttributeIndex(), keyValue);
+                        statement.updatedCells.put(binding.getOrdinalPosition(), keyValue);
                         //curRows.get(statement.row.row)[colIndex] = keyValue;
                         updated = true;
                     }

@@ -161,6 +161,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
     }
 
+    @Nullable
     @Override
     public Collection<? extends DBVEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {

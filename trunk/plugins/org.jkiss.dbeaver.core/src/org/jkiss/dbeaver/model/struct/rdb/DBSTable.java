@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -48,6 +49,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * @throws DBException on any DB error
      * @param monitor
      */
+    @Nullable
     @Override
     Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
 
