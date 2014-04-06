@@ -229,14 +229,14 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
                 // Nested binding must be resolved for each value
                 if (!rows.isEmpty()) {
                     // Analyse all read values
-                    resolveBindingsFromData(session, attribute, rows);
+                    resolveBindingsFromData(session, rows);
                 }
                 break;
         }
 
     }
 
-    private void resolveBindingsFromData(DBCSession session, DBSAttributeBase attribute, List<Object[]> rows) throws DBException {
+    private void resolveBindingsFromData(DBCSession session, List<Object[]> rows) throws DBException {
         Set<DBSAttributeBase> valueAttributes = new LinkedHashSet<DBSAttributeBase>();
         for (int i = 0; i < rows.size(); i++) {
             Object value = rows.get(i)[ordinalPosition];
