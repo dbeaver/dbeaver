@@ -4,7 +4,6 @@ Move main toolbar edit control in tab
 Save As+rename. Use external files in workspace
 Paste into multiple cells
 Dialect-dependent SQL generator
-Browse data by foreign keys. Table history (back/forward)
 Transaction state in status bar
 
 Process scripts with external native tool (SQLPlus + mysql)
@@ -15,7 +14,6 @@ Secure-storage for passwords
 Vertical/horizontal value view panel in RSV
 NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
 
-2. Tree-like grid
 4. Query manager fixes. + keep only primitive props + persistence
 5. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
 7. Check on MacOS

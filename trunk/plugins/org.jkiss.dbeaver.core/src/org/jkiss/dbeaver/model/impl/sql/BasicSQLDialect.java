@@ -252,6 +252,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
+    @Override
     public boolean supportsAliasInUpdate() {
         return false;
     }
