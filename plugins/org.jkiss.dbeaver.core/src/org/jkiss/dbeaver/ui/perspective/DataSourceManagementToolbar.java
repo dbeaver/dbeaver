@@ -39,6 +39,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -194,6 +195,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         registry.removeDataSourceListener(this);
     }
 
+    @Nullable
     private IAdaptable getActiveObject()
     {
         if (activePart instanceof IEditorPart) {
@@ -217,6 +219,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         return DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
     }
 
+    @Nullable
     private DBSDataSourceContainer getDataSourceContainer()
     {
         if (activePart instanceof IDataSourceContainerProvider) {
@@ -237,6 +240,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
+    @Nullable
     private IDataSourceContainerProviderEx getActiveDataSourceUpdater()
     {
         if (activePart instanceof IDataSourceContainerProviderEx) {
@@ -265,7 +269,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         return Collections.emptyList();
     }
 
-    public void setActivePart(IWorkbenchPart part)
+    public void setActivePart(@Nullable IWorkbenchPart part)
     {
         if (!(part instanceof IEditorPart)) {
             if (part == null || part.getSite() == null || part.getSite().getPage() == null) {
@@ -491,6 +495,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 curDataSourceContainer = new SoftReference<DBSDataSourceContainer>(dsContainer);
             } else {
                 curDataSourceContainer = null;
+                databaseCombo.removeAll();
             }
         }
     }
@@ -521,7 +526,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             databaseCombo.add(
                                 dbNode.getNodeIconDefault(),
                                 database.getName(),
-                                dataSource == null ? null : dataSource.getContainer().getConnectionInfo().getColor(),
+                                dataSource.getContainer().getConnectionInfo().getColor(),
                                 database);
                         }
                     }
@@ -673,6 +678,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     @Override
     public void partClosed(IWorkbenchPart part)
     {
+        if (part == activePart) {
+            setActivePart(null);
+        }
     }
 
     @Override
