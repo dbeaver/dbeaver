@@ -38,7 +38,7 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
      * Attribute ordinal index
      * @return index (starts from zero)
      */
-    int getIndex();
+    int getOrdinalPosition();
 
     /**
      * Attribute label in result set

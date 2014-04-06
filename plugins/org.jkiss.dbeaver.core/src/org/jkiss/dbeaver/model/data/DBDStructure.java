@@ -31,8 +31,10 @@ import java.util.Collection;
  */
 public interface DBDStructure extends DBDComplexType {
 
-    Collection<DBSAttributeBase> getAttributes();
+    @NotNull
+    Collection<? extends DBSAttributeBase> getAttributes();
 
+    @Nullable
     Object getAttributeValue(@NotNull DBSAttributeBase attribute)
         throws DBCException;
 

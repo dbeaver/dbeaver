@@ -55,6 +55,7 @@ public interface DBSEntity extends DBSObject
      * @throws org.jkiss.dbeaver.DBException on any DB error
      * @param monitor progress monitor
      */
+    @Nullable
     Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
 
     /**

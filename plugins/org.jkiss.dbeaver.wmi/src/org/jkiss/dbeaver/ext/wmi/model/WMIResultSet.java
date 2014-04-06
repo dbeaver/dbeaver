@@ -271,7 +271,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         }
 
         @Override
-        public int getIndex()
+        public int getOrdinalPosition()
         {
             return index;
         }

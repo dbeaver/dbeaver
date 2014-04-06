@@ -25,8 +25,6 @@ import org.jkiss.code.Nullable;
  */
 public interface DBSEntityAttribute extends DBSEntityElement, DBSAttributeBase {
 
-    int getOrdinalPosition();
-
     @Nullable
     String getDefaultValue();
 

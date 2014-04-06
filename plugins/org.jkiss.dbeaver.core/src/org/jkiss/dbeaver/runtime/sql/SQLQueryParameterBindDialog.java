@@ -144,7 +144,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             TableItem item = new TableItem(paramTable, SWT.NONE);
             item.setData(param);
             item.setImage(DBIcon.TREE_ATTRIBUTE.getImage());
-            item.setText(0, String.valueOf(param.getIndex() + 1));
+            item.setText(0, String.valueOf(param.getOrdinalPosition() + 1));
             item.setText(1, param.getTitle());
             item.setText(2, CommonUtils.toString(param.getTypeName()));
             item.setText(3, param.getValueHandler() == null ?

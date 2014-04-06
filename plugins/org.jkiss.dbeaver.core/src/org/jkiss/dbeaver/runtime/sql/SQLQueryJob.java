@@ -335,7 +335,7 @@ public class SQLQueryJob extends DataSourceJob
                             session,
                             curStatement,
                             param,
-                            param.getIndex(),
+                            param.getOrdinalPosition(),
                             param.getValue());
                     }
                 }

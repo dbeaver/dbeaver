@@ -123,7 +123,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
         @Override
         public int getOrdinalPosition()
         {
-            return attribute.getIndex();
+            return attribute.getOrdinalPosition();
         }
 
         @Nullable

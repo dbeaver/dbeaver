@@ -53,7 +53,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
     public static final String PROP_CATEGORY_COLUMN = "Column";
 
-    private int index;
+    private int ordinalPosition;
     private boolean notNull;
     private long displaySize;
     private String label;
@@ -71,7 +71,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private final DBPDataKind dataKind;
     private DBDPseudoAttribute pseudoAttribute;
 
-    protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
+    protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int ordinalPosition)
         throws SQLException
     {
         DBCStatement rsSource = resultSetMeta.getResultSet().getSourceStatement();
@@ -80,28 +80,28 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         if (statementSource instanceof DBSEntity) {
             ownerEntity = (DBSEntity)statementSource;
         }
-        this.index = index;
+        this.ordinalPosition = ordinalPosition;
 
-        this.label = resultSetMeta.getColumnLabel(index);
-        this.name = resultSetMeta.getColumnName(index);
-        this.readOnly = resultSetMeta.isReadOnly(index);
-        this.writable = resultSetMeta.isWritable(index);
+        this.label = resultSetMeta.getColumnLabel(ordinalPosition);
+        this.name = resultSetMeta.getColumnName(ordinalPosition);
+        this.readOnly = resultSetMeta.isReadOnly(ordinalPosition);
+        this.writable = resultSetMeta.isWritable(ordinalPosition);
 
         String fetchedTableName = null;
         try {
-            fetchedTableName = resultSetMeta.getTableName(index);
+            fetchedTableName = resultSetMeta.getTableName(ordinalPosition);
         } catch (SQLException e) {
             log.debug(e);
         }
         String fetchedCatalogName = null;
         try {
-            fetchedCatalogName = resultSetMeta.getCatalogName(index);
+            fetchedCatalogName = resultSetMeta.getCatalogName(ordinalPosition);
         } catch (SQLException e) {
             log.debug(e);
         }
         String fetchedSchemaName = null;
         try {
-            fetchedSchemaName = resultSetMeta.getSchemaName(index);
+            fetchedSchemaName = resultSetMeta.getSchemaName(ordinalPosition);
         } catch (SQLException e) {
             log.debug(e);
         }
@@ -150,24 +150,24 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
 
         if (this.tableColumn == null) {
-            this.notNull = resultSetMeta.isNullable(index) == ResultSetMetaData.columnNoNulls;
+            this.notNull = resultSetMeta.isNullable(ordinalPosition) == ResultSetMetaData.columnNoNulls;
             try {
-                this.displaySize = resultSetMeta.getColumnDisplaySize(index);
+                this.displaySize = resultSetMeta.getColumnDisplaySize(ordinalPosition);
             } catch (SQLException e) {
                 this.displaySize = 0;
             }
-            this.typeID = resultSetMeta.getColumnType(index);
-            this.typeName = resultSetMeta.getColumnTypeName(index);
-            this.sequence = resultSetMeta.isAutoIncrement(index);
+            this.typeID = resultSetMeta.getColumnType(ordinalPosition);
+            this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition);
+            this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition);
 
             try {
-                this.precision = resultSetMeta.getPrecision(index);
+                this.precision = resultSetMeta.getPrecision(ordinalPosition);
             } catch (Exception e) {
                 // NumberFormatException occurred in Oracle on BLOB columns
                 this.precision = 0;
             }
             try {
-                this.scale = resultSetMeta.getScale(index);
+                this.scale = resultSetMeta.getScale(ordinalPosition);
             } catch (Exception e) {
                 this.scale = 0;
             }
@@ -192,9 +192,9 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 1)
     @Override
-    public int getIndex()
+    public int getOrdinalPosition()
     {
-        return index;
+        return ordinalPosition;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 2)
@@ -411,7 +411,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
         JDBCColumnMetaData col = (JDBCColumnMetaData)obj;
         return
-            getIndex() == col.getIndex() &&
+            getOrdinalPosition() == col.getOrdinalPosition() &&
             isRequired() == col.isRequired() &&
             getMaxLength() == col.getMaxLength() &&
             CommonUtils.equalObjects(getLabel(), col.getLabel()) &&
