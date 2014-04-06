@@ -525,7 +525,7 @@ public abstract class LightGrid extends Canvas {
 
     private void createChildColumns(GridColumn parent) {
         Object[] children = getContentProvider().getChildren(parent.getElement());
-        if (!ArrayUtils.isEmpty(children)) {
+        if (children != null) {
             for (Object child : children) {
                 GridColumn column = new GridColumn(parent, child);
                 createChildColumns(column);
@@ -1530,9 +1530,6 @@ public abstract class LightGrid extends Canvas {
     public void showColumn(int column)
     {
         GridColumn col = getColumn(column);
-        if (col == null) {
-            return;
-        }
         showColumn(col);
     }
 
@@ -3504,17 +3501,6 @@ public abstract class LightGrid extends Canvas {
         if (oldHeaderHeight != headerHeight) {
             scrollValuesObsolete = true;
         }
-    }
-
-    /**
-     * Returns the current item in focus.
-     *
-     * @return item in focus or {@code null}.
-     */
-    public int getFocusItem()
-    {
-        checkWidget();
-        return focusItem;
     }
 
     /**
