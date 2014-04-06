@@ -491,7 +491,7 @@ public abstract class LightGrid extends Canvas {
             } else {
                 int totalWidth = 0;
                 for (GridColumn curColumn : topColumns) {
-                    curColumn.pack();
+                    curColumn.pack(false);
                     totalWidth += curColumn.getWidth();
                 }
                 // If grid width more than screen - lets narrow too long columns
@@ -2804,7 +2804,7 @@ public abstract class LightGrid extends Canvas {
         if (e.button == 1) {
 
             if (hoveringOnColumnResizer) {
-                columnBeingResized.pack();
+                columnBeingResized.pack(true);
                 resizingColumn = false;
                 handleHoverOnColumnHeader(e.x, e.y);
                 redraw();
