@@ -134,6 +134,7 @@ public class MSSQLTable extends MSSQLTableBase
         return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 
+    @Nullable
     @Override
     @Association
     public synchronized Collection<MSSQLTableConstraint> getConstraints(DBRProgressMonitor monitor)

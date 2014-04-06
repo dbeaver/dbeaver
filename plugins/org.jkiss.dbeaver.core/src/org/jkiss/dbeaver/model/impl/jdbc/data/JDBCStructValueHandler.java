@@ -105,22 +105,21 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
             log.error("Error resolving data type '" + typeName + "'", e);
         }
         if (dataType == null) {
-            dataType = new JDBCDataType(
-                session.getDataSource().getContainer(),
-                Types.STRUCT,
-                typeName,
-                "Synthetic struct type for '" + typeName + "'",
-                false, false, 0, 0, 0);
+            if (object instanceof Struct) {
+                return new JDBCStructDynamic(session, (Struct) object, null);
+            } else {
+                return new JDBCStructDynamic(session, object);
+            }
         }
         if (object == null) {
-            return new JDBCStruct(session, dataType, null);
-        } else if (object instanceof JDBCStruct) {
-            return copy ? ((JDBCStruct) object).cloneValue(session.getProgressMonitor()) : object;
+            return new JDBCStructStatic(session, dataType, null);
+        } else if (object instanceof JDBCStructStatic) {
+            return copy ? ((JDBCStructStatic) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Struct) {
-            return new JDBCStruct(session, dataType, (Struct) object);
+            return new JDBCStructStatic(session, dataType, (Struct) object);
         } else {
 //            log.warn("Unsupported struct type: " + object.getClass().getName());
-            return new JDBCStruct(session, dataType, object);
+            return new JDBCStructDynamic(session, object);
         }
     }
 

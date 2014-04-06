@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
@@ -38,18 +39,18 @@ import java.util.List;
  */
 public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObjectImageProvider
 {
-    private final DBSEntityAttribute attribute;
+    private final DBSAttributeBase attribute;
     private final int index;
     private final DBCAttributeMetaData parentMeta;
 
-    public DBCNestedAttributeMetaData(DBSEntityAttribute attribute, int index, DBCAttributeMetaData parentMeta) {
+    public DBCNestedAttributeMetaData(DBSAttributeBase attribute, int index, DBCAttributeMetaData parentMeta) {
         this.attribute = attribute;
         this.index = index;
         this.parentMeta = parentMeta;
     }
 
     @Override
-    public int getIndex() {
+    public int getOrdinalPosition() {
         return index;
     }
 
@@ -83,8 +84,8 @@ public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObject
 
     @Nullable
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException {
-        return attribute;
+    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) {
+        return attribute instanceof DBSEntityAttribute ? (DBSEntityAttribute) attribute : null;
     }
 
     @Nullable
@@ -161,5 +162,15 @@ public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObject
             return ((IObjectImageProvider) attribute).getObjectImage();
         }
         return DBUtils.getDataIcon(this).getImage();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DBCNestedAttributeMetaData && attribute.equals(((DBCNestedAttributeMetaData) obj).attribute);
+    }
+
+    @Override
+    public int hashCode() {
+        return attribute.hashCode();
     }
 }

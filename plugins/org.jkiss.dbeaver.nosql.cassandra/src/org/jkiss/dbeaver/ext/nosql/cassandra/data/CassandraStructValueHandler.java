@@ -21,15 +21,13 @@ package org.jkiss.dbeaver.ext.nosql.cassandra.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStruct;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructDynamic;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructValueHandler;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.ResultSetMetaData;
 import java.sql.Struct;
-import java.sql.Types;
 
 /**
  * Object type support
@@ -42,9 +40,9 @@ public class CassandraStructValueHandler extends JDBCStructValueHandler {
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return new JDBCStruct(session, makeEmptyType(session), null);
-        } else if (object instanceof JDBCStruct) {
-            return copy ? ((JDBCStruct) object).cloneValue(session.getProgressMonitor()) : object;
+            return new JDBCStructDynamic(session, null);
+        } else if (object instanceof JDBCStructStatic) {
+            return copy ? ((JDBCStructStatic) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Struct) {
             // Obtain metadata information from struct
             ResultSetMetaData metaData = null;
@@ -53,20 +51,11 @@ public class CassandraStructValueHandler extends JDBCStructValueHandler {
             } catch (Throwable e) {
                 // No metadata, use as plain value
             }
-            return new JDBCStruct(session, makeEmptyType(session), (Struct) object, metaData);
+            return new JDBCStructDynamic(session, (Struct) object, metaData);
         } else {
             throw new DBCException("Unsupported struct type: " + object.getClass().getName());
         }
     }
 
-    private DBSDataType makeEmptyType(DBCSession session)
-    {
-        return new JDBCDataType(
-            session.getDataSource().getContainer(),
-            Types.STRUCT,
-            "ROW",
-            "Cassandra struct type",
-            false, false, 0, 0, 0);
-    }
 
 }

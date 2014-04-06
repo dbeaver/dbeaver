@@ -134,6 +134,7 @@ public class MySQLTable extends MySQLTableBase
         return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 
+    @Nullable
     @Override
     @Association
     public synchronized Collection<MySQLTableConstraint> getConstraints(DBRProgressMonitor monitor)

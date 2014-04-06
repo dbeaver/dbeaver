@@ -21,16 +21,11 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,7 +104,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                     session,
                     resultSet,
                     metaColumns[i].getMetaAttribute(),
-                    metaColumns[i].getAttributeIndex());
+                    metaColumns[i].getOrdinalPosition());
             }
             catch (DBCException e) {
                 // Do not reports the same error multiple times

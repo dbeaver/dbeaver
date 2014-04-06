@@ -157,6 +157,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
     }
 
+    @Nullable
     @Override
     public synchronized Collection<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
         throws DBException

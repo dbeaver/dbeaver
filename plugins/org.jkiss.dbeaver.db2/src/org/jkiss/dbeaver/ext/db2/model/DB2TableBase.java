@@ -114,6 +114,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
         return Collections.emptyList();
     }
 
+    @Nullable
     @Override
     public Collection<DB2TableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException
     {

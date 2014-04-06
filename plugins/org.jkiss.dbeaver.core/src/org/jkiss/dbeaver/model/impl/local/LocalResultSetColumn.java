@@ -53,7 +53,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     }
 
     @Override
-    public int getIndex()
+    public int getOrdinalPosition()
     {
         return index;
     }

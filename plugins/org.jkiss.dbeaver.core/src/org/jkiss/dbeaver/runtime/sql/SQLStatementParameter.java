@@ -31,13 +31,13 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 public class SQLStatementParameter implements DBSAttributeBase {
     private DBDValueHandler valueHandler;
     private DBSDataType paramType;
-    private int index;
+    private int ordinalPosition;
     private String name;
     private Object value;
 
-    public SQLStatementParameter(int index, String name)
+    public SQLStatementParameter(int ordinalPosition, String name)
     {
-        this.index = index;
+        this.ordinalPosition = ordinalPosition;
         this.name = name;
     }
 
@@ -72,9 +72,9 @@ public class SQLStatementParameter implements DBSAttributeBase {
         this.paramType = paramType;
     }
 
-    public int getIndex()
+    public int getOrdinalPosition()
     {
-        return index;
+        return ordinalPosition;
     }
 
     @Override

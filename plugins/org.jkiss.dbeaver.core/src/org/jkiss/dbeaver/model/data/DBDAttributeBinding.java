@@ -21,16 +21,16 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCNestedAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Attribute value binding info
@@ -51,20 +51,20 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
 
-    private final int attributeIndex;
+    private final int ordinalPosition;
     private int level;
     private List<DBSEntityReferrer> referrers;
 
-    public DBDAttributeBinding(@NotNull DBPDataSource dataSource, @NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int attributeIndex) {
-        this(dataSource, null, metaAttribute, valueHandler, attributeIndex);
+    public DBDAttributeBinding(@NotNull DBPDataSource dataSource, @NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int ordinalPosition) {
+        this(dataSource, null, metaAttribute, valueHandler, ordinalPosition);
     }
 
-    public DBDAttributeBinding(@NotNull DBPDataSource dataSource, @Nullable DBDAttributeBinding parent, @NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int attributeIndex) {
+    public DBDAttributeBinding(@NotNull DBPDataSource dataSource, @Nullable DBDAttributeBinding parent, @NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int ordinalPosition) {
         this.dataSource = dataSource;
         this.parent = parent;
         this.metaAttribute = metaAttribute;
         this.valueHandler = valueHandler;
-        this.attributeIndex = attributeIndex;
+        this.ordinalPosition = ordinalPosition;
         this.level = (parent == null ? 0 : parent.level + 1);
     }
 
@@ -77,9 +77,10 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
      * Attribute index in result set
      * @return attribute index (zero based)
      */
-    public int getAttributeIndex()
+    @Override
+    public int getOrdinalPosition()
     {
-        return attributeIndex;
+        return ordinalPosition;
     }
 
     /**
@@ -228,21 +229,39 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
                 // Nested binding must be resolved for each value
                 if (!rows.isEmpty()) {
                     // Analyse all read values
-                    System.out.println(getName() + " -> ANY");
+                    resolveBindingsFromData(session, attribute, rows);
                 }
                 break;
         }
 
     }
 
-    private void createNestedBindings(DBCSession session, Collection<? extends DBSEntityAttribute> nestedAttributes, List<Object[]> rows) throws DBException {
+    private void resolveBindingsFromData(DBCSession session, DBSAttributeBase attribute, List<Object[]> rows) throws DBException {
+        Set<DBSAttributeBase> valueAttributes = new LinkedHashSet<DBSAttributeBase>();
+        for (int i = 0; i < rows.size(); i++) {
+            Object value = rows.get(i)[ordinalPosition];
+            if (value instanceof DBDStructure) {
+                Collection<? extends DBSAttributeBase> attributes = ((DBDStructure) value).getAttributes();
+                if (!attributes.isEmpty()) {
+                    valueAttributes.addAll(attributes);
+                }
+            } else {
+                // Unsupported value
+            }
+        }
+        if (!valueAttributes.isEmpty()) {
+            createNestedBindings(session, valueAttributes, rows);
+        }
+    }
+
+    private void createNestedBindings(DBCSession session, Collection<? extends DBSAttributeBase> nestedAttributes, List<Object[]> rows) throws DBException {
         nestedBindings = new ArrayList<DBDAttributeBinding>();
         int nestedIndex = 0;
-        for (DBSEntityAttribute nestedAttr : nestedAttributes) {
+        for (DBSAttributeBase nestedAttr : nestedAttributes) {
             DBCAttributeMetaData nestedMeta = new DBCNestedAttributeMetaData(nestedAttr, nestedIndex, metaAttribute);
             DBDValueHandler nestedHandler = DBUtils.findValueHandler(session, nestedAttr);
             DBDAttributeBinding nestedBinding = new DBDAttributeBinding(dataSource, this, nestedMeta, nestedHandler, nestedIndex);
-            nestedBinding.initValueLocator(nestedAttr, rowIdentifier);
+            nestedBinding.initValueLocator(nestedAttr instanceof DBSEntityAttribute ? (DBSEntityAttribute) nestedAttr : null, rowIdentifier);
             nestedBinding.readNestedBindings(session, rows);
             nestedBindings.add(nestedBinding);
             nestedIndex++;
@@ -297,7 +316,7 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
 
     @Override
     public String toString() {
-        return getName() + " [" + getAttributeIndex() + "]";
+        return getName() + " [" + getOrdinalPosition() + "]";
     }
 
     @Override

@@ -143,6 +143,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
         return null;
     }
 
+    @Nullable
     @Override
     public List<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {
