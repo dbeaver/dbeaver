@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.progress.IProgressConstants;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -34,7 +35,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
 {
     private DBSDataSourceContainer dataSourceContainer;
 
-    protected DataSourceJob(String name, ImageDescriptor image, DBPDataSource dataSource)
+    protected DataSourceJob(String name, @Nullable ImageDescriptor image, DBPDataSource dataSource)
     {
         this(name, image, dataSource.getContainer());
     }
