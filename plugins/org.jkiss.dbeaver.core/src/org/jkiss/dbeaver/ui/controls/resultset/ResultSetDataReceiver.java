@@ -45,7 +45,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     private boolean hasMoreData;
     private boolean nextSegmentRead;
 
-    Map<DBCAttributeMetaData, List<DBCException>> errors = new HashMap<DBCAttributeMetaData, List<DBCException>>();
+    private Map<DBCAttributeMetaData, List<DBCException>> errors = new HashMap<DBCAttributeMetaData, List<DBCException>>();
     private boolean updateMetaData;
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
