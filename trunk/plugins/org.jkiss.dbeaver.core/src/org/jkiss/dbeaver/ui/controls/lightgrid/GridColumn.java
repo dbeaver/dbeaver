@@ -180,7 +180,7 @@ class GridColumn {
 	 * Causes the receiver to be resized to its preferred size.
 	 *
 	 */
-	void pack() {
+	void pack(boolean reflect) {
 		int newWidth = computeHeaderWidth();
         if (CommonUtils.isEmpty(children)) {
             // Calculate width of visible cells
@@ -197,13 +197,16 @@ class GridColumn {
         } else {
             int childrenWidth = 0;
             for (GridColumn child : children) {
-                child.pack();
+                child.pack(reflect);
                 childrenWidth += child.getWidth();
             }
             newWidth = Math.max(newWidth, childrenWidth);
         }
-
-		this.width = newWidth;
+        if (reflect) {
+            setWidth(newWidth, false);
+        } else {
+		    this.width = newWidth;
+        }
 	}
 
     private int computeCellWidth(GridCell cell) {
