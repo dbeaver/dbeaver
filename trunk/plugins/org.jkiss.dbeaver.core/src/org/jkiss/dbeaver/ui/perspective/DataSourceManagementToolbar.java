@@ -438,6 +438,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (connectionCombo != null && !connectionCombo.isDisposed()) {
             IDataSourceContainerProviderEx containerProvider = getActiveDataSourceUpdater();
             if (containerProvider == null) {
+                connectionCombo.removeAll();
                 connectionCombo.setEnabled(false);
             } else {
                 connectionCombo.setEnabled(true);
