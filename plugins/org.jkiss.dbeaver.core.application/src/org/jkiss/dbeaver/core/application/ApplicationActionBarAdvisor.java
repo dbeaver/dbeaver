@@ -186,22 +186,18 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_DATABASE));
-        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_TXN));
-        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.LEFT), IActionConstants.TOOLBAR_DATASOURCE));
 
 /*
-        coolBar.add(new GroupMarker("nav"));
-        { // Navigate group
-            IToolBarManager navToolBar = new ToolBarManager(SWT.FLAT | SWT.LEFT);
-            navToolBar.add(new Separator(IWorkbenchActionConstants.HISTORY_GROUP));
-            navToolBar.add(new GroupMarker(IWorkbenchActionConstants.GROUP_APP));
-            navToolBar.add(historyBackAction);
-            navToolBar.add(historyForwardAction);
-
-            // Add to the cool bar manager
-            coolBar.add(new ToolBarContributionItem(navToolBar, IWorkbenchActionConstants.TOOLBAR_NAVIGATE));
-        }
+        // Use CommandAction here as a workaround. Otherwise FORCE_TEXT mode just ignored by Eclipse 4.2+
+        // TODO: remove all manual mapping when it will be fixed by Eclipse - https://bugs.eclipse.org/bugs/show_bug.cgi?id=399065
+        ToolBarManager txnToolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
+        txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), ICommandIds.CMD_COMMIT), true));
+        txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), ICommandIds.CMD_ROLLBACK), true));
+        coolBar.add(new ToolBarContributionItem(txnToolbar, IActionConstants.TOOLBAR_TXN));
 */
+
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_TXN));
+        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATASOURCE));
 
     }
 

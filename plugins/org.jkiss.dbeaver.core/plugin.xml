@@ -1257,10 +1257,10 @@
             </toolbar>
             <toolbar id="txn" label="Transactions">
                 <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
-                <command commandId="org.jkiss.dbeaver.core.commit">
+                <command commandId="org.jkiss.dbeaver.core.commit" label="Commit" style="push" mode="FORCE_TEXT">
                     <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.core.rollback">
+                <command commandId="org.jkiss.dbeaver.core.rollback" label="Rollback" style="push" mode="FORCE_TEXT">
                     <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn">
