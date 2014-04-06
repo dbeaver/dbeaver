@@ -335,7 +335,7 @@ public class ResultSetModel {
                 log.warn("Value [" + ownerValue + "] edit is not supported");
             }
         }
-        if (ownerValue != null || (value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {
+        if ((value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {
             // If DBDValue was updated (kind of LOB?) or actual value was changed
             if (ownerValue == null && DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
                 // Both nulls - nothing to update

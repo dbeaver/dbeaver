@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
 
 /**
@@ -96,12 +94,14 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
         manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_UNDO));
         manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_REDO));
 
+/*
         manager.add(new Separator());
         manager.add(ActionUtils.makeCommandContribution(workbenchWindow, ICommandIds.CMD_OBJECT_CREATE));
         manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_DELETE));
 
         manager.add(new Separator());
         manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REFRESH));
+*/
     }
 
     public static void registerSearchActions(IEditorPart activeEditor)

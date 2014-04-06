@@ -114,7 +114,6 @@ import java.util.List;
  * because we search for binding by attribute only in constraints and for unique key columns which are unique?
  * But what PK has struct type?
  *
- * TODO: collections and ANY types support
  * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
  * TODO: ipatheditorinput issue
@@ -1042,7 +1041,7 @@ public class ResultSetViewer extends Viewer
         return curState;
     }
 
-    private void setNewState(DBSDataContainer dataContainer, DBDDataFilter dataFilter) {
+    private void setNewState(DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter) {
         // Search in history
         for (int i = 0; i < stateHistory.size(); i++) {
             StateItem item = stateHistory.get(i);
@@ -2155,57 +2154,7 @@ public class ResultSetViewer extends Viewer
 
             prevCell = cell;
         }
-/*
-        if (copyRowNumbers) {
-            tdt.append(rowLabelProvider.getText(rowNumber++)).append(delimiter);
-        }
 
-        int prevRow = firstRow;
-        int prevCol = firstCol;
-        for (GridPos pos : selection) {
-            if (pos.row > prevRow) {
-                if (prevCol < lastCol) {
-                    for (int i = prevCol; i < lastCol; i++) {
-                        if (colsSelected.contains(i)) {
-                            tdt.append(delimiter);
-                        }
-                    }
-                }
-                tdt.append(lineSeparator);
-                if (copyRowNumbers) {
-                    tdt.append(rowLabelProvider.getText(rowNumber++)).append(delimiter);
-                }
-                prevRow = pos.row;
-                prevCol = firstCol;
-            }
-            if (pos.col > prevCol) {
-                for (int i = prevCol; i < pos.col; i++) {
-                    if (colsSelected.contains(i)) {
-                        tdt.append(delimiter);
-                    }
-                }
-                prevCol = pos.col;
-            }
-            GridCell cellPos = translateVisualPos(pos);
-            Object[] curRow = model.getRowData(cellPos.row);
-            Object value = curRow[cellPos.col];
-            DBDAttributeBinding column = model.getColumn(cellPos.col);
-            String cellText = column.getValueHandler().getValueDisplayString(
-                column.getMetaAttribute(),
-                value,
-                format);
-            if (cellText != null) {
-                tdt.append(cellText);
-            }
-            if (cut) {
-                DBDValueController valueController = new ResultSetValueController(
-                    cellPos, DBDValueController.EditType.NONE, null);
-                if (!valueController.isReadOnly()) {
-                    valueController.updateValue(DBUtils.makeNullValue(valueController));
-                }
-            }
-        }
-*/
         if (tdt.length() > 0) {
             TextTransfer textTransfer = TextTransfer.getInstance();
             getSpreadsheet().getClipboard().setContents(
