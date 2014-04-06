@@ -49,4 +49,6 @@ public interface ICommandIds
 
     public static final String GROUP_TOOLS = "tools";
 
+    public static final String CMD_COMMIT = "org.jkiss.dbeaver.core.commit";
+    public static final String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
 }
