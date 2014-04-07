@@ -349,12 +349,12 @@ public class UIUtils {
     public static void sortTable(Table table, Comparator<TableItem> comparator)
     {
         int columnCount = table.getColumnCount();
+        String[] values = new String[columnCount];
         TableItem[] items = table.getItems();
         for (int i = 1; i < items.length; i++) {
             for (int j = 0; j < i; j++) {
                 TableItem item = items[i];
                 if (comparator.compare(item, items[j]) < 0) {
-                    String[] values = new String[columnCount];
                     for (int k = 0; k < columnCount; k++) {
                         values[k] = item.getText(k);
                     }

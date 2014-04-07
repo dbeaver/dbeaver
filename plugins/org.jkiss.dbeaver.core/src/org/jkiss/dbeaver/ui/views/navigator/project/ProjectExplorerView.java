@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -83,22 +84,24 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     {
         final LabelProvider mainLabelProvider = (LabelProvider)viewer.getLabelProvider();
         ViewerColumnController columnController = new ViewerColumnController("projectExplorer", viewer);
-        columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new CellLabelProvider() {
+        columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
-            public void update(ViewerCell cell)
-            {
-                cell.setImage(mainLabelProvider.getImage(cell.getElement()));
-                cell.setText(mainLabelProvider.getText(cell.getElement()));
+            public String getText(Object element) {
+                return mainLabelProvider.getText(element);
             }
-        });
 
-        columnController.addColumn("DataSource", "Datasource(s) associated with resource", SWT.LEFT, true, false, new CellLabelProvider() {
             @Override
-            public void update(ViewerCell cell)
-            {
-                DBNNode node = (DBNNode) cell.getElement();
+            public Image getImage(Object element) {
+                return mainLabelProvider.getImage(element);
+            }
+        }));
+
+        columnController.addColumn("DataSource", "Datasource(s) associated with resource", SWT.LEFT, true, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
+            @Override
+            public String getText(Object element) {
+                DBNNode node = (DBNNode) element;
                 if (node instanceof DBNDatabaseNode) {
-                    cell.setText(((DBNDatabaseNode) node).getDataSourceContainer().getName());
+                    return ((DBNDatabaseNode) node).getDataSourceContainer().getName();
                 } else if (node instanceof DBNResource) {
                     Collection<DBSDataSourceContainer> containers = ((DBNResource) node).getAssociatedDataSources();
                     if (!CommonUtils.isEmpty(containers)) {
@@ -109,55 +112,54 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                             }
                             text.append(container.getName());
                         }
-                        cell.setText(text.toString());
+                        return text.toString();
                     }
-                } else {
-                    cell.setText("");
                 }
+                return "";
             }
-        });
-        columnController.addColumn("Size", "File size", SWT.LEFT, false, false, new CellLabelProvider() {
+        }));
+        columnController.addColumn("Size", "File size", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
-            public void update(ViewerCell cell)
-            {
-                DBNNode node = (DBNNode) cell.getElement();
+            public String getText(Object element) {
+                DBNNode node = (DBNNode) element;
                 if (node instanceof DBNResource) {
                     IResource resource = ((DBNResource) node).getResource();
                     if (resource instanceof IFile) {
-                        cell.setText(String.valueOf(resource.getLocation().toFile().length()));
+                        return String.valueOf(resource.getLocation().toFile().length());
                     }
                 }
+                return "";
             }
-        });
-        columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new CellLabelProvider() {
+        }));
+        columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
-            public void update(ViewerCell cell)
-            {
-                DBNNode node = (DBNNode) cell.getElement();
+            public String getText(Object element) {
+                DBNNode node = (DBNNode) element;
                 if (node instanceof DBNResource) {
                     IResource resource = ((DBNResource) node).getResource();
                     if (resource instanceof IFile) {
-                        cell.setText(
+                        return
                             SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.SHORT)
-                                .format(new Date(resource.getLocation().toFile().lastModified())));
+                                .format(new Date(resource.getLocation().toFile().lastModified()));
                     }
                 }
+                return "";
             }
-        });
-        columnController.addColumn("Type", "Resource type", SWT.LEFT, false, false, new CellLabelProvider() {
+        }));
+        columnController.addColumn("Type", "Resource type", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
-            public void update(ViewerCell cell)
-            {
-                DBNNode node = (DBNNode) cell.getElement();
+            public String getText(Object element) {
+                DBNNode node = (DBNNode) element;
                 if (node instanceof DBNResource) {
                     IResource resource = ((DBNResource) node).getResource();
                     RuntimeUtils.ProgramInfo program = RuntimeUtils.getProgram(resource);
                     if (program != null) {
-                        cell.setText(program.getProgram().getName());
+                        return program.getProgram().getName();
                     }
                 }
+                return "";
             }
-        });
+        }));
         columnController.createColumns();
     }
 
