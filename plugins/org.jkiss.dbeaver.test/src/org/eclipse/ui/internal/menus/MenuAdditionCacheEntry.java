@@ -67,7 +67,7 @@ public class MenuAdditionCacheEntry {
 	/**
 	 * Test whether the location URI is in one of the pre-defined workbench trim
 	 * areas.
-	 *
+	 * 
 	 * @param location
 	 * @return true if the URI is in workbench trim area.
 	 */
@@ -272,11 +272,6 @@ public class MenuAdditionCacheEntry {
 		} else {
 			item.setIconURI(iconUrl);
 		}
-		if (MenuHelper.getMode(commandAddition) == CommandContributionItem.MODE_FORCE_TEXT) {
-			item.getTags().add("FORCE_TEXT");
-			item.setLabel(MenuHelper.getLabel(commandAddition));
-		}
-
 		item.setLabel(MenuHelper.getLabel(commandAddition));
 		item.setMnemonics(MenuHelper.getMnemonic(commandAddition));
 		item.setTooltip(MenuHelper.getTooltip(commandAddition));
@@ -469,7 +464,7 @@ public class MenuAdditionCacheEntry {
 			if (descriptor == null) {
 				descriptor = commandImageService == null ? null : commandImageService
 						.getImageDescriptor(item.getElementId(),
-								ICommandImageService.IMAGE_STYLE_TOOLBAR);
+                            ICommandImageService.IMAGE_STYLE_TOOLBAR);
 				if (descriptor == null) {
 					item.setLabel(MenuHelper.getLabel(commandAddition));
 				} else {
@@ -503,6 +498,10 @@ public class MenuAdditionCacheEntry {
 		}
 		if (iconUrl != null) {
 			MenuHelper.setDisabledIconURI(item, iconUrl);
+		}
+		if (MenuHelper.getMode(commandAddition) == CommandContributionItem.MODE_FORCE_TEXT) {
+			item.getTags().add("FORCE_TEXT");
+			item.setLabel(MenuHelper.getLabel(commandAddition));
 		}
 
 		item.setTooltip(MenuHelper.getTooltip(commandAddition));
