@@ -34,6 +34,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -138,6 +139,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         }
     }
 
+    @NotNull
     public TreeViewer getViewer()
     {
         return viewer;
