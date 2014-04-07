@@ -34,6 +34,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.Collator;
 import java.util.*;
 import java.util.List;
 
@@ -202,36 +203,11 @@ public class ViewerColumnController {
                 });
                 columnInfo.column = column;
             }
-        }
-    }
-
-/*
-    private void updateColumnOrder(Item[] items, int[] orderList)
-    {
-        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-            Item item = items[i];
-            int order = orderList[i];
-            for (ColumnInfo columnInfo : columns) {
-                if (columnInfo.column == item) {
-                    columnInfo.order = order;
-                    break;
-                }
+            if (columnInfo.labelProvider instanceof ILabelProvider) {
+                columnInfo.column.addListener(SWT.Selection, new SortListener(columnInfo));
             }
         }
-        recreateColumns();
-        saveColumnConfig();
     }
-
-    private boolean orderChanged(int[] order)
-    {
-        for (int i = 0; i < order.length; i++) {
-            if (order[i] != i) {
-                return true;
-            }
-        }
-        return false;
-    }
-*/
 
     private Collection<ColumnInfo> getVisibleColumns()
     {
@@ -377,4 +353,55 @@ public class ViewerColumnController {
             return o1.order - o2.order;
         }
     }
+
+    private class SortListener implements Listener
+    {
+        ColumnInfo columnInfo;
+        int sortDirection = SWT.DOWN;
+        Item prevColumn = null;
+
+        public SortListener(ColumnInfo columnInfo) {
+            this.columnInfo = columnInfo;
+        }
+
+        @Override
+        public void handleEvent(Event e) {
+            Collator collator = Collator.getInstance();
+            Item column = (Item)e.widget;
+            if (prevColumn == column) {
+                // Set reverse order
+                sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
+            }
+            prevColumn = column;
+            if (viewer instanceof TreeViewer) {
+                ((TreeViewer)viewer).getTree().setSortColumn((TreeColumn) column);
+                ((TreeViewer)viewer).getTree().setSortDirection(sortDirection);
+            } else {
+                ((TableViewer)viewer).getTable().setSortColumn((TableColumn) column);
+                ((TableViewer)viewer).getTable().setSortDirection(sortDirection);
+            }
+            final ILabelProvider labelProvider = (ILabelProvider)columnInfo.labelProvider;
+
+            viewer.setSorter(new ViewerSorter(collator) {
+                @Override
+                public int compare(Viewer v, Object e1, Object e2)
+                {
+                    int result;
+                    String value1 = labelProvider.getText(e1);
+                    String value2 = labelProvider.getText(e2);
+                    if (value1 == null && value2 == null) {
+                        result = 0;
+                    } else if (value1 == null) {
+                        result = -1;
+                    } else if (value2 == null) {
+                        result = 1;
+                    } else {
+                        result = value1.compareToIgnoreCase(value2);
+                    }
+                    return sortDirection == SWT.DOWN ? result : -result;
+                }
+            });
+        }
+    }
+
 }
