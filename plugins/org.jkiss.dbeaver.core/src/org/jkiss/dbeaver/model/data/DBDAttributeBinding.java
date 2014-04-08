@@ -145,23 +145,6 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
     }
 
     @Nullable
-    public DBDAttributeBinding getNestedBinding(@NotNull DBSAttributeBase attribute)
-    {
-        if (nestedBindings != null) {
-            for (DBDAttributeBinding binding : nestedBindings) {
-                if (binding.matches(attribute)) {
-                    return binding;
-                }
-                DBDAttributeBinding subBinding = binding.getNestedBinding(attribute);
-                if (subBinding != null) {
-                    return subBinding;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Nullable
     public DBDAttributeBinding getParent() {
         return parent;
     }
