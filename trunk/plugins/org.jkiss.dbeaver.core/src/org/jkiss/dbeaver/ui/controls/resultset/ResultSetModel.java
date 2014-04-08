@@ -191,16 +191,7 @@ public class ResultSetModel {
     @Nullable
     public DBDAttributeBinding getAttributeBinding(@NotNull DBSAttributeBase attribute)
     {
-        for (DBDAttributeBinding binding : columns) {
-            if (binding.matches(attribute)) {
-                return binding;
-            }
-            DBDAttributeBinding subBinding = binding.getNestedBinding(attribute);
-            if (subBinding != null) {
-                return subBinding;
-            }
-        }
-        return null;
+        return DBUtils.findBinding(columns, attribute);
     }
 
     @Nullable

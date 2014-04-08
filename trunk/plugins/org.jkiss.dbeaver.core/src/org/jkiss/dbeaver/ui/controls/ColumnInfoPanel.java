@@ -120,10 +120,9 @@ public class ColumnInfoPanel extends Composite {
             List<DBDAttributeBinding> rowAttributes = rowController.getRowAttributes();
             List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();
             for (DBCAttributeMetaData metaAttr : rowIdentifier.getEntityIdentifier().getMetaAttributes()) {
-                for (DBDAttributeBinding rowAttr : rowAttributes) {
-                    if (rowAttr.matches(metaAttr)) {
-                        columns.add(new KeyColumnValue(metaAttr, rowController.getAttributeValue(rowAttr)));
-                    }
+                DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, metaAttr);
+                if (rowAttr != null) {
+                    columns.add(new KeyColumnValue(metaAttr, rowController.getAttributeValue(rowAttr)));
                 }
             }
             return columns;
