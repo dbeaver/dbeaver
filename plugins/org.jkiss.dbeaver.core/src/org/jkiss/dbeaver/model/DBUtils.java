@@ -541,6 +541,42 @@ public final class DBUtils {
         }
     }
 
+    @Nullable
+    public static DBDAttributeBinding findBinding(@NotNull Collection<DBDAttributeBinding> bindings, @NotNull DBSAttributeBase attribute)
+    {
+        for (DBDAttributeBinding binding : bindings) {
+            if (binding.matches(attribute)) {
+                return binding;
+            }
+            List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
+            if (nestedBindings != null) {
+                DBDAttributeBinding subBinding = findBinding(nestedBindings, attribute);
+                if (subBinding != null) {
+                    return subBinding;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static DBDAttributeBinding findBinding(@NotNull DBDAttributeBinding[] bindings, @NotNull DBSAttributeBase attribute)
+    {
+        for (DBDAttributeBinding binding : bindings) {
+            if (binding.matches(attribute)) {
+                return binding;
+            }
+            List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
+            if (nestedBindings != null) {
+                DBDAttributeBinding subBinding = findBinding(nestedBindings, attribute);
+                if (subBinding != null) {
+                    return subBinding;
+                }
+            }
+        }
+        return null;
+    }
+
     @NotNull
     public static List<DBSEntityReferrer> getAttributeReferrers(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute entityAttribute)
         throws DBException

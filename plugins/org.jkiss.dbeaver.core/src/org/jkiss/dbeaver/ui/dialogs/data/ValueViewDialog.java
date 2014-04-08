@@ -579,12 +579,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                             break;
                         }
                         DBSEntityAttribute precAttribute = precColumn.getAttribute();
-                        for (DBDAttributeBinding rowAttr : rowAttributes) {
-                            if (rowAttr.matches(precAttribute)) {
-                                Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
-                                precedingKeys.add(new DBDAttributeValue(precAttribute, precValue));
-                                break;
-                            }
+                        DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, precAttribute);
+                        if (rowAttr != null) {
+                            Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
+                            precedingKeys.add(new DBDAttributeValue(precAttribute, precValue));
                         }
                     }
                 }
