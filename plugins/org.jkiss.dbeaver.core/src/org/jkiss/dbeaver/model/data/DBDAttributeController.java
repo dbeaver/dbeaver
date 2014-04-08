@@ -18,8 +18,8 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 
 /**
  * DBD Value Controller
@@ -31,21 +31,27 @@ public interface DBDAttributeController extends DBDValueController
      * Row controller
      * @return row controller
      */
-    DBDRowController getRow();
+    @NotNull
+    DBDRowController getRowController();
 
     /**
      * Attribute meta data
      * @return meta data
      */
-    DBCAttributeMetaData getAttribute();
+    @NotNull
+    DBDAttributeBinding getBinding();
 
     /**
      * Column unique ID string
      * @return string
      */
+    @NotNull
     String getColumnId();
 
+    /**
+     * Row identifier
+     */
     @Nullable
-    DBDRowIdentifier getValueLocator();
+    DBDRowIdentifier getRowIdentifier();
 
 }

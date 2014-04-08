@@ -176,9 +176,9 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
                     if (marker.getType().equals(SQLConstants.SYNTAX_MARKER_TYPE)
                         || marker.getType().equals(SQLConstants.PORTABILITY_MARKER_TYPE)) {
                         if (store.getBoolean(SQLPreferenceConstants.SHOW_SYNTAX_ERROR_DETAIL)) {
-                            text = (String) marker.getAttribute(IMarker.MESSAGE);
+                            text = (String) marker.getBinding(IMarker.MESSAGE);
                         } else {
-                            text = (String) marker.getAttribute(SQLConstants.SHORT_MESSAGE);
+                            text = (String) marker.getBinding(SQLConstants.SHORT_MESSAGE);
                         }
                         //TODO: consider combine multiple annotations
                         break;

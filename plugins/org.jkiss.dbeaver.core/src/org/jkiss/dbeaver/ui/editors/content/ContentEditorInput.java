@@ -102,7 +102,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     {
         String inputName;
         if (valueController instanceof DBDAttributeController) {
-            DBCAttributeMetaData attribute = ((DBDAttributeController) valueController).getAttribute();
+            DBCAttributeMetaData attribute = ((DBDAttributeController) valueController).getBinding().getMetaAttribute();
             String tableName = attribute.getEntityName();
             inputName = CommonUtils.isEmpty(tableName) ?
                 attribute.getName() :

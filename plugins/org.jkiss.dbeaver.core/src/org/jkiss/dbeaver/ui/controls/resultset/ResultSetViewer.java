@@ -647,7 +647,7 @@ public class ResultSetViewer extends Viewer
                             cell,
                             DBDValueController.EditType.NONE,
                             null);
-                        PropertyCollector props = new PropertyCollector(valueController.getAttribute(), false);
+                        PropertyCollector props = new PropertyCollector(valueController.binding.getAttribute(), false);
                         props.collectProperties();
                         valueController.getValueHandler().contributeProperties(props, valueController);
                         return props;
@@ -690,7 +690,7 @@ public class ResultSetViewer extends Viewer
             curAttribute = (DBDAttributeBinding) newRow;
         }
         if (curState != null && curRow != null) {
-            curState.rowNumber = curRow.visualNumber;
+            curState.rowNumber = curRow.getVisualNumber();
         }
         if (changed) {
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
@@ -739,7 +739,7 @@ public class ResultSetViewer extends Viewer
         }
         if (rowsChanged) {
             int rowCount = model.getRowCount();
-            if (curRow == null || curRow.visualNumber >= rowCount) {
+            if (curRow == null || curRow.getVisualNumber() >= rowCount) {
                 curRow = rowCount == 0 ? null : model.getRow(rowCount - 1);
             }
             GridCell curCell = spreadsheet.getCursorCell();
@@ -859,7 +859,7 @@ public class ResultSetViewer extends Viewer
             // Fix row number if needed
             if (oldRow == null) {
                 oldRow = this.curRow = model.getRow(0);
-            } else if (oldRow.visualNumber >= rowCount) {
+            } else if (oldRow.getVisualNumber() >= rowCount) {
                 oldRow = this.curRow = model.getRow(rowCount - 1);
             }
         }
@@ -995,16 +995,16 @@ public class ResultSetViewer extends Viewer
                 }
                 break;
             case PREVIOUS:
-                if (recordMode && curRow != null && curRow.visualNumber > 0) {
-                    curRow = model.getRow(curRow.visualNumber - 1);
+                if (recordMode && curRow != null && curRow.getVisualNumber() > 0) {
+                    curRow = model.getRow(curRow.getVisualNumber() - 1);
                     updateRecordMode();
                 } else {
                     spreadsheet.shiftCursor(0, -1, false);
                 }
                 break;
             case NEXT:
-                if (recordMode && curRow != null && curRow.visualNumber < model.getRowCount() - 1) {
-                    curRow = model.getRow(curRow.visualNumber + 1);
+                if (recordMode && curRow != null && curRow.getVisualNumber() < model.getRowCount() - 1) {
+                    curRow = model.getRow(curRow.getVisualNumber() + 1);
                     updateRecordMode();
                 } else {
                     spreadsheet.shiftCursor(0, 1, false);
@@ -1058,7 +1058,7 @@ public class ResultSetViewer extends Viewer
         curState = new StateItem(
             dataContainer,
             dataFilter,
-            curRow == null ? -1 : curRow.visualNumber);
+            curRow == null ? -1 : curRow.getVisualNumber());
         stateHistory.add(curState);
         historyPosition = stateHistory.size() - 1;
     }
@@ -1122,7 +1122,7 @@ public class ResultSetViewer extends Viewer
             }
         } else {
             if (recordMode) {
-                setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.visualNumber + 1) + "/" + model.getRowCount() + getExecutionTimeMessage());
+                setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRow == null ? 0 : curRow.getVisualNumber() + 1) + "/" + model.getRowCount() + getExecutionTimeMessage());
             } else {
                 setStatus(String.valueOf(model.getRowCount()) + CoreMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage());
             }
@@ -1851,10 +1851,10 @@ public class ResultSetViewer extends Viewer
 
         if (resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
-            if (oldRow != null && oldRow.visualNumber >= segmentSize && segmentSize > 0) {
-                segmentSize = (oldRow.visualNumber / segmentSize + 1) * segmentSize;
+            if (oldRow != null && oldRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
+                segmentSize = (oldRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            runDataPump(getDataContainer(), null, 0, segmentSize, oldRow == null ? -1 : oldRow.visualNumber, new Runnable() {
+            runDataPump(getDataContainer(), null, 0, segmentSize, oldRow == null ? -1 : oldRow.getVisualNumber(), new Runnable() {
                 @Override
                 public void run()
                 {
@@ -1878,8 +1878,8 @@ public class ResultSetViewer extends Viewer
         if (force || isServerSideFiltering() && supportsDataFilter()) {
             if (resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
                 int segmentSize = getSegmentMaxRows();
-                if (curRow != null && curRow.visualNumber >= segmentSize && segmentSize > 0) {
-                    segmentSize = (curRow.visualNumber / segmentSize + 1) * segmentSize;
+                if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
+                    segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
                 }
                 runDataPump(getDataContainer(), null, 0, segmentSize, -1, onSuccess);
             }
@@ -2057,7 +2057,7 @@ public class ResultSetViewer extends Viewer
         try {
             boolean needPK = false;
             for (RowData row : model.getAllRows()) {
-                if (row.state == RowData.STATE_REMOVED || (row.state == RowData.STATE_NORMAL && row.isChanged())) {
+                if (row.getState() == RowData.STATE_REMOVED || (row.getState() == RowData.STATE_NORMAL && row.isChanged())) {
                     needPK = true;
                     break;
                 }
@@ -2213,7 +2213,7 @@ public class ResultSetViewer extends Viewer
         GridPos curPos = spreadsheet.getCursorPosition();
         int rowNum;
         if (recordMode) {
-            rowNum = curRow == null ? 0 : curRow.visualNumber;
+            rowNum = curRow == null ? 0 : curRow.getVisualNumber();
         } else {
             rowNum = curPos.row;
         }
@@ -2297,7 +2297,7 @@ public class ResultSetViewer extends Viewer
             if (model.deleteRow(row)) {
                 rowsRemoved++;
             }
-            lastRowNum = row.visualNumber;
+            lastRowNum = row.getVisualNumber();
         }
         // Move one row down (if we are in grid mode)
         if (!recordMode && lastRowNum < spreadsheet.getItemCount() - 1) {
@@ -2347,7 +2347,7 @@ public class ResultSetViewer extends Viewer
         // Probably we have only virtual one with empty column set
         final DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
         if (identifier != null) {
-            if (CommonUtils.isEmpty(identifier.getAttributes())) {
+            if (CommonUtils.isEmpty(identifier.getEntityAttributes())) {
                 // Empty identifier. We have to define it
                 RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
                     @Override
@@ -2387,7 +2387,7 @@ public class ResultSetViewer extends Viewer
             log.warn("No virtual identifier defined");
             return false;
         }
-        virtualEntityIdentifier.reloadAttributes(monitor, model.getVisibleColumn(0).getMetaAttribute().getEntity());
+        virtualEntityIdentifier.reloadAttributes(monitor, model.getVisibleColumn(0).getMetaAttribute().getEntityMetaData());
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
             dataSource.getContainer().persistConfiguration();
@@ -2402,7 +2402,7 @@ public class ResultSetViewer extends Viewer
         DBCEntityIdentifier identifier = firstColumn.getRowIdentifier().getEntityIdentifier();
         DBVEntityConstraint virtualKey = (DBVEntityConstraint) identifier.getReferrer();
         virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
-        identifier.reloadAttributes(monitor, firstColumn.getMetaAttribute().getEntity());
+        identifier.reloadAttributes(monitor, firstColumn.getMetaAttribute().getEntityMetaData());
         virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
 
         DBPDataSource dataSource = getDataSource();
@@ -2431,12 +2431,12 @@ public class ResultSetViewer extends Viewer
         private final EditType editType;
         private final Composite inlinePlaceholder;
         private RowData curRow;
-        private final DBDAttributeBinding column;
+        private final DBDAttributeBinding binding;
 
         ResultSetValueController(@NotNull ResultSetViewer viewer, @NotNull GridCell pos, @NotNull EditType editType, @Nullable Composite inlinePlaceholder) {
             this.viewer = viewer;
             this.curRow = (RowData) pos.row;
-            this.column = (DBDAttributeBinding) pos.col;
+            this.binding = (DBDAttributeBinding) pos.col;
             this.pos = new GridCell(pos);
             this.editType = editType;
             this.inlinePlaceholder = inlinePlaceholder;
@@ -2458,33 +2458,37 @@ public class ResultSetViewer extends Viewer
         @Override
         public String getValueName()
         {
-            return getAttribute().getName();
+            return binding.getName();
         }
 
         @Override
         public DBSTypedObject getValueType()
         {
-            return getAttribute();
+            return binding.getMetaAttribute();
         }
 
+        @NotNull
         @Override
-        public DBDRowController getRow() {
+        public DBDRowController getRowController() {
             return this;
         }
 
+        @NotNull
         @Override
-        public DBCAttributeMetaData getAttribute()
+        public DBDAttributeBinding getBinding()
         {
-            return column.getMetaAttribute();
+            return binding;
         }
 
+        @NotNull
         @Override
         public String getColumnId() {
             DBPDataSource dataSource = getDataSource();
+            DBCAttributeMetaData metaAttribute = binding.getMetaAttribute();
             return DBUtils.getSimpleQualifiedName(
                 dataSource == null ? null : dataSource.getContainer().getName(),
-                getAttribute().getEntityName(),
-                getAttribute().getName());
+                metaAttribute.getEntityName(),
+                metaAttribute.getName());
         }
 
         @Override
@@ -2496,7 +2500,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public void updateValue(@Nullable Object value)
         {
-            if (viewer.model.updateCellValue(curRow, column, value)) {
+            if (viewer.model.updateCellValue(curRow, binding, value)) {
                 // Update controls
                 viewer.site.getShell().getDisplay().syncExec(new Runnable() {
                     @Override
@@ -2512,15 +2516,15 @@ public class ResultSetViewer extends Viewer
 
         @Nullable
         @Override
-        public DBDRowIdentifier getValueLocator()
+        public DBDRowIdentifier getRowIdentifier()
         {
-            return column.getRowIdentifier();
+            return binding.getRowIdentifier();
         }
 
         @Override
         public DBDValueHandler getValueHandler()
         {
-            return column.getValueHandler();
+            return binding.getValueHandler();
         }
 
         @Override
@@ -2532,7 +2536,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isReadOnly()
         {
-            return viewer.isColumnReadOnly(column);
+            return viewer.isColumnReadOnly(binding);
         }
 
         @Override
@@ -2595,40 +2599,18 @@ public class ResultSetViewer extends Viewer
             viewer.setStatus(message, error);
         }
 
+        @NotNull
         @Override
-        public Collection<DBCAttributeMetaData> getAttributesMetaData() {
-            List<DBCAttributeMetaData> attributes = new ArrayList<DBCAttributeMetaData>();
-            for (DBDAttributeBinding column : viewer.model.getVisibleColumns()) {
-                attributes.add(column.getMetaAttribute());
-            }
-            return attributes;
+        public List<DBDAttributeBinding> getRowAttributes()
+        {
+            return Arrays.asList(viewer.model.getColumns());
         }
 
         @Nullable
         @Override
-        public DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName)
+        public Object getAttributeValue(DBDAttributeBinding attribute)
         {
-            for (DBDAttributeBinding column : viewer.model.getVisibleColumns()) {
-                if (column.getMetaAttribute().getEntity() == entity && column.getName().equals(columnName)) {
-                    return column.getMetaAttribute();
-                }
-            }
-            return null;
-         }
-
-        @Nullable
-        @Override
-        public Object getAttributeValue(DBCAttributeMetaData attribute)
-        {
-            DBDAttributeBinding[] columns = viewer.model.getColumns();
-            for (int i = 0; i < columns.length; i++) {
-                DBDAttributeBinding metaColumn = columns[i];
-                if (metaColumn.getMetaAttribute() == attribute) {
-                    return curRow.values[i];
-                }
-            }
-            log.warn("Unknown column value requested: " + attribute);
-            return null;
+            return viewer.model.getCellValue(curRow, attribute);
         }
 
         @Nullable
@@ -2667,6 +2649,12 @@ public class ResultSetViewer extends Viewer
                 DBDAttributeBinding binding = (DBDAttributeBinding) element;
                 if (binding.getNestedBindings() != null) {
                     return binding.getNestedBindings().toArray();
+                }
+                if (recordMode && curRow != null && binding.getDataKind() == DBPDataKind.ARRAY) {
+                    Object value = model.getCellValue(curRow, binding);
+                    if (!DBUtils.isNullValue(value) && value instanceof DBDArray) {
+                        System.out.println(value);
+                    }
                 }
             }
 
@@ -2727,7 +2715,7 @@ public class ResultSetViewer extends Viewer
         {
             DBDAttributeBinding attr = (DBDAttributeBinding)(cell.row instanceof DBDAttributeBinding ? cell.row: cell.col);
             RowData row = (RowData)(cell.col instanceof RowData ? cell.col : cell.row);
-            int rowNum = row.visualNumber;
+            int rowNum = row.getVisualNumber();
             Object value = getModel().getCellValue(row, attr);
 
             if (rowNum > 0 && rowNum == model.getRowCount() - 1 && (recordMode || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
@@ -2784,12 +2772,12 @@ public class ResultSetViewer extends Viewer
         {
             RowData row = (RowData) (!recordMode ?  cell.row : cell.col);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
-            boolean odd = row.visualNumber % 2 == 0;
+            boolean odd = row.getVisualNumber() % 2 == 0;
 
-            if (row.state == RowData.STATE_ADDED) {
+            if (row.getState() == RowData.STATE_ADDED) {
                 return backgroundAdded;
             }
-            if (row.state == RowData.STATE_REMOVED) {
+            if (row.getState() == RowData.STATE_REMOVED) {
                 return backgroundDeleted;
             }
             if (row.changes != null && row.changes.containsKey(attribute)) {
@@ -2842,7 +2830,7 @@ public class ResultSetViewer extends Viewer
                 }
             } else {
                 if (!recordMode) {
-                    return String.valueOf(((RowData)element).visualNumber + 1);
+                    return String.valueOf(((RowData)element).getVisualNumber() + 1);
                 } else {
                     return CoreMessages.controls_resultset_viewer_value;
                 }
@@ -3124,7 +3112,7 @@ public class ResultSetViewer extends Viewer
         public boolean isEnabled()
         {
             DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
-            return identifier != null && (define || !CommonUtils.isEmpty(identifier.getAttributes()));
+            return identifier != null && (define || !CommonUtils.isEmpty(identifier.getEntityAttributes()));
         }
 
         @Override

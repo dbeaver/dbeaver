@@ -26,6 +26,7 @@ import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -78,7 +79,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         return this;
     }
 
-    public PropertySourceAbstract addProperty(String category, Object id, String name, Object value)
+    public PropertySourceAbstract addProperty(@Nullable String category, Object id, String name, Object value)
     {
         props.add(new PropertyDescriptorEx(category, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
         propValues.put(id, value);

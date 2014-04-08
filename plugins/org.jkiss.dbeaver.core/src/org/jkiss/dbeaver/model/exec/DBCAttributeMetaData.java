@@ -25,9 +25,6 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-
-import java.util.List;
 
 /**
  * Result set attribute meta data
@@ -80,30 +77,13 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
      * @param monitor progress monitor
      */
     @Nullable
-    DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException;
+    DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Owner table metadata
      * @return table metadata
      */
     @Nullable
-    DBCEntityMetaData getEntity();
-
-    /**
-     * Check this column is a reference.
-     * Reference columns are included in one or more foreign keys. 
-     * @return true or false.
-     * @throws DBCException on any DB error
-     * @param monitor progress monitor
-     */
-    boolean isReference(DBRProgressMonitor monitor) throws DBException;
-
-    /**
-     * Gets list of foreign keys in which this column is contained.
-     * @return list of foreign keys. List can be empty or result can be null if this column is not a reference
-     * @throws DBCException on any DB error  @param monitor
-     */
-    @NotNull
-    List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor) throws DBException;
+    DBCEntityMetaData getEntityMetaData();
 
 }

@@ -90,7 +90,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             attribute = (DBSTableColumn) type;
         } else if (type instanceof DBCAttributeMetaData) {
             try {
-                attribute = ((DBCAttributeMetaData) type).getAttribute(session.getProgressMonitor());
+                attribute = ((DBCAttributeMetaData) type).getEntityAttribute(session.getProgressMonitor());
             } catch (DBException e) {
                 throw new SQLException(e);
             }

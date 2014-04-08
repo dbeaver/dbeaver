@@ -87,7 +87,7 @@ class ResultSetPersister {
         addedRows.clear();
         changedRows.clear();
         for (RowData row : model.getAllRows()) {
-            switch (row.state) {
+            switch (row.getState()) {
                 case RowData.STATE_NORMAL:
                     if (row.isChanged()) {
                         changedRows.add(row);
@@ -119,7 +119,7 @@ class ResultSetPersister {
         for (RowData row : deletedRows) {
             DBSEntity table = columns[0].getRowIdentifier().getEntity();
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, row, table);
-            Collection<? extends DBSEntityAttribute> keyColumns = columns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
+            Collection<? extends DBSEntityAttribute> keyColumns = columns[0].getRowIdentifier().getEntityIdentifier().getEntityAttributes();
             for (DBSEntityAttribute column : keyColumns) {
                 DBDAttributeBinding binding = model.getAttributeBinding(column);
                 if (binding == null) {
@@ -169,7 +169,7 @@ class ResultSetPersister {
                             model.getCellValue(row, changedAttr)));
                 }
                 // Key columns
-                Collection<? extends DBCAttributeMetaData> idColumns = rowIdentifier.getEntityIdentifier().getResultSetColumns();
+                Collection<? extends DBCAttributeMetaData> idColumns = rowIdentifier.getEntityIdentifier().getMetaAttributes();
                 for (DBCAttributeMetaData idAttribute : idColumns) {
                     // Find meta column and add statement parameter
                     DBDAttributeBinding metaColumn = model.getAttributeBinding(idAttribute);
@@ -221,7 +221,7 @@ class ResultSetPersister {
         boolean rowsChanged = model.cleanupRows(addedRows);
         // Remove deleted rows
         for (RowData row : deletedRows) {
-            row.state = RowData.STATE_NORMAL;
+            row.setState(RowData.STATE_NORMAL);
         }
         model.refreshChangeCount();
 
@@ -249,7 +249,7 @@ class ResultSetPersister {
             for (DataStatementInfo stat : insertStatements) {
                 if (stat.executed && stat.row == row) {
                     reflectKeysUpdate(stat);
-                    row.state = RowData.STATE_NORMAL;
+                    row.setState(RowData.STATE_NORMAL);
                     break;
                 }
             }

@@ -21,12 +21,14 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.data.DBDAttributeController;
-import org.jkiss.dbeaver.model.data.DBDRowController;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
@@ -49,11 +51,17 @@ public class ColumnInfoPanel extends Composite {
 
     protected void createPanel(DBDAttributeController valueController)
     {
-        PropertyCollector infoItem = new PropertyCollector(valueController.getAttribute(), false);
+        PropertyCollector infoItem = new PropertyCollector(valueController.getBinding().getMetaAttribute(), false);
         infoItem.collectProperties();
         valueController.getValueHandler().contributeProperties(infoItem, valueController);
-        if (valueController.getValueLocator() != null) {
-            infoItem.addProperty(null, "Key", CoreMessages.controls_column_info_panel_property_key, new CellKeyInfo(valueController) ); //$NON-NLS-1$
+        DBDRowIdentifier rowIdentifier = valueController.getRowIdentifier();
+        if (rowIdentifier != null) {
+            infoItem.addProperty(
+                null,
+                "Key",
+                CoreMessages.controls_column_info_panel_property_key,
+                new CellKeyInfo(valueController.getRowController(), rowIdentifier)
+            );
         }
 
         this.setLayout(new FillLayout());
@@ -66,7 +74,7 @@ public class ColumnInfoPanel extends Composite {
     public static class KeyColumnValue implements DBPNamedObject {
         private DBCAttributeMetaData attribute;
         private Object value;
-        public KeyColumnValue(DBCAttributeMetaData attribute, Object value)
+        public KeyColumnValue(DBCAttributeMetaData attribute, @Nullable Object value)
         {
             this.attribute = attribute;
             this.value = value;
@@ -79,37 +87,44 @@ public class ColumnInfoPanel extends Composite {
         @Override
         public String toString()
         {
-            return value == null ? "[NULL]" : value.toString(); //$NON-NLS-1$
+            return DBUtils.isNullValue(value) ? DBConstants.NULL_VALUE_LABEL : value.toString(); //$NON-NLS-1$
         }
     }
 
     public static class CellKeyInfo implements DBPObject {
-        private DBDAttributeController valueController;
+        @NotNull
+        private final DBDRowController rowController;
+        @NotNull
+        private final DBDRowIdentifier rowIdentifier;
 
-        private CellKeyInfo(DBDAttributeController valueController)
-        {
-            this.valueController = valueController;
+        public CellKeyInfo(@NotNull DBDRowController rowController, @NotNull DBDRowIdentifier rowIdentifier) {
+            this.rowController = rowController;
+            this.rowIdentifier = rowIdentifier;
         }
 
         @Property(viewable = true, order = 1, category = "general")
         public String getType()
         {
-            return valueController.getValueLocator().getKeyType();
+            return rowIdentifier.getKeyType();
         }
 
         @Property(viewable = true, order = 2, category = "general")
         public String getName()
         {
-            return valueController.getValueLocator().getUniqueKey().getName();
+            return rowIdentifier.getUniqueKey().getName();
         }
 
         @Property(viewable = true, order = 3, category = "columns")
         public List<KeyColumnValue> getColumns()
         {
+            List<DBDAttributeBinding> rowAttributes = rowController.getRowAttributes();
             List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();
-            DBDRowController row = valueController.getRow();
-            for (DBCAttributeMetaData col : valueController.getValueLocator().getEntityIdentifier().getResultSetColumns()) {
-                columns.add(new KeyColumnValue(col, row.getAttributeValue(col)));
+            for (DBCAttributeMetaData metaAttr : rowIdentifier.getEntityIdentifier().getMetaAttributes()) {
+                for (DBDAttributeBinding rowAttr : rowAttributes) {
+                    if (rowAttr.matches(metaAttr)) {
+                        columns.add(new KeyColumnValue(metaAttr, rowController.getAttributeValue(rowAttr)));
+                    }
+                }
             }
             return columns;
         }
