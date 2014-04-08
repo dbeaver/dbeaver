@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -51,7 +52,7 @@ public interface DBSConstraintEnumerable extends DBSEntityConstraint
         DBCSession session,
         DBSEntityAttribute keyColumn,
         Object keyPattern,
-        List<DBDAttributeValue> preceedingKeys,
+        @Nullable List<DBDAttributeValue> preceedingKeys,
         int maxResults)
         throws DBException;
 

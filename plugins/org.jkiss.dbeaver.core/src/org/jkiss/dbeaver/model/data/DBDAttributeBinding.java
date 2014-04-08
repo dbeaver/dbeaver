@@ -211,7 +211,9 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
     }
 
     public void readNestedBindings(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
-        referrers = metaAttribute.getReferrers(session.getProgressMonitor());
+        if (entityAttribute != null) {
+            referrers = DBUtils.getAttributeReferrers(session.getProgressMonitor(), entityAttribute);
+        }
         DBSAttributeBase attribute = getAttribute();
         switch (attribute.getDataKind()) {
             case STRUCT:

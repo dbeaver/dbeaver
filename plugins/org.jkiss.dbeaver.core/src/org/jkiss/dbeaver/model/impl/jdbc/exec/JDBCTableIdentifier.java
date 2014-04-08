@@ -38,7 +38,6 @@ public class JDBCTableIdentifier implements DBCEntityIdentifier {
 
     private DBSEntityReferrer referrer;
 
-    //private DBSTableIndex index;
     private List<DBCAttributeMetaData> columns;
     private List<DBSEntityAttribute> tableColumns;
 
@@ -67,13 +66,13 @@ public class JDBCTableIdentifier implements DBCEntityIdentifier {
     }
 
     @Override
-    public Collection<DBCAttributeMetaData> getResultSetColumns()
+    public Collection<DBCAttributeMetaData> getMetaAttributes()
     {
         return columns;
     }
 
     @Override
-    public Collection<? extends DBSEntityAttribute> getAttributes()
+    public Collection<? extends DBSEntityAttribute> getEntityAttributes()
     {
         return tableColumns;
     }

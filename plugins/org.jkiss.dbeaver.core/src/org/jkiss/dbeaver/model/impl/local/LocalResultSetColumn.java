@@ -29,9 +29,6 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-
-import java.util.List;
 
 /**
  * LocalResultSetColumn
@@ -93,27 +90,14 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
 
     @Nullable
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException
+    public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Nullable
     @Override
-    public DBCEntityMetaData getEntity()
-    {
-        return null;
-    }
-
-    @Override
-    public boolean isReference(DBRProgressMonitor monitor) throws DBException
-    {
-        return false;
-    }
-
-    @NotNull
-    @Override
-    public List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor) throws DBException
+    public DBCEntityMetaData getEntityMetaData()
     {
         return null;
     }

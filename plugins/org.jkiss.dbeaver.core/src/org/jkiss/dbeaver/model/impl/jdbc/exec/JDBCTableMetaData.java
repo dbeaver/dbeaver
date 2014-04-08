@@ -119,7 +119,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                 for (JDBCColumnMetaData column : columns) {
                     DBDPseudoAttribute pseudoAttribute = column.getPseudoAttribute();
                     if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
-                        identifiers.add(new JDBCTableIdentifier(monitor, new DBDPseudoReferrer(table, column.getAttribute(monitor)), this));
+                        identifiers.add(new JDBCTableIdentifier(monitor, new DBDPseudoReferrer(table, column.getEntityAttribute(monitor)), this));
                         break;
                     }
                 }
@@ -214,7 +214,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         throws DBException
     {
         for (JDBCColumnMetaData meta : columns) {
-            if (meta.getAttribute(monitor) == column) {
+            if (meta.getEntityAttribute(monitor) == column) {
                 return meta;
             }
         }

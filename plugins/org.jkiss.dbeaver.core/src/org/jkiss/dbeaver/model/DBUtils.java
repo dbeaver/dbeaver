@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -502,9 +501,9 @@ public final class DBUtils {
         try {
             for (DBDAttributeBinding column : bindings) {
                 DBCAttributeMetaData meta = column.getMetaAttribute();
-                DBCEntityMetaData entity = meta.getEntity();
+                DBCEntityMetaData entity = meta.getEntityMetaData();
                 if (entity != null) {
-                    DBSEntityAttribute tableColumn = meta.getAttribute(session.getProgressMonitor());
+                    DBSEntityAttribute tableColumn = meta.getEntityAttribute(session.getProgressMonitor());
                     // We got table name and column name
                     // To be editable we need this result   set contain set of columns from the same table
                     // which construct any unique key
@@ -542,28 +541,24 @@ public final class DBUtils {
         }
     }
 
-    public static DBSEntityReferrer getUniqueForeignConstraint(DBCAttributeMetaData attribute)
+    @NotNull
+    public static List<DBSEntityReferrer> getAttributeReferrers(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAttribute entityAttribute)
+        throws DBException
     {
-        return getUniqueForeignConstraint(null, attribute);
-    }
-
-    public static DBSEntityReferrer getUniqueForeignConstraint(@Nullable DBRProgressMonitor monitor, DBCAttributeMetaData attribute)
-    {
-        RefColumnFinder finder = new RefColumnFinder(attribute);
-        try {
-            if (monitor != null) {
-                finder.run(monitor);
-            } else {
-                DBeaverUI.runInProgressService(finder);
+        DBSEntity entity = entityAttribute.getParentObject();
+        List<DBSEntityReferrer> refs = null;
+        Collection<? extends DBSEntityAssociation> associations = entity.getAssociations(monitor);
+        if (associations != null) {
+            for (DBSEntityAssociation fk : associations) {
+                if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintColumn(monitor, (DBSEntityReferrer) fk, entityAttribute) != null) {
+                    if (refs == null) {
+                        refs = new ArrayList<DBSEntityReferrer>();
+                    }
+                    refs.add((DBSEntityReferrer)fk);
+                }
             }
         }
-        catch (InvocationTargetException e) {
-            // ignore
-        }
-        catch (InterruptedException e) {
-            // do nothing
-        }
-        return finder.refConstraint;
+        return refs != null ? refs : Collections.<DBSEntityReferrer>emptyList();
     }
 
     public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(DBRProgressMonitor monitor, DBSEntity entity)
@@ -1095,28 +1090,4 @@ public final class DBUtils {
         return false;
     }
 
-    private static class RefColumnFinder implements DBRRunnableWithProgress {
-        private DBCAttributeMetaData attribute;
-        private DBSEntityReferrer refConstraint;
-
-        private RefColumnFinder(DBCAttributeMetaData attribute)
-        {
-            this.attribute = attribute;
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
-            try {
-                List<DBSEntityReferrer> refs = attribute.getReferrers(monitor);
-                if (refs != null && !refs.isEmpty()) {
-                    refConstraint = refs.get(0);
-                }
-            }
-            catch (DBException e) {
-                throw new InvocationTargetException(e);
-            }
-        }
-    }
 }

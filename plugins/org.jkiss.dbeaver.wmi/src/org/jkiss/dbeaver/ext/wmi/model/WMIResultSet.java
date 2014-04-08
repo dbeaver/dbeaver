@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.*;
 
@@ -207,7 +206,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     public DBCAttributeMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column) throws DBException
     {
         for (DBCAttributeMetaData cmd : properties) {
-            if (cmd.getAttribute(monitor) == column) {
+            if (cmd.getEntityAttribute(monitor) == column) {
                 return cmd;
             }
         }
@@ -311,29 +310,16 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
         @Nullable
         @Override
-        public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException
+        public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) throws DBException
         {
             return classObject == null ? null : classObject.getAttribute(monitor, getName());
         }
 
         @Nullable
         @Override
-        public DBCEntityMetaData getEntity()
+        public DBCEntityMetaData getEntityMetaData()
         {
             return WMIResultSet.this;
-        }
-
-        @Override
-        public boolean isReference(DBRProgressMonitor monitor) throws DBException
-        {
-            return false;
-        }
-
-        @NotNull
-        @Override
-        public List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor) throws DBException
-        {
-            return null;
         }
 
         @Nullable

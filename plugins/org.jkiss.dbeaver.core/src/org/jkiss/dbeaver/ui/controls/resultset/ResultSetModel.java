@@ -118,7 +118,7 @@ public class ResultSetModel {
             if (row.changes.isEmpty()) {
                 row.changes = null;
             }
-            if (row.state == RowData.STATE_NORMAL) {
+            if (row.getState() == RowData.STATE_NORMAL) {
                 changesCount--;
             }
         }
@@ -128,7 +128,7 @@ public class ResultSetModel {
     {
         changesCount = 0;
         for (RowData row : curRows) {
-            if (row.state != RowData.STATE_NORMAL) {
+            if (row.getState() != RowData.STATE_NORMAL) {
                 changesCount++;
             } else if (row.changes != null) {
                 changesCount += row.changes.size();
@@ -342,7 +342,7 @@ public class ResultSetModel {
                 return false;
             }
             // Do not add edited cell for new/deleted rows
-            if (row.state == RowData.STATE_NORMAL) {
+            if (row.getState() == RowData.STATE_NORMAL) {
 
                 boolean cellWasEdited = row.changes != null && row.changes.containsKey(attr);
                 Object oldOldValue = !cellWasEdited ? null : row.changes.get(attr);
@@ -355,7 +355,7 @@ public class ResultSetModel {
                     }
                     row.changes.put(attr, oldValue);
                 }
-                if (updateChanges && row.state == RowData.STATE_NORMAL && !cellWasEdited) {
+                if (updateChanges && row.getState() == RowData.STATE_NORMAL && !cellWasEdited) {
                     changesCount++;
                 }
             }
@@ -461,7 +461,7 @@ public class ResultSetModel {
         List<RowData> newRows = new ArrayList<RowData>(rowCount);
         for (int i = 0; i < rowCount; i++) {
             newRows.add(
-                new RowData(curRows.size() + i, rows.get(i), null));
+                new RowData(curRows.size() + i, rows.get(i)));
         }
         curRows.addAll(newRows);
     }
@@ -507,9 +507,9 @@ public class ResultSetModel {
 
     void addNewRow(int rowNum, @NotNull Object[] data)
     {
-        RowData newRow = new RowData(curRows.size(), data, null);
-        newRow.visualNumber = rowNum;
-        newRow.state = RowData.STATE_ADDED;
+        RowData newRow = new RowData(curRows.size(), data);
+        newRow.setVisualNumber(rowNum);
+        newRow.setState(RowData.STATE_ADDED);
         shiftRows(newRow, 1);
         curRows.add(rowNum, newRow);
         changesCount++;
@@ -523,12 +523,12 @@ public class ResultSetModel {
      */
     boolean deleteRow(@NotNull RowData row)
     {
-        if (row.state == RowData.STATE_ADDED) {
+        if (row.getState() == RowData.STATE_ADDED) {
             cleanupRow(row);
             return true;
         } else {
             // Mark row as deleted
-            row.state = RowData.STATE_REMOVED;
+            row.setState(RowData.STATE_REMOVED);
             changesCount++;
             return false;
         }
@@ -537,7 +537,7 @@ public class ResultSetModel {
     void cleanupRow(@NotNull RowData row)
     {
         releaseRow(row);
-        this.curRows.remove(row.visualNumber);
+        this.curRows.remove(row.getVisualNumber());
         this.shiftRows(row, -1);
     }
 
@@ -549,7 +549,7 @@ public class ResultSetModel {
             Collections.sort(rowsToRemove, new Comparator<RowData>() {
                 @Override
                 public int compare(RowData o1, RowData o2) {
-                    return o1.visualNumber - o2.visualNumber;
+                    return o1.getVisualNumber() - o2.getVisualNumber();
                 }
             });
             for (RowData row : rowsToRemove) {
@@ -564,11 +564,11 @@ public class ResultSetModel {
     private void shiftRows(@NotNull RowData relative, int delta)
     {
         for (RowData row : curRows) {
-            if (row.visualNumber >= relative.visualNumber) {
-                row.visualNumber += delta;
+            if (row.getVisualNumber() >= relative.getVisualNumber()) {
+                row.setVisualNumber(row.getVisualNumber() + delta);
             }
-            if (row.rowNumber >= relative.rowNumber) {
-                row.rowNumber += delta;
+            if (row.getRowNumber() >= relative.getRowNumber()) {
+                row.setRowNumber(row.getRowNumber() + delta);
             }
         }
     }
@@ -676,7 +676,7 @@ public class ResultSetModel {
             public int compare(RowData row1, RowData row2)
             {
                 if (!hasOrdering) {
-                    return row1.rowNumber - row2.rowNumber;
+                    return row1.getRowNumber() - row2.getRowNumber();
                 }
                 int result = 0;
                 for (DBDAttributeConstraint co : orderConstraints) {
@@ -710,7 +710,7 @@ public class ResultSetModel {
             }
         });
         for (int i = 0; i < curRows.size(); i++) {
-            curRows.get(i).visualNumber = i;
+            curRows.get(i).setVisualNumber(i);
         }
     }
 

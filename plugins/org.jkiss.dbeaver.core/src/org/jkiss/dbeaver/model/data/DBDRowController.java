@@ -18,31 +18,22 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DBD Row Controller
  */
 public interface DBDRowController
 {
-    /**
-     * Column meta data
-     * @return meta data
-     */
-    Collection<DBCAttributeMetaData> getAttributesMetaData();
 
-    /**
-     * Find column metadata by specified table and column name
-     * @param entity table
-     * @param columnName column name
-     * @return column meta data or null
-     */
-    @Nullable
-    DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName);
+    @NotNull
+    List<DBDAttributeBinding> getRowAttributes();
 
     /**
      * Tries to read value of certain column from result set.
@@ -50,6 +41,6 @@ public interface DBDRowController
      * @return value or null
      */
     @Nullable
-    Object getAttributeValue(DBCAttributeMetaData attribute);
+    Object getAttributeValue(DBDAttributeBinding attribute);
 
 }

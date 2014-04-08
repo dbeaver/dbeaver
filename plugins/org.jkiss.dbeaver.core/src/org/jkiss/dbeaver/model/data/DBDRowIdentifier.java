@@ -43,19 +43,6 @@ public class DBDRowIdentifier implements DBPObject {
         this.entityIdentifier = entityIdentifier;
     }
 
-    public String getKeyId(DBDRowController rowController)
-    {
-        StringBuilder keyId = new StringBuilder();
-        Collection<? extends DBCAttributeMetaData> keyColumns = getEntityIdentifier().getResultSetColumns();
-        for (DBCAttributeMetaData keyAttribute : keyColumns) {
-            keyId.append('.').append(CommonUtils.escapeIdentifier(keyAttribute.getName()));
-            Object keyValue = rowController.getAttributeValue(keyAttribute);
-            keyId.append('-');
-            keyId.append(CommonUtils.escapeIdentifier(keyValue == null ? "NULL" : keyValue.toString()));
-        }
-        return keyId.toString();
-    }
-
     @Property(viewable = true, order = 1)
     public DBSEntity getEntity() {
         return entity;
