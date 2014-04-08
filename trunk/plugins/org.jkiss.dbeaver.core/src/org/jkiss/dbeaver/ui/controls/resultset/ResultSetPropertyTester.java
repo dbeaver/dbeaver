@@ -61,9 +61,9 @@ public class ResultSetPropertyTester extends PropertyTester
         } else if (PROP_CAN_MOVE.equals(property)) {
             RowData currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {
-                return currentRow != null && currentRow.visualNumber > 0;
+                return currentRow != null && currentRow.getVisualNumber() > 0;
             } else if ("forward".equals(expectedValue)) {
-                return currentRow != null && currentRow.visualNumber < rsv.getModel().getRowCount() - 1;
+                return currentRow != null && currentRow.getVisualNumber() < rsv.getModel().getRowCount() - 1;
             }
         } else if (PROP_EDITABLE.equals(property)) {
             if (!rsv.hasData()) {

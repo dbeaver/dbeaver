@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.exec;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -29,10 +28,6 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Result set attribute meta data
@@ -84,25 +79,14 @@ public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObject
 
     @Nullable
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) {
+    public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) {
         return attribute instanceof DBSEntityAttribute ? (DBSEntityAttribute) attribute : null;
     }
 
     @Nullable
     @Override
-    public DBCEntityMetaData getEntity() {
-        return parentMeta.getEntity();
-    }
-
-    @Override
-    public boolean isReference(DBRProgressMonitor monitor) throws DBException {
-        return false;
-    }
-
-    @NotNull
-    @Override
-    public List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return Collections.emptyList();
+    public DBCEntityMetaData getEntityMetaData() {
+        return parentMeta.getEntityMetaData();
     }
 
     @Override

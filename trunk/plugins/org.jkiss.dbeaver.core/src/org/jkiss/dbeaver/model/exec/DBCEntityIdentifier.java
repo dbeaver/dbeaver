@@ -40,13 +40,13 @@ public interface DBCEntityIdentifier {
      * Result set columns
      * @return list of result set columns.
      */
-    Collection<? extends DBCAttributeMetaData> getResultSetColumns();
+    Collection<? extends DBCAttributeMetaData> getMetaAttributes();
 
     /**
      * Identifier attributes (columns)
      * @return
      */
-    Collection<? extends DBSEntityAttribute> getAttributes();
+    Collection<? extends DBSEntityAttribute> getEntityAttributes();
 
     void reloadAttributes(DBRProgressMonitor monitor, DBCEntityMetaData metaData) throws DBException;
 }

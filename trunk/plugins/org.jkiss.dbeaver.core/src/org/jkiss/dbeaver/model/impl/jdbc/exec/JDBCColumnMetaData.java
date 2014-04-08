@@ -39,10 +39,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * JDBCColumnMetaData
@@ -297,14 +293,14 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
     @Nullable
     @Override
-    public JDBCTableMetaData getEntity()
+    public JDBCTableMetaData getEntityMetaData()
     {
         return tableMetaData;
     }
 
     @Nullable
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor)
+    public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor)
         throws DBException
     {
         if (tableColumn != null) {
@@ -323,57 +319,6 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             tableColumn = entity.getAttribute(monitor, name);
         }
         return tableColumn;
-    }
-
-    @Override
-    public boolean isReference(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        DBSEntityAttribute tableColumn = getAttribute(monitor);
-        if (tableColumn == null) {
-            return false;
-        }
-        DBSEntity entity = tableMetaData.getEntity(monitor);
-        if (entity == null) {
-            return false;
-        }
-        Collection<? extends DBSEntityAssociation> foreignKeys = entity.getAssociations(monitor);
-        if (foreignKeys != null) {
-            for (DBSEntityAssociation fk : foreignKeys) {
-                if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintColumn(monitor, (DBSEntityReferrer)fk, tableColumn) != null) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    @NotNull
-    @Override
-    public List<DBSEntityReferrer> getReferrers(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
-        DBSEntityAttribute tableColumn = getAttribute(monitor);
-        if (tableColumn == null) {
-            return Collections.emptyList();
-        }
-        DBSEntity table = tableMetaData.getEntity(monitor);
-        if (table == null) {
-            return Collections.emptyList();
-        }
-        List<DBSEntityReferrer> refs = null;
-        Collection<? extends DBSEntityAssociation> associations = table.getAssociations(monitor);
-        if (associations != null) {
-            for (DBSEntityAssociation fk : associations) {
-                if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintColumn(monitor, (DBSEntityReferrer) fk, tableColumn) != null) {
-                    if (refs == null) {
-                        refs = new ArrayList<DBSEntityReferrer>();
-                    }
-                    refs.add((DBSEntityReferrer)fk);
-                }
-            }
-        }
-        return refs != null ? refs : Collections.<DBSEntityReferrer>emptyList();
     }
 
     @Nullable

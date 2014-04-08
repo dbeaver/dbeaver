@@ -22,7 +22,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -35,34 +34,50 @@ public class RowData {
     static final byte STATE_REMOVED = 3;
 
     // Physical row number
-    public int rowNumber;
+    private int rowNumber;
     // Row number in grid
-    public int visualNumber;
+    private int visualNumber;
     // Column values
     @NotNull
     public Object[] values;
-    // Original column values
-    //public Object[] oldValues;
-    //@Nullable
-    //public boolean[] changedValues;
     @Nullable
     public Map<DBDAttributeBinding, Object> changes;
-    // Use info
-    @Nullable
-    public Object info;
     // Row state
-    public byte state;
+    private byte state;
 
-    RowData(int rowNumber, @NotNull Object[] values, @Nullable Object info) {
+    RowData(int rowNumber, @NotNull Object[] values) {
         this.rowNumber = rowNumber;
         this.visualNumber = rowNumber;
         this.values = values;
-        this.info = info;
         this.state = STATE_NORMAL;
     }
 
     public boolean isChanged() {
         return changes != null && !changes.isEmpty();
+    }
+
+    public int getRowNumber() {
+        return rowNumber;
+    }
+
+    public void setRowNumber(int rowNumber) {
+        this.rowNumber = rowNumber;
+    }
+
+    public int getVisualNumber() {
+        return visualNumber;
+    }
+
+    public void setVisualNumber(int visualNumber) {
+        this.visualNumber = visualNumber;
+    }
+
+    public byte getState() {
+        return state;
+    }
+
+    public void setState(byte state) {
+        this.state = state;
     }
 
 /*
