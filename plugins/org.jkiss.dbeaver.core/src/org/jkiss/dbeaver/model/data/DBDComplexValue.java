@@ -21,9 +21,9 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
- * Complex type
+ * Complex value
  */
-public interface DBDComplexType extends DBDValue {
+public interface DBDComplexValue extends DBDValue {
 
     DBSDataType getObjectDataType();
 

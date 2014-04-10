@@ -37,9 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Struct;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Static struct holder.
@@ -54,7 +52,9 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
     @Nullable
     private Struct contents;
     @NotNull
-    private Map<DBSAttributeBase, Object> values;
+    private DBSEntityAttribute[] attributes;
+    @NotNull
+    private Object[] values;
 
     private JDBCStructStatic()
     {
@@ -66,7 +66,6 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
         this.contents = contents;
 
         // Extract structure data
-        values = new LinkedHashMap<DBSAttributeBase, Object>();
         try {
             Object[] attrValues = contents == null ? null : contents.getAttributes();
             if (type instanceof DBSEntity) {
@@ -76,7 +75,10 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
                 if (attrValues != null && entityAttributes.size() != valueCount) {
                     log.warn("Number of entity attributes (" + entityAttributes.size() + ") differs from real values (" + valueCount + ")");
                 }
-                for (DBSEntityAttribute attr : entityAttributes) {
+                attributes = entityAttributes.toArray(new DBSEntityAttribute[entityAttributes.size()]);
+                values = new Object[attributes.length];
+                for (int i = 0; i < attributes.length; i++) {
+                    DBSEntityAttribute attr = attributes[i];
                     int ordinalPosition = attr.getOrdinalPosition() - 1;
                     if (ordinalPosition < 0 || attrValues != null && ordinalPosition >= valueCount) {
                         log.warn("Attribute '" + attr.getName() + "' ordinal position (" + ordinalPosition + ") is out of range (" + valueCount + ")");
@@ -85,8 +87,11 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
                     Object value = attrValues != null ? attrValues[ordinalPosition] : null;
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attr);
                     value = valueHandler.getValueFromObject(session, attr, value, false);
-                    values.put(attr, value);
+                    values[ordinalPosition] = value;
                 }
+            } else {
+                attributes = EMPTY_ATTRIBUTE;
+                values = EMPTY_VALUES;
             }
         } catch (DBException e) {
             throw new DBCException("Can't obtain attributes meta information", e);
@@ -111,7 +116,6 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
     public void release()
     {
         contents = null;
-        values.clear();
     }
 
     @NotNull
@@ -133,22 +137,23 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
 
     @NotNull
     @Override
-    public Collection<DBSAttributeBase> getAttributes()
+    public DBSAttributeBase[] getAttributes()
     {
-        return values.keySet();
+        return attributes;
     }
 
     @Nullable
     @Override
     public Object getAttributeValue(@NotNull DBSAttributeBase attribute) throws DBCException
     {
-        return values.get(attribute);
+        int ordinalPosition = attribute.getOrdinalPosition() - 1;
+        return ordinalPosition >= values.length ? null : values[ordinalPosition];
     }
 
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
     {
-        values.put(attribute, value);
+        values[attribute.getOrdinalPosition() - 1] = value;
     }
 
     @Override
@@ -157,7 +162,8 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
         JDBCStructStatic copyStruct = new JDBCStructStatic();
         copyStruct.type = this.type;
         copyStruct.contents = null;
-        copyStruct.values = new LinkedHashMap<DBSAttributeBase, Object>(this.values);
+        copyStruct.attributes = Arrays.copyOf(this.attributes, this.attributes.length);
+        copyStruct.values = Arrays.copyOf(this.values, this.values.length);
         return copyStruct;
     }
 

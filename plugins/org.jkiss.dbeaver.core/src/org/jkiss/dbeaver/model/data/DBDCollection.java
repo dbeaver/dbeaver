@@ -22,13 +22,17 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.dbeaver.model.exec.DBCException;
 
 /**
- * Array
+ * Collection of items.
+ * Item index is zero-based.
  *
  * @author Serge Rider
  */
-public interface DBDArray extends DBDComplexType {
+public interface DBDCollection extends DBDComplexValue {
 
-    Object[] getContents()
+    int getItemCount()
+        throws DBCException;
+
+    Object getItem(int index)
         throws DBCException;
 
 }

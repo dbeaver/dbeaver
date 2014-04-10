@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Data preferences
  */
@@ -39,6 +41,7 @@ public interface DBDPreferences {
      * Default value handler
      * @return value handler instance
      */
+    @NotNull
     DBDValueHandler getDefaultValueHandler();
 
 }

@@ -42,10 +42,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Struct;
 import java.sql.Types;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Dynamic struct. Self contained entity.
@@ -61,7 +58,9 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     @Nullable
     private Struct contents;
     @NotNull
-    private Map<DBSEntityAttribute, Object> values;
+    private DBSEntityAttribute[] attributes;
+    @NotNull
+    private Object[] values;
     @Nullable
     private Object structData;
 
@@ -73,6 +72,8 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     {
         this.dataSource = session.getDataSource();
         this.structData = structData;
+        this.attributes = EMPTY_ATTRIBUTE;
+        this.values = EMPTY_VALUES;
     }
 
     public JDBCStructDynamic(DBCSession session, @Nullable Struct contents, @Nullable ResultSetMetaData metaData) throws DBCException
@@ -81,10 +82,11 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
         this.contents = contents;
 
         // Extract structure data
-        values = new LinkedHashMap<DBSEntityAttribute, Object>();
         try {
             Object[] attrValues = contents == null ? null : contents.getAttributes();
             if (attrValues != null) {
+                attributes = new DBSEntityAttribute[attrValues.length];
+                values = new Object[attrValues.length];
                 if (metaData != null) {
                     // Use meta data to read struct information
                     int attrCount = metaData.getColumnCount();
@@ -96,7 +98,8 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
                         Object value = attrValues[i];
                         StructAttribute attr = new StructAttribute(metaData, i + 1);
                         value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false);
-                        values.put(attr, value);
+                        attributes[i] = attr;
+                        values[i] = value;
                     }
                 } else {
                     log.warn("Data type '" + contents.getSQLTypeName() + "' isn't resolved as structured type. Use synthetic attributes.");
@@ -104,9 +107,13 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
                         Object value = attrValues[i];
                         StructAttribute attr = new StructAttribute(i, value);
                         value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false);
-                        values.put(attr, value);
+                        attributes[i] = attr;
+                        values[i] = value;
                     }
                 }
+            } else {
+                this.attributes = EMPTY_ATTRIBUTE;
+                this.values = EMPTY_VALUES;
             }
         } catch (DBException e) {
             throw new DBCException("Can't obtain attributes meta information", e);
@@ -131,7 +138,6 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     public void release()
     {
         contents = null;
-        values.clear();
     }
 
     @NotNull
@@ -180,16 +186,17 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
         str.append(typeName);
         str.append("(");
         int i = 0;
-        for (Map.Entry<DBSEntityAttribute, Object> entry : values.entrySet()) {
-            Object item = entry.getValue();
+        for (int i1 = 0; i1 < attributes.length; i1++) {
+            DBSEntityAttribute attr = attributes[i1];
+            Object item = values[i];
             if (i > 0) str.append(",");
             //str.append(entry.getKey().getName()).append(':');
             if (DBUtils.isNullValue(item)) {
                 str.append("NULL");
             } else {
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, entry.getKey());
-                String strValue = valueHandler.getValueDisplayString(entry.getKey(), item, DBDDisplayFormat.UI);
-                SQLUtils.appendValue(str, entry.getKey(), strValue);
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attr);
+                String strValue = valueHandler.getValueDisplayString(attr, item, DBDDisplayFormat.UI);
+                SQLUtils.appendValue(str, attr, strValue);
             }
             i++;
             if (i >= MAX_ITEMS_IN_STRING) {
@@ -208,22 +215,22 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
 
     @NotNull
     @Override
-    public Collection<? extends DBSAttributeBase> getAttributes()
+    public DBSAttributeBase[] getAttributes()
     {
-        return values.keySet();
+        return attributes;
     }
 
     @Nullable
     @Override
     public Object getAttributeValue(@NotNull DBSAttributeBase attribute) throws DBCException
     {
-        return values.get(attribute);
+        return values[attribute.getOrdinalPosition() - 1];
     }
 
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
     {
-        values.put((DBSEntityAttribute)attribute, value);
+        values[((DBSEntityAttribute)attribute).getOrdinalPosition() - 1] = value;
     }
 
     @Override
@@ -231,7 +238,8 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     {
         JDBCStructDynamic copyStruct = new JDBCStructDynamic();
         copyStruct.contents = null;
-        copyStruct.values = new LinkedHashMap<DBSEntityAttribute, Object>(this.values);
+        copyStruct.attributes = Arrays.copyOf(this.attributes, this.attributes.length);
+        copyStruct.values = Arrays.copyOf(this.values, this.values.length);
         return copyStruct;
     }
 
@@ -243,15 +251,16 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     @Nullable
     @Override
     public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) {
-        return values.keySet();
+        return Arrays.asList(attributes);
     }
 
     @Nullable
     @Override
     public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) {
-        for (DBSAttributeBase attr :values.keySet()) {
+        for (int i = 0; i < attributes.length; i++) {
+            DBSEntityAttribute attr = attributes[i];
             if (attr.getName().equals(attributeName)) {
-                return (DBSEntityAttribute) attr;
+                return attr;
             }
         }
         return null;

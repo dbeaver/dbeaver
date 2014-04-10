@@ -28,6 +28,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -44,7 +45,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 
 /**
  * Structure object editor
@@ -149,7 +149,7 @@ public class ComplexObjectEditor extends TreeViewer {
         super.setContentProvider(new StructContentProvider());
     }
 
-    public void setModel(DBPDataSource dataSource, final DBDComplexType value)
+    public void setModel(DBPDataSource dataSource, final DBDComplexValue value)
     {
         getTree().setRedraw(false);
         try {
@@ -226,7 +226,7 @@ public class ComplexObjectEditor extends TreeViewer {
         final Object value;
         DBDValueHandler valueHandler;
 
-        private FieldInfo(DBPDataSource dataSource, DBSAttributeBase attribute, Object value)
+        private FieldInfo(DBPDataSource dataSource, DBSAttributeBase attribute, @Nullable Object value)
         {
             this.attribute = attribute;
             this.value = value;
@@ -235,12 +235,12 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     private static class ArrayItem {
-        final DBDArray array;
+        final DBDCollection array;
         final int index;
         final Object value;
         DBDValueHandler valueHandler;
 
-        private ArrayItem(DBDArray array, int index, Object value)
+        private ArrayItem(DBDCollection array, int index, Object value)
         {
             this.array = array;
             this.index = index;
@@ -377,6 +377,7 @@ public class ComplexObjectEditor extends TreeViewer {
             return getChildren(parent);
         }
 
+        @Nullable
         @Override
         public Object getParent(Object child)
         {
@@ -389,24 +390,23 @@ public class ComplexObjectEditor extends TreeViewer {
             if (parent instanceof DBDStructure) {
                 DBDStructure structure = (DBDStructure)parent;
                 try {
-                    Collection<? extends DBSAttributeBase> attributes = structure.getAttributes();
-                    Object[] children = new Object[attributes.size()];
-                    int index = 0;
-                    for (DBSAttributeBase attr : attributes) {
+                    DBSAttributeBase[] attributes = structure.getAttributes();
+                    Object[] children = new Object[attributes.length];
+                    for (int i = 0; i < attributes.length; i++) {
+                        DBSAttributeBase attr = attributes[i];
                         Object value = structure.getAttributeValue(attr);
-                        children[index++] = new FieldInfo(structure.getObjectDataType().getDataSource(), attr, value);
+                        children[i] = new FieldInfo(structure.getObjectDataType().getDataSource(), attr, value);
                     }
                     return children;
                 } catch (DBException e) {
                     log.error("Error getting structure meta data", e);
                 }
-            } else if (parent instanceof DBDArray) {
-                DBDArray array = (DBDArray)parent;
+            } else if (parent instanceof DBDCollection) {
+                DBDCollection array = (DBDCollection)parent;
                 try {
-                    Object[] contents = array.getContents();
-                    ArrayItem[] items = new ArrayItem[contents.length];
-                    for (int i = 0; i < contents.length; i++) {
-                        items[i] = new ArrayItem(array, i, contents[i]);
+                    ArrayItem[] items = new ArrayItem[array.getItemCount()];
+                    for (int i = 0; i < items.length; i++) {
+                        items[i] = new ArrayItem(array, i, array.getItem(i));
                     }
                     return items;
                 } catch (DBCException e) {
@@ -441,12 +441,12 @@ public class ComplexObjectEditor extends TreeViewer {
                 return getChildren(runnable.getResult());
             } else if (parent instanceof FieldInfo) {
                 Object value = ((FieldInfo) parent).value;
-                if (value instanceof DBDComplexType) {
+                if (value instanceof DBDComplexValue) {
                     return getChildren(value);
                 }
             } else if (parent instanceof ArrayItem) {
                 Object value = ((ArrayItem) parent).value;
-                if (value instanceof DBDComplexType) {
+                if (value instanceof DBDComplexValue) {
                     return getChildren(value);
                 }
             }
@@ -458,7 +458,7 @@ public class ComplexObjectEditor extends TreeViewer {
         {
             return
                 parent instanceof DBDStructure ||
-                parent instanceof DBDArray ||
+                parent instanceof DBDCollection ||
                 parent instanceof DBDReference ||
                 (parent instanceof FieldInfo && hasChildren(((FieldInfo) parent).value)) ||
                 (parent instanceof ArrayItem && hasChildren(((ArrayItem) parent).value));
@@ -493,17 +493,16 @@ public class ComplexObjectEditor extends TreeViewer {
 
         private String getValueText(DBDValueHandler valueHandler, DBSTypedObject type, Object value)
         {
-            if (value instanceof DBDArray) {
+            if (value instanceof DBDCollection) {
                 try {
-                    Object[] contents = ((DBDArray) value).getContents();
-                    return "[" + ((DBDArray) value).getObjectDataType().getName() + " - " + String.valueOf(contents == null ? 0 : contents.length) + "]";
+                    return "[" + ((DBDCollection) value).getObjectDataType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
                 } catch (DBCException e) {
                     log.error(e);
                     return "N/A";
                 }
             }
-            if (value instanceof DBDComplexType) {
-                return "[" + ((DBDComplexType) value).getObjectDataType().getName() + "]";
+            if (value instanceof DBDComplexValue) {
+                return "[" + ((DBDComplexValue) value).getObjectDataType().getName() + "]";
             }
             return valueHandler.getValueDisplayString(type, value, DBDDisplayFormat.UI);
         }
