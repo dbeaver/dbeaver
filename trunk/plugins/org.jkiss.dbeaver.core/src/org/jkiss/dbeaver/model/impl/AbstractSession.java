@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -97,6 +98,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
         dataFormatterProfile = formatterProfile;
     }
 
+    @NotNull
     @Override
     public DBDValueHandler getDefaultValueHandler()
     {

@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.data.DBDComplexType;
+import org.jkiss.dbeaver.model.data.DBDComplexValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -89,12 +89,12 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
         super.contributeProperties(propertySource, controller);
         try {
             Object value = controller.getValue();
-            if (value instanceof DBDComplexType) {
+            if (value instanceof DBDComplexValue) {
                 propertySource.addProperty(
                     PROP_CATEGORY_COMPLEX,
                     "object_type", //$NON-NLS-1$
                     CoreMessages.model_jdbc_type_name,
-                    ((DBDComplexType) value).getObjectDataType().getName());
+                    ((DBDComplexValue) value).getObjectDataType().getName());
             }
         } catch (Exception e) {
             log.warn("Could not extract complex type information", e); //$NON-NLS-1$
@@ -113,14 +113,14 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
                     @Override
                     public void primeEditorValue(Object value) throws DBException
                     {
-                        editor.setModel(controller.getDataSource(), (DBDComplexType) value);
+                        editor.setModel(controller.getDataSource(), (DBDComplexValue) value);
                     }
 
                     @Override
                     protected Tree createControl(Composite editPlaceholder)
                     {
                         editor = new ComplexObjectEditor(controller.getValueSite(), controller.getEditPlaceholder(), SWT.BORDER);
-                        editor.setModel(controller.getDataSource(), (DBDComplexType) controller.getValue());
+                        editor.setModel(controller.getDataSource(), (DBDComplexValue) controller.getValue());
                         return editor.getTree();
                     }
 

@@ -226,10 +226,8 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
         for (int i = 0; i < rows.size(); i++) {
             Object value = rows.get(i)[ordinalPosition];
             if (value instanceof DBDStructure) {
-                Collection<? extends DBSAttributeBase> attributes = ((DBDStructure) value).getAttributes();
-                if (!attributes.isEmpty()) {
-                    valueAttributes.addAll(attributes);
-                }
+                DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
+                Collections.addAll(valueAttributes, attributes);
             } else {
                 // Unsupported value
             }
@@ -311,7 +309,7 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
         }
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
-        for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParent()) {
+        for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.parent) {
             if (hasPrevIdentifier) {
                 query.insert(0, '.');
             }

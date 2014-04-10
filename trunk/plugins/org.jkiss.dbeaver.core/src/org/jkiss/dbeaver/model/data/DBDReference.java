@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 /**
  * Reference to another object (usually DBDStructure).
  */
-public interface DBDReference extends DBDComplexType {
+public interface DBDReference extends DBDComplexValue {
 
     /**
      * Retrieves referenced object.

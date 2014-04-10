@@ -405,6 +405,7 @@ public final class DBUtils {
      * @param object object
      * @return object path
      */
+    @NotNull
     public static List<DBSObject> getObjectPath(DBSObject object, boolean includeSelf)
     {
         List<DBSObject> path = new ArrayList<DBSObject>();
@@ -455,6 +456,7 @@ public final class DBUtils {
         return runnable.getResult();
     }
 
+    @NotNull
     public static DBDAttributeBinding getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta, int attributeIndex)
     {
         return new DBDAttributeBinding(
@@ -464,16 +466,19 @@ public final class DBUtils {
             attributeIndex);
     }
 
+    @NotNull
     public static DBDValueHandler findValueHandler(DBCSession session, DBSTypedObject column)
     {
         return findValueHandler(session.getDataSource(), session, column);
     }
 
+    @NotNull
     public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBSTypedObject column)
     {
         return findValueHandler(dataSource, dataSource.getContainer(), column);
     }
 
+    @NotNull
     public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
@@ -531,6 +536,7 @@ public final class DBUtils {
         }
     }
 
+    @NotNull
     public static String getDefaultDataType(DBPDataSource dataSource, DBPDataKind dataKind)
     {
         if (dataSource instanceof DBPDataTypeProvider) {
@@ -597,6 +603,7 @@ public final class DBUtils {
         return refs != null ? refs : Collections.<DBSEntityReferrer>emptyList();
     }
 
+    @NotNull
     public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(DBRProgressMonitor monitor, DBSEntity entity)
         throws DBException
     {
@@ -655,6 +662,7 @@ public final class DBUtils {
         }
     }
 
+    @NotNull
     public static List<DBSEntityAttribute> getEntityAttributes(DBRProgressMonitor monitor, DBSEntityReferrer referrer)
     {
         Collection<? extends DBSEntityAttributeRef> constraintColumns = null;
@@ -730,6 +738,7 @@ public final class DBUtils {
         return null;
     }
 
+    @NotNull
     public static DBCStatement prepareStatement(
         DBCSession session,
         DBCStatementType statementType,
@@ -776,6 +785,7 @@ public final class DBUtils {
         return dbStat;
     }
 
+    @NotNull
     public static DBCStatement createStatement(
         DBCSession session,
         String query) throws DBCException
@@ -789,6 +799,7 @@ public final class DBUtils {
             false);
     }
 
+    @NotNull
     public static DBCStatement prepareStatement(
         DBCSession session,
         String query) throws DBCException
@@ -891,6 +902,7 @@ public final class DBUtils {
         return object.getDataSource().getContainer();
     }
 
+    @NotNull
     public static String getObjectUniqueName(DBSObject object)
     {
         if (object instanceof DBSObjectUnique) {
@@ -992,6 +1004,7 @@ public final class DBUtils {
         }
     }
 
+    @NotNull
     public static DBPDataSourceRegistry getRegistry(@NotNull DBSObject object)
     {
         DBSDataSourceContainer container;
@@ -1004,6 +1017,7 @@ public final class DBUtils {
         return container.getRegistry();
     }
 
+    @NotNull
     public static String getObjectShortName(Object object)
     {
         String strValue;
@@ -1015,6 +1029,7 @@ public final class DBUtils {
         return strValue;
     }
 
+    @NotNull
     public static String getObjectFullName(@NotNull DBPNamedObject object)
     {
         if (object instanceof DBPQualifiedObject) {
@@ -1026,6 +1041,7 @@ public final class DBUtils {
         }
     }
 
+    @NotNull
     public static String getObjectFullName(@NotNull DBPDataSource dataSource, @NotNull DBPNamedObject object)
     {
         if (object instanceof DBPQualifiedObject) {
@@ -1035,6 +1051,7 @@ public final class DBUtils {
         }
     }
 
+    @NotNull
     public static String getFullTypeName(@NotNull DBSTypedObject typedObject)
     {
         String typeName = typedObject.getTypeName();
@@ -1046,6 +1063,7 @@ public final class DBUtils {
         }
     }
 
+    @NotNull
     public static String generateScript(IDatabasePersistAction[] persistActions)
     {
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
@@ -1060,6 +1078,7 @@ public final class DBUtils {
         return script.toString();
     }
 
+    @NotNull
     public static DBIcon getDataIcon(@NotNull DBSTypedObject type)
     {
         switch (type.getDataKind()) {
@@ -1090,6 +1109,7 @@ public final class DBUtils {
         }
     }
 
+    @NotNull
     public static DBDBinaryFormatter getBinaryPresentation(@NotNull DBPDataSource dataSource)
     {
         String id = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION);

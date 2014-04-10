@@ -20,13 +20,14 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -46,7 +47,7 @@ import java.util.List;
 /**
  * Array holder
  */
-public class JDBCArray implements DBDArray, DBDValueCloneable {
+public class JDBCArray implements DBDCollection, DBDValueCloneable {
 
     static final Log log = LogFactory.getLog(JDBCArray.class);
 
@@ -141,7 +142,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         return contents;
     }
 
-    public JDBCArray(DBSDataType type, DBDValueHandler valueHandler, Object[] contents)
+    public JDBCArray(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents)
     {
         this.type = type;
         this.valueHandler = valueHandler;
@@ -152,12 +153,6 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
     public DBSDataType getObjectDataType()
     {
         return type;
-    }
-
-    @Override
-    public Object[] getContents() throws DBCException
-    {
-        return contents;
     }
 
     @Override
@@ -187,11 +182,11 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
     }
 
-    @Nullable
+    @NotNull
     public String makeArrayString()
     {
         if (isNull()) {
-            return null;
+            return String.valueOf(null);
         }
         if (contents.length == 0) {
             return "";
@@ -210,4 +205,13 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
     }
 
+    @Override
+    public int getItemCount() {
+        return contents == null ? 0 : contents.length;
+    }
+
+    @Override
+    public Object getItem(int index) {
+        return contents[index];
+    }
 }
