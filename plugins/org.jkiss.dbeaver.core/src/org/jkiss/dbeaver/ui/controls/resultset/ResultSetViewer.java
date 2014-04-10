@@ -2652,7 +2652,7 @@ public class ResultSetViewer extends Viewer
                 }
                 if (recordMode && curRow != null && binding.getDataKind() == DBPDataKind.ARRAY) {
                     Object value = model.getCellValue(curRow, binding);
-                    if (!DBUtils.isNullValue(value) && value instanceof DBDArray) {
+                    if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
                         System.out.println(value);
                     }
                 }

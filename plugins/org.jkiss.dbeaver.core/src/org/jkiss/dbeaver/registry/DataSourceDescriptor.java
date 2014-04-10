@@ -957,6 +957,7 @@ public class DataSourceDescriptor
         this.formatterProfile = formatterProfile;
     }
 
+    @NotNull
     @Override
     public DBDValueHandler getDefaultValueHandler()
     {

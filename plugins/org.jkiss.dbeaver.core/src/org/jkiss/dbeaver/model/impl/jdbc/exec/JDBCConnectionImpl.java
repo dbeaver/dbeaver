@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -169,6 +170,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         }
     }
 
+    @NotNull
     @Override
     public DBDValueHandler getDefaultValueHandler()
     {
