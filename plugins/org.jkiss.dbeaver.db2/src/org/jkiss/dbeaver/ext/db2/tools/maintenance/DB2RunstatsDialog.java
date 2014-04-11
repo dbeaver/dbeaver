@@ -154,4 +154,5 @@ public class DB2RunstatsDialog extends DB2BaseTableToolDialog {
 
         lines.add(sb.toString());
     }
+
 }

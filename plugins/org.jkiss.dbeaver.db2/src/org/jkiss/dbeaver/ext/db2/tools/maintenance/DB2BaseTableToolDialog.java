@@ -48,9 +48,16 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
         super(partSite, title, objects);
     }
 
+    protected int getNumberExtraResultingColumns()
+    {
+        return 0;
+    }
+
     @Override
     protected SQLScriptProgressListener<DB2Table> getScriptListener()
     {
+        final int nbExtraColumns = getNumberExtraResultingColumns();
+
         return new SQLScriptStatusDialog<DB2Table>(getShell(), getTitle() + " " + DB2Messages.dialog_table_tools_progress, null) {
             @Override
             protected void createStatusColumns(Tree objectTree)
@@ -58,7 +65,7 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
                 TreeColumn msgColumn = new TreeColumn(objectTree, SWT.NONE);
                 msgColumn.setText(DB2Messages.dialog_table_tools_result);
 
-                for (int i = 0; i < 20; i++) {
+                for (int i = 0; i < nbExtraColumns; i++) {
                     new TreeColumn(objectTree, SWT.NONE);
                 }
             }
