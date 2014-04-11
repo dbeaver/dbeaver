@@ -21,7 +21,12 @@ package org.jkiss.dbeaver.ui;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProduct;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -29,18 +34,61 @@ import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.Resource;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Widget;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
@@ -69,7 +117,12 @@ import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.SortedMap;
 
 /**
  * UI Utils
@@ -78,7 +131,7 @@ public class UIUtils {
 
     static final Log log = LogFactory.getLog(UIUtils.class);
 
-    public static final char PARAGRAPH_CHAR = (char)182;
+    public static final char PARAGRAPH_CHAR = (char) 182;
     public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
 
     public static VerifyListener getIntegerVerifyListener(Locale locale)
@@ -90,10 +143,7 @@ public class UIUtils {
             {
                 for (int i = 0; i < e.text.length(); i++) {
                     char ch = e.text.charAt(i);
-                    if (!Character.isDigit(ch) &&
-                        ch != symbols.getMinusSign() &&
-                        ch != symbols.getGroupingSeparator())
-                    {
+                    if (!Character.isDigit(ch) && ch != symbols.getMinusSign() && ch != symbols.getGroupingSeparator()) {
                         e.doit = false;
                         return;
                     }
@@ -106,14 +156,8 @@ public class UIUtils {
     public static VerifyListener getNumberVerifyListener(Locale locale)
     {
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
-        final char[] allowedChars = new char[] {
-            symbols.getDecimalSeparator(),
-            symbols.getGroupingSeparator(),
-            symbols.getMinusSign(),
-            symbols.getZeroDigit(),
-            symbols.getMonetaryDecimalSeparator(),
-            '+'
-        };
+        final char[] allowedChars = new char[] { symbols.getDecimalSeparator(), symbols.getGroupingSeparator(),
+            symbols.getMinusSign(), symbols.getZeroDigit(), symbols.getMonetaryDecimalSeparator(), '+' };
         final String exponentSeparator = symbols.getExponentSeparator();
         return new VerifyListener() {
             @Override
@@ -158,7 +202,7 @@ public class UIUtils {
             else if (eClass == boolean[].class)
                 return Arrays.toString((boolean[]) object);
             else { // element is an array of object references
-                return Arrays.deepToString((Object[])object);
+                return Arrays.deepToString((Object[]) object);
             }
         }
         return object;
@@ -229,10 +273,10 @@ public class UIUtils {
                     sbWidth = table.getVerticalBar().getSize().x;
                 }
                 if (columns.length > 0) {
-	                float extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length;
-	                for (TableColumn tc : columns) {
-	                    tc.setWidth((int) (tc.getWidth() + extraSpace));
-	                }
+                    float extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length;
+                    for (TableColumn tc : columns) {
+                        tc.setWidth((int) (tc.getWidth() + extraSpace));
+                    }
                 }
             }
         } finally {
@@ -491,7 +535,8 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Text createLabelText(@NotNull Composite parent, @NotNull String label, @Nullable String value, int style, @Nullable Object layoutData)
+    public static Text createLabelText(@NotNull Composite parent, @NotNull String label, @Nullable String value, int style,
+        @Nullable Object layoutData)
     {
         createControlLabel(parent, label);
 
@@ -533,10 +578,11 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Button createLabelCheckbox(@NotNull Composite parent, @NotNull String label, @Nullable String tooltip, boolean checked, int style)
+    public static Button createLabelCheckbox(@NotNull Composite parent, @NotNull String label, @Nullable String tooltip,
+        boolean checked, int style)
     {
         Label labelControl = createControlLabel(parent, label);
-        //labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        // labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Button button = new Button(parent, SWT.CHECK | style);
         if (checked) {
@@ -574,7 +620,7 @@ public class UIUtils {
     public static Combo createLabelCombo(Composite parent, String label, int style)
     {
         Label labelControl = createControlLabel(parent, label);
-        //labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        // labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Combo combo = new Combo(parent, style);
         combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -725,100 +771,51 @@ public class UIUtils {
     public static SashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
     {
         final SashForm sash = new SashForm(parent, style);
-/*
-        //sash.setSashWidth(10);
-        final IWorkbenchWindow workbenchWindow = workbenchPart.getSite().getWorkbenchWindow();
-        //sash.setBackground(sashActiveBackground);
-
-        final IPartListener partListener = new IPartListener() {
-            @Override
-            public void partBroughtToTop(IWorkbenchPart part)
-            {
-            }
-
-            @Override
-            public void partOpened(IWorkbenchPart part)
-            {
-            }
-
-            @Override
-            public void partClosed(IWorkbenchPart part)
-            {
-            }
-
-            @Override
-            @SuppressWarnings("restriction")
-            public void partActivated(IWorkbenchPart part)
-            {
-                if (part == workbenchPart) {
-                    Color sashActiveBackground = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(
-                        IWorkbenchThemeConstants.ACTIVE_TAB_BG_END);
-                    if (sashActiveBackground == null) {
-                        sashActiveBackground = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-                    }
-                    sash.setBackground(sashActiveBackground);
-                }
-            }
-
-            @Override
-            public void partDeactivated(IWorkbenchPart part)
-            {
-                if (part == workbenchPart) {
-                    sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-                }
-            }
-        };
-
-        final IPageListener pageListener = workbenchWindow.getActivePage() != null ? null : new IPageListener() {
-            @Override
-            public void pageActivated(IWorkbenchPage page)
-            {
-            }
-
-            @Override
-            public void pageOpened(IWorkbenchPage page)
-            {
-                page.addPartListener(partListener);
-            }
-
-            @Override
-            public void pageClosed(IWorkbenchPage page)
-            {
-                page.removePartListener(partListener);
-            }
-        };
-        if (pageListener != null) {
-            // No active page yet, wait for it in listener
-            workbenchWindow.addPageListener(pageListener);
-        } else {
-            // Add listener to active page
-            workbenchWindow.getActivePage().addPartListener(partListener);
-        }
-
-        sash.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                if (pageListener != null) {
-                    workbenchWindow.removePageListener(pageListener);
-                }
-                if (workbenchWindow.getActivePage() != null) {
-                    workbenchWindow.getActivePage().removePartListener(partListener);
-                }
-            }
-        });
-*/
+        /*
+         * //sash.setSashWidth(10); final IWorkbenchWindow workbenchWindow = workbenchPart.getSite().getWorkbenchWindow();
+         * //sash.setBackground(sashActiveBackground);
+         * 
+         * final IPartListener partListener = new IPartListener() {
+         * 
+         * @Override public void partBroughtToTop(IWorkbenchPart part) { }
+         * 
+         * @Override public void partOpened(IWorkbenchPart part) { }
+         * 
+         * @Override public void partClosed(IWorkbenchPart part) { }
+         * 
+         * @Override
+         * 
+         * @SuppressWarnings("restriction") public void partActivated(IWorkbenchPart part) { if (part == workbenchPart) { Color
+         * sashActiveBackground = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(
+         * IWorkbenchThemeConstants.ACTIVE_TAB_BG_END); if (sashActiveBackground == null) { sashActiveBackground =
+         * Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW); } sash.setBackground(sashActiveBackground); } }
+         * 
+         * @Override public void partDeactivated(IWorkbenchPart part) { if (part == workbenchPart) {
+         * sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND)); } } };
+         * 
+         * final IPageListener pageListener = workbenchWindow.getActivePage() != null ? null : new IPageListener() {
+         * 
+         * @Override public void pageActivated(IWorkbenchPage page) { }
+         * 
+         * @Override public void pageOpened(IWorkbenchPage page) { page.addPartListener(partListener); }
+         * 
+         * @Override public void pageClosed(IWorkbenchPage page) { page.removePartListener(partListener); } }; if (pageListener !=
+         * null) { // No active page yet, wait for it in listener workbenchWindow.addPageListener(pageListener); } else { // Add
+         * listener to active page workbenchWindow.getActivePage().addPartListener(partListener); }
+         * 
+         * sash.addDisposeListener(new DisposeListener() {
+         * 
+         * @Override public void widgetDisposed(DisposeEvent e) { if (pageListener != null) {
+         * workbenchWindow.removePageListener(pageListener); } if (workbenchWindow.getActivePage() != null) {
+         * workbenchWindow.getActivePage().removePartListener(partListener); } } });
+         */
 
         return sash;
     }
 
-    public static void showErrorDialog(
-        @Nullable Shell shell,
-        String title,
-        @Nullable String message,
-        @Nullable Throwable error)
+    public static void showErrorDialog(@Nullable Shell shell, String title, @Nullable String message, @Nullable Throwable error)
     {
-        if (error instanceof DBException && DBUtils.showDatabaseError(shell, title, message, (DBException)error)) {
+        if (error instanceof DBException && DBUtils.showDatabaseError(shell, title, message, (DBException) error)) {
             // If this DB error was handled by some DB-specific way then just don't care about it
             return;
         }
@@ -826,64 +823,39 @@ public class UIUtils {
             log.error(error);
         }
 
-        showErrorDialog(
-            shell,
-            title,
-            error == null ? null : message,
-            error == null ?
-                new Status(IStatus.ERROR, DBeaverConstants.PLUGIN_ID, message) :
-                RuntimeUtils.makeExceptionStatus(error));
+        showErrorDialog(shell, title, error == null ? null : message, error == null ? new Status(IStatus.ERROR,
+            DBeaverConstants.PLUGIN_ID, message) : RuntimeUtils.makeExceptionStatus(error));
     }
 
-    public static void showErrorDialog(
-        @Nullable Shell shell,
-        @NotNull String title,
-        @Nullable String message)
+    public static void showErrorDialog(@Nullable Shell shell, @NotNull String title, @Nullable String message)
     {
         showErrorDialog(shell, title, message, (Throwable) null);
     }
 
-    public static void showErrorDialog(
-        @Nullable Shell shell,
-        @NotNull String title,
-        @Nullable String message,
+    public static void showErrorDialog(@Nullable Shell shell, @NotNull String title, @Nullable String message,
         @NotNull Collection<String> errorMessages)
     {
-        //log.debug(message);
+        // log.debug(message);
         java.util.List<Status> messageStatuses = new ArrayList<Status>(errorMessages.size());
         for (String error : errorMessages) {
-            messageStatuses.add(new Status(
-                Status.ERROR,
-                DBeaverCore.getCorePluginID(),
-                error));
+            messageStatuses.add(new Status(Status.ERROR, DBeaverCore.getCorePluginID(), error));
         }
-        MultiStatus status = new MultiStatus(
-            DBeaverCore.getCorePluginID(),
-            0,
-            messageStatuses.toArray(new IStatus[messageStatuses.size()]),
-            message,
-            null);
+        MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[messageStatuses
+            .size()]), message, null);
         showErrorDialog(shell, title, message, status);
     }
 
-    public static void showErrorDialog(
-        @Nullable final Shell shell,
-        @NotNull final String title,
-        @Nullable final String message,
+    public static void showErrorDialog(@Nullable final Shell shell, @NotNull final String title, @Nullable final String message,
         @NotNull final IStatus status)
     {
-        //log.debug(message);
+        // log.debug(message);
         Runnable runnable = new Runnable() {
             @Override
             public void run()
             {
                 // Display the dialog
-                StandardErrorDialog dialog = new StandardErrorDialog(
-                    shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
-                    title,
-                    message,
-                    status,
-                    IStatus.ERROR);
+                StandardErrorDialog dialog = new StandardErrorDialog(shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
+                    title, message, status, IStatus.ERROR);
                 dialog.open();
             }
         };
@@ -902,8 +874,15 @@ public class UIUtils {
 
     public static void runInDetachedUI(@Nullable Shell shell, @NotNull Runnable runnable)
     {
-        final Display display = shell == null ? Display.getDefault() : shell.getDisplay();
-        display.asyncExec(runnable);
+        if (shell == null) {
+            Display.getDefault().asyncExec(runnable);
+        } else {
+            try {
+                shell.getDisplay().asyncExec(runnable);
+            } catch (SWTException e) {
+                // DF: Widget has been disposed, too late for some processing then..
+            }
+        }
     }
 
     @NotNull
@@ -931,21 +910,17 @@ public class UIUtils {
 
     public static void setHelp(Control control, String pluginId, String helpContextID)
     {
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(
-            control,
-            pluginId + "." + helpContextID); //$NON-NLS-1$
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, pluginId + "." + helpContextID); //$NON-NLS-1$
     }
 
     public static void setHelp(Control control, String helpContextID)
     {
-        setHelp(
-            control,
-            DBeaverConstants.PLUGIN_ID,
-            helpContextID);
+        setHelp(control, DBeaverConstants.PLUGIN_ID, helpContextID);
     }
 
     @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label, @Nullable ModifyListener changeListener)
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label,
+        @Nullable ModifyListener changeListener)
     {
         UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory);
         Composite chooserPlaceholder = UIUtils.createPlaceholder(parent, 2);
@@ -986,17 +961,17 @@ public class UIUtils {
         openFolder.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER));
         openFolder.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e)
+            {
                 folderChooser.run();
             }
         });
         return directoryText;
     }
 
-
     public static String makeAnchor(String text)
     {
-    	return "<a>" + text + "</a>"; //$NON-NLS-1$ //$NON-NLS-2$
+        return "<a>" + text + "</a>"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Nullable
@@ -1027,9 +1002,7 @@ public class UIUtils {
     public static void setClipboardContents(Display display, Transfer transfer, Object contents)
     {
         Clipboard clipboard = new Clipboard(display);
-        clipboard.setContents(
-            new Object[]{contents},
-            new Transfer[]{transfer});
+        clipboard.setContents(new Object[] { contents }, new Transfer[] { transfer });
         clipboard.dispose();
     }
 
@@ -1053,12 +1026,7 @@ public class UIUtils {
 
     public static void showPreferencesFor(Shell shell, IAdaptable element, String defPageID)
     {
-        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
-            shell,
-            element,
-            defPageID,
-            null,
-            null);
+        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID, null, null);
         if (propDialog != null) {
             propDialog.open();
         }
@@ -1122,7 +1090,8 @@ public class UIUtils {
 
     public static boolean isContextActive(String contextId)
     {
-        Collection<?> contextIds = ((IContextService) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(IContextService.class)).getActiveContextIds();
+        Collection<?> contextIds = ((IContextService) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+            .getService(IContextService.class)).getActiveContextIds();
         for (Object id : contextIds) {
             if (contextId.equals(id)) {
                 return true;
@@ -1144,8 +1113,8 @@ public class UIUtils {
             if (activePart == null) {
                 IWorkbenchWindow activeWindow = DBeaverUI.getActiveWorkbenchWindow();
                 if (activeWindow != null) {
-    				activePart = activeWindow.getActivePage().getActivePart();
-				}
+                    activePart = activeWindow.getActivePage().getActivePart();
+                }
             }
             if (activePart != null) {
                 partSite = activePart.getSite();
@@ -1172,7 +1141,9 @@ public class UIUtils {
 
     /**
      * Determine whether this control or any of it's child has focus
-     * @param control control to check
+     * 
+     * @param control
+     *            control to check
      * @return true if it has focus
      */
     public static boolean hasFocus(Control control)
@@ -1190,20 +1161,21 @@ public class UIUtils {
     }
 
     /**
-     * Eclipse hack.
-     * Disables/enabled all key bindings in specified site's part.
-     * Works only if host editor is extender of AbstractTextEditor
-     * Uses reflection because setActionActivation is private method
-     * TODO: find better way to disable key bindings or prioritize event handling to widgets
-     * @param partSite workbench part site
-     * @param enable enable or disable
+     * Eclipse hack. Disables/enabled all key bindings in specified site's part. Works only if host editor is extender of
+     * AbstractTextEditor Uses reflection because setActionActivation is private method TODO: find better way to disable key
+     * bindings or prioritize event handling to widgets
+     * 
+     * @param partSite
+     *            workbench part site
+     * @param enable
+     *            enable or disable
      */
     @Deprecated
     public static void enableHostEditorKeyBindings(IWorkbenchPartSite partSite, boolean enable)
     {
         IWorkbenchPart part = partSite.getPart();
         if (part instanceof AbstractTextEditor) {
-            AbstractTextEditor hostEditor = (AbstractTextEditor)part;
+            AbstractTextEditor hostEditor = (AbstractTextEditor) part;
             try {
                 Method activatorMethod = AbstractTextEditor.class.getDeclaredMethod("setActionActivation", Boolean.TYPE);
                 activatorMethod.setAccessible(true);
@@ -1215,7 +1187,8 @@ public class UIUtils {
         }
     }
 
-    public static CTabItem getTabItem(CTabFolder tabFolder, Object data) {
+    public static CTabItem getTabItem(CTabFolder tabFolder, Object data)
+    {
         for (CTabItem item : tabFolder.getItems()) {
             if (item.getData() == data) {
                 return item;
@@ -1224,7 +1197,8 @@ public class UIUtils {
         return null;
     }
 
-    public static TreeItem getTreeItem(Tree tree, Object data) {
+    public static TreeItem getTreeItem(Tree tree, Object data)
+    {
         for (TreeItem item : tree.getItems()) {
             if (item.getData() == data) {
                 return item;
@@ -1235,6 +1209,7 @@ public class UIUtils {
 
     public interface TableEditorController {
         void showEditor(TableItem item);
+
         void closeEditor(TableEditor tableEditor);
     }
 
@@ -1244,7 +1219,8 @@ public class UIUtils {
         private final int columnIndex;
         private final TableEditorController controller;
 
-        public ColumnTextEditorTraverseListener(Table table, TableEditor tableEditor, int columnIndex, TableEditorController controller)
+        public ColumnTextEditorTraverseListener(Table table, TableEditor tableEditor, int columnIndex,
+            TableEditorController controller)
         {
             this.table = table;
             this.tableEditor = tableEditor;
@@ -1278,5 +1254,5 @@ public class UIUtils {
             }
         }
     }
-    
+
 }
