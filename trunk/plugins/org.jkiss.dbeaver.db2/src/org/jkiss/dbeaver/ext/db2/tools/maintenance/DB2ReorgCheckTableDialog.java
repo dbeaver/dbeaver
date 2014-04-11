@@ -31,9 +31,17 @@ import java.util.List;
  */
 public class DB2ReorgCheckTableDialog extends DB2BaseTableToolDialog {
 
+    private static final int NB_RESULT_COLS = 12;
+
     public DB2ReorgCheckTableDialog(IWorkbenchPartSite partSite, final Collection<DB2Table> selectedTables)
     {
         super(partSite, DB2Messages.dialog_table_tools_reorgcheck_title, selectedTables);
+    }
+
+    @Override
+    protected int getNumberExtraResultingColumns()
+    {
+        return NB_RESULT_COLS;
     }
 
     @Override
