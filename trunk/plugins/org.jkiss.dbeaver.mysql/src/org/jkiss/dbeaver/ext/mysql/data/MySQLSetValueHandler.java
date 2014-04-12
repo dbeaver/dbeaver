@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -50,7 +51,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
 
                 return new ValueEditor<org.eclipse.swt.widgets.List>(controller) {
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
                         fillSetList(control, enumValue);

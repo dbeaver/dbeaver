@@ -32,10 +32,11 @@ public interface DBDCollection extends DBDComplexValue {
 
     DBSDataType getComponentType();
 
-    int getItemCount()
-        throws DBCException;
+    DBDValueHandler getComponentValueHandler();
 
-    Object getItem(int index)
-        throws DBCException;
+    int getItemCount();
 
+    Object getItem(int index);
+
+    void setItem(int index, Object value);
 }

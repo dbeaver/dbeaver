@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -135,7 +136,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             {
                 return new ValueEditor<Combo>(controller) {
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
                         control.setText(enumValue.isNull() ? "" : enumValue.getValue());
@@ -176,7 +177,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             {
                 return new ValueEditor<List>(controller) {
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
                         if (enumValue.isNull()) {

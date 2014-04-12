@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -138,7 +139,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
                             SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
                     }
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         control.setText(CommonUtils.toString(value));
                     }

@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.Nullable;
 
 import javax.activation.MimeType;
 
@@ -31,7 +32,7 @@ import javax.activation.MimeType;
  */
 public interface ContentEditorPart extends IEditorPart {
 
-    void initPart(IEditorPart contentEditor, MimeType mimeType);
+    void initPart(IEditorPart contentEditor, @Nullable MimeType mimeType);
 
     IEditorActionBarContributor getActionBarContributor();
 

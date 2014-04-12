@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -125,7 +126,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                         }
                     }
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         control.setText(value == null ? "FALSE" : value.toString().toUpperCase());
                     }
@@ -140,7 +141,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                         return control.getSelectionIndex() == 1;
                     }
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         control.setSelection(Boolean.TRUE.equals(value) ? 1 : 0);
                     }

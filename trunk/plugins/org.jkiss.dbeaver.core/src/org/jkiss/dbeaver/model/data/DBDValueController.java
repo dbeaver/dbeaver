@@ -57,6 +57,7 @@ public interface DBDValueController extends IDataSourceProvider
      * Column value
      * @return value
      */
+    @Nullable
     Object getValue();
 
     /**
