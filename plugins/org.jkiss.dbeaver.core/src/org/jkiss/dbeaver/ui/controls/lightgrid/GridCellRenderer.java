@@ -60,12 +60,12 @@ class GridCellRenderer extends AbstractRenderer
         colorBackgroundDisabled = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, GridCell cell)
+    public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, Object col, Object row)
     {
         boolean drawBackground = true;
 
         if (selected) {
-            Color cellBackground = grid.getCellBackground(cell);
+            Color cellBackground = grid.getCellBackground(col, row);
             if (cellBackground.equals(grid.getBackground())) {
                 gc.setBackground(colorSelected);
             } else {
@@ -79,7 +79,7 @@ class GridCellRenderer extends AbstractRenderer
             gc.setForeground(colorSelectedText);
         } else {
             if (grid.isEnabled()) {
-                Color back = grid.getCellBackground(cell);
+                Color back = grid.getCellBackground(col, row);
 
                 if (back != null) {
                     gc.setBackground(back);
@@ -89,7 +89,7 @@ class GridCellRenderer extends AbstractRenderer
             } else {
                 gc.setBackground(colorBackgroundDisabled);
             }
-            gc.setForeground(grid.getCellForeground(cell));
+            gc.setForeground(grid.getCellForeground(col, row));
         }
 
         if (drawBackground)
@@ -97,7 +97,7 @@ class GridCellRenderer extends AbstractRenderer
                 bounds.height);
 
 
-        int state = grid.getContentProvider().getCellState(cell);
+        int state = grid.getContentProvider().getCellState(col, row);
         int x = LEFT_MARGIN;
 
 /*
@@ -118,7 +118,7 @@ class GridCellRenderer extends AbstractRenderer
             image = LINK_IMAGE;
             imageBounds = LINK_IMAGE_BOUNDS;
         } else {
-            image = grid.getCellImage(cell);
+            image = grid.getCellImage(col, row);
             if (image != null) {
                 imageBounds = image.getBounds();
             }
@@ -141,7 +141,7 @@ class GridCellRenderer extends AbstractRenderer
 //        }
 
         // Get cell text
-        String text = grid.getCellText(cell);
+        String text = grid.getCellText(col, row);
         if (text != null && !text.isEmpty()) {
             // Get shortern version of string
             text = TextUtils.getShortString(grid.fontMetrics, text, width);
@@ -181,7 +181,7 @@ class GridCellRenderer extends AbstractRenderer
     }
 
     public boolean isOverLink(GridColumn column, int row, int x, int y) {
-        int state = grid.getContentProvider().getCellState(new GridCell(column.getElement(), grid.getRowElement(row)));
+        int state = grid.getContentProvider().getCellState(column.getElement(), grid.getRowElement(row));
 
         if ((state & IGridContentProvider.STATE_LINK) != 0) {
             Point origin = grid.getOrigin(column, row);

@@ -1971,14 +1971,13 @@ public abstract class LightGrid extends Canvas {
 
                         testPos.col = k;
                         testPos.row = row;
-                        testCell.row = rowElements[row];
-                        testCell.col = column.getElement();
                         cellRenderer.paint(
                             gc,
                             cellBounds,
                             selectedCells.contains(testPos),
                             focusItem == row && focusColumn == column,
-                            testCell);
+                            column.getElement(),
+                            rowElements[row]);
 
                         //gc.setClipping((Rectangle) null);
                     }
@@ -3522,6 +3521,19 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
+    public Object getFocusColumnElement() {
+        return focusColumn == null ? null : focusColumn.getElement();
+    }
+
+    @Nullable
+    public Object getFocusRowElement() {
+        if (focusItem == -1) {
+            return null;
+        }
+        return rowElements[focusItem];
+    }
+
+    @Nullable
     public GridCell getFocusCell()
     {
         return posToCell(getFocusPos());
@@ -3938,9 +3950,9 @@ public abstract class LightGrid extends Canvas {
         return over;
     }
 
-    public String getCellText(GridCell cell)
+    public String getCellText(Object colElement, Object rowElement)
     {
-        String text = getContentProvider().getCellText(cell);
+        String text = getContentProvider().getCellText(colElement, rowElement);
         // Truncate too long texts (they are really bad for performance)
         if (text.length() > MAX_TOOLTIP_LENGTH) {
             text = text.substring(0, MAX_TOOLTIP_LENGTH) + " ...";
@@ -3952,7 +3964,7 @@ public abstract class LightGrid extends Canvas {
     @Nullable
     public String getCellToolTip(GridColumn col, int row)
     {
-        String toolTip = getCellText(posToCell(col.getIndex(), row));
+        String toolTip = getCellText(columnElements[col.getIndex()], rowElements[row]);
         if (toolTip == null) {
             return null;
         }
@@ -3982,20 +3994,20 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
-    public Image getCellImage(GridCell cell)
+    public Image getCellImage(Object colElement, Object rowElement)
     {
-        return getContentProvider().getCellImage(cell);
+        return getContentProvider().getCellImage(colElement, rowElement);
     }
 
-    public Color getCellBackground(GridCell cell)
+    public Color getCellBackground(Object colElement, Object rowElement)
     {
-        Color color = getContentProvider().getCellBackground(cell);
+        Color color = getContentProvider().getCellBackground(colElement, rowElement);
         return color != null ? color : getBackground();
     }
 
-    public Color getCellForeground(GridCell cell)
+    public Color getCellForeground(Object colElement, Object rowElement)
     {
-        Color color = getContentProvider().getCellForeground(cell);
+        Color color = getContentProvider().getCellForeground(colElement, rowElement);
         return color != null ? color : getForeground();
     }
 

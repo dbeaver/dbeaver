@@ -641,10 +641,13 @@ public class ResultSetViewer extends Viewer
                 public IPropertySource getPropertySource(Object object)
                 {
                     if (object instanceof GridCell) {
-                        final GridCell cell = translateVisualPos((GridCell) object);
+                        GridCell cell = (GridCell) object;
+                        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
+                        final RowData row = (RowData)(recordMode ? cell.col : cell.row);
                         final ResultSetValueController valueController = new ResultSetValueController(
                             ResultSetViewer.this,
-                            cell,
+                            attr,
+                            row,
                             DBDValueController.EditType.NONE,
                             null);
                         PropertyCollector props = new PropertyCollector(valueController.binding.getAttribute(), false);
@@ -910,19 +913,20 @@ public class ResultSetViewer extends Viewer
 
     void previewValue()
     {
-        GridCell currentPosition = getCurrentPosition();
-        if (!isPreviewVisible() || currentPosition == null) {
+        DBDAttributeBinding attr = getFocusAttribute();
+        RowData row = getFocusRow();
+        if (!isPreviewVisible() || attr == null || row == null) {
             return;
         }
-        GridCell cell = translateVisualPos(currentPosition);
-        if (panelValueController == null || panelValueController.pos.col != cell.col) {
+        if (panelValueController == null || panelValueController.binding != attr) {
             panelValueController = new ResultSetValueController(
                 this,
-                cell,
+                attr,
+                row,
                 DBDValueController.EditType.PANEL,
                 previewPane.getViewPlaceholder());
         } else {
-            panelValueController.setCurRow((RowData) cell.row);
+            panelValueController.setCurRow(row);
         }
         previewPane.viewValue(panelValueController);
     }
@@ -1021,17 +1025,6 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    boolean isColumnReadOnly(GridCell pos)
-    {
-        DBDAttributeBinding column;
-        if (!recordMode) {
-            column = (DBDAttributeBinding)pos.col;
-        } else {
-            column = (DBDAttributeBinding)pos.row;
-        }
-        return isReadOnly() || model.isColumnReadOnly(column);
-    }
-
     boolean isColumnReadOnly(DBDAttributeBinding column)
     {
         return isReadOnly() || model.isColumnReadOnly(column);
@@ -1086,9 +1079,19 @@ public class ResultSetViewer extends Viewer
     }
 
     @Nullable
-    public GridCell getCurrentPosition()
+    public DBDAttributeBinding getFocusAttribute()
     {
-        return spreadsheet.getCursorCell();
+        return recordMode ?
+            (DBDAttributeBinding) spreadsheet.getFocusRowElement() :
+            (DBDAttributeBinding) spreadsheet.getFocusColumnElement();
+    }
+
+    @Nullable
+    public RowData getFocusRow()
+    {
+        return recordMode ?
+            (RowData) spreadsheet.getFocusColumnElement() :
+            (RowData) spreadsheet.getFocusRowElement();
     }
 
     public void setStatus(String status)
@@ -1286,21 +1289,6 @@ public class ResultSetViewer extends Viewer
     }
 
     /**
-     * Translated visual grid position into model cell position.
-     * Check for grid mode (grid/record) and columns reordering/hiding
-     * @param pos visual position
-     * @return model position
-     */
-    @NotNull GridCell translateVisualPos(@NotNull GridCell pos)
-    {
-        if (!recordMode) {
-            return pos;
-        } else {
-            return new GridCell(pos.row, pos.col);
-        }
-    }
-
-    /**
      * Checks that current state of result set allows to insert new rows
      * @return true if new rows insert is allowed
      */
@@ -1319,23 +1307,21 @@ public class ResultSetViewer extends Viewer
         final boolean inline)
     {
         // The control that will be the editor must be a child of the Table
-        final GridCell focusCell = spreadsheet.getFocusCell();
-        if (focusCell == null) {
+        DBDAttributeBinding attr = getFocusAttribute();
+        RowData row = getFocusRow();
+        if (attr == null || row == null) {
             return null;
         }
 
-        GridCell cell = translateVisualPos(focusCell);
         if (!inline) {
             for (ResultSetValueController valueController : openEditors.keySet()) {
-                GridCell cellPos = valueController.getCellPos();
-                if (cellPos != null && cellPos.equalsTo(cell)) {
+                if (attr == valueController.binding && row == valueController.curRow) {
                     openEditors.get(valueController).showValueEditor();
                     return null;
                 }
             }
         }
-        DBDAttributeBinding metaColumn = (DBDAttributeBinding) cell.col;
-        final int handlerFeatures = metaColumn.getValueHandler().getFeatures();
+        final int handlerFeatures = attr.getValueHandler().getFeatures();
         if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
             return null;
         }
@@ -1350,7 +1336,7 @@ public class ResultSetViewer extends Viewer
             }
             return null;
         }
-        if (isColumnReadOnly(metaColumn) && inline) {
+        if (isColumnReadOnly(attr) && inline) {
             // No inline editors for readonly columns
             return null;
         }
@@ -1376,12 +1362,13 @@ public class ResultSetViewer extends Viewer
 
         ResultSetValueController valueController = new ResultSetValueController(
             this,
-            cell,
+            attr,
+            row,
             inline ? DBDValueController.EditType.INLINE : DBDValueController.EditType.EDITOR,
             placeholder);
         final DBDValueEditor editor;
         try {
-            editor = metaColumn.getValueHandler().createEditor(valueController);
+            editor = attr.getValueHandler().createEditor(valueController);
         }
         catch (Exception e) {
             UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
@@ -1431,10 +1418,11 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void resetCellValue(@NotNull GridCell cell, boolean delete)
+    public void resetCellValue(@NotNull Object colElement, @NotNull Object rowElement, boolean delete)
     {
-        cell = translateVisualPos(cell);
-        model.resetCellValue(cell);
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
+        final RowData row = (RowData)(recordMode ? colElement : rowElement);
+        model.resetCellValue(attr, row);
         spreadsheet.redrawGrid();
         updateEditControls();
         previewValue();
@@ -1447,10 +1435,10 @@ public class ResultSetViewer extends Viewer
         final RowData row = (RowData)(colObject instanceof RowData? colObject : rowObject);
         // Custom oldValue items
         if (attr != null && row != null) {
-            final GridCell cell = new GridCell(attr, row);
             final ResultSetValueController valueController = new ResultSetValueController(
                 this,
-                cell,
+                attr,
+                row,
                 DBDValueController.EditType.NONE,
                 null);
 
@@ -1476,13 +1464,13 @@ public class ResultSetViewer extends Viewer
                         }
                     });
                 }
-                if (((RowData)cell.row).isChanged()) {
+                if (row.isChanged()) {
                     Action resetValueAction = new Action(CoreMessages.controls_resultset_viewer_action_reset_value)
                     {
                         @Override
                         public void run()
                         {
-                            resetCellValue(cell, false);
+                            resetCellValue(attr, row, false);
                         }
                     };
                     resetValueAction.setAccelerator(SWT.ESC);
@@ -1490,15 +1478,13 @@ public class ResultSetViewer extends Viewer
                 }
             }
 
-            if (cell != null) {
-                // Menus from value handler
-                try {
-                    manager.add(new Separator());
-                    ((DBDAttributeBinding)cell.col).getValueHandler().contributeActions(manager, valueController);
-                }
-                catch (Exception e) {
-                    log.error(e);
-                }
+            // Menus from value handler
+            try {
+                manager.add(new Separator());
+                attr.getValueHandler().contributeActions(manager, valueController);
+            }
+            catch (Exception e) {
+                log.error(e);
             }
         }
 
@@ -1700,7 +1686,7 @@ public class ResultSetViewer extends Viewer
     private void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull DBDAttributeBinding attr, @NotNull RowData row)
         throws DBException
     {
-        Object value = getModel().getCellValue(row, attr);
+        Object value = getModel().getCellValue(attr, row);
         if (DBUtils.isNullValue(value)) {
             log.warn("Can't navigate to NULL value");
             return;
@@ -1733,7 +1719,7 @@ public class ResultSetViewer extends Viewer
             constraint.setVisible(true);
             constraints.add(constraint);
 
-            Object keyValue = getModel().getCellValue(row, ownBinding);
+            Object keyValue = getModel().getCellValue(ownBinding, row);
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
             //constraint.setCriteria("='" + ownBinding.getValueHandler().getValueDisplayString(ownBinding.getAttribute(), keyValue, DBDDisplayFormat.NATIVE) + "'");
@@ -2137,7 +2123,7 @@ public class ResultSetViewer extends Viewer
 
             DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
             RowData row = (RowData) (!recordMode ?  cell.row : cell.col);
-            Object value = getModel().getCellValue(row, column);
+            Object value = getModel().getCellValue(column, row);
             String cellText = column.getValueHandler().getValueDisplayString(
                 column.getAttribute(),
                 value,
@@ -2146,7 +2132,7 @@ public class ResultSetViewer extends Viewer
 
             if (cut) {
                 DBDValueController valueController = new ResultSetValueController(
-                    this, cell, DBDValueController.EditType.NONE, null);
+                    this, column, row, DBDValueController.EditType.NONE, null);
                 if (!valueController.isReadOnly()) {
                     valueController.updateValue(DBUtils.makeNullValue(valueController));
                 }
@@ -2165,24 +2151,24 @@ public class ResultSetViewer extends Viewer
 
     public void pasteCellValue()
     {
-        GridCell cell = getCurrentPosition();
-        if (cell == null) {
+        DBDAttributeBinding attr = getFocusAttribute();
+        RowData row = getFocusRow();
+        if (attr == null || row == null) {
             return;
         }
-        cell = translateVisualPos(cell);
-        DBDAttributeBinding metaColumn = (DBDAttributeBinding) cell.col;
-        if (isColumnReadOnly(metaColumn)) {
+        if (isColumnReadOnly(attr)) {
             // No inline editors for readonly columns
             return;
         }
         try {
-            Object newValue = getColumnValueFromClipboard(metaColumn);
+            Object newValue = getColumnValueFromClipboard(attr);
             if (newValue == null) {
                 return;
             }
             new ResultSetValueController(
                 this,
-                cell,
+                attr,
+                row,
                 DBDValueController.EditType.NONE,
                 null).updateValue(newValue);
         }
@@ -2427,17 +2413,21 @@ public class ResultSetViewer extends Viewer
     static class ResultSetValueController implements DBDAttributeController, DBDRowController {
 
         private final ResultSetViewer viewer;
-        private final GridCell pos;
         private final EditType editType;
         private final Composite inlinePlaceholder;
         private RowData curRow;
         private final DBDAttributeBinding binding;
 
-        ResultSetValueController(@NotNull ResultSetViewer viewer, @NotNull GridCell pos, @NotNull EditType editType, @Nullable Composite inlinePlaceholder) {
+        ResultSetValueController(
+            @NotNull ResultSetViewer viewer,
+            @NotNull DBDAttributeBinding binding,
+            @NotNull RowData row,
+            @NotNull EditType editType,
+            @Nullable Composite inlinePlaceholder)
+        {
             this.viewer = viewer;
-            this.curRow = (RowData) pos.row;
-            this.binding = (DBDAttributeBinding) pos.col;
-            this.pos = new GridCell(pos);
+            this.binding = binding;
+            this.curRow = row;
             this.editType = editType;
             this.inlinePlaceholder = inlinePlaceholder;
         }
@@ -2445,7 +2435,6 @@ public class ResultSetViewer extends Viewer
         void setCurRow(RowData curRow)
         {
             this.curRow = curRow;
-            this.pos.row = curRow;
         }
 
         @Nullable
@@ -2494,13 +2483,13 @@ public class ResultSetViewer extends Viewer
         @Override
         public Object getValue()
         {
-            return viewer.spreadsheet.getContentProvider().getCellValue(pos, false);
+            return viewer.spreadsheet.getContentProvider().getCellValue(curRow, binding, false);
         }
 
         @Override
         public void updateValue(@Nullable Object value)
         {
-            if (viewer.model.updateCellValue(curRow, binding, value)) {
+            if (viewer.model.updateCellValue(binding, curRow, value)) {
                 // Update controls
                 viewer.site.getShell().getDisplay().syncExec(new Runnable() {
                     @Override
@@ -2610,14 +2599,9 @@ public class ResultSetViewer extends Viewer
         @Override
         public Object getAttributeValue(DBDAttributeBinding attribute)
         {
-            return viewer.model.getCellValue(curRow, attribute);
+            return viewer.model.getCellValue(attribute, curRow);
         }
 
-        @Nullable
-        private GridCell getCellPos()
-        {
-            return pos;
-        }
     }
 
     private class ContentProvider implements IGridContentProvider {
@@ -2651,7 +2635,7 @@ public class ResultSetViewer extends Viewer
                     return binding.getNestedBindings().toArray();
                 }
                 if (recordMode && curRow != null && binding.getDataKind() == DBPDataKind.ARRAY) {
-                    Object value = model.getCellValue(curRow, binding);
+                    Object value = model.getCellValue(binding, curRow);
                     if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
                         DBDCollection collection = (DBDCollection)value;
                         int count = collection.getItemCount();
@@ -2690,7 +2674,7 @@ public class ResultSetViewer extends Viewer
                     case STRUCT:
                         return ElementState.EXPANDED;
                     case ARRAY:
-                        return ElementState.COLLAPSED;
+                        //return ElementState.COLLAPSED;
                     default:
                         break;
                 }
@@ -2699,11 +2683,11 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        public int getCellState(@NotNull GridCell cell) {
+        public int getCellState(Object colElement, Object rowElement) {
             int state = STATE_NONE;
-            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-            RowData row = (RowData)(recordMode ? cell.col : cell.row);
-            Object value = getModel().getCellValue(row, attr);
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
+            RowData row = (RowData)(recordMode ? colElement : rowElement);
+            Object value = getModel().getCellValue(attr, row);
             if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                 state |= STATE_LINK;
             }
@@ -2722,12 +2706,12 @@ public class ResultSetViewer extends Viewer
 
         @Nullable
         @Override
-        public Object getCellValue(@NotNull GridCell cell, boolean formatString)
+        public Object getCellValue(Object colElement, Object rowElement, boolean formatString)
         {
-            DBDAttributeBinding attr = (DBDAttributeBinding)(cell.row instanceof DBDAttributeBinding ? cell.row: cell.col);
-            RowData row = (RowData)(cell.col instanceof RowData ? cell.col : cell.row);
+            DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
+            RowData row = (RowData)(colElement instanceof RowData ? colElement : rowElement);
             int rowNum = row.getVisualNumber();
-            Object value = getModel().getCellValue(row, attr);
+            Object value = getModel().getCellValue(attr, row);
 
             if (rowNum > 0 && rowNum == model.getRowCount() - 1 && (recordMode || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
                 readNextSegment();
@@ -2745,12 +2729,12 @@ public class ResultSetViewer extends Viewer
 
         @Nullable
         @Override
-        public Image getCellImage(@NotNull GridCell cell)
+        public Image getCellImage(Object colElement, Object rowElement)
         {
             if (!showCelIcons) {
                 return null;
             }
-            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
+            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
                 return getTypeImage(attr.getMetaAttribute());
             } else {
@@ -2760,16 +2744,16 @@ public class ResultSetViewer extends Viewer
 
         @NotNull
         @Override
-        public String getCellText(@NotNull GridCell cell)
+        public String getCellText(Object colElement, Object rowElement)
         {
-            return String.valueOf(getCellValue(cell, true));
+            return String.valueOf(getCellValue(colElement, rowElement, true));
         }
 
         @Nullable
         @Override
-        public Color getCellForeground(@NotNull GridCell cell)
+        public Color getCellForeground(Object colElement, Object rowElement)
         {
-            Object value = getCellValue(cell, false);
+            Object value = getCellValue(colElement, rowElement, false);
             if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
@@ -2779,10 +2763,10 @@ public class ResultSetViewer extends Viewer
 
         @Nullable
         @Override
-        public Color getCellBackground(@NotNull GridCell cell)
+        public Color getCellBackground(Object colElement, Object rowElement)
         {
-            RowData row = (RowData) (!recordMode ?  cell.row : cell.col);
-            DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
+            RowData row = (RowData) (!recordMode ?  rowElement : colElement);
+            DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
             boolean odd = row.getVisualNumber() % 2 == 0;
 
             if (row.getState() == RowData.STATE_ADDED) {
@@ -2988,13 +2972,12 @@ public class ResultSetViewer extends Viewer
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
-                GridCell cell = viewer.getSpreadsheet().getFocusCell();
-                if (cell == null) {
+                final DBDAttributeBinding attr = viewer.getFocusAttribute();
+                final RowData row = viewer.getFocusRow();
+                if (attr == null || row == null) {
                     return null;
                 }
-                final DBDAttributeBinding attr = (DBDAttributeBinding)(viewer.recordMode ? cell.row : cell.col);
-                final RowData row = (RowData)(viewer.recordMode ? cell.col : cell.row);
-                Object cellValue = viewer.getModel().getCellValue(row, attr);
+                Object cellValue = viewer.getModel().getCellValue(attr, row);
                 if (operator == DBCLogicalOperator.LIKE && cellValue != null) {
                     cellValue = "%" + cellValue + "%";
                 }
@@ -3008,11 +2991,11 @@ public class ResultSetViewer extends Viewer
                 if (useDefault) {
                     return "..";
                 } else {
-                    GridCell cell = viewer.getSpreadsheet().getFocusCell();
-                    if (cell == null) {
+                    RowData focusRow = viewer.getFocusRow();
+                    if (focusRow == null) {
                         return null;
                     }
-                    FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, cell, operator);
+                    FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, column, focusRow, operator);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         return dialog.getValue();
                     } else {

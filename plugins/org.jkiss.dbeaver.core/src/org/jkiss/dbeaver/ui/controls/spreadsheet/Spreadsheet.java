@@ -263,9 +263,10 @@ public class Spreadsheet extends LightGrid implements Listener {
                     }
                 } else if (event.keyCode == SWT.ESC) {
                     // Reset cell value
-                    GridCell cell = posToCell(super.getFocusPos());
-                    if (cell != null) {
-                        spreadsheetController.resetCellValue(cell, false);
+                    Object col = getFocusColumnElement();
+                    Object row = getFocusRowElement();
+                    if (col != null && row != null) {
+                        spreadsheetController.resetCellValue(col, row, false);
                     }
                 }
                 break;

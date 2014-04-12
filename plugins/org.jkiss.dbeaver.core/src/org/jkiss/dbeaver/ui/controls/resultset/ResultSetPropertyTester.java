@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
@@ -53,11 +54,10 @@ public class ResultSetPropertyTester extends PropertyTester
         if (PROP_HAS_DATA.equals(property)) {
             return rsv.getModel().getRowCount() > 0;
         } else if (PROP_CAN_COPY.equals(property)) {
-            final GridCell currentPosition = rsv.getCurrentPosition();
-            return currentPosition != null;
+            return rsv.getFocusAttribute() != null && rsv.getFocusRow() != null;
         } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
-            final GridCell currentPosition = rsv.getCurrentPosition();
-            return currentPosition != null && !rsv.isColumnReadOnly(currentPosition);
+            DBDAttributeBinding attr = rsv.getFocusAttribute();
+            return attr != null && !rsv.isColumnReadOnly(attr);
         } else if (PROP_CAN_MOVE.equals(property)) {
             RowData currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {
@@ -70,12 +70,12 @@ public class ResultSetPropertyTester extends PropertyTester
                 return false;
             }
             if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
-                GridCell pos = rsv.getCurrentPosition();
-                if (pos == null) {
+                DBDAttributeBinding attr = rsv.getFocusAttribute();
+                if (attr == null) {
                     return false;
                 }
                 if ("inline".equals(expectedValue)) {
-                    return !rsv.isColumnReadOnly(pos);
+                    return !rsv.isColumnReadOnly(attr);
                 } else {
                     return true;
                 }
