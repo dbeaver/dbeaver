@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -107,7 +108,7 @@ public class DateTimeViewDialog extends ValueViewDialog {
     }
 
     @Override
-    public void primeEditorValue(Object value)
+    public void primeEditorValue(@Nullable Object value)
     {
         if (value instanceof Date) {
             Calendar cl = Calendar.getInstance();

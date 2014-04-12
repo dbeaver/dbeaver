@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDComplexValue;
@@ -113,7 +114,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
                     ComplexObjectEditor editor;
 
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         editor.setModel(controller.getDataSource(), (DBDComplexValue) value);
                     }

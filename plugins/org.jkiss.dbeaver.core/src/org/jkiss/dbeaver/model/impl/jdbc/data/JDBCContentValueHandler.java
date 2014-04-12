@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -283,7 +284,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     // String editor
                     return new ValueEditor<Text>(controller) {
                         @Override
-                        public void primeEditorValue(Object value) throws DBException
+                        public void primeEditorValue(@Nullable Object value) throws DBException
                         {
                             if (value instanceof DBDContentCached) {
                                 DBDContentCached newValue = (DBDContentCached)value;
@@ -377,7 +378,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     }
 
                     @Override
-                    public void primeEditorValue(final Object value) throws DBException
+                    public void primeEditorValue(@Nullable final Object value) throws DBException
                     {
                         DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
                             @Override

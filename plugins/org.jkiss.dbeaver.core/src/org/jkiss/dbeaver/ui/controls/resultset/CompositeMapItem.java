@@ -18,35 +18,39 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDStructure;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**
- * Complex value element.
- * Map pair or array item
+ * Map item
  */
-public abstract class ComplexValueElement {
+public class CompositeMapItem implements CompositeObjectElement {
 
     @NotNull
-    private final DBDComplexValue ownerValue;
-    @NotNull
+    private final DBDStructure ownerValue;
     private final DBSAttributeBase attribute;
-    @NotNull
     private final DBDValueHandler valueHandler;
 
-    public ComplexValueElement(@NotNull DBDComplexValue ownerValue, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler) {
+    public CompositeMapItem(@NotNull DBDStructure ownerValue, @NotNull DBSAttributeBase attribute) {
         this.ownerValue = ownerValue;
         this.attribute = attribute;
-        this.valueHandler = valueHandler;
+        this.valueHandler = DBUtils.findValueHandler(ownerValue.getDataType().getDataSource(), attribute);
     }
 
     @NotNull
-    public DBDComplexValue getOwnerValue() {
-        return ownerValue;
+    public String getLabel() {
+        return attribute.getName();
+    }
+
+    @NotNull
+    public Image getImage() {
+        return DBUtils.getDataIcon(attribute).getImage();
     }
 
     @NotNull
@@ -56,13 +60,11 @@ public abstract class ComplexValueElement {
 
     @Nullable
     public Object getValue() throws DBCException {
-        if (ownerValue instanceof DBDStructure) {
-            return ((DBDStructure) ownerValue).getAttributeValue(attribute);
-        } else if (ownerValue instanceof DBDCollection) {
-            return ((DBDCollection) ownerValue).getItem(attribute.getOrdinalPosition());
-        } else {
-            throw new DBCException("Unsupported component type: " + ownerValue);
-        }
+        return ownerValue.getAttributeValue(attribute);
+    }
+
+    public void setValue(Object value) throws DBCException {
+        ownerValue.setAttributeValue(attribute, value);
     }
 
 }

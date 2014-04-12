@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
@@ -62,6 +63,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         return (ContentEditorInput)super.getEditorInput();
     }
 
+    @Nullable
     public static ContentEditor openEditor(DBDValueController valueController, ContentEditorPart[] editorParts)
     {
         ContentEditorInput editorInput;
@@ -115,7 +117,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         ContentEditorPart[] editorParts;
         ContentEditorInput editorInput;
 
-        private LOBInitializer(DBDValueController valueController, ContentEditorPart[] editorParts, ContentEditorInput editorInput)
+        private LOBInitializer(DBDValueController valueController, ContentEditorPart[] editorParts, @Nullable ContentEditorInput editorInput)
         {
             this.valueController = valueController;
             this.editorParts = editorParts;
@@ -153,6 +155,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     {
     }
 
+    @Nullable
     public ContentPartInfo getContentEditor(IEditorPart editor) {
         for (ContentPartInfo contentPart : contentParts) {
             if (contentPart.editorPart == editor) {
@@ -203,7 +206,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
                             saveInProgress = false;
                         }
                     }
-                    // Set dirty flag - if error will occure during content save
+                    // Set dirty flag - if error will occur during content save
                     // then document remains dirty
                     ContentEditor.this.dirty = true;
 
@@ -264,7 +267,10 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
         if (valueEditorRegistered) {
-            getValueController().unregisterEditor(this);
+            DBDValueController valueController = getValueController();
+            if (valueController != null) {
+                valueController.unregisterEditor(this);
+            }
             valueEditorRegistered = false;
         }
         if (getEditorInput() != null) {
@@ -396,7 +402,9 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         panel.setLayoutData(gd);
 
         {
-            infoPanel = new ColumnInfoPanel(panel, SWT.NONE, getValueController());
+            DBDValueController valueController = getValueController();
+            assert valueController != null;
+            infoPanel = new ColumnInfoPanel(panel, SWT.NONE, valueController);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.exclude = true;
             infoPanel.setLayoutData(gd);
@@ -427,9 +435,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         infoPanel.getParent().layout();
     }
 
+    @Nullable
     DBDContent getContent()
     {
-        Object value = getValueController().getValue();
+        DBDValueController valueController = getValueController();
+        Object value = valueController == null? null : valueController.getValue();
         if (value instanceof DBDContent) {
             return (DBDContent) value;
         } else {
@@ -437,6 +447,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         }
     }
 
+    @Nullable
     public DBDValueController getValueController()
     {
         ContentEditorInput input = getEditorInput();
@@ -468,7 +479,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     }
 
     @Override
-    public void primeEditorValue(Object value) throws DBException
+    public void primeEditorValue(@Nullable Object value) throws DBException
     {
         DBDValueController valueController = getEditorInput().getValueController();
         LOBInitializer initializer = new LOBInitializer(valueController, getEditorInput().getEditors(), getEditorInput());
@@ -498,7 +509,10 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
             // Special case - occurred when entire workbench is closed
             // We need to unregister editor and release all resource here
             if (valueEditorRegistered) {
-                getValueController().unregisterEditor(this);
+                DBDValueController valueController = getValueController();
+                if (valueController != null) {
+                    valueController.unregisterEditor(this);
+                }
                 valueEditorRegistered = false;
             }
         }

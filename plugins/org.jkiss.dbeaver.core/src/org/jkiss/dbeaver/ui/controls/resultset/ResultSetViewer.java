@@ -2653,7 +2653,13 @@ public class ResultSetViewer extends Viewer
                 if (recordMode && curRow != null && binding.getDataKind() == DBPDataKind.ARRAY) {
                     Object value = model.getCellValue(curRow, binding);
                     if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
-                        System.out.println(value);
+                        DBDCollection collection = (DBDCollection)value;
+                        int count = collection.getItemCount();
+                        Object[] items = new Object[count];
+                        for (int i = 0; i < count; i++) {
+                            items[i] = new CompositeArrayItem(collection, i);
+                        }
+                        return items;
                     }
                 }
             }
@@ -2680,8 +2686,13 @@ public class ResultSetViewer extends Viewer
         @Override
         public ElementState getDefaultState(@NotNull Object element) {
             if (element instanceof DBDAttributeBinding) {
-                if (((DBDAttributeBinding) element).getAttribute().getDataKind() == DBPDataKind.STRUCT) {
-                    return ElementState.EXPANDED;
+                switch (((DBDAttributeBinding) element).getAttribute().getDataKind()) {
+                    case STRUCT:
+                        return ElementState.EXPANDED;
+                    case ARRAY:
+                        return ElementState.COLLAPSED;
+                    default:
+                        break;
                 }
             }
             return ElementState.NONE;
