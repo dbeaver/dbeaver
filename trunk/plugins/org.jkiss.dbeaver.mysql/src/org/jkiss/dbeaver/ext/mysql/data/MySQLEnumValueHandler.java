@@ -139,7 +139,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
                     public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
-                        control.setText(enumValue.isNull() ? "" : enumValue.getValue());
+                        control.setText(DBUtils.isNullValue(enumValue) ? "" : enumValue.getValue());
                     }
                     @Override
                     public Object extractEditorValue()
