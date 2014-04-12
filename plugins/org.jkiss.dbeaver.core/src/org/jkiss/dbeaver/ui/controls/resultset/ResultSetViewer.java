@@ -2634,6 +2634,7 @@ public class ResultSetViewer extends Viewer
                 if (binding.getNestedBindings() != null) {
                     return binding.getNestedBindings().toArray();
                 }
+/*
                 if (recordMode && curRow != null && binding.getDataKind() == DBPDataKind.ARRAY) {
                     Object value = model.getCellValue(binding, curRow);
                     if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
@@ -2646,6 +2647,7 @@ public class ResultSetViewer extends Viewer
                         return items;
                     }
                 }
+*/
             }
 
             return null;
@@ -2674,7 +2676,7 @@ public class ResultSetViewer extends Viewer
                     case STRUCT:
                         return ElementState.EXPANDED;
                     case ARRAY:
-                        //return ElementState.COLLAPSED;
+                        return ElementState.COLLAPSED;
                     default:
                         break;
                 }

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -187,8 +188,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                             List<DBCAttributeMetaData> metaAttributes = dbResult.getResultSetMetaData().getAttributes();
                             for (int i = metaAttributes.size(); i > 0; i--) {
                                 DBCAttributeMetaData attr = metaAttributes.get(i - 1);
-                                if (attrId.equalsIgnoreCase(attr.getName())) {
-                                    attr.setPseudoAttribute(rowIdAttribute);
+                                if (attrId.equalsIgnoreCase(attr.getName()) && attr instanceof JDBCColumnMetaData) {
+                                    ((JDBCColumnMetaData)attr).setPseudoAttribute(rowIdAttribute);
                                     break;
                                 }
                             }

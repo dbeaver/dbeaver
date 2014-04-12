@@ -35,7 +35,7 @@ import java.util.*;
 /**
  * Attribute value binding info
  */
-public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject {
+public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQualifiedObject {
     @NotNull
     private final DBPDataSource dataSource;
     @Nullable
@@ -145,7 +145,13 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
     }
 
     @Nullable
-    public DBDAttributeBinding getParent() {
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Nullable
+    public DBDAttributeBinding getParentObject() {
         return parent;
     }
 
@@ -296,7 +302,6 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
         return getAttribute().getMaxLength();
     }
 
-
     @Override
     public String toString() {
         return getName() + " [" + getOrdinalPosition() + "]";
@@ -320,4 +325,8 @@ public class DBDAttributeBinding implements DBSAttributeBase, DBPQualifiedObject
         return query.toString();
     }
 
+    @Override
+    public boolean isPersisted() {
+        return false;
+    }
 }

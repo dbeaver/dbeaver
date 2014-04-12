@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -210,6 +211,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         return columns;
     }
 
+    @Nullable
     public JDBCColumnMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
         throws DBException
     {

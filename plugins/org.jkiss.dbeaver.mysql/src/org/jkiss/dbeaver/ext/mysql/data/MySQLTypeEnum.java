@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.data;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.utils.CommonUtils;
@@ -36,7 +37,7 @@ public class MySQLTypeEnum implements DBDValue {
         this.value = source.value;
     }
 
-    public MySQLTypeEnum(MySQLTableColumn column, String value)
+    public MySQLTypeEnum(MySQLTableColumn column, @Nullable String value)
     {
         this.column = column;
         this.value = value;

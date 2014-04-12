@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,6 +37,7 @@ public interface DBCEntityMetaData {
      * @return table table reference. never returns null
      * @param monitor progress monitor
      */
+    @Nullable
     DBSEntity getEntity(DBRProgressMonitor monitor)
         throws DBException;
 
@@ -43,10 +45,12 @@ public interface DBCEntityMetaData {
      * Table name
      * @return table name
      */
+    @Nullable
     String getEntityName();
 
     List<? extends DBCAttributeMetaData> getAttributes();
 
+    @Nullable
     DBCAttributeMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
         throws DBException;
 
@@ -57,6 +61,7 @@ public interface DBCEntityMetaData {
      * or null if no identifiers found.
      * @param monitor progress monitor
      */
+    @Nullable
     DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException;
 
