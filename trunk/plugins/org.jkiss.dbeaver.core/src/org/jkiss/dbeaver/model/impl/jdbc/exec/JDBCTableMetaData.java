@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -49,15 +50,15 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
 
     static final Log log = LogFactory.getLog(JDBCTableMetaData.class);
 
-    private JDBCResultSetMetaData resultSetMetaData;
-    private String catalogName;
-    private String schemaName;
-    private String tableName;
-    private List<JDBCColumnMetaData> columns = new ArrayList<JDBCColumnMetaData>();
+    private final JDBCResultSetMetaData resultSetMetaData;
+    private final String catalogName;
+    private final String schemaName;
+    private final String tableName;
+    private final List<JDBCColumnMetaData> columns = new ArrayList<JDBCColumnMetaData>();
     private List<JDBCTableIdentifier> identifiers;
     private DBSEntity entity;
 
-    JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSEntity entity, String catalogName, String schemaName, String tableName)
+    JDBCTableMetaData(@NotNull JDBCResultSetMetaData resultSetMetaData, DBSEntity entity, String catalogName, String schemaName, @NotNull String tableName)
     {
         this.resultSetMetaData = resultSetMetaData;
         this.catalogName = catalogName;
@@ -100,6 +101,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         return entity;
     }
 
+    @NotNull
     @Override
     public String getEntityName()
     {
@@ -205,6 +207,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         return true;
     }
 
+    @NotNull
     @Override
     public List<JDBCColumnMetaData> getAttributes()
     {

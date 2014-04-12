@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
@@ -33,6 +34,20 @@ import java.util.List;
 public interface DBCEntityMetaData {
 
     /**
+     * Table name
+     * @return table name
+     */
+    @NotNull
+    String getEntityName();
+
+    /**
+     * Meta attributes which belongs to this entity
+     */
+    @NotNull
+    List<? extends DBCAttributeMetaData> getAttributes();
+
+    // TODO: move to utils
+    /**
      * Table reference
      * @return table table reference. never returns null
      * @param monitor progress monitor
@@ -41,19 +56,12 @@ public interface DBCEntityMetaData {
     DBSEntity getEntity(DBRProgressMonitor monitor)
         throws DBException;
 
-    /**
-     * Table name
-     * @return table name
-     */
-    @Nullable
-    String getEntityName();
-
-    List<? extends DBCAttributeMetaData> getAttributes();
-
+    // TODO: move to utils
     @Nullable
     DBCAttributeMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
         throws DBException;
 
+    // TODO: move to utils
     /**
      * Gets best table identifier.
      * Best identifier is a primary key. If no such one then any unique key fits.
