@@ -74,7 +74,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
      */
     @NotNull
     @Override
-    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
+    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format)
     {
         if (value == null) {
             return DBUtils.getDefaultValueDisplayString(null, format);
@@ -275,6 +275,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         {
                             if (value != null) {
                                 control.setText(getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.UI));
+                            } else {
+                                control.setText("");
                             }
                             if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
                                 control.selectAll();
@@ -328,7 +330,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Nullable
-    public static Number convertStringToNumber(DBDDataFormatter formatter, String text, Object originalValue, DBSTypedObject type)
+    public static Number convertStringToNumber(DBDDataFormatter formatter, String text, @Nullable Object originalValue, DBSTypedObject type)
     {
         if (text == null || text.length() == 0) {
             return null;

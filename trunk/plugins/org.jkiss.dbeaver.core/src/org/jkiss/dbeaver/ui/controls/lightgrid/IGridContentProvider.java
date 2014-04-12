@@ -46,20 +46,20 @@ public interface IGridContentProvider extends IContentProvider {
 
     ElementState getDefaultState(@NotNull Object element);
 
-    int getCellState(@NotNull GridCell cell);
+    int getCellState(Object colElement, Object rowElement);
 
-    Object getCellValue(@NotNull GridCell cell, boolean formatString);
+    Object getCellValue(Object colElement, Object rowElement, boolean formatString);
 
     @NotNull
-    String getCellText(@NotNull GridCell cell);
+    String getCellText(Object colElement, Object rowElement);
 
     @Nullable
-    Image getCellImage(@NotNull GridCell cell);
+    Image getCellImage(Object colElement, Object rowElement);
 
     @Nullable
-    Color getCellForeground(@NotNull GridCell cell);
+    Color getCellForeground(Object colElement, Object rowElement);
 
     @Nullable
-    Color getCellBackground(@NotNull GridCell cell);
+    Color getCellBackground(Object colElement, Object rowElement);
 
 }
