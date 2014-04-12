@@ -175,6 +175,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     /////////////////////////////////////////////////////////////
     // DBCResultSetMetaData
 
+    @NotNull
     @Override
     public List<DBCAttributeMetaData> getAttributes()
     {
@@ -191,7 +192,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         return classObject == null ? null : classObject;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public String getEntityName()
     {

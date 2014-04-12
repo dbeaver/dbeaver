@@ -192,11 +192,11 @@ public class ResultSetModel {
     }
 
     @Nullable
-    DBDAttributeBinding getAttributeBinding(@Nullable DBSEntity table, @NotNull String columnName)
+    DBDAttributeBinding getAttributeBinding(@Nullable DBSEntity entity, @NotNull String columnName)
     {
         for (DBDAttributeBinding column : visibleColumns) {
             DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
-            if ((table == null || (rowIdentifier != null && rowIdentifier.getEntity() == table)) &&
+            if ((entity == null || (rowIdentifier != null && rowIdentifier.getEntity() == entity)) &&
                 column.getName().equals(columnName)) {
                 return column;
             }
