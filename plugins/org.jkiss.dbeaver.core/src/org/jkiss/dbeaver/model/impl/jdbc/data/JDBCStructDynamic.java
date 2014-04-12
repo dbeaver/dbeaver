@@ -208,7 +208,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     }
 
     @Override
-    public DBSDataType getObjectDataType()
+    public DBSDataType getDataType()
     {
         return this;
     }

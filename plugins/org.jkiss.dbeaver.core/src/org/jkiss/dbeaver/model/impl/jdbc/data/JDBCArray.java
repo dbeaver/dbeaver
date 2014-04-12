@@ -150,7 +150,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     }
 
     @Override
-    public DBSDataType getObjectDataType()
+    public DBSDataType getComponentType()
     {
         return type;
     }
