@@ -79,7 +79,7 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
                 values = new Object[attributes.length];
                 for (int i = 0; i < attributes.length; i++) {
                     DBSEntityAttribute attr = attributes[i];
-                    int ordinalPosition = attr.getOrdinalPosition() - 1;
+                    int ordinalPosition = attr.getOrdinalPosition();
                     if (ordinalPosition < 0 || attrValues != null && ordinalPosition >= valueCount) {
                         log.warn("Attribute '" + attr.getName() + "' ordinal position (" + ordinalPosition + ") is out of range (" + valueCount + ")");
                         continue;
@@ -146,14 +146,14 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
     @Override
     public Object getAttributeValue(@NotNull DBSAttributeBase attribute) throws DBCException
     {
-        int ordinalPosition = attribute.getOrdinalPosition() - 1;
+        int ordinalPosition = attribute.getOrdinalPosition();
         return ordinalPosition >= values.length ? null : values[ordinalPosition];
     }
 
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
     {
-        values[attribute.getOrdinalPosition() - 1] = value;
+        values[attribute.getOrdinalPosition()] = value;
     }
 
     @Override

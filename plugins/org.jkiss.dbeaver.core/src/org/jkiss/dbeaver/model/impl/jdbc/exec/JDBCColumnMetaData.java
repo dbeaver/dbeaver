@@ -78,26 +78,26 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
         this.ordinalPosition = ordinalPosition;
 
-        this.label = resultSetMeta.getColumnLabel(ordinalPosition);
-        this.name = resultSetMeta.getColumnName(ordinalPosition);
-        this.readOnly = resultSetMeta.isReadOnly(ordinalPosition);
-        this.writable = resultSetMeta.isWritable(ordinalPosition);
+        this.label = resultSetMeta.getColumnLabel(ordinalPosition + 1);
+        this.name = resultSetMeta.getColumnName(ordinalPosition + 1);
+        this.readOnly = resultSetMeta.isReadOnly(ordinalPosition + 1);
+        this.writable = resultSetMeta.isWritable(ordinalPosition + 1);
 
         String fetchedTableName = null;
         try {
-            fetchedTableName = resultSetMeta.getTableName(ordinalPosition);
+            fetchedTableName = resultSetMeta.getTableName(ordinalPosition + 1);
         } catch (SQLException e) {
             log.debug(e);
         }
         String fetchedCatalogName = null;
         try {
-            fetchedCatalogName = resultSetMeta.getCatalogName(ordinalPosition);
+            fetchedCatalogName = resultSetMeta.getCatalogName(ordinalPosition + 1);
         } catch (SQLException e) {
             log.debug(e);
         }
         String fetchedSchemaName = null;
         try {
-            fetchedSchemaName = resultSetMeta.getSchemaName(ordinalPosition);
+            fetchedSchemaName = resultSetMeta.getSchemaName(ordinalPosition + 1);
         } catch (SQLException e) {
             log.debug(e);
         }
@@ -146,24 +146,24 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
 
         if (this.tableColumn == null) {
-            this.notNull = resultSetMeta.isNullable(ordinalPosition) == ResultSetMetaData.columnNoNulls;
+            this.notNull = resultSetMeta.isNullable(ordinalPosition + 1) == ResultSetMetaData.columnNoNulls;
             try {
-                this.displaySize = resultSetMeta.getColumnDisplaySize(ordinalPosition);
+                this.displaySize = resultSetMeta.getColumnDisplaySize(ordinalPosition + 1);
             } catch (SQLException e) {
                 this.displaySize = 0;
             }
-            this.typeID = resultSetMeta.getColumnType(ordinalPosition);
-            this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition);
-            this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition);
+            this.typeID = resultSetMeta.getColumnType(ordinalPosition + 1);
+            this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition + 1);
+            this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
 
             try {
-                this.precision = resultSetMeta.getPrecision(ordinalPosition);
+                this.precision = resultSetMeta.getPrecision(ordinalPosition + 1);
             } catch (Exception e) {
                 // NumberFormatException occurred in Oracle on BLOB columns
                 this.precision = 0;
             }
             try {
-                this.scale = resultSetMeta.getScale(ordinalPosition);
+                this.scale = resultSetMeta.getScale(ordinalPosition + 1);
             } catch (Exception e) {
                 this.scale = 0;
             }
