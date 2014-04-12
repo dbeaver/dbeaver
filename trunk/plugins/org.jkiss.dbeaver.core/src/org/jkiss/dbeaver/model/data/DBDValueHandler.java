@@ -71,7 +71,8 @@ public interface DBDValueHandler
      * @param session session
      * @param resultSet result set
      * @param type attribute type
-     * @param index @return value or null
+     * @param index attribute index (zero based)
+     * @return value or null
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
     @Nullable
@@ -84,7 +85,7 @@ public interface DBDValueHandler
      * @param session execution context
      * @param statement statement
      * @param type attribute type
-     * @param index parameter index
+     * @param index parameter index (zero based)
      * @param value parameter value (can be null). Value is get from fetchValueObject function or from
      * object set by editor (editValue function).  @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */

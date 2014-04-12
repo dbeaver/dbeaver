@@ -136,7 +136,8 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     @Override
     public int getOrdinalPosition()
     {
-        return number;
+        // Number is 1 based
+        return number - 1;
     }
 
     @Override

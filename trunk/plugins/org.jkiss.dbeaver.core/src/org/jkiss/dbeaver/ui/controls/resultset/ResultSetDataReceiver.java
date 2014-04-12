@@ -78,13 +78,10 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
             columnsCount = rsAttributes.size();
 
-            // Determine type handlers for all columns
-            //DBPDataSource dataSource = resultSet.getContext().getDataSource();
-
             // Extract column info
             metaColumns = new DBDAttributeBinding[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
-                metaColumns[i] = DBUtils.getColumnBinding(session, rsAttributes.get(i), i);
+                metaColumns[i] = DBUtils.getColumnBinding(session, rsAttributes.get(i));
             }
 
             updateMetaData = resultSetViewer.setMetaData(metaColumns);

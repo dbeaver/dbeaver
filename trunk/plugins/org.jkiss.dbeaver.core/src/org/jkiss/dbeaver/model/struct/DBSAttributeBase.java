@@ -25,6 +25,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public interface DBSAttributeBase extends DBSTypedObject, DBPNamedObject
 {
+    /**
+     * Attribute ordinal position (zero based).
+     */
     int getOrdinalPosition();
 
     boolean isRequired();

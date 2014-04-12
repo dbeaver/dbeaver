@@ -224,13 +224,13 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     @Override
     public Object getAttributeValue(@NotNull DBSAttributeBase attribute) throws DBCException
     {
-        return values[attribute.getOrdinalPosition() - 1];
+        return values[attribute.getOrdinalPosition()];
     }
 
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
     {
-        values[((DBSEntityAttribute)attribute).getOrdinalPosition() - 1] = value;
+        values[((DBSEntityAttribute)attribute).getOrdinalPosition()] = value;
     }
 
     @Override

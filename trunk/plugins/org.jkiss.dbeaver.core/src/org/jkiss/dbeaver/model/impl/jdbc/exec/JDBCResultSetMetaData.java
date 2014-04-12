@@ -52,7 +52,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
         try {
             this.original = resultSet.getOriginal().getMetaData();
             int count = original.getColumnCount();
-            for (int i = 1; i <= count; i++) {
+            for (int i = 0; i < count; i++) {
                 columns.add(createColumnMetaDataImpl(i));
             }
         }

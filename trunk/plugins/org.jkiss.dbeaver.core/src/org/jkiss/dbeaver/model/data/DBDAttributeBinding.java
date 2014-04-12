@@ -51,21 +51,17 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
 
-    private final int ordinalPosition;
-    private int level;
     private List<DBSEntityReferrer> referrers;
 
-    public DBDAttributeBinding(@NotNull DBPDataSource dataSource, @NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int ordinalPosition) {
-        this(dataSource, null, metaAttribute, valueHandler, ordinalPosition);
-    }
-
-    public DBDAttributeBinding(@NotNull DBPDataSource dataSource, @Nullable DBDAttributeBinding parent, @NotNull DBCAttributeMetaData metaAttribute, @NotNull DBDValueHandler valueHandler, int ordinalPosition) {
+    public DBDAttributeBinding(
+        @NotNull DBPDataSource dataSource,
+        @Nullable DBDAttributeBinding parent,
+        @NotNull DBCAttributeMetaData metaAttribute)
+    {
         this.dataSource = dataSource;
         this.parent = parent;
         this.metaAttribute = metaAttribute;
-        this.valueHandler = valueHandler;
-        this.ordinalPosition = ordinalPosition;
-        this.level = (parent == null ? 0 : parent.level + 1);
+        this.valueHandler = DBUtils.findValueHandler(dataSource, metaAttribute);
     }
 
     @NotNull
@@ -80,7 +76,7 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
     @Override
     public int getOrdinalPosition()
     {
-        return ordinalPosition;
+        return metaAttribute.getOrdinalPosition();
     }
 
     /**
@@ -187,7 +183,7 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
      * @return attribute level (depth)
      */
     public int getLevel() {
-        return level;
+        return parent == null ? 0 : parent.getLevel() + 1;
     }
 
     public List<DBSEntityReferrer> getReferrers() {
@@ -230,7 +226,7 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
     private void resolveBindingsFromData(DBCSession session, List<Object[]> rows) throws DBException {
         Set<DBSAttributeBase> valueAttributes = new LinkedHashSet<DBSAttributeBase>();
         for (int i = 0; i < rows.size(); i++) {
-            Object value = rows.get(i)[ordinalPosition];
+            Object value = rows.get(i)[getOrdinalPosition()];
             if (value instanceof DBDStructure) {
                 DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
                 Collections.addAll(valueAttributes, attributes);
@@ -248,8 +244,7 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
         int nestedIndex = 0;
         for (DBSAttributeBase nestedAttr : nestedAttributes) {
             DBCAttributeMetaData nestedMeta = new DBCNestedAttributeMetaData(nestedAttr, nestedIndex, metaAttribute);
-            DBDValueHandler nestedHandler = DBUtils.findValueHandler(session, nestedAttr);
-            DBDAttributeBinding nestedBinding = new DBDAttributeBinding(dataSource, this, nestedMeta, nestedHandler, nestedIndex);
+            DBDAttributeBinding nestedBinding = new DBDAttributeBinding(dataSource, this, nestedMeta);
             nestedBinding.initValueLocator(nestedAttr instanceof DBSEntityAttribute ? (DBSEntityAttribute) nestedAttr : null, rowIdentifier);
             nestedBinding.readNestedBindings(session, rows);
             nestedBindings.add(nestedBinding);

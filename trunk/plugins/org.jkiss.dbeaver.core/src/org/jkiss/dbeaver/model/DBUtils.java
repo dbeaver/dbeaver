@@ -457,13 +457,9 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDAttributeBinding getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta, int attributeIndex)
+    public static DBDAttributeBinding getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta)
     {
-        return new DBDAttributeBinding(
-            session.getDataSource(),
-            attributeMeta,
-            findValueHandler(session, attributeMeta),
-            attributeIndex);
+        return new DBDAttributeBinding(session.getDataSource(), null, attributeMeta);
     }
 
     @NotNull
