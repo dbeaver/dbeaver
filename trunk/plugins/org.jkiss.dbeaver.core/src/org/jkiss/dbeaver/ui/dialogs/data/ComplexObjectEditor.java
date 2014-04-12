@@ -182,7 +182,7 @@ public class ComplexObjectEditor extends TreeViewer {
         } else if (obj instanceof ArrayItem) {
             ArrayItem arrayItem = (ArrayItem) obj;
             valueHandler = arrayItem.valueHandler;
-            type = arrayItem.array.getObjectDataType();
+            type = arrayItem.array.getComponentType();
             name = type.getTypeName() + "["  + arrayItem.index + "]";
             value = arrayItem.value;
         } else {
@@ -245,7 +245,7 @@ public class ComplexObjectEditor extends TreeViewer {
             this.array = array;
             this.index = index;
             this.value = value;
-            this.valueHandler = DBUtils.findValueHandler(array.getObjectDataType().getDataSource(), array.getObjectDataType());
+            this.valueHandler = DBUtils.findValueHandler(array.getComponentType().getDataSource(), array.getComponentType());
         }
     }
 
@@ -395,7 +395,7 @@ public class ComplexObjectEditor extends TreeViewer {
                     for (int i = 0; i < attributes.length; i++) {
                         DBSAttributeBase attr = attributes[i];
                         Object value = structure.getAttributeValue(attr);
-                        children[i] = new FieldInfo(structure.getObjectDataType().getDataSource(), attr, value);
+                        children[i] = new FieldInfo(structure.getDataType().getDataSource(), attr, value);
                     }
                     return children;
                 } catch (DBException e) {
@@ -486,7 +486,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (isName) {
                     return String.valueOf(item.index);
                 }
-                return getValueText(item.valueHandler, item.array.getObjectDataType(), item.value);
+                return getValueText(item.valueHandler, item.array.getComponentType(), item.value);
             }
             return String.valueOf(columnIndex);
         }
@@ -495,14 +495,17 @@ public class ComplexObjectEditor extends TreeViewer {
         {
             if (value instanceof DBDCollection) {
                 try {
-                    return "[" + ((DBDCollection) value).getObjectDataType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
+                    return "[" + ((DBDCollection) value).getComponentType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
                 } catch (DBCException e) {
                     log.error(e);
                     return "N/A";
                 }
             }
-            if (value instanceof DBDComplexValue) {
-                return "[" + ((DBDComplexValue) value).getObjectDataType().getName() + "]";
+            if (value instanceof DBDStructure) {
+                return "[" + ((DBDStructure) value).getDataType().getName() + "]";
+            }
+            if (value instanceof DBDReference) {
+                return "--> [" + ((DBDReference) value).getReferencedType().getName() + "]";
             }
             return valueHandler.getValueDisplayString(type, value, DBDDisplayFormat.UI);
         }

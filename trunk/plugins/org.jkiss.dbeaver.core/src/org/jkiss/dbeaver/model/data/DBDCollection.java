@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
  * Collection of items.
@@ -28,6 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
  * @author Serge Rider
  */
 public interface DBDCollection extends DBDComplexValue {
+
+    DBSDataType getComponentType();
 
     int getItemCount()
         throws DBCException;

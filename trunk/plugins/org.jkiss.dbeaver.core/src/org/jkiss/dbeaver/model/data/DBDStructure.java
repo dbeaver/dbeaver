@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 import java.util.List;
@@ -34,6 +35,8 @@ public interface DBDStructure extends DBDComplexValue {
 
     public static final DBSEntityAttribute[] EMPTY_ATTRIBUTE = new DBSEntityAttribute[0];
     public static final Object[] EMPTY_VALUES = new Object[0];
+
+    DBSDataType getDataType();
 
     @NotNull
     DBSAttributeBase[] getAttributes();

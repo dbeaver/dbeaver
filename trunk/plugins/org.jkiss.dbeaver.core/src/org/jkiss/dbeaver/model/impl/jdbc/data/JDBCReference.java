@@ -66,7 +66,7 @@ public class JDBCReference implements DBDReference {
     }
 
     @Override
-    public DBSDataType getObjectDataType()
+    public DBSDataType getReferencedType()
     {
         return type;
     }
