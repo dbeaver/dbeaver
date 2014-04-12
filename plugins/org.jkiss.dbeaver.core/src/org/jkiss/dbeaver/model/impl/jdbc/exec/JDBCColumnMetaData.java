@@ -347,27 +347,4 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         return db.toString();
     }
 
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (!(obj instanceof JDBCColumnMetaData)) {
-            return false;
-        }
-        JDBCColumnMetaData col = (JDBCColumnMetaData)obj;
-        return
-            getOrdinalPosition() == col.getOrdinalPosition() &&
-            isRequired() == col.isRequired() &&
-            getMaxLength() == col.getMaxLength() &&
-            CommonUtils.equalObjects(getLabel(), col.getLabel()) &&
-            CommonUtils.equalObjects(getName(), col.getName()) &&
-            getPrecision() == col.getPrecision() &&
-            getScale() == col.getScale() &&
-            CommonUtils.equalObjects(getEntityName(), col.getEntityName()) &&
-            getTypeID() == col.getTypeID() &&
-            CommonUtils.equalObjects(getTypeName(), col.getTypeName()) &&
-            readOnly == col.readOnly &&
-            writable == col.writable;
-    }
-
 }

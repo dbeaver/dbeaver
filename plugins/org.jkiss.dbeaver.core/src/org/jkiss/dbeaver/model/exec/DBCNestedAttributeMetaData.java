@@ -72,11 +72,6 @@ public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObject
         return null;
     }
 
-    @Override
-    public void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute) {
-
-    }
-
     @Nullable
     @Override
     public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) {

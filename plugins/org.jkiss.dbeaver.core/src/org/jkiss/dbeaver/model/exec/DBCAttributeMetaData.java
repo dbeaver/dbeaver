@@ -32,12 +32,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 public interface DBCAttributeMetaData extends DBSAttributeBase
 {
     /**
-     * Attribute ordinal index
-     * @return index (starts from zero)
-     */
-    int getOrdinalPosition();
-
-    /**
      * Attribute label in result set
      * @return label
      */
@@ -63,12 +57,6 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
      */
     @Nullable
     DBDPseudoAttribute getPseudoAttribute();
-
-    /**
-     * Annotate this meta attribute with pseudo attribute information
-     * @param pseudoAttribute pseudo attribute info
-     */
-    void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute);
 
     /**
      * Column metadata

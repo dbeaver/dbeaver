@@ -389,7 +389,7 @@ public class ResultSetModel {
 */
 
             for (int i = 0; i < this.columns.length; i++) {
-                if (!this.columns[i].getMetaAttribute().equals(columns[i].getMetaAttribute())) {
+                if (!DBUtils.equalAttributes(this.columns[i], columns[i])) {
                     update = true;
                     break;
                 }

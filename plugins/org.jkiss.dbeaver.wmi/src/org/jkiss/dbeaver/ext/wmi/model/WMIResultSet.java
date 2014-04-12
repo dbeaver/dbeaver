@@ -184,18 +184,21 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     /////////////////////////////////////////////////////////////
     // DBCTableMetaData
 
+    @Nullable
     @Override
     public DBSEntity getEntity(DBRProgressMonitor monitor) throws DBException
     {
         return classObject == null ? null : classObject;
     }
 
+    @Nullable
     @Override
     public String getEntityName()
     {
         return classObject == null ? null : classObject.getName();
     }
 
+    @Nullable
     @Override
     public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor) throws DBException
     {
@@ -300,12 +303,6 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         public DBDPseudoAttribute getPseudoAttribute()
         {
             return null;
-        }
-
-        @Override
-        public void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute)
-        {
-            // ignore
         }
 
         @Nullable
