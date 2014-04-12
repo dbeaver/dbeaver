@@ -40,7 +40,7 @@ public interface ISpreadsheetController {
     @Nullable
     Control showCellEditor(boolean inline);
 
-    void resetCellValue(@NotNull GridCell cell, boolean delete);
+    void resetCellValue(@NotNull Object col, @NotNull Object row, boolean delete);
 
     void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager);
 

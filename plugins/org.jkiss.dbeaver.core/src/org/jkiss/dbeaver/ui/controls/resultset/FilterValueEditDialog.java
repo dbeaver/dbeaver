@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -41,17 +42,19 @@ class FilterValueEditDialog extends BaseDialog {
     static final Log log = LogFactory.getLog(FilterValueEditDialog.class);
 
     private final ResultSetViewer viewer;
-    private final GridCell cell;
+    private final DBDAttributeBinding attr;
+    private final RowData row;
     private final DBCLogicalOperator operator;
 
     private Object value;
     private DBDValueEditor editor;
     private Text textControl;
 
-    public FilterValueEditDialog(ResultSetViewer viewer, GridCell cell, DBCLogicalOperator operator) {
+    public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, RowData row, DBCLogicalOperator operator) {
         super(viewer.getControl().getShell(), "Edit value", null);
         this.viewer = viewer;
-        this.cell = cell;
+        this.attr = attr;
+        this.row = row;
         this.operator = operator;
     }
 
@@ -69,7 +72,8 @@ class FilterValueEditDialog extends BaseDialog {
 
         final ResultSetViewer.ResultSetValueController valueController = new ResultSetViewer.ResultSetValueController(
             viewer,
-            cell,
+            attr,
+            row,
             DBDValueController.EditType.PANEL,
             editorPlaceholder);
 

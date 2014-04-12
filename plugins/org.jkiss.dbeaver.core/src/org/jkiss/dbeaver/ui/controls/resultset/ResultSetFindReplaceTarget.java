@@ -90,7 +90,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         }
         Spreadsheet spreadsheet = resultSet.getSpreadsheet();
         GridCell cell = spreadsheet.posToCell(selection);
-        String value = cell == null ? "" : spreadsheet.getContentProvider().getCellText(cell);
+        String value = cell == null ? "" : spreadsheet.getContentProvider().getCellText(cell.col, cell.row);
         return CommonUtils.toString(value);
     }
 
@@ -211,7 +211,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                 }
             }
             GridCell cell = resultSet.getSpreadsheet().posToCell(curPosition);
-            String cellText = resultSet.getSpreadsheet().getContentProvider().getCellText(cell);
+            String cellText = resultSet.getSpreadsheet().getContentProvider().getCellText(cell.col, cell.row);
             Matcher matcher = findPattern.matcher(cellText);
             if (wholeWord ? matcher.matches() : matcher.find()) {
                 resultSet.getSpreadsheet().setCellSelection(curPosition);
@@ -233,14 +233,15 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         if (cell == null) {
             return;
         }
-        String oldValue = resultSet.getSpreadsheet().getContentProvider().getCellText(cell);
+        String oldValue = resultSet.getSpreadsheet().getContentProvider().getCellText(cell.col, cell.row);
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
 
-        cell = resultSet.translateVisualPos(cell);
-        resultSet.getModel().updateCellValue((RowData) cell.row, (DBDAttributeBinding) cell.col, newValue);
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(resultSet.isRecordMode() ? cell.row : cell.col);
+        final RowData row = (RowData)(resultSet.isRecordMode() ? cell.col : cell.row);
+        resultSet.getModel().updateCellValue(attr, row, newValue);
 
         resultSet.updateEditControls();
         resultSet.getSpreadsheet().redrawGrid();

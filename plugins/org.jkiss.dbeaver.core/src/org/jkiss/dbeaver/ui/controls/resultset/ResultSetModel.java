@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -107,14 +106,12 @@ public class ResultSetModel {
         return rowIdentifier.getEntity();
     }
 
-    public void resetCellValue(GridCell cell)
+    public void resetCellValue(DBDAttributeBinding attr, RowData row)
     {
-        RowData row = (RowData) cell.row;
-        DBDAttributeBinding attr = ((DBDAttributeBinding) cell.col);
         if (row.changes != null && row.changes.containsKey(attr)) {
-            resetValue(getCellValue(row, attr));
-            updateCellValue(row, attr, row.changes.get(cell.col), false);
-            row.changes.remove(cell.col);
+            resetValue(getCellValue(attr, row));
+            updateCellValue(attr, row, row.changes.get(attr), false);
+            row.changes.remove(attr);
             if (row.changes.isEmpty()) {
                 row.changes = null;
             }
@@ -235,7 +232,7 @@ public class ResultSetModel {
     }
 
     @Nullable
-    public Object getCellValue(@NotNull RowData row, @NotNull DBDAttributeBinding column) {
+    public Object getCellValue(@NotNull DBDAttributeBinding column, @NotNull RowData row) {
         int depth = column.getLevel();
         if (depth == 0) {
             return row.values[column.getOrdinalPosition()];
@@ -268,17 +265,18 @@ public class ResultSetModel {
 
     /**
      * Updates cell value. Saves previous value.
-     * @param row row index
+     *
      * @param attr Attribute
+     * @param row row index
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(@NotNull RowData row, @NotNull DBDAttributeBinding attr, @Nullable Object value)
+    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull RowData row, @Nullable Object value)
     {
-        return updateCellValue(row, attr, value, true);
+        return updateCellValue(attr, row, value, true);
     }
 
-    public boolean updateCellValue(@NotNull RowData row, @NotNull DBDAttributeBinding attr, @Nullable Object value, boolean updateChanges)
+    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull RowData row, @Nullable Object value, boolean updateChanges)
     {
         int depth = attr.getLevel();
         int rootIndex;
@@ -675,8 +673,8 @@ public class ResultSetModel {
                     if (binding == null) {
                         continue;
                     }
-                    Object cell1 = getCellValue(row1, binding);
-                    Object cell2 = getCellValue(row2, binding);
+                    Object cell1 = getCellValue(binding, row1);
+                    Object cell2 = getCellValue(binding, row2);
                     if (cell1 == cell2) {
                         result = 0;
                     } else if (DBUtils.isNullValue(cell1)) {

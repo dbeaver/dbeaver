@@ -188,10 +188,8 @@ class GridColumn {
             int bottomIndex = grid.getBottomIndex();
             if (topIndex >= 0 && bottomIndex >= topIndex) {
                 int itemCount = grid.getItemCount();
-                GridCell cell = new GridCell(element, element);
                 for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
-                    cell.row = grid.getRowElement(i);
-                    newWidth = Math.max(newWidth, computeCellWidth(cell));
+                    newWidth = Math.max(newWidth, computeCellWidth(element, grid.getRowElement(i)));
                 }
             }
         } else {
@@ -209,24 +207,24 @@ class GridColumn {
         }
 	}
 
-    private int computeCellWidth(GridCell cell) {
+    private int computeCellWidth(Object col, Object row) {
         int x = 0;
 
         x += leftMargin;
 
-        int state = grid.getContentProvider().getCellState(cell);
+        int state = grid.getContentProvider().getCellState(col, row);
         Rectangle imageBounds;
         if ((state & IGridContentProvider.STATE_LINK) != 0) {
             imageBounds = GridCellRenderer.LINK_IMAGE_BOUNDS;
         } else {
-            Image image = grid.getContentProvider().getCellImage(cell);
+            Image image = grid.getContentProvider().getCellImage(col, row);
             imageBounds = image == null ? null : image.getBounds();
         }
         if (imageBounds != null) {
             x += imageBounds.width + insideMargin;
         }
 
-        x += grid.sizingGC.textExtent(grid.getCellText(cell)).x + rightMargin;
+        x += grid.sizingGC.textExtent(grid.getCellText(col, row)).x + rightMargin;
         return x;
     }
 

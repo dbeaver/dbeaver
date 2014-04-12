@@ -166,7 +166,7 @@ class ResultSetPersister {
                     statement.updateAttributes.add(
                         new DBDAttributeValue(
                             changedAttr,
-                            model.getCellValue(row, changedAttr)));
+                            model.getCellValue(changedAttr, row)));
                 }
                 // Key columns
                 Collection<? extends DBCAttributeMetaData> idColumns = rowIdentifier.getEntityIdentifier().getMetaAttributes();
@@ -210,9 +210,9 @@ class ResultSetPersister {
         for (RowData row : changedRows) {
             if (row.changes != null) {
                 for (Map.Entry<DBDAttributeBinding, Object> changedValue : row.changes.entrySet()) {
-                    Object curValue = model.getCellValue(row, changedValue.getKey());
+                    Object curValue = model.getCellValue(changedValue.getKey(), row);
                     ResultSetModel.releaseValue(curValue);
-                    model.updateCellValue(row, changedValue.getKey(), changedValue.getValue(), false);
+                    model.updateCellValue(changedValue.getKey(), row, changedValue.getValue(), false);
                 }
                 row.changes = null;
             }
