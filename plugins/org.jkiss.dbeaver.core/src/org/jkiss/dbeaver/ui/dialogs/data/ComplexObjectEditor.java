@@ -28,6 +28,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -255,7 +256,7 @@ public class ComplexObjectEditor extends TreeViewer {
         private final String name;
         private final Object value;
         private final EditType editType;
-        public ComplexValueController(DBDValueHandler valueHandler, DBSTypedObject type, String name, Object value, EditType editType)
+        public ComplexValueController(DBDValueHandler valueHandler, DBSTypedObject type, String name, @Nullable Object value, EditType editType)
         {
             this.valueHandler = valueHandler;
             this.type = type;
@@ -282,6 +283,7 @@ public class ComplexObjectEditor extends TreeViewer {
             return type;
         }
 
+        @Nullable
         @Override
         public Object getValue()
         {
@@ -403,15 +405,11 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
             } else if (parent instanceof DBDCollection) {
                 DBDCollection array = (DBDCollection)parent;
-                try {
-                    ArrayItem[] items = new ArrayItem[array.getItemCount()];
-                    for (int i = 0; i < items.length; i++) {
-                        items[i] = new ArrayItem(array, i, array.getItem(i));
-                    }
-                    return items;
-                } catch (DBCException e) {
-                    log.error("Error getting array content", e);
+                ArrayItem[] items = new ArrayItem[array.getItemCount()];
+                for (int i = 0; i < items.length; i++) {
+                    items[i] = new ArrayItem(array, i, array.getItem(i));
                 }
+                return items;
             } else if (parent instanceof DBDReference) {
                 final DBDReference reference = (DBDReference)parent;
                 DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
@@ -491,23 +489,17 @@ public class ComplexObjectEditor extends TreeViewer {
             return String.valueOf(columnIndex);
         }
 
-        private String getValueText(DBDValueHandler valueHandler, DBSTypedObject type, Object value)
+        private String getValueText(@NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type, @Nullable Object value)
         {
             if (value instanceof DBDCollection) {
-                try {
-                    return "[" + ((DBDCollection) value).getComponentType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
-                } catch (DBCException e) {
-                    log.error(e);
-                    return "N/A";
-                }
-            }
-            if (value instanceof DBDStructure) {
+                return "[" + ((DBDCollection) value).getComponentType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
+            } else if (value instanceof DBDStructure) {
                 return "[" + ((DBDStructure) value).getDataType().getName() + "]";
-            }
-            if (value instanceof DBDReference) {
+            } else if (value instanceof DBDReference) {
                 return "--> [" + ((DBDReference) value).getReferencedType().getName() + "]";
+            } else {
+                return valueHandler.getValueDisplayString(type, value, DBDDisplayFormat.UI);
             }
-            return valueHandler.getValueDisplayString(type, value, DBDDisplayFormat.UI);
         }
 
         @Override

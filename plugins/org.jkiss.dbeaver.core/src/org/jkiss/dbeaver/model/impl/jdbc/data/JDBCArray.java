@@ -156,6 +156,11 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     }
 
     @Override
+    public DBDValueHandler getComponentValueHandler() {
+        return valueHandler;
+    }
+
+    @Override
     public DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
     {
         return new JDBCArray(type, valueHandler, contents);
@@ -213,5 +218,10 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     @Override
     public Object getItem(int index) {
         return contents[index];
+    }
+
+    @Override
+    public void setItem(int index, Object value) {
+        contents[index] = value;
     }
 }

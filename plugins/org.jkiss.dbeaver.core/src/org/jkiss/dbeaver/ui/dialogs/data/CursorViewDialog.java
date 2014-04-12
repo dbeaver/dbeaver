@@ -115,7 +115,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
     }
 
     @Override
-    public void primeEditorValue(Object value) throws DBException
+    public void primeEditorValue(@Nullable Object value) throws DBException
     {
         resultSetViewer.refresh();
     }

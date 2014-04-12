@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -79,7 +80,7 @@ public class DefaultValueViewDialog extends ValueViewDialog {
     }
 
     @Override
-    public void primeEditorValue(Object value) throws DBException
+    public void primeEditorValue(@Nullable Object value) throws DBException
     {
         panelEditor.primeEditorValue(value);
     }

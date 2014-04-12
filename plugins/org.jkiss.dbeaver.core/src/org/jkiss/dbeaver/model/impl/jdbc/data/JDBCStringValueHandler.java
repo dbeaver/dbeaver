@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -87,7 +88,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
                         return editor;
                     }
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         control.setText(CommonUtils.toString(value));
                         if (valueController.getEditType() == DBDValueController.EditType.INLINE) {

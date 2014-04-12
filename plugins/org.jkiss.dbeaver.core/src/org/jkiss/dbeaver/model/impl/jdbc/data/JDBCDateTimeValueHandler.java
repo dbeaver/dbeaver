@@ -128,7 +128,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                     DateTime dateEditor;
                     DateTime timeEditor;
                     @Override
-                    public void primeEditorValue(Object value) throws DBException
+                    public void primeEditorValue(@Nullable Object value) throws DBException
                     {
                         if (value instanceof Date) {
                             Calendar cl = Calendar.getInstance();

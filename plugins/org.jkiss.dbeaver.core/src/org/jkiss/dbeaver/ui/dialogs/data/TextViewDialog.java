@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -290,7 +291,7 @@ public class TextViewDialog extends ValueViewDialog {
     }
 
     @Override
-    public void primeEditorValue(Object value)
+    public void primeEditorValue(@Nullable Object value)
     {
         if (value instanceof DBDContentCached) {
             value = ((DBDContentCached) value).getCachedValue();
