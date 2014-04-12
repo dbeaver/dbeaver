@@ -130,7 +130,7 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
     }
 
     @Override
-    public DBSDataType getObjectDataType()
+    public DBSDataType getDataType()
     {
         return type;
     }

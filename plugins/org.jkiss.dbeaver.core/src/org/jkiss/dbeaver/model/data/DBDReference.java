@@ -20,11 +20,14 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
  * Reference to another object (usually DBDStructure).
  */
 public interface DBDReference extends DBDComplexValue {
+
+    DBSDataType getReferencedType();
 
     /**
      * Retrieves referenced object.

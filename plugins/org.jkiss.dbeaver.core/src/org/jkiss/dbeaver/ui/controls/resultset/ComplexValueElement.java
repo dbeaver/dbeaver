@@ -38,10 +38,10 @@ public abstract class ComplexValueElement {
     @NotNull
     private final DBDValueHandler valueHandler;
 
-    public ComplexValueElement(@NotNull DBDComplexValue ownerValue, @NotNull DBSAttributeBase attribute) {
+    public ComplexValueElement(@NotNull DBDComplexValue ownerValue, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler) {
         this.ownerValue = ownerValue;
         this.attribute = attribute;
-        this.valueHandler = DBUtils.findValueHandler(ownerValue.getObjectDataType().getDataSource(), attribute);
+        this.valueHandler = valueHandler;
     }
 
     @NotNull

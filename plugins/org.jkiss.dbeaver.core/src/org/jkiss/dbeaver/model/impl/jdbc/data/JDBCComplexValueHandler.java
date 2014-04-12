@@ -83,6 +83,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
         throw new DBCException("Unsupported value type: " + value);
     }
 
+/*
     @Override
     public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller)
     {
@@ -100,6 +101,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
             log.warn("Could not extract complex type information", e); //$NON-NLS-1$
         }
     }
+*/
 
     @Override
     public DBDValueEditor createEditor(@NotNull final DBDValueController controller)
