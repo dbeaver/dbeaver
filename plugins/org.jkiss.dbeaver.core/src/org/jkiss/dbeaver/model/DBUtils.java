@@ -501,18 +501,18 @@ public final class DBUtils {
         Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<DBSEntity, DBDRowIdentifier>();
         try {
             for (DBDAttributeBinding column : bindings) {
-                DBCAttributeMetaData meta = column.getMetaAttribute();
-                DBCEntityMetaData entity = meta.getEntityMetaData();
-                if (entity != null) {
-                    DBSEntityAttribute tableColumn = meta.getEntityAttribute(session.getProgressMonitor());
+                DBCAttributeMetaData attrMeta = column.getMetaAttribute();
+                DBCEntityMetaData entityMeta = attrMeta.getEntityMetaData();
+                if (entityMeta != null) {
+                    DBSEntityAttribute tableColumn = attrMeta.getEntityAttribute(session.getProgressMonitor());
                     // We got table name and column name
                     // To be editable we need this result   set contain set of columns from the same table
                     // which construct any unique key
-                    DBSEntity ownerEntity = entity.getEntity(session.getProgressMonitor());
+                    DBSEntity ownerEntity = entityMeta.getEntity(session.getProgressMonitor());
                     if (ownerEntity != null) {
                         DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
                         if (rowIdentifier == null) {
-                            DBCEntityIdentifier entityIdentifier = entity.getBestIdentifier(session.getProgressMonitor());
+                            DBCEntityIdentifier entityIdentifier = entityMeta.getBestIdentifier(session.getProgressMonitor());
                             if (entityIdentifier != null) {
                                 rowIdentifier = new DBDRowIdentifier(
                                     ownerEntity,

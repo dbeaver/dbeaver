@@ -58,6 +58,7 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
     @Nullable
     DBDPseudoAttribute getPseudoAttribute();
 
+    // TODO: move to utils
     /**
      * Column metadata
      * @return column metadata
