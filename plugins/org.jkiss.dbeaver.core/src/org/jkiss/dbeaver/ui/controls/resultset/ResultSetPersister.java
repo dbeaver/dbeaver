@@ -166,11 +166,10 @@ class ResultSetPersister {
                 // Key columns
                 List<DBDAttributeBinding> idColumns = rowIdentifier.getEntityIdentifier().getAttributes();
                 for (DBDAttributeBinding metaColumn : idColumns) {
-                    int attributeIndex = metaColumn.getOrdinalPosition();
-                    Object keyValue = row.values[attributeIndex];
+                    Object keyValue = model.getCellValue(metaColumn, row);
                     // Try to find old key oldValue
                     if (row.changes != null && row.changes.containsKey(metaColumn)) {
-                        keyValue = row.changes.containsKey(metaColumn);
+                        keyValue = row.changes.get(metaColumn);
                     }
                     statement.keyAttributes.add(new DBDAttributeValue(metaColumn, keyValue));
                 }

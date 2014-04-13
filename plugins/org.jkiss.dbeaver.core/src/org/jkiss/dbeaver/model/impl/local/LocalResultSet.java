@@ -132,7 +132,7 @@ public class LocalResultSet implements DBCResultSet
 
     public DBCAttributeMetaData addColumn(String label, DBPDataKind dataKind)
     {
-        LocalResultSetColumn column = new LocalResultSetColumn(this, metaColumns.size() + 1, label, dataKind);
+        LocalResultSetColumn column = new LocalResultSetColumn(this, metaColumns.size(), label, dataKind);
         metaColumns.add(column);
         return column;
     }

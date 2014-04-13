@@ -520,7 +520,6 @@ public abstract class LightGrid extends Canvas {
         }
         recalculateSizes();
         updateScrollbars();
-        setCursor(null);
     }
 
     private void createChildColumns(GridColumn parent) {
