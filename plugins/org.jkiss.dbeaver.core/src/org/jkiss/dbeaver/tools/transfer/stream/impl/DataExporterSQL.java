@@ -118,7 +118,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 if (i > 0) {
                     sqlBuffer.append(',');
                 }
-                sqlBuffer.append(column.getMetaAttribute().getName());
+                sqlBuffer.append(column.getName());
             }
             sqlBuffer.append(") VALUES ");
             if (insertMode != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {

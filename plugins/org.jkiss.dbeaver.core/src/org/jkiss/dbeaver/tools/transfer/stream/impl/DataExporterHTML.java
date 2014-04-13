@@ -82,9 +82,9 @@ public class DataExporterHTML extends StreamExporterAbstract {
         out.write("<body><table>");
         out.write("<tr>");
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            String colName = columns.get(i).getMetaAttribute().getLabel();
+            String colName = columns.get(i).getLabel();
             if (CommonUtils.isEmpty(colName)) {
-                colName = columns.get(i).getMetaAttribute().getName();
+                colName = columns.get(i).getName();
             }
             writeTextCell(colName, true);
         }

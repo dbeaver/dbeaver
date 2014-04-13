@@ -29,12 +29,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 
@@ -102,11 +101,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     {
         String inputName;
         if (valueController instanceof DBDAttributeController) {
-            DBCAttributeMetaData attribute = ((DBDAttributeController) valueController).getBinding().getMetaAttribute();
-            String tableName = attribute.getEntityName();
-            inputName = CommonUtils.isEmpty(tableName) ?
-                attribute.getName() :
-                tableName + "." + attribute.getName();
+            inputName = ((DBDAttributeController) valueController).getColumnId();
         } else {
             inputName = valueController.getValueName();
         }
@@ -116,6 +111,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return inputName;
     }
 
+    @Nullable
     @Override
     public IPersistableElement getPersistable()
     {
@@ -128,6 +124,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return getName();
     }
 
+    @Nullable
     @Override
     public Object getAdapter(Class adapter)
     {
@@ -229,6 +226,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return contentFile;
     }
 
+    @Nullable
     @Override
     public IPath getPath()
     {

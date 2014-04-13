@@ -80,6 +80,15 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
     }
 
     /**
+     * Attribute label
+     */
+    @NotNull
+    public String getLabel()
+    {
+        return metaAttribute.getLabel();
+    }
+
+    /**
      * Attribute name
      */
     @NotNull

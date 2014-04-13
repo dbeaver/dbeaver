@@ -53,7 +53,7 @@ public abstract class StreamExporterAbstract implements IStreamDataExporter {
         Object value)
     {
         final DBDValueHandler valueHandler = column.getValueHandler();
-        return valueHandler.getValueDisplayString(column.getMetaAttribute(), value, getSite().getExportFormat());
+        return valueHandler.getValueDisplayString(column, value, getSite().getExportFormat());
     }
 
 

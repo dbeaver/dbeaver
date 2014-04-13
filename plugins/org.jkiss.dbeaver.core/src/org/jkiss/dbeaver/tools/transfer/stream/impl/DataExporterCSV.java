@@ -104,9 +104,9 @@ public class DataExporterCSV extends StreamExporterAbstract {
     {
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             DBDAttributeBinding column = columns.get(i);
-            String colName = column.getMetaAttribute().getLabel();
+            String colName = column.getLabel();
             if (CommonUtils.isEmpty(colName)) {
-                colName = column.getMetaAttribute().getName();
+                colName = column.getName();
             }
             writeCellValue(colName, true);
             if (i < columnsSize - 1) {
