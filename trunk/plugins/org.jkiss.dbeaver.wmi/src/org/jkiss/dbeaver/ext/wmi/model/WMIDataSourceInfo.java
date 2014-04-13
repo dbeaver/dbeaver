@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.osgi.framework.Version;
 
 import java.util.Collection;
 
@@ -54,6 +55,11 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     public String getDatabaseProductVersion()
     {
         return "?";
+    }
+
+    @Override
+    public Version getDatabaseVersion() {
+        return new Version(1, 0, 0);
     }
 
     @Override

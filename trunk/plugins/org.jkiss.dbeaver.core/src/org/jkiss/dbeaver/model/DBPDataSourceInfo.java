@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.osgi.framework.Version;
+
 import java.util.Collection;
 
 /**
@@ -54,6 +56,12 @@ public interface DBPDataSourceInfo
      * @return database version number
      */
     String getDatabaseProductVersion();
+
+    /**
+     * Database server version
+     * @return server version
+     */
+    Version getDatabaseVersion();
 
     /**
      * Retrieves the name of this driver.

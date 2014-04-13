@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -28,7 +29,9 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -54,6 +57,8 @@ public class OracleDataType extends OracleObject<DBSObject>
     implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObjectEx {
 
     static final Log log = LogFactory.getLog(OracleTableForeignKey.class);
+    public static final String TYPE_CODE_COLLECTION = "COLLECTION";
+    public static final String TYPE_CODE_OBJECT = "OBJECT";
 
     static class TypeDesc {
         final DBPDataKind dataKind;
@@ -146,6 +151,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     private int valueType = java.sql.Types.OTHER;
     private String sourceDeclaration;
     private String sourceDefinition;
+    private OracleDataType componentType;
 
     public OracleDataType(DBSObject owner, String typeName, boolean persisted)
     {
@@ -187,9 +193,9 @@ public class OracleDataType extends OracleObject<DBSObject>
             // Determine value type for predefined types
             findTypeDesc(name);
         } else {
-            if ("COLLECTION".equals(this.typeCode)) {
+            if (TYPE_CODE_COLLECTION.equals(this.typeCode)) {
                 this.valueType = java.sql.Types.ARRAY;
-            } else if ("OBJECT".equals(this.typeCode)) {
+            } else if (TYPE_CODE_OBJECT.equals(this.typeCode)) {
                 this.valueType = java.sql.Types.STRUCT;
             }
         }
@@ -441,6 +447,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         return attributeCache != null ? attributeCache.getObject(monitor, this, attributeName) : null;
     }
 
+    @Nullable
     @Association
     public Collection<OracleDataTypeMethod> getMethods(DBRProgressMonitor monitor)
         throws DBException
@@ -458,6 +465,46 @@ public class OracleDataType extends OracleObject<DBSObject>
     public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
+    }
+
+    public OracleDataType getComponentType(@NotNull DBRProgressMonitor monitor)
+        throws DBCException
+    {
+        if (componentType != null) {
+            return componentType;
+        }
+        OracleSchema schema = getSchema();
+        if (schema == null || !TYPE_CODE_COLLECTION.equals(typeCode) || !getDataSource().isAtLeastV10()) {
+            return null;
+        }
+        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load collection types");
+        try {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT ELEM_TYPE_OWNER,ELEM_TYPE_NAME,ELEM_TYPE_MOD FROM SYS.ALL_COLL_TYPES WHERE OWNER=? AND TYPE_NAME=?");
+            try {
+                dbStat.setString(1, schema.getName());
+                dbStat.setString(2, getName());
+                JDBCResultSet dbResults = dbStat.executeQuery();
+                try {
+                    if (dbResults.next()) {
+                        String compTypeSchema = JDBCUtils.safeGetString(dbResults, "ELEM_TYPE_OWNER");
+                        String compTypeName = JDBCUtils.safeGetString(dbResults, "ELEM_TYPE_NAME");
+                        //String compTypeMod = JDBCUtils.safeGetString(dbResults, "ELEM_TYPE_MOD");
+                        componentType = OracleDataType.resolveDataType(monitor, getDataSource(), compTypeSchema, compTypeName);
+                    }
+                } finally {
+                    dbResults.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        } catch (Exception e) {
+            log.warn("Error reading collection types", e);
+        } finally {
+            session.close();
+        }
+
+        return componentType;
     }
 
     @Override

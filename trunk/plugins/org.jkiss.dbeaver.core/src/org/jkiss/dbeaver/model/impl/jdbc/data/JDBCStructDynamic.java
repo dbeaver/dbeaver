@@ -42,7 +42,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Struct;
 import java.sql.Types;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
 
 /**
  * Dynamic struct. Self contained entity.
@@ -310,6 +312,12 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     @Override
     public boolean isPersisted() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        return null;
     }
 
     @Override
