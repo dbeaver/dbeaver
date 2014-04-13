@@ -1980,6 +1980,11 @@ public class ResultSetViewer extends Viewer
                                 // Restore original position
                                 curRow = model.getRow(focusRow);
                                 curAttribute = model.getVisibleColumn(0);
+                                if (recordMode) {
+                                    updateRecordMode();
+                                } else {
+                                    updateStatusMessage();
+                                }
                                 GridCell newPos;
                                 if (!recordMode) {
                                     newPos = new GridCell(curAttribute, curRow);
@@ -1987,7 +1992,6 @@ public class ResultSetViewer extends Viewer
                                     newPos = new GridCell(curRow, curAttribute);
                                 }
                                 spreadsheet.setCursor(newPos, false);
-                                updateStatusMessage();
                                 previewValue();
                             } else {
                                 spreadsheet.redraw();
