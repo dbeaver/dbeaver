@@ -2819,11 +2819,10 @@ public class ResultSetViewer extends Viewer
         {
             if (element instanceof DBDAttributeBinding) {
                 DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
-                DBCAttributeMetaData attribute = attributeBinding.getMetaAttribute();
-                if (CommonUtils.isEmpty(attribute.getLabel())) {
+                if (CommonUtils.isEmpty(attributeBinding.getLabel())) {
                     return attributeBinding.getName();
                 } else {
-                    return attribute.getLabel();
+                    return attributeBinding.getLabel();
                 }
             } else {
                 if (!recordMode) {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -75,9 +76,9 @@ public class DataExporterXML extends StreamExporterAbstract {
         out.write("  <!ELEMENT DATA_RECORD (");
         int columnsSize = columns.size();
         for (int i = 0; i < columnsSize; i++) {
-            String colName = columns.get(i).getMetaAttribute().getLabel();
+            String colName = columns.get(i).getLabel();
             if (CommonUtils.isEmpty(colName)) {
-                colName = columns.get(i).getMetaAttribute().getName();
+                colName = columns.get(i).getName();
             }
             out.write(escapeXmlElementName(colName) + "?");
             if (i < columnsSize - 1) {
@@ -86,7 +87,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         }
         out.write(")+>\n");
         for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getMetaAttribute().getName()) + " (#PCDATA)>\n");
+            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getName()) + " (#PCDATA)>\n");
         }
         out.write("]>\n");
         out.write("<" + tableName + ">\n");
@@ -98,7 +99,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
-            String columnName = escapeXmlElementName(column.getMetaAttribute().getName());
+            String columnName = escapeXmlElementName(column.getName());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
                 writeTextCell(null);
@@ -131,7 +132,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         out.write("</" + tableName + ">\n");
     }
 
-    private void writeTextCell(String value)
+    private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
