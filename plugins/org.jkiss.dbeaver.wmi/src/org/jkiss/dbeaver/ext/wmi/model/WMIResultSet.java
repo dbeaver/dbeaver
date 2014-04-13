@@ -21,15 +21,11 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.*;
 
@@ -187,9 +183,14 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
     @Nullable
     @Override
-    public DBSEntity getEntity(DBRProgressMonitor monitor) throws DBException
-    {
-        return classObject == null ? null : classObject;
+    public String getCatalogName() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getSchemaName() {
+        return null;
     }
 
     @NotNull
@@ -197,24 +198,6 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     public String getEntityName()
     {
         return classObject == null ? null : classObject.getName();
-    }
-
-    @Nullable
-    @Override
-    public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    @Override
-    public DBCAttributeMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column) throws DBException
-    {
-        for (DBCAttributeMetaData cmd : properties) {
-            if (cmd.getEntityAttribute(monitor) == column) {
-                return cmd;
-            }
-        }
-        return null;
     }
 
     /////////////////////////////////////////////////////////////
@@ -279,6 +262,12 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return index;
         }
 
+        @Nullable
+        @Override
+        public Object getSource() {
+            return null;
+        }
+
         @NotNull
         @Override
         public String getLabel()
@@ -304,13 +293,6 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         public DBDPseudoAttribute getPseudoAttribute()
         {
             return null;
-        }
-
-        @Nullable
-        @Override
-        public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) throws DBException
-        {
-            return classObject == null ? null : classObject.getAttribute(monitor, getName());
         }
 
         @Nullable

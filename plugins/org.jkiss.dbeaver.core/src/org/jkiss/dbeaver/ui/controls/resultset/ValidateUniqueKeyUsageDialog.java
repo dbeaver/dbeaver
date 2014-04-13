@@ -118,7 +118,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
         try {
             identifier.reloadAttributes(
                 VoidProgressMonitor.INSTANCE,
-                viewer.getModel().getVisibleColumn(0).getMetaAttribute().getEntityMetaData());
+                viewer.getModel().getColumns());
         } catch (DBException e) {
             UIUtils.showErrorDialog(shell, "Use All Columns", "Can't reload unique columns", e);
             return false;
@@ -134,7 +134,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             // No key
             return false;
         }
-        if (!CommonUtils.isEmpty(identifier.getEntityAttributes())) {
+        if (!CommonUtils.isEmpty(identifier.getAttributes())) {
             // Key already defined
             return true;
         }

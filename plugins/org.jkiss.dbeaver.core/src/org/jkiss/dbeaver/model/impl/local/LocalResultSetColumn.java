@@ -54,6 +54,12 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return index;
     }
 
+    @Nullable
+    @Override
+    public Object getSource() {
+        return null;
+    }
+
     @NotNull
     @Override
     public String getLabel()
@@ -77,13 +83,6 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     @Nullable
     @Override
     public DBDPseudoAttribute getPseudoAttribute()
-    {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

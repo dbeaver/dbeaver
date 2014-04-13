@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.BaseEntityIdentifier;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -39,6 +40,8 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -500,36 +503,174 @@ public final class DBUtils {
     {
         Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<DBSEntity, DBDRowIdentifier>();
         try {
-            for (DBDAttributeBinding column : bindings) {
-                DBCAttributeMetaData attrMeta = column.getMetaAttribute();
+            for (DBDAttributeBinding binding : bindings) {
+                DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
                 DBCEntityMetaData entityMeta = attrMeta.getEntityMetaData();
-                if (entityMeta != null) {
-                    DBSEntityAttribute tableColumn = attrMeta.getEntityAttribute(session.getProgressMonitor());
-                    // We got table name and column name
-                    // To be editable we need this result   set contain set of columns from the same table
-                    // which construct any unique key
-                    DBSEntity ownerEntity = entityMeta.getEntity(session.getProgressMonitor());
-                    if (ownerEntity != null) {
-                        DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
-                        if (rowIdentifier == null) {
-                            DBCEntityIdentifier entityIdentifier = entityMeta.getBestIdentifier(session.getProgressMonitor());
-                            if (entityIdentifier != null) {
-                                rowIdentifier = new DBDRowIdentifier(
-                                    ownerEntity,
-                                    entityIdentifier);
-                                locatorMap.put(ownerEntity, rowIdentifier);
-                            }
+                Object metaSource = attrMeta.getSource();
+                DBSEntity entity = null;
+                if (metaSource instanceof DBSEntity) {
+                    entity = (DBSEntity)metaSource;
+                } else if (entityMeta != null) {
+
+                    final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, session.getDataSource());
+                    if (objectContainer != null) {
+                        String catalogName = entityMeta.getCatalogName();
+                        String schemaName = entityMeta.getSchemaName();
+                        String entityName = entityMeta.getEntityName();
+                        Class<? extends DBSObject> scChildType = objectContainer.getChildType(session.getProgressMonitor());
+                        DBSObject entityObject;
+                        if (!CommonUtils.isEmpty(catalogName) && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {
+                            // Do not use catalog name
+                            // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2)
+                            entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+                        } else {
+                            entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
                         }
-                        column.initValueLocator(tableColumn, rowIdentifier);
+                        if (entityObject == null) {
+                            log.debug("Table '" + entityName + "' not found in metadata catalog");
+                        } else if (entityObject instanceof DBSEntity) {
+                            entity = (DBSEntity) entityObject;
+                        } else {
+                            log.debug("Unsupported table class: " + entityObject.getClass().getName());
+                        }
                     }
                 }
+                // We got table name and column name
+                // To be editable we need this result   set contain set of columns from the same table
+                // which construct any unique key
+                if (entity != null) {
+                    DBSEntityAttribute tableColumn;
+                    if (attrMeta.getPseudoAttribute() != null) {
+                        tableColumn = attrMeta.getPseudoAttribute().createFakeAttribute(entity, attrMeta);
+                    } else {
+                        tableColumn = entity.getAttribute(session.getProgressMonitor(), attrMeta.getName());
+                    }
 
-                column.readNestedBindings(session, rows);
+                    binding.setEntityAttribute(tableColumn);
+                }
+            }
+
+            // Init row identifiers
+            for (DBDAttributeBinding binding : bindings) {
+                DBSEntityAttribute attr = binding.getEntityAttribute();
+                if (attr == null) {
+                    continue;
+                }
+                DBSEntity entity = attr.getParentObject();
+                DBDRowIdentifier rowIdentifier = locatorMap.get(entity);
+                if (rowIdentifier == null) {
+                    DBCEntityIdentifier entityIdentifier = getBestIdentifier(session.getProgressMonitor(), entity, bindings);
+                    if (entityIdentifier != null) {
+                        rowIdentifier = new DBDRowIdentifier(
+                            entity,
+                            entityIdentifier);
+                        locatorMap.put(entity, rowIdentifier);
+                    }
+                }
+                binding.setRowIdentifier(rowIdentifier);
+            }
+
+            // Read nested bindings
+            for (DBDAttributeBinding binding : bindings) {
+                binding.readNestedBindings(session, rows);
             }
         }
         catch (DBException e) {
             log.error("Can't extract column identifier info", e);
         }
+    }
+
+    private static DBCEntityIdentifier getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
+        throws DBException
+    {
+        List<DBCEntityIdentifier> identifiers = new ArrayList<DBCEntityIdentifier>(2);
+        // Check for pseudo attrs (ROWID)
+        for (DBDAttributeBinding column : bindings) {
+            DBDPseudoAttribute pseudoAttribute = column.getMetaAttribute().getPseudoAttribute();
+            if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
+                identifiers.add(new BaseEntityIdentifier(monitor, new DBDPseudoReferrer(table, column), bindings));
+                break;
+            }
+        }
+
+        if (table instanceof DBSTable && ((DBSTable) table).isView()) {
+            // Skip physical identifiers for views. There are nothing anyway
+
+        } else if (identifiers.isEmpty()) {
+
+            // Check constraints
+            Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
+            if (!CommonUtils.isEmpty(constraints)) {
+                for (DBSEntityConstraint constraint : constraints) {
+                    if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
+                        identifiers.add(
+                            new BaseEntityIdentifier(monitor, (DBSEntityReferrer)constraint, bindings));
+                    }
+                }
+            }
+            if (identifiers.isEmpty() && table instanceof DBSTable) {
+                try {
+                    // Check indexes only if no unique constraints found
+                    Collection<? extends DBSTableIndex> indexes = ((DBSTable)table).getIndexes(monitor);
+                    if (!CommonUtils.isEmpty(indexes)) {
+                        for (DBSTableIndex index : indexes) {
+                            if (index.isUnique()) {
+                                identifiers.add(
+                                    new BaseEntityIdentifier(monitor, index, bindings));
+                                break;
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    // Indexes are not supported or not available
+                    // Just skip them
+                    log.debug(e);
+                }
+            }
+        }
+        if (CommonUtils.isEmpty(identifiers)) {
+            // No physical identifiers
+            // Make new or use existing virtual identifier
+            DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table, true);
+            identifiers.add(new BaseEntityIdentifier(monitor, virtualEntity.getBestIdentifier(), bindings));
+        }
+        if (!CommonUtils.isEmpty(identifiers)) {
+            // Find PK or unique key
+            DBCEntityIdentifier uniqueId = null;
+            for (DBCEntityIdentifier id : identifiers) {
+                DBSEntityReferrer referrer = id.getReferrer();
+                if (referrer != null && isGoodReferrer(monitor, bindings, referrer)) {
+                    if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                        return id;
+                    } else if (referrer.getConstraintType().isUnique() ||
+                        (referrer instanceof DBSTableIndex && ((DBSTableIndex) referrer).isUnique()))
+                    {
+                        uniqueId = id;
+                    }
+                }
+            }
+            return uniqueId;
+        }
+        return null;
+    }
+
+    private static boolean isGoodReferrer(DBRProgressMonitor monitor, DBDAttributeBinding[] bindings, DBSEntityReferrer referrer) throws DBException
+    {
+        if (referrer instanceof DBDPseudoReferrer) {
+            return true;
+        }
+        Collection<? extends DBSEntityAttributeRef> references = referrer.getAttributeReferences(monitor);
+        if (CommonUtils.isEmpty(references)) {
+            return referrer instanceof DBVEntityConstraint;
+        }
+        for (DBSEntityAttributeRef ref : references) {
+            for (DBDAttributeBinding binding : bindings) {
+                if (binding.matches(ref.getAttribute())) {
+                    return true;
+                }
+            }
+        }
+        return true;
     }
 
     @NotNull
