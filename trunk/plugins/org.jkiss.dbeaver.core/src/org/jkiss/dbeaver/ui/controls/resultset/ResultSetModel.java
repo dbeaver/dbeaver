@@ -245,6 +245,13 @@ public class ResultSetModel {
             }
             DBDAttributeBinding attr = column.getParent(depth - i - 1);
             assert attr != null;
+            if (curValue instanceof DBDCollection) {
+                // Use first collection item
+                DBDCollection col = (DBDCollection) curValue;
+                if (col.getItemCount() > 0) {
+                    curValue = col.getItem(0);
+                }
+            }
             if (curValue instanceof DBDStructure) {
                 try {
                     curValue = ((DBDStructure) curValue).getAttributeValue(attr.getAttribute());

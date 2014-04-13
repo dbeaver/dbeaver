@@ -467,6 +467,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         return null;
     }
 
+    @Property(viewable = true, order = 8)
     public OracleDataType getComponentType(@NotNull DBRProgressMonitor monitor)
         throws DBCException
     {

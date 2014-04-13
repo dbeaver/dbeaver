@@ -107,6 +107,10 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     @Override
     public DBPDataKind getDataKind()
     {
+        if (attrTypeMod == OracleDataTypeModifier.REF) {
+            // Explicitly say that we are reference
+            return DBPDataKind.REFERENCE;
+        }
         return attrType.getDataKind();
     }
 
