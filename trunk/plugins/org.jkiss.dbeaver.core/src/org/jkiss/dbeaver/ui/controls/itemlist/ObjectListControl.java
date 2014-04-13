@@ -32,6 +32,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -222,7 +223,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return curListObject;
     }
 
-    protected void setCurListObject(OBJECT_TYPE curListObject)
+    protected void setCurListObject(@Nullable OBJECT_TYPE curListObject)
     {
         this.curListObject = curListObject;
     }
@@ -248,6 +249,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return columns.get(index);
     }
 
+    @Nullable
     protected ObjectPropertyDescriptor getObjectProperty(OBJECT_TYPE object, int columnIndex)
     {
         return columns.get(columnIndex).getProperty(getObjectValue(object));
@@ -550,6 +552,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    @Nullable
     private synchronized Map<OBJECT_TYPE, List<ObjectColumn>> obtainLazyObjects()
     {
         synchronized (lazyCache) {
@@ -562,6 +565,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
+    @Nullable
     private Object getCellValue(Object element, int columnIndex)
     {
         OBJECT_TYPE object = (OBJECT_TYPE)element;
@@ -610,6 +614,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return getListPropertySource().getPropertyValue(objectValue, prop);
     }
 
+    @Nullable
     private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue)
     {
         ObjectPropertyDescriptor prop = null;
@@ -627,6 +632,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return prop;
     }
 
+    @Nullable
     protected Class<?>[] getListBaseTypes(Collection<OBJECT_TYPE> items)
     {
         return null;
@@ -647,6 +653,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * @param item object
      * @return image or null
      */
+    @Nullable
     protected Image getObjectImage(OBJECT_TYPE item)
     {
         return null;
@@ -728,6 +735,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // Edit
 
+    @Nullable
     protected EditingSupport makeEditingSupport(ViewerColumn viewerColumn, int columnIndex)
     {
         return null;
@@ -828,6 +836,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             this.propMap.put(objectClass, prop);
         }
 
+        @Nullable
         public ObjectPropertyDescriptor getProperty(Object element)
         {
             return element == null ? null : getPropertyByObject(this, element);
@@ -846,6 +855,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             this.columnIndex = columnIndex;
         }
 
+        @Nullable
         @Override
         public Image getImage(Object element)
         {
@@ -1051,6 +1061,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             super(itemsViewer);
         }
 
+        @Nullable
         @Override
         protected Object getCellValue(Object element, int columnIndex)
         {
