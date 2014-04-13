@@ -26,6 +26,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -315,7 +316,7 @@ public abstract class ObjectViewerRenderer {
         linkLayout.setStyle(linkStyle, 0, text.length());
     }
 
-    public static String getCellString(Object value)
+    public static String getCellString(@Nullable Object value)
     {
         if (value == null || value instanceof Boolean) {
             return "";
@@ -358,7 +359,7 @@ public abstract class ObjectViewerRenderer {
         }
     }
 
-    public boolean isHyperlink(Object cellValue)
+    public boolean isHyperlink(@Nullable Object cellValue)
     {
         return false;
     }
@@ -368,6 +369,7 @@ public abstract class ObjectViewerRenderer {
         // do nothing. by default all cells are not navigable
     }
 
+    @Nullable
     protected abstract Object getCellValue(Object element, int columnIndex);
 
 }
