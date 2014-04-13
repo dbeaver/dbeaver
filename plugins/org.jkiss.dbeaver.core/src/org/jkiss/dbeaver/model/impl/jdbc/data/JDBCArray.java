@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 
 import java.sql.Array;
 import java.sql.ResultSet;
@@ -191,7 +192,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     public String makeArrayString()
     {
         if (isNull()) {
-            return String.valueOf(null);
+            return SQLConstants.NULL_VALUE;
         }
         if (contents.length == 0) {
             return "";
