@@ -234,16 +234,30 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
                 // Data type was not resolved - let's threat it as ANY
             case ANY:
                 // Nested binding must be resolved for each value
-                if (!rows.isEmpty()) {
-                    // Analyse all read values
-                    resolveBindingsFromData(session, rows);
+                // Analyse all read values
+                resolveMapsFromData(session, rows);
+                break;
+            case ARRAY:
+                //
+                DBSDataType collectionType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
+                if (collectionType != null) {
+                    DBSDataType componentType = collectionType.getComponentType(session.getProgressMonitor());
+                    if (componentType instanceof DBSEntity) {
+                        Collection<? extends DBSEntityAttribute> nestedAttributes = ((DBSEntity) componentType).getAttributes(session.getProgressMonitor());
+                        if (nestedAttributes != null && !nestedAttributes.isEmpty()) {
+                            createNestedBindings(session, nestedAttributes, rows);
+                            return;
+                        }
+                    }
                 }
+                // No component type found.
+                // Array items should be resolved in a lazy mode
                 break;
         }
 
     }
 
-    private void resolveBindingsFromData(DBCSession session, List<Object[]> rows) throws DBException {
+    private void resolveMapsFromData(DBCSession session, List<Object[]> rows) throws DBException {
         Set<DBSAttributeBase> valueAttributes = new LinkedHashSet<DBSAttributeBase>();
         for (int i = 0; i < rows.size(); i++) {
             Object value = rows.get(i)[getOrdinalPosition()];
@@ -257,6 +271,15 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
         if (!valueAttributes.isEmpty()) {
             createNestedBindings(session, valueAttributes, rows);
         }
+    }
+
+    private void resolveCollectionsFromData(DBCSession session, List<Object[]> rows) throws DBException {
+//        for (int i = 0; i < rows.size(); i++) {
+//            Object value = rows.get(i)[getOrdinalPosition()];
+//            if (value instanceof DBDCollection) {
+//                DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
+//            }
+//        }
     }
 
     private void createNestedBindings(DBCSession session, Collection<? extends DBSAttributeBase> nestedAttributes, List<Object[]> rows) throws DBException {

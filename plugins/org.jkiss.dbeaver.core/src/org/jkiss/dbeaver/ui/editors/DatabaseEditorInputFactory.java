@@ -101,42 +101,44 @@ public class DatabaseEditorInputFactory implements IElementFactory
                 DBNDataSource dsNode = null;
                 try {
                     dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dsObject);
-                    dsNode.initializeNode(monitor, new DBRProcessListener() {
-                        @Override
-                        public void onProcessFinish(IStatus status)
-                        {
-                            if (!status.isOK()) {
-                                errorStatus = status;
-                                return;
-                            }
-                            try {
-                                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
-                                if (node != null) {
-                                    Class<?> aClass = Class.forName(inputClass);
-                                    Constructor<?> constructor ;
-                                    for (Class nodeType = node.getClass(); ; nodeType = nodeType.getSuperclass()) {
-                                        try {
-                                            constructor = aClass.getConstructor(nodeType);
-                                            break;
-                                        } catch (NoSuchMethodException e) {
-                                            // No such constructor
+                    if (dsNode != null) {
+                        dsNode.initializeNode(monitor, new DBRProcessListener() {
+                            @Override
+                            public void onProcessFinish(IStatus status)
+                            {
+                                if (!status.isOK()) {
+                                    errorStatus = status;
+                                    return;
+                                }
+                                try {
+                                    DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
+                                    if (node != null) {
+                                        Class<?> aClass = Class.forName(inputClass);
+                                        Constructor<?> constructor ;
+                                        for (Class nodeType = node.getClass(); ; nodeType = nodeType.getSuperclass()) {
+                                            try {
+                                                constructor = aClass.getConstructor(nodeType);
+                                                break;
+                                            } catch (NoSuchMethodException e) {
+                                                // No such constructor
+                                            }
+                                        }
+                                        if (constructor != null) {
+                                            DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
+                                            input.setDefaultPageId(activePageId);
+                                            input.setDefaultFolderId(activeFolderId);
+                                            result = input;
+                                        } else {
+                                            throw new DBException("Can't create object instance [" + inputClass + "]");
                                         }
                                     }
-                                    if (constructor != null) {
-                                        DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
-                                        input.setDefaultPageId(activePageId);
-                                        input.setDefaultFolderId(activeFolderId);
-                                        result = input;
-                                    } else {
-                                        throw new DBException("Can't create object instance [" + inputClass + "]");
-                                    }
+                                } catch (Exception e) {
+                                    errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
+                                    log.error(e);
                                 }
-                            } catch (Exception e) {
-                                errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
-                                log.error(e);
                             }
-                        }
-                    });
+                        });
+                    }
                 } catch (Exception e) {
                     errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
                 }

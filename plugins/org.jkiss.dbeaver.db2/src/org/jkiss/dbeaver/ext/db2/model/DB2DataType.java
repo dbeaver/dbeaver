@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
@@ -28,9 +29,11 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -216,6 +219,12 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         } else {
             return 0;
         }
+    }
+
+    @Nullable
+    @Override
+    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        return null;
     }
 
     @Override

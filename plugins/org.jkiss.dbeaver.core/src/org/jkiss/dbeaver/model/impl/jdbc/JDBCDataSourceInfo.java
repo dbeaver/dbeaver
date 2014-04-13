@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private String databaseProductVersion;
     private String driverName;
     private String driverVersion;
+    private Version databaseVersion;
     private String schemaTerm;
     private String procedureTerm;
     private String catalogTerm;
@@ -91,6 +93,16 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         } catch (Throwable e) {
             log.debug(e.getMessage());
             this.driverVersion = "?"; //$NON-NLS-1$
+        }
+        try {
+            databaseVersion = new Version(metaData.getDatabaseMajorVersion(), metaData.getDatabaseMinorVersion(), 0);
+        } catch (SQLException e) {
+            try {
+                databaseVersion = new Version(databaseProductVersion);
+            } catch (IllegalArgumentException e1) {
+                log.debug("Can't determine database version. Use default");
+                databaseVersion = new Version(0, 0, 0);
+            }
         }
         try {
             this.schemaTerm = makeTermString(metaData.getSchemaTerm(), TERM_SCHEMA);
@@ -168,6 +180,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public String getDatabaseProductVersion()
     {
         return databaseProductVersion;
+    }
+
+    @Override
+    public Version getDatabaseVersion() {
+        return databaseVersion;
     }
 
     @Override
