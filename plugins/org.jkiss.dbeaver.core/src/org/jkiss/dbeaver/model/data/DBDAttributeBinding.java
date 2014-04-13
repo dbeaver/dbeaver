@@ -50,7 +50,7 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
     private DBDRowIdentifier rowIdentifier;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
-
+    @Nullable
     private List<DBSEntityReferrer> referrers;
 
     public DBDAttributeBinding(
@@ -192,9 +192,17 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
      * @return attribute level (depth)
      */
     public int getLevel() {
-        return parent == null ? 0 : parent.getLevel() + 1;
+        if (parent == null) {
+            return 0;
+        }
+        int level = 0;
+        for (DBDAttributeBinding binding = parent; binding != null; binding = binding.parent) {
+            level++;
+        }
+        return level;
     }
 
+    @Nullable
     public List<DBSEntityReferrer> getReferrers() {
         return referrers;
     }
