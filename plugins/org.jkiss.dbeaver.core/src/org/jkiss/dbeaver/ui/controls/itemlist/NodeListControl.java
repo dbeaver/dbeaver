@@ -212,11 +212,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
     }
 
+    @Nullable
     @Override
     protected Class<?>[] getListBaseTypes(Collection<DBNNode> items)
     {
         // Collect base types for root node
-        if (getRootNode() instanceof DBNDatabaseNode && nodeMeta != null) {
+        if (getRootNode() instanceof DBNDatabaseNode) {
             DBNDatabaseNode dbNode = (DBNDatabaseNode) getRootNode();
             List<Class<?>> baseTypes = dbNode.getChildrenTypes(nodeMeta);
             // Collect base types for inline children
