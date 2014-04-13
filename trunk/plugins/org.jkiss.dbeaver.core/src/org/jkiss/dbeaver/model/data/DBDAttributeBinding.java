@@ -190,8 +190,11 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
         return referrers;
     }
 
-    public void initValueLocator(@Nullable DBSEntityAttribute entityAttribute, @Nullable DBDRowIdentifier rowIdentifier) {
+    public void setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
         this.entityAttribute = entityAttribute;
+    }
+
+    public void setRowIdentifier(@Nullable DBDRowIdentifier rowIdentifier) {
         this.rowIdentifier = rowIdentifier;
     }
 
@@ -245,7 +248,10 @@ public class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQual
         for (DBSAttributeBase nestedAttr : nestedAttributes) {
             DBCAttributeMetaData nestedMeta = new DBCNestedAttributeMetaData(nestedAttr, nestedIndex, metaAttribute);
             DBDAttributeBinding nestedBinding = new DBDAttributeBinding(dataSource, this, nestedMeta);
-            nestedBinding.initValueLocator(nestedAttr instanceof DBSEntityAttribute ? (DBSEntityAttribute) nestedAttr : null, rowIdentifier);
+            if (nestedAttr instanceof DBSEntityAttribute) {
+                nestedBinding.setEntityAttribute((DBSEntityAttribute) nestedAttr);
+            }
+            nestedBinding.setRowIdentifier(rowIdentifier);
             nestedBinding.readNestedBindings(session, rows);
             nestedBindings.add(nestedBinding);
             nestedIndex++;

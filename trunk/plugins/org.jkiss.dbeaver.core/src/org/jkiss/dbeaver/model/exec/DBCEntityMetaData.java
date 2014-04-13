@@ -33,9 +33,14 @@ import java.util.List;
  */
 public interface DBCEntityMetaData {
 
+    @Nullable
+    String getCatalogName();
+
+    @Nullable
+    String getSchemaName();
+
     /**
-     * Table name
-     * @return table name
+     * Entity name
      */
     @NotNull
     String getEntityName();
@@ -45,32 +50,5 @@ public interface DBCEntityMetaData {
      */
     @NotNull
     List<? extends DBCAttributeMetaData> getAttributes();
-
-    // TODO: move to utils
-    /**
-     * Table reference
-     * @return table table reference. never returns null
-     * @param monitor progress monitor
-     */
-    @Nullable
-    DBSEntity getEntity(DBRProgressMonitor monitor)
-        throws DBException;
-
-    // TODO: move to utils
-    @Nullable
-    DBCAttributeMetaData getAttributeMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
-        throws DBException;
-
-    // TODO: move to utils
-    /**
-     * Gets best table identifier.
-     * Best identifier is a primary key. If no such one then any unique key fits.
-     * @return list of identifier columns which identifies this table row the best way
-     * or null if no identifiers found.
-     * @param monitor progress monitor
-     */
-    @Nullable
-    DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
-        throws DBException;
 
 }

@@ -25,9 +25,7 @@ import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 /**
  * Result set attribute meta data
@@ -47,6 +45,12 @@ public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObject
     @Override
     public int getOrdinalPosition() {
         return index;
+    }
+
+    @Nullable
+    @Override
+    public Object getSource() {
+        return parentMeta.getSource();
     }
 
     @NotNull
@@ -70,12 +74,6 @@ public class DBCNestedAttributeMetaData implements DBCAttributeMetaData, IObject
     @Override
     public DBDPseudoAttribute getPseudoAttribute() {
         return null;
-    }
-
-    @Nullable
-    @Override
-    public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) {
-        return attribute instanceof DBSEntityAttribute ? (DBSEntityAttribute) attribute : null;
     }
 
     @Nullable

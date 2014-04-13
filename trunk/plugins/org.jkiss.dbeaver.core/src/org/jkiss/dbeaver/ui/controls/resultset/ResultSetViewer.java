@@ -2333,7 +2333,7 @@ public class ResultSetViewer extends Viewer
         // Probably we have only virtual one with empty column set
         final DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
         if (identifier != null) {
-            if (CommonUtils.isEmpty(identifier.getEntityAttributes())) {
+            if (CommonUtils.isEmpty(identifier.getAttributes())) {
                 // Empty identifier. We have to define it
                 RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
                     @Override
@@ -2373,7 +2373,7 @@ public class ResultSetViewer extends Viewer
             log.warn("No virtual identifier defined");
             return false;
         }
-        virtualEntityIdentifier.reloadAttributes(monitor, model.getVisibleColumn(0).getMetaAttribute().getEntityMetaData());
+        virtualEntityIdentifier.reloadAttributes(monitor, model.getColumns());
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
             dataSource.getContainer().persistConfiguration();
@@ -2388,7 +2388,7 @@ public class ResultSetViewer extends Viewer
         DBCEntityIdentifier identifier = firstColumn.getRowIdentifier().getEntityIdentifier();
         DBVEntityConstraint virtualKey = (DBVEntityConstraint) identifier.getReferrer();
         virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
-        identifier.reloadAttributes(monitor, firstColumn.getMetaAttribute().getEntityMetaData());
+        identifier.reloadAttributes(monitor, model.getColumns());
         virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
 
         DBPDataSource dataSource = getDataSource();
@@ -3108,7 +3108,7 @@ public class ResultSetViewer extends Viewer
         public boolean isEnabled()
         {
             DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
-            return identifier != null && (define || !CommonUtils.isEmpty(identifier.getEntityAttributes()));
+            return identifier != null && (define || !CommonUtils.isEmpty(identifier.getAttributes()));
         }
 
         @Override

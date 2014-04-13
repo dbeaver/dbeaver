@@ -32,6 +32,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 public interface DBCAttributeMetaData extends DBSAttributeBase
 {
     /**
+     * Source of this metadata object
+     */
+    @Nullable
+    Object getSource();
+    /**
      * Attribute label in result set
      * @return label
      */
@@ -64,9 +69,10 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
      * @return column metadata
      * @throws DBCException on any DB error
      * @param monitor progress monitor
-     */
+     *
     @Nullable
     DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) throws DBException;
+    */
 
     /**
      * Owner table metadata

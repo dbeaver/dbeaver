@@ -23,18 +23,17 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
@@ -43,39 +42,33 @@ import java.sql.SQLException;
 /**
  * JDBCColumnMetaData
  */
-public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImageProvider
-{
+public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImageProvider {
     static final Log log = LogFactory.getLog(JDBCColumnMetaData.class);
 
     public static final String PROP_CATEGORY_COLUMN = "Column";
 
-    private int ordinalPosition;
-    private boolean notNull;
+    private final int ordinalPosition;
+    private final boolean notNull;
     private long displaySize;
-    private String label;
-    private String name;
+    private final String label;
+    private final String name;
     private int precision;
     private int scale;
-    private String tableName;
-    private int typeID;
-    private String typeName;
-    private boolean readOnly;
-    private boolean writable;
-    private boolean sequence;
-    private JDBCTableMetaData tableMetaData;
-    private DBSEntityAttribute tableColumn;
+    private final String tableName;
+    private final int typeID;
+    private final String typeName;
+    private final boolean readOnly;
+    private final boolean writable;
+    private final boolean sequence;
+    private final JDBCTableMetaData tableMetaData;
     private final DBPDataKind dataKind;
     private DBDPseudoAttribute pseudoAttribute;
+    private final Object source;
 
     protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int ordinalPosition)
-        throws SQLException
-    {
+        throws SQLException {
         DBCStatement rsSource = resultSetMeta.getResultSet().getSourceStatement();
-        Object statementSource = rsSource != null ? rsSource.getStatementSource() : null;
-        DBSEntity ownerEntity = null;
-        if (statementSource instanceof DBSEntity) {
-            ownerEntity = (DBSEntity)statementSource;
-        }
+        this.source = rsSource != null ? rsSource.getStatementSource() : null;
         this.ordinalPosition = ordinalPosition;
 
         this.label = resultSetMeta.getColumnLabel(ordinalPosition + 1);
@@ -127,105 +120,82 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             }
         }
 
-        if (ownerEntity != null) {
-            this.tableName = ownerEntity.getName();
-            try {
-                this.tableColumn = ownerEntity.getAttribute(resultSetMeta.getResultSet().getSession().getProgressMonitor(), name);
-            }
-            catch (DBException e) {
-                log.warn(e);
-            }
-            try {
-                this.tableMetaData = resultSetMeta.getTableMetaData(ownerEntity);
-            }
-            catch (DBException e) {
-                log.warn(e);
-            }
+        this.notNull = resultSetMeta.isNullable(ordinalPosition + 1) == ResultSetMetaData.columnNoNulls;
+        try {
+            this.displaySize = resultSetMeta.getColumnDisplaySize(ordinalPosition + 1);
+        } catch (SQLException e) {
+            this.displaySize = 0;
+        }
+        this.typeID = resultSetMeta.getColumnType(ordinalPosition + 1);
+        this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition + 1);
+        this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
+
+        try {
+            this.precision = resultSetMeta.getPrecision(ordinalPosition + 1);
+        } catch (Exception e) {
+            // NumberFormatException occurred in Oracle on BLOB columns
+            this.precision = 0;
+        }
+        try {
+            this.scale = resultSetMeta.getScale(ordinalPosition + 1);
+        } catch (Exception e) {
+            this.scale = 0;
+        }
+
+        this.tableName = fetchedTableName;
+        if (!CommonUtils.isEmpty(this.tableName)) {
+            this.tableMetaData = resultSetMeta.getTableMetaData(fetchedCatalogName, fetchedSchemaName, tableName);
         } else {
-            this.tableName = fetchedTableName;
+            this.tableMetaData = null;
         }
 
-        if (this.tableColumn == null) {
-            this.notNull = resultSetMeta.isNullable(ordinalPosition + 1) == ResultSetMetaData.columnNoNulls;
-            try {
-                this.displaySize = resultSetMeta.getColumnDisplaySize(ordinalPosition + 1);
-            } catch (SQLException e) {
-                this.displaySize = 0;
-            }
-            this.typeID = resultSetMeta.getColumnType(ordinalPosition + 1);
-            this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition + 1);
-            this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
-
-            try {
-                this.precision = resultSetMeta.getPrecision(ordinalPosition + 1);
-            } catch (Exception e) {
-                // NumberFormatException occurred in Oracle on BLOB columns
-                this.precision = 0;
-            }
-            try {
-                this.scale = resultSetMeta.getScale(ordinalPosition + 1);
-            } catch (Exception e) {
-                this.scale = 0;
-            }
-        }
-
-        if (this.tableMetaData == null) {
-            try {
-                if (!CommonUtils.isEmpty(this.tableName)) {
-                    this.tableMetaData = resultSetMeta.getTableMetaData(fetchedCatalogName, fetchedSchemaName, tableName);
-                }
-            }
-            catch (DBException e) {
-                log.warn(e);
-            }
-        }
         if (this.tableMetaData != null) {
             this.tableMetaData.addAttribute(this);
         }
 
-        dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSourceStatement().getSession().getDataSource(), typeName, typeID);
+        this.dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSourceStatement().getSession().getDataSource(), typeName, typeID);
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 1)
     @Override
-    public int getOrdinalPosition()
-    {
+    public int getOrdinalPosition() {
         return ordinalPosition;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 2)
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
+    }
+
+    @Override
+    public Object getSource() {
+        return source;
     }
 
     //@Property(category = PROP_CATEGORY_COLUMN, order = 3)
     @NotNull
     @Override
-    public String getLabel()
-    {
+    public String getLabel() {
         return label;
     }
 
     @Nullable
     @Property(category = PROP_CATEGORY_COLUMN, order = 4)
     @Override
-    public String getEntityName()
-    {
-        return tableMetaData != null ? tableMetaData.getEntityName() : tableName;
+    public String getEntityName() {
+        return tableName;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 30)
     @Override
-    public boolean isRequired()
-    {
-        return tableColumn == null || pseudoAttribute != null ? notNull : tableColumn.isRequired();
+    public boolean isRequired() {
+        return notNull;
     }
 
     @Override
     public boolean isAutoGenerated() {
-        return tableColumn == null || pseudoAttribute != null ? sequence : tableColumn.isAutoGenerated();
+        return sequence;
     }
 
     @Override
@@ -235,105 +205,67 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 20)
     @Override
-    public long getMaxLength()
-    {
-        return tableColumn == null || pseudoAttribute != null ? displaySize : tableColumn.getMaxLength();
+    public long getMaxLength() {
+        return displaySize;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 21)
     @Override
-    public int getPrecision()
-    {
-        return tableColumn == null || pseudoAttribute != null ? precision : tableColumn.getPrecision();
+    public int getPrecision() {
+        return precision;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 22)
     @Override
-    public int getScale()
-    {
-        return tableColumn == null || pseudoAttribute != null ? scale : tableColumn.getScale();
+    public int getScale() {
+        return scale;
     }
 
     @Override
-    public int getTypeID()
-    {
-        return tableColumn == null || pseudoAttribute != null ? typeID : tableColumn.getTypeID();
+    public int getTypeID() {
+        return typeID;
     }
 
     @Override
-    public DBPDataKind getDataKind()
-    {
-        return tableColumn == null || pseudoAttribute != null ? dataKind : tableColumn.getDataKind();
+    public DBPDataKind getDataKind() {
+        return dataKind;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 4)
     @Override
-    public String getTypeName()
-    {
-        return tableColumn == null || pseudoAttribute != null ? typeName : tableColumn.getTypeName();
+    public String getTypeName() {
+        return typeName;
     }
 
     @Override
-    public boolean isReadOnly()
-    {
+    public boolean isReadOnly() {
         return readOnly;
     }
 
     @Nullable
     @Override
-    public DBDPseudoAttribute getPseudoAttribute()
-    {
+    public DBDPseudoAttribute getPseudoAttribute() {
         return pseudoAttribute;
     }
 
-    public void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute)
-    {
+    public void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute) {
         this.pseudoAttribute = pseudoAttribute;
     }
 
     @Nullable
     @Override
-    public JDBCTableMetaData getEntityMetaData()
-    {
+    public JDBCTableMetaData getEntityMetaData() {
         return tableMetaData;
     }
 
     @Nullable
     @Override
-    public DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (tableColumn != null) {
-            return tableColumn;
-        }
-        if (tableMetaData == null) {
-            return null;
-        }
-        DBSEntity entity = tableMetaData.getEntity(monitor);
-        if (entity == null) {
-            return null;
-        }
-        if (pseudoAttribute != null) {
-            tableColumn = pseudoAttribute.createFakeAttribute(entity, this);
-        } else {
-            tableColumn = entity.getAttribute(monitor, name);
-        }
-        return tableColumn;
-    }
-
-    @Nullable
-    @Override
-    public Image getObjectImage()
-    {
-        if (tableColumn instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider) tableColumn).getObjectImage();
-        }
+    public Image getObjectImage() {
         return DBUtils.getDataIcon(this).getImage();
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder db = new StringBuilder();
         if (!CommonUtils.isEmpty(tableName)) {
             db.append(tableName).append('.');

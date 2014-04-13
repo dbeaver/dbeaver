@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -119,12 +118,8 @@ class ResultSetPersister {
         for (RowData row : deletedRows) {
             DBSEntity table = columns[0].getRowIdentifier().getEntity();
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, row, table);
-            Collection<? extends DBSEntityAttribute> keyColumns = columns[0].getRowIdentifier().getEntityIdentifier().getEntityAttributes();
-            for (DBSEntityAttribute column : keyColumns) {
-                DBDAttributeBinding binding = model.getAttributeBinding(column);
-                if (binding == null) {
-                    throw new DBCException("Can't find meta column for ID column " + column.getName());
-                }
+            List<DBDAttributeBinding> keyColumns = columns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
+            for (DBDAttributeBinding binding : keyColumns) {
                 statement.keyAttributes.add(
                     new DBDAttributeValue(
                         binding,
@@ -169,13 +164,8 @@ class ResultSetPersister {
                             model.getCellValue(changedAttr, row)));
                 }
                 // Key columns
-                Collection<? extends DBCAttributeMetaData> idColumns = rowIdentifier.getEntityIdentifier().getMetaAttributes();
-                for (DBCAttributeMetaData idAttribute : idColumns) {
-                    // Find meta column and add statement parameter
-                    DBDAttributeBinding metaColumn = model.getAttributeBinding(idAttribute);
-                    if (metaColumn == null) {
-                        throw new DBCException("Can't find meta column for ID column " + idAttribute.getName());
-                    }
+                List<DBDAttributeBinding> idColumns = rowIdentifier.getEntityIdentifier().getAttributes();
+                for (DBDAttributeBinding metaColumn : idColumns) {
                     int attributeIndex = metaColumn.getOrdinalPosition();
                     Object keyValue = row.values[attributeIndex];
                     // Try to find old key oldValue
