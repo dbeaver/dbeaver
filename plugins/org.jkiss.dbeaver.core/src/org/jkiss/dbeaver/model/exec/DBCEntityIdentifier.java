@@ -19,11 +19,13 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Result set table metadata
@@ -40,13 +42,7 @@ public interface DBCEntityIdentifier {
      * Result set columns
      * @return list of result set columns.
      */
-    Collection<? extends DBCAttributeMetaData> getMetaAttributes();
+    List<DBDAttributeBinding> getAttributes();
 
-    /**
-     * Identifier attributes (columns)
-     * @return
-     */
-    Collection<? extends DBSEntityAttribute> getEntityAttributes();
-
-    void reloadAttributes(DBRProgressMonitor monitor, DBCEntityMetaData metaData) throws DBException;
+    void reloadAttributes(DBRProgressMonitor monitor, DBDAttributeBinding[] bindings) throws DBException;
 }

@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -72,9 +71,9 @@ public class ColumnInfoPanel extends Composite {
     }
 
     public static class KeyColumnValue implements DBPNamedObject {
-        private DBCAttributeMetaData attribute;
+        private DBDAttributeBinding attribute;
         private Object value;
-        public KeyColumnValue(DBCAttributeMetaData attribute, @Nullable Object value)
+        public KeyColumnValue(DBDAttributeBinding attribute, @Nullable Object value)
         {
             this.attribute = attribute;
             this.value = value;
@@ -119,11 +118,8 @@ public class ColumnInfoPanel extends Composite {
         {
             List<DBDAttributeBinding> rowAttributes = rowController.getRowAttributes();
             List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();
-            for (DBCAttributeMetaData metaAttr : rowIdentifier.getEntityIdentifier().getMetaAttributes()) {
-                DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, metaAttr);
-                if (rowAttr != null) {
-                    columns.add(new KeyColumnValue(metaAttr, rowController.getAttributeValue(rowAttr)));
-                }
+            for (DBDAttributeBinding binding : rowIdentifier.getEntityIdentifier().getAttributes()) {
+                columns.add(new KeyColumnValue(binding, rowController.getAttributeValue(binding)));
             }
             return columns;
         }

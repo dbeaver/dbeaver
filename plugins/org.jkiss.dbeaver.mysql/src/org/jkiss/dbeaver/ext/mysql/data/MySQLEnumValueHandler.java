@@ -27,10 +27,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -89,12 +89,8 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         DBSEntityAttribute attribute = null;
         if (type instanceof DBSTableColumn) {
             attribute = (DBSTableColumn) type;
-        } else if (type instanceof DBCAttributeMetaData) {
-            try {
-                attribute = ((DBCAttributeMetaData) type).getEntityAttribute(session.getProgressMonitor());
-            } catch (DBException e) {
-                throw new SQLException(e);
-            }
+        } else if (type instanceof DBDAttributeBinding) {
+            attribute = ((DBDAttributeBinding) type).getEntityAttribute();
         }
         if (attribute == null) {
             throw new SQLException("Could not find table column for column '" + index + "'");

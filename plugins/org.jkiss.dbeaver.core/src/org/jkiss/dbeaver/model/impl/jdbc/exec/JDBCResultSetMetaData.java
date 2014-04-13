@@ -18,14 +18,13 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
@@ -82,8 +81,8 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
         return columns;
     }
 
+    @Nullable
     public JDBCTableMetaData getTableMetaData(String catalogName, String schemaName, String tableName)
-        throws DBException
     {
         if (CommonUtils.isEmpty(tableName)) {
             // some constant instead of table name
@@ -93,25 +92,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
 
         JDBCTableMetaData tableMetaData = tables.get(fullQualifiedName);
         if (tableMetaData == null) {
-            tableMetaData = new JDBCTableMetaData(this, null, catalogName, schemaName, tableName);
-            tables.put(fullQualifiedName, tableMetaData);
-        }
-        return tableMetaData;
-    }
-
-    public JDBCTableMetaData getTableMetaData(DBSEntity table)
-        throws DBException
-    {
-        String fullQualifiedName = DBUtils.getFullQualifiedName(table.getDataSource(), table);
-
-        JDBCTableMetaData tableMetaData = tables.get(fullQualifiedName);
-        if (tableMetaData == null) {
-            tableMetaData = new JDBCTableMetaData(
-                this,
-                table,
-                null,
-                null,
-                null);
+            tableMetaData = new JDBCTableMetaData(this, catalogName, schemaName, tableName);
             tables.put(fullQualifiedName, tableMetaData);
         }
         return tableMetaData;

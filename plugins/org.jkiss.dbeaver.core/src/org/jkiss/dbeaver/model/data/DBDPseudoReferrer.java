@@ -35,12 +35,11 @@ import java.util.List;
 public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeRef {
 
     private final DBSEntity entity;
-    private final DBSEntityAttribute entityAttribute;
+    private final DBDAttributeBinding binding;
 
-    public DBDPseudoReferrer(DBSEntity entity, DBSEntityAttribute attribute)
-    {
+    public DBDPseudoReferrer(DBSEntity entity, DBDAttributeBinding binding) {
         this.entity = entity;
-        this.entityAttribute = attribute;
+        this.binding = binding;
     }
 
     @Override
@@ -53,7 +52,7 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
     @Override
     public String getDescription()
     {
-        return this.entityAttribute.getDescription();
+        return this.getAttribute().getDescription();
     }
 
     @NotNull
@@ -92,6 +91,6 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
     @Override
     public DBSEntityAttribute getAttribute()
     {
-        return this.entityAttribute;
+        return binding.getEntityAttribute();
     }
 }
