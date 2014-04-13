@@ -22,7 +22,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -133,6 +135,12 @@ public class JDBCDataType implements DBSDataType
     public long getMaxLength()
     {
         return precision;
+    }
+
+    @Nullable
+    @Override
+    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        return null;
     }
 
     @Override

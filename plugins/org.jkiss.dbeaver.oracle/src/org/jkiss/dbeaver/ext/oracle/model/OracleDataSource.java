@@ -202,6 +202,16 @@ public class OracleDataSource extends JDBCDataSource
         return publicSchema.getRecycledObjects(monitor);
     }
 
+    public boolean isAtLeastV10()
+    {
+        return getInfo().getDatabaseVersion().getMajor() >= 10;
+    }
+
+    public boolean isAtLeastV11()
+    {
+        return getInfo().getDatabaseVersion().getMajor() >= 11;
+    }
+
     @Override
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
