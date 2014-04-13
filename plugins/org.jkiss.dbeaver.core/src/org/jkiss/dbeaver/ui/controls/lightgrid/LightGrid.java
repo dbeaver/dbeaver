@@ -2789,6 +2789,7 @@ public abstract class LightGrid extends Canvas {
             }
         }
         updateSelectionCache();
+        computeHeaderSizes();
         redraw();
     }
 
