@@ -22,7 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 
@@ -40,7 +40,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
     private ResultSetViewer resultSetViewer;
     private int columnsCount;
-    private DBDAttributeBinding[] metaColumns;
+    private DBDAttributeBindingMeta[] metaColumns;
     private List<Object[]> rows = new ArrayList<Object[]>();
     private boolean hasMoreData;
     private boolean nextSegmentRead;
@@ -79,7 +79,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             columnsCount = rsAttributes.size();
 
             // Extract column info
-            metaColumns = new DBDAttributeBinding[columnsCount];
+            metaColumns = new DBDAttributeBindingMeta[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
                 metaColumns[i] = DBUtils.getColumnBinding(session, rsAttributes.get(i));
             }
