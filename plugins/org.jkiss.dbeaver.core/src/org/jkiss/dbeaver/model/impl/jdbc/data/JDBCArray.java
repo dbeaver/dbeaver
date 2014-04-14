@@ -57,8 +57,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     private final DBDValueHandler valueHandler;
 
     @Nullable
-    public static Object makeArray(JDBCSession session, Array array)
-    {
+    public static Object makeArray(JDBCSession session, Array array) {
         if (array == null) {
             return null;
         }
@@ -98,8 +97,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     }
 
     @Nullable
-    private static Object[] extractDataFromResultSet(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
-    {
+    private static Object[] extractDataFromResultSet(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException {
         ResultSet dbResult = array.getResultSet();
         if (dbResult == null) {
             return null;
@@ -116,8 +114,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
             } finally {
                 resultSet.close();
             }
-        }
-        finally {
+        } finally {
             try {
                 dbResult.close();
             } catch (SQLException e) {
@@ -127,8 +124,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     }
 
     @Nullable
-    private static Object[] extractDataFromArray(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
-    {
+    private static Object[] extractDataFromArray(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException {
         Object arrObject = array.getArray();
         if (arrObject == null) {
             return null;
@@ -143,44 +139,40 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
         return contents;
     }
 
-    public JDBCArray(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents)
-    {
+    public JDBCArray(DBSDataType type, DBDValueHandler valueHandler, @Nullable Object[] contents) {
         this.type = type;
         this.valueHandler = valueHandler;
         this.contents = contents;
     }
 
+    @NotNull
     @Override
-    public DBSDataType getComponentType()
-    {
+    public DBSDataType getComponentType() {
         return type;
     }
 
+    @NotNull
     @Override
     public DBDValueHandler getComponentValueHandler() {
         return valueHandler;
     }
 
     @Override
-    public DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
-    {
+    public DBDValueCloneable cloneValue(DBRProgressMonitor monitor) {
         return new JDBCArray(type, valueHandler, contents);
     }
 
     @Override
-    public boolean isNull()
-    {
+    public boolean isNull() {
         return contents == null;
     }
 
     @Override
-    public void release()
-    {
+    public void release() {
         contents = null;
     }
 
-    public String toString()
-    {
+    public String toString() {
         if (isNull()) {
             return DBConstants.NULL_VALUE_LABEL;
         } else {
@@ -189,8 +181,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     }
 
     @NotNull
-    public String makeArrayString()
-    {
+    public String makeArrayString() {
         if (isNull()) {
             return SQLConstants.NULL_VALUE;
         }
