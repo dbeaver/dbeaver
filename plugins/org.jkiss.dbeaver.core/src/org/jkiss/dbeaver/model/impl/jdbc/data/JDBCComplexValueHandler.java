@@ -57,7 +57,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
     @Override
     public int getFeatures()
     {
-        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_SHOW_ICON;
+        return FEATURE_VIEWER | FEATURE_EDITOR;
     }
 
     @Override
