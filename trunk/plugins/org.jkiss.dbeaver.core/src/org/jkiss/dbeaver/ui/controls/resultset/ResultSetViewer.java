@@ -2636,21 +2636,24 @@ public class ResultSetViewer extends Viewer
             if (element instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) element;
                 switch (binding.getDataKind()) {
+                    case ARRAY:
+                        if (recordMode) {
+                            if (curRow != null) {
+                                Object value = model.getCellValue(binding, curRow);
+                                if (value instanceof DBDCollection) {
+                                    return curRow.getCollectionData(
+                                        binding,
+                                        ((DBDCollection)value)).nestedBindings;
+                                }
+                            }
+                            return null;
+                        }
                     case STRUCT:
                     case ANY:
                         if (binding.getNestedBindings() != null) {
                             return binding.getNestedBindings().toArray();
                         }
                         break;
-                    case ARRAY:
-                        if (recordMode && curRow != null) {
-                            Object value = model.getCellValue(binding, curRow);
-                            if (value instanceof DBDCollection) {
-                                return curRow.getCollectionData(
-                                    binding,
-                                    ((DBDCollection)value)).nestedBindings;
-                            }
-                        }
                 }
             }
 
