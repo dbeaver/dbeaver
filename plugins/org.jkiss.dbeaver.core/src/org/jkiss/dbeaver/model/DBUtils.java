@@ -460,9 +460,9 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBDAttributeBinding getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta)
+    public static DBDAttributeBindingMeta getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta)
     {
-        return new DBDAttributeBinding(session.getDataSource(), null, attributeMeta);
+        return new DBDAttributeBindingMeta(session.getDataSource(), null, attributeMeta);
     }
 
     @NotNull
@@ -498,12 +498,12 @@ public final class DBUtils {
 
     public static void findValueLocators(
         DBCSession session,
-        DBDAttributeBinding[] bindings,
+        DBDAttributeBindingMeta[] bindings,
         List<Object[]> rows)
     {
         Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<DBSEntity, DBDRowIdentifier>();
         try {
-            for (DBDAttributeBinding binding : bindings) {
+            for (DBDAttributeBindingMeta binding : bindings) {
                 DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
                 DBCEntityMetaData entityMeta = attrMeta.getEntityMetaData();
                 Object metaSource = attrMeta.getSource();
@@ -551,7 +551,7 @@ public final class DBUtils {
             }
 
             // Init row identifiers
-            for (DBDAttributeBinding binding : bindings) {
+            for (DBDAttributeBindingMeta binding : bindings) {
                 DBSEntityAttribute attr = binding.getEntityAttribute();
                 if (attr == null) {
                     continue;
