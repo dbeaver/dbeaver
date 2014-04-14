@@ -21,11 +21,11 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
@@ -96,6 +96,13 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      */
     @Nullable
     public abstract DBDRowIdentifier getRowIdentifier();
+
+    @Nullable
+    public abstract List<DBSEntityReferrer> getReferrers();
+
+    @Nullable
+    public abstract Object extractNestedValue(@NotNull Object ownerValue)
+        throws DBCException;
 
     /**
      * Attribute value handler
@@ -207,9 +214,6 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return level;
     }
 
-    @Nullable
-    public abstract List<DBSEntityReferrer> getReferrers();
-
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
         DBSAttributeBase attribute = getAttribute();
         switch (attribute.getDataKind()) {
@@ -260,7 +264,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     private void createNestedMapBindings(DBCSession session, Collection<? extends DBSAttributeBase> nestedAttributes, List<Object[]> rows) throws DBException {
         nestedBindings = new ArrayList<DBDAttributeBinding>();
         for (DBSAttributeBase nestedAttr : nestedAttributes) {
-            DBDAttributeBindingMap nestedBinding = new DBDAttributeBindingMap(this, nestedAttr);
+            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(this, nestedAttr);
             nestedBinding.lateBinding(session, rows);
             nestedBindings.add(nestedBinding);
         }

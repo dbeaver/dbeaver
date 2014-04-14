@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
@@ -46,10 +47,9 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     public DBDAttributeBindingMeta(
         @NotNull DBPDataSource dataSource,
-        @Nullable DBDAttributeBindingMeta parent,
         @NotNull DBCAttributeMetaData metaAttribute)
     {
-        super(dataSource, parent, DBUtils.findValueHandler(dataSource, metaAttribute));
+        super(dataSource, null, DBUtils.findValueHandler(dataSource, metaAttribute));
         this.metaAttribute = metaAttribute;
     }
 
@@ -155,6 +155,12 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @Override
     public List<DBSEntityReferrer> getReferrers() {
         return referrers;
+    }
+
+    @Nullable
+    @Override
+    public Object extractNestedValue(@NotNull Object ownerValue) throws DBCException {
+        throw new DBCException("Meta binding doesn't support nested values");
     }
 
     public void setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
