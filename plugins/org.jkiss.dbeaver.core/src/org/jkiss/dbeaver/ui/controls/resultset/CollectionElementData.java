@@ -18,30 +18,32 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.swt.graphics.Image;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Complex value element.
  * Map pair or array item
  */
-public interface CompositeObjectElement {
+class CollectionElementData {
 
-    @NotNull
-    String getLabel();
+    final DBDAttributeBinding collectionBinding;
+    final List<RowData> rows;
+    final DBDAttributeBinding[] nestedBindings;
 
-    @NotNull
-    Image getImage();
+    public CollectionElementData(DBDAttributeBinding collectionBinding, DBDCollection collection) {
+        this.collectionBinding = collectionBinding;
 
-    @NotNull
-    DBDValueHandler getValueHandler();
-
-    @Nullable
-    Object getValue() throws DBCException;
-
-    void setValue(Object value) throws DBCException;
+        int count = collection.getItemCount();
+        rows = new ArrayList<RowData>(count);
+        nestedBindings = new DBDAttributeBinding[count];
+        Object[] items = new Object[count];
+        for (int i = 0; i < count; i++) {
+            items[i] = collection.getItem(i);
+        }
+    }
 
 }
