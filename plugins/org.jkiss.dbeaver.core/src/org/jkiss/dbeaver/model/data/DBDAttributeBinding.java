@@ -33,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 /**
- * Attribute value binding info
+ * Base attribute binding
  */
 public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQualifiedObject {
     @NotNull
@@ -44,8 +44,6 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     protected final DBDValueHandler valueHandler;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
-    @Nullable
-    private List<DBSEntityReferrer> referrers;
 
     protected DBDAttributeBinding(
         @NotNull DBPDataSource dataSource,
@@ -223,6 +221,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         }
         DBDAttributeBinding p = this;
         for (int i = 0; i < grand; i++) {
+            assert p != null;
             p = p.parent;
         }
         return p;
@@ -254,15 +253,9 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     @Nullable
-    public List<DBSEntityReferrer> getReferrers() {
-        return referrers;
-    }
+    public abstract List<DBSEntityReferrer> getReferrers();
 
-    public void readNestedBindings(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
-        DBSEntityAttribute entityAttribute = getEntityAttribute();
-        if (entityAttribute != null) {
-            referrers = DBUtils.getAttributeReferrers(session.getProgressMonitor(), entityAttribute);
-        }
+    public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
         DBSAttributeBase attribute = getAttribute();
         switch (attribute.getDataKind()) {
             case STRUCT:
@@ -302,8 +295,6 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
             if (value instanceof DBDStructure) {
                 DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
                 Collections.addAll(valueAttributes, attributes);
-            } else {
-                // Unsupported value
             }
         }
         if (!valueAttributes.isEmpty()) {
@@ -315,7 +306,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         nestedBindings = new ArrayList<DBDAttributeBinding>();
         for (DBSAttributeBase nestedAttr : nestedAttributes) {
             DBDAttributeBindingMap nestedBinding = new DBDAttributeBindingMap(dataSource, this, nestedAttr);
-            nestedBinding.readNestedBindings(session, rows);
+            nestedBinding.lateBinding(session, rows);
             nestedBindings.add(nestedBinding);
         }
     }
@@ -324,7 +315,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         nestedBindings = new ArrayList<DBDAttributeBinding>();
         for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(type.getAttributes(session.getProgressMonitor()))) {
             DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(dataSource, this, nestedAttr);
-            nestedBinding.readNestedBindings(session, rows);
+            nestedBinding.lateBinding(session, rows);
             nestedBindings.add(nestedBinding);
         }
     }

@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+
+import java.util.List;
 
 /**
  * Map attribute value binding info
@@ -53,7 +56,7 @@ public class DBDAttributeBindingMap extends DBDAttributeBinding implements DBCAt
         return attribute.getOrdinalPosition();
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBSEntity getSource() {
         return null;
@@ -88,6 +91,7 @@ public class DBDAttributeBindingMap extends DBDAttributeBinding implements DBCAt
     @Nullable
     @Override
     public DBCEntityMetaData getEntityMetaData() {
+        assert parent != null;
         return parent.getMetaAttribute().getEntityMetaData();
     }
 
@@ -111,7 +115,7 @@ public class DBDAttributeBindingMap extends DBDAttributeBinding implements DBCAt
     /**
      * Entity attribute
      */
-    @NotNull
+    @Nullable
     public DBSEntityAttribute getEntityAttribute()
     {
         return attribute instanceof DBSEntityAttribute ? (DBSEntityAttribute) attribute : null;
@@ -122,7 +126,14 @@ public class DBDAttributeBindingMap extends DBDAttributeBinding implements DBCAt
      */
     @Nullable
     public DBDRowIdentifier getRowIdentifier() {
+        assert parent != null;
         return parent.getRowIdentifier();
+    }
+
+    @Nullable
+    @Override
+    public List<DBSEntityReferrer> getReferrers() {
+        return null;
     }
 
 }
