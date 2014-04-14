@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+
+import java.util.List;
 
 /**
  * Type attribute value binding info
@@ -90,6 +93,7 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
     @Nullable
     @Override
     public DBCEntityMetaData getEntityMetaData() {
+        assert parent != null;
         return parent.getMetaAttribute().getEntityMetaData();
     }
 
@@ -124,7 +128,14 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
      */
     @Nullable
     public DBDRowIdentifier getRowIdentifier() {
+        assert parent != null;
         return parent.getRowIdentifier();
+    }
+
+    @Nullable
+    @Override
+    public List<DBSEntityReferrer> getReferrers() {
+        return null;
     }
 
     @Nullable

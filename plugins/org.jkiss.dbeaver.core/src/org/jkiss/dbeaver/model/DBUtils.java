@@ -572,7 +572,7 @@ public final class DBUtils {
 
             // Read nested bindings
             for (DBDAttributeBinding binding : bindings) {
-                binding.readNestedBindings(session, rows);
+                binding.lateBinding(session, rows);
             }
         }
         catch (DBException e) {

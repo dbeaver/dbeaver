@@ -20,10 +20,15 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+
+import java.util.List;
 
 /**
  * Attribute value binding info
@@ -35,6 +40,8 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     private DBSEntityAttribute entityAttribute;
     @Nullable
     private DBDRowIdentifier rowIdentifier;
+    @Nullable
+    private List<DBSEntityReferrer> referrers;
 
     public DBDAttributeBindingMeta(
         @NotNull DBPDataSource dataSource,
@@ -98,6 +105,12 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         return rowIdentifier;
     }
 
+    @Nullable
+    @Override
+    public List<DBSEntityReferrer> getReferrers() {
+        return referrers;
+    }
+
     public void setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
         this.entityAttribute = entityAttribute;
     }
@@ -106,4 +119,12 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         this.rowIdentifier = rowIdentifier;
     }
 
+    @Override
+    public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
+        DBSEntityAttribute entityAttribute = getEntityAttribute();
+        if (entityAttribute != null) {
+            referrers = DBUtils.getAttributeReferrers(session.getProgressMonitor(), entityAttribute);
+        }
+        super.lateBinding(session, rows);
+    }
 }
