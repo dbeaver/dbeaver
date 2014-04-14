@@ -402,6 +402,9 @@ public abstract class LightGrid extends Canvas {
     {
         for (int i = 0; i < rows.length; i++) {
             Object row = rows[i];
+            if (row == null) {
+                continue;
+            }
             result.add(row);
             parents.add(parent);
             Object[] children = getContentProvider().getChildren(row);
