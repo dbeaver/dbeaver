@@ -2643,7 +2643,7 @@ public class ResultSetViewer extends Viewer
                                 if (value instanceof DBDCollection) {
                                     return curRow.getCollectionData(
                                         binding,
-                                        ((DBDCollection)value)).nestedBindings;
+                                        ((DBDCollection)value)).elements;
                                 }
                             }
                             return null;

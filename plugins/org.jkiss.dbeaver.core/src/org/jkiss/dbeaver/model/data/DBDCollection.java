@@ -19,7 +19,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
@@ -30,8 +30,10 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
  */
 public interface DBDCollection extends DBDComplexValue {
 
+    @NotNull
     DBSDataType getComponentType();
 
+    @NotNull
     DBDValueHandler getComponentValueHandler();
 
     int getItemCount();

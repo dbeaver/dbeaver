@@ -19,10 +19,8 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
 import org.jkiss.dbeaver.model.data.DBDCollection;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Complex value element.
@@ -31,18 +29,15 @@ import java.util.List;
 class CollectionElementData {
 
     final DBDAttributeBinding collectionBinding;
-    final List<RowData> rows;
-    final DBDAttributeBinding[] nestedBindings;
+    final DBDAttributeBindingElement[] elements;
 
     public CollectionElementData(DBDAttributeBinding collectionBinding, DBDCollection collection) {
         this.collectionBinding = collectionBinding;
 
         int count = collection.getItemCount();
-        rows = new ArrayList<RowData>(count);
-        nestedBindings = new DBDAttributeBinding[count];
-        Object[] items = new Object[count];
+        elements = new DBDAttributeBindingElement[count];
         for (int i = 0; i < count; i++) {
-            items[i] = collection.getItem(i);
+            elements[i] = new DBDAttributeBindingElement(collectionBinding, collection, i);
         }
     }
 
