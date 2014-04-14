@@ -462,7 +462,7 @@ public final class DBUtils {
     @NotNull
     public static DBDAttributeBindingMeta getColumnBinding(DBCSession session, DBCAttributeMetaData attributeMeta)
     {
-        return new DBDAttributeBindingMeta(session.getDataSource(), null, attributeMeta);
+        return new DBDAttributeBindingMeta(session.getDataSource(), attributeMeta);
     }
 
     @NotNull

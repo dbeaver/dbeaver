@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
@@ -119,7 +120,7 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
     @NotNull
     public String getName()
     {
-        return String.valueOf(index);
+        return String.valueOf(index + 1);
     }
 
     /**
@@ -154,6 +155,17 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
         return null;
     }
 
+    @Nullable
+    @Override
+    public Object extractNestedValue(@NotNull Object ownerValue) throws DBCException {
+        if (collection.isNull()) {
+            // Can happen if values was released
+            return null;
+        }
+        return collection.getItem(index);
+    }
+
+/*
     @Override
     public boolean hasNestedBindings() {
         assert parent != null;
@@ -166,6 +178,7 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
         assert parent != null;
         return parent.getNestedBindings();
     }
+*/
 
     @Override
     public String getTypeName() {

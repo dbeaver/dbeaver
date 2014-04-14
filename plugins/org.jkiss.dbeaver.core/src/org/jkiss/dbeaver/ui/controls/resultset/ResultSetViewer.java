@@ -2683,7 +2683,7 @@ public class ResultSetViewer extends Viewer
                     case STRUCT:
                         return ElementState.EXPANDED;
                     case ARRAY:
-                        return ElementState.COLLAPSED;
+                        return ElementState.EXPANDED;
                     default:
                         break;
                 }
