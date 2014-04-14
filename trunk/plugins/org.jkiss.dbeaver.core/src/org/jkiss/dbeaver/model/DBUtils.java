@@ -1294,4 +1294,18 @@ public final class DBUtils {
             attr1.getTypeID() == attr2.getTypeID() &&
             CommonUtils.equalObjects(attr1.getTypeName(), attr2.getTypeName());
     }
+
+    public static void releaseValue(@Nullable Object value)
+    {
+        if (value instanceof DBDValue) {
+            ((DBDValue)value).release();
+        }
+    }
+
+    public static void resetValue(@Nullable Object value)
+    {
+        if (value instanceof DBDContent) {
+            ((DBDContent)value).resetContents();
+        }
+    }
 }

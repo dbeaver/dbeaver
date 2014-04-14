@@ -2635,23 +2635,23 @@ public class ResultSetViewer extends Viewer
         public Object[] getChildren(Object element) {
             if (element instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) element;
-                if (binding.getNestedBindings() != null) {
-                    return binding.getNestedBindings().toArray();
-                }
-/*
-                if (recordMode && curRow != null && binding.getDataKind() == DBPDataKind.ARRAY) {
-                    Object value = model.getCellValue(binding, curRow);
-                    if (!DBUtils.isNullValue(value) && value instanceof DBDCollection) {
-                        DBDCollection collection = (DBDCollection)value;
-                        int count = collection.getItemCount();
-                        Object[] items = new Object[count];
-                        for (int i = 0; i < count; i++) {
-                            items[i] = new CompositeArrayItem(collection, i);
+                switch (binding.getDataKind()) {
+                    case STRUCT:
+                    case ANY:
+                        if (binding.getNestedBindings() != null) {
+                            return binding.getNestedBindings().toArray();
                         }
-                        return items;
-                    }
+                        break;
+                    case ARRAY:
+                        if (recordMode && curRow != null) {
+                            Object value = model.getCellValue(binding, curRow);
+                            if (value instanceof DBDCollection) {
+                                return curRow.getCollectionData(
+                                    binding,
+                                    ((DBDCollection)value)).nestedBindings;
+                            }
+                        }
                 }
-*/
             }
 
             return null;
