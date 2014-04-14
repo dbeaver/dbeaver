@@ -200,7 +200,7 @@ class ResultSetPersister {
             if (row.changes != null) {
                 for (Map.Entry<DBDAttributeBinding, Object> changedValue : row.changes.entrySet()) {
                     Object curValue = model.getCellValue(changedValue.getKey(), row);
-                    ResultSetModel.releaseValue(curValue);
+                    DBUtils.releaseValue(curValue);
                     model.updateCellValue(changedValue.getKey(), row, changedValue.getValue(), false);
                 }
                 row.changes = null;
@@ -262,7 +262,7 @@ class ResultSetPersister {
         if (!stat.updatedCells.isEmpty()) {
             for (Map.Entry<Integer, Object> entry : stat.updatedCells.entrySet()) {
                 RowData row = stat.row;
-                ResultSetModel.releaseValue(row.values[entry.getKey()]);
+                DBUtils.releaseValue(row.values[entry.getKey()]);
                 row.values[entry.getKey()] = entry.getValue();
             }
         }

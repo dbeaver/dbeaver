@@ -109,15 +109,14 @@ public class ResultSetModel {
     public void resetCellValue(DBDAttributeBinding attr, RowData row)
     {
         if (row.changes != null && row.changes.containsKey(attr)) {
-            resetValue(getCellValue(attr, row));
+            DBUtils.resetValue(getCellValue(attr, row));
             updateCellValue(attr, row, row.changes.get(attr), false);
-            row.changes.remove(attr);
-            if (row.changes.isEmpty()) {
-                row.changes = null;
-            }
+            row.resetChange(attr);
             if (row.getState() == RowData.STATE_NORMAL) {
                 changesCount--;
             }
+        } else {
+            log.warn("Rest on unchanged attribute [" + attr + "]");
         }
     }
 
@@ -344,12 +343,9 @@ public class ResultSetModel {
                 Object oldOldValue = !cellWasEdited ? null : row.changes.get(attr);
                 if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
                     // Value rewrite - release previous stored old value
-                    releaseValue(oldValue);
+                    DBUtils.releaseValue(oldValue);
                 } else if (updateChanges) {
-                    if (row.changes == null) {
-                        row.changes = new IdentityHashMap<DBDAttributeBinding, Object>();
-                    }
-                    row.changes.put(attr, oldValue);
+                    row.addChange(attr, oldValue);
                 }
                 if (updateChanges && row.getState() == RowData.STATE_NORMAL && !cellWasEdited) {
                     changesCount++;
@@ -532,7 +528,7 @@ public class ResultSetModel {
 
     void cleanupRow(@NotNull RowData row)
     {
-        releaseRow(row);
+        row.release();
         this.curRows.remove(row.getVisualNumber());
         this.shiftRows(row, -1);
     }
@@ -572,33 +568,7 @@ public class ResultSetModel {
     private void releaseAll()
     {
         for (RowData row : curRows) {
-            releaseRow(row);
-        }
-    }
-
-    private static void releaseRow(@NotNull RowData row)
-    {
-        for (Object value : row.values) {
-            releaseValue(value);
-        }
-        if (row.changes != null) {
-            for (Object oldValue : row.changes.values()) {
-                releaseValue(oldValue);
-            }
-        }
-    }
-
-    static void releaseValue(@Nullable Object value)
-    {
-        if (value instanceof DBDValue) {
-            ((DBDValue)value).release();
-        }
-    }
-
-    static void resetValue(@Nullable Object value)
-    {
-        if (value instanceof DBDContent) {
-            ((DBDContent)value).resetContents();
+            row.release();
         }
     }
 

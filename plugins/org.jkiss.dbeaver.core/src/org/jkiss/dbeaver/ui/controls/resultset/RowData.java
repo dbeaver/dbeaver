@@ -20,8 +20,13 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDValue;
 
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
@@ -44,6 +49,8 @@ public class RowData {
     public Map<DBDAttributeBinding, Object> changes;
     // Row state
     private byte state;
+    @Nullable
+    public Map<DBDValue, CollectionElementData> collections;
 
     RowData(int rowNumber, @NotNull Object[] values) {
         this.rowNumber = rowNumber;
@@ -80,15 +87,47 @@ public class RowData {
         this.state = state;
     }
 
-/*
-    public void updateValue(DBDAttributeBinding attribute, Object newValue) {
+    boolean isChanged(DBDAttributeBinding attr) {
+        return changes != null && changes.containsKey(attr);
+    }
+
+    void addChange(DBDAttributeBinding attr, @Nullable Object oldValue) {
         if (changes == null) {
             changes = new IdentityHashMap<DBDAttributeBinding, Object>();
         }
-        if (changes.containsKey(attribute)) {
-            return;
+        changes.put(attr, oldValue);
+    }
+
+    void resetChange(DBDAttributeBinding attr) {
+        assert changes != null;
+        changes.remove(attr);
+        if (changes.isEmpty()) {
+            changes = null;
         }
     }
-*/
+
+    void release() {
+        for (Object value : values) {
+            DBUtils.releaseValue(value);
+        }
+        if (changes != null) {
+            for (Object oldValue : changes.values()) {
+                DBUtils.releaseValue(oldValue);
+            }
+        }
+    }
+
+    @NotNull
+    CollectionElementData getCollectionData(DBDAttributeBinding binding, DBDCollection collection) {
+        if (collections == null) {
+            collections = new HashMap<DBDValue, CollectionElementData>();
+        }
+        CollectionElementData ced = collections.get(collection);
+        if (ced == null) {
+            ced = new CollectionElementData(binding, collection);
+            collections.put(collection, ced);
+        }
+        return ced;
+    }
 
 }
