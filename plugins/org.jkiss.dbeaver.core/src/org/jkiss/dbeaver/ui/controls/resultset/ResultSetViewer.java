@@ -2727,6 +2727,9 @@ public class ResultSetViewer extends Viewer
             }
 
             if (formatString) {
+                if (recordMode && attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection) {
+                    return "[" + ((DBDCollection) value).getItemCount() + "]";
+                }
                 return attr.getValueHandler().getValueDisplayString(
                     attr.getAttribute(),
                     value,
