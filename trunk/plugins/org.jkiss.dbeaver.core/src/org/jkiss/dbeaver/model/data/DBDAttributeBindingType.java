@@ -101,7 +101,8 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
 
     @Override
     public boolean isReadOnly() {
-        return false;
+        assert parent != null;
+        return parent.getMetaAttribute().isReadOnly();
     }
 
     @Nullable

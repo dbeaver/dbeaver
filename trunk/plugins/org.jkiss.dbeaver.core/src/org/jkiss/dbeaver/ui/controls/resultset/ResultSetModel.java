@@ -115,8 +115,6 @@ public class ResultSetModel {
             if (row.getState() == RowData.STATE_NORMAL) {
                 changesCount--;
             }
-        } else {
-            log.warn("Rest on unchanged attribute [" + attr + "]");
         }
     }
 
@@ -466,11 +464,15 @@ public class ResultSetModel {
 
     boolean isColumnReadOnly(@NotNull DBDAttributeBinding column)
     {
-        if (column.getRowIdentifier() == null || !(column.getRowIdentifier().getEntity() instanceof DBSDataManipulator) ||
+        if (column.getMetaAttribute().isReadOnly()) {
+            return true;
+        }
+        DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
+        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator) ||
             (column.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
             return true;
         }
-        DBSDataManipulator dataContainer = (DBSDataManipulator) column.getRowIdentifier().getEntity();
+        DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
         return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
     }
 
