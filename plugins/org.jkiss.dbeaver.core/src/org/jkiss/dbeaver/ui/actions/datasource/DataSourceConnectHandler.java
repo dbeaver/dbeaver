@@ -96,8 +96,12 @@ public class DataSourceConnectHandler extends DataSourceHandler
                     if (event.getResult().isOK()) {
                         if (!dataSourceDescriptor.isSavePassword()) {
                             // Rest password back to null
-                            dataSourceDescriptor.getConnectionInfo().setUserName(oldName);
-                            dataSourceDescriptor.getConnectionInfo().setUserPassword(oldPassword);
+                            // TODO: to be correct we need to reset password info.
+                            // but we need a password to open isolated contexts (e.g. for data export)
+                            // Currently it is not possible to ask for password from isolation context opening
+                            // procedure. We need to do something here...
+                            //dataSourceDescriptor.getConnectionInfo().setUserName(oldName);
+                            //dataSourceDescriptor.getConnectionInfo().setUserPassword(oldPassword);
                         }
                     }
                     if (onFinish != null) {
