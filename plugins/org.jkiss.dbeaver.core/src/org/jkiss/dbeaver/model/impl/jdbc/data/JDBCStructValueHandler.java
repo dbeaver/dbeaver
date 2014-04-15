@@ -59,6 +59,9 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof JDBCStruct) {
+            if (format == DBDDisplayFormat.UI) {
+
+            }
             return ((JDBCStruct) value).getStringRepresentation();
         } else {
             return String.valueOf(value);

@@ -102,7 +102,7 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
     @Override
     public boolean isReadOnly() {
         assert parent != null;
-        return parent.getMetaAttribute().isReadOnly();
+        return parent.getMetaAttribute().isReadOnly() || parent.getMetaAttribute().getDataKind() == DBPDataKind.ARRAY;
     }
 
     @Nullable
@@ -165,13 +165,16 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
     @Nullable
     @Override
     public Object extractNestedValue(@NotNull Object ownerValue) throws DBCException {
-        // IF we have a collection then use first element
-        if (ownerValue instanceof DBDCollection) {
-            DBDCollection collection = (DBDCollection) ownerValue;
-            if (collection.getItemCount() > 0) {
-                ownerValue = collection.getItem(0);
-            } else {
-                return null;
+        assert parent != null;
+        if (parent.getDataKind() == DBPDataKind.ARRAY) {
+            // If we have a collection then use first element
+            if (ownerValue instanceof DBDCollection) {
+                DBDCollection collection = (DBDCollection) ownerValue;
+                if (collection.getItemCount() > 0) {
+                    ownerValue = collection.getItem(0);
+                } else {
+                    return null;
+                }
             }
         }
         if (ownerValue instanceof DBDStructure) {
