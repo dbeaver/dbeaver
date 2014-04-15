@@ -98,7 +98,7 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
 
     @Override
     public boolean isReadOnly() {
-        return false;
+        return true;
     }
 
     @Nullable
