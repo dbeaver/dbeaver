@@ -3240,6 +3240,23 @@ public abstract class LightGrid extends Canvas {
                 }
                 //newColumnFocus = focusColumn;
                 break;
+            case '+':
+            case '-':
+            case '=':
+            case SWT.KEYPAD_ADD:
+            case SWT.KEYPAD_SUBTRACT:
+                if (focusItem >= 0) {
+                    GridNode node = rowNodes.get(rowElements[focusItem]);
+                    if (node != null) {
+                        boolean isPlus = (e.keyCode == '+' || e.keyCode == '=' || e.keyCode == SWT.KEYPAD_ADD);
+                        if ((node.state == IGridContentProvider.ElementState.EXPANDED && !isPlus) ||
+                            (node.state == IGridContentProvider.ElementState.COLLAPSED && isPlus))
+                        {
+                            toggleRowState(focusItem);
+                        }
+                    }
+                }
+                break;
             default:
                 break;
         }
