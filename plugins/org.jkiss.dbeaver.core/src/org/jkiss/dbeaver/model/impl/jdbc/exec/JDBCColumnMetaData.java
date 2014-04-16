@@ -60,15 +60,34 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private final boolean readOnly;
     private final boolean writable;
     private final boolean sequence;
-    private final JDBCTableMetaData tableMetaData;
     private final DBPDataKind dataKind;
+    private JDBCTableMetaData tableMetaData;
     private DBDPseudoAttribute pseudoAttribute;
-    private final Object source;
+    private Object source;
+    private String catalogName;
+    private String schemaName;
 
-    protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int ordinalPosition)
-        throws SQLException {
+    public JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int ordinalPosition)
+        throws SQLException
+    {
+        this(resultSetMeta.getResultSet().getSession().getDataSource(), resultSetMeta, ordinalPosition);
         DBCStatement rsSource = resultSetMeta.getResultSet().getSourceStatement();
         this.source = rsSource != null ? rsSource.getStatementSource() : null;
+
+        if (!CommonUtils.isEmpty(this.tableName)) {
+            this.tableMetaData = resultSetMeta.getTableMetaData(catalogName, schemaName, tableName);
+        } else {
+            this.tableMetaData = null;
+        }
+
+        if (this.tableMetaData != null) {
+            this.tableMetaData.addAttribute(this);
+        }
+    }
+
+    public JDBCColumnMetaData(DBPDataSource dataSource, ResultSetMetaData resultSetMeta, int ordinalPosition)
+        throws SQLException
+    {
         this.ordinalPosition = ordinalPosition;
 
         this.label = resultSetMeta.getColumnLabel(ordinalPosition + 1);
@@ -82,23 +101,20 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         } catch (SQLException e) {
             log.debug(e);
         }
-        String fetchedCatalogName = null;
         try {
-            fetchedCatalogName = resultSetMeta.getCatalogName(ordinalPosition + 1);
+            catalogName = resultSetMeta.getCatalogName(ordinalPosition + 1);
         } catch (SQLException e) {
             log.debug(e);
         }
-        String fetchedSchemaName = null;
         try {
-            fetchedSchemaName = resultSetMeta.getSchemaName(ordinalPosition + 1);
+            schemaName = resultSetMeta.getSchemaName(ordinalPosition + 1);
         } catch (SQLException e) {
             log.debug(e);
         }
 
         // Check for tables name
         // Sometimes [DBSPEC: Informix] it contains schema/catalog name inside
-        if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(fetchedCatalogName) && CommonUtils.isEmpty(fetchedSchemaName)) {
-            final DBPDataSource dataSource = resultSetMeta.getResultSet().getSession().getDataSource();
+        if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(catalogName) && CommonUtils.isEmpty(schemaName)) {
             if (dataSource instanceof SQLDataSource) {
                 SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
                 if (!DBUtils.isQuotedIdentifier(dataSource, fetchedTableName)) {
@@ -106,14 +122,14 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
                     final int catDivPos = fetchedTableName.indexOf(catalogSeparator);
                     if (catDivPos != -1 && (sqlDialect.getCatalogUsage() & SQLDialect.USAGE_DML) != 0) {
                         // Catalog in table name - extract it
-                        fetchedCatalogName = fetchedTableName.substring(0, catDivPos);
+                        catalogName = fetchedTableName.substring(0, catDivPos);
                         fetchedTableName = fetchedTableName.substring(catDivPos + catalogSeparator.length());
                     }
                     final char structSeparator = sqlDialect.getStructSeparator();
                     final int schemaDivPos = fetchedTableName.indexOf(structSeparator);
                     if (schemaDivPos != -1 && (sqlDialect.getSchemaUsage() & SQLDialect.USAGE_DML) != 0) {
                         // Schema in table name - extract it
-                        fetchedSchemaName = fetchedTableName.substring(0, schemaDivPos);
+                        schemaName = fetchedTableName.substring(0, schemaDivPos);
                         fetchedTableName = fetchedTableName.substring(schemaDivPos + 1);
                     }
                 }
@@ -143,17 +159,8 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
 
         this.tableName = fetchedTableName;
-        if (!CommonUtils.isEmpty(this.tableName)) {
-            this.tableMetaData = resultSetMeta.getTableMetaData(fetchedCatalogName, fetchedSchemaName, tableName);
-        } else {
-            this.tableMetaData = null;
-        }
 
-        if (this.tableMetaData != null) {
-            this.tableMetaData.addAttribute(this);
-        }
-
-        this.dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSourceStatement().getSession().getDataSource(), typeName, typeID);
+        this.dataKind = JDBCUtils.resolveDataKind(dataSource, typeName, typeID);
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 1)

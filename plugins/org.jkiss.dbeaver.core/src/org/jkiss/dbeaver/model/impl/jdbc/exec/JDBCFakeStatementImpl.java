@@ -42,6 +42,10 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
         setDescription(description);
     }
 
+    protected boolean isQMLoggingEnabled() {
+        return false;
+    }
+
     @Override
     public boolean execute() throws SQLException
     {

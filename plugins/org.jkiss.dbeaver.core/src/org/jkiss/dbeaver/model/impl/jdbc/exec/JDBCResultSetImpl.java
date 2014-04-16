@@ -70,9 +70,10 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         // Simulate statement execution
         this.statement.beforeExecute();
         this.statement.afterExecute();
-
-        // Notify handler
-        QMUtils.getDefaultHandler().handleResultSetOpen(this);
+        if (this.statement.isQMLoggingEnabled()) {
+            // Notify handler
+            QMUtils.getDefaultHandler().handleResultSetOpen(this);
+        }
     }
 
     protected JDBCResultSetImpl(JDBCStatementImpl statement, ResultSet original)
@@ -82,8 +83,10 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         this.original = original;
         this.fake = false;
 
-        // Notify handler
-        QMUtils.getDefaultHandler().handleResultSetOpen(this);
+        if (this.statement.isQMLoggingEnabled()) {
+            // Notify handler
+            QMUtils.getDefaultHandler().handleResultSetOpen(this);
+        }
     }
 
     protected void beforeFetch()
@@ -276,9 +279,10 @@ public class JDBCResultSetImpl implements JDBCResultSet {
                 log.debug("Could not check for resultset warnings", e);
             }
 */
-
-            // Handle close
-            QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
+            if (this.statement.isQMLoggingEnabled()) {
+                // Handle close
+                QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
+            }
 
             // Close result set
             try {
