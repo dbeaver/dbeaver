@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * JDBCDataType
@@ -63,6 +64,10 @@ public class JDBCDataType implements DBSDataType
         this.precision = precision;
         this.minScale = minScale;
         this.maxScale = maxScale;
+    }
+
+    public JDBCDataType(DBSObject owner, DBSTypedObject typed) {
+        this(owner, typed.getTypeID(), typed.getTypeName(), null, false, false, typed.getPrecision(), typed.getScale(), typed.getScale());
     }
 
     @Override
