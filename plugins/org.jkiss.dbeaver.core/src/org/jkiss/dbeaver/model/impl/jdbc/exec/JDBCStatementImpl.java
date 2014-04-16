@@ -58,12 +58,18 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     {
         this.connection = connection;
         this.original = original;
-        QMUtils.getDefaultHandler().handleStatementOpen(this);
+        if (isQMLoggingEnabled()) {
+            QMUtils.getDefaultHandler().handleStatementOpen(this);
+        }
     }
 
     protected STATEMENT getOriginal()
     {
         return original;
+    }
+
+    protected boolean isQMLoggingEnabled() {
+        return true;
     }
 
     protected void startBlock()
@@ -317,14 +323,18 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     {
         this.updateCount = 0;
         this.executeError = null;
-        QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
+        if (isQMLoggingEnabled()) {
+            QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
+        }
         this.startBlock();
     }
 
     protected void afterExecute()
     {
         this.endBlock();
-        QMUtils.getDefaultHandler().handleStatementExecuteEnd(this, this.updateCount, this.executeError);
+        if (isQMLoggingEnabled()) {
+            QMUtils.getDefaultHandler().handleStatementExecuteEnd(this, this.updateCount, this.executeError);
+        }
     }
 
     ////////////////////////////////////
@@ -501,8 +511,10 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         }
 */
 
-        // Handle close
-        QMUtils.getDefaultHandler().handleStatementClose(this);
+        if (isQMLoggingEnabled()) {
+            // Handle close
+            QMUtils.getDefaultHandler().handleStatementClose(this);
+        }
 
         // Close statement
         try {
