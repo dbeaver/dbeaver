@@ -98,7 +98,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
                     }
                     for (int i = 0; i < attrCount; i++) {
                         Object value = attrValues[i];
-                        StructAttribute attr = new StructAttribute(metaData, i + 1);
+                        StructAttribute attr = new StructAttribute(metaData, i);
                         value = DBUtils.findValueHandler(session, attr).getValueFromObject(session, attr, value, false);
                         attributes[i] = attr;
                         values[i] = value;
@@ -361,15 +361,15 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
         public StructAttribute(ResultSetMetaData metaData, int index) throws SQLException
         {
             super(
-                metaData.getColumnName(index),
-                metaData.getColumnTypeName(index),
-                metaData.getColumnType(index),
+                metaData.getColumnName(index + 1),
+                metaData.getColumnTypeName(index + 1),
+                metaData.getColumnType(index + 1),
                 index,
-                metaData.getColumnDisplaySize(index),
-                metaData.getScale(index),
-                metaData.getPrecision(index),
-                metaData.isNullable(index) == ResultSetMetaData.columnNoNulls,
-                metaData.isAutoIncrement(index));
+                metaData.getColumnDisplaySize(index + 1),
+                metaData.getScale(index + 1),
+                metaData.getPrecision(index + 1),
+                metaData.isNullable(index + 1) == ResultSetMetaData.columnNoNulls,
+                metaData.isAutoIncrement(index + 1));
             dataKind = JDBCUtils.resolveDataKind(dataSource, getTypeName(), getTypeID());
         }
 
