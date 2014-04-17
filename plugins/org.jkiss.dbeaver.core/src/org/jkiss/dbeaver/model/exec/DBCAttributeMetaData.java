@@ -63,17 +63,6 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
     @Nullable
     DBDPseudoAttribute getPseudoAttribute();
 
-    // TODO: move to utils
-    /**
-     * Column metadata
-     * @return column metadata
-     * @throws DBCException on any DB error
-     * @param monitor progress monitor
-     *
-    @Nullable
-    DBSEntityAttribute getEntityAttribute(DBRProgressMonitor monitor) throws DBException;
-    */
-
     /**
      * Owner table metadata
      * @return table metadata
