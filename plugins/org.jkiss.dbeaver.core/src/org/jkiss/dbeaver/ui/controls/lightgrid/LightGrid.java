@@ -2793,6 +2793,7 @@ public abstract class LightGrid extends Canvas {
         }
         updateSelectionCache();
         computeHeaderSizes();
+        this.scrollValuesObsolete = true;
         redraw();
     }
 
