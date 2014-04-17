@@ -1,5 +1,6 @@
 
-Big icons in main toolbar
+BUG: REFRESH VIRTUAL MODEL ALONG WITH METADATA
+
 Move main toolbar edit control in tab
 Save As+rename. Use external files in workspace
 Paste into multiple cells

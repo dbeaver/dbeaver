@@ -92,7 +92,9 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
         this.label = resultSetMeta.getColumnLabel(ordinalPosition + 1);
         this.name = resultSetMeta.getColumnName(ordinalPosition + 1);
-        this.readOnly = resultSetMeta.isReadOnly(ordinalPosition + 1);
+        // TODO: some drivers (DB2) always mark all columns as read only. Dunno why. So let's ignore this property
+        // read-only connections are detected separately.
+        this.readOnly = false;//resultSetMeta.isReadOnly(ordinalPosition + 1);
         this.writable = resultSetMeta.isWritable(ordinalPosition + 1);
 
         String fetchedTableName = null;
