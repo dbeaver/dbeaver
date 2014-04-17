@@ -357,24 +357,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            DBDPseudoAttribute pseudoAttribute = null;
-            if (attribute.isPseudoAttribute()) {
-                if (attribute instanceof DBDAttributeBinding) {
-                    pseudoAttribute = ((DBDAttributeBinding) attribute).getMetaAttribute().getPseudoAttribute();
-                } else if (attribute instanceof DBCAttributeMetaData) {
-                    pseudoAttribute = ((DBCAttributeMetaData)attribute).getPseudoAttribute();
-                }
-            }
-            if (pseudoAttribute != null) {
-                String criteria = pseudoAttribute.getQueryExpression().replace("$alias", tableAlias != null ? tableAlias : getName());
-                query.append(criteria);
-            } else {
-                if (tableAlias != null) {
-                    query.append(tableAlias).append(dialect.getStructSeparator());
-                }
-                query.append(getAttributeName(attribute));
-            }
-            query.append("=?"); //$NON-NLS-1$
+            appendAttributeCriteria(tableAlias, dialect, query, attribute);
         }
 
         // Execute
@@ -412,10 +395,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         for (DBSAttributeBase attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            if (tableAlias != null) {
-                query.append(tableAlias).append(dialect.getStructSeparator());
-            }
-            query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
+            appendAttributeCriteria(tableAlias, dialect, query, attribute);
         }
 
         // Execute
@@ -446,6 +426,27 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 SQLUtils.appendOrderString(dataFilter, getDataSource(), tableAlias, query);
             }
         }
+    }
+
+    private void appendAttributeCriteria(@Nullable String tableAlias, SQLDialect dialect, StringBuilder query, DBSAttributeBase attribute) {
+        DBDPseudoAttribute pseudoAttribute = null;
+        if (attribute.isPseudoAttribute()) {
+            if (attribute instanceof DBDAttributeBinding) {
+                pseudoAttribute = ((DBDAttributeBinding) attribute).getMetaAttribute().getPseudoAttribute();
+            } else if (attribute instanceof DBCAttributeMetaData) {
+                pseudoAttribute = ((DBCAttributeMetaData)attribute).getPseudoAttribute();
+            }
+        }
+        if (pseudoAttribute != null) {
+            String criteria = pseudoAttribute.getQueryExpression().replace("$alias", tableAlias != null ? tableAlias : getName());
+            query.append(criteria);
+        } else {
+            if (tableAlias != null) {
+                query.append(tableAlias).append(dialect.getStructSeparator());
+            }
+            query.append(getAttributeName(attribute));
+        }
+        query.append("=?"); //$NON-NLS-1$
     }
 
     private void readKeys(@NotNull DBCSession session, @NotNull DBCStatement dbStat, @NotNull DBDDataReceiver keysReceiver)
