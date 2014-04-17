@@ -435,6 +435,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 pseudoAttribute = ((DBDAttributeBinding) attribute).getMetaAttribute().getPseudoAttribute();
             } else if (attribute instanceof DBCAttributeMetaData) {
                 pseudoAttribute = ((DBCAttributeMetaData)attribute).getPseudoAttribute();
+            } else {
+                log.error("Unsupported attribute argument: " + attribute);
             }
         }
         if (pseudoAttribute != null) {
