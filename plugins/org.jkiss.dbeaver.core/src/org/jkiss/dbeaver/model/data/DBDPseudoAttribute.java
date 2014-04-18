@@ -39,7 +39,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
     private final String alias;
     private final String description;
 
-    public DBDPseudoAttribute(DBDPseudoAttributeType type, String name, String queryExpression, String alias, String description)
+    public DBDPseudoAttribute(DBDPseudoAttributeType type, String name, String queryExpression, @Nullable String alias, String description)
     {
         this.type = type;
         this.name = name;
@@ -64,6 +64,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
         return queryExpression;
     }
 
+    @Nullable
     public String getAlias()
     {
         return alias;
@@ -72,6 +73,10 @@ public class DBDPseudoAttribute implements DBPNamedObject {
     public String getDescription()
     {
         return description;
+    }
+
+    public String translateExpression(String tableAlias) {
+        return queryExpression.replace("$alias", tableAlias);
     }
 
     @Override
