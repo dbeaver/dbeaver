@@ -138,7 +138,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (tableAlias != null) {
                 // If we have pseudo attributes then query gonna be more complex
                 query.append("SELECT ").append(tableAlias).append(".*"); //$NON-NLS-1$
-                query.append(",").append(rowIdAttribute.getQueryExpression().replace("$alias", tableAlias));
+                query.append(",").append(rowIdAttribute.translateExpression(tableAlias));
                 if (rowIdAttribute.getAlias() != null) {
                     query.append(" as ").append(rowIdAttribute.getAlias());
                 }
@@ -440,7 +440,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
         if (pseudoAttribute != null) {
-            String criteria = pseudoAttribute.getQueryExpression().replace("$alias", tableAlias != null ? tableAlias : getName());
+            String criteria = pseudoAttribute.translateExpression(tableAlias != null ? tableAlias : getName());
             query.append(criteria);
         } else {
             if (tableAlias != null) {

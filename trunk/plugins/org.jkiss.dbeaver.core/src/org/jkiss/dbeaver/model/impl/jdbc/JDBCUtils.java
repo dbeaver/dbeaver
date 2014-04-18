@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -44,6 +45,7 @@ public class JDBCUtils {
     static final Log log = LogFactory.getLog(JDBCUtils.class);
     public static final int CONNECTION_VALIDATION_TIMEOUT = 5000;
 
+    @Nullable
     public static String safeGetString(ResultSet dbResult, String columnName)
     {
         try {
@@ -54,6 +56,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static String safeGetStringTrimmed(ResultSet dbResult, String columnName)
     {
         try {
@@ -69,6 +72,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static String safeGetString(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -79,6 +83,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static String safeGetStringTrimmed(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -114,6 +119,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Integer safeGetInteger(ResultSet dbResult, String columnName)
     {
         try {
@@ -129,6 +135,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Integer safeGetInteger(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -164,6 +171,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Long safeGetLongNullable(ResultSet dbResult, String columnName)
     {
         try {
@@ -195,6 +203,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static BigDecimal safeGetBigDecimal(ResultSet dbResult, String columnName)
     {
         try {
@@ -205,6 +214,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static BigDecimal safeGetBigDecimal(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -246,6 +256,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static byte[] safeGetBytes(ResultSet dbResult, String columnName)
     {
         try {
@@ -256,6 +267,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Timestamp safeGetTimestamp(ResultSet dbResult, String columnName)
     {
         try {
@@ -266,6 +278,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Timestamp safeGetTimestamp(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -276,6 +289,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Date safeGetDate(ResultSet dbResult, String columnName)
     {
         try {
@@ -286,6 +300,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Date safeGetDate(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -296,6 +311,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Time safeGetTime(ResultSet dbResult, String columnName)
     {
         try {
@@ -306,6 +322,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Time safeGetTime(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -316,6 +333,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static SQLXML safeGetXML(ResultSet dbResult, String columnName)
     {
         try {
@@ -326,6 +344,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static SQLXML safeGetXML(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -336,6 +355,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Object safeGetObject(ResultSet dbResult, String columnName)
     {
         try {
@@ -346,6 +366,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static Object safeGetObject(ResultSet dbResult, int columnIndex)
     {
         try {
@@ -356,7 +377,8 @@ public class JDBCUtils {
         }
     }
 
-    public static String normalizeIdentifier(String value)
+    @Nullable
+    public static String normalizeIdentifier(@Nullable String value)
     {
         return value == null ? null : value.trim();
     }
@@ -463,9 +485,10 @@ public class JDBCUtils {
         }
     }
 
-    public static String limitQueryLength(String query, int maxLength)
+    @NotNull
+    public static String limitQueryLength(@NotNull String query, int maxLength)
     {
-        return query == null || query.length() <= maxLength ? query : query.substring(0, maxLength);
+        return query.length() <= maxLength ? query : query.substring(0, maxLength);
     }
 
     public static DBSForeignKeyModifyRule getCascadeFromNum(int num)
@@ -506,6 +529,7 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
     public static String queryString(JDBCSession session, String sql, Object... args) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
@@ -626,11 +650,12 @@ public class JDBCUtils {
      * @param paramTypes
      *            parameter type array or null
      * @param paramValues
-     *            parameter valeu array or null
+     *            parameter value array or null
      * @return result or null
      * @throws SQLException
      *             on error. Throws SQLFeatureNotSupportedException if specified method is not implemented
      */
+    @Nullable
     public static <T> T callMethod17(Object object, String methodName, Class<T> resultType, Class[] paramTypes,
         Object... paramValues) throws SQLException
     {

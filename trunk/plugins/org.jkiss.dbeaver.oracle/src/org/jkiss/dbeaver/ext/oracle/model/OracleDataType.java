@@ -492,6 +492,8 @@ public class OracleDataType extends OracleObject<DBSObject>
                         String compTypeName = JDBCUtils.safeGetString(dbResults, "ELEM_TYPE_NAME");
                         //String compTypeMod = JDBCUtils.safeGetString(dbResults, "ELEM_TYPE_MOD");
                         componentType = OracleDataType.resolveDataType(monitor, getDataSource(), compTypeSchema, compTypeName);
+                    } else {
+                        log.warn("Can't resolve collection type [" + getName() + "]");
                     }
                 } finally {
                     dbResults.close();
