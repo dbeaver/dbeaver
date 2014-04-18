@@ -1,10 +1,10 @@
 
-BUG: REFRESH VIRTUAL MODEL ALONG WITH METADATA
+BUG: REFRESH RSV MODEL ALONG WITH METADATA
 
+Plain-text results representation
 Move main toolbar edit control in tab
 Save As+rename. Use external files in workspace
 Paste into multiple cells
-Dialect-dependent SQL generator
 Transaction state in status bar
 
 Process scripts with external native tool (SQLPlus + mysql)
@@ -12,7 +12,6 @@ Process SQL blocks (begin/end/final delimiter)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 SSL
 Secure-storage for passwords
-Vertical/horizontal value view panel in RSV
 NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
 
 4. Query manager fixes. + keep only primitive props + persistence
@@ -22,10 +21,7 @@ NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
 
 Aster Teradata
 
-
 Connection "dirty" flag handle
-Structs in record mode
-
 Office formats support (xls, doc) for export/import. Possibly office extension.
 
 Search in multiple data sources
