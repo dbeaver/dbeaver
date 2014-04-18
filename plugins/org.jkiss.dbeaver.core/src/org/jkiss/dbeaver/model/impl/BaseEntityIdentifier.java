@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
@@ -27,12 +29,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Basic entity identifier
  */
 public class BaseEntityIdentifier implements DBCEntityIdentifier {
+
+    static final Log log = LogFactory.getLog(BaseEntityIdentifier.class);
 
     private DBSEntityReferrer referrer;
 
@@ -47,12 +52,17 @@ public class BaseEntityIdentifier implements DBCEntityIdentifier {
     public void reloadAttributes(DBRProgressMonitor monitor, DBDAttributeBinding[] bindings) throws DBException
     {
         this.attributes.clear();
-        for (DBSEntityAttributeRef cColumn : CommonUtils.safeCollection(referrer.getAttributeReferences(monitor))) {
+        Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(referrer.getAttributeReferences(monitor));
+        for (DBSEntityAttributeRef cColumn : refs) {
             for (DBDAttributeBinding binding : bindings) {
                 if (binding.matches(cColumn.getAttribute())) {
                     this.attributes.add(binding);
+                    break;
                 }
             }
+        }
+        if (this.attributes.size() != refs.size()) {
+            log.warn("Can't resolve all identifier attributes (" + bindings.length + ")");
         }
     }
 
