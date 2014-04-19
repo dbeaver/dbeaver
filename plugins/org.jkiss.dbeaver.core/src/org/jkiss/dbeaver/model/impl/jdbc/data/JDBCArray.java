@@ -116,7 +116,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
             valueHandler = DBUtils.findValueHandler(session, itemMeta);
         }
         try {
-            DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(session, dbResult, CoreMessages.model_jdbc_array_result_set);
+            DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(session, dbResult, CoreMessages.model_jdbc_array_result_set, true);
             try {
                 List<Object> data = new ArrayList<Object>();
                 while (dbResult.next()) {

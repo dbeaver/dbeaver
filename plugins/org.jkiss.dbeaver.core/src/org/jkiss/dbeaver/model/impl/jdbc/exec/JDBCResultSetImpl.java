@@ -51,12 +51,12 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     private long maxRows = -1;
     private boolean fake;
 
-    public static JDBCResultSetImpl makeResultSet(JDBCSession session, ResultSet original, String description)
+    public static JDBCResultSetImpl makeResultSet(JDBCSession session, ResultSet original, String description, boolean disableLogging)
     {
-        return new JDBCResultSetImpl(session, original, description);
+        return new JDBCResultSetImpl(session, original, description, disableLogging);
     }
 
-    protected JDBCResultSetImpl(JDBCSession session, ResultSet original, String description)
+    protected JDBCResultSetImpl(JDBCSession session, ResultSet original, String description, boolean disableLogging)
     {
         this.session = session;
         this.original = original;
@@ -64,7 +64,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             log.debug("Null result set passed. Possibly broken database metadata");
         }
         // Make fake statement
-        this.statement = new JDBCFakeStatementImpl(session, this, description);
+        this.statement = new JDBCFakeStatementImpl(session, this, description, disableLogging);
         this.fake = true;
 
         // Simulate statement execution

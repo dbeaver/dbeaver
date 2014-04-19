@@ -31,7 +31,7 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
 
     public JDBCCursor(JDBCSession session, ResultSet original, String description)
     {
-        super(session, original, description);
+        super(session, original, description, true);
     }
 
     @Override

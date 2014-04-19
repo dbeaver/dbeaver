@@ -27,10 +27,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IFindReplaceTarget;
-import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -162,14 +159,15 @@ public class SQLEditor extends SQLEditorBase
     public int[] getCurrentLines()
     {
         synchronized (runningQueries) {
-            if (runningQueries.isEmpty()) {
+            Document document = getDocument();
+            if (document == null || runningQueries.isEmpty()) {
                 return null;
             }
             List<Integer> lines = new ArrayList<Integer>(runningQueries.size() * 2);
             for (SQLStatementInfo statementInfo : runningQueries) {
                 try {
-                    int firstLine = getDocument().getLineOfOffset(statementInfo.getOffset());
-                    int lastLine = getDocument().getLineOfOffset(statementInfo.getOffset() + statementInfo.getLength());
+                    int firstLine = document.getLineOfOffset(statementInfo.getOffset());
+                    int lastLine = document.getLineOfOffset(statementInfo.getOffset() + statementInfo.getLength());
                     for (int k = firstLine; k <= lastLine; k++) {
                         lines.add(k);
                     }
