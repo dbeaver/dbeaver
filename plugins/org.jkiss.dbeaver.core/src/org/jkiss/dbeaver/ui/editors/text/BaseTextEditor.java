@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.model.impl.resources.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.IOUtils;

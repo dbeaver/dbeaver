@@ -56,7 +56,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
         if (args.length > 0) {
             description += " [" + DBUtils.getSimpleQualifiedName(args) + "]";
         }
-        return JDBCResultSetImpl.makeResultSet(connection, resultSet, description);
+        return JDBCResultSetImpl.makeResultSet(connection, resultSet, description, false);
     }
 
     @Override
