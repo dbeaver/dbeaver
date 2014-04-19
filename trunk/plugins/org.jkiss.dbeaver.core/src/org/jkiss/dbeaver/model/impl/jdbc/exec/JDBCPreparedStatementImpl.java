@@ -46,6 +46,16 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         setQueryString(query);
     }
 
+    public JDBCPreparedStatementImpl(
+        JDBCSession connection,
+        PreparedStatement original,
+        String query,
+        boolean disableLogging)
+    {
+        super(connection, original, disableLogging);
+        setQueryString(query);
+    }
+
     @Override
     public PreparedStatement getOriginal()
     {
