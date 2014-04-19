@@ -31,19 +31,22 @@ import java.sql.SQLException;
 class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
 
     private JDBCResultSetImpl resultSet;
+    private boolean disableLogging;
 
     JDBCFakeStatementImpl(
         JDBCSession connection,
         JDBCResultSetImpl resultSet,
-        String description)
+        String description,
+        boolean disableLogging)
     {
         super(connection, JDBCVoidStatementImpl.INSTANCE, description);
         this.resultSet = resultSet;
+        this.disableLogging = disableLogging;
         setDescription(description);
     }
 
     protected boolean isQMLoggingEnabled() {
-        return false;
+        return !disableLogging;
     }
 
     @Override
