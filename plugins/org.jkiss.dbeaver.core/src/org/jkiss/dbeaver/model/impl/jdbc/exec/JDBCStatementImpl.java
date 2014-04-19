@@ -54,10 +54,18 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     private int updateCount;
     private Throwable executeError;
 
+    private boolean disableLogging;
+
     public JDBCStatementImpl(JDBCSession connection, STATEMENT original)
+    {
+        this(connection, original, false);
+    }
+
+    public JDBCStatementImpl(JDBCSession connection, STATEMENT original, boolean disableLogging)
     {
         this.connection = connection;
         this.original = original;
+        this.disableLogging = disableLogging;
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementOpen(this);
         }
@@ -69,8 +77,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     protected boolean isQMLoggingEnabled() {
-        return true;
+        return !disableLogging;
     }
+
 
     protected void startBlock()
     {

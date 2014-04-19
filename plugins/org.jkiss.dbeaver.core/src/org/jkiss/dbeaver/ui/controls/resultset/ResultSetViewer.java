@@ -209,10 +209,10 @@ public class ResultSetViewer extends Viewer
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
 
-    private Button filtersApplyButton;
-    private Button filtersClearButton;
-    private Button historyBackButton;
-    private Button historyForwardButton;
+    private ToolItem filtersApplyButton;
+    private ToolItem filtersClearButton;
+    private ToolItem historyBackButton;
+    private ToolItem historyForwardButton;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull ResultSetProvider resultSetProvider)
     {
@@ -337,7 +337,7 @@ public class ResultSetViewer extends Viewer
         filtersPanel = new Composite(viewerPanel, SWT.NONE);
         filtersPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        GridLayout gl = new GridLayout(7, false);
+        GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 3;
         gl.marginWidth = 3;
         filtersPanel.setLayout(gl);
@@ -419,9 +419,10 @@ public class ResultSetViewer extends Viewer
             }
         });
 
+        ToolBar filterToolbar = new ToolBar(filtersPanel, SWT.HORIZONTAL);
 
-        filtersApplyButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        filtersApplyButton.setText("Apply");
+        filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+        filtersApplyButton.setImage(DBIcon.ACCEPT.getImage());
         filtersApplyButton.setToolTipText("Apply filter criteria");
         filtersApplyButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -430,7 +431,7 @@ public class ResultSetViewer extends Viewer
             }
         });
         filtersApplyButton.setEnabled(false);
-        filtersClearButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
         filtersClearButton.setImage(DBIcon.CANCEL.getImage());
         filtersClearButton.setToolTipText("Remove all filters");
         filtersClearButton.addSelectionListener(new SelectionAdapter() {
@@ -441,7 +442,7 @@ public class ResultSetViewer extends Viewer
         });
         filtersClearButton.setEnabled(false);
 
-        historyBackButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        historyBackButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
         historyBackButton.setImage(DBIcon.RS_BACK.getImage());
         historyBackButton.setEnabled(false);
         historyBackButton.addSelectionListener(new SelectionAdapter() {
@@ -451,7 +452,7 @@ public class ResultSetViewer extends Viewer
             }
         });
 
-        historyForwardButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        historyForwardButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
         historyForwardButton.setImage(DBIcon.RS_FORWARD.getImage());
         historyForwardButton.setEnabled(false);
         historyForwardButton.addSelectionListener(new SelectionAdapter() {
