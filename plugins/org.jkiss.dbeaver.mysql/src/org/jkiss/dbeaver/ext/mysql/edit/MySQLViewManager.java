@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -36,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class MySQLViewManager extends JDBCObjectEditor<MySQLTableBase, MySQLCatalog> {
 
+    @Nullable
     @Override
     public DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
     {

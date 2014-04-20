@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -43,6 +44,7 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
         return 0;
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, DataSourceDescriptor> getObjectsCache(DataSourceDescriptor object)
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
@@ -39,6 +40,7 @@ public class DB2WrapperManager extends DB2AbstractDropOnlyManager<DB2Wrapper, DB
         return String.format(SQL_DROP, name);
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<DB2DataSource, DB2Wrapper> getObjectsCache(DB2Wrapper db2Wrapper)
     {

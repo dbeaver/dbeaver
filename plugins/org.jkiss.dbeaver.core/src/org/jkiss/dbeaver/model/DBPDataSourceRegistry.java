@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.resources.IProject;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.util.List;
@@ -31,10 +32,13 @@ public interface DBPDataSourceRegistry {
 
     IProject getProject();
 
+    @Nullable
     DBSDataSourceContainer getDataSource(String id);
 
+    @Nullable
     DBSDataSourceContainer getDataSource(DBPDataSource dataSource);
 
+    @Nullable
     DBSDataSourceContainer findDataSourceByName(String name);
 
     public List<? extends DBSDataSourceContainer> getDataSources();

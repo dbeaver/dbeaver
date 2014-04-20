@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -50,6 +51,7 @@ public class DB2AliasManager extends DB2AbstractDropOnlyManager<DB2Alias, DB2Sch
         }
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<DB2Schema, DB2Alias> getObjectsCache(DB2Alias db2Alias)
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -38,6 +39,7 @@ public class DB2MQTManager extends DB2AbstractDropOnlyManager<DB2MaterializedQue
         return String.format(SQL_DROP, fullyQualifiedName);
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<DB2Schema, DB2MaterializedQueryTable> getObjectsCache(DB2MaterializedQueryTable db2MQT)
     {

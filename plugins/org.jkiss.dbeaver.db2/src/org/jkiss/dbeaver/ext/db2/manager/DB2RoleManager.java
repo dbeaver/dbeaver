@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -38,6 +39,7 @@ public class DB2RoleManager extends DB2AbstractDropOnlyManager<DB2Role, DB2DataS
         return String.format(SQL_DROP, name);
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<DB2DataSource, DB2Role> getObjectsCache(DB2Role db2Role)
     {

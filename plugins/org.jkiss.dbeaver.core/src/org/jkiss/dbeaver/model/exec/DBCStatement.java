@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
@@ -32,18 +34,21 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * Statement's context
      * @return context
      */
+    @NotNull
     DBCSession getSession();
 
     /**
      * Statement's query string.
      * @return query string
      */
+    @Nullable
     String getQueryString();
 
     /**
      * Statement's description
      * @return description string or null
      */
+    @Nullable
     String getDescription();
 
     /**
@@ -51,13 +56,14 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * In most cases it is some DBSDataContainer (e.g. table). Also it could be SQL editor.
      * @return data container or null
      */
+    @Nullable
     Object getStatementSource();
 
     /**
      * Sets statement data source
      * @param source data source object
      */
-    void setStatementSource(Object source);
+    void setStatementSource(@Nullable Object source);
 
     /**
      * Executes statement
@@ -83,6 +89,7 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * @return result set or null
      * @throws DBCException on error
      */
+    @Nullable
     DBCResultSet openResultSet() throws DBCException;
 
     /**
@@ -90,6 +97,7 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * @return result set or null
      * @throws DBCException on error
      */
+    @Nullable
     DBCResultSet openGeneratedKeysResultSet() throws DBCException;
 
     /**

@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -53,6 +54,7 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleSchema> getObjectsCache(OracleSchema object)
     {

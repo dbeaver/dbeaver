@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
@@ -78,6 +79,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
         return CHILD_TYPES;
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<DB2Schema, DB2Table> getObjectsCache(DB2Table object)
     {

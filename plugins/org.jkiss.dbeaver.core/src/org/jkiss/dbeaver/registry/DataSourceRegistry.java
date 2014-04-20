@@ -164,6 +164,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     ////////////////////////////////////////////////////
     // Data sources
 
+    @Nullable
     @Override
     public DataSourceDescriptor getDataSource(String id)
     {
@@ -177,6 +178,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
+    @Nullable
     @Override
     public DataSourceDescriptor getDataSource(DBPDataSource dataSource)
     {
@@ -190,6 +192,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
+    @Nullable
     @Override
     public DataSourceDescriptor findDataSourceByName(String name)
     {

@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLTableBase;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLTableColumn;
@@ -40,6 +41,7 @@ import java.sql.Types;
  */
 public class MSSQLTableColumnManager extends JDBCTableColumnManager<MSSQLTableColumn, MSSQLTableBase> {
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, MSSQLTableColumn> getObjectsCache(MSSQLTableColumn object)
     {

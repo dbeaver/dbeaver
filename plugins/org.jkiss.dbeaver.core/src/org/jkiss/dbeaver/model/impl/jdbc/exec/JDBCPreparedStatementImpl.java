@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -40,7 +41,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     public JDBCPreparedStatementImpl(
         JDBCSession connection,
         PreparedStatement original,
-        String query)
+        @Nullable String query)
     {
         super(connection, original);
         setQueryString(query);
@@ -62,9 +63,9 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         return original;
     }
 
-    private void handleStatementBind(int parameterIndex, Object o)
+    private void handleStatementBind(int parameterIndex, @Nullable Object o)
     {
-        QMUtils.getDefaultHandler().handleStatementBind(this, parameterIndex, null);
+        QMUtils.getDefaultHandler().handleStatementBind(this, parameterIndex, o);
     }
 
     ////////////////////////////////////////////////////////////////////

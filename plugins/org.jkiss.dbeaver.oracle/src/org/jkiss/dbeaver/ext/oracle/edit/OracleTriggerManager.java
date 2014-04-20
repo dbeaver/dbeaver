@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
@@ -57,6 +58,7 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
         }
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTrigger> getObjectsCache(OracleTrigger object)
     {

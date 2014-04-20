@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -94,6 +95,7 @@ public class DataFormatterRegistry
         return globalProfile;
     }
 
+    @Nullable
     public DBDDataFormatterProfile getCustomProfile(String name)
     {
         for (DBDDataFormatterProfile profile : getCustomProfiles()) {

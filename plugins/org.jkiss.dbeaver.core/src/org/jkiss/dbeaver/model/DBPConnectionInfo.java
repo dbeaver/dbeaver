@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 
 import java.util.*;
@@ -203,6 +202,7 @@ public class DBPConnectionInfo implements DBPObject
         this.handlers.add(handler);
     }
 
+    @Nullable
     public DBWHandlerConfiguration getHandler(String id)
     {
         for (DBWHandlerConfiguration handler : handlers) {

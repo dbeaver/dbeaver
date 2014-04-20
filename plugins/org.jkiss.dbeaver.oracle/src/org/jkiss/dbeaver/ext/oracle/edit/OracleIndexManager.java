@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
@@ -43,6 +44,7 @@ import java.util.Collections;
  */
 public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, OracleTablePhysical> {
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableIndex> getObjectsCache(OracleTableIndex object)
     {

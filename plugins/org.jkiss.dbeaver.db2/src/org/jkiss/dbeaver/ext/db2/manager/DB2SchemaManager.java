@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -52,6 +53,7 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, DB2Schema> getObjectsCache(DB2Schema object)
     {

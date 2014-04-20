@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -37,6 +38,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class OracleConstraintManager extends JDBCConstraintManager<OracleTableConstraint, OracleTableBase> {
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableConstraint> getObjectsCache(OracleTableConstraint object)
     {

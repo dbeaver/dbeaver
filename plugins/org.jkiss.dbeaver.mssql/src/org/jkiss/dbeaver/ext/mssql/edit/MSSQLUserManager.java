@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mssql.MSSQLMessages;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLDataSource;
@@ -48,6 +49,7 @@ public class MSSQLUserManager extends JDBCObjectManager<MSSQLUser> implements DB
         return FEATURE_EDITOR_ON_CREATE;
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, MSSQLUser> getObjectsCache(MSSQLUser object)
     {

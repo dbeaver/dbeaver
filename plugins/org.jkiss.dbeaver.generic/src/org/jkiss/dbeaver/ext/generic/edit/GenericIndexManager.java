@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
@@ -41,6 +42,7 @@ import java.util.Collections;
  */
 public class GenericIndexManager extends JDBCIndexManager<GenericTableIndex, GenericTable> {
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, GenericTableIndex> getObjectsCache(GenericTableIndex object)
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.exec.jdbc;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
@@ -96,6 +97,7 @@ public interface JDBCSession extends DBCSession, Connection {
     ////////////////////////////////////////////////////////////////////////////
     // JDBC 1.7
 
+    @Nullable
     @Override
     String getSchema() throws SQLException;
 

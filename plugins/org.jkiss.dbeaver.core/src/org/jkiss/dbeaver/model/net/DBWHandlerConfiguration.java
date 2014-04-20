@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -116,7 +117,7 @@ public class DBWHandlerConfiguration implements IObjectPropertyConfiguration {
         return password;
     }
 
-    public void setPassword(String password)
+    public void setPassword(@Nullable String password)
     {
         this.password = password;
     }
