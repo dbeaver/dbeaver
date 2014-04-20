@@ -44,7 +44,7 @@ public class DBSObjectFilter
     {
     }
 
-    public DBSObjectFilter(String includeString, String excludeString)
+    public DBSObjectFilter(String includeString, @Nullable String excludeString)
     {
         if (include != null) {
             this.include = SQLUtils.splitFilter(includeString);

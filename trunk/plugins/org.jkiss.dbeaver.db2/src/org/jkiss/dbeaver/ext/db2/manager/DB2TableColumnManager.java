@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
@@ -60,6 +61,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     // -----------------
     // Business Contract
     // -----------------
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, DB2TableColumn> getObjectsCache(DB2TableColumn object)
     {

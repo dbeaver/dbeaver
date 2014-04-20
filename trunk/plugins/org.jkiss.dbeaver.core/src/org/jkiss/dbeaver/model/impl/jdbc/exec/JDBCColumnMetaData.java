@@ -251,6 +251,10 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         return readOnly;
     }
 
+    public boolean isWritable() {
+        return writable;
+    }
+
     @Nullable
     @Override
     public DBDPseudoAttribute getPseudoAttribute() {

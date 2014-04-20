@@ -99,13 +99,13 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     }
 
     @Nullable
-    private static JDBCArray extractDataFromResultSet(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBException {
+    private static JDBCArray extractDataFromResultSet(JDBCSession session, Array array, @Nullable DBSDataType type, @Nullable DBDValueHandler valueHandler) throws SQLException, DBException {
         ResultSet dbResult = array.getResultSet();
         if (dbResult == null) {
             log.debug("JDBC array type was not resolved and result set was not provided by driver. Return NULL.");
             return null;
         }
-        if (valueHandler == null) {
+        if (type == null || valueHandler == null) {
             JDBCColumnMetaData itemMeta = new JDBCColumnMetaData(session.getDataSource(), dbResult.getMetaData(), 1);
             if (type == null) {
                 type = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), itemMeta.getTypeName());

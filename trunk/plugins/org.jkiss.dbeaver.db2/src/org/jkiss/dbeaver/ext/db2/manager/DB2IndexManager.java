@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
@@ -67,6 +68,7 @@ public class DB2IndexManager extends JDBCIndexManager<DB2Index, DB2Table> {
         return false;
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, DB2Index> getObjectsCache(DB2Index object)
     {

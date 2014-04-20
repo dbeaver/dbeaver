@@ -18,37 +18,17 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
-import org.jkiss.dbeaver.model.data.DBDPseudoReferrer;
-import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
  * JDBC Table MetaData
  */
 public class JDBCTableMetaData implements DBCEntityMetaData {
-
-    static final Log log = LogFactory.getLog(JDBCTableMetaData.class);
 
     private final JDBCResultSetMetaData resultSetMetaData;
     private final String catalogName;

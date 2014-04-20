@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -487,6 +488,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         return createPreparedStatementImpl(getConnection().prepareStatement(sql, columnNames), sql);
     }
 
+    @Nullable
     @Override
     public String getSchema() throws SQLException
     {
@@ -511,7 +513,8 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-        return JDBCUtils.callMethod17(getConnection(), "getNetworkTimeout", Integer.class, null);
+        Integer networkTimeout = JDBCUtils.callMethod17(getConnection(), "getNetworkTimeout", Integer.class, null);
+        return networkTimeout == null ? 0 : networkTimeout;
     }
 
     @Override
@@ -640,13 +643,13 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         return new JDBCStatementImpl<Statement>(this, original);
     }
 
-    protected JDBCPreparedStatement createPreparedStatementImpl(PreparedStatement original, String sql)
+    protected JDBCPreparedStatement createPreparedStatementImpl(PreparedStatement original, @Nullable String sql)
         throws SQLFeatureNotSupportedException
     {
         return new JDBCPreparedStatementImpl(this, original, sql);
     }
 
-    protected JDBCCallableStatement createCallableStatementImpl(CallableStatement original, String sql)
+    protected JDBCCallableStatement createCallableStatementImpl(CallableStatement original, @Nullable String sql)
         throws SQLFeatureNotSupportedException
     {
         return new JDBCCallableStatementImpl(this, original, sql);

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLCatalog;
@@ -36,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class MSSQLProcedureManager extends JDBCObjectEditor<MSSQLProcedure, MSSQLCatalog> {
 
+    @Nullable
     @Override
     public DBSObjectCache<MSSQLCatalog, MSSQLProcedure> getObjectsCache(MSSQLProcedure object)
     {

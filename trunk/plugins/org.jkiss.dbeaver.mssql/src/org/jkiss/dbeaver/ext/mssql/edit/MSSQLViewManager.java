@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLCatalog;
@@ -36,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class MSSQLViewManager extends JDBCObjectEditor<MSSQLTableBase, MSSQLCatalog> {
 
+    @Nullable
     @Override
     public DBSObjectCache<MSSQLCatalog, MSSQLTableBase> getObjectsCache(MSSQLTableBase object)
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -38,6 +39,7 @@ public class DB2BufferpoolManager extends DB2AbstractDropOnlyManager<DB2Bufferpo
         return String.format(SQL_DROP, name);
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<DB2DataSource, DB2Bufferpool> getObjectsCache(DB2Bufferpool db2Bufferpool)
     {

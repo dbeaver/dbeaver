@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mssql.MSSQLMessages;
@@ -43,6 +44,7 @@ public class MSSQLCatalogManager extends JDBCObjectEditor<MSSQLCatalog, MSSQLDat
         return FEATURE_SAVE_IMMEDIATELY;
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<MSSQLDataSource, MSSQLCatalog> getObjectsCache(MSSQLCatalog object)
     {

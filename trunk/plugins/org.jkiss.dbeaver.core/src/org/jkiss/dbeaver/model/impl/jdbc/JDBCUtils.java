@@ -656,7 +656,7 @@ public class JDBCUtils {
      *             on error. Throws SQLFeatureNotSupportedException if specified method is not implemented
      */
     @Nullable
-    public static <T> T callMethod17(Object object, String methodName, Class<T> resultType, Class[] paramTypes,
+    public static <T> T callMethod17(Object object, String methodName, @Nullable Class<T> resultType, @Nullable Class[] paramTypes,
         Object... paramValues) throws SQLException
     {
         try {

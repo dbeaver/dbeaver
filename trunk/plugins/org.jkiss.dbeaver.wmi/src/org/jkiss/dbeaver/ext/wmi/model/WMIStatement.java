@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.wmi.service.WMIConstants;
@@ -50,18 +52,21 @@ public class WMIStatement implements DBCStatement {
         return session.getDataSource().getService();
     }
 
+    @NotNull
     @Override
     public DBCSession getSession()
     {
         return session;
     }
 
+    @Nullable
     @Override
     public String getQueryString()
     {
         return query;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {
@@ -98,6 +103,7 @@ public class WMIStatement implements DBCStatement {
         throw new DBCException("Batches not supported");
     }
 
+    @Nullable
     @Override
     public DBCResultSet openResultSet() throws DBCException
     {
@@ -111,6 +117,7 @@ public class WMIStatement implements DBCStatement {
         }
     }
 
+    @Nullable
     @Override
     public DBCResultSet openGeneratedKeysResultSet() throws DBCException
     {
@@ -141,6 +148,7 @@ public class WMIStatement implements DBCStatement {
         this.maxRows = limit;
     }
 
+    @Nullable
     @Override
     public Object getStatementSource()
     {

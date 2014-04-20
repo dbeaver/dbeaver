@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -49,6 +50,7 @@ public class DB2RoutineManager extends DB2AbstractDropOnlyManager<DB2Routine, DB
         }
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<DB2Schema, DB2Routine> getObjectsCache(DB2Routine db2Routine)
     {

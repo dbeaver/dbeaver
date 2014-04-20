@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -148,6 +149,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         }
     }
 
+    @Nullable
     @Override
     public DBDValueMeta getColumnValueMeta(int index) throws DBCException
     {
@@ -155,6 +157,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         return null;
     }
 
+    @Nullable
     @Override
     public DBDValueMeta getRowMeta() throws DBCException
     {
@@ -208,6 +211,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         return metaData;
     }
 
+    @Nullable
     @Override
     public String getResultSetName() throws DBCException {
         if (this.original == null) {
@@ -585,6 +589,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         original.clearWarnings();
     }
 
+    @Nullable
     @Override
     public String getCursorName()
         throws SQLException
@@ -1626,11 +1631,13 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         original.updateNClob(columnLabel, reader);
     }
 
+    @Nullable
     @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
         return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class[] {Integer.TYPE, Class.class}, columnIndex, type);
     }
 
+    @Nullable
     @Override
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
         return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class[] {String.class, Class.class}, columnLabel, type);

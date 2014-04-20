@@ -37,8 +37,10 @@ public interface DBCResultSet extends DBPObject
     @Nullable
     Object getColumnValue(String name) throws DBCException;
 
+    @Nullable
     DBDValueMeta getColumnValueMeta(int index) throws DBCException;
 
+    @Nullable
     DBDValueMeta getRowMeta() throws DBCException;
 
     boolean nextRow() throws DBCException;
@@ -47,6 +49,7 @@ public interface DBCResultSet extends DBPObject
 
     DBCResultSetMetaData getResultSetMetaData() throws DBCException;
 
+    @Nullable
     String getResultSetName() throws DBCException;
 
     void close();

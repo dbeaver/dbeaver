@@ -419,10 +419,11 @@ public class ResultSetViewer extends Viewer
             }
         });
 
-        ToolBar filterToolbar = new ToolBar(filtersPanel, SWT.HORIZONTAL);
+        ToolBar filterToolbar = new ToolBar(filtersPanel, SWT.HORIZONTAL | SWT.RIGHT);
 
         filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersApplyButton.setImage(DBIcon.ACCEPT.getImage());
+        filtersApplyButton.setImage(DBIcon.FILTER_APPLY.getImage());
+        //filtersApplyButton.setText("Apply");
         filtersApplyButton.setToolTipText("Apply filter criteria");
         filtersApplyButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -431,8 +432,9 @@ public class ResultSetViewer extends Viewer
             }
         });
         filtersApplyButton.setEnabled(false);
+
         filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersClearButton.setImage(DBIcon.CANCEL.getImage());
+        filtersClearButton.setImage(DBIcon.FILTER_RESET.getImage());
         filtersClearButton.setToolTipText("Remove all filters");
         filtersClearButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -442,25 +444,15 @@ public class ResultSetViewer extends Viewer
         });
         filtersClearButton.setEnabled(false);
 
-        historyBackButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+        historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
         historyBackButton.setImage(DBIcon.RS_BACK.getImage());
         historyBackButton.setEnabled(false);
-        historyBackButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                navigateHistory(historyPosition - 1);
-            }
-        });
+        historyBackButton.addSelectionListener(new HistoryMenuListener(historyBackButton, true));
 
-        historyForwardButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+        historyForwardButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
         historyForwardButton.setImage(DBIcon.RS_FORWARD.getImage());
         historyForwardButton.setEnabled(false);
-        historyForwardButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                navigateHistory(historyPosition + 1);
-            }
-        });
+        historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
 
         this.filtersText.addModifyListener(new ModifyListener() {
             @Override
@@ -3235,4 +3227,30 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private class HistoryMenuListener extends SelectionAdapter {
+        private final ToolItem dropdown;
+        private final boolean back;
+        public HistoryMenuListener(ToolItem item, boolean back) {
+            this.dropdown = item;
+            this.back = back;
+        }
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            if (e.detail == SWT.ARROW) {
+                ToolItem item = (ToolItem) e.widget;
+                Rectangle rect = item.getBounds();
+                Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
+
+                Menu menu = new Menu(dropdown.getParent().getShell());
+                menu.setLocation(pt.x, pt.y + rect.height);
+                menu.setVisible(true);
+                MenuItem mi = new MenuItem(menu, SWT.NONE);
+                mi.setText("ZZZ");
+            } else {
+                int newPosition = back ? historyPosition - 1 : historyPosition + 1;
+                navigateHistory(newPosition);
+            }
+        }
+    }
 }
