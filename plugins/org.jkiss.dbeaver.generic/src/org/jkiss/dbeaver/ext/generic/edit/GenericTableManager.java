@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -42,6 +43,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
         GenericTableIndex.class
     };
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, GenericTable> getObjectsCache(GenericTable object)
     {

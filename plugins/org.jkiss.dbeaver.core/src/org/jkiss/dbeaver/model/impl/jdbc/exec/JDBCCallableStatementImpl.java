@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -39,7 +40,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     public JDBCCallableStatementImpl(
         JDBCSession connection,
         CallableStatement original,
-        String query)
+        @Nullable String query)
     {
         super(connection, original, query);
     }

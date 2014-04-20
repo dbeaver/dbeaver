@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -48,6 +49,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
         return FEATURE_EDITOR_ON_CREATE;
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, MySQLUser> getObjectsCache(MySQLUser object)
     {

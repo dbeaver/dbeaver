@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
@@ -58,6 +59,7 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
         }
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleView> getObjectsCache(OracleView object)
     {

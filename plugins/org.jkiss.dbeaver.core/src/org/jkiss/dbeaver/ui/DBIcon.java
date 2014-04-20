@@ -169,6 +169,8 @@ public enum DBIcon
     SORT_UNKNOWN("sort_unknown", "/icons/misc/sort_unknown.png"), //$NON-NLS-1$ //$NON-NLS-2$
     FRAME_QUERY("frame_query", "/icons/misc/frame_query.png"), //$NON-NLS-1$ //$NON-NLS-2$
     FILTER("filter", "/icons/misc/filter.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    FILTER_APPLY("filter_apply", "/icons/misc/filter_apply.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    FILTER_RESET("filter_reset", "/icons/misc/filter_reset.png"), //$NON-NLS-1$ //$NON-NLS-2$
     EVENT("event", "/icons/misc/event.png"), //$NON-NLS-1$ //$NON-NLS-2$
     HOME("home", "/icons/misc/home.png"), //$NON-NLS-1$ //$NON-NLS-2$
     COMPILE("compile", "/icons/misc/compile.png"), //$NON-NLS-1$ //$NON-NLS-2$

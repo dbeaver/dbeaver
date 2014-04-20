@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.*;
@@ -46,6 +47,7 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
         OracleTableIndex.class
     };
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTable> getObjectsCache(OracleTable object)
     {

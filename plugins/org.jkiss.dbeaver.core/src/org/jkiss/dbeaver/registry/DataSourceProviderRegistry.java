@@ -324,6 +324,7 @@ public class DataSourceProviderRegistry
      * @param resourcePath path
      * @return URL or null if specified resource not found
      */
+    @Nullable
     public URL findResourceURL(String resourcePath)
     {
         ExternalResourceDescriptor descriptor = resourceContributions.get(resourcePath);

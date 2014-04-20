@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.exec.jdbc;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
@@ -33,16 +34,20 @@ public interface JDBCStatement extends Statement, DBCStatement, DBRBlockingObjec
     @Override
     JDBCSession getConnection();
 
+    @Nullable
     @Override
     JDBCResultSet openResultSet() throws DBCException;
 
+    @Nullable
     @Override
     JDBCResultSet openGeneratedKeysResultSet() throws DBCException;
 
+    @Nullable
     @Override
     JDBCResultSet executeQuery(String sql)
         throws SQLException;
 
+    @Nullable
     @Override
     JDBCResultSet getResultSet()
         throws SQLException;

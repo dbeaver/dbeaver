@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
@@ -64,6 +65,7 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
         }
     }
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, DB2Sequence> getObjectsCache(DB2Sequence object)
     {

@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -38,6 +39,7 @@ import java.sql.Types;
  */
 public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTableColumn, GenericTable> {
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, GenericTableColumn> getObjectsCache(GenericTableColumn object)
     {

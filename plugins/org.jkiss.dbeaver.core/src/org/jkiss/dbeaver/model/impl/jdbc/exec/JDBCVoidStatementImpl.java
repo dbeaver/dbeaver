@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.Nullable;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -32,6 +34,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
 
     public static final JDBCVoidStatementImpl INSTANCE = new JDBCVoidStatementImpl();
 
+    @Nullable
     @Override
     public ResultSet executeQuery()
         throws SQLException
@@ -236,6 +239,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
       
     }
 
+    @Nullable
     @Override
     public ResultSetMetaData getMetaData()
         throws SQLException
@@ -278,6 +282,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
       
     }
 
+    @Nullable
     @Override
     public ParameterMetaData getParameterMetaData()
         throws SQLException
@@ -418,6 +423,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
       
     }
 
+    @Nullable
     @Override
     public ResultSet executeQuery(String sql)
         throws SQLException
@@ -495,6 +501,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
       
     }
 
+    @Nullable
     @Override
     public SQLWarning getWarnings()
         throws SQLException
@@ -523,6 +530,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
         return false;
     }
 
+    @Nullable
     @Override
     public ResultSet getResultSet()
         throws SQLException
@@ -607,6 +615,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
         return new int[0];
     }
 
+    @Nullable
     @Override
     public Connection getConnection()
         throws SQLException
@@ -621,6 +630,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
         return false;
     }
 
+    @Nullable
     @Override
     public ResultSet getGeneratedKeys()
         throws SQLException
@@ -708,6 +718,7 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
         return false;
     }
 
+    @Nullable
     @Override
     public <T> T unwrap(Class<T> iface)
         throws SQLException

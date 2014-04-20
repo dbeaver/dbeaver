@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.MSSQLMessages;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -38,6 +39,7 @@ import java.util.Collections;
  */
 public class MSSQLIndexManager extends JDBCIndexManager<MSSQLTableIndex, MSSQLTable> {
 
+    @Nullable
     @Override
     public DBSObjectCache<MSSQLCatalog, MSSQLTableIndex> getObjectsCache(MSSQLTableIndex object)
     {

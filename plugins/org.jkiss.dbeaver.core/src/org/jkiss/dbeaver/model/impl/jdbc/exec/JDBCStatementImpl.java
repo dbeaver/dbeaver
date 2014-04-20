@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -108,6 +110,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         }
     }
 
+    @NotNull
     @Override
     public JDBCSession getConnection()
     {
@@ -118,23 +121,26 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     // DBC Statement overrides
     ////////////////////////////////////////////////////////////////////
 
+    @NotNull
     @Override
     public JDBCSession getSession()
     {
         return connection;
     }
 
+    @Nullable
     @Override
     public String getQueryString()
     {
         return query;
     }
 
-    public void setQueryString(String query)
+    public void setQueryString(@Nullable String query)
     {
         this.query = query;
     }
 
+    @Nullable
     @Override
     public String getDescription()
     {
@@ -180,6 +186,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         this.description = description;
     }
 
+    @Nullable
     @Override
     public JDBCResultSet openResultSet() throws DBCException
     {
@@ -191,6 +198,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         }
     }
 
+    @Nullable
     @Override
     public JDBCResultSet openGeneratedKeysResultSet()
         throws DBCException
@@ -250,6 +258,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         }
     }
 
+    @Nullable
     @Override
     public Object getStatementSource()
     {
@@ -262,7 +271,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         this.source = source;
     }
 
-    private JDBCResultSetImpl makeResultSet(ResultSet resultSet)
+    @Nullable
+    private JDBCResultSetImpl makeResultSet(@Nullable ResultSet resultSet)
         throws SQLException
     {
         if (resultSet == null) {
@@ -364,6 +374,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         }
     }
 
+    @Nullable
     @Override
     public JDBCResultSet executeQuery(String sql)
         throws SQLException
@@ -614,6 +625,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         getOriginal().setCursorName(name);
     }
 
+    @Nullable
     @Override
     public JDBCResultSet getResultSet()
         throws SQLException
@@ -700,6 +712,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         return getOriginal().getMoreResults(current);
     }
 
+    @Nullable
     @Override
     public ResultSet getGeneratedKeys()
         throws SQLException
@@ -742,7 +755,8 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     @Override
     public boolean isCloseOnCompletion() throws SQLException {
-        return JDBCUtils.callMethod17(getOriginal(), "isCloseOnCompletion", Boolean.TYPE, null);
+        Boolean closeOnCompletion = JDBCUtils.callMethod17(getOriginal(), "isCloseOnCompletion", Boolean.TYPE, null);
+        return closeOnCompletion == null ? false : closeOnCompletion;
     }
 
     @Override

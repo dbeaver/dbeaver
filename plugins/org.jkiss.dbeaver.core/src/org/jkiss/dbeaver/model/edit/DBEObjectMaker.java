@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -42,6 +43,7 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * @param object contained object
      * @return objects cache or null
      */
+    @Nullable
     DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object);
 
     boolean canCreateObject(CONTAINER_TYPE parent);

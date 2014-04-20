@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -36,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericTableForeignKey, GenericTable> {
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, GenericTableForeignKey> getObjectsCache(GenericTableForeignKey object)
     {

@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
@@ -48,7 +49,7 @@ public interface QMExecutionHandler {
 
     void handleTransactionSavepoint(DBCSavepoint savepoint);
 
-    void handleTransactionRollback(DBCSession session, DBCSavepoint savepoint);
+    void handleTransactionRollback(DBCSession session, @Nullable DBCSavepoint savepoint);
 
     void handleStatementOpen(DBCStatement statement);
 
@@ -56,7 +57,7 @@ public interface QMExecutionHandler {
 
     void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error);
 
-    void handleStatementBind(DBCStatement statement, Object column, Object value);
+    void handleStatementBind(DBCStatement statement, Object column, @Nullable Object value);
 
     void handleStatementClose(DBCStatement statement);
 

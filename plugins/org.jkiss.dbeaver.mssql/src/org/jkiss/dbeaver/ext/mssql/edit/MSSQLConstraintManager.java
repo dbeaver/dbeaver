@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mssql.MSSQLMessages;
 import org.jkiss.dbeaver.ext.mssql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -36,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class MSSQLConstraintManager extends JDBCConstraintManager<MSSQLTableConstraint, MSSQLTable> {
 
+    @Nullable
     @Override
     public DBSObjectCache<MSSQLCatalog, MSSQLTableConstraint> getObjectsCache(MSSQLTableConstraint object)
     {

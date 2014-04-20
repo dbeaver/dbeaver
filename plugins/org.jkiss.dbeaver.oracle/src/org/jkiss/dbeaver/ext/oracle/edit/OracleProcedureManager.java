@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
@@ -39,6 +40,7 @@ import java.util.List;
  */
 public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStandalone, OracleSchema> {
 
+    @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, OracleProcedureStandalone> getObjectsCache(OracleProcedureStandalone object)
     {
