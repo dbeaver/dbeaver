@@ -3237,6 +3237,10 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void widgetSelected(SelectionEvent e) {
+            DBPDataSource dataSource = getDataSource();
+            if (dataSource == null) {
+                return;
+            }
             if (e.detail == SWT.ARROW) {
                 ToolItem item = (ToolItem) e.widget;
                 Rectangle rect = item.getBounds();
@@ -3245,8 +3249,18 @@ public class ResultSetViewer extends Viewer
                 Menu menu = new Menu(dropdown.getParent().getShell());
                 menu.setLocation(pt.x, pt.y + rect.height);
                 menu.setVisible(true);
-                MenuItem mi = new MenuItem(menu, SWT.NONE);
-                mi.setText("ZZZ");
+                for (int i = historyPosition + (back ? -1 : 1); i >= 0 && i < stateHistory.size(); i += back ? -1 : 1) {
+                    MenuItem mi = new MenuItem(menu, SWT.NONE);
+                    StateItem state = stateHistory.get(i);
+                    mi.setText(state.describeState(dataSource));
+                    final int statePosition = i;
+                    mi.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            navigateHistory(statePosition);
+                        }
+                    });
+                }
             } else {
                 int newPosition = back ? historyPosition - 1 : historyPosition + 1;
                 navigateHistory(newPosition);

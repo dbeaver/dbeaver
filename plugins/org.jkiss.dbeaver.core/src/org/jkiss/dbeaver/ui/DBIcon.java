@@ -103,11 +103,6 @@ public enum DBIcon
     LOADING3("loading3", "icons/tree/load/loading3.gif"), //$NON-NLS-1$ //$NON-NLS-2$
     LOADING4("loading4", "icons/tree/load/loading4.gif"), //$NON-NLS-1$ //$NON-NLS-2$
 
-    ROTATE1("rotate1", "icons/tree/load/rotate1.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    ROTATE2("rotate2", "icons/tree/load/rotate2.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    ROTATE3("rotate3", "icons/tree/load/rotate3.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    ROTATE4("rotate4", "icons/tree/load/rotate4.png"), //$NON-NLS-1$ //$NON-NLS-2$
-
     PROGRESS0("progress0", "icons/misc/progress_0.gif"), //$NON-NLS-1$ //$NON-NLS-2$
     PROGRESS1("progress1", "icons/misc/progress_1.gif"), //$NON-NLS-1$ //$NON-NLS-2$
     PROGRESS2("progress2", "icons/misc/progress_2.gif"), //$NON-NLS-1$ //$NON-NLS-2$
