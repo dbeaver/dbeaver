@@ -154,24 +154,38 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         // If the dataType is a SYSIBM dataType, get it
         if (db2Schema.getName().equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA)) {
             tempTypeDesc = PREDEFINED_TYPES.get(name);
+            // NLS_STRING_UNITS_TYPE is a SYSIBM type, but not a predefined one...
+            // so tempTypeDesc may be null at this time even if the schema is SYSIBM
         }
 
-        // NLS_STRING_UNITS_TYPE is a SYSIBM type, but not a predefined one...
-        // so tempTypeDesc may be null at this time even if the schema is SYSIBM
         if (tempTypeDesc == null) {
             // This is a UDT
-            // If the UDT is based on a SYSIBM dataType, get it
-            if ((sourceSchemaName != null) && (sourceSchemaName.equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA))) {
-                LOG.debug(name + " is a User Defined Type base on a System Data Type.");
-                tempTypeDesc = PREDEFINED_TYPES.get(sourceName);
-            } else {
-                // This UDT is based on another UDT, set it's TypeDesc to unkknown as looking for the base type recursively
-                // could lead to infinite loops:
-                // load corresponding module ->module load sits UDT->come back here to instanciate the UDT -> look for type in
-                // module etc.
-                // It would have to be done recursively with a direct SQL. No real benefit here..
-                LOG.debug(name + " is a User Defined Type base on another UDT. Set its DBPDataKind to UNKNOWN/OTHER");
-                tempTypeDesc = new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, null, null, null);
+
+            // Check for Structured or Array like DataTypes
+            switch (metaType) {
+            case R:
+                tempTypeDesc = new TypeDesc(DBPDataKind.STRUCT, Types.STRUCT, null, null, null);
+                break;
+            case A:
+            case L:
+                tempTypeDesc = new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, null, null, null);
+                break;
+            default:
+                // If the UDT is based on a SYSIBM dataType, get it
+                if ((sourceSchemaName != null) && (sourceSchemaName.equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA))) {
+                    LOG.debug(name + " is a User Defined Type base on a System Data Type.");
+                    tempTypeDesc = PREDEFINED_TYPES.get(sourceName);
+                } else {
+                    // This UDT is based on another UDT, set it's TypeDesc to unkknown as looking for the base type recursively
+                    // could lead to infinite loops:
+                    // load corresponding module ->module load its own UDTs ->come back here to instanciate the UDT -> look for type
+                    // in
+                    // module etc.
+                    // It would have to be done recursively with a direct SQL. No real benefit here..
+                    LOG.debug(name + " is a User Defined Type base on another UDT. Set its DBPDataKind to UNKNOWN/OTHER");
+                    tempTypeDesc = new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, null, null, null);
+                }
+                break;
             }
         }
         this.typeDesc = tempTypeDesc;
