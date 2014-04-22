@@ -21,11 +21,13 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineRowType;
+import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 import org.jkiss.utils.CommonUtils;
@@ -44,10 +46,13 @@ public class DB2RoutineParm implements DBSProcedureParameter {
     private String remarks;
     private Integer scale;
     private Integer length;
+    private DB2RoutineRowType rowType;
+
     private DB2DataType dataType;
     private DB2Schema dataTypeSchema;
+    private DB2Schema dataTypeModule;
+
     private String typeName;
-    private DB2RoutineRowType rowType;
 
     // -----------------------
     // Constructors
@@ -55,29 +60,42 @@ public class DB2RoutineParm implements DBSProcedureParameter {
 
     public DB2RoutineParm(DBRProgressMonitor monitor, DB2Routine procedure, ResultSet dbResult) throws DBException
     {
-
         super();
 
         this.procedure = procedure;
 
-        this.name = JDBCUtils.safeGetString(dbResult, "PARMNAME");
+        DB2DataSource db2DataSource = getDataSource();
+
+        this.name = JDBCUtils.safeGetStringTrimmed(dbResult, "PARMNAME");
         this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");
         this.length = JDBCUtils.safeGetInteger(dbResult, "LENGTH");
-        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.remarks = JDBCUtils.safeGetStringTrimmed(dbResult, "REMARKS");
         this.rowType = CommonUtils.valueOf(DB2RoutineRowType.class, JDBCUtils.safeGetString(dbResult, "ROWTYPE"));
-        this.typeName = JDBCUtils.safeGetString(dbResult, "TYPENAME");
 
+        String typeSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
+        String typeModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPEMODULENAME");
+        this.typeName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPENAME");
+        this.dataTypeSchema = db2DataSource.getSchema(monitor, typeSchemaName);
+
+        // -------------------
         // Search for DataType
-        // First Search in Standard Data Types
-        this.dataType = procedure.getDataSource().getDataTypeCache().getObject(monitor, procedure.getDataSource(), typeName);
-        if (this.dataType == null) {
-            // It not found, seaqrch in UDTs
-            String typeSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
-            this.dataTypeSchema = getDataSource().getSchema(monitor, typeSchemaName);
-            this.dataType = this.dataTypeSchema.getUDT(monitor, typeName);
-        } else {
-            this.dataTypeSchema = dataType.getSchema();
+        // -------------------
+
+        // First Search in System/Standard Data Types
+        this.dataType = db2DataSource.getDataType(typeName);
+        if (this.dataType != null) {
+            return;
         }
+
+        // Not found : Search for a UDT in Module
+        if (typeModuleName != null) {
+            DB2Module db2Module = DB2Utils.findModuleBySchemaNameAndName(monitor, db2DataSource, typeSchemaName, typeModuleName);
+            this.dataType = db2Module.getType(monitor, typeName);
+            return;
+        }
+
+        // Not found, search for a UDT
+        this.dataType = this.dataTypeSchema.getUDT(monitor, typeName);
     }
 
     @Nullable
@@ -157,23 +175,23 @@ public class DB2RoutineParm implements DBSProcedureParameter {
 
     @Override
     @Property(viewable = true, order = 4)
+    public DBSProcedureParameterType getParameterType()
+    {
+        return rowType.getParameterType();
+    }
+
+    @Override
+    @Property(viewable = true, order = 5)
     public long getMaxLength()
     {
         return length;
     }
 
     @Override
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, order = 6)
     public int getScale()
     {
         return scale;
-    }
-
-    @Override
-    @Property(viewable = true, order = 6)
-    public DBSProcedureParameterType getParameterType()
-    {
-        return rowType.getParameterType();
     }
 
     public DB2RoutineRowType getRowType()
