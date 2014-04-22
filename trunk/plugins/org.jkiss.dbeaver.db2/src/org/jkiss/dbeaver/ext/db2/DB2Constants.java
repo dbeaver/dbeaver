@@ -58,6 +58,7 @@ public class DB2Constants {
     public static final String CAT_COMPILER = "Compiler";
     public static final String CAT_DATETIME = "Date & Time";
     public static final String CAT_OWNER = "Owner";
+    public static final String CAT_SOURCE = "Source";
     public static final String CAT_PERFORMANCE = "Performance";
     public static final String CAT_STATS = "Statistics";
     public static final String CAT_TABLESPACE = "Tablespace";
