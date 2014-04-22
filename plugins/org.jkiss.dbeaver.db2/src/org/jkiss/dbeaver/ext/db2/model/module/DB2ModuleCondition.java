@@ -51,7 +51,7 @@ public class DB2ModuleCondition extends DB2Object<DB2Module> {
     public DB2ModuleCondition(DB2Module db2Module, ResultSet dbResult) throws DBException
     {
 
-        super(db2Module, JDBCUtils.safeGetString(dbResult, "VARNAME"), true);
+        super(db2Module, JDBCUtils.safeGetString(dbResult, "CONDNAME"), true);
 
         this.id = JDBCUtils.safeGetInteger(dbResult, "CONDID");
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
