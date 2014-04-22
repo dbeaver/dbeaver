@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DataTypeMetaType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
@@ -86,6 +87,8 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     private String constraintText;
     private String remarks;
 
+    private DB2Module db2Module;
+
     // -----------------------
     // Constructors
     // -----------------------
@@ -129,6 +132,12 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         } else {
             if (owner instanceof DB2Module) {
                 this.db2Schema = ((DB2Module) owner).getSchema();
+                String typeModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPEMODULENAME");
+                if (typeModuleName != null) {
+                    this.db2Module = DB2Utils.findModuleBySchemaNameAndName(VoidProgressMonitor.INSTANCE, db2DataSource,
+                        db2Schema.getName(), typeModuleName);
+                }
+
             } else {
                 // System datatypes
                 String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
@@ -282,11 +291,10 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return db2Schema;
     }
 
-    @Override
-    @Property(viewable = false, editable = false)
-    public int getTypeID()
+    @Property(viewable = true, editable = false, order = 3)
+    public DB2Module getModule()
     {
-        return typeDesc.sqlType;
+        return db2Module;
     }
 
     @Override
@@ -294,6 +302,12 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     public DBPDataKind getDataKind()
     {
         return typeDesc == null ? DBPDataKind.UNKNOWN : typeDesc.dataKind;
+    }
+
+    @Property(viewable = false, editable = false, order = 5)
+    public DB2DataTypeMetaType getMetaType()
+    {
+        return metaType;
     }
 
     @Override
@@ -310,6 +324,51 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return scale;
     }
 
+    @Override
+    @Property(viewable = false, editable = false, order = 10)
+    public int getTypeID()
+    {
+        return typeDesc.sqlType;
+    }
+
+    @Property(viewable = false, editable = false, order = 11)
+    public Integer getDb2TypeId()
+    {
+        return db2TypeId;
+    }
+
+    @Property(viewable = false, editable = false)
+    public String getConstraintText()
+    {
+        return constraintText;
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = false, editable = false)
+    public String getDescription()
+    {
+        return remarks;
+    }
+
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_SOURCE, order = 20)
+    public String getSourceSchemaName()
+    {
+        return sourceSchemaName;
+    }
+
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_SOURCE, order = 21)
+    public String getSourceModuleName()
+    {
+        return sourceModuleName;
+    }
+
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_SOURCE, order = 22)
+    public String getSourceName()
+    {
+        return sourceName;
+    }
+
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
@@ -320,30 +379,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
-    }
-
-    @Property(viewable = false, editable = false)
-    public String getSourceSchemaName()
-    {
-        return sourceSchemaName;
-    }
-
-    @Property(viewable = false, editable = false)
-    public String getSourceModuleName()
-    {
-        return sourceModuleName;
-    }
-
-    @Property(viewable = false, editable = false)
-    public String getSourceName()
-    {
-        return sourceName;
-    }
-
-    @Property(viewable = false, editable = false)
-    public DB2DataTypeMetaType getMetaType()
-    {
-        return metaType;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
@@ -362,26 +397,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     public Timestamp getLastRegenTime()
     {
         return lastRegenTime;
-    }
-
-    @Property(viewable = false, editable = false)
-    public String getConstraintText()
-    {
-        return constraintText;
-    }
-
-    @Nullable
-    @Override
-    @Property(viewable = false, editable = false)
-    public String getDescription()
-    {
-        return remarks;
-    }
-
-    @Property(viewable = false, editable = false)
-    public Integer getDb2TypeId()
-    {
-        return this.typeDesc == null ? db2TypeId : this.typeDesc.sqlType;
     }
 
     // --------------
