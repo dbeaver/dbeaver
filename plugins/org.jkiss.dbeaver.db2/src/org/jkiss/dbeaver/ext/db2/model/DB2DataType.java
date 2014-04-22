@@ -149,13 +149,16 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         }
 
         // Determine DBSKind and javax.sql.Types
-        TypeDesc tempTypeDesc;
+        TypeDesc tempTypeDesc = null;
 
         // If the dataType is a SYSIBM dataType, get it
         if (db2Schema.getName().equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA)) {
             tempTypeDesc = PREDEFINED_TYPES.get(name);
-        } else {
+        }
 
+        // NLS_STRING_UNITS_TYPE is a SYSIBM type, but not a predefined one...
+        // so tempTypeDesc may be null at this time even if the schema is SYSIBM
+        if (tempTypeDesc == null) {
             // This is a UDT
             // If the UDT is based on a SYSIBM dataType, get it
             if ((sourceSchemaName != null) && (sourceSchemaName.equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA))) {
@@ -223,7 +226,8 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     @Nullable
     @Override
-    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
+    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException
+    {
         return null;
     }
 
