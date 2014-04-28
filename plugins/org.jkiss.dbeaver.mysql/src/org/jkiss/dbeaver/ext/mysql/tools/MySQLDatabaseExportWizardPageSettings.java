@@ -19,10 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
@@ -72,13 +69,26 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
         methodCombo.add(MySQLMessages.tools_db_export_wizard_page_settings_combo_item_normal);
         methodCombo.select(wizard.method.ordinal());
 
+        SelectionListener changeListener = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateState();
+            }
+        };
+
         Group settingsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_settings, 2, GridData.FILL_HORIZONTAL, 0);
         noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.noCreateStatements);
+        noCreateStatementsCheck.addSelectionListener(changeListener);
         addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.addDropStatements);
+        addDropStatementsCheck.addSelectionListener(changeListener);
         disableKeysCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_disable_keys, wizard.disableKeys);
+        disableKeysCheck.addSelectionListener(changeListener);
         extendedInsertsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_ext_inserts, wizard.extendedInserts);
+        extendedInsertsCheck.addSelectionListener(changeListener);
         dumpEventsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_dump_events, wizard.dumpEvents);
+        dumpEventsCheck.addSelectionListener(changeListener);
         commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
+        commentsCheck.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 3, GridData.FILL_HORIZONTAL, 0);
         outputFileText = UIUtils.createLabelText(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, null);
@@ -96,11 +106,11 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
         browseButton.setImage(DBIcon.TREE_FOLDER.getImage());
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 File file = ContentUtils.selectFileForSave(getShell(), MySQLMessages.tools_db_export_wizard_page_settings_file_selector_title, new String[]{"*.sql", "*.txt", "*.*"}, outputFileText.getText()); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                 if (file != null) {
                     outputFileText.setText(file.getAbsolutePath());
+                    updateState();
                 }
             }
         });
@@ -108,8 +118,6 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
         createSecurityGroup(composite);
 
         setControl(composite);
-
-        //updateState();
     }
 
     private void updateState()

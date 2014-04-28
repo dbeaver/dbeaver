@@ -802,13 +802,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         @Override
         public void propertyChange(PropertyChangeEvent event)
         {
+            GraphicalViewer graphicalViewer = getGraphicalViewer();
+            if (graphicalViewer == null) {
+                return;
+            }
             if (ERDConstants.PREF_GRID_ENABLED.equals(event.getProperty())) {
                 Boolean enabled = (Boolean)event.getNewValue();
-                getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, enabled);
-                getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, enabled);
+                graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, enabled);
+                graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, enabled);
             } else if (ERDConstants.PREF_GRID_WIDTH.equals(event.getProperty()) || ERDConstants.PREF_GRID_HEIGHT.equals(event.getProperty())) {
                 final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-                getGraphicalViewer().setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
+                graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
                     store.getInt(ERDConstants.PREF_GRID_WIDTH),
                     store.getInt(ERDConstants.PREF_GRID_HEIGHT)));
             }
