@@ -52,7 +52,10 @@
             <date>29.04.2014</date>
 
             <release-notes>
-                -
+                - Foreign keys navigation added
+                - Structured and collection types support added
+                - Results viewer improved
+                - A lot of minor bugfixes and improvements
             </release-notes>
         </version>
 
