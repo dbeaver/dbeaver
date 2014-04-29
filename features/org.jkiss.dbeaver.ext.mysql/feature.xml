@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.mysql"
       label="%featureName"
-      version="1.0.12"
+      version="1.0.13"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ext.mysql">
 
