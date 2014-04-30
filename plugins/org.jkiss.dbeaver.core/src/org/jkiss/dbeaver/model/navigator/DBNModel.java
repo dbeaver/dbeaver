@@ -56,6 +56,7 @@ public class DBNModel implements IResourceChangeListener {
 
     private static Map<Image, Map<DBSObjectState, Image>> overlayStateImageCache = new IdentityHashMap<Image, Map<DBSObjectState, Image>>();
     private static Map<Image, Image> overlayLockImageCache = new IdentityHashMap<Image, Image>();
+    private static Map<Image, Image> overlayNetworkImageCache = new IdentityHashMap<Image, Image>();
 
     private DBNRoot root;
     private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
@@ -131,6 +132,10 @@ public class DBNModel implements IResourceChangeListener {
                 img.dispose();
             }
             overlayLockImageCache.clear();
+            for (Image img : overlayNetworkImageCache.values()) {
+                img.dispose();
+            }
+            overlayNetworkImageCache.clear();
         }
     }
 
@@ -503,6 +508,19 @@ public class DBNModel implements IResourceChangeListener {
             oid.setBottomLeft(new ImageDescriptor[] {overlayImage} );
             result = oid.createImage();
             overlayLockImageCache.put(image, result);
+        }
+        return result;
+    }
+
+    public static synchronized Image getNetworkOverlayImage(Image image)
+    {
+        final ImageDescriptor overlayImage = DBIcon.OVER_EXTERNAL.getImageDescriptor();
+        Image result = overlayNetworkImageCache.get(image);
+        if (result == null) {
+            OverlayImageDescriptor oid = new OverlayImageDescriptor(image.getImageData());
+            oid.setTopRight(new ImageDescriptor[] {overlayImage} );
+            result = oid.createImage();
+            overlayNetworkImageCache.put(image, result);
         }
         return result;
     }
