@@ -79,7 +79,6 @@ public class DataSourceDescriptor
         IAdaptable,
         DBEPrivateObjectEditor,
         DBSObjectStateful,
-        DBPGuardedObject,
         DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
@@ -513,6 +512,15 @@ public class DataSourceDescriptor
     public void setDescription(@Nullable String description)
     {
         this.description = description;
+    }
+
+    public boolean hasNetworkHandlers() {
+        for (DBWHandlerConfiguration handler : connectionInfo.getDeclaredHandlers()) {
+            if (handler.isEnabled()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Date getCreateDate()
@@ -1009,19 +1017,6 @@ public class DataSourceDescriptor
     {
         // just do nothing
     }
-
-    @Override
-    public boolean isObjectLocked()
-    {
-        return isConnectionReadOnly();
-    }
-
-    @Override
-    public void setObjectLock(DBRProgressMonitor monitor, boolean locked) throws DBCException
-    {
-        // just do nothing
-    }
-
 
     public static String generateNewId(DriverDescriptor driver)
     {

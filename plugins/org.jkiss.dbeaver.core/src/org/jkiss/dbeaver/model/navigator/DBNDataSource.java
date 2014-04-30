@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
@@ -143,6 +144,19 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
             }
         }
         return dataSource.isConnected();
+    }
+
+    @Override
+    public Image getNodeIcon() {
+        Image image = super.getNodeIcon();
+        DataSourceDescriptor dataSource = getDataSourceContainer();
+        if (dataSource.isConnectionReadOnly()) {
+            image = DBNModel.getLockedOverlayImage(image);
+        }
+        if (dataSource.hasNetworkHandlers()) {
+            image = DBNModel.getNetworkOverlayImage(image);
+        }
+        return image;
     }
 
     @Override
