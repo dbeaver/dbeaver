@@ -117,9 +117,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         if (image != null && object instanceof DBSObjectStateful) {
             image = DBNModel.getStateOverlayImage(image, ((DBSObjectStateful) object).getObjectState());
         }
-        if (object instanceof DBPGuardedObject && ((DBPGuardedObject) object).isObjectLocked()) {
-            image = DBNModel.getLockedOverlayImage(image);
-        }
         return image;
     }
 
