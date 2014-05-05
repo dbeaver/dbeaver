@@ -101,7 +101,9 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 }
 
                 String prevWord = document.get(prevOffset, prevStartOffset - prevOffset);
-                if (syntaxManager.getDialect().getKeywordType(prevWord) == DBPKeywordType.KEYWORD) {
+                if (syntaxManager.getDialect().getKeywordType(prevWord) == DBPKeywordType.KEYWORD &&
+                    !prevWord.equalsIgnoreCase("as"))
+                {
                     this.prevKeyWord = prevWord.toUpperCase();
                     break;
                 }

@@ -347,14 +347,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             Pattern aliasPattern;
             SQLDialect sqlDialect = dataSource.getSQLDialect();
             String quoteString = sqlDialect.getIdentifierQuoteString();
-            if (quoteString == null) {
-                quoteString = SQLConstants.STR_QUOTE_DOUBLE;
-            }
-            String quote = Pattern.quote(quoteString);
+            String quote = SQLConstants.STR_QUOTE_DOUBLE.equals(quoteString) ? quoteString : Pattern.quote(quoteString);
             String catalogSeparator = sqlDialect.getCatalogSeparator();
-            if (catalogSeparator == null) {
-                catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
-            }
             while (token.endsWith(catalogSeparator)) token = token.substring(0, token.length() -1);
 
             String tableNamePattern = "((?:" + quote + "(?:[.[^" + quote + "]]+)" + quote + ")|(?:[\\w" + Pattern.quote(catalogSeparator) + "]+))";
