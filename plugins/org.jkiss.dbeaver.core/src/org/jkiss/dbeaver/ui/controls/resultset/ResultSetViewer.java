@@ -1920,7 +1920,6 @@ public class ResultSetViewer extends Viewer
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob == null) {
-
             // Read data
             DBDDataFilter useDataFilter = dataFilter;
             if (useDataFilter == null) {
@@ -1972,7 +1971,7 @@ public class ResultSetViewer extends Viewer
                                 // Seems to be refresh
                                 // Restore original position
                                 curRow = model.getRow(focusRow);
-                                curAttribute = model.getVisibleColumn(0);
+                                //curAttribute = model.getVisibleColumn(0);
                                 if (recordMode) {
                                     updateRecordMode();
                                 } else {
