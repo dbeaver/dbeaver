@@ -61,9 +61,11 @@ public class BaseEntityIdentifier implements DBCEntityIdentifier {
                 }
             }
         }
+/*
         if (this.attributes.size() != refs.size()) {
             log.warn("Can't resolve all identifier attributes (" + bindings.length + ")");
         }
+*/
     }
 
     public DBSEntityReferrer getReferrer()

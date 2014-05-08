@@ -1986,6 +1986,7 @@ public class ResultSetViewer extends Viewer
                                 spreadsheet.setCursor(newPos, false);
                                 previewValue();
                             } else {
+                                curAttribute = null;
                                 spreadsheet.redraw();
                             }
 
