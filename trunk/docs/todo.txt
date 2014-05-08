@@ -1,7 +1,5 @@
+BUG: insert explicit values for auto-increment columns in data transfer (configurable)
 
-BUG: REFRESH RSV MODEL ALONG WITH METADATA
-
-Over icons for tunnelized connections
 Plain-text results representation
 Move main toolbar edit control in tab
 Save As+rename. Use external files in workspace
