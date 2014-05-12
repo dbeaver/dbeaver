@@ -29,6 +29,10 @@ import java.util.Collection;
  */
 public interface DBSEntity extends DBSObject
 {
+    /**
+     * Entity type
+     * @return entity type
+     */
     DBSEntityType getEntityType();
 
     /**
@@ -42,8 +46,8 @@ public interface DBSEntity extends DBSObject
 
     /**
      * Retrieve attribute by it's name (case insensitive)
-     * @param monitor
-     *@param attributeName column name  @return column or null
+     * @param monitor progress monitor
+     * @param attributeName column name  @return column or null
      * @throws DBException on any DB error
      */
     @Nullable

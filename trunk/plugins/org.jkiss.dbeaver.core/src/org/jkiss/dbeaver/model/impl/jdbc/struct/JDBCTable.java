@@ -440,7 +440,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
         if (pseudoAttribute != null) {
-            String criteria = pseudoAttribute.translateExpression(tableAlias != null ? tableAlias : getName());
+            if (tableAlias == null) {
+                tableAlias = this.getFullQualifiedName();
+            }
+            String criteria = pseudoAttribute.translateExpression(tableAlias);
             query.append(criteria);
         } else {
             if (tableAlias != null) {

@@ -38,7 +38,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * Table indices
      * @return list of indices
      * @throws DBException  on any DB error
-     * @param monitor
+     * @param monitor progress monitor
      */
     Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 
@@ -47,7 +47,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * Foreign keys can be obtained with {@link #getReferences(org.jkiss.dbeaver.model.runtime.DBRProgressMonitor)}
      * @return list of constraints
      * @throws DBException on any DB error
-     * @param monitor
+     * @param monitor progress monitor
      */
     @Nullable
     @Override
@@ -57,7 +57,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * Gets this table foreign keys
      * @return foreign keys list
      * @throws DBException on any DB error
-     * @param monitor
+     * @param monitor progress monitor
      */
     @Override
     Collection<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException;
@@ -66,7 +66,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * Gets foreign keys which refers this table
      * @return foreign keys list
      * @throws DBException on any DB error
-     * @param monitor
+     * @param monitor progress monitor
      */
     @Override
     Collection<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
