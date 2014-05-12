@@ -347,7 +347,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             Pattern aliasPattern;
             SQLDialect sqlDialect = dataSource.getSQLDialect();
             String quoteString = sqlDialect.getIdentifierQuoteString();
-            String quote = SQLConstants.STR_QUOTE_DOUBLE.equals(quoteString) ? quoteString : Pattern.quote(quoteString);
+            String quote = quoteString == null ? SQLConstants.STR_QUOTE_DOUBLE :
+                SQLConstants.STR_QUOTE_DOUBLE.equals(quoteString) ?
+                    quoteString :
+                    Pattern.quote(quoteString);
             String catalogSeparator = sqlDialect.getCatalogSeparator();
             while (token.endsWith(catalogSeparator)) token = token.substring(0, token.length() -1);
 
@@ -378,7 +381,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 if (!CommonUtils.isEmpty(group)) {
                     String[] allNames = group.split(Pattern.quote(catalogSeparator));
                     for (String name : allNames) {
-                        if (name.startsWith(quoteString) && name.endsWith(quoteString)) {
+                        if (quoteString != null && name.startsWith(quoteString) && name.endsWith(quoteString)) {
                             name = name.substring(1, name.length() - 1);
                         }
                         nameList.add(name);
