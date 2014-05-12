@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -74,6 +75,9 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         }
         if (identifierQuoteString != null) {
             identifierQuoteString = identifierQuoteString.trim();
+            if (identifierQuoteString.isEmpty()) {
+                identifierQuoteString = null;
+            }
         }
 
         try {
@@ -195,6 +199,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return name;
     }
 
+    @Nullable
     @NotNull
     @Override
     public String getIdentifierQuoteString()

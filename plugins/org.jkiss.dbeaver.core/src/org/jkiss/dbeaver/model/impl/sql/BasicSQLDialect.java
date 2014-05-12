@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -61,7 +62,7 @@ public class BasicSQLDialect implements SQLDialect {
         return "SQL";
     }
 
-    @NotNull
+    @Nullable
     @Override
     public String getIdentifierQuoteString()
     {

@@ -60,7 +60,7 @@ public interface SQLDialect extends ICommentsSupport {
      *
      * @return the quoting string or a space if quoting is not supported
      */
-    @NotNull
+    @Nullable
     String getIdentifierQuoteString();
 
     /**
