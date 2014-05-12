@@ -82,7 +82,7 @@ public final class DBUtils {
     {
         if (dataSource instanceof SQLDataSource) {
             final String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
-            return str.startsWith(quote) && str.endsWith(quote);
+            return quote != null && str.startsWith(quote) && str.endsWith(quote);
         } else {
             return false;
         }
@@ -101,6 +101,9 @@ public final class DBUtils {
     {
         final SQLDialect sqlDialect = dataSource.getSQLDialect();
         String quoteString = sqlDialect.getIdentifierQuoteString();
+        if (quoteString == null) {
+            return str;
+        }
         if (str.startsWith(quoteString) && str.endsWith(quoteString)) {
             // Already quoted
             return str;

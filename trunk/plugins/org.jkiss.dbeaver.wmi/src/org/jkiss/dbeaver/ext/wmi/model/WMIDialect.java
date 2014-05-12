@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 
@@ -37,6 +38,7 @@ public class WMIDialect extends BasicSQLDialect {
         return "WMI";
     }
 
+    @Nullable
     @NotNull
     @Override
     public String getIdentifierQuoteString()
