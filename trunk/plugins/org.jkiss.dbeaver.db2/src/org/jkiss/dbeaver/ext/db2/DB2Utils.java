@@ -66,7 +66,7 @@ public class DB2Utils {
 
     private static final Log LOG = LogFactory.getLog(DB2Utils.class);
 
-    private static final String LINE_SEP = "\n";
+    private static final String LINE_SEP = ";\n";
 
     // TODO DF: many things in this class could probably be factorized or genreric-ified
 
