@@ -47,6 +47,16 @@
 
     <versions>
         <version>
+            <number>2.4.1</number>
+            <type>hotfix</type>
+            <date>19.05.2014</date>
+
+            <release-notes>
+                -
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.4.0</number>
             <type>major</type>
             <date>29.04.2014</date>
