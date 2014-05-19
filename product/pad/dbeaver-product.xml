@@ -52,7 +52,10 @@
             <date>19.05.2014</date>
 
             <release-notes>
-                -
+                - Results scrolling was fixed
+                - DB2 tables edit fixed
+                - SQLite driver configuration fixed
+                - SQL editor opening error fixed
             </release-notes>
         </version>
 
