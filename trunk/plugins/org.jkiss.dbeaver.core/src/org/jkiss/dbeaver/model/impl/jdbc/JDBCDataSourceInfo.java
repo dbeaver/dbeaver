@@ -27,11 +27,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * JDBCDataSourceInfo
@@ -96,7 +94,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         }
         try {
             databaseVersion = new Version(metaData.getDatabaseMajorVersion(), metaData.getDatabaseMinorVersion(), 0);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             try {
                 databaseVersion = new Version(databaseProductVersion);
             } catch (IllegalArgumentException e1) {
@@ -124,7 +122,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         }
         try {
             supportsBatchUpdates = metaData.supportsBatchUpdates();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             log.debug(e);
         }
 
