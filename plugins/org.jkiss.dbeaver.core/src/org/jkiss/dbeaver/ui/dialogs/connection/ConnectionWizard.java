@@ -27,6 +27,7 @@ import org.eclipse.ui.INewWizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -146,31 +147,44 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 monitor.worked(1);
                 DBPDataSource dataSource = testDataSource.getDataSource();
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
-                DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection");
-                try {
-                    if (session instanceof Connection) {
-                        try {
-                            Connection connection = (Connection) session;
-                            DatabaseMetaData metaData = connection.getMetaData();
-                            productName = metaData.getDatabaseProductName();
-                            productVersion = metaData.getDatabaseProductVersion();
-                            driverName = metaData.getDriverName();
-                            driverVersion = metaData.getDriverVersion();
-                        } catch (Exception e) {
-                            log.error("Can't obtain connection metadata", e);
-                        }
-                    }
+
+                DBPDataSourceInfo info = dataSource.getInfo();
+                if (info != null) {
                     try {
-                        monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
-                        testDataSource.disconnect(monitor, false);
-                    } catch (DBException e) {
-                        // ignore it
-                        log.error(e);
-                    } finally {
-                        monitor.done();
+                        productName = info.getDatabaseProductName();
+                        productVersion = info.getDatabaseProductVersion();
+                        driverName = info.getDriverName();
+                        driverVersion = info.getDriverVersion();
+                    } catch (Exception e) {
+                        log.error("Can't obtain connection metadata", e);
                     }
-                } finally {
-                    session.close();
+                } else {
+                    DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection");
+                    try {
+                        if (session instanceof Connection) {
+                            try {
+                                Connection connection = (Connection) session;
+                                DatabaseMetaData metaData = connection.getMetaData();
+                                productName = metaData.getDatabaseProductName();
+                                productVersion = metaData.getDatabaseProductVersion();
+                                driverName = metaData.getDriverName();
+                                driverVersion = metaData.getDriverVersion();
+                            } catch (Exception e) {
+                                log.error("Can't obtain connection metadata", e);
+                            }
+                        }
+                        try {
+                            monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
+                            testDataSource.disconnect(monitor, false);
+                        } catch (DBException e) {
+                            // ignore it
+                            log.error(e);
+                        } finally {
+                            monitor.done();
+                        }
+                    } finally {
+                        session.close();
+                    }
                 }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
             } catch (DBException ex) {
