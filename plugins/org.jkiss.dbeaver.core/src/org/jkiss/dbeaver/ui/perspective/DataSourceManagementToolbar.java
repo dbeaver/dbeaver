@@ -333,13 +333,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
         try {
             if (update) {
-                // Remove all but first item
-                final int itemCount = connectionCombo.getItemCount();
-                if (itemCount > 1) {
-                    for (int i = itemCount - 1; i > 0; i--) {
-                        connectionCombo.remove(i);
-                    }
-                }
+                connectionCombo.removeAll();
+                connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null, null);
             }
 
             int selectionIndex = 0;
