@@ -288,8 +288,6 @@ public class MySQLTable extends MySQLTableBase
                                 int divPos = desc.indexOf("; " + INNODB_COMMENT);
                                 if (divPos != -1) {
                                     desc = desc.substring(0, divPos);
-                                } else {
-                                    desc = "";
                                 }
                             }
                             additionalInfo.description = desc;
