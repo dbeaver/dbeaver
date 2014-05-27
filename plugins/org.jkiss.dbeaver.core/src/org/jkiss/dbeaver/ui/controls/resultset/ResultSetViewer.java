@@ -114,6 +114,7 @@ import java.util.List;
  * because we search for binding by attribute only in constraints and for unique key columns which are unique?
  * But what PK has struct type?
  *
+ * TODO: fix command handlers. Replace activeControl handler with activeEditor. It also fixes standard shortcuts problem (http://dbeaver.jkiss.org/forum/posting.php?mode=reply&f=2&t=1247)
  * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
  * TODO: ipatheditorinput issue
