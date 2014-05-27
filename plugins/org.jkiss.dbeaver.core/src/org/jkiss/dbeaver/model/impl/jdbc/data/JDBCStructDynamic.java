@@ -226,7 +226,12 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     @Override
     public Object getAttributeValue(@NotNull DBSAttributeBase attribute) throws DBCException
     {
-        return values[attribute.getOrdinalPosition()];
+        int position = attribute.getOrdinalPosition();
+        if (position >= values.length) {
+            log.warn("Attribute index is out of range (" + position + ">=" + values.length + ")");
+            return null;
+        }
+        return values[position];
     }
 
     @Override
