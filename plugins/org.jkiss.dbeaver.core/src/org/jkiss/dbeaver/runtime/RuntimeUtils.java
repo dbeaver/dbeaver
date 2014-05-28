@@ -117,6 +117,26 @@ public class RuntimeUtils {
             null);
     }
 
+    public static IStatus getRootStatus(IStatus status) {
+        IStatus[] children = status.getChildren();
+        if (children == null || children.length == 0) {
+            return status;
+        } else {
+            return getRootStatus(children[0]);
+        }
+    }
+
+    public static String getStatusText(IStatus status) {
+        String text = status.getMessage();
+        IStatus[] children = status.getChildren();
+        if (children != null && children.length > 0) {
+            for (IStatus child : children) {
+                text += "\n" + getStatusText(child);
+            }
+        }
+        return text;
+    }
+
     public static String getExceptionMessage(Throwable ex)
     {
         StringBuilder msg = new StringBuilder(/*CommonUtils.getShortClassName(ex.getClass())*/);

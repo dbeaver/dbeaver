@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -371,7 +372,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (getEditorInput() instanceof ErrorEditorInput) {
             ErrorEditorInput errorInput = (ErrorEditorInput) getEditorInput();
             try {
-                addPage(new ErrorEditorPart(errorInput.getError()), errorInput);
+                addPage(new ErrorEditorPartEx(errorInput.getError()), errorInput);
+                setPageImage(0, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK));
                 setPageText(0, "Error");
             } catch (PartInitException e) {
                 log.error(e);
