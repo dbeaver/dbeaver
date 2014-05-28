@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 import java.util.Collection;
@@ -37,7 +38,7 @@ public interface DBSTableIndex extends DBSEntityConstraint, DBSEntityReferrer, D
      * Also the table can be index container.
      * @return container
      */
-    DBSObjectContainer getContainer();
+    DBSObject getContainer();
 
     DBSTable getTable();
 
