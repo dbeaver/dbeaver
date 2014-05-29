@@ -78,6 +78,7 @@ class SQLTokensParser {
         case '>': // greater than operator
         case '!': // greater than operator
         case '~': // greater than operator
+        case '`': // apos
             return true;
         default:
             return false;
@@ -176,26 +177,16 @@ class SQLTokensParser {
                     return new FormatterToken(FormatterConstants.COMMENT, s.toString(), start_pos);
                 }
             }
-        } else if (fChar == '\'') {
+        } else if (fChar == '\'' || fChar == '\"' || fChar == configuration.getSyntaxManager().getQuoteSymbol().charAt(0)) {
             fPos++;
-            StringBuilder s = new StringBuilder("'");
+            char quoteChar = fChar;
+            StringBuilder s = new StringBuilder(String.valueOf(quoteChar));
             for (;;) {
                 fChar = fBefore.charAt(fPos);
                 s.append(fChar);
                 fPos++;
-                if (fChar == '\'') {
+                if (fChar == quoteChar) {
                     return new FormatterToken(FormatterConstants.VALUE, s.toString(), start_pos);
-                }
-            }
-        } else if (fChar == '\"') {
-            fPos++;
-            StringBuilder s = new StringBuilder("\"");
-            for (;;) {
-                fChar = fBefore.charAt(fPos);
-                s.append(fChar);
-                fPos++;
-                if (fChar == '\"') {
-                    return new FormatterToken(FormatterConstants.NAME, s.toString(), start_pos);
                 }
             }
         }
