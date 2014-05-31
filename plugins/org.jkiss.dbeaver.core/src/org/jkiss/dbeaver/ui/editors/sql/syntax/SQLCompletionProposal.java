@@ -30,6 +30,9 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -60,6 +63,8 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     /** The additional info of this proposal. */
     private String additionalProposalInfo;
 
+    private DBPNamedObject object;
+
     public SQLCompletionProposal(
         SQLSyntaxManager syntaxManager,
         String displayString,
@@ -68,7 +73,8 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         int cursorPosition,
         @Nullable Image image,
         IContextInformation contextInformation,
-        String additionalProposalInfo)
+        String additionalProposalInfo,
+        DBPNamedObject object)
     {
         this.syntaxManager = syntaxManager;
         this.displayString = displayString;
@@ -86,6 +92,12 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         this.additionalProposalInfo = additionalProposalInfo;
 
         setPosition(wordDetector);
+
+        this.object = object;
+    }
+
+    public DBPNamedObject getObject() {
+        return object;
     }
 
     private void setPosition(SQLWordPartDetector wordDetector)
@@ -191,4 +203,19 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             return false;
         }
     }
+
+    public boolean hasStructObject() {
+        return object instanceof DBSObject || object instanceof DBSObjectReference;
+    }
+
+    public DBSObject getObjectContainer() {
+        if (object instanceof DBSObject) {
+            return ((DBSObject) object).getParentObject();
+        } else if (object instanceof DBSObjectReference) {
+            return ((DBSObjectReference) object).getContainer();
+        } else {
+            return null;
+        }
+    }
+
 }
