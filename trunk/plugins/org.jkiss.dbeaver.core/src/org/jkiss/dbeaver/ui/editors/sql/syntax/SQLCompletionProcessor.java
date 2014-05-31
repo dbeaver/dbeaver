@@ -97,7 +97,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         this.activeQuery = null;
 
         this.wordDetector = new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
-        final List<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>();
+        final List<SQLCompletionProposal> proposals = new ArrayList<SQLCompletionProposal>();
         final String wordPart = wordDetector.getWordPart();
 
         QueryType queryType = null;
@@ -148,15 +148,16 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         keyWord,
                         keyWord + " (" + keywordType.name() + ")",
                         null,
-                        false));
+                        false,
+                        null));
             }
         }
 
         // Remove duplications
         for (int i = 0; i < proposals.size(); i++) {
-            ICompletionProposal proposal = proposals.get(i);
+            SQLCompletionProposal proposal = proposals.get(i);
             for (int j = i + 1; j < proposals.size(); ) {
-                ICompletionProposal proposal2 = proposals.get(j);
+                SQLCompletionProposal proposal2 = proposals.get(j);
                 if (proposal.getDisplayString().equals(proposal2.getDisplayString())) {
                     proposals.remove(j);
                 } else {
@@ -164,12 +165,38 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
         }
+        DBSObject selectedObject = getSelectedObject(editor.getDataSource());
+        boolean hideDups = getPreferences().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
+        if (hideDups) {
+            for (int i = 0; i < proposals.size(); i++) {
+                SQLCompletionProposal proposal = proposals.get(i);
+                for (int j = 0; j < proposals.size(); ) {
+                    SQLCompletionProposal proposal2 = proposals.get(j);
+                    if (i != j && proposal.hasStructObject() && proposal2.hasStructObject() &&
+                        CommonUtils.equalObjects(proposal.getObject().getName(), proposal2.getObject().getName()) &&
+                        proposal.getObjectContainer() == selectedObject) {
+                        proposals.remove(j);
+                    } else {
+                        j++;
+                    }
+                }
+            }
+        }
+
+        if (hideDups) {
+            // Remove duplicates from non-active schema
+
+            if (selectedObject instanceof DBSObjectContainer) {
+                //List<ICompletionProposal>
+            }
+
+        }
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
     }
 
     private void makeStructureProposals(
         final DBRProgressMonitor monitor,
-        final List<ICompletionProposal> proposals,
+        final List<SQLCompletionProposal> proposals,
         final String wordPart,
         final QueryType queryType)
     {
@@ -227,7 +254,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     private void makeStructureProposals(
         DBRProgressMonitor monitor,
         DBPDataSource dataSource,
-        List<ICompletionProposal> proposals)
+        List<SQLCompletionProposal> proposals)
     {
         final DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (rootContainer == null) {
@@ -441,7 +468,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         DBRProgressMonitor monitor,
         DBSObject parent,
         @Nullable String startPart,
-        List<ICompletionProposal> proposals)
+        List<SQLCompletionProposal> proposals)
     {
         if (startPart != null) {
             startPart = wordDetector.removeQuotes(startPart).toUpperCase();
@@ -475,7 +502,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         DBSStructureAssistant assistant,
         @Nullable DBSObjectContainer rootSC,
         String objectName,
-        List<ICompletionProposal> proposals)
+        List<SQLCompletionProposal> proposals)
     {
         try {
             Collection<DBSObjectReference> references = assistant.findObjectsByMask(
@@ -493,13 +520,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
     }
 
-    private ICompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, DBSObject object)
+    private SQLCompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, DBSObject object)
     {
         DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, false);
         return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
     }
 
-    private ICompletionProposal makeProposalsFromObject(DBPNamedObject object, @Nullable Image objectIcon)
+    private SQLCompletionProposal makeProposalsFromObject(DBPNamedObject object, @Nullable Image objectIcon)
     {
         String objectFullName = DBUtils.getObjectFullName(object);
 
@@ -550,23 +577,36 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             objectFullName,
             info.toString(),
             objectIcon,
-            isSingleObject);
+            isSingleObject,
+            object);
+    }
+
+    private IPreferenceStore getPreferences() {
+        IPreferenceStore store = null;
+        SQLDataSource dataSource = editor.getDataSource();
+        if (dataSource != null) {
+            store = dataSource.getContainer().getPreferenceStore();
+        }
+        if (store == null) {
+            store = DBeaverCore.getGlobalPreferenceStore();
+        }
+        return store;
     }
 
     /*
     * Turns the vector into an Array of ICompletionProposal objects
     */
-    protected ICompletionProposal createCompletionProposal(
+    protected SQLCompletionProposal createCompletionProposal(
         String replaceString,
         String displayString,
         String description,
         @Nullable Image image,
-        boolean isObject)
+        boolean isObject,
+        @Nullable DBPNamedObject object)
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        IPreferenceStore store = getPreferences();
         SQLDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
-            store = dataSource.getContainer().getPreferenceStore();
             if (isObject) {
                 // Escape replace string if required
                 replaceString = DBUtils.getQuotedIdentifier(dataSource, replaceString);
@@ -600,7 +640,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                                 // relative to replacementOffset
             image, //image to display
             new ContextInformation(image, displayString, displayString), //the context information associated with this proposal
-            description);
+            description,
+            object);
     }
 
     /**
