@@ -60,6 +60,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Spinner csAutoActivationDelaySpinner;
     private Button csAutoInsertCheck;
     private Combo csInsertCase;
+    private Button csHideDuplicates;
     private Map<RulerColumnDescriptor, Button> rulerChecks = new HashMap<RulerColumnDescriptor, Button>();
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
@@ -177,6 +178,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csInsertCase.add("Default");
             csInsertCase.add("Upper case");
             csInsertCase.add("Lower case");
+
+            csHideDuplicates = UIUtils.createLabelCheckbox(assistGroup, "Hide duplicate names\nfrom non-active schemas", false);
         }
 
         // Autoclose
@@ -227,6 +230,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
             csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
+            csHideDuplicates.setSelection(store.getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS));
             acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
             acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
             acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
@@ -254,6 +258,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
+            store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
 
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
@@ -287,6 +292,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY);
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
+        store.setToDefault(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS);
 
         store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_TYPE);
         store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_LINES);
