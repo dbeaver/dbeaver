@@ -256,7 +256,7 @@
 
         <echo message="Extract JRE"/>
         <unzip
-            src="${buildDirectory}/../../contrib/jre/windows/jre6_u43_${arch}.zip"
+            src="${buildDirectory}/../../contrib/jre/windows/${jreVersion}_${arch}.zip"
             dest="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/jre"
             overwrite="true"
             />

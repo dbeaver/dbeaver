@@ -21,6 +21,7 @@ babelLocation=D:/Devel/java/Babel
 updateFilesDirectory=c:/temp/update
 driversDirectory=c:/temp/drivers
 locales=ru,fr
+jreVersion=jre7_u60
 
 #configs = *, *, *
 
