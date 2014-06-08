@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -243,7 +244,8 @@ public class DBNModel implements IResourceChangeListener {
             DBNNode nextChild = null;
             for (DBNNode child : children) {
                 if (child instanceof DBNDatabaseFolder) {
-                    if (((DBNDatabaseFolder) child).getMeta().getType().equals(item)) {
+                    DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
+                    if (meta != null && meta.getType() != null && meta.getType().equals(item)) {
                         nextChild = child;
                         break;
                     }
