@@ -35,6 +35,7 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -80,7 +81,8 @@ public abstract class BaseSQLDialog extends BaseDialog implements IDataSourcePro
             @Override
             public SQLDataSource getDataSource()
             {
-                return (SQLDataSource)BaseSQLDialog.this.getDataSource();
+                DBPDataSource dataSource = BaseSQLDialog.this.getDataSource();
+                return dataSource instanceof SQLDataSource ? (SQLDataSource) dataSource : null;
             }
 
             @Override
