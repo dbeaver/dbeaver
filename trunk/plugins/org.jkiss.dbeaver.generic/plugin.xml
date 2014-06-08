@@ -108,6 +108,9 @@
                     <property id="query-set-active-db" label="Set active database" description="Query to change active database" type="string" required="false" defaultValue=""/>
                     <property id="active-entity-type" label="Active object type" description="Type of selectable object (schema, catalog)" type="string" required="false" defaultValue="" validValues="catalog,schema"/>
                 </propertyGroup>
+                <propertyGroup label="DDL" description="DDL generation options">
+                    <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
+                </propertyGroup>
             </driver-properties>
 
             <drivers managable="true">
@@ -268,6 +271,7 @@
                     <!--parameter name="query-get-active-db">select db_name()</query>
                     <parameter name="query-set-active-db">use ?</query-->
                     <parameter name="script-delimiter" value="go"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
                     <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="*"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
                 </driver>
@@ -544,6 +548,7 @@
                     description="Driver for Vertica Database">
                     <file type="jar" path="drivers/vertica/vertica-jdk5-6.1.2-0.jar" url="*"/>
                     <parameter name="supports-limits" value="false"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
                 </driver>
                 <driver
                     id="cassandra_jkiss"

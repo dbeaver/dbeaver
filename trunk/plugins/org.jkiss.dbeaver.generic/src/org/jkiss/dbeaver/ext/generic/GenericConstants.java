@@ -40,6 +40,7 @@ public class GenericConstants {
     public static final String PARAM_ALL_OBJECTS_PATTERN = "all-objects-pattern";
     public static final String PARAM_SCRIPT_DELIMITER = "script-delimiter";
     public static final String PARAM_EMBEDDED = "embedded";
+    public static final String PARAM_DDL_DROP_COLUMN_SHORT = "ddl-drop-column-short";
 
     public static final String ENTITY_TYPE_CATALOG = "catalog";
     public static final String ENTITY_TYPE_SCHEMA = "schema";

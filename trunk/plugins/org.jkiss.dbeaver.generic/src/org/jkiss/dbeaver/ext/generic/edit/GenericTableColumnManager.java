@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
 
@@ -60,4 +62,13 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
         return column;
     }
 
+    @Override
+    protected long getDDLFeatures(GenericTableColumn object) {
+        long features = 0;
+        Object shortDrop = object.getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_DDL_DROP_COLUMN_SHORT);
+        if (shortDrop != null && CommonUtils.toBoolean(shortDrop)) {
+            features |= DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP;
+        }
+        return features;
+    }
 }

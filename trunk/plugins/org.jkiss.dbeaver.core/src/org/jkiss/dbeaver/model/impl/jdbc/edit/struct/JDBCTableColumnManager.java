@@ -117,14 +117,14 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    protected long getDDLFeatures()
+    protected long getDDLFeatures(OBJECT_TYPE object)
     {
         return 0;
     }
 
-    private boolean hasDDLFeature(long feature)
+    private boolean hasDDLFeature(OBJECT_TYPE object, long feature)
     {
-        return (getDDLFeatures() & feature) != 0;
+        return (getDDLFeatures(object) & feature) != 0;
     }
 
     @Override
@@ -143,7 +143,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 CoreMessages.model_jdbc_drop_table_column, "ALTER TABLE " + command.getObject().getTable().getFullQualifiedName() + //$NON-NLS-2$
-                    " DROP " + (hasDDLFeature(DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                    " DROP " + (hasDDLFeature(command.getObject(), DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         };
     }
 
