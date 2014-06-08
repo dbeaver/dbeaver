@@ -47,6 +47,7 @@ public interface DBPDataSource extends DBCExecutionContext
      * at the moment of invocation of this function.
      * @return datasource info.
      */
+    @NotNull
     DBPDataSourceInfo getInfo();
 
     /**
