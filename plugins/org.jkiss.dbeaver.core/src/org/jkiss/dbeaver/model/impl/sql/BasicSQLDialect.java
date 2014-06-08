@@ -66,7 +66,7 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public String getIdentifierQuoteString()
     {
-        return "\\";
+        return "\"";
     }
 
     @NotNull
