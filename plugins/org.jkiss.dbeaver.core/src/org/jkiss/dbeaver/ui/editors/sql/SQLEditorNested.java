@@ -100,7 +100,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
         if (editorInput == null) {
             return null;
         }
-        return (SQLDataSource) editorInput.getDataSource();
+        DBPDataSource dataSource = editorInput.getDataSource();
+        return dataSource instanceof SQLDataSource ? (SQLDataSource) dataSource : null;
     }
 
     @Override
