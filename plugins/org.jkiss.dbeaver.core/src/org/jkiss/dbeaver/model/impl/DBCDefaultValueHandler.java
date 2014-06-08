@@ -19,7 +19,11 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -99,8 +103,33 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(@NotNull DBDValueController controller) throws DBException {
-        return new TextViewDialog(controller);
+    public DBDValueEditor createEditor(@NotNull final DBDValueController controller) throws DBException {
+        switch (controller.getEditType()) {
+            case INLINE:
+            case PANEL:
+                return new DBDValueEditor() {
+                    private Text control = new Text(controller.getEditPlaceholder(), SWT.BORDER);
+                    @Override
+                    public Control getControl() {
+                        return control;
+                    }
+
+                    @Override
+                    public Object extractEditorValue() throws DBException {
+                        return control.getText();
+                    }
+
+                    @Override
+                    public void primeEditorValue(@Nullable Object value) throws DBException {
+                        control.setText(
+                            DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.EDIT));
+                    }
+                };
+            case EDITOR:
+                return new TextViewDialog(controller);
+            default:
+                return null;
+        }
     }
 
 }
