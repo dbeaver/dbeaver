@@ -77,6 +77,8 @@ public enum DBIcon
     TREE_FILE("file", "icons/tree/file.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_CLASS("class", "icons/tree/class.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_ASSOCIATION("association", "icons/tree/association.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_SERVER("server", "icons/tree/server.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_SERVERS("servers", "icons/tree/servers.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     TREE_INFO("info", "/icons/tree/info.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FOLDER_INFO("folder_info", "/icons/tree/folder_info.png"), //$NON-NLS-1$ //$NON-NLS-2$
@@ -192,7 +194,7 @@ public enum DBIcon
     ROW_EDIT("row_edit", "/icons/sql/row_edit.png"), //$NON-NLS-1$ //$NON-NLS-2$
     ROW_DELETE("row_delete", "/icons/sql/row_delete.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
-    EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    EDIT_DATABASE("edit_database", "/icons/misc/edit_database.png"), //$NON-NLS-1$ //$NON-NLS-2$
     EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"), //$NON-NLS-1$ //$NON-NLS-2$
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"), //$NON-NLS-1$ //$NON-NLS-2$
     CONFIG_TABLE("edit_table", "/icons/misc/config_table.png"), //$NON-NLS-1$ //$NON-NLS-2$
