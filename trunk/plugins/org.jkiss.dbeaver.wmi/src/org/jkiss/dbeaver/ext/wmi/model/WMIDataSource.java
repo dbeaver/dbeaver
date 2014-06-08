@@ -62,6 +62,7 @@ public class WMIDataSource implements DBPDataSource, SQLDataSource, IAdaptable//
         return container;
     }
 
+    @NotNull
     @Override
     public DBPDataSourceInfo getInfo()
     {

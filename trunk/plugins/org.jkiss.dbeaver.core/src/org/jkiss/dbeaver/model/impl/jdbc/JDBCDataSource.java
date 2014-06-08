@@ -216,6 +216,7 @@ public abstract class JDBCDataSource
         return container;
     }
 
+    @NotNull
     @Override
     public DBPDataSourceInfo getInfo()
     {
