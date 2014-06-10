@@ -1520,10 +1520,11 @@ public class ResultSetViewer extends Viewer
     private void fillFiltersMenu(@NotNull DBDAttributeBinding column, @NotNull IMenuManager filtersMenu)
     {
         if (supportsDataFilter()) {
-            DBPDataKind dataKind = column.getDataKind();
-            if (!column.isRequired()) {
-                filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.IS_NULL, FilterByColumnType.NONE, column));
-                filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.IS_NOT_NULL, FilterByColumnType.NONE, column));
+            DBCLogicalOperator[] operators = column.getValueHandler().getSupportedOperators(column);
+            for (DBCLogicalOperator operator : operators) {
+                if (operator.getArgumentCount() == 0) {
+                    filtersMenu.add(new FilterByColumnAction(operator, FilterByColumnType.NONE, column));
+                }
             }
             for (FilterByColumnType type : FilterByColumnType.values()) {
                 if (type == FilterByColumnType.NONE) {
@@ -1535,20 +1536,10 @@ public class ResultSetViewer extends Viewer
                     // Null cell value - no operators can be applied
                     continue;
                 }
-                if (dataKind == DBPDataKind.BOOLEAN) {
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.EQUALS, type, column));
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.NOT_EQUALS, type, column));
-                } else if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.EQUALS, type, column));
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.NOT_EQUALS, type, column));
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.GREATER, type, column));
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.LESS, type, column));
-                } else if (dataKind == DBPDataKind.STRING) {
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.EQUALS, type, column));
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.NOT_EQUALS, type, column));
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.GREATER, type, column));
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.LESS, type, column));
-                    filtersMenu.add(new FilterByColumnAction(DBCLogicalOperator.LIKE, type, column));
+                for (DBCLogicalOperator operator : operators) {
+                    if (operator.getArgumentCount() > 0) {
+                        filtersMenu.add(new FilterByColumnAction(operator, type, column));
+                    }
                 }
             }
             filtersMenu.add(new Separator());
