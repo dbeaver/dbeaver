@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -118,6 +115,11 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         int paramIndex,
         Object value)
         throws DBCException, SQLException;
+
+    @Override
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBDAttributeBinding attribute) {
+        return DBUtils.getDefaultOperators(attribute);
+    }
 
     protected abstract class ValueEditor<T extends Control> implements DBDValueEditor {
         protected final DBDValueController valueController;

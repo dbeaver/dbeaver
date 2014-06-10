@@ -27,10 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
@@ -130,6 +127,11 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
             default:
                 return null;
         }
+    }
+
+    @Override
+    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBDAttributeBinding attribute) {
+        return DBUtils.getDefaultOperators(attribute);
     }
 
 }
