@@ -1311,4 +1311,30 @@ public final class DBUtils {
             ((DBDContent)value).resetContents();
         }
     }
+
+    public static DBCLogicalOperator[] getDefaultOperators(DBSAttributeBase attribute) {
+        List<DBCLogicalOperator> operators = new ArrayList<DBCLogicalOperator>();
+        DBPDataKind dataKind = attribute.getDataKind();
+        if (!attribute.isRequired()) {
+            operators.add(DBCLogicalOperator.IS_NULL);
+            operators.add(DBCLogicalOperator.IS_NOT_NULL);
+        }
+        if (dataKind == DBPDataKind.BOOLEAN) {
+            operators.add(DBCLogicalOperator.EQUALS);
+            operators.add(DBCLogicalOperator.NOT_EQUALS);
+        }
+        if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.STRING) {
+            operators.add(DBCLogicalOperator.EQUALS);
+            operators.add(DBCLogicalOperator.NOT_EQUALS);
+            operators.add(DBCLogicalOperator.GREATER);
+            //operators.add(DBCLogicalOperator.GREATER_EQUALS);
+            operators.add(DBCLogicalOperator.LESS);
+            //operators.add(DBCLogicalOperator.LESS_EQUALS);
+        }
+        if (dataKind == DBPDataKind.STRING) {
+            operators.add(DBCLogicalOperator.LESS);
+            operators.add(DBCLogicalOperator.LIKE);
+        }
+        return operators.toArray(new DBCLogicalOperator[operators.size()]);
+    }
 }

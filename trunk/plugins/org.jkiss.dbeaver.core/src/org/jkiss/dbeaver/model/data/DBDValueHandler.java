@@ -23,10 +23,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
@@ -161,5 +158,7 @@ public interface DBDValueHandler
     @Nullable
     DBDValueEditor createEditor(@NotNull DBDValueController controller)
         throws DBException;
+
+    DBCLogicalOperator[] getSupportedOperators(@NotNull DBDAttributeBinding attribute);
 
 }

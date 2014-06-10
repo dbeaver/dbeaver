@@ -29,7 +29,7 @@ public class DBCLogicalOperator {
     public static final DBCLogicalOperator GREATER = new DBCLogicalOperator(">", 1);
     public static final DBCLogicalOperator GREATER_EQUALS = new DBCLogicalOperator(">=", 1);
     public static final DBCLogicalOperator LESS = new DBCLogicalOperator("<", 1);
-    public static final DBCLogicalOperator LESS_EQUALS = new DBCLogicalOperator(">=", 1);
+    public static final DBCLogicalOperator LESS_EQUALS = new DBCLogicalOperator("<=", 1);
     public static final DBCLogicalOperator IS_NULL = new DBCLogicalOperator("IS NULL", 0);
     public static final DBCLogicalOperator IS_NOT_NULL = new DBCLogicalOperator("IS NOT NULL", 0);
     public static final DBCLogicalOperator BETWEEN = new DBCLogicalOperator("BETWEEN", 2);
