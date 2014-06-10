@@ -267,27 +267,6 @@ public final class SQLUtils {
         return null;
     }
 
-    public static void appendOrderString(@NotNull DBDDataFilter filter, @NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
-    {
-            // Construct ORDER BY
-        boolean hasOrder = false;
-        for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
-            if (hasOrder) query.append(',');
-            if (conditionTable != null) {
-                query.append(conditionTable).append('.');
-            }
-            query.append(DBUtils.getObjectFullName(co.getAttribute()));
-            if (co.isOrderDescending()) {
-                query.append(" DESC"); //$NON-NLS-1$
-            }
-            hasOrder = true;
-        }
-        if (!CommonUtils.isEmpty(filter.getOrder())) {
-            if (hasOrder) query.append(',');
-            query.append(filter.getOrder());
-        }
-    }
-
     public static void appendConditionString(
         @NotNull DBDDataFilter filter,
         @NotNull DBPDataSource dataSource,
@@ -314,6 +293,27 @@ public final class SQLUtils {
         if (!CommonUtils.isEmpty(filter.getWhere())) {
             if (hasWhere) query.append(" AND "); //$NON-NLS-1$
             query.append(filter.getWhere());
+        }
+    }
+
+    public static void appendOrderString(@NotNull DBDDataFilter filter, @NotNull DBPDataSource dataSource, @Nullable String conditionTable, @NotNull StringBuilder query)
+    {
+        // Construct ORDER BY
+        boolean hasOrder = false;
+        for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
+            if (hasOrder) query.append(',');
+            if (conditionTable != null) {
+                query.append(conditionTable).append('.');
+            }
+            query.append(DBUtils.getObjectFullName(co.getAttribute()));
+            if (co.isOrderDescending()) {
+                query.append(" DESC"); //$NON-NLS-1$
+            }
+            hasOrder = true;
+        }
+        if (!CommonUtils.isEmpty(filter.getOrder())) {
+            if (hasOrder) query.append(',');
+            query.append(filter.getOrder());
         }
     }
 
