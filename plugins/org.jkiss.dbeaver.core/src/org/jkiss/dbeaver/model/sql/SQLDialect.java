@@ -39,7 +39,7 @@ public interface SQLDialect extends ICommentsSupport {
     int USAGE_PROC = 4;
     int USAGE_INDEX = 8;
     int USAGE_PRIV = 8;
-    int USAGE_ALL = 256;
+    int USAGE_ALL = Integer.MAX_VALUE;
 
     enum MultiValueInsertMode {
         NOT_SUPPORTED,
