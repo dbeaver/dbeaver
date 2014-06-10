@@ -1532,6 +1532,7 @@ public class ResultSetViewer extends Viewer
                 }
                 filtersMenu.add(new Separator());
                 if (type.getValue(this, column, DBCLogicalOperator.EQUALS, true) == null) {
+                    // Null cell value - no operators can be applied
                     continue;
                 }
                 if (dataKind == DBPDataKind.BOOLEAN) {
