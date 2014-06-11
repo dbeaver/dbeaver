@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -36,7 +37,8 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -55,7 +57,6 @@ import java.util.List;
 public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
-    private static final String NESTED_QUERY_AlIAS = "z_q";
 
     private final List<SQLStatementInfo> queries;
     private final SQLResultsConsumer resultsConsumer;
@@ -266,21 +267,20 @@ public class SQLQueryJob extends DataSourceJob
 
         long startTime = System.currentTimeMillis();
         String sqlQuery = sqlStatement.getQuery();
+        DBPDataSource dataSource = getDataSource();
         if (dataFilter != null && dataFilter.hasFilters()) {
-            // Append filter conditions to query
-            StringBuilder modifiedQuery = new StringBuilder(sqlQuery.length() + 100);
-            modifiedQuery.append("SELECT * FROM (\n");
-            modifiedQuery.append(sqlQuery);
-            modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS);
-            if (dataFilter.hasConditions()) {
-                modifiedQuery.append(" WHERE ");
-                SQLUtils.appendConditionString(dataFilter, getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery, true);
+
+            try {
+                if (dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries()) {
+                    sqlQuery = SQLSemanticProcessor.wrapQuery(dataSource, sqlQuery, dataFilter);
+                } else {
+                    sqlQuery = SQLSemanticProcessor.patchQuery(dataSource, sqlQuery, dataFilter);
+                }
+            } catch (DBException e) {
+                // Can't parse query semantics
+                lastError = e;
+                return false;
             }
-            if (dataFilter.hasOrdering()) {
-                modifiedQuery.append(" ORDER BY "); //$NON-NLS-1$
-                SQLUtils.appendOrderString(dataFilter, getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
-            }
-            sqlQuery = modifiedQuery.toString();
         }
         statistics.setQueryText(sqlQuery);
         SQLQueryResult curResult = new SQLQueryResult(sqlStatement);
@@ -296,8 +296,8 @@ public class SQLQueryJob extends DataSourceJob
             closeStatement();
 
             // Check and invalidate connection
-            if (!connectionInvalidated && getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
-                getDataSource().invalidateContext(session.getProgressMonitor());
+            if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
+                dataSource.invalidateContext(session.getProgressMonitor());
                 connectionInvalidated = true;
             }
 

@@ -1140,13 +1140,7 @@ public class SQLEditor extends SQLEditorBase
             int features = DATA_SELECT;
 
             if (resultSetNumber == 0) {
-                final SQLQueryJob job = queryProcessor.curJob;
-                if (job != null) {
-                    DBPDataSource dataSource = getDataSource();
-                    if (dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries()) {
-                        features |= DATA_FILTER;
-                    }
-                }
+                features |= DATA_FILTER;
             }
             return features;
         }
