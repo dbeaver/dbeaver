@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.BaseEntityIdentifier;
-import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
+import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -491,7 +491,7 @@ public final class DBUtils {
         }
         if (typeHandler == null) {
             if (preferences == null) {
-                typeHandler = DBCDefaultValueHandler.INSTANCE;
+                typeHandler = DefaultValueHandler.INSTANCE;
             } else {
                 typeHandler = preferences.getDefaultValueHandler();
             }

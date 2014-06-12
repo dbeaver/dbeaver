@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
+import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -969,7 +969,7 @@ public class DataSourceDescriptor
     @Override
     public DBDValueHandler getDefaultValueHandler()
     {
-        return DBCDefaultValueHandler.INSTANCE;
+        return DefaultValueHandler.INSTANCE;
     }
 
     @Override

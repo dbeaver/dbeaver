@@ -16,9 +16,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl;
+package org.jkiss.dbeaver.model.impl.data;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
@@ -30,14 +29,13 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 /**
  * Default value handler
  */
-public class DBCDefaultValueHandler implements DBDValueHandler {
+public class DefaultValueHandler extends BaseValueHandler {
 
-    public static final DBCDefaultValueHandler INSTANCE = new DBCDefaultValueHandler();
+    public static final DefaultValueHandler INSTANCE = new DefaultValueHandler();
 
     @Override
     public int getFeatures()
@@ -79,27 +77,6 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public void releaseValueObject(Object value) {
-        if (value instanceof DBDValue) {
-            ((DBDValue) value).release();
-        }
-    }
-
-    @NotNull
-    @Override
-    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
-        return DBUtils.getDefaultValueDisplayString(value, format);
-    }
-
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull DBDValueController controller) throws DBCException {
-    }
-
-    @Override
-    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller) {
-    }
-
-    @Override
     public DBDValueEditor createEditor(@NotNull final DBDValueController controller) throws DBException {
         switch (controller.getEditType()) {
             case INLINE:
@@ -127,11 +104,6 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
             default:
                 return null;
         }
-    }
-
-    @Override
-    public DBCLogicalOperator[] getSupportedOperators(@NotNull DBDAttributeBinding attribute) {
-        return DBUtils.getDefaultOperators(attribute);
     }
 
 }
