@@ -51,6 +51,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
   @Override
   public void initializeDefaultPreferences() {
+      boolean isMac = Platform.getOS().toLowerCase().contains("macos");
+
       // Init default preferences
       IPreferenceStore store = DBeaverActivator.getInstance().getPreferenceStore();
       {
@@ -60,7 +62,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
       // Agent
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, !isMac);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, 30);
 
       // Navigator
