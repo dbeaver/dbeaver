@@ -23,15 +23,20 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -75,35 +80,41 @@ public class SQLSemanticProcessor {
         return modifiedQuery.toString();
     }
 
-    public static String patchQuery(final DBPDataSource dataSource, String sql, final DBDDataFilter filter) throws DBException {
-        try {
-            Statement statement = CCJSqlParserUtil.parse(sql);
-            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-                patchSelectQuery(dataSource, (PlainSelect)((Select) statement).getSelectBody(), filter);
-            }
-            return statement.toString();
-        } catch (Exception e) {
-            throw new DBException("SQL parse error", e);
-        }
-    }
-
     private static void patchSelectQuery(DBPDataSource dataSource, PlainSelect select, DBDDataFilter filter) throws JSQLParserException {
         // WHERE
         FromItem fromItem = select.getFromItem();
         String tableAlias = fromItem.getAlias() == null ? null : fromItem.getAlias().getName();
-        StringBuilder whereString = new StringBuilder();
-        SQLUtils.appendConditionString(filter, dataSource, tableAlias, whereString, true);
-        Expression filterWhere = CCJSqlParserUtil.parseCondExpression(whereString.toString());
-        Expression sourceWhere = select.getWhere();
-        if (sourceWhere == null) {
-            select.setWhere(filterWhere);
-        } else {
-            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), filterWhere));
+        if (filter.hasConditions()) {
+            StringBuilder whereString = new StringBuilder();
+            SQLUtils.appendConditionString(filter, dataSource, tableAlias, whereString, true);
+            Expression filterWhere = CCJSqlParserUtil.parseCondExpression(whereString.toString());
+            Expression sourceWhere = select.getWhere();
+            if (sourceWhere == null) {
+                select.setWhere(filterWhere);
+            } else {
+                select.setWhere(new AndExpression(new Parenthesis(sourceWhere), filterWhere));
+            }
         }
         // ORDER
-        StringBuilder orderString = new StringBuilder();
-        SQLUtils.appendOrderString(filter, dataSource, tableAlias, orderString);
-        List<OrderByElement> orderByElements = select.getOrderByElements();
+        if (filter.hasOrdering()) {
+            List<OrderByElement> orderByElements = select.getOrderByElements();
+            if (orderByElements == null) {
+                orderByElements = new ArrayList<OrderByElement>();
+                select.setOrderByElements(orderByElements);
+            }
+            Table orderTable = tableAlias == null ? null : new Table(tableAlias);
+            for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
+                Expression orderExpr = new Column(orderTable, co.getAttribute().getName());
+                OrderByElement element = new OrderByElement();
+                element.setExpression(orderExpr);
+                if (co.isOrderDescending()) {
+                    element.setAsc(false);
+                    element.setAscDescPresent(true);
+                }
+                orderByElements.add(element);
+            }
+
+        }
 
     }
 
