@@ -268,20 +268,6 @@ public class SQLQueryJob extends DataSourceJob
         long startTime = System.currentTimeMillis();
         String sqlQuery = sqlStatement.getQuery();
         DBPDataSource dataSource = getDataSource();
-        if (dataFilter != null && dataFilter.hasFilters()) {
-
-            try {
-                if (dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries()) {
-                    sqlQuery = SQLSemanticProcessor.wrapQuery(dataSource, sqlQuery, dataFilter);
-                } else {
-                    sqlQuery = SQLSemanticProcessor.patchQuery(dataSource, sqlQuery, dataFilter);
-                }
-            } catch (DBException e) {
-                // Can't parse query semantics
-                lastError = e;
-                return false;
-            }
-        }
         statistics.setQueryText(sqlQuery);
         SQLQueryResult curResult = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
@@ -292,6 +278,10 @@ public class SQLQueryJob extends DataSourceJob
         //}
 
         try {
+            if (dataFilter != null && dataFilter.hasFilters()) {
+                sqlQuery = SQLSemanticProcessor.addFiltersToQuery(dataSource, sqlQuery, dataFilter);
+            }
+
             // Prepare statement
             closeStatement();
 

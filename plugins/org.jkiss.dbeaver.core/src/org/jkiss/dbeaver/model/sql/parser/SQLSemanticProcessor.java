@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
@@ -27,7 +28,9 @@ import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -37,6 +40,23 @@ import java.util.List;
 public class SQLSemanticProcessor {
 
     private static final String NESTED_QUERY_AlIAS = "z_q";
+
+    public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) throws DBException {
+        boolean supportSubqueries = dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries();
+        try {
+            Statement statement = CCJSqlParserUtil.parse(sqlQuery);
+            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+                PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
+                if (!supportSubqueries || CommonUtils.isEmpty(select.getJoins())) {
+                    patchSelectQuery(dataSource, select, dataFilter);
+                    return statement.toString();
+                }
+            }
+            return wrapQuery(dataSource, sqlQuery, dataFilter);
+        } catch (Exception e) {
+            throw new DBException("SQL parse error", e);
+        }
+    }
 
     public static String wrapQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) throws DBException {
         // Append filter conditions to query
@@ -58,27 +78,8 @@ public class SQLSemanticProcessor {
     public static String patchQuery(final DBPDataSource dataSource, String sql, final DBDDataFilter filter) throws DBException {
         try {
             Statement statement = CCJSqlParserUtil.parse(sql);
-            if (statement instanceof Select) {
-                ((Select) statement).getSelectBody().accept(new SelectVisitor() {
-                    @Override
-                    public void visit(PlainSelect plainSelect) {
-                        try {
-                            patchSelectQuery(dataSource, plainSelect, filter);
-                        } catch (JSQLParserException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-
-                    @Override
-                    public void visit(SetOperationList setOpList) {
-
-                    }
-
-                    @Override
-                    public void visit(WithItem withItem) {
-
-                    }
-                });
+            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+                patchSelectQuery(dataSource, (PlainSelect)((Select) statement).getSelectBody(), filter);
             }
             return statement.toString();
         } catch (Exception e) {
@@ -97,7 +98,7 @@ public class SQLSemanticProcessor {
         if (sourceWhere == null) {
             select.setWhere(filterWhere);
         } else {
-            select.setWhere(new AndExpression(select.getWhere(), filterWhere));
+            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), filterWhere));
         }
         // ORDER
         StringBuilder orderString = new StringBuilder();
