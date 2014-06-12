@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 class FilterValueEditDialog extends BaseDialog {
