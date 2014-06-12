@@ -3062,6 +3062,9 @@ public class ResultSetViewer extends Viewer
         public void run()
         {
             Object value = type.getValue(ResultSetViewer.this, column, operator, false);
+            if (operator.getArgumentCount() > 0 && value == null) {
+                return;
+            }
             DBDDataFilter filter = model.getDataFilter();
             DBDAttributeConstraint constraint = filter.getConstraint(column);
             if (constraint != null) {
