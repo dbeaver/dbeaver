@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDComplexValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -35,10 +34,10 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.BaseValueEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
 
@@ -110,7 +109,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
     {
         switch (controller.getEditType()) {
             case PANEL:
-                return new ValueEditor<Tree>(controller) {
+                return new BaseValueEditor<Tree>(controller) {
                     ComplexObjectEditor editor;
 
                     @Override

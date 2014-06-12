@@ -80,7 +80,10 @@ class FilterValueEditDialog extends BaseDialog {
         label.setText(valueController.getBinding().getName() + " " + operator.getStringValue() + " :");
         try {
             editor = valueController.getValueHandler().createEditor(valueController);
-            editor.primeEditorValue(valueController.getValue());
+            if (editor != null) {
+                editor.createControl();
+                editor.primeEditorValue(valueController.getValue());
+            }
         } catch (DBException e) {
             log.error("Can't create inline value editor", e);
         }

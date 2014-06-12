@@ -1368,6 +1368,9 @@ public class ResultSetViewer extends Viewer
             UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
             return null;
         }
+        if (editor != null) {
+            editor.createControl();
+        }
         if (editor instanceof DBDValueEditorStandalone) {
             valueController.registerEditor((DBDValueEditorStandalone)editor);
             // show dialog in separate job to avoid block

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.impl.data.BaseValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,7 +50,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
             case PANEL:
                 final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
 
-                return new ValueEditor<org.eclipse.swt.widgets.List>(controller) {
+                return new BaseValueEditor<org.eclipse.swt.widgets.List>(controller) {
                     @Override
                     public void primeEditorValue(@Nullable Object value) throws DBException
                     {
