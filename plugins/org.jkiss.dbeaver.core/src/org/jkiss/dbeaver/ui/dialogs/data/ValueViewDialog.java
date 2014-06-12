@@ -101,6 +101,11 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         dialogCount++;
     }
 
+    @Override
+    public void createControl() {
+
+    }
+
     protected IDialogSettings getDialogSettings()
     {
         return dialogSettings;
@@ -115,7 +120,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
     protected DBDValueEditor createPanelEditor(final Composite placeholder)
         throws DBException
     {
-        return valueController.getValueHandler().createEditor(new DBDValueController() {
+        DBDValueEditor editor = valueController.getValueHandler().createEditor(new DBDValueController() {
             @Override
             public DBPDataSource getDataSource()
             {
@@ -202,6 +207,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
             {
             }
         });
+        if (editor != null) {
+            editor.createControl();
+        }
+        return editor;
     }
 
     public DBDValueController getValueController() {

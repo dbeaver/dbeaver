@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
+import org.jkiss.dbeaver.model.impl.data.BaseValueEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -282,7 +283,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 if (controller.getValue() instanceof DBDContentCached) {
                     final boolean isText = ContentUtils.isTextContent(((DBDContent) controller.getValue()));
                     // String editor
-                    return new ValueEditor<Text>(controller) {
+                    return new BaseValueEditor<Text>(controller) {
                         @Override
                         public void primeEditorValue(@Nullable Object value) throws DBException
                         {

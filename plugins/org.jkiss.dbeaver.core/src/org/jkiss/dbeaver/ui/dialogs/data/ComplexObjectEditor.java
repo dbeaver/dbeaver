@@ -201,6 +201,7 @@ public class ComplexObjectEditor extends TreeViewer {
         try {
             curCellEditor = valueHandler.createEditor(valueController);
             if (curCellEditor != null) {
+                curCellEditor.createControl();
                 if (curCellEditor instanceof DBDValueEditorStandalone) {
                     ((DBDValueEditorStandalone) curCellEditor).showValueEditor();
                 } else if (curCellEditor.getControl() != null) {

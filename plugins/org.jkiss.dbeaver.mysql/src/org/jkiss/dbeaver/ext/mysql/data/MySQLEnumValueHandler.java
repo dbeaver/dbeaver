@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.BaseValueEditor;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -130,7 +131,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             {
-                return new ValueEditor<Combo>(controller) {
+                return new BaseValueEditor<Combo>(controller) {
                     @Override
                     public void primeEditorValue(@Nullable Object value) throws DBException
                     {
@@ -171,7 +172,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             }
             case PANEL:
             {
-                return new ValueEditor<List>(controller) {
+                return new BaseValueEditor<List>(controller) {
                     @Override
                     public void primeEditorValue(@Nullable Object value) throws DBException
                     {

@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.dialogs.data;
+package org.jkiss.dbeaver.model.impl.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -29,9 +29,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -39,32 +38,33 @@ import java.util.Date;
 /**
  * DateTimeViewDialog
  */
-public class DateTimeViewDialog extends ValueViewDialog {
+public class DateTimeStandaloneEditor extends ValueViewDialog {
 
+    private final DateTimeEditorHelper helper;
     private DateTime dateEditor;
     private DateTime timeEditor;
 
-    public DateTimeViewDialog(DBDValueController valueController) {
+    public DateTimeStandaloneEditor(DBDValueController valueController, DateTimeEditorHelper helper) {
         super(valueController);
+        this.helper = helper;
     }
 
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        Object value = getValueController().getValue();
+        DBDValueController valueController = getValueController();
+        Object value = valueController.getValue();
 
-
-        DBSTypedObject valueType = getValueController().getValueType();
-        boolean isDate = valueType.getTypeID() == java.sql.Types.DATE;
-        boolean isTime = valueType.getTypeID() == java.sql.Types.TIME;
-        boolean isTimeStamp = valueType.getTypeID() == java.sql.Types.TIMESTAMP;
+        boolean isDate = helper.isDate(valueController);
+        boolean isTime = helper.isTime(valueController);
+        boolean isTimeStamp = helper.isTimestamp(valueController);
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
         Composite panel = UIUtils.createPlaceholder(dialogGroup, isTimeStamp ? 2 : 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         int style = SWT.BORDER;
-        if (getValueController().isReadOnly()) {
+        if (valueController.isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
 
@@ -95,7 +95,7 @@ public class DateTimeViewDialog extends ValueViewDialog {
             gd.horizontalSpan = 2;
             button.setLayoutData(gd);
         }
-        button.setEnabled(!getValueController().isReadOnly());
+        button.setEnabled(!valueController.isReadOnly());
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -125,7 +125,8 @@ public class DateTimeViewDialog extends ValueViewDialog {
     @Override
     public Object extractEditorValue()
     {
-        return JDBCDateTimeValueHandler.getDate(dateEditor, timeEditor);
+        long ms = DateTimeInlineEditor.getCalendarFromControls(dateEditor, timeEditor).getTimeInMillis();
+        return helper.getValueFromMillis(getValueController(), ms);
     }
 
     @Override

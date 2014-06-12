@@ -455,6 +455,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     }
 
     @Override
+    public void createControl() {
+
+    }
+
+    @Override
     public Control getControl()
     {
         return getControl(getActivePage());

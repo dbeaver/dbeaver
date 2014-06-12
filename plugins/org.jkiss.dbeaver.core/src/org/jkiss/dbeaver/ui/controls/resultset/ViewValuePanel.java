@@ -110,7 +110,9 @@ abstract class ViewValuePanel extends Composite {
                 return;
             }
             fillStandardToolBar();
-            if (valueViewer == null) {
+            if (valueViewer != null) {
+                valueViewer.createControl();
+            } else {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
                 placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
                 placeholder.addPaintListener(new PaintListener() {
