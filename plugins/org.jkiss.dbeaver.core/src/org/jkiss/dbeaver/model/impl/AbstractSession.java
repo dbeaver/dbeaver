@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -102,7 +103,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     @Override
     public DBDValueHandler getDefaultValueHandler()
     {
-        return DBCDefaultValueHandler.INSTANCE;
+        return DefaultValueHandler.INSTANCE;
     }
 
     @Override
