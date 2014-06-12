@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.BaseValueEditor;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -220,7 +221,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             case INLINE:
             case PANEL:
                 if (controller.getValueType().getDataKind() == DBPDataKind.BOOLEAN) {
-                    return new ValueEditor<Combo>(controller) {
+                    return new BaseValueEditor<Combo>(controller) {
                         @Override
                         protected Combo createControl(Composite editPlaceholder)
                         {
@@ -249,7 +250,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         }
                     };
                 } else {
-                    return new ValueEditor<Text>(controller) {
+                    return new BaseValueEditor<Text>(controller) {
                         @Override
                         protected Text createControl(Composite editPlaceholder)
                         {

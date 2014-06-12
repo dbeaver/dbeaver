@@ -20,10 +20,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,10 +30,11 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.DateTimeEditorHelper;
+import org.jkiss.dbeaver.model.impl.data.DateTimeInlineEditor;
+import org.jkiss.dbeaver.model.impl.data.DateTimeStandaloneEditor;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
@@ -50,7 +47,7 @@ import java.util.Date;
 /**
  * JDBC string value handler
  */
-public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
+public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implements DateTimeEditorHelper {
 
     public static final String TYPE_NAME_DATE = "date"; //$NON-NLS-1$
     public static final String TYPE_NAME_TIME = "time"; //$NON-NLS-1$
@@ -124,72 +121,9 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new ValueEditor<DateTime>(controller) {
-                    DateTime dateEditor;
-                    DateTime timeEditor;
-                    @Override
-                    public void primeEditorValue(@Nullable Object value) throws DBException
-                    {
-                        if (value instanceof Date) {
-                            Calendar cl = Calendar.getInstance();
-                            cl.setTime((Date) value);
-                            if (dateEditor != null) {
-                                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
-                            }
-                            if (timeEditor != null) {
-                                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
-                            }
-                        }
-                    }
-
-                    @Override
-                    protected DateTime createControl(Composite editPlaceholder)
-                    {
-                        boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
-                        final Composite dateTimeGroup = inline ?
-                            valueController.getEditPlaceholder() :
-                            new Composite(valueController.getEditPlaceholder(), SWT.BORDER);
-                        if (!inline) {
-                            dateTimeGroup.setLayout(new GridLayout(2, false));
-                        }
-
-                        boolean isDate = valueController.getValueType().getTypeID() == java.sql.Types.DATE;
-                        boolean isTime = valueController.getValueType().getTypeID() == java.sql.Types.TIME;
-                        boolean isTimeStamp = valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP || (!isDate && !isTime);
-
-                        if (!inline && (isDate || isTimeStamp)) {
-                            UIUtils.createControlLabel(dateTimeGroup, "Date");
-                        }
-                        if (isDate || isTimeStamp) {
-                            dateEditor = new DateTime(dateTimeGroup,
-                                (inline ? SWT.DATE | SWT.DROP_DOWN | SWT.MEDIUM | SWT.BORDER : SWT.DATE | SWT.DROP_DOWN | SWT.LONG));
-                            dateEditor.setEnabled(!valueController.isReadOnly());
-                        }
-                        if (!inline && (isTime || isTimeStamp)) {
-                            UIUtils.createControlLabel(dateTimeGroup, "Time");
-                        }
-                        if (isTime || isTimeStamp) {
-                            timeEditor = new DateTime(dateTimeGroup,
-                                (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG);
-                            timeEditor.setEnabled(!valueController.isReadOnly());
-                        }
-
-                        if (dateEditor != null) {
-                            if (timeEditor != null) {
-                                initInlineControl(timeEditor);
-                            }
-                            return dateEditor;
-                        }
-                        return timeEditor;
-                    }
-                    @Override
-                    public Object extractEditorValue()
-                    {
-                        return getDate(dateEditor, timeEditor);
-                    }
-                };
+                return new DateTimeInlineEditor(controller, this);
             case EDITOR:
-                return new DateTimeViewDialog(controller);
+                return new DateTimeStandaloneEditor(controller, this);
             default:
                 return null;
         }
@@ -200,7 +134,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value == null) {
-            return super.getValueDisplayString(column, value, format);
+            return super.getValueDisplayString(column, null, format);
         }
         if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
             Calendar cal = Calendar.getInstance();
@@ -279,8 +213,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     {
         manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time) {
             @Override
-            public void run()
-            {
+            public void run() {
                 controller.updateValue(new Date());
             }
         });
@@ -295,30 +228,6 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             "format", //$NON-NLS-1$
             "Pattern",
             getFormatter(controller.getValueType()).getPattern());
-    }
-
-    public static Date getDate(DateTime dateEditor, DateTime timeEditor)
-    {
-        Calendar cl = Calendar.getInstance();
-        cl.clear();
-        if (dateEditor != null) {
-            cl.set(Calendar.YEAR, dateEditor.getYear());
-            cl.set(Calendar.MONTH, dateEditor.getMonth());
-            cl.set(Calendar.DAY_OF_MONTH, dateEditor.getDay());
-        }
-        if (timeEditor != null) {
-            cl.set(Calendar.HOUR_OF_DAY, timeEditor.getHours());
-            cl.set(Calendar.MINUTE, timeEditor.getMinutes());
-            cl.set(Calendar.SECOND, timeEditor.getSeconds());
-            cl.set(Calendar.MILLISECOND, 0);
-        }
-        if (timeEditor == null) {
-            return new java.sql.Date(cl.getTimeInMillis());
-        } else if (dateEditor == null) {
-            return new java.sql.Time(cl.getTimeInMillis());
-        } else {
-            return new Timestamp(cl.getTimeInMillis());
-        }
     }
 
     @Nullable
@@ -385,4 +294,29 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
+    public boolean isTimestamp(DBDValueController valueController) {
+        return valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP;
+    }
+
+    @Override
+    public boolean isTime(DBDValueController valueController) {
+        return valueController.getValueType().getTypeID() == java.sql.Types.TIME;
+    }
+
+    @Override
+    public boolean isDate(DBDValueController valueController) {
+        return valueController.getValueType().getTypeID() == java.sql.Types.DATE;
+    }
+
+    @Override
+    public Object getValueFromMillis(DBDValueController valueController, long ms) {
+        if (isTimestamp(valueController)) {
+            return new Timestamp(ms);
+        } else if (isTime(valueController)) {
+            return new java.sql.Time(ms);
+        } else {
+            return new java.sql.Date(ms);
+        }
+    }
 }

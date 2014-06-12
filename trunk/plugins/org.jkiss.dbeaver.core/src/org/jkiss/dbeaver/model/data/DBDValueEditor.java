@@ -30,6 +30,11 @@ import org.jkiss.dbeaver.DBException;
 public interface DBDValueEditor
 {
     /**
+     * Create editor control(s)
+     */
+    void createControl();
+
+    /**
      * Gets control which actually performs edit
      * @return control reference
      */

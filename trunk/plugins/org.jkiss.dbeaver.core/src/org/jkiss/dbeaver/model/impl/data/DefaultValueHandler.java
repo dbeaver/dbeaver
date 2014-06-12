@@ -82,7 +82,13 @@ public class DefaultValueHandler extends BaseValueHandler {
             case INLINE:
             case PANEL:
                 return new DBDValueEditor() {
-                    private Text control = new Text(controller.getEditPlaceholder(), SWT.BORDER);
+                    private Text control;
+
+                    @Override
+                    public void createControl() {
+                        control = new Text(controller.getEditPlaceholder(), SWT.BORDER);
+                    }
+
                     @Override
                     public Control getControl() {
                         return control;

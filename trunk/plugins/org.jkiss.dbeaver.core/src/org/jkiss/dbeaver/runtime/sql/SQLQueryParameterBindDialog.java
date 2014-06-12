@@ -191,6 +191,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         try {
             DBDValueEditor editor = valueHandler.createEditor(valueController);
             if (editor != null) {
+                editor.createControl();
                 tableEditor.minimumHeight = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
                 tableEditor.setEditor(placeholder, item, 3);
             } else {
