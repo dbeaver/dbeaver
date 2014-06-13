@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 
@@ -40,7 +41,7 @@ public class DefaultValueHandler extends BaseValueHandler {
     @Override
     public int getFeatures()
     {
-        return FEATURE_EDITOR;
+        return FEATURE_VIEWER;
     }
 
     @Override
@@ -81,30 +82,7 @@ public class DefaultValueHandler extends BaseValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new DBDValueEditor() {
-                    private Text control;
-
-                    @Override
-                    public void createControl() {
-                        control = new Text(controller.getEditPlaceholder(), SWT.BORDER);
-                    }
-
-                    @Override
-                    public Control getControl() {
-                        return control;
-                    }
-
-                    @Override
-                    public Object extractEditorValue() throws DBException {
-                        return control.getText();
-                    }
-
-                    @Override
-                    public void primeEditorValue(@Nullable Object value) throws DBException {
-                        control.setText(
-                            DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.EDIT));
-                    }
-                };
+                return new StringInlineEditor(controller);
             case EDITOR:
                 return new TextViewDialog(controller);
             default:
