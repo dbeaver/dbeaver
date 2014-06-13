@@ -22,10 +22,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.Pair;
 
@@ -244,6 +248,11 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
         return MultiValueInsertMode.NOT_SUPPORTED;
+    }
+
+    @Override
+    public String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter) throws DBException {
+        return SQLSemanticProcessor.addFiltersToQuery(dataSource, query, filter);
     }
 
     @Override
