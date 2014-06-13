@@ -16,38 +16,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.utils.Base64;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
- * Base64 formatter
+ * String formatter
  */
-public class BinaryFormatterBase64 implements DBDBinaryFormatter {
+public class BinaryFormatterString implements DBDBinaryFormatter {
 
     @Override
     public String getId()
     {
-        return "base64";
+        return "string";
     }
 
     @Override
     public String getTitle()
     {
-        return "Base64";
+        return "String";
     }
 
     @Override
     public String toString(byte[] bytes, int offset, int length)
     {
-        return Base64.encode(bytes, offset, length);
+        return ContentUtils.convertToString(bytes, offset, length);
     }
 
     @Override
     public byte[] toBytes(String string)
     {
-        return Base64.decode(string);
+        return ContentUtils.convertToBytes(string);
     }
 
 }

@@ -16,29 +16,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
-import java.sql.Timestamp;
-import java.util.*;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
 
-public class TimestampFormatSample implements DBDDataFormatterSample {
+public class TimeFormatSample implements DBDDataFormatterSample {
+
+    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss";
 
     @Override
     public Map<Object, Object> getDefaultProperties(Locale locale)
     {
-//        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, locale);
+//        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
 //        String pattern = tmp.toPattern();
-        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)(DateFormatSample.DEFAULT_DATE_PATTERN + " " + TimeFormatSample.DEFAULT_TIME_PATTERN));
+        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)DEFAULT_TIME_PATTERN);
     }
 
     @Override
     public Object getSampleValue()
     {
-        Timestamp ts = new Timestamp(System.currentTimeMillis());
-        ts.setNanos(ts.getNanos() + new Random(System.currentTimeMillis()).nextInt(99999));
-        return ts;
+        return new Date();
     }
 
 }
