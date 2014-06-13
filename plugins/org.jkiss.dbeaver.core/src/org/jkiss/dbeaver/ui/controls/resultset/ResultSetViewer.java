@@ -1021,7 +1021,13 @@ public class ResultSetViewer extends Viewer
 
     boolean isColumnReadOnly(DBDAttributeBinding column)
     {
-        return isReadOnly() || model.isColumnReadOnly(column);
+        if (isReadOnly()) {
+            return true;
+        }
+        if (!model.isColumnReadOnly(column) || (curRow != null && curRow.getState() == RowData.STATE_ADDED)) {
+            return false;
+        }
+        return true;
     }
 
     public StateItem getCurrentState() {
