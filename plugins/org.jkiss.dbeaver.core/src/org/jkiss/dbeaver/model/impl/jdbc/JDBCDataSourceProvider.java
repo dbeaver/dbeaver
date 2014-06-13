@@ -37,19 +37,16 @@ import java.util.Properties;
 /**
  * JDBCDataSourceProvider
  */
-public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
-{
+public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
     static final protected Log log = LogFactory.getLog(JDBCDataSourceProvider.class);
 
     @Override
-    public void close()
-    {
+    public void close() {
 
     }
 
     @Override
-    public void init(DBPApplication application)
-    {
+    public void init(DBPApplication application) {
 
     }
 
@@ -58,8 +55,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
         IRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
-        throws DBException
-    {
+        throws DBException {
         Collection<IPropertyDescriptor> props = null;
         Object driverInstance = driver.getDriverInstance(runnableContext);
         if (driverInstance instanceof Driver) {
@@ -74,8 +70,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
     private Collection<IPropertyDescriptor> readDriverProperties(
         DBPConnectionInfo connectionInfo,
         Driver driver)
-        throws DBException
-    {
+        throws DBException {
         Properties driverProps = new Properties();
         //driverProps.putAll(connectionInfo.getProperties());
         DriverPropertyInfo[] propDescs;
@@ -110,8 +105,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
         return properties;
     }
 
-    protected String getConnectionPropertyDefaultValue(String name, String value)
-    {
+    protected String getConnectionPropertyDefaultValue(String name, String value) {
         return value;
     }
 }
