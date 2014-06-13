@@ -16,31 +16,44 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.data.formatters;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 
-import java.util.Collections;
-import java.util.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
 
-public class TimeFormatSample implements DBDDataFormatterSample {
+public class DefaultDataFormatter implements DBDDataFormatter {
 
-    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss";
+    public static final DBDDataFormatter INSTANCE = new DefaultDataFormatter();
 
-    @Override
-    public Map<Object, Object> getDefaultProperties(Locale locale)
+    private  DefaultDataFormatter()
     {
-//        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
-//        String pattern = tmp.toPattern();
-        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)DEFAULT_TIME_PATTERN);
     }
 
     @Override
-    public Object getSampleValue()
+    public void init(Locale locale, Map<Object, Object> properties)
     {
-        return new Date();
+    }
+
+    @Override
+    public String getPattern()
+    {
+        return null;
+    }
+
+    @Override
+    public String formatValue(Object value)
+    {
+        return value == null ? null : value.toString();
+    }
+
+    @Override
+    public Object parseValue(String value, Class<?> typeHint) throws ParseException
+    {
+        return DateFormat.getInstance().parse(value);
     }
 
 }

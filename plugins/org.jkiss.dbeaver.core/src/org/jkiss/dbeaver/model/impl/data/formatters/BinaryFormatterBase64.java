@@ -16,31 +16,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.data.formatters;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
+import org.jkiss.utils.Base64;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-
-public class DateFormatSample implements DBDDataFormatterSample {
-
-    public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd";
+/**
+ * Base64 formatter
+ */
+public class BinaryFormatterBase64 implements DBDBinaryFormatter {
 
     @Override
-    public Map<Object, Object> getDefaultProperties(Locale locale)
+    public String getId()
     {
-//        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, locale);
-//        String pattern = tmp.toPattern();
-        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)DEFAULT_DATE_PATTERN);
+        return "base64";
     }
 
     @Override
-    public Object getSampleValue()
+    public String getTitle()
     {
-        return new Date();
+        return "Base64";
+    }
+
+    @Override
+    public String toString(byte[] bytes, int offset, int length)
+    {
+        return Base64.encode(bytes, offset, length);
+    }
+
+    @Override
+    public byte[] toBytes(String string)
+    {
+        return Base64.decode(string);
     }
 
 }

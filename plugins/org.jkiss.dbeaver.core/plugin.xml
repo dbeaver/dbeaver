@@ -2152,22 +2152,22 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataFormatter">
-        <formatter id="date" label="%DateFormatter.date.label" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.DateFormatSample">
+        <formatter id="date" label="%DateFormatter.date.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.DateFormatSample">
             <propertyGroup label="%DateFormatter.date.general.label">
                 <property id="pattern" label="%DateFormatter.date.general.pattern.label" type="string" description="%DateFormatter.date.general.pattern.description" required="true"/>
             </propertyGroup>
         </formatter>
-        <formatter id="time" label="%DateFormatter.time.label" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.TimeFormatSample">
+        <formatter id="time" label="%DateFormatter.time.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimeFormatSample">
             <propertyGroup label="%DateFormatter.time.general.label">
                 <property id="pattern" label="%DateFormatter.time.general.pattern.label" type="string" description="%DateFormatter.time.general.pattern.description" required="true"/>
             </propertyGroup>
         </formatter>
-        <formatter id="timestamp" label="%DateFormatter.timestamp.label" class="org.jkiss.dbeaver.model.impl.data.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.TimestampFormatSample">
+        <formatter id="timestamp" label="%DateFormatter.timestamp.label" class="org.jkiss.dbeaver.model.impl.data.formatters.DateTimeDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample">
             <propertyGroup label="%DateFormatter.timestamp.general.label">
                 <property id="pattern" label="%DateFormatter.timestamp.general.pattern.label" type="string" description="%DateFormatter.timestamp.general.pattern.description" required="true"/>
             </propertyGroup>
         </formatter>
-        <formatter id="number" label="%DateFormatter.number.label" class="org.jkiss.dbeaver.model.impl.data.NumberDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.NumberFormatSample">
+        <formatter id="number" label="%DateFormatter.number.label" class="org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter" sampleClass="org.jkiss.dbeaver.model.impl.data.formatters.NumberFormatSample">
             <propertyGroup label="%DateFormatter.number.general.label">
                 <property id="useGrouping" label="%DateFormatter.number.general.grouping.label" type="boolean" description="%DateFormatter.number.general.grouping.description"/>
                 <property id="maxIntegerDigits" label="%DateFormatter.number.general.maxIntDigits.label" type="integer" description="%DateFormatter.number.general.maxIntDigits.description"/>
