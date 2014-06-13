@@ -125,8 +125,8 @@ public class DatabaseEditorInputFactory implements IElementFactory
                                     DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
                                     if (node != null) {
                                         Class<?> aClass = Class.forName(inputClass);
-                                        Constructor<?> constructor ;
-                                        for (Class nodeType = node.getClass(); ; nodeType = nodeType.getSuperclass()) {
+                                        Constructor<?> constructor = null;
+                                        for (Class nodeType = node.getClass(); nodeType != null; nodeType = nodeType.getSuperclass()) {
                                             try {
                                                 constructor = aClass.getConstructor(nodeType);
                                                 break;

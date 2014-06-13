@@ -16,38 +16,53 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.ui.editors.binary.HexUtils;
 
 /**
- * String formatter
+ * Hex formatter
  */
-public class BinaryFormatterString implements DBDBinaryFormatter {
+public class BinaryFormatterHex implements DBDBinaryFormatter {
 
     @Override
     public String getId()
     {
-        return "string";
+        return "hex";
     }
 
     @Override
     public String getTitle()
     {
-        return "String";
+        return "Hex";
     }
 
     @Override
     public String toString(byte[] bytes, int offset, int length)
     {
-        return ContentUtils.convertToString(bytes, offset, length);
+        char[] chars = new char[length * 2];
+        for (int i = offset; i < offset + length; i++) {
+            String hex = HexUtils.byteToHex[bytes[i] & 0x0ff];
+            chars[i * 2] = hex.charAt(0);
+            chars[i * 2 + 1] = hex.charAt(1);
+        }
+        return new String(chars);
     }
 
     @Override
     public byte[] toBytes(String string)
     {
-        return ContentUtils.convertToBytes(string);
+        int length = string.length();
+        if (length > 0 && length % 2 != 0) {
+            length--;
+        }
+        byte bytes[] = new byte[length / 2];
+        for (int i = 0; i < length; i += 2) {
+            bytes[i / 2] = (byte) ((Character.digit(string.charAt(i), 16) << 4)
+                + Character.digit(string.charAt(i + 1), 16));
+        }
+        return bytes;
     }
 
 }

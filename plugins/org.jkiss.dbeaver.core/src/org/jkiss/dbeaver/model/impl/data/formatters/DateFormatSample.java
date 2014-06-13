@@ -16,29 +16,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.model.impl.data.formatters;
 
-import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterBase64;
-import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
-import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterString;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 
-/**
- * Binary content presentation
- */
-public interface DBDBinaryFormatter {
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Map;
 
-    static DBDBinaryFormatter FORMATS[] = {
-        new BinaryFormatterString(),
-        new BinaryFormatterHex(),
-        new BinaryFormatterBase64(),
-    };
+public class DateFormatSample implements DBDDataFormatterSample {
 
-    String getId();
+    public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd";
 
-    String getTitle();
+    @Override
+    public Map<Object, Object> getDefaultProperties(Locale locale)
+    {
+//        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.SHORT, locale);
+//        String pattern = tmp.toPattern();
+        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)DEFAULT_DATE_PATTERN);
+    }
 
-    String toString(byte[] bytes, int offset, int length);
-
-    byte[] toBytes(String string);
+    @Override
+    public Object getSampleValue()
+    {
+        return new Date();
+    }
 
 }
