@@ -1457,7 +1457,7 @@ public class ResultSetViewer extends Viewer
                 manager.add(new Separator());
                 manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
                 manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
-                if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)) {
+                if (!valueController.isReadOnly() && !DBUtils.isNullValue(value) && !attr.isRequired()) {
                     manager.add(new Action(CoreMessages.controls_resultset_viewer_action_set_to_null) {
                         @Override
                         public void run()

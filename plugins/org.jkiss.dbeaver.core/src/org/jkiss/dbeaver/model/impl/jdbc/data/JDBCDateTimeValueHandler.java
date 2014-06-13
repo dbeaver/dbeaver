@@ -49,10 +49,6 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implements DateTimeEditorHelper {
 
-    public static final String TYPE_NAME_DATE = "date"; //$NON-NLS-1$
-    public static final String TYPE_NAME_TIME = "time"; //$NON-NLS-1$
-    public static final String TYPE_NAME_TIMESTAMP = "timestamp"; //$NON-NLS-1$
-
     private DBDDataFormatterProfile formatterProfile;
     private DBDDataFormatter formatter;
     //private Calendar calendar;
@@ -286,11 +282,11 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     {
         switch (column.getTypeID()) {
             case java.sql.Types.TIME:
-                return getFormatter(TYPE_NAME_TIME);
+                return getFormatter(DBDDataFormatter.TYPE_NAME_TIME);
             case java.sql.Types.DATE:
-                return getFormatter(TYPE_NAME_DATE);
+                return getFormatter(DBDDataFormatter.TYPE_NAME_DATE);
             default:
-                return getFormatter(TYPE_NAME_TIMESTAMP);
+                return getFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP);
         }
     }
 

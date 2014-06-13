@@ -46,8 +46,6 @@ import java.util.Locale;
  */
 public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements NumberEditorHelper {
 
-    private static final String TYPE_NAME_NUMBER = "number"; //$NON-NLS-1$
-
     private Locale locale;
     private DBDDataFormatter formatter;
 
@@ -55,7 +53,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     {
         try {
             locale = formatterProfile.getLocale();
-            formatter = formatterProfile.createFormatter(TYPE_NAME_NUMBER);
+            formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER);
         } catch (Exception e) {
             log.error("Could not create formatter for number value handler", e); //$NON-NLS-1$
             formatter = DefaultDataFormatter.INSTANCE;
