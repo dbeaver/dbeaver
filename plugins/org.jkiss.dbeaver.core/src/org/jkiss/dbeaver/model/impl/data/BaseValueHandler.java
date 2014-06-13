@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -63,14 +62,6 @@ public abstract class BaseValueHandler implements DBDValueHandler {
     @Override
     public DBCLogicalOperator[] getSupportedOperators(@NotNull DBDAttributeBinding attribute) {
         return DBUtils.getDefaultOperators(attribute);
-    }
-
-    protected abstract static class ValueEditorEx<T extends Control> extends BaseValueEditor<T> implements DBDValueEditorStandalone {
-
-        protected ValueEditorEx(final DBDValueController valueController)
-        {
-            super(valueController);
-        }
     }
 
 }

@@ -18,11 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -31,10 +27,9 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.BaseValueEditor;
+import org.jkiss.dbeaver.model.impl.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -44,8 +39,6 @@ import java.sql.SQLException;
 public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCStringValueHandler INSTANCE = new JDBCStringValueHandler();
-
-    private static final int MAX_STRING_LENGTH = 0xffff;
 
     @Override
     protected Object fetchColumnValue(
@@ -77,31 +70,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new BaseValueEditor<Text>(controller) {
-                    @Override
-                    protected Text createControl(Composite editPlaceholder)
-                    {
-                        final boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
-                        final Text editor = new Text(valueController.getEditPlaceholder(),
-                            SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
-                        editor.setTextLimit(MAX_STRING_LENGTH);
-                        editor.setEditable(!valueController.isReadOnly());
-                        return editor;
-                    }
-                    @Override
-                    public void primeEditorValue(@Nullable Object value) throws DBException
-                    {
-                        control.setText(CommonUtils.toString(value));
-                        if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
-                            control.selectAll();
-                        }
-                    }
-                    @Override
-                    public Object extractEditorValue()
-                    {
-                        return control.getText();
-                    }
-                };
+                return new StringInlineEditor(controller);
             case EDITOR:
                 return new TextViewDialog(controller);
             default:

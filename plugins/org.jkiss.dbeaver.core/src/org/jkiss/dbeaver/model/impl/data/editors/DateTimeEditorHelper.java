@@ -16,22 +16,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.data.editors;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-
-import java.util.Locale;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 
 /**
-* NumberEditorHelper
+* DateTimeEditorHelper
 */
-public interface NumberEditorHelper {
+public interface DateTimeEditorHelper {
 
-    Locale getLocale();
+    boolean isTimestamp(DBDValueController valueController);
 
-    DBDDataFormatter getFormatter();
+    boolean isTime(DBDValueController valueController);
 
-    Class<? extends Number> getNumberType(DBSTypedObject type, Object originalValue);
+    boolean isDate(DBDValueController valueController);
+
+    Object getValueFromMillis(DBDValueController valueController, long ms);
 
 }

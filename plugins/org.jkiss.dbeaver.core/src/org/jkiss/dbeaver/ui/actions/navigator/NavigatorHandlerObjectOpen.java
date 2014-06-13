@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
@@ -124,24 +125,31 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 defaultFolderId = selectedNode.getNodeType();
                 selectedNode = (DBNDatabaseNode) selectedNode.getParentNode();
             }
-            for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
-                IEditorInput editorInput;
-                try {
-                    editorInput = ref.getEditorInput();
-                } catch (PartInitException e) {
-                    log.warn(e);
-                    continue;
-                }
-                if (editorInput instanceof EntityEditorInput && ((EntityEditorInput) editorInput).getTreeNode() == selectedNode) {
-                    final IEditorPart editor = ref.getEditor(true);
-                    if (editor instanceof IFolderedPart) {
-                        // Activate default folder
-                        //((IFolderedPart)editor).switchFolder(defaultFolderId);
+
+            DatabaseEditorInputFactory.setLookupEditor(true);
+            try {
+                for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
+                    IEditorInput editorInput;
+                    try {
+                        editorInput = ref.getEditorInput();
+                    } catch (PartInitException e) {
+                        continue;
                     }
-                    workbenchWindow.getActivePage().activate(editor);
-                    return editor;
+                    if (editorInput instanceof EntityEditorInput && ((EntityEditorInput) editorInput).getTreeNode() == selectedNode) {
+                        final IEditorPart editor = ref.getEditor(true);
+                        if (editor instanceof IFolderedPart) {
+                            // Activate default folder
+                            //((IFolderedPart)editor).switchFolder(defaultFolderId);
+                        }
+                        workbenchWindow.getActivePage().activate(editor);
+                        return editor;
+                    }
                 }
             }
+            finally {
+                DatabaseEditorInputFactory.setLookupEditor(false);
+            }
+
             IWorkbenchPart oldActivePart = workbenchWindow.getActivePage().getActivePart();
             try {
                 if (selectedNode instanceof DBNDatabaseFolder) {

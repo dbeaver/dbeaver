@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.BooleanInlineEditor;
-import org.jkiss.dbeaver.model.impl.data.BooleanPanelEditor;
+import org.jkiss.dbeaver.model.impl.data.editors.BooleanInlineEditor;
+import org.jkiss.dbeaver.model.impl.data.editors.BooleanPanelEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
