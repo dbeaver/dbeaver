@@ -16,49 +16,50 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.data;
+package org.jkiss.dbeaver.model.impl.data.editors;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.utils.CommonUtils;
 
 /**
-* BooleanInlineEditor
+* StringInlineEditor
 */
-public class BooleanInlineEditor extends BaseValueEditor<Combo> {
-    public BooleanInlineEditor(DBDValueController controller) {
+public class StringInlineEditor extends BaseValueEditor<Text> {
+
+    private static final int MAX_STRING_LENGTH = 0xffff;
+
+    public StringInlineEditor(DBDValueController controller) {
         super(controller);
     }
 
     @Override
-    protected Combo createControl(Composite editPlaceholder)
+    protected Text createControl(Composite editPlaceholder)
     {
-        final Combo editor = new Combo(editPlaceholder, SWT.READ_ONLY);
-        editor.add("FALSE");
-        editor.add("TRUE");
-        editor.setEnabled(!valueController.isReadOnly());
+        final boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
+        final Text editor = new Text(valueController.getEditPlaceholder(),
+            SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
+        editor.setTextLimit(MAX_STRING_LENGTH);
+        editor.setEditable(!valueController.isReadOnly());
         return editor;
-    }
-
-    @Override
-    public Object extractEditorValue()
-    {
-        switch (control.getSelectionIndex()) {
-            case 0:
-                return Boolean.FALSE;
-            case 1:
-                return Boolean.TRUE;
-            default:
-                return null;
-        }
     }
 
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        control.setText(value == null ? "FALSE" : value.toString().toUpperCase());
+        control.setText(CommonUtils.toString(value));
+        if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
+            control.selectAll();
+        }
+    }
+
+    @Override
+    public Object extractEditorValue()
+    {
+        return control.getText();
     }
 }

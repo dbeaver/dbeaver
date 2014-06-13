@@ -22,52 +22,40 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
-import org.jkiss.dbeaver.model.impl.StringContentStorage;
-import org.jkiss.dbeaver.model.impl.data.BaseValueEditor;
+import org.jkiss.dbeaver.model.impl.data.editors.ContentInlineEditor;
+import org.jkiss.dbeaver.model.impl.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
-import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentXMLEditorPart;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.ByteBuffer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -88,7 +76,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     public static final JDBCContentValueHandler INSTANCE = new JDBCContentValueHandler();
 
     public static final String PROP_CATEGORY_CONTENT = "LOB";
-    private static final int MAX_STRING_LENGTH = 0xfffff;
 
     @Override
     protected DBDContent fetchColumnValue(
@@ -283,53 +270,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 if (controller.getValue() instanceof DBDContentCached) {
                     final boolean isText = ContentUtils.isTextContent(((DBDContent) controller.getValue()));
                     // String editor
-                    return new BaseValueEditor<Text>(controller) {
-                        @Override
-                        public void primeEditorValue(@Nullable Object value) throws DBException
-                        {
-                            if (value instanceof DBDContentCached) {
-                                DBDContentCached newValue = (DBDContentCached)value;
-                                Object cachedValue = newValue.getCachedValue();
-                                String stringValue;
-                                if (cachedValue == null) {
-                                    stringValue = "";  //$NON-NLS-1$
-                                } else if (cachedValue instanceof byte[]) {
-                                    byte[] bytes = (byte[]) cachedValue;
-                                    stringValue = DBUtils.getBinaryPresentation(controller.getDataSource()).toString(bytes, 0, bytes.length);
-                                } else {
-                                    stringValue = cachedValue.toString();
-                                }
-                                control.setText(stringValue);
-                                control.selectAll();
-                            }
-                        }
-                        @Override
-                        protected Text createControl(Composite editPlaceholder)
-                        {
-                            final Text editor = new Text(editPlaceholder, SWT.BORDER);
-                            editor.setEditable(!valueController.isReadOnly());
-                            long maxLength = valueController.getValueType().getMaxLength();
-                            if (maxLength <= 0) {
-                                maxLength = MAX_STRING_LENGTH;
-                            } else {
-                                maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
-                            }
-                            editor.setTextLimit((int) maxLength);
-                            return editor;
-                        }
-                        @Override
-                        public Object extractEditorValue()
-                        {
-                            String newValue = control.getText();
-                            if (isText) {
-                                return new JDBCContentChars(valueController.getDataSource(), newValue);
-                            } else {
-                                return new JDBCContentBytes(
-                                    valueController.getDataSource(),
-                                    newValue);
-                            }
-                        }
-                    };
+                    return new ContentInlineEditor(controller, isText);
                 } else {
                     return null;
                 }
@@ -367,131 +308,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             }
             case PANEL:
             {
-                return new ValueEditorEx<Control>(controller) {
-                    @Override
-                    public void showValueEditor()
-                    {
-                    }
-
-                    @Override
-                    public void closeValueEditor()
-                    {
-                    }
-
-                    @Override
-                    public void primeEditorValue(@Nullable final Object value) throws DBException
-                    {
-                        DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
-                            @Override
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                            {
-                                try {
-                                    DBDContent content = (DBDContent) value;
-                                    DBDContentStorage data = content.getContents(monitor);
-                                    if (control instanceof Text) {
-                                        Text text = (Text) control;
-                                        StringWriter buffer = new StringWriter();
-                                        if (data != null) {
-                                            Reader contentReader = data.getContentReader();
-                                            try {
-                                                ContentUtils.copyStreams(contentReader, -1, buffer, monitor);
-                                            } finally {
-                                                ContentUtils.close(contentReader);
-                                            }
-                                        }
-                                        text.setText(buffer.toString());
-                                    } else if (control instanceof HexEditControl) {
-                                        HexEditControl hexEditControl = (HexEditControl) control;
-                                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                                        if (data != null) {
-                                            InputStream contentStream = data.getContentStream();
-                                            try {
-                                                ContentUtils.copyStreams(contentStream, -1, buffer, monitor);
-                                            } catch (IOException e) {
-                                                ContentUtils.close(contentStream);
-                                            }
-                                        }
-                                        hexEditControl.setContent(buffer.toByteArray());
-                                    } else if (control instanceof ImageViewer) {
-                                        ImageViewer imageViewControl = (ImageViewer)control;
-                                        InputStream contentStream = data.getContentStream();
-                                        try {
-                                            if (!imageViewControl.loadImage(contentStream)) {
-                                                controller.showMessage("Can't load image: " + imageViewControl.getLastError().getMessage(), true);
-                                            } else {
-                                                controller.showMessage("Image: " + imageViewControl.getImageDescription(), false);
-                                            }
-                                        } finally {
-                                            ContentUtils.close(contentStream);
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    log.error(e);
-                                    valueController.showMessage(e.getMessage(), true);
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public Object extractEditorValue() throws DBException
-                    {
-                        final DBDContent content = (DBDContent) valueController.getValue();
-                        DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
-                            @Override
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                            {
-                                try {
-                                    if (control instanceof Text) {
-                                        Text styledText = (Text) control;
-                                        content.updateContents(
-                                            monitor,
-                                            new StringContentStorage(styledText.getText()));
-                                    } else if (control instanceof HexEditControl) {
-                                        HexEditControl hexEditControl = (HexEditControl) control;
-                                        BinaryContent binaryContent = hexEditControl.getContent();
-                                        ByteBuffer buffer = ByteBuffer.allocate((int) binaryContent.length());
-                                        try {
-                                            binaryContent.get(buffer, 0);
-                                        } catch (IOException e) {
-                                            log.error(e);
-                                        }
-                                        content.updateContents(
-                                            monitor,
-                                            new BytesContentStorage(buffer.array(), ContentUtils.getDefaultFileEncoding()));
-                                    }
-                                } catch (Exception e) {
-                                    throw new InvocationTargetException(e);
-                                }
-                            }
-                        });
-                        return content;
-                    }
-
-                    @Override
-                    protected Control createControl(Composite editPlaceholder)
-                    {
-                        DBDContent content = (DBDContent) valueController.getValue();
-                        if (ContentUtils.isTextContent(content)) {
-                            Text text = new Text(editPlaceholder, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-                            text.setEditable(!valueController.isReadOnly());
-                            return text;
-                        } else {
-                            ImageDetector imageDetector = new ImageDetector(content);
-                            if (!content.isNull()) {
-                                DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), imageDetector);
-                            }
-
-                            if (imageDetector.isImage()) {
-                                ImageViewer imageViewer = new ImageViewer(editPlaceholder, SWT.BORDER);
-                                imageViewer.fillToolBar(valueController.getEditToolBar());
-                                return imageViewer;
-                            } else {
-                                return new HexEditControl(editPlaceholder, SWT.BORDER);
-                            }
-                        }
-                    }
-                };
+                return new ContentPanelEditor(controller);
             }
             default:
                 return null;
@@ -587,40 +404,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         catch (InterruptedException e) {
             // do nothing
-        }
-    }
-
-    private static class ImageDetector implements DBRRunnableWithProgress {
-        private final DBDContent content;
-        private boolean isImage;
-
-        private ImageDetector(DBDContent content)
-        {
-            this.content = content;
-        }
-
-        public boolean isImage()
-        {
-            return isImage;
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
-            if (!content.isNull()) {
-                try {
-                    InputStream contentStream = content.getContents(monitor).getContentStream();
-                    try {
-                        new ImageData(contentStream);
-                    } finally {
-                        ContentUtils.close(contentStream);
-                    }
-                    isImage = true;
-                }
-                catch (Exception e) {
-                    // this is not an image
-                }
-            }
         }
     }
 

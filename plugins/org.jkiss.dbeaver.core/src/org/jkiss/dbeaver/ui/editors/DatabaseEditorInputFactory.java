@@ -50,7 +50,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
 {
     static final Log log = LogFactory.getLog(DatabaseEditorInputFactory.class);
 
-    static final String ID_FACTORY = DatabaseEditorInputFactory.class.getName(); //$NON-NLS-1$
+    public static final String ID_FACTORY = DatabaseEditorInputFactory.class.getName(); //$NON-NLS-1$
 
     private static final String TAG_CLASS = "class"; //$NON-NLS-1$
     private static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
@@ -58,8 +58,14 @@ public class DatabaseEditorInputFactory implements IElementFactory
     private static final String TAG_ACTIVE_PAGE = "page"; //$NON-NLS-1$
     private static final String TAG_ACTIVE_FOLDER = "folder"; //$NON-NLS-1$
 
+    private static volatile boolean lookupEditor;
+
     public DatabaseEditorInputFactory()
     {
+    }
+
+    public static void setLookupEditor(boolean lookupEditor) {
+        DatabaseEditorInputFactory.lookupEditor = lookupEditor;
     }
 
     @Override
@@ -92,6 +98,11 @@ public class DatabaseEditorInputFactory implements IElementFactory
             return null;
         }
         final DBSDataSourceContainer dsObject = dataSourceContainer;
+        if (lookupEditor && !dsObject.isConnected()) {
+            // Do not instantiate editor input if we are just looking for opened editor
+            //. for some object. Connection must be instantiated.
+            return null;
+        }
 
         DBRRunnableWithResult<IEditorInput> opener = new DBRRunnableWithResult<IEditorInput>() {
             private IStatus errorStatus;

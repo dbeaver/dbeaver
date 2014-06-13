@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.BitInlineEditor;
+import org.jkiss.dbeaver.model.impl.data.editors.BitInlineEditor;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
-import org.jkiss.dbeaver.model.impl.data.NumberEditorHelper;
-import org.jkiss.dbeaver.model.impl.data.NumberInlineEditor;
+import org.jkiss.dbeaver.model.impl.data.editors.NumberEditorHelper;
+import org.jkiss.dbeaver.model.impl.data.editors.NumberInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
