@@ -20,9 +20,12 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 
 import java.util.Collection;
 import java.util.List;
@@ -195,5 +198,7 @@ public interface SQLDialect extends ICommentsSupport {
 
     @NotNull
     MultiValueInsertMode getMultiValueInsertMode();
+
+    String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter) throws DBException;
 
 }
