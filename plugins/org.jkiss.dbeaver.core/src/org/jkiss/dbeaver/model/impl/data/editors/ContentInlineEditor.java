@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.nio.ByteBuffer;
+
 /**
 * ContentInlineEditor
 */
@@ -43,9 +45,9 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
 
     private final boolean isText;
 
-    public ContentInlineEditor(DBDValueController controller, boolean isText) {
+    public ContentInlineEditor(DBDValueController controller) {
         super(controller);
-        this.isText = isText;
+        this.isText = ContentUtils.isTextContent(((DBDContent) controller.getValue()));
     }
 
     @Override
@@ -59,6 +61,9 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
                 stringValue = "";  //$NON-NLS-1$
             } else if (cachedValue instanceof byte[]) {
                 byte[] bytes = (byte[]) cachedValue;
+                stringValue = DBUtils.getBinaryPresentation(valueController.getDataSource()).toString(bytes, 0, bytes.length);
+            } else if (cachedValue instanceof ByteBuffer) {
+                byte[] bytes = ((ByteBuffer) cachedValue).array();
                 stringValue = DBUtils.getBinaryPresentation(valueController.getDataSource()).toString(bytes, 0, bytes.length);
             } else {
                 stringValue = cachedValue.toString();
