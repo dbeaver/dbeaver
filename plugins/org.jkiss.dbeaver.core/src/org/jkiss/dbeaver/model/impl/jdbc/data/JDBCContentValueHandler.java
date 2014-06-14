@@ -216,20 +216,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final DBDValueController controller)
         throws DBCException
     {
-        if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
-            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBIcon.SAVE.getImageDescriptor()) {
-                @Override
-                public void run() {
-                    saveToFile(controller);
-                }
-            });
-        }
-        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBIcon.LOAD.getImageDescriptor()) {
-            @Override
-            public void run() {
-                loadFromFile(controller);
-            }
-        });
+        ContentUtils.contributeContentActions(manager, controller);
     }
 
     @Override
@@ -265,145 +252,18 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     {
         switch (controller.getEditType()) {
             case INLINE:
-            {
                 // Open inline/panel editor
                 if (controller.getValue() instanceof DBDContentCached) {
-                    final boolean isText = ContentUtils.isTextContent(((DBDContent) controller.getValue()));
-                    // String editor
-                    return new ContentInlineEditor(controller, isText);
+                    return new ContentInlineEditor(controller);
                 } else {
                     return null;
                 }
-            }
             case EDITOR:
-            {
-                // Open LOB editor
-                Object value = controller.getValue();
-                DBDValueController.EditType binaryEditType = DBDValueController.EditType.valueOf(
-                    controller.getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
-                if (binaryEditType != DBDValueController.EditType.EDITOR && value instanceof DBDContentCached) {
-                    // Use string editor for cached content
-                    return new TextViewDialog(controller);
-                } else if (value instanceof DBDContent) {
-                    DBDContent content = (DBDContent)value;
-                    boolean isText = ContentUtils.isTextContent(content);
-                    List<ContentEditorPart> parts = new ArrayList<ContentEditorPart>();
-                    if (isText) {
-                        parts.add(new ContentTextEditorPart());
-                        if (isXML(content)) {
-                            parts.add(new ContentXMLEditorPart());
-                        }
-                    } else {
-                        parts.add(new ContentBinaryEditorPart());
-                        parts.add(new ContentTextEditorPart());
-                        parts.add(new ContentImageEditorPart());
-                    }
-                    return ContentEditor.openEditor(
-                        controller,
-                        parts.toArray(new ContentEditorPart[parts.size()]) );
-                } else {
-                    controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
-                    return null;
-                }
-            }
+                return ContentUtils.openContentEditor(controller);
             case PANEL:
-            {
                 return new ContentPanelEditor(controller);
-            }
             default:
                 return null;
-        }
-    }
-
-    private static boolean isXML(DBDContent content)
-    {
-        return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
-    }
-
-    private void loadFromFile(final DBDValueController controller)
-    {
-        if (!(controller.getValue() instanceof DBDContent)) {
-            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
-            return;
-        }
-
-        Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File openFile = ContentUtils.openFile(shell);
-        if (openFile == null) {
-            return;
-        }
-        final DBDContent value = (DBDContent)controller.getValue();
-        DBeaverUI.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                try {
-                    DBDContentStorage storage;
-                    if (ContentUtils.isTextContent(value)) {
-                        storage = new ExternalContentStorage(openFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
-                    } else {
-                        storage = new ExternalContentStorage(openFile);
-                    }
-                    value.updateContents(monitor, storage);
-                    controller.updateValue(value);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-        });
-    }
-
-    private void saveToFile(DBDValueController controller)
-    {
-        if (!(controller.getValue() instanceof DBDContent)) {
-            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
-            return;
-        }
-
-        Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File saveFile = ContentUtils.selectFileForSave(shell);
-        if (saveFile == null) {
-            return;
-        }
-        final DBDContent value = (DBDContent)controller.getValue();
-        try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        DBDContentStorage storage = value.getContents(monitor);
-                        if (ContentUtils.isTextContent(value)) {
-                            ContentUtils.saveContentToFile(
-                                storage.getContentReader(),
-                                saveFile,
-                                ContentUtils.DEFAULT_FILE_CHARSET_NAME,
-                                monitor
-                            );
-                        } else {
-                            ContentUtils.saveContentToFile(
-                                storage.getContentStream(),
-                                saveFile,
-                                monitor
-                            );
-                        }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-        }
-        catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(
-                shell,
-                CoreMessages.model_jdbc_could_not_save_content,
-                CoreMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
-                e.getTargetException());
-        }
-        catch (InterruptedException e) {
-            // do nothing
         }
     }
 
