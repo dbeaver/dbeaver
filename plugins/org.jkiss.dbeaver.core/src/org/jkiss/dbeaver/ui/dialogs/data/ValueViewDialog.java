@@ -288,7 +288,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         // create OK and Cancel buttons by default
         createButton(parent, IDialogConstants.OK_ID, CoreMessages.dialog_value_view_button_save, true)
             .setEnabled(!valueController.isReadOnly());
-        boolean required = valueController.getValueType() instanceof DBSAttributeBase && ((DBSAttributeBase) valueController.getValueType()).isRequired();
+        boolean required = false;//valueController.getValueType() instanceof DBSAttributeBase && ((DBSAttributeBase) valueController.getValueType()).isRequired();
         createButton(parent, IDialogConstants.IGNORE_ID, CoreMessages.dialog_value_view_button_sat_null, false)
             .setEnabled(!valueController.isReadOnly() && !DBUtils.isNullValue(valueController.getValue()) && !required);
         createButton(parent, IDialogConstants.CANCEL_ID, CoreMessages.dialog_value_view_button_cancel, false);
