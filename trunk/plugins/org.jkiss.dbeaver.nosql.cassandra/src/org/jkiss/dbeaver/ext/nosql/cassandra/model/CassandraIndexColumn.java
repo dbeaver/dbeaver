@@ -46,7 +46,7 @@ public class CassandraIndexColumn extends AbstractTableIndexColumn
     @Override
     public String getName()
     {
-        return getTableColumn().getName();
+        return tableColumn.getName();
     }
 
     @Override
