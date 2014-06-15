@@ -39,8 +39,9 @@
     </features>
 
     <plugins>
-        <plugin id="modules/org.jkiss.utils" type="general"/>
+        <plugin id="modules/org.jkiss.utils" type="primary"/>
         <plugin id="modules/org.jkiss.wmi" type="general"/>
+
         <plugin id="plugins/org.jkiss.dbeaver.core" type="primary"/>
         <plugin id="plugins/org.jkiss.dbeaver.core.application" type="primary"/>
         <plugin id="plugins/org.jkiss.dbeaver.core.eclipse" type="primary"/>
