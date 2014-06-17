@@ -49,10 +49,14 @@
         <version>
             <number>2.4.2</number>
             <type>minor</type>
-            <date>16.06.2014</date>
+            <date>17.06.2014</date>
 
             <release-notes>
-                -
+                - Windows version now shipped with JRE 7
+                - Database selection toolbar was fixed
+                - Auto-completion was improved
+                - DDL generation was fixed (Vertica and Sybase)
+                - Minor fixes of UI
             </release-notes>
         </version>
 
