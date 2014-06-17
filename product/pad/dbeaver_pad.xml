@@ -49,10 +49,11 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Results scrolling was fixed
-        - DB2 tables edit fixed
-        - SQLite driver configuration fixed
-        - SQL editor opening error fixed
+        - Windows version now shipped with JRE 7
+        - Database selection toolbar was fixed
+        - Auto-completion was improved
+        - DDL generation was fixed (Vertica and Sybase)
+        - Minor fixes of UI
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
