@@ -103,7 +103,7 @@ public class DirectedGraphLayoutVisitor {
         Dimension preferredSize = nodeEditPart.getFigure().getPreferredSize(400, 300);
         entityNode.width = preferredSize.width;
         entityNode.height = preferredSize.height;
-        entityNode.setPadding(new Insets(10, 8, 10, 12));
+        entityNode.setPadding(new Insets(20, 15, 10, 15));
         partToNodesMap.put(nodeEditPart, entityNode);
         graph.nodes.add(entityNode);
 

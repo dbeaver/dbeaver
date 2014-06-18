@@ -676,6 +676,44 @@ public final class DBUtils {
         return true;
     }
 
+    /**
+     * Identifying association is an association which associated entity's attributes are included into owner entity primary key. I.e. they
+     * identifies entity.
+     */
+    public static boolean isIdentifyingAssociation(DBRProgressMonitor monitor, DBSEntityAssociation association) throws DBException
+    {
+        if (!(association instanceof DBSEntityReferrer)) {
+            return false;
+        }
+        DBSEntityReferrer referrer = (DBSEntityReferrer)association;
+        DBSEntity refEntity = association.getAssociatedEntity();
+        if (refEntity == association.getParentObject()) {
+            // Can't migrate into itself
+            return false;
+        }
+        Collection<? extends DBSEntityConstraint> constraints = association.getParentObject().getConstraints(monitor);
+        if (!CommonUtils.isEmpty(constraints)) {
+            for (DBSEntityConstraint constraint : constraints) {
+                if (constraint.getConstraintType().isUnique() && constraint instanceof DBSEntityReferrer) {
+                    List<DBSEntityAttribute> ownAttrs = getEntityAttributes(monitor, referrer);
+                    List<DBSEntityAttribute> constAttrs = getEntityAttributes(monitor, (DBSEntityReferrer) constraint);
+
+                    boolean included = true;
+                    for (DBSEntityAttribute attr : ownAttrs) {
+                        if (!constAttrs.contains(attr)) {
+                            included = false;
+                            break;
+                        }
+                    }
+                    if (included) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @NotNull
     public static String getDefaultDataType(DBPDataSource dataSource, DBPDataKind dataKind)
     {
