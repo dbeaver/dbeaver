@@ -40,14 +40,16 @@ public class EntityFigure extends Figure {
     public static Color commonTableColor = new Color(null, 0xff, 0xff, 0xe1);
     public static Color tableNameColor = new Color(null, 0, 0, 0);
 
-    private AttributeFigure attributeFigure;
+    private AttributeListFigure keyFigure;
+    private AttributeListFigure attributeFigure;
     private EditableLabel nameLabel;
 
     public EntityFigure(ERDEntity entity)
     {
         Image tableImage = entity.getObject().getEntityType().getIcon();
 
-        attributeFigure = new AttributeFigure(entity);
+        keyFigure = new AttributeListFigure(entity, true);
+        attributeFigure = new AttributeListFigure(entity, false);
         nameLabel = new EditableLabel(entity.getObject().getName());
         if (tableImage != null) {
             nameLabel.setIcon(tableImage);
@@ -70,6 +72,7 @@ public class EntityFigure extends Figure {
         setOpaque(true);
 
         add(nameLabel);
+        add(keyFigure);
         add(attributeFigure);
 
         Label toolTip = new Label(DBUtils.getObjectFullName(entity.getObject()));
@@ -99,9 +102,21 @@ public class EntityFigure extends Figure {
     /**
      * @return the figure containing the column lables
      */
-    public AttributeFigure getColumnsFigure()
+    public AttributeListFigure getColumnsFigure()
     {
         return attributeFigure;
     }
 
+    @Override
+    public void add(IFigure figure, Object constraint, int index) {
+        if (figure instanceof AttributeItemFigure) {
+            if (((AttributeItemFigure) figure).getAttribute().isInPrimaryKey()) {
+                keyFigure.add(figure, constraint, -1);
+            } else {
+                attributeFigure.add(figure, constraint, -1);
+            }
+        } else {
+            super.add(figure, constraint, index);
+        }
+    }
 }

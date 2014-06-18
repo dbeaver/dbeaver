@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
+import org.jkiss.dbeaver.ext.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 
@@ -63,9 +64,7 @@ public class AttributePart extends PropertyAwarePart
     protected IFigure createFigure()
 	{
 		ERDEntityAttribute column = (ERDEntityAttribute) getModel();
-		String label = column.getLabelText();
-        EditableLabel editableLabel = new EditableLabel(label);
-        editableLabel.setIcon(column.getLabelImage());
+        AttributeItemFigure editableLabel = new AttributeItemFigure(column);
 
         DiagramPart diagramPart = (DiagramPart) getParent().getParent();
         Font columnFont = diagramPart.getNormalFont();
