@@ -1,10 +1,12 @@
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
+ERD rendering (IDEF1X)
 
 Plain-text results representation
 Move main toolbar edit control in tab
 Save As+rename. Use external files in workspace
 Paste into multiple cells
 Transaction state in status bar
+Comment/uncomment: extra space after --
 
 Process scripts with external native tool (SQLPlus + mysql)
 Process SQL blocks (begin/end/final delimiter)
