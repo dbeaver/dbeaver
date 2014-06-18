@@ -21,15 +21,19 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
@@ -50,6 +54,7 @@ import java.util.*;
  * @author Serge Rieder
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
+    static final Log log = LogFactory.getLog(AssociationPart.class);
 
     public AssociationPart()
     {
@@ -84,6 +89,13 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     protected IFigure createFigure() {
         ERDAssociation association = (ERDAssociation) getModel();
 
+        boolean identifying = false;
+        try {
+            identifying = DBUtils.isIdentifyingAssociation(VoidProgressMonitor.INSTANCE, association.getObject());
+        } catch (DBException e) {
+            log.debug(e);
+        }
+
         PolylineConnection conn = (PolylineConnection) super.createFigure();
         //conn.setLineJoin(SWT.JOIN_ROUND);
         //conn.setConnectionRouter(new BendpointConnectionRouter());
@@ -98,17 +110,21 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             conn.setSourceDecoration(srcDec);
         }
         if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
-//            final CircleDecoration dec = new CircleDecoration();
-//            dec.setRadius(3);
-//            if (false) {
-//                dec.setFill(true);
-//                dec.setBackgroundColor(getParent().getViewer().getControl().getForeground());
-//            }
-            final PolygonDecoration dec = new PolygonDecoration();
-            conn.setTargetDecoration(dec);
+            final CircleDecoration targetDecor = new CircleDecoration();
+            targetDecor.setRadius(3);
+            targetDecor.setFill(true);
+            targetDecor.setBackgroundColor(getParent().getViewer().getControl().getForeground());
+            //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+            conn.setTargetDecoration(targetDecor);
+            if (!identifying) {
+                final RhombusDecoration sourceDecor = new RhombusDecoration();
+                sourceDecor.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+                //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+                conn.setSourceDecoration(sourceDecor);
+            }
         }
 
-        if (association.isLogical()) {
+        if (!identifying || association.isLogical()) {
             conn.setLineStyle(SWT.LINE_CUSTOM);
             conn.setLineDash(new float[] {5} );
         }
@@ -164,6 +180,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         //toolTip.setTextPlacement(PositionConstants.SOUTH);
         //toolTip.setIconTextGap();
         conn.setToolTip(toolTip);
+
+        //conn.setMinimumSize(new Dimension(60, 20));
 
         return conn;
     }
@@ -276,7 +294,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         return getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getName();
     }
 
-    public class CircleDecoration extends Ellipse implements RotatableDecoration {
+    public static class CircleDecoration extends Ellipse implements RotatableDecoration {
 
         private int radius = 5;
         private Point location = new Point();
@@ -361,4 +379,20 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             setBounds(new Rectangle(rx- radius, ry- radius, (int)(radius *2.5), (int)(radius *2.5)));
         }
     }
+
+    public static class RhombusDecoration extends PolygonDecoration {
+        private static PointList GEOMETRY = new PointList();
+        static {
+            GEOMETRY.addPoint(0, 0);
+            GEOMETRY.addPoint(-1, 1);
+            GEOMETRY.addPoint(-2, 0);
+            GEOMETRY.addPoint(-1, -1);
+        }
+        public RhombusDecoration() {
+            setTemplate(GEOMETRY);
+            setFill(true);
+            setScale(5, 5);
+        }
+    }
+
 }
