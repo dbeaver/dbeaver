@@ -1,5 +1,5 @@
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
-ERD rendering (IDEF1X)
+DBDValueHandler.getValueFromObject - replace session with dataSource and progress monitor?
 
 Plain-text results representation
 Move main toolbar edit control in tab
