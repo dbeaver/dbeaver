@@ -57,7 +57,7 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
     @Override
     public int getOrdinalPosition()
     {
-        return index;
+        return 0;
     }
 
     @Override

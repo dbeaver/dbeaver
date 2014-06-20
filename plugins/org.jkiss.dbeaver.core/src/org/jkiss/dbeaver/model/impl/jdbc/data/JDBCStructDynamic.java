@@ -131,6 +131,11 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     }
 
     @Override
+    public Object getRawValue() {
+        return contents;
+    }
+
+    @Override
     public boolean isNull()
     {
         return contents == null && structData == null;

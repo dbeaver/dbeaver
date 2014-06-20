@@ -176,6 +176,11 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     }
 
     @Override
+    public Object getRawValue() {
+        return contents;
+    }
+
+    @Override
     public boolean isNull() {
         return contents == null;
     }

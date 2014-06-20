@@ -211,6 +211,11 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     }
 
     @Override
+    public Object getRawValue() {
+        return blob;
+    }
+
+    @Override
     public boolean isNull()
     {
         return blob == null && storage == null;

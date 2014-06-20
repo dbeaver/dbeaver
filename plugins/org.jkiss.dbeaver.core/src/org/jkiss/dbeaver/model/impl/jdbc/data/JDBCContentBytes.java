@@ -178,6 +178,11 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     }
 
     @Override
+    public Object getRawValue() {
+        return data;
+    }
+
+    @Override
     public boolean isNull()
     {
         return data == null;
