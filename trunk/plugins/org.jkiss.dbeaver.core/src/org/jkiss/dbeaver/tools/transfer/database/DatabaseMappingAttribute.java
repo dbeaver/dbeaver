@@ -188,7 +188,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                         possibleTypes.add(type);
                     }
                 }
-                typeName = DBUtils.getDefaultDataType(targetDataSource, source.getDataKind());
+                typeName = DBUtils.getDefaultDataTypeName(targetDataSource, source.getDataKind());
                 if (!possibleTypes.isEmpty()) {
                     DBSDataType targetType = null;
                     for (DBSDataType type : possibleTypes) {
