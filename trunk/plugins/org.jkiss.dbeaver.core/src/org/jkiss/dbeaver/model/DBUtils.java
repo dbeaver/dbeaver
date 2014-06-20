@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
@@ -435,31 +436,25 @@ public final class DBUtils {
     @Nullable
     public static Object makeNullValue(@NotNull final DBDValueController valueController)
     {
-        DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                final DBPDataSource dataSource = valueController.getDataSource();
-                try {
-                    if (dataSource == null) {
-                        throw new DBCException(CoreMessages.editors_sql_status_not_connected_to_database);
-                    }
-                    DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Set NULL value");
-                    try {
-                        result = DBUtils.makeNullValue(
-                            session,
-                            valueController.getValueHandler(),
-                            valueController.getValueType());
-                    } finally {
-                        session.close();
-                    }
-                } catch (DBCException e) {
-                    throw new InvocationTargetException(e);
-                }
+        try {
+            DBPDataSource dataSource = valueController.getDataSource();
+            if (dataSource == null) {
+                throw new DBCException(CoreMessages.editors_sql_status_not_connected_to_database);
             }
-        };
-        DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), runnable);
-        return runnable.getResult();
+            // We are going to create NULL value - it shouldn't result in any DB roundtrips so let's use dummy monitor
+            DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Set NULL value");
+            try {
+                return DBUtils.makeNullValue(
+                    session,
+                    valueController.getValueHandler(),
+                    valueController.getValueType());
+            } finally {
+                session.close();
+            }
+        } catch (DBCException e) {
+            log.error("Can't make NULL value", e);
+            return null;
+        }
     }
 
     @NotNull
