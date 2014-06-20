@@ -21,14 +21,11 @@ package org.jkiss.dbeaver.model.impl.local;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 /**
  * LocalResultSetColumn
@@ -119,7 +116,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     @Override
     public String getTypeName()
     {
-        return DBUtils.getDefaultDataType(resultSet.getSession().getDataSource(), dataKind);
+        return DBUtils.getDefaultDataTypeName(resultSet.getSession().getDataSource(), dataKind);
     }
 
     @Override
