@@ -162,8 +162,8 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         if (model.isEmpty()) {
             return -1;
         }
-        int rowCount = model.getRowCount();
-        int columnCount = model.getVisibleColumnCount();
+        int rowCount = resultSet.getSpreadsheet().getItemCount();
+        int columnCount = resultSet.getSpreadsheet().getColumnsCount();
         Collection<GridPos> selection = resultSet.getSpreadsheet().getSelection();
         GridPos startPosition = selection.isEmpty() ? null : selection.iterator().next();
         if (startPosition == null) {

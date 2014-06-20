@@ -45,6 +45,11 @@ public class JDBCRowId implements DBDValue {
     }
 
     @Override
+    public Object getRawValue() {
+        return value;
+    }
+
+    @Override
     public boolean isNull()
     {
         return value == null;

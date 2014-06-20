@@ -163,6 +163,11 @@ public class JDBCContentXML extends JDBCContentLOB {
     }
 
     @Override
+    public Object getRawValue() {
+        return xml;
+    }
+
+    @Override
     public boolean isNull()
     {
         return xml == null && storage == null;

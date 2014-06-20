@@ -24,6 +24,8 @@ package org.jkiss.dbeaver.model.data;
  */
 public interface DBDValue extends DBDObject {
 
+    Object getRawValue();
+
     /**
      * check this value is NULL
      * @return true for NULL values
@@ -34,4 +36,5 @@ public interface DBDValue extends DBDObject {
      * Releases allocated resources. Resets to original value
      */
     void release();
+
 }

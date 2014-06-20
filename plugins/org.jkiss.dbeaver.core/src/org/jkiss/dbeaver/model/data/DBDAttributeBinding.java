@@ -242,6 +242,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 }
                 // No component type found.
                 // Array items should be resolved in a lazy mode
+                resolveMapsFromData(session, rows);
                 break;
         }
 
@@ -251,6 +252,14 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         Map<DBSAttributeBase, Object> valueAttributes = new LinkedHashMap<DBSAttributeBase, Object>();
         for (int i = 0; i < rows.size(); i++) {
             Object value = rows.get(i)[getOrdinalPosition()];
+            if (value instanceof DBDCollection) {
+                // Use first element to discover structure
+                DBDCollection collection = (DBDCollection) value;
+                if (collection.getItemCount() > 0) {
+                    value = collection.getItem(0);
+                }
+            }
+
             if (value instanceof DBDStructure) {
                 DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
                 if (attributes != null) {

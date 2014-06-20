@@ -35,6 +35,11 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
     }
 
     @Override
+    public Object getRawValue() {
+        return getOriginal();
+    }
+
+    @Override
     public boolean isNull()
     {
         return false;
