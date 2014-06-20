@@ -420,7 +420,7 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public String getDefaultDataType(DBPDataKind dataKind)
+    public String getDefaultDataTypeName(DBPDataKind dataKind)
     {
         switch (dataKind) {
             case BOOLEAN: return "BOOLEAN";

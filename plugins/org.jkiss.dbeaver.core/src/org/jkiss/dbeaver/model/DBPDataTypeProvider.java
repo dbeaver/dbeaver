@@ -39,6 +39,16 @@ public interface DBPDataTypeProvider
     DBPDataKind resolveDataKind(String typeName, int typeID);
 
     /**
+     * Resolve data type by it's full name.
+     * @param monitor progress monitor
+     * @param typeFullName full qualified type name
+     * @return data type or null if type not found
+     * @throws DBException on any DB access error
+     */
+    DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName)
+        throws DBException;
+
+    /**
      * Retrieves list of supported datatypes
      * @return list of types
      */
@@ -53,19 +63,9 @@ public interface DBPDataTypeProvider
     DBSDataType getDataType(String typeName);
 
     /**
-     * Resolve data type by it's full name.
-     * @param monitor progress monitor
-     * @param typeFullName full qualified type name
-     * @return data type or null if type not found
-     * @throws DBException on any DB access error
-     */
-    DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName)
-        throws DBException;
-
-    /**
      * Returns name of default data type for specified data kind
      * @param dataKind data kind
      * @return data type name or null if data kind not supported
      */
-    String getDefaultDataType(DBPDataKind dataKind);
+    String getDefaultDataTypeName(DBPDataKind dataKind);
 }

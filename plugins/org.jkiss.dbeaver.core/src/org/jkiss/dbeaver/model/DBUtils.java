@@ -715,10 +715,10 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getDefaultDataType(DBPDataSource dataSource, DBPDataKind dataKind)
+    public static String getDefaultDataTypeName(DBPDataSource dataSource, DBPDataKind dataKind)
     {
         if (dataSource instanceof DBPDataTypeProvider) {
-            return ((DBPDataTypeProvider) dataSource).getDefaultDataType(dataKind);
+            return ((DBPDataTypeProvider) dataSource).getDefaultDataTypeName(dataKind);
         } else {
             // Unsupported data kind
             return "?";
