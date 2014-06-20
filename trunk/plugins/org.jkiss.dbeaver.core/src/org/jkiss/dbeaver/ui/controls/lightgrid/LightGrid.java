@@ -2645,6 +2645,49 @@ public abstract class LightGrid extends Canvas {
                 isSelectedCell = selectedCells.contains(new GridPos(col.getIndex(), row));
             }
 
+            if (col == null && rowHeaderVisible && e.x <= rowHeaderWidth) {
+                boolean shift = ((e.stateMask & SWT.MOD2) != 0);
+                boolean ctrl = false;
+                if (!shift) {
+                    ctrl = ((e.stateMask & SWT.MOD1) != 0);
+                }
+
+                if (e.button == 1 && !shift && !ctrl) {
+                    GridNode node = rowNodes.get(rowElements[row]);
+                    GridNode parentNode = parentNodes[row];
+                    if (node != null && node.state != IGridContentProvider.ElementState.NONE) {
+                        if (GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
+                        {
+                            toggleRowState(row);
+                            return;
+                        }
+                    }
+                }
+                List<GridPos> cells = new ArrayList<GridPos>();
+
+                if (shift) {
+                    getCells(row, focusItem, cells);
+                } else {
+                    getCells(row, cells);
+                }
+
+                int newStateMask = SWT.NONE;
+                if (ctrl) newStateMask = SWT.MOD1;
+
+                selectionEvent = updateCellSelection(cells, newStateMask, shift, ctrl, EventSource.MOUSE);
+                cellRowSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
+
+                if (!shift) {
+                    //set focus back to the first visible column
+                    focusColumn = getColumn(new Point(rowHeaderWidth + 1, e.y));
+
+                    focusItem = row;
+                }
+                showItem(row);
+                redraw();
+                return;
+            }
+
             if (e.button == 1 || e.button == 2 || (e.button == 3 && col != null && !isSelectedCell)) {
                 if (col != null) {
                     selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
@@ -2657,48 +2700,6 @@ public abstract class LightGrid extends Canvas {
                     //showColumn(col);
                     showItem(row);
                     redraw();
-                } else if (rowHeaderVisible) {
-                    if (e.x <= rowHeaderWidth) {
-                        boolean shift = ((e.stateMask & SWT.MOD2) != 0);
-                        boolean ctrl = false;
-                        if (!shift) {
-                            ctrl = ((e.stateMask & SWT.MOD1) != 0);
-                        }
-
-                        if (e.button == 1 && !shift && !ctrl) {
-                            GridNode node = rowNodes.get(rowElements[row]);
-                            GridNode parentNode = parentNodes[row];
-                            if (node != null && node.state != IGridContentProvider.ElementState.NONE) {
-                                if (GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
-                                {
-                                    toggleRowState(row);
-                                    return;
-                                }
-                            }
-                        }
-                        List<GridPos> cells = new ArrayList<GridPos>();
-
-                        if (shift) {
-                            getCells(row, focusItem, cells);
-                        } else {
-                            getCells(row, cells);
-                        }
-
-                        int newStateMask = SWT.NONE;
-                        if (ctrl) newStateMask = SWT.MOD1;
-
-                        selectionEvent = updateCellSelection(cells, newStateMask, shift, ctrl, EventSource.MOUSE);
-                        cellRowSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
-
-                        if (!shift) {
-                            //set focus back to the first visible column
-                            focusColumn = getColumn(new Point(rowHeaderWidth + 1, e.y));
-
-                            focusItem = row;
-                        }
-                        showItem(row);
-                        redraw();
-                    }
                 }
             }
         } else if (e.button == 1 && rowHeaderVisible && e.x <= rowHeaderWidth && e.y < headerHeight) {
