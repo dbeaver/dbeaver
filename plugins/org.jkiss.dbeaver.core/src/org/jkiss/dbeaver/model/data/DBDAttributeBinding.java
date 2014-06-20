@@ -248,24 +248,37 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     private void resolveMapsFromData(DBCSession session, List<Object[]> rows) throws DBException {
-        Set<DBSAttributeBase> valueAttributes = new LinkedHashSet<DBSAttributeBase>();
+        Map<DBSAttributeBase, Object> valueAttributes = new LinkedHashMap<DBSAttributeBase, Object>();
         for (int i = 0; i < rows.size(); i++) {
             Object value = rows.get(i)[getOrdinalPosition()];
             if (value instanceof DBDStructure) {
                 DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
-                Collections.addAll(valueAttributes, attributes);
+                if (attributes != null) {
+                    for (DBSAttributeBase attr : attributes) {
+                        valueAttributes.put(attr, ((DBDStructure) value).getAttributeValue(attr));
+                    }
+                }
             }
         }
         if (!valueAttributes.isEmpty()) {
-            createNestedMapBindings(session, valueAttributes, rows);
+            createNestedMapBindings(session, valueAttributes);
         }
     }
 
-    private void createNestedMapBindings(DBCSession session, Collection<? extends DBSAttributeBase> nestedAttributes, List<Object[]> rows) throws DBException {
+    private void createNestedMapBindings(DBCSession session, Map<DBSAttributeBase, Object> nestedAttributes) throws DBException {
         nestedBindings = new ArrayList<DBDAttributeBinding>();
-        for (DBSAttributeBase nestedAttr : nestedAttributes) {
-            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(this, nestedAttr);
-            nestedBinding.lateBinding(session, rows);
+        int maxPosition = 0;
+        for (DBSAttributeBase attr : nestedAttributes.keySet()) {
+            maxPosition = Math.max(maxPosition, attr.getOrdinalPosition());
+        }
+        Object[] fakeRow = new Object[maxPosition + 1];
+
+        List<Object[]> fakeRows = Collections.singletonList(fakeRow);
+        for (Map.Entry<DBSAttributeBase, Object> nestedAttr : nestedAttributes.entrySet()) {
+            DBSAttributeBase attribute = nestedAttr.getKey();
+            fakeRow[attribute.getOrdinalPosition()] = nestedAttr.getValue();
+            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(this, attribute);
+            nestedBinding.lateBinding(session, fakeRows);
             nestedBindings.add(nestedBinding);
         }
     }
