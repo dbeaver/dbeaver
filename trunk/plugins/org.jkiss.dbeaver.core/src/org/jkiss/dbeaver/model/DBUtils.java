@@ -1375,4 +1375,12 @@ public final class DBUtils {
         }
         return operators.toArray(new DBCLogicalOperator[operators.size()]);
     }
+
+    public static Object getRawValue(Object value) {
+        if (value instanceof DBDValue) {
+            return ((DBDValue)value).getRawValue();
+        } else {
+            return value;
+        }
+    }
 }

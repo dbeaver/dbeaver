@@ -107,6 +107,11 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
     }
 
     @Override
+    public Object getRawValue() {
+        return contents;
+    }
+
+    @Override
     public boolean isNull()
     {
         return contents == null;

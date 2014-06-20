@@ -53,6 +53,11 @@ public class JDBCReference implements DBDReference {
     }
 
     @Override
+    public Object getRawValue() {
+        return value;
+    }
+
+    @Override
     public boolean isNull()
     {
         return value == null;

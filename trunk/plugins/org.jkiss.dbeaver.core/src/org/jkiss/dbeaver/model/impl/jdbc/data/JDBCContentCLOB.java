@@ -194,6 +194,11 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     }
 
     @Override
+    public Object getRawValue() {
+        return clob;
+    }
+
+    @Override
     public boolean isNull()
     {
         return clob == null && storage == null;

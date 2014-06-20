@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Complex value element.
@@ -51,8 +53,10 @@ class CollectionElementData {
         }
         DBCSession session = collectionBinding.getDataSource().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Collection types read");
         try {
-            ArrayList<Object[]> rows = new ArrayList<Object[]>();
+            Object[] row = new Object[1];
+            List<Object[]> rows = Collections.singletonList(row);
             for (int i = 0; i < count; i++) {
+                row[0] = collection.getItem(i);
                 try {
                     elements[i].lateBinding(session, rows);
                 } catch (DBException e) {
