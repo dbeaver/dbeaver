@@ -1692,10 +1692,12 @@ public abstract class LightGrid extends Canvas {
 
         // Row header width
         rowHeaderWidth = DEFAULT_ROW_HEADER_WIDTH;
-        for (Object row : rowElements) {
+        for (int i = 0; i < rowElements.length; i++) {
+            Object row = rowElements[i];
+            GridNode parentNode = parentNodes[i];
             GridNode nr = rowNodes.get(row);
             int width = rowHeaderRenderer.computeHeaderWidth(
-                row, nr == null ? 0 : nr.level);
+                row, nr != null ? nr.level : parentNode == null ? 0 : parentNode.level + 1);
             rowHeaderWidth = Math.max(rowHeaderWidth, width);
         }
         if (rowHeaderWidth > MAX_ROW_HEADER_WIDTH) {
