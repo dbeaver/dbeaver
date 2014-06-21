@@ -1274,9 +1274,12 @@ public final class DBUtils {
                 return DBIcon.TYPE_ARRAY;
             case STRUCT:
                 return DBIcon.TYPE_STRUCT;
+            case ROWID:
+                return DBIcon.TYPE_ROWID;
             case OBJECT:
-            case ANY:
                 return DBIcon.TYPE_OBJECT;
+            case ANY:
+                return DBIcon.TYPE_ANY;
             default:
                 return DBIcon.TYPE_UNKNOWN;
         }
