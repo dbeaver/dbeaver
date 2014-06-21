@@ -2988,7 +2988,7 @@ public abstract class LightGrid extends Canvas {
                     if (hoveringItem < 0) {
                         if (e.y > headerHeight) {
                             //then we must be hovering way to the bottom
-                            intentItem = getItemCount() - 1;
+                            intentItem = getTopIndex() + 1;
                         } else {
                             if (getTopIndex() > 0) {
                                 intentItem = getTopIndex() - 1;
