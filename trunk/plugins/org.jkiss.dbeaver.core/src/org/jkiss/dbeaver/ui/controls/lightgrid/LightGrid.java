@@ -2765,10 +2765,9 @@ public abstract class LightGrid extends Canvas {
         }
         if (node.state == IGridContentProvider.ElementState.EXPANDED) {
             // Collapse node. Remove all elements with different parent
-            GridNode rowParent = parentNodes[row];
             int deleteTo;
             for (deleteTo = row + 1; deleteTo < rowElements.length; deleteTo++) {
-                if (parentNodes[deleteTo] == rowParent) {
+                if (parentNodes[deleteTo] != node) {
                     break;
                 }
             }
