@@ -20,13 +20,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDComplexValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -34,9 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.editors.BaseValueEditor;
+import org.jkiss.dbeaver.model.impl.data.ComplexValueInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 import java.sql.SQLException;
@@ -109,29 +103,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
     {
         switch (controller.getEditType()) {
             case PANEL:
-                return new BaseValueEditor<Tree>(controller) {
-                    ComplexObjectEditor editor;
-
-                    @Override
-                    public void primeEditorValue(@Nullable Object value) throws DBException
-                    {
-                        editor.setModel(controller.getDataSource(), (DBDComplexValue) value);
-                    }
-
-                    @Override
-                    protected Tree createControl(Composite editPlaceholder)
-                    {
-                        editor = new ComplexObjectEditor(controller.getValueSite(), controller.getEditPlaceholder(), SWT.BORDER);
-                        editor.setModel(controller.getDataSource(), (DBDComplexValue) controller.getValue());
-                        return editor.getTree();
-                    }
-
-                    @Override
-                    public Object extractEditorValue()
-                    {
-                        return editor.getInput();
-                    }
-                };
+                return new ComplexValueInlineEditor(controller);
             case EDITOR:
                 return new DefaultValueViewDialog(controller);
             default:

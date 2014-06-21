@@ -51,7 +51,7 @@
 
                 <driver
                     id="apache_cassandra"
-                    label="Cassandra"
+                    label="Cassandra Thrift"
                     category="NoSQL"
                     class="org.jkiss.jdbc.cassandra.CassandraDriver"
                     sampleURL="jdbc:jkiss:cassandra://{host}[:{port}]/{database}"
