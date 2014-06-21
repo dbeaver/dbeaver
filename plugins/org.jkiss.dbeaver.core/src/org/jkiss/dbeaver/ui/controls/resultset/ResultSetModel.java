@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -386,14 +387,7 @@ public class ResultSetModel {
         if (update) {
             this.clearData();
             this.columns = columns;
-            this.visibleColumns.clear();
-            for (DBDAttributeBinding binding : this.columns) {
-                DBDPseudoAttribute pseudoAttribute = binding.getMetaAttribute().getPseudoAttribute();
-                if (pseudoAttribute == null) {
-                    // Make visible "real" attributes
-                    this.visibleColumns.add(binding);
-                }
-            }
+            fillVisibleColumns();
         }
         return update;
     }
@@ -402,6 +396,16 @@ public class ResultSetModel {
     {
         // Clear previous data
         this.clearData();
+
+        if (updateMetaData) {
+            if (columns.length == 1 && columns[0].getDataKind() == DBPDataKind.STRUCT) {
+                List<DBDAttributeBinding> nested = columns[0].getNestedBindings();
+                if (!CommonUtils.isEmpty(nested)) {
+                    columns = nested.toArray(new DBDAttributeBinding[nested.size()]);
+                    fillVisibleColumns();
+                }
+            }
+        }
 
         // Add new data
         appendData(rows);
@@ -460,6 +464,17 @@ public class ResultSetModel {
     public boolean isDirty()
     {
         return changesCount != 0;
+    }
+
+    private void fillVisibleColumns() {
+        this.visibleColumns.clear();
+        for (DBDAttributeBinding binding : this.columns) {
+            DBDPseudoAttribute pseudoAttribute = binding.getMetaAttribute().getPseudoAttribute();
+            if (pseudoAttribute == null) {
+                // Make visible "real" attributes
+                this.visibleColumns.add(binding);
+            }
+        }
     }
 
     boolean isColumnReadOnly(@NotNull DBDAttributeBinding column)
