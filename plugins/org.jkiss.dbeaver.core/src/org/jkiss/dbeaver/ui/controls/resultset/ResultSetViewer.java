@@ -2674,11 +2674,16 @@ public class ResultSetViewer extends Viewer
         @Override
         public ElementState getDefaultState(@NotNull Object element) {
             if (element instanceof DBDAttributeBinding) {
-                switch (((DBDAttributeBinding) element).getAttribute().getDataKind()) {
+                DBDAttributeBinding binding = (DBDAttributeBinding) element;
+                switch (binding.getAttribute().getDataKind()) {
                     case STRUCT:
                         return ElementState.EXPANDED;
                     case ARRAY:
-                        return ElementState.EXPANDED;
+                        Object cellValue = model.getCellValue(binding, curRow);
+                        if (cellValue instanceof DBDCollection && ((DBDCollection) cellValue).getItemCount() < 2) {
+                            return ElementState.EXPANDED;
+                        }
+                        return ElementState.COLLAPSED;
                     default:
                         break;
                 }
