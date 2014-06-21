@@ -84,14 +84,25 @@ public abstract class LightGrid extends Canvas {
     }
 
     static class GridNode {
+        GridNode parent;
         Object[] rows;
         IGridContentProvider.ElementState state;
         int level;
 
-        private GridNode(Object[] rows, IGridContentProvider.ElementState state, int level) {
+        private GridNode(GridNode parent, Object[] rows, IGridContentProvider.ElementState state, int level) {
+            this.parent = parent;
             this.rows = rows;
             this.state = state;
             this.level = level;
+        }
+
+        public boolean isParentOf(GridNode node) {
+            for (GridNode p = node; p != null; p = p.parent) {
+                if (p == this) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -413,7 +424,7 @@ public abstract class LightGrid extends Canvas {
                 GridNode node = rowNodes.get(row);
                 if (node == null) {
                     state = getContentProvider().getDefaultState(row);
-                    node = new GridNode(children, state, level + 1);
+                    node = new GridNode(parent, children, state, level + 1);
                 } else {
                     state = node.state;
                 }
@@ -2767,7 +2778,7 @@ public abstract class LightGrid extends Canvas {
             // Collapse node. Remove all elements with different parent
             int deleteTo;
             for (deleteTo = row + 1; deleteTo < rowElements.length; deleteTo++) {
-                if (parentNodes[deleteTo] != node) {
+                if (!node.isParentOf(parentNodes[deleteTo])) {
                     break;
                 }
             }
