@@ -24,18 +24,28 @@ package org.jkiss.dbeaver.model;
  */
 public enum DBPDataKind
 {
-    BOOLEAN,
-    NUMERIC,
-    STRING,
-    DATETIME,
-    BINARY,
-    LOB,
-    STRUCT,
-    ARRAY,
-    OBJECT,
-    REFERENCE,
-    ROWID,
-    ANY,
-    UNKNOWN
+    BOOLEAN(false),
+    NUMERIC(false),
+    STRING(false),
+    DATETIME(false),
+    BINARY(false),
+    LOB(false),
+    STRUCT(true),
+    ARRAY(true),
+    OBJECT(true),
+    REFERENCE(true),
+    ROWID(false),
+    ANY(true),
+    UNKNOWN(false);
+
+    private final boolean complex;
+
+    DBPDataKind(boolean complex) {
+        this.complex = complex;
+    }
+
+    public boolean isComplex() {
+        return complex;
+    }
 
 }

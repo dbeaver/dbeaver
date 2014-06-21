@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.util.*;
 
@@ -249,7 +251,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     private void resolveMapsFromData(DBCSession session, List<Object[]> rows) throws DBException {
-        Map<DBSAttributeBase, Object> valueAttributes = new LinkedHashMap<DBSAttributeBase, Object>();
+        // Analyse rows and extract meta information from values
+        List<Pair<DBSAttributeBase, Object[]>> valueAttributes = new ArrayList<Pair<DBSAttributeBase, Object[]>>();
         for (int i = 0; i < rows.size(); i++) {
             Object value = rows.get(i)[getOrdinalPosition()];
             if (value instanceof DBDCollection) {
@@ -264,7 +267,24 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
                 if (attributes != null) {
                     for (DBSAttributeBase attr : attributes) {
-                        valueAttributes.put(attr, ((DBDStructure) value).getAttributeValue(attr));
+                        Pair<DBSAttributeBase, Object[]> attrValue = null;
+                        for (Pair<DBSAttributeBase, Object[]> pair : valueAttributes) {
+                            if (pair.getFirst().getName().equals(attr.getName())) {
+                                attrValue = pair;
+                                break;
+                            }
+                        }
+                        if (attrValue != null) {
+                            // Update attr value
+                            attrValue.getSecond()[i] = ((DBDStructure) value).getAttributeValue(attr);
+                        } else {
+                            Object[] valueList = new Object[rows.size()];
+                            valueList[i] = ((DBDStructure) value).getAttributeValue(attr);
+                            valueAttributes.add(
+                                new Pair<DBSAttributeBase, Object[]>(
+                                    attr,
+                                    valueList));
+                        }
                     }
                 }
             }
@@ -274,26 +294,52 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         }
     }
 
-    private void createNestedMapBindings(DBCSession session, Map<DBSAttributeBase, Object> nestedAttributes) throws DBException {
-        nestedBindings = new ArrayList<DBDAttributeBinding>();
+    private void createNestedMapBindings(DBCSession session, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes) throws DBException {
         int maxPosition = 0;
-        for (DBSAttributeBase attr : nestedAttributes.keySet()) {
-            maxPosition = Math.max(maxPosition, attr.getOrdinalPosition());
+        for (Pair<DBSAttributeBase, Object[]> attr : nestedAttributes) {
+            maxPosition = Math.max(maxPosition, attr.getFirst().getOrdinalPosition());
+        }
+        if (nestedBindings == null) {
+            nestedBindings = new ArrayList<DBDAttributeBinding>();
+        } else {
+            for (DBDAttributeBinding binding : nestedBindings) {
+                maxPosition = Math.max(maxPosition, binding.getOrdinalPosition());
+            }
         }
         Object[] fakeRow = new Object[maxPosition + 1];
 
         List<Object[]> fakeRows = Collections.singletonList(fakeRow);
-        for (Map.Entry<DBSAttributeBase, Object> nestedAttr : nestedAttributes.entrySet()) {
-            DBSAttributeBase attribute = nestedAttr.getKey();
-            fakeRow[attribute.getOrdinalPosition()] = nestedAttr.getValue();
-            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(this, attribute);
-            nestedBinding.lateBinding(session, fakeRows);
-            nestedBindings.add(nestedBinding);
+        for (Pair<DBSAttributeBase, Object[]> nestedAttr : nestedAttributes) {
+            DBSAttributeBase attribute = nestedAttr.getFirst();
+            Object[] values = nestedAttr.getSecond();
+            DBDAttributeBinding nestedBinding = null;
+            for (DBDAttributeBinding binding : nestedBindings) {
+                if (binding.getName().equals(attribute.getName())) {
+                    nestedBinding = binding;
+                    break;
+                }
+            }
+            if (nestedBinding == null) {
+                nestedBinding = new DBDAttributeBindingType(this, attribute);
+                nestedBindings.add(nestedBinding);
+            }
+            if (attribute.getDataKind().isComplex()) {
+                // Make late binding for each row value
+                for (int i = 0; i < values.length; i++) {
+                    if (DBUtils.isNullValue(values[i])) {
+                        continue;
+                    }
+                    fakeRow[nestedBinding.getOrdinalPosition()] = values[i];
+                    nestedBinding.lateBinding(session, fakeRows);
+                }
+            }
         }
     }
 
     private void createNestedTypeBindings(DBCSession session, DBSEntity type, List<Object[]> rows) throws DBException {
-        nestedBindings = new ArrayList<DBDAttributeBinding>();
+        if (nestedBindings == null) {
+            nestedBindings = new ArrayList<DBDAttributeBinding>();
+        }
         for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(type.getAttributes(session.getProgressMonitor()))) {
             DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(this, nestedAttr);
             nestedBinding.lateBinding(session, rows);
