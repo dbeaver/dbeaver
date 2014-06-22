@@ -180,6 +180,9 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     protected void appendSelectSource(StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) {
         if (tableType != null && tableType.getName().equals(OracleConstants.TYPE_NAME_XML)) {
             query.append("XMLType(value(").append(tableAlias).append(").getClobval()) as XML");
+            if (rowIdAttribute != null) {
+                query.append(",").append(rowIdAttribute.translateExpression(tableAlias));
+            }
         } else {
             super.appendSelectSource(query, tableAlias, rowIdAttribute);
         }
