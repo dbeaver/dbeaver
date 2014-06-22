@@ -292,28 +292,21 @@ public class ResultSetModel {
                 }
                 DBDAttributeBinding ownerAttr = attr.getParent(depth - i - 1);
                 assert ownerAttr != null;
-                if (ownerValue instanceof DBDStructure) {
-                    try {
-                        ownerValue = ((DBDStructure) ownerValue).getAttributeValue(ownerAttr.getAttribute());
-                    } catch (DBCException e) {
-                        log.warn("Error getting field [" + ownerAttr.getName() + "] value", e);
-                        return false;
-                    }
+                try {
+                    ownerValue = ownerAttr.extractNestedValue(ownerValue);
+                } catch (DBCException e) {
+                    log.warn("Error getting field [" + ownerAttr.getName() + "] value", e);
+                    return false;
                 }
             }
         }
         // Get old value
         Object oldValue = rootValue;
         if (ownerValue != null) {
-            oldValue = null;
-            if (ownerValue instanceof DBDStructure) {
-                try {
-                    oldValue = ((DBDStructure) ownerValue).getAttributeValue(attr.getAttribute());
-                } catch (DBCException e) {
-                    log.error("Error getting [" + attr.getName() + "] value", e);
-                }
-            } else {
-                log.warn("Value [" + ownerValue + "] edit is not supported");
+            try {
+                oldValue = attr.extractNestedValue(ownerValue);
+            } catch (DBCException e) {
+                log.error("Error getting [" + attr.getName() + "] value", e);
             }
         }
         if ((value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {

@@ -521,7 +521,7 @@ public class ResultSetViewer extends Viewer
 
             if (resultSetProvider.isReadyToRun() &&
                 !model.isUpdateInProgress() &&
-                (!CommonUtils.isEmpty(whereCondition) || (getModel().getVisibleColumnCount() > 0 && supportsDataFilter())))
+                (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleColumnCount() > 0 && supportsDataFilter())))
             {
                 enableFilters = true;
             }
@@ -1571,7 +1571,7 @@ public class ResultSetViewer extends Viewer
                     @Override
                     public void run()
                     {
-                        if (selectedColumns.size() >= getModel().getVisibleColumnCount()) {
+                        if (selectedColumns.size() >= model.getVisibleColumnCount()) {
                             UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
                         } else {
                             int[] columnIndexes = new int[selectedColumns.size()];
@@ -1580,7 +1580,7 @@ public class ResultSetViewer extends Viewer
                             }
                             Arrays.sort(columnIndexes);
                             for (int i = columnIndexes.length; i > 0; i--) {
-                                getModel().setColumnVisibility(getModel().getVisibleColumn(columnIndexes[i - 1]), false);
+                                model.setColumnVisibility(model.getVisibleColumn(columnIndexes[i - 1]), false);
                             }
                             refreshSpreadsheet(true);
                         }
@@ -1681,7 +1681,7 @@ public class ResultSetViewer extends Viewer
     private void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull DBDAttributeBinding attr, @NotNull RowData row)
         throws DBException
     {
-        Object value = getModel().getCellValue(attr, row);
+        Object value = model.getCellValue(attr, row);
         if (DBUtils.isNullValue(value)) {
             log.warn("Can't navigate to NULL value");
             return;
@@ -1714,7 +1714,7 @@ public class ResultSetViewer extends Viewer
             constraint.setVisible(true);
             constraints.add(constraint);
 
-            Object keyValue = getModel().getCellValue(ownBinding, row);
+            Object keyValue = model.getCellValue(ownBinding, row);
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
             //constraint.setCriteria("='" + ownBinding.getValueHandler().getValueDisplayString(ownBinding.getAttribute(), keyValue, DBDDisplayFormat.NATIVE) + "'");
@@ -1937,7 +1937,7 @@ public class ResultSetViewer extends Viewer
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void aboutToRun(IJobChangeEvent event) {
-                    getModel().setUpdateInProgress(true);
+                    model.setUpdateInProgress(true);
                     getControl().getDisplay().asyncExec(new Runnable() {
                         @Override
                         public void run() {
@@ -1996,7 +1996,7 @@ public class ResultSetViewer extends Viewer
                                 setNewState(dataContainer, dataFilter);
                             }
 
-                            getModel().setUpdateInProgress(false);
+                            model.setUpdateInProgress(false);
                             if (dataFilter != null) {
                                 model.updateDataFilter(dataFilter);
                             }
@@ -2122,7 +2122,7 @@ public class ResultSetViewer extends Viewer
 
             DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
             RowData row = (RowData) (!recordMode ?  cell.row : cell.col);
-            Object value = getModel().getCellValue(column, row);
+            Object value = model.getCellValue(column, row);
             String cellText = column.getValueHandler().getValueDisplayString(
                 column.getAttribute(),
                 value,
@@ -2202,8 +2202,8 @@ public class ResultSetViewer extends Viewer
         } else {
             rowNum = curPos.row;
         }
-        if (rowNum >= getModel().getRowCount()) {
-            rowNum = getModel().getRowCount() - 1;
+        if (rowNum >= model.getRowCount()) {
+            rowNum = model.getRowCount() - 1;
         }
         if (rowNum < 0) {
             rowNum = 0;
@@ -2696,7 +2696,7 @@ public class ResultSetViewer extends Viewer
             int state = STATE_NONE;
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
             RowData row = (RowData)(recordMode ? colElement : rowElement);
-            Object value = getModel().getCellValue(attr, row);
+            Object value = model.getCellValue(attr, row);
             if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                 state |= STATE_LINK;
             }
@@ -2720,7 +2720,7 @@ public class ResultSetViewer extends Viewer
             DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
             RowData row = (RowData)(colElement instanceof RowData ? colElement : rowElement);
             int rowNum = row.getVisualNumber();
-            Object value = getModel().getCellValue(attr, row);
+            Object value = model.getCellValue(attr, row);
 
             if (rowNum > 0 && rowNum == model.getRowCount() - 1 && (recordMode || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
                 readNextSegment();
@@ -2988,7 +2988,7 @@ public class ResultSetViewer extends Viewer
                 if (attr == null || row == null) {
                     return null;
                 }
-                Object cellValue = viewer.getModel().getCellValue(attr, row);
+                Object cellValue = viewer.model.getCellValue(attr, row);
                 if (operator == DBCLogicalOperator.LIKE && cellValue != null) {
                     cellValue = "%" + cellValue + "%";
                 }
