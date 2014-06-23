@@ -34,9 +34,7 @@
                 <items label="#catalog" path="catalog" property="catalogs" icon="#database" optional="true">
                     <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
-                            <items label="%tree.table.node.name" path="table" property="tables">
-                                <icon icon="#table" default="true"/>
-                                <icon icon="#view" if="object.view"/>
+                            <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
@@ -67,6 +65,14 @@
                                 </folder>
                                 <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
                                 </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                            <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" visibleIf="object.dataSource.info.supportsIndexes()">
@@ -583,6 +589,7 @@
                     <property name="quotechar" value="&quot;"/>
                     <property name="fileExtension" value=".csv"/>
                     <property name="suppressHeaders" value="false"/>
+                    <parameter name="supports-stored-code" value="false"/>
                     <file type="license" path="drivers/csvjdbc/LICENSE.txt" url="*"/>
                     <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0.12.jar" url="*"/>
                     <parameter name="embedded" value="true"/>

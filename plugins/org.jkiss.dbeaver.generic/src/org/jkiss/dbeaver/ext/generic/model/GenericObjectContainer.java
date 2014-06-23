@@ -102,6 +102,36 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
+    public Collection<GenericTable> getViews(DBRProgressMonitor monitor) throws DBException {
+        Collection<GenericTable> tables = getTables(monitor);
+        if (tables != null) {
+            List<GenericTable> filtered = new ArrayList<GenericTable>();
+            for (GenericTable table : tables) {
+                if (table.isView()) {
+                    filtered.add(table);
+                }
+            }
+            return filtered;
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+        Collection<GenericTable> tables = getTables(monitor);
+        if (tables != null) {
+            List<GenericTable> filtered = new ArrayList<GenericTable>();
+            for (GenericTable table : tables) {
+                if (!table.isView()) {
+                    filtered.add(table);
+                }
+            }
+            return filtered;
+        }
+        return null;
+    }
+
+    @Override
     public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {

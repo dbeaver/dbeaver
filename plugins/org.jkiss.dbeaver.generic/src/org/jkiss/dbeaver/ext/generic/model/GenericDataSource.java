@@ -238,6 +238,15 @@ public class GenericDataSource extends JDBCDataSource
     }
 
 
+    @Override
+    public Collection<GenericTable> getViews(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getViews(monitor);
+    }
+
+    @Override
+    public Collection<GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getPhysicalTables(monitor);
+    }
 
     @Override
     public Collection<GenericTable> getTables(DBRProgressMonitor monitor)

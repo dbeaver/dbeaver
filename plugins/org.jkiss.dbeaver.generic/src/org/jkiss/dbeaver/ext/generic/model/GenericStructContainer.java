@@ -50,6 +50,8 @@ public interface GenericStructContainer extends DBSObjectContainer
 
     ForeignKeysCache getForeignKeysCache();
 
+    Collection<GenericTable> getViews(DBRProgressMonitor monitor) throws DBException;
+    Collection<GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
 
     Collection<GenericTable> getTables(DBRProgressMonitor monitor) throws DBException;
 
