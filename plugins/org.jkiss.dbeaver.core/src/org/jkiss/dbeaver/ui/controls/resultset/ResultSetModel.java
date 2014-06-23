@@ -47,6 +47,8 @@ public class ResultSetModel {
     private List<DBDAttributeBinding> visibleColumns = new ArrayList<DBDAttributeBinding>();
     private DBDDataFilter dataFilter;
     private boolean singleSourceCells;
+    //private boolean refreshDynamicMeta;
+
 
     // Data
     private List<RowData> curRows = new ArrayList<RowData>();
@@ -349,6 +351,14 @@ public class ResultSetModel {
         return false;
     }
 
+    private boolean isDynamicMetadata() {
+        if (this.columns == null || this.columns.length == 0) {
+            return false;
+        }
+        DBDAttributeBinding testColumn = this.columns[0].getTopParent();
+        return testColumn.getDataSource().getInfo().isDynamicMetadata();
+    }
+
     /**
      * Sets new metadata of result set
      * @param newColumns columns metadata
@@ -357,9 +367,7 @@ public class ResultSetModel {
     public boolean setMetaData(@NotNull DBDAttributeBinding[] newColumns)
     {
         boolean update = false;
-        if (this.columns == null || this.columns.length == 0 || this.columns.length != newColumns.length ||
-            this.columns[0].getDataSource().getInfo().isDynamicMetadata())
-        {
+        if (this.columns == null || this.columns.length == 0 || this.columns.length != newColumns.length || isDynamicMetadata()) {
             update = true;
         } else {
 /*
@@ -381,13 +389,14 @@ public class ResultSetModel {
             }
         }
 
-        if (update && !ArrayUtils.isEmpty(this.columns) && !ArrayUtils.isEmpty(newColumns)) {
-            DBDAttributeBinding testColumn = this.columns[0].getTopParent();
-            if (testColumn.getDataSource().getInfo().isDynamicMetadata() &&
-                testColumn.getMetaAttribute().getSource() == columns[0].getTopParent().getMetaAttribute().getSource()) {
-                update = false;
-            }
+/*
+        refreshDynamicMeta = false;
+        if (update && !ArrayUtils.isEmpty(this.columns) && !ArrayUtils.isEmpty(newColumns) && isDynamicMetadata() &&
+                this.columns[0].getTopParent().getMetaAttribute().getSource() == newColumns[0].getTopParent().getMetaAttribute().getSource())
+        {
+            refreshDynamicMeta = true;
         }
+*/
 
         if (update) {
             this.clearData();

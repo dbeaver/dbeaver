@@ -1,4 +1,5 @@
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
+BUG: RSV filter not saved for Mongo (due to always-refresh-metadata)
 DBDValueHandler.getValueFromObject - replace session with dataSource and progress monitor?
 
 Plain-text results representation
