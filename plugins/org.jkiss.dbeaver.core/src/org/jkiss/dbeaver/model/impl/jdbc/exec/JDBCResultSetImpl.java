@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -201,6 +202,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         }
     }
 
+    @NotNull
     @Override
     public JDBCResultSetMetaData getResultSetMetaData()
         throws DBCException

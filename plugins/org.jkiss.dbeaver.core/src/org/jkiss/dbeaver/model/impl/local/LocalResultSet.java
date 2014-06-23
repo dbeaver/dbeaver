@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.impl.local;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
@@ -105,6 +106,7 @@ public class LocalResultSet implements DBCResultSet
         return true;
     }
 
+    @NotNull
     @Override
     public DBCResultSetMetaData getResultSetMetaData() throws DBCException
     {

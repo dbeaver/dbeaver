@@ -144,4 +144,10 @@ public interface DBPDataSourceInfo
     boolean supportsResultSetLimit();
 
     boolean supportsResultSetScroll();
+
+    /**
+     * Dynamic metadata means that each execution of the same query may produce different results.
+     */
+    boolean isDynamicMetadata();
+
 }
