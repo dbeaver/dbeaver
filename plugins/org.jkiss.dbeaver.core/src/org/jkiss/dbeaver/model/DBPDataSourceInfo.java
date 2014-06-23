@@ -128,6 +128,12 @@ public interface DBPDataSourceInfo
     boolean supportsIndexes();
 
     /**
+     * Retrieves whether this database supports stored code (procedures, functions, packages, etc).
+     * @return true or false
+     */
+    boolean supportsStoredCode();
+
+    /**
      * Retrieves list of supported transaction isolation levels
      * @return list of supported transaction isolation levels
      */

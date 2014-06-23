@@ -117,6 +117,11 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     }
 
     @Override
+    public boolean supportsStoredCode() {
+        return false;
+    }
+
+    @Override
     public Collection<DBPTransactionIsolation> getSupportedTransactionsIsolation()
     {
         return null;
