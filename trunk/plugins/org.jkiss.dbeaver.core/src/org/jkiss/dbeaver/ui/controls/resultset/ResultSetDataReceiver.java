@@ -125,7 +125,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     public void fetchEnd(DBCSession session)
         throws DBCException
     {
-        if (updateMetaData) {
+        {
             // Read locators' metadata
             DBUtils.findValueLocators(session, metaColumns, rows);
         }
