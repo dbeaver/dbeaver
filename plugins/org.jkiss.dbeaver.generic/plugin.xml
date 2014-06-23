@@ -69,13 +69,13 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" visibleIf="object.dataSource.info.supportsIndexes()">
                             <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
                                 <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" virtual="true">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
                                 <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
@@ -92,6 +92,7 @@
             <driver-properties>
                 <propertyGroup label="Parameters" description="Custom driver parameters">
                     <property id="supports-indexes" label="Driver supports indexes" description="Driver supports table indexes" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
                     <property id="script-delimiter" label="Script delimiter" description="Literal for SQL queries sepration in scripts" type="string" required="false" defaultValue=";"/>
@@ -466,6 +467,7 @@
                     <parameter name="embedded" value="true"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
+                    <parameter name="supports-stored-code" value="false"/>
                 </driver>
                 <driver
                     id="sqlite_xerial"
@@ -482,6 +484,7 @@
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
                     <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
 
                 </driver>
                 <driver
@@ -496,6 +499,7 @@
                     <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="*"/>
                     <parameter name="embedded" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
                 </driver>
                 <driver
                     id="sqlite_jdbc"
@@ -511,6 +515,7 @@
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
                     <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
                     <replace provider="generic" driver="sqlite_zentus"/>
                     <replace provider="generic" driver="sqlite_xerial"/>
                     <replace provider="generic" driver="sqlite_ch_werner"/>

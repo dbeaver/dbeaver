@@ -57,6 +57,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
 
     private boolean supportsReferences = true;
     private boolean supportsIndexes = true;
+    private boolean supportsStoredCode = true;
     private boolean supportsBatchUpdates = false;
     private boolean supportsScroll;
 
@@ -247,6 +248,15 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public void setSupportsIndexes(boolean supportsIndexes)
     {
         this.supportsIndexes = supportsIndexes;
+    }
+
+    @Override
+    public boolean supportsStoredCode() {
+        return supportsStoredCode;
+    }
+
+    public void setSupportsStoredCode(boolean supportsStoredCode) {
+        this.supportsStoredCode = supportsStoredCode;
     }
 
     @Override
