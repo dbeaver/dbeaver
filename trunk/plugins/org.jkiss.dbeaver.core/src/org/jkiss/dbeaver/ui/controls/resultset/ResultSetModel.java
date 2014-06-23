@@ -356,7 +356,9 @@ public class ResultSetModel {
     public boolean setMetaData(@NotNull DBDAttributeBinding[] columns)
     {
         boolean update = false;
-        if (this.columns == null || this.columns.length != columns.length) {
+        if (this.columns == null || this.columns.length == 0 || this.columns.length != columns.length ||
+            this.columns[0].getDataSource().getInfo().isDynamicMetadata())
+        {
             update = true;
         } else {
 /*

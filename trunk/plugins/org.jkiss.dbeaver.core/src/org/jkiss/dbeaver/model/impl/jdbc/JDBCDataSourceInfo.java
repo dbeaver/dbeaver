@@ -276,6 +276,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return supportsScroll;
     }
 
+    @Override
+    public boolean isDynamicMetadata() {
+        return false;
+    }
+
     public void setSupportsResultSetScroll(boolean supportsScroll)
     {
         this.supportsScroll = supportsScroll;

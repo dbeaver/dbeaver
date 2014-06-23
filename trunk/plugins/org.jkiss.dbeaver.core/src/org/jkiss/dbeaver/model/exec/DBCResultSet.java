@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
@@ -47,6 +48,7 @@ public interface DBCResultSet extends DBPObject
 
     boolean moveTo(int position) throws DBCException;
 
+    @NotNull
     DBCResultSetMetaData getResultSetMetaData() throws DBCException;
 
     @Nullable

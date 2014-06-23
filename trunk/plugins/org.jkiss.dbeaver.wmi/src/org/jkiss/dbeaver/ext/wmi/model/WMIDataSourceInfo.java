@@ -142,4 +142,9 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     public boolean supportsResultSetScroll() {
         return false;
     }
+
+    @Override
+    public boolean isDynamicMetadata() {
+        return false;
+    }
 }

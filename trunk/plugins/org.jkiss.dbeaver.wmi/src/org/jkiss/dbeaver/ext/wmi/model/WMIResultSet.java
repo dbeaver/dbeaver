@@ -147,6 +147,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         throw new DBCException("Not Implemented");
     }
 
+    @NotNull
     @Override
     public DBCResultSetMetaData getResultSetMetaData() throws DBCException
     {
