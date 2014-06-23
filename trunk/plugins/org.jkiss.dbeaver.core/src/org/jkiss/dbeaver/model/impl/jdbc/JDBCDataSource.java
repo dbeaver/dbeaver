@@ -260,8 +260,8 @@ public abstract class JDBCDataSource
         JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {
             JDBCDatabaseMetaData metaData = session.getMetaData();
-            dataSourceInfo = createDataSourceInfo(metaData);
             sqlDialect = createSQLDialect(metaData);
+            dataSourceInfo = createDataSourceInfo(metaData);
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC meta data", ex, this);
         }

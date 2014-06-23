@@ -115,6 +115,7 @@ public class GenericDataSource extends JDBCDataSource
     protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
         final GenericDataSourceInfo info = new GenericDataSourceInfo(getContainer().getDriver(), metaData);
+        final GenericSQLDialect dialect = (GenericSQLDialect)getSQLDialect();
 
         final Object supportsReferences = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_REFERENCES);
         if (supportsReferences != null) {
@@ -126,9 +127,14 @@ public class GenericDataSource extends JDBCDataSource
             info.setSupportsIndexes(Boolean.valueOf(supportsIndexes.toString()));
         }
 
+        final Object supportsStoredCode = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STORED_CODE);
+        if (supportsStoredCode != null) {
+            info.setSupportsStoredCode(Boolean.valueOf(supportsStoredCode.toString()));
+        }
+
         final Object supportsSubqueries = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SUBQUERIES);
         if (supportsSubqueries != null) {
-            info.setSupportsIndexes(Boolean.valueOf(supportsSubqueries.toString()));
+            dialect.setSupportsSubqueries(Boolean.valueOf(supportsSubqueries.toString()));
         }
 
         final Object supportsStructCacheParam = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_STRUCT_CACHE);
