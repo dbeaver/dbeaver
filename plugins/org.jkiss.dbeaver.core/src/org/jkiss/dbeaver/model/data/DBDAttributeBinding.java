@@ -153,6 +153,10 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
         for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.parent) {
+            if (attribute.isPseudoAttribute()) {
+                // Skip pseudo attributes (e.g. Mongo root document)
+                continue;
+            }
             if (hasPrevIdentifier) {
                 query.insert(0, '.');
             }
