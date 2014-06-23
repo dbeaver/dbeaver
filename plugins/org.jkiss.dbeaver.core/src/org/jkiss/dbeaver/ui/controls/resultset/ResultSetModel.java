@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -350,13 +351,13 @@ public class ResultSetModel {
 
     /**
      * Sets new metadata of result set
-     * @param columns columns metadata
+     * @param newColumns columns metadata
      * @return true if new metadata differs from old one, false otherwise
      */
-    public boolean setMetaData(@NotNull DBDAttributeBinding[] columns)
+    public boolean setMetaData(@NotNull DBDAttributeBinding[] newColumns)
     {
         boolean update = false;
-        if (this.columns == null || this.columns.length == 0 || this.columns.length != columns.length ||
+        if (this.columns == null || this.columns.length == 0 || this.columns.length != newColumns.length ||
             this.columns[0].getDataSource().getInfo().isDynamicMetadata())
         {
             update = true;
@@ -373,15 +374,24 @@ public class ResultSetModel {
 */
 
             for (int i = 0; i < this.columns.length; i++) {
-                if (!DBUtils.equalAttributes(this.columns[i].getMetaAttribute(), columns[i].getMetaAttribute())) {
+                if (!DBUtils.equalAttributes(this.columns[i].getMetaAttribute(), newColumns[i].getMetaAttribute())) {
                     update = true;
                     break;
                 }
             }
         }
+
+        if (update && !ArrayUtils.isEmpty(this.columns) && !ArrayUtils.isEmpty(newColumns)) {
+            DBDAttributeBinding testColumn = this.columns[0].getTopParent();
+            if (testColumn.getDataSource().getInfo().isDynamicMetadata() &&
+                testColumn.getMetaAttribute().getSource() == columns[0].getTopParent().getMetaAttribute().getSource()) {
+                update = false;
+            }
+        }
+
         if (update) {
             this.clearData();
-            this.columns = columns;
+            this.columns = newColumns;
             fillVisibleColumns();
         }
         return update;
