@@ -85,9 +85,17 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
-        return "jdbc:mysql://" + connectionInfo.getHostName() +
-                ":" + connectionInfo.getHostPort() +
-                "/" + connectionInfo.getDatabaseName();
+        StringBuilder url = new StringBuilder();
+        url.append("jdbc:mysql://")
+            .append(connectionInfo.getHostName());
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            url.append(":").append(connectionInfo.getHostPort());
+        }
+        url.append("/").append(connectionInfo.getDatabaseName());
+        if (CommonUtils.toBoolean(connectionInfo.getProperties().get(MySQLConstants.PROP_USE_SSL))) {
+            url.append("?verifyServerCertificate=false&useSSL=true&requireSSL=true");
+        }
+        return url.toString();
     }
 
     @Override

@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
@@ -28,6 +29,9 @@ public class MySQLConstants {
 
     public static final int DEFAULT_PORT = 3306;
     public static final String DEFAULT_HOST = "localhost";
+
+    public static final String PROP_USE_SSL = DBConstants.INTERNAL_PROP_PREFIX + "ssl@";
+    public static final String PROP_SSL_CERT = DBConstants.INTERNAL_PROP_PREFIX + "ssl-cert@";
 
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 
