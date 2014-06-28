@@ -396,19 +396,19 @@ public class ResultSetModel {
         }
 
         if (update) {
+            if (!ArrayUtils.isEmpty(this.columns) && !ArrayUtils.isEmpty(newColumns) && isDynamicMetadata() &&
+                this.columns[0].getTopParent().getMetaAttribute().getSource() == newColumns[0].getTopParent().getMetaAttribute().getSource())
+            {
+                // the same source
+                sourceChanged = false;
+            } else {
+                sourceChanged = true;
+            }
             this.clearData();
             this.columns = newColumns;
             fillVisibleColumns();
         }
         metadataChanged = update;
-        sourceChanged = update;
-
-        if (update && !ArrayUtils.isEmpty(this.columns) && !ArrayUtils.isEmpty(newColumns) && isDynamicMetadata() &&
-            this.columns[0].getTopParent().getMetaAttribute().getSource() == newColumns[0].getTopParent().getMetaAttribute().getSource())
-        {
-            // the same source
-            sourceChanged = false;
-        }
     }
 
     public void setData(@NotNull List<Object[]> rows)
