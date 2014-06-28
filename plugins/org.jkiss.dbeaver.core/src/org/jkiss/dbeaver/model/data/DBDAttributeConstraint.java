@@ -211,8 +211,8 @@ public class DBDAttributeConstraint {
         return attribute.getName() + " " + clause;
     }
 
-    public boolean matches(DBSAttributeBase attr) {
+    public boolean matches(DBSAttributeBase attr, boolean matchByName) {
         return attribute == attr ||
-            (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr));
+            (attribute instanceof DBDAttributeBinding && ((DBDAttributeBinding) attribute).matches(attr, matchByName));
     }
 }

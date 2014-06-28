@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,7 +31,9 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Base attribute binding
@@ -121,8 +122,25 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return attr == null ? getMetaAttribute() : attr;
     }
 
-    public boolean matches(DBSAttributeBase attr) {
-        return attr != null && (this == attr || getMetaAttribute() == attr || getEntityAttribute() == attr);
+    public boolean matches(DBSAttributeBase attr, boolean searchByName) {
+        if (!searchByName) {
+            return attr != null && (this == attr || getMetaAttribute() == attr || getEntityAttribute() == attr);
+        } else {
+            if (attr instanceof DBDAttributeBinding) {
+                if (getLevel() != ((DBDAttributeBinding) attr).getLevel()) {
+                    return false;
+                }
+                // Match all hierarchy names
+                for (DBDAttributeBinding a1 = (DBDAttributeBinding) attr, a2 = this; a1 != null && a2 != null; a1 = a1.getParentObject(), a2 = a2.getParentObject()) {
+                    if (!attr.getName().equals(this.getName())) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return attr.getName().equals(this.getName());
+            }
+        }
     }
 
     @Nullable

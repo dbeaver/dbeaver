@@ -59,6 +59,8 @@ public class ResultSetModel {
 
     // Edited rows and cells
     private DBCStatistics statistics;
+    private transient boolean metadataChanged;
+    private transient boolean sourceChanged;
 
     public ResultSetModel()
     {
@@ -85,6 +87,10 @@ public class ResultSetModel {
                 addConstraints(constraints, nested);
             }
         }
+    }
+
+    public boolean isMetadataChanged() {
+        return metadataChanged;
     }
 
     public boolean isSingleSource()
@@ -364,7 +370,7 @@ public class ResultSetModel {
      * @param newColumns columns metadata
      * @return true if new metadata differs from old one, false otherwise
      */
-    public boolean setMetaData(@NotNull DBDAttributeBinding[] newColumns)
+    public void setMetaData(@NotNull DBDAttributeBinding[] newColumns)
     {
         boolean update = false;
         if (this.columns == null || this.columns.length == 0 || this.columns.length != newColumns.length || isDynamicMetadata()) {
@@ -389,29 +395,28 @@ public class ResultSetModel {
             }
         }
 
-/*
-        refreshDynamicMeta = false;
-        if (update && !ArrayUtils.isEmpty(this.columns) && !ArrayUtils.isEmpty(newColumns) && isDynamicMetadata() &&
-                this.columns[0].getTopParent().getMetaAttribute().getSource() == newColumns[0].getTopParent().getMetaAttribute().getSource())
-        {
-            refreshDynamicMeta = true;
-        }
-*/
-
         if (update) {
             this.clearData();
             this.columns = newColumns;
             fillVisibleColumns();
         }
-        return update;
+        metadataChanged = update;
+        sourceChanged = update;
+
+        if (update && !ArrayUtils.isEmpty(this.columns) && !ArrayUtils.isEmpty(newColumns) && isDynamicMetadata() &&
+            this.columns[0].getTopParent().getMetaAttribute().getSource() == newColumns[0].getTopParent().getMetaAttribute().getSource())
+        {
+            // the same source
+            sourceChanged = false;
+        }
     }
 
-    public void setData(@NotNull List<Object[]> rows, boolean updateMetaData)
+    public void setData(@NotNull List<Object[]> rows)
     {
         // Clear previous data
         this.clearData();
 
-        if (updateMetaData) {
+        if (metadataChanged) {
             if (columns.length == 1 && columns[0].getDataKind() == DBPDataKind.STRUCT) {
                 List<DBDAttributeBinding> nested = columns[0].getNestedBindings();
                 if (!CommonUtils.isEmpty(nested)) {
@@ -424,9 +429,15 @@ public class ResultSetModel {
         // Add new data
         appendData(rows);
 
-        if (updateMetaData) {
+        if (sourceChanged) {
             this.dataFilter = createDataFilter();
+        } else {
+            DBDDataFilter prevFilter = dataFilter;
+            this.dataFilter = createDataFilter();
+            updateDataFilter(prevFilter);
+        }
 
+        if (metadataChanged) {
             // Check single source flag
             this.singleSourceCells = true;
             DBSEntity sourceTable = null;
@@ -448,6 +459,8 @@ public class ResultSetModel {
         }
 
         hasData = true;
+        metadataChanged = false;
+        sourceChanged = false;
     }
 
     public void appendData(@NotNull List<Object[]> rows)
@@ -632,9 +645,9 @@ public class ResultSetModel {
     void updateDataFilter(DBDDataFilter filter)
     {
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
-            DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute());
+            DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), metadataChanged);
             if (filterConstraint == null) {
-                log.warn("Constraint for attribute [" + constraint.getAttribute().getName() + "] not found");
+                //log.warn("Constraint for attribute [" + constraint.getAttribute().getName() + "] not found");
                 continue;
             }
             filterConstraint.setCriteria(constraint.getCriteria());
