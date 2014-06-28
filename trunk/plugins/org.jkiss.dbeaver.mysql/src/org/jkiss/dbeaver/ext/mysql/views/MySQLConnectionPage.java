@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
@@ -72,12 +73,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
-        if (getSite().getDriver().getId().equalsIgnoreCase("MariaDB")) {
-            setImageDescriptor(MARIADB_LOGO_IMG);
-        } else {
-            setImageDescriptor(MYSQL_LOGO_IMG);
-        }
-
         ModifyListener textListener = new ModifyListener()
         {
             @Override
@@ -189,6 +184,13 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     @Override
     public void loadSettings()
     {
+        DBPDriver driver = getSite().getDriver();
+        if (driver != null && driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
+            setImageDescriptor(MARIADB_LOGO_IMG);
+        } else {
+            setImageDescriptor(MYSQL_LOGO_IMG);
+        }
+
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
         if (hostText != null) {
