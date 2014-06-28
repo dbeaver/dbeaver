@@ -30,6 +30,9 @@ public class MySQLConstants {
     public static final int DEFAULT_PORT = 3306;
     public static final String DEFAULT_HOST = "localhost";
 
+    public static final String DRIVER_ID_MYSQL = "mysql5";
+    public static final String DRIVER_ID_MARIA_DB = "mariaDB";
+
     public static final String PROP_USE_SSL = DBConstants.INTERNAL_PROP_PREFIX + "ssl@";
     public static final String PROP_SSL_CERT = DBConstants.INTERNAL_PROP_PREFIX + "ssl-cert@";
 
@@ -176,4 +179,5 @@ public class MySQLConstants {
     public static final String COL_CHECKSUM = "CHECKSUM";
     public static final String COL_CHECK_OPTION = "CHECK_OPTION";
     public static final String COL_VIEW_DEFINITION = "VIEW_DEFINITION";
+
 }
