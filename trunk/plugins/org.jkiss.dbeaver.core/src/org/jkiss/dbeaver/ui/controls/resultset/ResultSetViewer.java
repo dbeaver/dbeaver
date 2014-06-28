@@ -3052,7 +3052,7 @@ public class ResultSetViewer extends Viewer
         if (operator.getArgumentCount() == 0) {
             return operator.getStringValue();
         } else {
-            return operator.getStringValue() + " " + strValue;
+            return operator.getStringValue() + " " + CommonUtils.truncateString(strValue, 64);
         }
     }
 
