@@ -162,10 +162,12 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             useSslButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    sslCertText.setEnabled(useSslButton.getSelection());
+                    if (sslCertText != null) {
+                        sslCertText.setEnabled(useSslButton.getSelection());
+                    }
                 }
             });
-            sslCertText = UIUtils.createLabelText(secureGroup, "Certificate Path", "");
+            //sslCertText = UIUtils.createLabelText(secureGroup, "Certificate Path", "");
         }
 
         setControl(addrGroup);
@@ -211,8 +213,10 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
 
         final boolean useSSL = CommonUtils.toBoolean(connectionInfo.getProperties().get(MySQLConstants.PROP_USE_SSL));
         useSslButton.setSelection(useSSL);
-        sslCertText.setText(CommonUtils.toString(connectionInfo.getProperties().get(MySQLConstants.PROP_SSL_CERT)));
-        sslCertText.setEnabled(useSSL);
+        if (sslCertText != null) {
+            sslCertText.setText(CommonUtils.toString(connectionInfo.getProperties().get(MySQLConstants.PROP_SSL_CERT)));
+            sslCertText.setEnabled(useSSL);
+        }
 
         activated = true;
     }
