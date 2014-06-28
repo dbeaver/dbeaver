@@ -116,6 +116,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
             activated.add(connectionInfo);
         }
+        getContainer().updateTitleBar();
+    }
+
+    @Override
+    public Image getImage() {
+        if (this.connectionEditor != null) {
+            Image image = this.connectionEditor.getImage();
+            if (image != null) {
+                return image;
+            }
+        }
+        return super.getImage();
     }
 
     void saveSettings(DataSourceDescriptor dataSource)
@@ -165,11 +177,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 // Create single editor control
                 this.connectionEditor.createControl(parent);
                 setControl(this.connectionEditor.getControl());
-            }
-
-            final Image editorImage = this.connectionEditor.getImage();
-            if (editorImage != null) {
-                setImageDescriptor(ImageDescriptor.createFromImage(editorImage));
             }
 
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);
