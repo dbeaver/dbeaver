@@ -57,7 +57,8 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     private Text sslCertText;
     private boolean activated = false;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/mysql_logo.png");
+    private static ImageDescriptor MYSQL_LOGO_IMG = Activator.getImageDescriptor("icons/mysql_logo.png");
+    private static ImageDescriptor MARIADB_LOGO_IMG = Activator.getImageDescriptor("icons/mariadb_logo.png");
 
 
     @Override
@@ -71,7 +72,11 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
-        setImageDescriptor(logoImage);
+        if (getSite().getDriver().getId().equalsIgnoreCase("MariaDB")) {
+            setImageDescriptor(MARIADB_LOGO_IMG);
+        } else {
+            setImageDescriptor(MYSQL_LOGO_IMG);
+        }
 
         ModifyListener textListener = new ModifyListener()
         {
