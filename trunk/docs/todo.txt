@@ -1,6 +1,5 @@
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
-BUG: RSV filter not saved for Mongo (due to always-refresh-metadata)
-DBDValueHandler.getValueFromObject - replace session with dataSource and progress monitor?
+BerkeleyDB
 
 Plain-text results representation
 Move main toolbar edit control in tab
@@ -14,7 +13,7 @@ Process SQL blocks (begin/end/final delimiter)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 SSL
 Secure-storage for passwords
-NoSQL model. Cassandra new driver, mongo db, redis. BerkeleyDB.
+
 
 4. Query manager fixes. + keep only primitive props + persistence
 5. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
