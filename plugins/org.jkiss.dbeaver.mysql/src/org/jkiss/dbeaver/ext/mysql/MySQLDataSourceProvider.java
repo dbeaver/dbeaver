@@ -85,6 +85,13 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
+        String trustStorePath = "D:/temp/ssl/test-cert-store";
+
+        System.setProperty("javax.net.ssl.keyStore", trustStorePath);
+        System.setProperty("javax.net.ssl.keyStorePassword", "password");
+        System.setProperty("javax.net.ssl.trustStore", trustStorePath);
+        System.setProperty("javax.net.ssl.trustStorePassword", "password");
+
         StringBuilder url = new StringBuilder();
         url.append("jdbc:mysql://")
             .append(connectionInfo.getHostName());
@@ -93,7 +100,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         }
         url.append("/").append(connectionInfo.getDatabaseName());
         if (CommonUtils.toBoolean(connectionInfo.getProperties().get(MySQLConstants.PROP_USE_SSL))) {
-            url.append("?verifyServerCertificate=false&useSSL=true&requireSSL=true");
+            url.append("?useSSL=true&requireSSL=true");
         }
         return url.toString();
     }
