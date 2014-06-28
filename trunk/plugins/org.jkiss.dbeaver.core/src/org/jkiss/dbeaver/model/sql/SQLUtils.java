@@ -367,6 +367,9 @@ public final class SQLUtils {
         if (dataSource instanceof SQLDataSource) {
             sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
         }
+        if (value instanceof Number) {
+            return strValue;
+        }
         switch (attribute.getDataKind()) {
             case BOOLEAN:
             case NUMERIC:
