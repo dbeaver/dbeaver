@@ -1366,7 +1366,7 @@ public final class DBUtils {
             operators.add(DBCLogicalOperator.IS_NULL);
             operators.add(DBCLogicalOperator.IS_NOT_NULL);
         }
-        if (dataKind == DBPDataKind.BOOLEAN) {
+        if (dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.ROWID) {
             operators.add(DBCLogicalOperator.EQUALS);
             operators.add(DBCLogicalOperator.NOT_EQUALS);
         }
