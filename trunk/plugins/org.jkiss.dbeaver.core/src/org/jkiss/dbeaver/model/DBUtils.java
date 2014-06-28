@@ -674,7 +674,7 @@ public final class DBUtils {
         }
         for (DBSEntityAttributeRef ref : references) {
             for (DBDAttributeBinding binding : bindings) {
-                if (binding.matches(ref.getAttribute())) {
+                if (binding.matches(ref.getAttribute(), false)) {
                     return true;
                 }
             }
@@ -735,7 +735,7 @@ public final class DBUtils {
     public static DBDAttributeBinding findBinding(@NotNull Collection<DBDAttributeBinding> bindings, @NotNull DBSAttributeBase attribute)
     {
         for (DBDAttributeBinding binding : bindings) {
-            if (binding.matches(attribute)) {
+            if (binding.matches(attribute, false)) {
                 return binding;
             }
             List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
@@ -753,7 +753,7 @@ public final class DBUtils {
     public static DBDAttributeBinding findBinding(@NotNull DBDAttributeBinding[] bindings, @NotNull DBSAttributeBase attribute)
     {
         for (DBDAttributeBinding binding : bindings) {
-            if (binding.matches(attribute)) {
+            if (binding.matches(attribute, false)) {
                 return binding;
             }
             List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();

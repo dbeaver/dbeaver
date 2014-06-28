@@ -66,10 +66,10 @@ public class DBDDataFilter {
     }
 
     @Nullable
-    public DBDAttributeConstraint getConstraint(DBSAttributeBase attribute)
+    public DBDAttributeConstraint getConstraint(DBSAttributeBase attribute, boolean metaChanged)
     {
         for (DBDAttributeConstraint co : constraints) {
-            if (co.matches(attribute)) {
+            if (co.matches(attribute, metaChanged)) {
                 return co;
             }
         }
