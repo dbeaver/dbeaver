@@ -46,7 +46,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     private boolean nextSegmentRead;
 
     private Map<DBCAttributeMetaData, List<DBCException>> errors = new HashMap<DBCAttributeMetaData, List<DBCException>>();
-    private boolean updateMetaData;
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
@@ -84,9 +83,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 metaColumns[i] = DBUtils.getColumnBinding(session, rsAttributes.get(i));
             }
 
-            updateMetaData = resultSetViewer.setMetaData(metaColumns);
-        } else {
-            updateMetaData = false;
+            resultSetViewer.setMetaData(metaColumns);
         }
     }
 
@@ -135,7 +132,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         hasMoreData = segmentSize > 0 && tmpRows.size() >= segmentSize;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
-        final boolean updateMetaData = this.updateMetaData;
         Control control = resultSetViewer.getControl();
         if (!control.isDisposed()) {
             control.getDisplay().asyncExec(new Runnable() {
@@ -145,7 +141,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                     // Check for more data
                     // Push data into viewer
                     if (!nextSegmentRead) {
-                        resultSetViewer.setData(tmpRows, updateMetaData);
+                        resultSetViewer.setData(tmpRows);
                     } else {
                         resultSetViewer.appendData(tmpRows);
                     }

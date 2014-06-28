@@ -55,7 +55,7 @@ public class BaseEntityIdentifier implements DBCEntityIdentifier {
         Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(referrer.getAttributeReferences(monitor));
         for (DBSEntityAttributeRef cColumn : refs) {
             for (DBDAttributeBinding binding : bindings) {
-                if (binding.matches(cColumn.getAttribute())) {
+                if (binding.matches(cColumn.getAttribute(), false)) {
                     this.attributes.add(binding);
                     break;
                 }

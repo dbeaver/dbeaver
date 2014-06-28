@@ -1144,30 +1144,29 @@ public class ResultSetViewer extends Viewer
     /**
      * Sets new metadata of result set
      * @param columns columns metadata
-     * @return true if new metadata differs from old one, false otherwise
      */
-    public boolean setMetaData(DBDAttributeBinding[] columns)
+    public void setMetaData(DBDAttributeBinding[] columns)
     {
-        if (model.setMetaData(columns)) {
+        model.setMetaData(columns);
+        if (model.isMetadataChanged()) {
             this.panelValueController = null;
-            return true;
         }
-        return false;
     }
 
-    public void setData(List<Object[]> rows, boolean updateMetaData)
+    public void setData(List<Object[]> rows)
     {
         if (spreadsheet.isDisposed()) {
             return;
         }
+        boolean metaChanged = model.isMetadataChanged();
         // Clear previous data
         this.closeEditors();
 
         this.curRow = null;
-        this.model.setData(rows, updateMetaData);
+        this.model.setData(rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
 
-        if (updateMetaData) {
+        if (metaChanged) {
 
             if (getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
                 boolean newRecordMode = (rows.size() == 1);
