@@ -47,6 +47,7 @@ public class OracleTableConstraintColumn extends AbstractTableConstraintColumn
         return tableColumn.getName();
     }
 
+    @NotNull
     @Override
     @Property(id = "name", viewable = true, order = 1)
     public OracleTableColumn getAttribute()

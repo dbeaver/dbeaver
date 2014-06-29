@@ -836,6 +836,8 @@ public final class DBUtils {
                     return getEntityAttributes(monitor, (DBSEntityReferrer) id);
                 } else if (id.getConstraintType().isUnique()) {
                     uniqueId = id;
+                } else if (id instanceof DBSTableIndex && ((DBSTableIndex) id).isUnique()) {
+                    uniqueId = id;
                 }
             }
             return uniqueId instanceof DBSEntityReferrer ?

@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -48,6 +49,7 @@ public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, I
         return null;
     }
 
+    @NotNull
     @Override
     public DBSEntityAttribute getAttribute()
     {

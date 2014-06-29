@@ -193,6 +193,7 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
                         return null;
                     }
                     return Collections.singletonList(new DBSEntityAttributeRef() {
+                        @NotNull
                         @Override
                         public DBSEntityAttribute getAttribute()
                         {
