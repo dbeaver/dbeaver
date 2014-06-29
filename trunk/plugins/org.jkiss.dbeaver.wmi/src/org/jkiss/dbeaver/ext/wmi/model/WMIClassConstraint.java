@@ -88,6 +88,7 @@ public class WMIClassConstraint implements DBSEntityConstraint, DBSEntityReferre
         return Collections.singletonList(this);
     }
 
+    @NotNull
     @Override
     public DBSEntityAttribute getAttribute()
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -36,6 +37,7 @@ public class DBVEntityConstraintColumn implements DBSEntityAttributeRef {
         this.attributeName = attributeName;
     }
 
+    @NotNull
     @Override
     public DBSEntityAttribute getAttribute()
     {

@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 /**
  * DBSEntityAttributeRef
  */
@@ -25,8 +27,9 @@ public interface DBSEntityAttributeRef {
 
     /**
      * Reference on real attribute
-     * @return
+     * @return referenced attribute
      */
+    @NotNull
     DBSEntityAttribute getAttribute();
 
 }
