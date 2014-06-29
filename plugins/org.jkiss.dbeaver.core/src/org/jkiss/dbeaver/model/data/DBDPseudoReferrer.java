@@ -88,6 +88,7 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
         return true;
     }
 
+    @NotNull
     @Override
     public DBSEntityAttribute getAttribute()
     {

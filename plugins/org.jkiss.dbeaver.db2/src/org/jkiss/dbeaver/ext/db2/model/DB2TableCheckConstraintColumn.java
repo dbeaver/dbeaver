@@ -79,6 +79,7 @@ public class DB2TableCheckConstraintColumn extends AbstractTableConstraintColumn
         return tableColumn.getName();
     }
 
+    @NotNull
     @Override
     @Property(id = "name", viewable = true, order = 1)
     public DB2TableColumn getAttribute()

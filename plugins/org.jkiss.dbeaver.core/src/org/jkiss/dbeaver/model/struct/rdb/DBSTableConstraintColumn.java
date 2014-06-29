@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -29,6 +30,7 @@ public interface DBSTableConstraintColumn extends DBSObject, DBSEntityAttributeR
     @Override
     DBSTableConstraint getParentObject();
 
+    @NotNull
     @Override
     DBSTableColumn getAttribute();
 

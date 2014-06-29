@@ -47,6 +47,7 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
         return tableColumn.getName();
     }
 
+    @NotNull
     @Override
     @Property(id = "name", viewable = true, order = 1)
     public MySQLTableColumn getAttribute()
