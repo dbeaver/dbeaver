@@ -2830,12 +2830,23 @@ public abstract class LightGrid extends Canvas {
             Point point = new Point(e.x, e.y);
             int row = getRow(point);
             GridColumn col = getColumn(point);
-            if (row >= 0 && col != null) {
-                if (isListening(SWT.DefaultSelection)) {
-                    Event newEvent = new Event();
-                    newEvent.data = new GridCell(col.getElement(), rowElements[row]);
+            if (row >= 0) {
+                if (col != null) {
+                    if (isListening(SWT.DefaultSelection)) {
+                        Event newEvent = new Event();
+                        newEvent.data = new GridCell(col.getElement(), rowElements[row]);
 
-                    notifyListeners(SWT.DefaultSelection, newEvent);
+                        notifyListeners(SWT.DefaultSelection, newEvent);
+                    }
+                } else {
+                    GridNode node = rowNodes.get(rowElements[row]);
+                    GridNode parentNode = parentNodes[row];
+                    if (node != null && node.state != IGridContentProvider.ElementState.NONE) {
+                        if (!GridRowRenderer.isOverExpander(e.x, parentNode == null ? 0 : parentNode.level))
+                        {
+                            toggleRowState(row);
+                        }
+                    }
                 }
             }
         }
