@@ -1,6 +1,5 @@
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
 
-Search (ctl+f) in header
 Expand/collapse All in Grid
 Edit collections
 Edit Mongo data
