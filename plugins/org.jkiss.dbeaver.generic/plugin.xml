@@ -241,7 +241,7 @@
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-scroll" value="true"/>
-                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="*"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.3.1.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="*"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="*"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
@@ -274,12 +274,12 @@
                     sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
                     defaultPort="5000"
                     webURL="http://jtds.sourceforge.net/"
-                    description="Sybase JTDS driver">
+                    description="Sybase jTDS driver">
                     <!--parameter name="query-get-active-db">select db_name()</query>
                     <parameter name="query-set-active-db">use ?</query-->
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
-                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="*"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.3.1.jar" url="*"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
