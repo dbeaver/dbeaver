@@ -951,7 +951,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             public void completeLoading(EntityDiagram entityDiagram)
             {
                 super.completeLoading(entityDiagram);
-                getGraphicalControl().setBackground(ColorConstants.white);
+                Control graphicalControl = getGraphicalControl();
+                if (graphicalControl == null) {
+                    return;
+                }
+                graphicalControl.setBackground(ColorConstants.white);
                 isLoaded = true;
                 Control control = getGraphicalViewer().getControl();
                 if (control == null || control.isDisposed()) {
