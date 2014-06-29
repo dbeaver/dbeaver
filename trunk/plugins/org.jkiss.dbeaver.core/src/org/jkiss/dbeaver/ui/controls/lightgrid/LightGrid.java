@@ -564,12 +564,13 @@ public abstract class LightGrid extends Canvas {
         return new GridPos(colIndex, rowIndex);
     }
 
-    public GridCell posToCell(int col, int row)
-    {
-        return new GridCell(columnElements[col], rowElements[row]);
+    public Object getColumnElement(int col) {
+        return columnElements[col];
     }
 
-
+    public Object getRowElement(int row) {
+        return rowElements[row];
+    }
 
     @Override
     public Color getBackground()
@@ -698,7 +699,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     @NotNull
-    public GridColumn getColumn(int index)
+    GridColumn getColumn(int index)
     {
         return columns.get(index);
     }
@@ -711,7 +712,7 @@ public abstract class LightGrid extends Canvas {
      * @return the column at the given point
      */
     @Nullable
-    public GridColumn getColumn(Point point)
+    GridColumn getColumn(Point point)
     {
         checkWidget();
         if (point == null) {
@@ -770,7 +771,7 @@ public abstract class LightGrid extends Canvas {
         return columns.size();
     }
 
-    public Collection<GridColumn> getColumns()
+    Collection<GridColumn> getColumns()
     {
         return columns;
     }
@@ -799,10 +800,6 @@ public abstract class LightGrid extends Canvas {
     public int getRowHeaderWidth()
     {
         return rowHeaderWidth;
-    }
-
-    Object getRowElement(int row) {
-        return rowElements[row];
     }
 
     public int getRow(Point point)

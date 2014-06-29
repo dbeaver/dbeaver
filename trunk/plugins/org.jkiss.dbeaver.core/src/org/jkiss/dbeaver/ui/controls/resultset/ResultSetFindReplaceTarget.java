@@ -162,9 +162,10 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         if (model.isEmpty()) {
             return -1;
         }
-        int rowCount = resultSet.getSpreadsheet().getItemCount();
-        int columnCount = resultSet.getSpreadsheet().getColumnsCount();
-        Collection<GridPos> selection = resultSet.getSpreadsheet().getSelection();
+        Spreadsheet spreadsheet = resultSet.getSpreadsheet();
+        int rowCount = spreadsheet.getItemCount();
+        int columnCount = spreadsheet.getColumnsCount();
+        Collection<GridPos> selection = spreadsheet.getSelection();
         GridPos startPosition = selection.isEmpty() ? null : selection.iterator().next();
         if (startPosition == null) {
             // From the beginning
@@ -181,17 +182,18 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         } else {
             findPattern = Pattern.compile(Pattern.quote(findString), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
         }
+        int minColumnNum = resultSet.isRecordMode() ? -1 : 0;
         for (GridPos curPosition = new GridPos(startPosition);;) {
             //Object element = contentProvider.getElement(curPosition);
             if (searchForward) {
                 curPosition.col++;
                 if (curPosition.col >= columnCount) {
-                    curPosition.col = 0;
+                    curPosition.col = minColumnNum;
                     curPosition.row++;
                 }
             } else {
                 curPosition.col--;
-                if (curPosition.col < 0) {
+                if (curPosition.col < minColumnNum) {
                     curPosition.col = columnCount - 1;
                     curPosition.row--;
                 }
@@ -210,12 +212,21 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                     return -1;
                 }
             }
-            GridCell cell = resultSet.getSpreadsheet().posToCell(curPosition);
-            String cellText = resultSet.getSpreadsheet().getContentProvider().getCellText(cell.col, cell.row);
+            String cellText;
+            if (resultSet.isRecordMode() && curPosition.col == minColumnNum) {
+                // Header
+                cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRowElement(curPosition.row));
+            } else {
+                GridCell cell = spreadsheet.posToCell(curPosition);
+                cellText = spreadsheet.getContentProvider().getCellText(cell.col, cell.row);
+            }
             Matcher matcher = findPattern.matcher(cellText);
             if (wholeWord ? matcher.matches() : matcher.find()) {
-                resultSet.getSpreadsheet().setCellSelection(curPosition);
-                resultSet.getSpreadsheet().showSelection();
+                if (curPosition.col == minColumnNum) {
+                    curPosition.col = 0;
+                }
+                spreadsheet.setCellSelection(curPosition);
+                spreadsheet.showSelection();
                 searchPattern = findPattern;
                 return curPosition.row;
             }
