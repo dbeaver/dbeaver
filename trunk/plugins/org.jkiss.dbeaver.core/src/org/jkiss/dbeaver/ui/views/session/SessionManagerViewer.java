@@ -85,7 +85,7 @@ public class SessionManagerViewer
             sessionInfo.setEditable(false);
             sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            sessionProps = new PropertyTreeViewer(infoSash, SWT.NONE);
+            sessionProps = new PropertyTreeViewer(infoSash, SWT.BORDER);
 
             sash.setWeights(new int[]{50, 50});
         }

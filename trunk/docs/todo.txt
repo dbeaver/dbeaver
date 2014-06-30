@@ -1,4 +1,6 @@
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
+MySQL and Cassandra + SSL.
+SQL folding.
 
 Expand/collapse All in Grid
 Edit collections
