@@ -230,7 +230,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
                 }
                 pathName.insert(0, ((DBNDatabaseFolder) node).getMeta().getType());
             }
-            if (!(node instanceof DBNDatabaseItem)) {
+            if (!(node instanceof DBNDatabaseItem) && !(node instanceof DBNDatabaseObject)) {
                 // skip folders
                 continue;
             }
