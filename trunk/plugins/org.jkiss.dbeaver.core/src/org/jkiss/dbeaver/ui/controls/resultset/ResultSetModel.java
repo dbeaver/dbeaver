@@ -61,6 +61,7 @@ public class ResultSetModel {
     private DBCStatistics statistics;
     private transient boolean metadataChanged;
     private transient boolean sourceChanged;
+    private transient boolean metadataDynamic;
 
     public ResultSetModel()
     {
@@ -357,12 +358,8 @@ public class ResultSetModel {
         return false;
     }
 
-    private boolean isDynamicMetadata() {
-        if (this.columns == null || this.columns.length == 0) {
-            return false;
-        }
-        DBDAttributeBinding testColumn = this.columns[0].getTopParent();
-        return testColumn.getDataSource().getInfo().isDynamicMetadata();
+    boolean isDynamicMetadata() {
+        return metadataDynamic;
     }
 
     /**
@@ -409,6 +406,9 @@ public class ResultSetModel {
             fillVisibleColumns();
         }
         metadataChanged = update;
+        metadataDynamic = this.columns != null &&
+            this.columns.length > 0 &&
+            this.columns[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
     }
 
     public void setData(@NotNull List<Object[]> rows)

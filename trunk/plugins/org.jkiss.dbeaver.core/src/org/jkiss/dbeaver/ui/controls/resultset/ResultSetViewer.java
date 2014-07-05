@@ -2804,7 +2804,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public Image getImage(Object element)
         {
-            if (element instanceof DBDAttributeBinding) {
+            if (element instanceof DBDAttributeBinding && (!isRecordMode() || !model.isDynamicMetadata())) {
                 return getTypeImage(((DBDAttributeBinding)element).getMetaAttribute());
             }
             return null;

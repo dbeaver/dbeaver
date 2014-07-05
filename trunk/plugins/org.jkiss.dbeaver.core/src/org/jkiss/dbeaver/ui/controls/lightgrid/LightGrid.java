@@ -3206,7 +3206,7 @@ public abstract class LightGrid extends Canvas {
                 }
                 break;
             case SWT.HOME:
-                if (ctrlPressed) {
+                if (ctrlPressed || columns.size() == 1) {
                     newSelection = 0;
                 } else {
                     newSelection = impliedFocusItem;
@@ -3216,7 +3216,7 @@ public abstract class LightGrid extends Canvas {
                 break;
             case SWT.END:
                 {
-                    if (ctrlPressed && getItemCount() > 0) {
+                    if ((ctrlPressed || columns.size() == 1) && getItemCount() > 0) {
                         newSelection = getItemCount() - 1;
                     } else {
                         newSelection = impliedFocusItem;
