@@ -199,6 +199,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
     protected boolean setDocumentContent(IDocument document, IStorage storage) throws CoreException
     {
         try {
+            String charsetFor = ((IFile) storage).getCharsetFor(new InputStreamReader(storage.getContents()));
             InputStream contentStream = storage.getContents();
             try {
                 String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : ContentUtils.getDefaultFileEncoding());

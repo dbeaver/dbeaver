@@ -687,7 +687,7 @@ public class UIUtils {
         if (curCharset == null) {
             curCharset = ContentUtils.getDefaultFileEncoding();
         }
-        Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+        Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN);
         encodingCombo.setVisibleItemCount(30);
         SortedMap<String, Charset> charsetMap = Charset.availableCharsets();
         int index = 0;
