@@ -1017,6 +1017,7 @@ public class ResultSetViewer extends Viewer
                 }
                 break;
         }
+        updateToolbar();
     }
 
     boolean isColumnReadOnly(DBDAttributeBinding column)
