@@ -1,6 +1,7 @@
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
 MySQL and Cassandra + SSL.
-SQL folding.
+SQL folding
+Resource property page (file encoding etc)
 NoSQL: in record mode show only existing attrs for dynamic metadata
 NoSQL: hide dynamic columns which presents in less than 50% of records. Show them as arrays??
 
