@@ -124,6 +124,9 @@
             <command commandId="org.eclipse.ui.file.import"/>
             <command commandId="org.eclipse.ui.file.export"/>
 
+            <separator name="properties" visible="true"/>
+            <command commandId="org.eclipse.ui.file.properties"/>
+
             <separator name="exit" visible="true"/>
             <command commandId="org.eclipse.ui.file.exit"/>
         </menuContribution>
