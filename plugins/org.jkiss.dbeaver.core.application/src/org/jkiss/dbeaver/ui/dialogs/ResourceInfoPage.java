@@ -23,13 +23,17 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.osgi.util.TextProcessor;
 import org.eclipse.swt.SWT;
@@ -83,8 +87,9 @@ public class ResourceInfoPage extends PropertyPage {
 
     // Max value width in characters before wrapping
 	private static final int MAX_VALUE_WIDTH = 80;
+    private String defEncoding;
 
-	private Composite createBasicInfoGroup(Composite basicInfoComposite, IResource resource) {
+    private Composite createBasicInfoGroup(Composite basicInfoComposite, IResource resource) {
 		// The group for path
 		Label pathLabel = new Label(basicInfoComposite, SWT.NONE);
 		pathLabel.setText(PATH_TITLE);
@@ -103,18 +108,15 @@ public class ResourceInfoPage extends PropertyPage {
 		gd.grabExcessHorizontalSpace = true;
 		gd.horizontalAlignment = GridData.FILL;
 		pathValueText.setLayoutData(gd);
-		pathValueText.setBackground(pathValueText.getDisplay().getSystemColor(
-				SWT.COLOR_WIDGET_BACKGROUND));
+		pathValueText.setBackground(pathValueText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
 		// The group for types
 		Label typeTitle = new Label(basicInfoComposite, SWT.LEFT);
 		typeTitle.setText(TYPE_TITLE);
 
 		Text typeValue = new Text(basicInfoComposite, SWT.LEFT | SWT.READ_ONLY);
-		typeValue.setText(getTypeString(resource,
-            getContentDescription(resource)));
-		typeValue.setBackground(typeValue.getDisplay().getSystemColor(
-				SWT.COLOR_WIDGET_BACKGROUND));
+		typeValue.setText(getTypeString(resource, getContentDescription(resource)));
+		typeValue.setBackground(typeValue.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
 		if (resource.isLinked() && !resource.isVirtual()) {
 			// The group for location
@@ -124,8 +126,7 @@ public class ResourceInfoPage extends PropertyPage {
 			gd.verticalAlignment = SWT.TOP;
 			locationTitle.setLayoutData(gd);
 
-			Composite locationComposite = new Composite(basicInfoComposite,
-					SWT.NULL);
+			Composite locationComposite = new Composite(basicInfoComposite, SWT.NULL);
             GridLayout layout = new GridLayout();
 			layout.numColumns = 2;
 			layout.marginWidth = 0;
@@ -138,10 +139,8 @@ public class ResourceInfoPage extends PropertyPage {
 			gd.horizontalAlignment = GridData.FILL;
 			locationComposite.setLayoutData(gd);
 
-            Text locationValue = new Text(locationComposite, SWT.WRAP
-                | SWT.READ_ONLY);
-			String locationStr = TextProcessor.process(
-                getLocationText(resource));
+            Text locationValue = new Text(locationComposite, SWT.WRAP | SWT.READ_ONLY);
+			String locationStr = TextProcessor.process(getLocationText(resource));
 			locationValue.setText(locationStr);
 			gd = new GridData();
 			gd.widthHint = convertWidthInCharsToPixels(MAX_VALUE_WIDTH);
@@ -149,21 +148,17 @@ public class ResourceInfoPage extends PropertyPage {
 			gd.verticalAlignment = SWT.TOP;
 			gd.horizontalAlignment = GridData.FILL;
 			locationValue.setLayoutData(gd);
-			locationValue.setBackground(locationValue.getDisplay().getSystemColor(
-                SWT.COLOR_WIDGET_BACKGROUND));
+			locationValue.setBackground(locationValue.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
 			// displayed in all cases since the link can be changed to a path variable any time by the user in this dialog
-			Label resolvedLocationTitle = new Label(basicInfoComposite,
-					SWT.LEFT);
+			Label resolvedLocationTitle = new Label(basicInfoComposite, SWT.LEFT);
 			resolvedLocationTitle.setText(RESOLVED_LOCATION_TITLE);
 			gd = new GridData();
 			gd.verticalAlignment = SWT.TOP;
 			resolvedLocationTitle.setLayoutData(gd);
 
-			resolvedLocationValue = new Text(basicInfoComposite, SWT.WRAP
-					| SWT.READ_ONLY);
-			resolvedLocationValue.setText(
-                getResolvedLocationText(resource));
+			resolvedLocationValue = new Text(basicInfoComposite, SWT.WRAP | SWT.READ_ONLY);
+			resolvedLocationValue.setText(getResolvedLocationText(resource));
 			gd = new GridData();
 			gd.widthHint = convertWidthInCharsToPixels(MAX_VALUE_WIDTH);
 			gd.grabExcessHorizontalSpace = true;
@@ -199,8 +194,7 @@ public class ResourceInfoPage extends PropertyPage {
 			Label sizeTitle = new Label(basicInfoComposite, SWT.LEFT);
 			sizeTitle.setText(SIZE_TITLE);
 
-			Text sizeValue = new Text(basicInfoComposite, SWT.LEFT
-					| SWT.READ_ONLY);
+			Text sizeValue = new Text(basicInfoComposite, SWT.LEFT | SWT.READ_ONLY);
 			sizeValue.setText(getSizeString(resource));
 			gd = new GridData();
 			gd.widthHint = convertWidthInCharsToPixels(MAX_VALUE_WIDTH);
@@ -218,10 +212,8 @@ public class ResourceInfoPage extends PropertyPage {
 		Text timeStampValue = new Text(basicInfoComposite, SWT.READ_ONLY);
 		timeStampValue.setText(
             getDateStringValue(resource));
-		timeStampValue.setBackground(timeStampValue.getDisplay()
-				.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-		timeStampValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL
-				| GridData.GRAB_HORIZONTAL));
+		timeStampValue.setBackground(timeStampValue.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+		timeStampValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.GRAB_HORIZONTAL));
 
 		return basicInfoComposite;
 	}
@@ -261,10 +253,16 @@ public class ResourceInfoPage extends PropertyPage {
 		createBasicInfoGroup(encodingComposite, resource);
 
         {
+            defEncoding = ContentUtils.getDefaultFileEncoding();
 
             UIUtils.createControlLabel(encodingComposite, "Encoding");
-            IContentDescription contentDescription = getContentDescription(resource);
-            String defEncoding = contentDescription == null ? ContentUtils.getDefaultFileEncoding() : contentDescription.getCharset();
+            if (resource instanceof IFile) {
+                try {
+                    defEncoding = ((IFile) resource).getCharset();
+                } catch (CoreException e) {
+                    log.error(e);
+                }
+            }
             encodingEditor = UIUtils.createEncodingCombo(encodingComposite, defEncoding);
         }
 
@@ -291,14 +289,14 @@ public class ResourceInfoPage extends PropertyPage {
 
 	protected void performDefaults() {
 
-		IResource resource = (IResource) getElement().getAdapter(
-				IResource.class);
-		
-		if (resource == null)
-			return;
+		IResource resource = (IResource) getElement().getAdapter(IResource.class);
+
+        if (resource == null) {
+            return;
+        }
 
 		if (encodingEditor != null) {
-			//encodingEditor.loadDefault();
+			encodingEditor.setText(defEncoding);
 		}
 	}
 
@@ -306,37 +304,38 @@ public class ResourceInfoPage extends PropertyPage {
 	 * Apply the read only state and the encoding to the resource.
 	 */
 	public boolean performOk() {
+        IResource resource = (IResource) getElement().getAdapter(IResource.class);
 
-		IResource resource = (IResource) getElement().getAdapter(
-				IResource.class);
-		
-		if (resource == null)
-			return true;
-
-/*
+        if (resource == null) {
+            return true;
+        }
 		try {
-			if (newResourceLocation != null) {
-				if (resource.getType() == IResource.FILE)
-					((IFile)resource).createLink(newResourceLocation, IResource.REPLACE,
-							new NullProgressMonitor());
-				if (resource.getType() == IResource.FOLDER)
-					((IFolder)resource).createLink(newResourceLocation, IResource.REPLACE,
-							new NullProgressMonitor());
-			}
+            // This must be invoked after the 'derived' property has been set,
+            // because it may influence the place where encoding is stored.
+            if (encodingEditor != null && !encodingEditor.getText().equals(defEncoding)) {
+                String newEncoding = encodingEditor.getText();
+                applyEncoding(resource, newEncoding, new NullProgressMonitor());
+                defEncoding = newEncoding;
+            }
+
 		} catch (CoreException exception) {
 			ErrorDialog.openError(getShell(),
-					"Error", exception.getLocalizedMessage(), exception.getStatus());
+                "Error", exception.getLocalizedMessage(), exception.getStatus());
 			return false;
-		} finally {
-			// This must be invoked after the 'derived' property has been set,
-			// because it may influence the place where encoding is stored.
-			if (encodingEditor != null) {
-				encodingEditor.store();
-			}
 		}
-*/
+
 		return true;
 	}
+
+    private void applyEncoding(IResource resource, String encoding, IProgressMonitor monitor) throws CoreException {
+        if (resource instanceof IFile) {
+            ((IFile) resource).setCharset(encoding, monitor);
+        } else if (resource instanceof IContainer) {
+            for (IResource child : ((IContainer) resource).members()) {
+                applyEncoding(child, encoding, monitor);
+            }
+        }
+    }
 
     private static String getContentTypeString(IContentDescription description) {
         if (description != null) {
