@@ -138,7 +138,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         connectionInfo = new DBPConnectionInfo(connectionInfo);
         String newPortValue = String.valueOf(localPort);
         // Replace database host/port and URL - let's use localhost
-        connectionInfo.setHostName("localhost");
+        connectionInfo.setHostName("127.0.0.1");
         connectionInfo.setHostPort(newPortValue);
         String newURL = configuration.getDriver().getDataSourceProvider().getConnectionURL(
             configuration.getDriver(),
