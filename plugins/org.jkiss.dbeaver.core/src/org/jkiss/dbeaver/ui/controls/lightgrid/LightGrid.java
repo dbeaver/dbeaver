@@ -1839,17 +1839,27 @@ public abstract class LightGrid extends Canvas {
 
             x2 -= getHScrollSelectionInPixels();
 
-            for (GridColumn column : columns) {
-                if (column.isOverSortArrow(x - x2, y)) {
+            if (x < x2) {
+                int ltSort = getContentProvider().getSortOrder(null);
+                if (ltSort != SWT.NONE && x > x2 - GridColumnRenderer.SORT_WIDTH - GridColumnRenderer.ARROW_MARGIN && x < x2 - GridColumnRenderer.ARROW_MARGIN &&
+                    y > GridColumnRenderer.TOP_MARGIN)
+                {
+                    columnBeingSorted = null;
                     overSorter = true;
-                    columnBeingSorted = column;
-                    break;
                 }
-                x2 += column.getWidth();
-                if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
-                    overResizer = true;
-                    columnBeingResized = column;
-                    break;
+            } else {
+                for (GridColumn column : columns) {
+                    if (column.isOverSortArrow(x - x2, y)) {
+                        overSorter = true;
+                        columnBeingSorted = column;
+                        break;
+                    }
+                    x2 += column.getWidth();
+                    if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
+                        overResizer = true;
+                        columnBeingResized = column;
+                        break;
+                    }
                 }
             }
         } else if (x <= rowHeaderWidth) {
@@ -2878,7 +2888,7 @@ public abstract class LightGrid extends Canvas {
                     Event event = new Event();
                     event.x = e.x;
                     event.y = e.y;
-                    event.data = columnBeingSorted.getElement();
+                    event.data = columnBeingSorted == null ? null : columnBeingSorted.getElement();
                     event.stateMask = e.stateMask;
                     notifyListeners(Event_ChangeSort, event);
                     return;
@@ -4130,6 +4140,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     private void drawTopLeftCell(GC gc, int x, int y, int width, int height) {
+        int sortOrder = getContentProvider().getSortOrder(null);
         gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
         gc.fillRectangle(
@@ -4152,8 +4163,15 @@ public abstract class LightGrid extends Canvas {
             x + width,
             y + height - 1);
 
-        //cfgButton.redraw();
-
+        if (sortOrder != SWT.NONE) {
+            int arrowWidth = GridColumnRenderer.SORT_WIDTH;
+            Rectangle sortBounds = new Rectangle(
+                x + width - GridColumnRenderer.ARROW_MARGIN - arrowWidth,
+                y + GridColumnRenderer.TOP_MARGIN,
+                arrowWidth,
+                height);
+            GridColumnRenderer.paintSort(gc, sortBounds, sortOrder);
+        }
     }
 
 }

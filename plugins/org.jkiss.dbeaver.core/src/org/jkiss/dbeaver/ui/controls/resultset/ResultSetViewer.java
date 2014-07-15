@@ -185,6 +185,7 @@ public class ResultSetViewer extends Viewer
     private DBDAttributeBinding curAttribute;
     // Mode
     private boolean recordMode;
+    private int columnOrder = SWT.NONE;
 
     private final Map<ResultSetValueController, DBDValueEditorStandalone> openEditors = new HashMap<ResultSetValueController, DBDValueEditorStandalone>();
     private final List<ResultSetListener> listeners = new ArrayList<ResultSetListener>();
@@ -864,6 +865,7 @@ public class ResultSetViewer extends Viewer
             oldAttribute = model.getVisibleColumn(0);
         }
         this.recordMode = recordMode;
+        this.columnOrder = recordMode ? SWT.DEFAULT : SWT.NONE;
         if (!this.recordMode) {
             this.initResultSet();
         } else {
@@ -1601,6 +1603,12 @@ public class ResultSetViewer extends Viewer
     @Override
     public void changeSorting(@NotNull Object columnElement, final int state)
     {
+        if (columnElement == null) {
+            columnOrder = columnOrder == SWT.DEFAULT ? SWT.DOWN : (columnOrder == SWT.DOWN ? SWT.UP : SWT.DEFAULT);
+            spreadsheet.refreshData(false);
+            spreadsheet.redrawGrid();
+            return;
+        }
         DBDDataFilter dataFilter = model.getDataFilter();
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
         boolean altPressed = (state & SWT.ALT) == SWT.ALT;
@@ -2021,6 +2029,7 @@ public class ResultSetViewer extends Viewer
         model.clearData();
         this.curRow = null;
         this.curAttribute = null;
+        this.columnOrder = SWT.NONE;
     }
 
     public void applyChanges(@Nullable DBRProgressMonitor monitor)
@@ -2620,7 +2629,16 @@ public class ResultSetViewer extends Viewer
                 if (!recordMode) {
                     return model.getAllRows().toArray();
                 } else {
-                    return model.getVisibleColumns().toArray();
+                    DBDAttributeBinding[] columns = model.getVisibleColumns().toArray(new DBDAttributeBinding[model.getVisibleColumnCount()]);
+                    if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
+                        Arrays.sort(columns, new Comparator<DBDAttributeBinding>() {
+                            @Override
+                            public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
+                                return o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.DOWN ? 1 : -1);
+                            }
+                        });
+                    }
+                    return columns;
                 }
             }
         }
@@ -2667,6 +2685,9 @@ public class ResultSetViewer extends Viewer
                     }
                     return SWT.DEFAULT;
                 }
+            } else if (column == null && recordMode) {
+                // Columns order in record mode
+                return columnOrder;
             }
             return SWT.NONE;
         }
