@@ -36,9 +36,10 @@ class GridColumnRenderer extends AbstractRenderer
     public static final int ARROW_MARGIN = 6;
     public static final int IMAGE_SPACING = 3;
 
-    private static final Image IMAGE_ASTERISK = DBIcon.SORT_UNKNOWN.getImage();
-    private static final Image IMAGE_ARROW_UP = DBIcon.SORT_DECREASE.getImage();
-    private static final Image IMAGE_ARROW_DOWN = DBIcon.SORT_INCREASE.getImage();
+    public static final Image IMAGE_ASTERISK = DBIcon.SORT_UNKNOWN.getImage();
+    public static final Image IMAGE_ARROW_UP = DBIcon.SORT_DECREASE.getImage();
+    public static final Image IMAGE_ARROW_DOWN = DBIcon.SORT_INCREASE.getImage();
+    public static final int SORT_WIDTH = 16;
 
     public  GridColumnRenderer(LightGrid grid) {
         super(grid);
@@ -190,7 +191,7 @@ class GridColumnRenderer extends AbstractRenderer
         gc.setFont(grid.normalFont);
     }
 
-    private void paintSort(GC gc, Rectangle bounds, int sort)
+    public static void paintSort(GC gc, Rectangle bounds, int sort)
     {
         switch (sort) {
             case SWT.DEFAULT:
