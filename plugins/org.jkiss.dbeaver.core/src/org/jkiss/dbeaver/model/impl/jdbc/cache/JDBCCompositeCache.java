@@ -180,6 +180,8 @@ public abstract class JDBCCompositeCache<
     private class ObjectInfo {
         final OBJECT object;
         final List<ROW_REF> rows = new ArrayList<ROW_REF>();
+        public boolean broken;
+
         public ObjectInfo(OBJECT object)
         {
             this.object = object;
@@ -276,7 +278,10 @@ public abstract class JDBCCompositeCache<
                         }
                         ROW_REF rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
                         if (rowRef == null) {
-                            continue;
+                            // At least one of rows is broken.
+                            // So entire object is broken, let's just skip it.
+                            objectInfo.broken = true;
+                            break;
                         }
                         objectInfo.rows.add(rowRef);
                     }
@@ -309,7 +314,9 @@ public abstract class JDBCCompositeCache<
                     for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
                         if (objMap != null) {
                             for (ObjectInfo info : objMap.values()) {
-                                globalCache.add(info.object);
+                                if (!info.broken) {
+                                    globalCache.add(info.object);
+                                }
                             }
                         }
                     }
@@ -334,8 +341,10 @@ public abstract class JDBCCompositeCache<
                 Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
                 ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
                 for (ObjectInfo objectInfo : objectInfos) {
-                    cacheChildren(objectInfo.object, objectInfo.rows);
-                    objects.add(objectInfo.object);
+                    if (!objectInfo.broken) {
+                        cacheChildren(objectInfo.object, objectInfo.rows);
+                        objects.add(objectInfo.object);
+                    }
                 }
                 objectCache.put(colEntry.getKey(), objects);
             }

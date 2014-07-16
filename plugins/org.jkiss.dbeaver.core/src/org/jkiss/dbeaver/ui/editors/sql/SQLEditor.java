@@ -142,7 +142,9 @@ public class SQLEditor extends SQLEditorBase
         if (dataSource instanceof SQLDataSource) {
             return (SQLDataSource)dataSource;
         } else {
-            log.debug("Data source doesn't support SQL");
+            if (dataSource != null) {
+                log.debug("Data source doesn't support SQL");
+            }
             return null;
         }
     }
