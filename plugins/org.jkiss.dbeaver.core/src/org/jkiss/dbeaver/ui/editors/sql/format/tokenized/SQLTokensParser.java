@@ -33,7 +33,7 @@ class SQLTokensParser {
     private SQLFormatterConfiguration configuration;
     private String fBefore;
     private int fPos;
-    private static final String[] twoCharacterSymbol = { "<>", "<=", ">=", "||", "()", "!=", ":=" };
+    private static final String[] twoCharacterSymbol = { "<>", "<=", ">=", "||", "()", "!=", ":=", ".*" };
     private char structSeparator;
     private String catalogSeparator;
 
@@ -126,7 +126,7 @@ class SQLTokensParser {
             return new FormatterToken(FormatterConstants.VALUE, s.toString(), start_pos);
         } else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
-            while (isLetter(fChar) || isDigit(fChar) || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
+            while (isLetter(fChar) || isDigit(fChar) || fChar == '*' || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
                 s.append(fChar);
                 fPos++;
                 if (fPos >= fBefore.length()) {
