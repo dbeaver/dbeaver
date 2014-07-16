@@ -112,9 +112,13 @@ public class ResultSetModel {
         if (!singleSourceCells) {
             return null;
         }
-        DBDRowIdentifier rowIdentifier = columns[0].getRowIdentifier();
-        assert rowIdentifier != null;
-        return rowIdentifier.getEntity();
+        for (DBDAttributeBinding attr : columns) {
+            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+            if (rowIdentifier != null) {
+                return rowIdentifier.getEntity();
+            }
+        }
+        return null;
     }
 
     public void resetCellValue(DBDAttributeBinding attr, RowData row)
