@@ -219,7 +219,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     public String getContainerFullName()
     {
         DBSObjectContainer container = getContainer();
-        return container == null ? null :
+        return container == null ? "" :
             container instanceof DBPDataSource ? DBUtils.getObjectFullName(container) :
             DBUtils.getObjectFullName(container) + " [" + container.getDataSource().getContainer().getName() + "]";
     }
