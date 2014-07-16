@@ -90,7 +90,12 @@ public class TrayIconHandler {
     public void notify(String message, int status)
     {
         if (trayItem == null) {
-            show();
+            try {
+                show();
+            } catch (Exception e) {
+                log.warn("Can't show tray item", e);
+                return;
+            }
         }
         TrayIcon.MessageType type;
         switch (status) {
