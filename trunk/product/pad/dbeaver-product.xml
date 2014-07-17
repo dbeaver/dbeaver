@@ -52,7 +52,17 @@
             <date>18.07.2014</date>
 
             <release-notes>
-                -
+                - Table constrains reading fixed
+                - SSH tunnel instantiation fixed
+                - Editors reopen fixed
+                - Data grid UI improved
+                - Data grid toolbar fixed
+                - jTDS driver updated
+                - SSL for MySQL (alpha version)
+                - Generic driver now splits tables and views
+                - Oracle XML type support improved
+                - ERD diagrams made IDEF1X compatible
+                - Many minor UI fixes
             </release-notes>
         </version>
 
