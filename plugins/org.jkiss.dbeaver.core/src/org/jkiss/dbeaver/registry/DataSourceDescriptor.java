@@ -300,12 +300,12 @@ public class DataSourceDescriptor
     {
         if (updateConnection && dataSource != null) {
             try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
-                        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Change '" + getName() + "' transactional mode");
+                        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Change '" + getName() + "' transactional mode to " + (autoCommit ? "auto-commit" : "manual"));
                         try {
                             DBCTransactionManager txnManager = session.getTransactionManager();
                             // Change auto-commit mode
@@ -319,9 +319,6 @@ public class DataSourceDescriptor
                 });
             } catch (InvocationTargetException e) {
                 UIUtils.showErrorDialog(null, "Auto-Commit", "Error while toggle auto-commit", e.getTargetException());
-                return;
-            } catch (InterruptedException e) {
-                // do nothing
                 return;
             }
         }
