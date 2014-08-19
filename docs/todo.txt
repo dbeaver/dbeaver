@@ -1,3 +1,4 @@
+BUG: open object (F4) with FQ name (schema)
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
 Order columns in record mode
 NoSQL: in record mode show only existing attrs for dynamic metadata
