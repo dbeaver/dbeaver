@@ -654,10 +654,13 @@ public class ResultSetModel {
                 //log.warn("Constraint for attribute [" + constraint.getAttribute().getName() + "] not found");
                 continue;
             }
-            filterConstraint.setCriteria(constraint.getCriteria());
-            filterConstraint.setOperator(constraint.getOperator());
-            filterConstraint.setReverseOperator(constraint.isReverseOperator());
-            filterConstraint.setValue(constraint.getValue());
+            if (constraint.getOperator() != null) {
+                filterConstraint.setOperator(constraint.getOperator());
+                filterConstraint.setReverseOperator(constraint.isReverseOperator());
+                filterConstraint.setValue(constraint.getValue());
+            } else {
+                filterConstraint.setCriteria(constraint.getCriteria());
+            }
             if (constraint.getOrderPosition() > 0) {
                 filterConstraint.setOrderPosition(constraint.getOrderPosition());
                 filterConstraint.setOrderDescending(constraint.isOrderDescending());
