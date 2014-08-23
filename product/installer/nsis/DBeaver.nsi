@@ -17,7 +17,7 @@
   Caption "DBeaver Setup"
   BrandingText "Universal Database Manager"
   Icon "@product.dir@\docs\dbeaver.ico"
-  OutFile "@product.dir@\dist\@archivePrefix@-@productVersion@-@arch@-setup.exe"
+  OutFile "@dist.dir@\dist\@archivePrefix@-@productVersion@-@arch@-setup.exe"
 
   VIAddVersionKey "ProductName" "DBeaver"
   VIAddVersionKey "Comments" "Universal Database Manager"

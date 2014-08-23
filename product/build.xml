@@ -340,6 +340,7 @@
         <filter filtersfile="build.properties"/>
         <filter token="arch" value="${arch}"/>
         <filter token="product.dir" value="..\..\.."/>
+        <filter token="dist.dir" value="${distSource}"/>
         <copy todir="${buildDirectory}/installer/${arch}" filtering="true">
             <fileset dir="installer/nsis">
                 <include name="*.*" />
