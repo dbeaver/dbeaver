@@ -26,7 +26,8 @@
     <property name="buildLabel" value="${buildId}"/>
     <property name="readmeFile" value="build/readme.txt"/>
     <property name="distDirectory" value="dist"/>
-    <property name="distEntDirectory" value="${distDirectory}/enterprise"/>
+    <property name="distCE" value="${distDirectory}/ce"/>
+    <property name="distEE" value="${distDirectory}/ee"/>
     <tstamp>
         <format property="current-date" pattern="dd MMM yyyy" locale="en"/>
     </tstamp>
@@ -96,6 +97,7 @@
         </copy>
 
         <mkdir dir="${distDirectory}" />
+        <mkdir dir="${distCE}" />
 
         <antcall target="init-ent"/>
 
@@ -130,7 +132,7 @@
             </fileset>
         </copy>
 
-        <mkdir dir="${distDirectory}/enterprise" />
+        <mkdir dir="${distEE}" />
     </target>
 
     <target name="readme">
@@ -169,7 +171,7 @@
             </classpath>
         </java>
 
-        <move todir="${distDirectory}">
+        <move todir="${distCE}">
             <fileset dir="${buildDirectory}/${buildId}">
                 <include name="*.zip" />
             </fileset>
@@ -191,7 +193,7 @@
             </classpath>
         </java>
 
-        <move todir="${distEntDirectory}">
+        <move todir="${distEE}">
             <fileset dir="${buildDirectory}/${buildId}">
                 <include name="*.zip" />
             </fileset>
@@ -355,21 +357,22 @@
 
         <antcall target="nsis">
             <param name="arch" value="x86"/>
-            <param name="distSource" value="${distDirectory}"/>
+            <param name="distSource" value="${distCE}"/>
         </antcall>
         <antcall target="nsis">
             <param name="arch" value="x86_64"/>
-            <param name="distSource" value="${distDirectory}"/>
+            <param name="distSource" value="${distCE}"/>
         </antcall>
     </target>
+
     <target name="dist-win-ent" if="enterprise">
         <antcall target="nsis">
             <param name="arch" value="x86"/>
-            <param name="distSource" value="${distEntDirectory}"/>
+            <param name="distSource" value="${distEE}"/>
         </antcall>
         <antcall target="nsis">
             <param name="arch" value="x86_64"/>
-            <param name="distSource" value="${distEntDirectory}"/>
+            <param name="distSource" value="${distEE}"/>
         </antcall>
     </target>
 
@@ -542,7 +545,10 @@
     <target name="publish-release" depends="init">
         <mkdir dir="${releaseFilesDirectory}" />
         <copy todir="${releaseFilesDirectory}">
-            <fileset dir="${distDirectory}">
+            <fileset dir="${distCE}">
+                <include name="*" />
+            </fileset>
+            <fileset dir="${distEE}">
                 <include name="*" />
             </fileset>
         </copy>
@@ -551,7 +557,10 @@
     <target name="publish-ea" depends="init">
         <mkdir dir="${releaseFilesDirectory}/ea" />
         <copy todir="${releaseFilesDirectory}/ea">
-            <fileset dir="${distDirectory}">
+            <fileset dir="${distCE}">
+                <include name="*" />
+            </fileset>
+            <fileset dir="${distEE}">
                 <include name="*" />
             </fileset>
         </copy>
