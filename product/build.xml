@@ -128,6 +128,8 @@
                 <include name="*.product" />
             </fileset>
         </copy>
+
+        <mkdir dir="${distDirectory}/enterprise" />
     </target>
 
     <target name="readme">
@@ -173,7 +175,7 @@
         </move>
     </target>
 
-    <target name="pde-enterprise">
+    <target name="pde-enterprise" if="enterprise">
         <!-- Build enterprise product -->
         <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
             <arg value="-application" />
@@ -182,13 +184,13 @@
             <arg value="${buildFile}" />
             <arg value="-Dtimestamp=${timestamp}" />
             <arg value="-DproductId=${buildDirectory}/DBeaverEnterprise" />
-            <arg value="-Dconfigs=${configs}" />
+            <arg value="-Dconfigs=${enterpriseConfigs}" />
             <classpath>
                 <pathelement location="${launcherLibLocation}" />
             </classpath>
         </java>
 
-        <move todir="${distDirectory}">
+        <move todir="${distDirectory}/enterprise">
             <fileset dir="${buildDirectory}/${buildId}">
                 <include name="*.zip" />
             </fileset>
@@ -289,11 +291,9 @@
     <target name="pde-build" depends="init">
         <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
-<!--
         <antcall target="pde-runtime"/>
         <antcall target="update-site"/>
         <antcall target="pde-standalone"/>
--->
         <antcall target="pde-enterprise"/>
     </target>
 
