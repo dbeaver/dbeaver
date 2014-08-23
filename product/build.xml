@@ -323,22 +323,10 @@
             overwrite="true"
             />
 
-        <echo message="Pack200 all jars"/>
-        <apply executable="pack200" parallel="false" dest="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" verbose="true">
-            <arg value="--modification-time=latest"/>
-            <arg value="--deflate-hint=true"/>
-            <arg value="--segment-limit=-1"/>
-            <arg value="-g"/>
-            <targetfile/>
-            <srcfile/>
-            <fileset dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="**/*.jar" />
-            <mapper type="glob" from="*.jar" to="*.pack" />
-        </apply>
-        <delete dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="**/*.jar"/>
-
         <echo message="Filter installer script"/>
         <path id="dist.source.path"><pathelement location="${distSource}"/></path>
         <pathconvert targetos="windows" property="distSourceWin" refid="dist.source.path"/>
+        <echo message="distSourceWin = ${distSourceWin}"/>
 
         <filter filtersfile="build.properties"/>
         <filter token="arch" value="${arch}"/>
