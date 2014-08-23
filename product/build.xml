@@ -337,10 +337,13 @@
         <delete dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="**/*.jar"/>
 
         <echo message="Filter installer script"/>
+        <path id="dist.source.path"><pathelement location="${distSource}"/></path>
+        <pathconvert targetos="windows" property="distSourceWin" refid="dist.source.path"/>
+
         <filter filtersfile="build.properties"/>
         <filter token="arch" value="${arch}"/>
         <filter token="product.dir" value="..\..\.."/>
-        <filter token="dist.dir" value="${distSource}"/>
+        <filter token="dist.dir" value="${distSourceWin}"/>
         <copy todir="${buildDirectory}/installer/${arch}" filtering="true">
             <fileset dir="installer/nsis">
                 <include name="*.*" />
