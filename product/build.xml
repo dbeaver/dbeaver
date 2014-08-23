@@ -385,7 +385,7 @@
         <property name="debDirectory" value="${buildDirectory}/installer/deb/linux.${arch}"/>
         <property name="packageName" value="${archivePrefix}"/>
         <unzip
-            src="${distDirectory}/${buildId}-linux.gtk.${arch}.zip"
+            src="${distCE}/${buildId}-linux.gtk.${arch}.zip"
             dest="${debDirectory}"
             overwrite="true"
             />
@@ -404,7 +404,7 @@
         <deb
             package="${packageName}"
             version="${productVersion}"
-            todir="${distDirectory}"
+            todir="${distCE}"
             section="devel"
             depends="java6-runtime"
             homepage="http://dbeaver.jkiss.org"
@@ -444,10 +444,10 @@
     <!-- Patch archives with corrected Info.plist -->
     <target name="dist-macos" depends="init">
         <copy file="installer/mac/Info.plist" tofile="${buildDirectory}/Info.plist" filtering="true"/>
-        <zip destfile="${distDirectory}/dbeaver-${productVersion}-macosx.cocoa.x86.zip" update="true">
+        <zip destfile="${distCE}/dbeaver-${productVersion}-macosx.cocoa.x86.zip" update="true">
             <zipfileset dir="${buildDirectory}" includes="Info.plist" prefix="dbeaver/dbeaver.app/Contents"/>
         </zip>
-        <zip destfile="${distDirectory}/dbeaver-${productVersion}-macosx.cocoa.x86_64.zip" update="true">
+        <zip destfile="${distCE}/dbeaver-${productVersion}-macosx.cocoa.x86_64.zip" update="true">
             <zipfileset dir="${buildDirectory}" includes="Info.plist" prefix="dbeaver/dbeaver.app/Contents"/>
         </zip>
     </target>
@@ -495,7 +495,7 @@
             destination="dist">
             <zipfileset 
                 prefix='/usr/share/dbeaver' 
-                file="${distDirectory}/${buildId}-linux.gtk.x86.zip"/>
+                file="${distCE}/${buildId}-linux.gtk.x86.zip"/>
                 <!--link path="/usr/share/java/test.jar" target="/usr/share/java/test-1.2.3.jar"/-->
             <depends name="sun-jre" version="1.6"/>
         </rpm>
