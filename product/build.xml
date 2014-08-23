@@ -26,6 +26,7 @@
     <property name="buildLabel" value="${buildId}"/>
     <property name="readmeFile" value="build/readme.txt"/>
     <property name="distDirectory" value="dist"/>
+    <property name="distEntDirectory" value="${distDirectory}/enterprise"/>
     <tstamp>
         <format property="current-date" pattern="dd MMM yyyy" locale="en"/>
     </tstamp>
@@ -190,7 +191,7 @@
             </classpath>
         </java>
 
-        <move todir="${distDirectory}/enterprise">
+        <move todir="${distEntDirectory}">
             <fileset dir="${buildDirectory}/${buildId}">
                 <include name="*.zip" />
             </fileset>
@@ -304,7 +305,7 @@
     <target name="nsis">
         <echo message="Extract archive"/>
         <unzip
-            src="${distDirectory}/${buildId}-win32.win32.${arch}.zip"
+            src="${distSource}/${buildId}-win32.win32.${arch}.zip"
             dest="${buildDirectory}/installer/raw/win32.${arch}"
             overwrite="true"
             />
@@ -354,13 +355,24 @@
 
         <antcall target="nsis">
             <param name="arch" value="x86"/>
+            <param name="distSource" value="${distDirectory}"/>
         </antcall>
         <antcall target="nsis">
             <param name="arch" value="x86_64"/>
+            <param name="distSource" value="${distDirectory}"/>
         </antcall>
-
-        <!--delete dir="${buildDirectory}/installer" /-->
     </target>
+    <target name="dist-win-ent" if="enterprise">
+        <antcall target="nsis">
+            <param name="arch" value="x86"/>
+            <param name="distSource" value="${distEntDirectory}"/>
+        </antcall>
+        <antcall target="nsis">
+            <param name="arch" value="x86_64"/>
+            <param name="distSource" value="${distEntDirectory}"/>
+        </antcall>
+    </target>
+
 
     <!-- ===================================================================== -->
     <!-- Debian installer -->
@@ -629,7 +641,7 @@
 
     </target>
 
-    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos">
+    <target name="all" depends="clean,build,dist-win,dist-win-ent,dist-deb,dist-rpm,dist-macos">
 
     </target>
 
