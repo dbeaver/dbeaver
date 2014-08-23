@@ -1,6 +1,7 @@
+BUG: Save navigation filter and use correct nav page index
+
 BUG: open object (F4) with FQ name (schema)
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
-Order columns in record mode
 NoSQL: in record mode show only existing attrs for dynamic metadata
 NoSQL: hide dynamic columns which presents in less than 50% of records. Show them as arrays??
 SQL folding
