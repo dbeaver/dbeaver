@@ -52,12 +52,12 @@
                 <driver
                     id="apache_cassandra"
                     label="Cassandra Thrift"
-                    category="NoSQL"
+                    category="Cassandra"
                     class="org.jkiss.jdbc.cassandra.CassandraDriver"
                     sampleURL="jdbc:jkiss:cassandra://{host}[:{port}]/{database}"
                     defaultPort="9160"
                     webURL="http://cassandra.jkiss.org/"
-                    description="Driver for Apache Cassandra"
+                    description="Driver for Apache Cassandra 0.x-1.x"
                     icon="icons/cassandra_icon.png">
                     <property name="structResultSet" value="true"/>
                     <replace provider="generic" driver="cassandra_jkiss"/>
