@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.oracle"
       label="%featureName"
-      version="1.0.16"
+      version="2.0.0"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ext.oracle">
 
