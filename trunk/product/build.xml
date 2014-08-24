@@ -560,7 +560,7 @@
                 <include name="*" />
             </fileset>
             <filtermapper>
-                <replacestring from="${productVersion}" to="${productVersion}-ea"/>
+                <replacestring from="${productVersion}" to="${productVersion}-ee"/>
             </filtermapper>
         </copy>
     </target>
@@ -577,7 +577,7 @@
                 <include name="*" />
             </fileset>
             <filtermapper>
-                <replacestring from="${productVersion}" to="${productVersion}-ea"/>
+                <replacestring from="${productVersion}" to="${productVersion}-ee"/>
             </filtermapper>
         </copy>
     </target>
