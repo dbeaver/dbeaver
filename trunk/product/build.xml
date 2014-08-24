@@ -554,9 +554,14 @@
             <fileset dir="${distCE}">
                 <include name="*" />
             </fileset>
+        </copy>
+        <copy todir="${releaseFilesDirectory}">
             <fileset dir="${distEE}">
                 <include name="*" />
             </fileset>
+            <filtermapper>
+                <replacestring from="${productVersion}" to="${productVersion}-ea"/>
+            </filtermapper>
         </copy>
     </target>
 
@@ -566,9 +571,14 @@
             <fileset dir="${distCE}">
                 <include name="*" />
             </fileset>
+        </copy>
+        <copy todir="${releaseFilesDirectory}/ea">
             <fileset dir="${distEE}">
                 <include name="*" />
             </fileset>
+            <filtermapper>
+                <replacestring from="${productVersion}" to="${productVersion}-ea"/>
+            </filtermapper>
         </copy>
     </target>
 
