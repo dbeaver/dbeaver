@@ -341,6 +341,7 @@
         <pathconvert targetos="windows" property="distSourceWin" refid="dist.source.path"/>
         <echo message="distSourceWin = ${distSourceWin}"/>
 
+        <delete dir="${buildDirectory}/installer/${arch}" />
         <filter filtersfile="build.properties"/>
         <filter token="arch" value="${arch}"/>
         <filter token="product.dir" value="..\..\.."/>
