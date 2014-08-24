@@ -43,10 +43,6 @@
          version="0.0.0"/>
 
    <includes
-         id="org.jkiss.dbeaver.ext.cassandra"
-         version="0.0.0"/>
-
-   <includes
          id="org.jkiss.dbeaver.ext.wmi"
          version="0.0.0"/>
 
