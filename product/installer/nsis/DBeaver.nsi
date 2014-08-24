@@ -152,7 +152,7 @@ FunctionEnd
 ;--------------------------------
 ;Installer Sections
 
-Section "-DBeaver Core" SecCore
+Section "DBeaver" SecCore
 
   DetailPrint "Cleanup previous installation in $INSTDIR"
 
@@ -172,8 +172,8 @@ Section "-DBeaver Core" SecCore
   File "..\raw\win32.@arch@\dbeaver\readme.txt"
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
-  ;File /r  "..\raw\win32.@arch@\dbeaver\features"
-  File /r  /x org.jkiss.* /x com.oracle.* /x com.mysql.* /x com.ibm.db2.* "..\raw\win32.@arch@\dbeaver\plugins"
+  ;File /r "..\raw\win32.@arch@\dbeaver\features"
+  File /r "..\raw\win32.@arch@\dbeaver\plugins"
 
   ; Unpack script
   File "install.cmd"
@@ -187,13 +187,6 @@ Section "-DBeaver Core" SecCore
 
   File "..\raw\win32.@arch@\dbeaver\licenses\*.*"
 
-  ; Core plugins
-  SetOutPath "$INSTDIR\plugins"
-  
-  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core_*"
-  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core.application_*"
-  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.utils_*"
-  
   ;Store installation folder
   WriteRegStr HKCU "Software\DBeaver" "" $INSTDIR
   
@@ -216,81 +209,6 @@ Section "JRE" SecJRE
   ; JRE and unpack script
   SetOutPath "$INSTDIR"
   File /r "..\raw\win32.@arch@\dbeaver\jre"
-
-SectionEnd
-
-SectionGroup /e "Plugins" SecPlugins
-
-	Section "Generic JDBC" SecGeneric
-
-	  SetOutPath "$INSTDIR\plugins"
-	  
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.generic_*"
-
-	SectionEnd
-
-	Section "MySQL Plugin" SecMySQL
-
-	  SetOutPath "$INSTDIR\plugins"
-	  
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.mysql_*"
-	  File "..\raw\win32.@arch@\dbeaver\plugins\com.mysql.*"
-
-	SectionEnd
-
-	Section "Oracle Plugin" SecOracle
-
-	  SetOutPath "$INSTDIR\plugins"
-
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.oracle_*"
-	  File /r "..\raw\win32.@arch@\dbeaver\plugins\com.oracle.*"
-
-	SectionEnd
-
-	Section "DB2 Plugin" SecDB2
-
-	  SetOutPath "$INSTDIR\plugins"
-
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.db2_*"
-	  File /r "..\raw\win32.@arch@\dbeaver\plugins\com.ibm.*"
-
-	SectionEnd
-
-	Section "WMI" SecWMI
-
-	  SetOutPath "$INSTDIR\plugins"
-
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.wmi_*"
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.wmi_*"
-
-	SectionEnd
-
-	Section "NoSQL" SecNoSQL
-
-	  SetOutPath "$INSTDIR\plugins"
-
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.nosql*"
-	  File /r "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.jdbc.cassandra*"
-
-	SectionEnd
-
-	Section "ER Diagrams" SecERD
-
-	  SetOutPath "$INSTDIR\plugins"
-	  
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.erd_*"
-
-	SectionEnd
-	
-	Section "-Import 3rd Party Configurations" Sec3RD
-		File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.import_config_*"
-	SectionEnd
-
-SectionGroupEnd
-
-Section "-Drivers" SecDrivers
-  SetOutPath "$INSTDIR"
-;  File /r "..\raw\win32.@arch@\dbeaver\drivers"
 
 SectionEnd
 
