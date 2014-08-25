@@ -49,10 +49,15 @@
         <version>
             <number>3.0.0</number>
             <type>major</type>
-            <date>00.09.2014</date>
+            <date>25.08.2014</date>
 
             <release-notes>
-                -
+                - Community/Enterprise editions split
+                - NoSQL databases support improved
+                - Cassandra CQL extension
+                - Mongo DB extension
+                - Standalone DBeaver now based on Eclipse 4.4 (Luna)
+                - Many UI bugfixes and improvements
             </release-notes>
         </version>
 
