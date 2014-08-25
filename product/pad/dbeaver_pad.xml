@@ -32,34 +32,27 @@
     </Contact_Info>
     <Support_Info>
       <Support_Email>support@jkiss.org</Support_Email>
-      <General_Email>serge@jkiss.org</General_Email>
-      <Support_Phone>+7-962-728-16-88</Support_Phone>
     </Support_Info>
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>3.0.0</Program_Version>
-    <Program_Release_Month>07</Program_Release_Month>
-    <Program_Release_Day>18</Program_Release_Day>
+    <Program_Release_Month>08</Program_Release_Month>
+    <Program_Release_Day>25</Program_Release_Day>
     <Program_Release_Year>2014</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
     <Program_Release_Status>New Release</Program_Release_Status>
     <Program_Install_Support>Install and Uninstall</Program_Install_Support>
-    <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
+    <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,AIX,Solaris,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Table constrains reading fixed
-        - SSH tunnel instantiation fixed
-        - Editors reopen fixed
-        - Data grid UI improved
-        - Data grid toolbar fixed
-        - jTDS driver updated
-        - SSL for MySQL (alpha version)
-        - Generic driver now splits tables and views
-        - Oracle XML type support improved
-        - ERD diagrams made IDEF1X compatible
-        - Many minor UI fixes
+        - Community/Enterprise editions split
+        - NoSQL databases support improved
+        - Cassandra CQL extension
+        - Mongo DB extension
+        - Standalone DBeaver now based on Eclipse 4.4 (Luna)
+        - Many UI bugfixes and improvements
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
