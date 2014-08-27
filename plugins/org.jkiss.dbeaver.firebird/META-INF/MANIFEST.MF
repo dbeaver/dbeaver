@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: FireBird Plug-in
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.firebird;singleton:=true
+Bundle-Version: 2.0.0
+Bundle-Activator: org.jkiss.dbeaver.ext.firebird.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.views,
+ org.eclipse.jface,
+ org.eclipse.jface.text,
+ org.jkiss.dbeaver.core,
+ org.eclipse.ui.workbench.texteditor,
+ com.mysql.jdbc
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: Serge Rieder
+Bundle-ClassPath: .
+Bundle-Localization: plugin
