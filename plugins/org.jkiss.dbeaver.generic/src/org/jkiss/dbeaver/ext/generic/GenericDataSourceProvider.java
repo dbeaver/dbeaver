@@ -53,6 +53,10 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         }
     }
 
+    public GenericMetaModel getMetamodel(String id) {
+        return metaModels.get(id);
+    }
+
     @Override
     public long getFeatures()
     {
