@@ -16,18 +16,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.firebird;
+package org.jkiss.dbeaver.ext.firebird.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.firebird.model.FireBirdDataSource;
-import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
-public class FireBirdDataSourceProvider extends GenericDataSourceProvider {
-    @Override
-    public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException {
-        return new FireBirdDataSource(monitor, container);
+import java.util.Collection;
+
+/**
+ * FireBirdDataSource
+ */
+public class FireBirdMetaModel extends GenericMetaModel
+{
+    static final Log log = LogFactory.getLog(FireBirdMetaModel.class);
+
+    public FireBirdMetaModel() {
+        super("firebird");
     }
 }

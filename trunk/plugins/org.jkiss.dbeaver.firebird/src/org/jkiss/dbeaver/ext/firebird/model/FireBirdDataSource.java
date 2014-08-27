@@ -22,9 +22,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+
+import java.util.Collection;
 
 /**
  * FireBirdDataSource
@@ -33,7 +36,14 @@ public class FireBirdDataSource extends GenericDataSource
 {
     static final Log log = LogFactory.getLog(FireBirdDataSource.class);
 
-    public FireBirdDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container, GenericMetaModel metaModel) throws DBException {
-        super(monitor, container, metaModel);
+    private static final FireBirdMetaModel META_MODEL = new FireBirdMetaModel();
+
+    public FireBirdDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException {
+        super(monitor, container, META_MODEL);
+    }
+
+    @Override
+    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name) throws DBException {
+        return super.getProcedures(monitor, name);
     }
 }

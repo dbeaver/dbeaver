@@ -45,6 +45,10 @@ public class GenericMetaModel {
         }
     }
 
+    protected GenericMetaModel(String id) {
+        this.id = id;
+    }
+
     public String getId()
     {
         return id;
@@ -54,5 +58,86 @@ public class GenericMetaModel {
     {
         return objects.get(id);
     }
+
+/*
+    public void loadProcedures(DBRProgressMonitor monitor, GenericObjectContainer container)
+        throws DBException
+    {
+        GenericDataSource dataSource = container.getDataSource();
+        GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Load procedures");
+        try {
+            JDBCResultSet dbResult = session.getMetaData().getProcedures(
+                container.getCatalog() == null ? null : container.getCatalog().getName(),
+                container.getSchema() == null ? null : container.getSchema().getName(),
+                dataSource.getAllObjectsPattern());
+            try {
+                while (dbResult.next()) {
+                    String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
+                    String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                    String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
+                    int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
+                    String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
+                    DBSProcedureType procedureType;
+                    switch (procTypeNum) {
+                        case DatabaseMetaData.procedureNoResult: procedureType = DBSProcedureType.PROCEDURE; break;
+                        case DatabaseMetaData.procedureReturnsResult: procedureType = DBSProcedureType.FUNCTION; break;
+                        case DatabaseMetaData.procedureResultUnknown: procedureType = DBSProcedureType.PROCEDURE; break;
+                        default: procedureType = DBSProcedureType.UNKNOWN; break;
+                    }
+                    // Check for packages. Oracle (and may be some other databases) uses catalog name as storage for package name
+                    String packageName = null;
+                    GenericPackage procedurePackage = null;
+                    if (!CommonUtils.isEmpty(procedureCatalog) && CommonUtils.isEmpty(dataSource.getCatalogs())) {
+                        // Catalog name specified while there are no catalogs in data source
+                        packageName = procedureCatalog;
+                    }
+
+                    if (!CommonUtils.isEmpty(packageName)) {
+                        if (packageMap == null) {
+                            packageMap = new TreeMap<String, GenericPackage>();
+                        }
+                        procedurePackage = packageMap.get(packageName);
+                        if (procedurePackage == null) {
+                            procedurePackage = new GenericPackage(container, packageName, true);
+                            packageMap.put(packageName, procedurePackage);
+                        }
+                    }
+
+                    final GenericProcedure procedure = new GenericProcedure(
+                        procedurePackage != null ? procedurePackage : this,
+                        procedureName,
+                        specificName,
+                        remarks,
+                        procedureType);
+                    if (procedurePackage != null) {
+                        procedurePackage.addProcedure(procedure);
+                    } else {
+                        if (procedures == null) {
+                            procedures = new ArrayList<GenericProcedure>();
+                        }
+                        procedures.add(procedure);
+                    }
+                }
+                // Order procedures
+                if (procedures != null) {
+                    DBUtils.orderObjects(procedures);
+                }
+                if (packageMap != null) {
+                    for (GenericPackage pack : packageMap.values()) {
+                        pack.orderProcedures();
+                    }
+                }
+            }
+            finally {
+                dbResult.close();
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, session.getDataSource());
+        } finally {
+            session.close();
+        }
+    }
+*/
 
 }
