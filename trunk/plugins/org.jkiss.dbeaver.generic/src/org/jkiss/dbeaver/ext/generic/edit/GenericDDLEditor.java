@@ -22,11 +22,15 @@ public class GenericDDLEditor extends SQLEditorNested<GenericTable> {
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
-        if (!getSourceObject().isPersisted()) {
+        GenericTable sourceObject = getSourceObject();
+        if (sourceObject.isView()) {
+            return sourceObject.getDataSource().getMetaModel().getViewDDL(monitor, sourceObject);
+        }
+        if (!sourceObject.isPersisted()) {
             return "";
         }
         GenericTableManager tableManager = new GenericTableManager();
-        IDatabasePersistAction[] ddlActions = tableManager.getTableDDL(monitor, getSourceObject());
+        IDatabasePersistAction[] ddlActions = tableManager.getTableDDL(monitor, sourceObject);
         return DBUtils.generateScript(ddlActions);
     }
 
