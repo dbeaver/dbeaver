@@ -171,6 +171,7 @@ Section "DBeaver" SecCore
   File "..\raw\win32.@arch@\dbeaver\.eclipseproduct"
   File "..\raw\win32.@arch@\dbeaver\readme.txt"
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
+  File "..\raw\win32.@arch@\dbeaver\dbeaver.ini"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
   ;File /r "..\raw\win32.@arch@\dbeaver\features"
   File /r "..\raw\win32.@arch@\dbeaver\plugins"

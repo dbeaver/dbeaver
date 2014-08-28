@@ -13,8 +13,12 @@
    </configIni>
 
    <launcherArgs>
-      <programArgs>-showsplash</programArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+      <programArgs>-showsplash
+      </programArgs>
+      <programArgsLin>--launcher.GTK_version 2
+      </programArgsLin>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <windowImages i48="/org.jkiss.dbeaver.core.application/icons/dbeaver.png"/>
