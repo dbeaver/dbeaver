@@ -22,22 +22,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * GenericEntityContainer
@@ -51,7 +44,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private final IndexCache indexCache;
     private final ForeignKeysCache foreignKeysCache;
     private final PrimaryKeysCache primaryKeysCache;
-    private Map<String, GenericPackage> packageMap;
+    private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
 
     protected GenericObjectContainer(GenericDataSource dataSource)
@@ -264,7 +257,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         if (procedures == null) {
             loadProcedures(monitor);
         }
-        return packageMap == null ? null : packageMap.values();
+        return packages == null ? null : packages;
     }
 
     public GenericPackage getPackage(DBRProgressMonitor monitor, String name)
@@ -323,7 +316,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         this.indexCache.clearCache();
         this.primaryKeysCache.clearCache();
         this.foreignKeysCache.clearCache();
-        this.packageMap = null;
+        this.packages = null;
         this.procedures = null;
         return true;
     }
@@ -336,79 +329,30 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private synchronized void loadProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
-        GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load procedures");
-        try {
-            JDBCResultSet dbResult = session.getMetaData().getProcedures(
-                getCatalog() == null ? null : getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                getDataSource().getAllObjectsPattern());
-            try {
-                while (dbResult.next()) {
-                    String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
-                    String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
-                    String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
-                    int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
-                    String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
-                    DBSProcedureType procedureType;
-                    switch (procTypeNum) {
-                        case DatabaseMetaData.procedureNoResult: procedureType = DBSProcedureType.PROCEDURE; break;
-                        case DatabaseMetaData.procedureReturnsResult: procedureType = DBSProcedureType.FUNCTION; break;
-                        case DatabaseMetaData.procedureResultUnknown: procedureType = DBSProcedureType.PROCEDURE; break;
-                        default: procedureType = DBSProcedureType.UNKNOWN; break;
-                    }
-                    // Check for packages. Oracle (and may be some other databases) uses catalog name as storage for package name
-                    String packageName = null;
-                    GenericPackage procedurePackage = null;
-                    if (!CommonUtils.isEmpty(procedureCatalog) && CommonUtils.isEmpty(getDataSource().getCatalogs())) {
-                        // Catalog name specified while there are no catalogs in data source
-                        packageName = procedureCatalog;
-                    }
+        getDataSource().getMetaModel().loadProcedures(monitor, this);
 
-                    if (!CommonUtils.isEmpty(packageName)) {
-                        if (packageMap == null) {
-                            packageMap = new TreeMap<String, GenericPackage>();
-                        }
-                        procedurePackage = packageMap.get(packageName);
-                        if (procedurePackage == null) {
-                            procedurePackage = new GenericPackage(GenericObjectContainer.this, packageName, true);
-                            packageMap.put(packageName, procedurePackage);
-                        }
-                    }
-
-                    final GenericProcedure procedure = new GenericProcedure(
-                        procedurePackage != null ? procedurePackage : this,
-                        procedureName,
-                        specificName,
-                        remarks,
-                        procedureType);
-                    if (procedurePackage != null) {
-                        procedurePackage.addProcedure(procedure);
-                    } else {
-                        if (procedures == null) {
-                            procedures = new ArrayList<GenericProcedure>();
-                        }
-                        procedures.add(procedure);
-                    }
-                }
-                // Order procedures
-                if (procedures != null) {
-                    DBUtils.orderObjects(procedures);
-                }
-                if (packageMap != null) {
-                    for (GenericPackage pack : packageMap.values()) {
-                        pack.orderProcedures();
-                    }
-                }
+        // Order procedures
+        if (procedures != null) {
+            DBUtils.orderObjects(procedures);
+        }
+        if (packages != null) {
+            for (GenericPackage pack : packages) {
+                pack.orderProcedures();
             }
-            finally {
-                dbResult.close();
-            }
-        } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
-        } finally {
-            session.close();
         }
     }
 
+    public void addProcedure(GenericProcedure procedure) {
+        if (procedures == null) {
+            procedures = new ArrayList<GenericProcedure>();
+        }
+        procedures.add(procedure);
+    }
+
+    public void addPackage(GenericPackage procedurePackage) {
+        if (packages == null) {
+            packages = new ArrayList<GenericPackage>();
+        }
+        packages.add(procedurePackage);
+    }
 }
