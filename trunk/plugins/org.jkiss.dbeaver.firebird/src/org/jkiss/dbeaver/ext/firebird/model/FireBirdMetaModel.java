@@ -24,9 +24,11 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.util.Collection;
 
@@ -40,4 +42,20 @@ public class FireBirdMetaModel extends GenericMetaModel
     public FireBirdMetaModel() {
         super("firebird");
     }
+
+    protected GenericProcedure createProcedureImpl(
+        GenericStructContainer container,
+        String procedureName,
+        String specificName,
+        String remarks,
+        DBSProcedureType procedureType)
+    {
+        return new FireBirdProcedure(
+            container,
+            procedureName,
+            specificName,
+            remarks,
+            procedureType);
+    }
+
 }

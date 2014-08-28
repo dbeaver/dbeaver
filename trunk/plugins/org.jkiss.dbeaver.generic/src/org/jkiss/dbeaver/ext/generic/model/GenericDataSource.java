@@ -105,6 +105,10 @@ public class GenericDataSource extends JDBCDataSource
         return allObjectsPattern;
     }
 
+    public GenericMetaModel getMetaModel() {
+        return metaModel;
+    }
+
     @Nullable
     public GenericMetaObject getMetaObject(String id)
     {
