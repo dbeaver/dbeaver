@@ -164,27 +164,31 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                         indexCache.clearCache();
                     }
                 } catch (Exception e) {
-                    // Failed
-                    if (readFromTables) {
-                        // Load indexes for all tables and return copy of them
-                        Collection<GenericTable> tables = getTables(monitor);
-                        monitor.beginTask("Cache indexes from tables", tables.size());
-                        try {
-                            List<GenericTableIndex> tmpIndexMap = new ArrayList<GenericTableIndex>();
-                            for (GenericTable table : tables) {
-                                if (monitor.isCanceled()) {
-                                    return;
-                                }
-                                monitor.subTask("Read indexes for '" + table.getFullQualifiedName() + "'");
-                                tmpIndexMap.addAll(table.getIndexes(monitor));
-                                monitor.worked(1);
+                    log.debug(e);
+                }
+
+                // Failed
+                if (!indexCache.isCached() && readFromTables) {
+                    // Load indexes for all tables and return copy of them
+                    Collection<GenericTable> tables = getTables(monitor);
+                    monitor.beginTask("Cache indexes from tables", tables.size());
+                    try {
+                        List<GenericTableIndex> tmpIndexMap = new ArrayList<GenericTableIndex>();
+                        for (GenericTable table : tables) {
+                            if (monitor.isCanceled()) {
+                                return;
                             }
-                            indexCache.setCache(tmpIndexMap);
-                        } finally {
-                            monitor.done();
+                            monitor.subTask("Read indexes for '" + table.getFullQualifiedName() + "'");
+                            Collection<GenericTableIndex> tableIndexes = table.getIndexes(monitor);
+                            tmpIndexMap.addAll(tableIndexes);
+                            monitor.worked(1);
                         }
+                        indexCache.setCache(tmpIndexMap);
+                    } finally {
+                        monitor.done();
                     }
                 }
+
             }
         }
     }
