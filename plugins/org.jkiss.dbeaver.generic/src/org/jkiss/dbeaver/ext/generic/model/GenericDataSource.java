@@ -105,6 +105,7 @@ public class GenericDataSource extends JDBCDataSource
         return allObjectsPattern;
     }
 
+    @NotNull
     public GenericMetaModel getMetaModel() {
         return metaModel;
     }
@@ -112,7 +113,7 @@ public class GenericDataSource extends JDBCDataSource
     @Nullable
     public GenericMetaObject getMetaObject(String id)
     {
-        return metaModel == null ? null : metaModel.getObject(id);
+        return metaModel.getObject(id);
     }
 
     @Override

@@ -3,10 +3,10 @@
 
 <plugin>
 
-    <extension point="org.jkiss.dbeaver.generic.metaModel">
-        <metaModel id="firebird" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdMetaModel"
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="firebird" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdMetaModel"
             driverClass="org.firebirdsql.jdbc.FBDriver">
-        </editor>
+        </meta>
     </extension>
 
 </plugin>
