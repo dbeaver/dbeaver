@@ -219,4 +219,8 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return CommonUtils.isEmpty(specificName) ? getName() : specificName;
     }
 
+    @Override
+    public String getSource(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
 }

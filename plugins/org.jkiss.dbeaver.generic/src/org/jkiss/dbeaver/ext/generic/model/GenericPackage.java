@@ -142,13 +142,18 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         return nameFromCatalog;
     }
 
-    void addProcedure(GenericProcedure procedure)
+    public void addProcedure(GenericProcedure procedure)
     {
         procedures.add(procedure);
     }
 
-    void orderProcedures()
+    public void orderProcedures()
     {
         DBUtils.orderObjects(procedures);
+    }
+
+    @Override
+    public String getSource(DBRProgressMonitor monitor) throws DBException {
+        return null;
     }
 }

@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -25,4 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Used in navigator tree to allow nodes search in procedures folder
  */
 public interface GenericStoredCode extends DBSObject {
+
+    String getSource(DBRProgressMonitor monitor) throws DBException;
+
 }
