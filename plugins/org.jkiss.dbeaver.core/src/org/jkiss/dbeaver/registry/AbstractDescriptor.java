@@ -216,6 +216,11 @@ public abstract class AbstractDescriptor {
 
     public <T> Class<T> getObjectClass(String className, Class<T> type)
     {
+        return getObjectClass(getContributorBundle(), className, type);
+    }
+
+    public static <T> Class<T> getObjectClass(Bundle fromBundle, String className, Class<T> type)
+    {
         Class<?> objectClass = null;
         try {
             objectClass = DBeaverActivator.getInstance().getBundle().loadClass(className);
@@ -226,7 +231,7 @@ public abstract class AbstractDescriptor {
 
         if (objectClass == null) {
             try {
-                objectClass = getContributorBundle().loadClass(className);
+                objectClass = fromBundle.loadClass(className);
             } catch (Throwable ex) {
                 log.error("Can't determine object class '" + className + "'", ex);
                 return null;

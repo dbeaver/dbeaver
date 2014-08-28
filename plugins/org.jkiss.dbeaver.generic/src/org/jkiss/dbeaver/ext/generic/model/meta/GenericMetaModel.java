@@ -45,6 +45,7 @@ public class GenericMetaModel {
 
     private String id;
     private final Map<String, GenericMetaObject> objects = new HashMap<String, GenericMetaObject>();
+    private String driverClass;
 
     public GenericMetaModel(IConfigurationElement cfg)
     {
@@ -56,15 +57,20 @@ public class GenericMetaModel {
                 objects.put(metaObject.getType(), metaObject);
             }
         }
+        this.driverClass = cfg.getAttribute("driverClass");
     }
 
-    protected GenericMetaModel(String id) {
+    public GenericMetaModel(String id) {
         this.id = id;
     }
 
     public String getId()
     {
         return id;
+    }
+
+    public String getDriverClass() {
+        return driverClass;
     }
 
     public GenericMetaObject getObject(String id)
@@ -155,6 +161,5 @@ public class GenericMetaModel {
             remarks,
             procedureType);
     }
-
 
 }

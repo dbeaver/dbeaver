@@ -15,3 +15,8 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: JKISS
 Bundle-Localization: plugin
+Export-Package: org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.ext.generic.edit,
+ org.jkiss.dbeaver.ext.generic.model,
+ org.jkiss.dbeaver.ext.generic.model.meta,
+ org.jkiss.dbeaver.ext.generic.views

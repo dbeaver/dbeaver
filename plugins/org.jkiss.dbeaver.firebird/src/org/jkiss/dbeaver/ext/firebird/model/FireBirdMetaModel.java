@@ -39,8 +39,8 @@ public class FireBirdMetaModel extends GenericMetaModel
 {
     static final Log log = LogFactory.getLog(FireBirdMetaModel.class);
 
-    public FireBirdMetaModel() {
-        super("firebird");
+    public FireBirdMetaModel(IConfigurationElement cfg) {
+        super(cfg);
     }
 
     protected GenericProcedure createProcedureImpl(

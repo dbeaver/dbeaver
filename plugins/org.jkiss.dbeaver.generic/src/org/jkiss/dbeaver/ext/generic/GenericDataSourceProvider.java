@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,18 +44,33 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
 
     public GenericDataSourceProvider()
     {
+        metaModels.put(GenericConstants.META_MODEL_STANDARD, new GenericMetaModel(GenericConstants.META_MODEL_STANDARD));
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
         IConfigurationElement[] extElements = extensionRegistry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
-            //for (IConfigurationElement metaChild : ext.getChildren("meta")) {
-                GenericMetaModel metaModel = new GenericMetaModel(ext);
-                metaModels.put(metaModel.getId(), metaModel);
-            //}
+            String metaClass = ext.getAttribute("class");
+            GenericMetaModel metaModel;
+            if (!CommonUtils.isEmpty(metaClass)) {
+                try {
+                    metaModel = AbstractDescriptor.getObjectClass(
+                        Platform.getBundle(ext.getContributor().getName()),
+                        metaClass,
+                        GenericMetaModel.class)
+                        .getConstructor(IConfigurationElement.class)
+                        .newInstance(ext);
+                } catch (Exception e) {
+                    log.error(e);
+                    continue;
+                }
+            } else {
+                //for (IConfigurationElement metaChild : ext.getChildren("meta")) {
+                metaModel = new GenericMetaModel(ext);
+            }
+            metaModels.put(metaModel.getId(), metaModel);
+            if (metaModel.getDriverClass() != null) {
+                metaModels.put(metaModel.getDriverClass(), metaModel);
+            }
         }
-    }
-
-    public GenericMetaModel getMetamodel(String id) {
-        return metaModels.get(id);
     }
 
     @Override
@@ -113,6 +129,13 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
             if (metaModel == null) {
                 log.warn("Meta model '" + metaModelId + "' not recognized. Default one will be used");
             }
+        }
+        if (metaModel == null) {
+            // Try to get model by driver class
+            metaModel = metaModels.get(container.getDriver().getDriverClassName());
+        }
+        if (metaModel == null) {
+            metaModel = metaModels.get(GenericConstants.META_MODEL_STANDARD);
         }
         return new GenericDataSource(monitor, container, metaModel);
     }
