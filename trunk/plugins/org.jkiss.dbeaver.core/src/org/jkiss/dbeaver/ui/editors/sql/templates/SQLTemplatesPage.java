@@ -33,11 +33,13 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.templates.AbstractTemplatesPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.ProxyPageSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
@@ -59,10 +61,12 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
      *
      * @param sqlEditor the java editor
      */
-    public SQLTemplatesPage(SQLEditorBase sqlEditor)
+    public SQLTemplatesPage(final SQLEditorBase sqlEditor)
     {
         super(sqlEditor, sqlEditor.getViewer());
         this.sqlEditor = sqlEditor;
+        IPageSite ps = new ProxyPageSite(sqlEditor.getSite());
+        init(ps);
     }
 
     @Override
