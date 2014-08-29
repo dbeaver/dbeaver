@@ -164,7 +164,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     isolationLevel.setEnabled(!autocommit.getSelection());
                     supportedLevels.clear();
                     DBPTransactionIsolation defaultLevel = dataSourceDescriptor.getDefaultTransactionsIsolation();
-                    for (DBPTransactionIsolation level : dataSourceDescriptor.getDataSource().getInfo().getSupportedTransactionsIsolation()) {
+                    for (DBPTransactionIsolation level : CommonUtils.safeCollection(dataSourceDescriptor.getDataSource().getInfo().getSupportedTransactionsIsolation())) {
                         if (!level.isEnabled()) continue;
                         isolationLevel.add(level.getTitle());
                         supportedLevels.add(level);
