@@ -383,14 +383,22 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         {
             if (!CommonUtils.isEmpty(attr.getDefaultValue())) {
                 sql.append(attr.getDefaultValue());
-            }
-            switch (attr.getDataKind()) {
-                case BOOLEAN: sql.append("false"); break;
-                case NUMERIC: sql.append("0"); break;
-                case STRING:
-                case DATETIME:
-                    sql.append("''"); break;
-                default: sql.append("?"); break;
+            } else {
+                switch (attr.getDataKind()) {
+                    case BOOLEAN:
+                        sql.append("false");
+                        break;
+                    case NUMERIC:
+                        sql.append("0");
+                        break;
+                    case STRING:
+                    case DATETIME:
+                        sql.append("''");
+                        break;
+                    default:
+                        sql.append("?");
+                        break;
+                }
             }
         }
 
