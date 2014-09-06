@@ -238,7 +238,11 @@ public class DBNModel implements IResourceChangeListener {
         if (curNode == null) {
             return null;
         }
-        for (int i = 1, itemsSize = items.size(); i < itemsSize; i++) {
+        return findNodeByPath(monitor, items, curNode, 1);
+    }
+
+    private DBNNode findNodeByPath(DBRProgressMonitor monitor, List<String> items, DBNNode curNode, int firstItem) throws DBException {
+        for (int i = firstItem, itemsSize = items.size(); i < itemsSize; i++) {
             String item = items.get(i);
             List<? extends DBNNode> children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
@@ -247,11 +251,19 @@ public class DBNModel implements IResourceChangeListener {
                     DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
                     if (meta != null && !CommonUtils.isEmpty(meta.getType()) && meta.getType().equals(item)) {
                         nextChild = child;
-                        break;
                     }
                 }
                 if (child.getNodeName().equals(item)) {
                     nextChild = child;
+                }
+                if (nextChild != null) {
+                    if (i < itemsSize - 1) {
+                        nextChild = findNodeByPath(monitor, items, nextChild, i + 1);
+                        if (nextChild != null) {
+                            return nextChild;
+                        }
+                        continue;
+                    }
                     break;
                 }
             }
