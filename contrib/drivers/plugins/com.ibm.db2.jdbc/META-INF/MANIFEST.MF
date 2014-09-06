@@ -4,7 +4,7 @@ Bundle-Name: DB2 JDBC Driver
 Bundle-SymbolicName: com.ibm.db2.jdbc;singleton:=true
 Bundle-Version: 4.16.53
 Bundle-ClassPath: db2jcc4.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: IBM Corporation
 Export-Package: 
  COM.ibm.db2.app,

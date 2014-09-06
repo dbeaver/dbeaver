@@ -4,9 +4,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="firebird" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdMetaModel"
-            driverClass="org.firebirdsql.jdbc.FBDriver">
-        </meta>
+        <meta id="firebird" class="org.jkiss.dbeaver.ext.firebird.model.FireBirdMetaModel" driverClass="org.firebirdsql.jdbc.FBDriver"/>
     </extension>
 
 </plugin>
