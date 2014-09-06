@@ -412,7 +412,7 @@
             version="${productVersion}"
             todir="${distCE}"
             section="devel"
-            depends="java6-runtime"
+            depends="java7-runtime"
             homepage="http://dbeaver.jkiss.org"
             suggests="dbeaver"
             architecture="${arch.deb}">
@@ -503,7 +503,7 @@
                 prefix='/usr/share/dbeaver' 
                 file="${distCE}/${buildId}-linux.gtk.x86.zip"/>
                 <!--link path="/usr/share/java/test.jar" target="/usr/share/java/test-1.2.3.jar"/-->
-            <depends name="sun-jre" version="1.6"/>
+            <depends name="sun-jre" version="1.7"/>
         </rpm>
 
             

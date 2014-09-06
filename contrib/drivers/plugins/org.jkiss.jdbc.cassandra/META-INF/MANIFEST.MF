@@ -9,7 +9,7 @@ Bundle-ClassPath: apache-cassandra-thrift-1.1.6.jar,
  cassandra-jkiss-jdbc-1.2.0.jar,
  libthrift-0.7.0.jar,
  slf4j-api-1.6.1.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.apache.cassandra.thrift,
  org.apache.thrift,
  org.apache.thrift.async,
