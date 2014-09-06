@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jkiss.dbeaver.ext.generic"
-      label="%featureName"
-      version="2.0.0"
-      provider-name="%providerName"
-      plugin="org.jkiss.dbeaver.ext.generic">
+        id="org.jkiss.dbeaver.ext.generic"
+        label="%featureName"
+        version="2.0.0"
+        provider-name="%providerName"
+        plugin="org.jkiss.dbeaver.ext.generic">
 
-   <description>
-      %description
-   </description>
+    <description>
+        %description
+    </description>
 
-   <copyright>
-      %copyright
-   </copyright>
+    <copyright>
+        %copyright
+    </copyright>
 
-   <license url="%licenseURL">
-      %license
-   </license>
+    <license url="%licenseURL">
+        %license
+    </license>
 
-   <requires>
-      <import feature="org.jkiss.dbeaver.core" version="1.0.0"/>
-   </requires>
+    <requires>
+        <import feature="org.jkiss.dbeaver.core" version="1.0.0"/>
+    </requires>
 
-   <plugin
-         id="org.jkiss.dbeaver.ext.generic"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
     <plugin
-        id="org.jkiss.dbeaver.ext.firebird"
-        download-size="0"
-        install-size="0"
-        version="0.0.0"
-        unpack="false"/>
+            id="org.jkiss.dbeaver.ext.generic"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+    <plugin
+            id="org.jkiss.dbeaver.ext.postgresql"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
 
 </feature>
