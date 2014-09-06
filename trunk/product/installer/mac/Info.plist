@@ -6,7 +6,7 @@
 	<key>CFBundleExecutable</key>
 		<string>dbeaver</string>
 	<key>CFBundleGetInfoString</key>
-		<string>DBeaver @productVersion@, Copyright JKISS 2010-2013</string>
+		<string>DBeaver @productVersion@, Copyright JKISS 2010-2014</string>
 	<key>CFBundleIconFile</key>
 		<string>dbeaver.icns</string>
 	<key>CFBundleIdentifier</key>

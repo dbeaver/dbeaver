@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
 Bundle-Version: 3.0.0
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.apache.commons.logging,
  org.apache.commons.logging.impl;
   uses:="org.apache.log,
