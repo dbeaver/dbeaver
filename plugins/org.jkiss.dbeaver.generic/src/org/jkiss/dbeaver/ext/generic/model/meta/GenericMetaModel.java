@@ -166,4 +166,8 @@ public class GenericMetaModel {
         return "";
     }
 
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        return "";
+    }
+
 }
