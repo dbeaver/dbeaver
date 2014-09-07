@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.ArrayUtils;
@@ -170,4 +172,7 @@ public class GenericMetaModel {
         return "";
     }
 
+    public JDBCBasicDataTypeCache createDataTypeCache(DBSDataSourceContainer container) {
+        return new JDBCBasicDataTypeCache(container);
+    }
 }

@@ -82,7 +82,7 @@ public class GenericDataSource extends JDBCDataSource
         super(monitor, container);
         this.metaModel = metaModel;
         final DBPDriver driver = container.getDriver();
-        this.dataTypeCache = new JDBCBasicDataTypeCache(container);
+        this.dataTypeCache = metaModel.createDataTypeCache(container);
         this.tableTypeCache = new TableTypeCache();
         this.queryGetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         this.querySetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
