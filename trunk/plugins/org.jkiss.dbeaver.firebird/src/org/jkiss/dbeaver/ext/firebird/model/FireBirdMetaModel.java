@@ -41,23 +41,12 @@ public class FireBirdMetaModel extends GenericMetaModel
         super(cfg);
     }
 
-    protected GenericProcedure createProcedureImpl(
-        GenericStructContainer container,
-        String procedureName,
-        String specificName,
-        String remarks,
-        DBSProcedureType procedureType)
-    {
-        return new FireBirdProcedure(
-            container,
-            procedureName,
-            specificName,
-            remarks,
-            procedureType);
-    }
-
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
         return FireBirdUtils.getViewSource(monitor, sourceObject);
     }
 
+    @Override
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        return FireBirdUtils.getProcedureSource(monitor, sourceObject);
+    }
 }

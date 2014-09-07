@@ -18,12 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 /**
@@ -32,20 +28,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 public class PostgreProcedure extends GenericProcedure
 {
 
-    private String sourceDeclaration;
-
     public PostgreProcedure(GenericStructContainer container, String procedureName, String specificName, String description, DBSProcedureType procedureType) {
         super(container, procedureName, specificName, description, procedureType);
-    }
-
-    @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getSource(DBRProgressMonitor monitor) throws DBException
-    {
-        if (sourceDeclaration == null && monitor != null) {
-            sourceDeclaration = PostgreUtils.getProcedureSource(monitor, this);
-        }
-        return sourceDeclaration;
     }
 
 }
