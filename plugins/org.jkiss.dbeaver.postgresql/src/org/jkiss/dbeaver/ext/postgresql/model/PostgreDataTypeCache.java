@@ -51,10 +51,11 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
     protected JDBCDataType fetchObject(JDBCSession session, JDBCDataSource owner, ResultSet dbResult) throws SQLException, DBException
     {
         int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
-        String name = JDBCUtils.safeGetString(dbResult, "typename");
+        String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
+        PostgreTypeType typeType = PostgreTypeType.valueOf(JDBCUtils.safeGetString(dbResult, "typtype"));
         return new JDBCDataType(
             owner,
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE),
