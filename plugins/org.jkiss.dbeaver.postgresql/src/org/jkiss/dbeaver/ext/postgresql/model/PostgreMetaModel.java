@@ -27,11 +27,17 @@ import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
+import java.sql.SQLException;
+
 /**
- * postgresqlDataSource
+ * PostgreMetaModel
  */
 public class PostgreMetaModel extends GenericMetaModel
 {
@@ -41,23 +47,19 @@ public class PostgreMetaModel extends GenericMetaModel
         super(cfg);
     }
 
-    protected GenericProcedure createProcedureImpl(
-        GenericStructContainer container,
-        String procedureName,
-        String specificName,
-        String remarks,
-        DBSProcedureType procedureType)
-    {
-        return new PostgreProcedure(
-            container,
-            procedureName,
-            specificName,
-            remarks,
-            procedureType);
-    }
-
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        return PostgreUtils.getViewSource(monitor, sourceObject);
+        JDBCSession session = sourceObject.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
+        try {
+            return JDBCUtils.queryString(session, "SELECT definition FROM PG_CATALOG.PG_VIEWS WHERE SchemaName=? and ViewName=?", sourceObject.getContainer().getName(), sourceObject.getName());
+        } catch (SQLException e) {
+            throw new DBException(e, sourceObject.getDataSource());
+        } finally {
+            session.close();
+        }
     }
 
+    @Override
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        return super.getProcedureDDL(monitor, sourceObject);
+    }
 }

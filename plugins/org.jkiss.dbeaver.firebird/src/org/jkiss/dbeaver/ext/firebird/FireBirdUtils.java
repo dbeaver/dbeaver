@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.ext.firebird;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.firebird.model.FireBirdProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -38,7 +38,7 @@ public class FireBirdUtils {
 
     static final Log log = LogFactory.getLog(FireBirdUtils.class);
 
-    public static String getProcedureSource(DBRProgressMonitor monitor, FireBirdProcedure procedure)
+    public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure)
         throws DBException
     {
         JDBCSession session = procedure.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load procedure source code");

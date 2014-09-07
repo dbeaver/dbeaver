@@ -53,6 +53,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     private String specificName;
     private DBSProcedureType procedureType;
     private List<GenericProcedureParameter> columns;
+    private String source;
 
     public GenericProcedure(
         GenericStructContainer container,
@@ -221,6 +222,9 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
     @Override
     public String getSource(DBRProgressMonitor monitor) throws DBException {
-        return null;
+        if (source == null) {
+            source = getDataSource().getMetaModel().getProcedureDDL(monitor, this);
+        }
+        return source;
     }
 }
