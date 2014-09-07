@@ -60,6 +60,14 @@ public class PostgreMetaModel extends GenericMetaModel
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        return super.getProcedureDDL(monitor, sourceObject);
+        JDBCSession session = sourceObject.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
+        try {
+            return JDBCUtils.queryString(session, "SELECT p.prosrc FROM PG_CATALOG.PG_PROC P, PG_CATALOG.PG_NAMESPACE NS\n" +
+                "WHERE ns.oid=p.pronamespace and ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
+        } catch (SQLException e) {
+            throw new DBException(e, sourceObject.getDataSource());
+        } finally {
+            session.close();
+        }
     }
 }
