@@ -30,22 +30,25 @@
 
     <company>
         <name>JKISS</name>
-        <address1>Engelsa pr. 97-212</address1>
-        <address2> </address2>
-        <city>Saint-Petersburg</city>
-        <state>SPb</state>
-        <zip>194214</zip>
-        <country>Russian Federation</country>
         <web>http://jkiss.org</web>
         <contact>
             <first-name>Serge</first-name>
             <last-name>Rieder</last-name>
             <email>serge@jkiss.org</email>
-            <phone>+7-962-728-16-88</phone>
         </contact>
     </company>
 
     <versions>
+        <version>
+            <number>3.0.1</number>
+            <type>hotfix</type>
+            <date>10.09.2014</date>
+
+            <release-notes>
+                -
+            </release-notes>
+        </version>
+
         <version>
             <number>3.0.0</number>
             <type>major</type>
