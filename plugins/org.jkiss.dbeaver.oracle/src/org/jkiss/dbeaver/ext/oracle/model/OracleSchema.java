@@ -530,9 +530,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             OracleTable parent, OracleTableForeignKey object, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleTableForeignKeyColumn(
+            OracleTableColumn column = getTableColumn(session, parent, dbResult);
+            return column == null ? null : new OracleTableForeignKeyColumn(
                 object,
-                getTableColumn(session, parent, dbResult),
+                column,
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
         }
 
