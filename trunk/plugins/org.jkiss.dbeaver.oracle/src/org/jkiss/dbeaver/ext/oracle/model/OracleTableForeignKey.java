@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -42,11 +43,11 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
     private DBSForeignKeyModifyRule deleteRule;
 
     public OracleTableForeignKey(
-        OracleTableBase oracleTable,
-        String name,
-        OracleObjectStatus status,
-        OracleTableConstraint referencedKey,
-        DBSForeignKeyModifyRule deleteRule)
+        @NotNull OracleTableBase oracleTable,
+        @Nullable String name,
+        @Nullable OracleObjectStatus status,
+        @NotNull OracleTableConstraint referencedKey,
+        @NotNull DBSForeignKeyModifyRule deleteRule)
     {
         super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, status, false);
         this.referencedKey = referencedKey;
@@ -82,6 +83,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
             referencedKey = refTable.getConstraint(monitor, refName);
             if (referencedKey == null) {
                 log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
+                referencedKey = new OracleTableConstraint(refTable, "refName", DBSEntityConstraintType.UNIQUE_KEY, null, OracleObjectStatus.ERROR);
             }
         }
 
