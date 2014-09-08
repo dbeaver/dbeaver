@@ -296,6 +296,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         monitor.subTask("Create table " + containerMapping.getTargetName());
         StringBuilder sql = new StringBuilder(500);
         DBSObjectContainer schema = settings.getContainer();
+        if (schema == null) {
+            throw new DBException("No target container selected");
+        }
         if (!(schema.getDataSource() instanceof SQLDataSource)) {
             throw new DBException("Data source doesn't support SQL");
         }
