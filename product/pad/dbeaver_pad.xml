@@ -39,7 +39,7 @@
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>3.0.1</Program_Version>
     <Program_Release_Month>09</Program_Release_Month>
-    <Program_Release_Day>10</Program_Release_Day>
+    <Program_Release_Day>09</Program_Release_Day>
     <Program_Release_Year>2014</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -48,7 +48,12 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,AIX,Solaris,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        -
+        - Firebird and PostgreSQL extensions added (views and procedures definition view)
+        - MongoDB secured connections support added
+        - Indexes information read fixed
+        - SQL editor fixed
+        - Oracle metadata read fixed
+        - Data transfer wizard configuration fixed
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>

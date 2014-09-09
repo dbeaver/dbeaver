@@ -42,10 +42,15 @@
         <version>
             <number>3.0.1</number>
             <type>hotfix</type>
-            <date>10.09.2014</date>
+            <date>09.09.2014</date>
 
             <release-notes>
-                -
+                - Firebird and PostgreSQL extensions added (views and procedures definition view)
+                - MongoDB secured connections support added
+                - Indexes information read fixed
+                - SQL editor fixed
+                - Oracle metadata read fixed
+                - Data transfer wizard configuration fixed
             </release-notes>
         </version>
 
