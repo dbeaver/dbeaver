@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -932,7 +933,7 @@ public final class DBUtils {
         long offset,
         long maxRows) throws DBCException
     {
-        final boolean dataModifyQuery = SQLUtils.isDataModifyQuery(query);
+        final boolean dataModifyQuery = !SQLSemanticProcessor.isSelectQuery(query);
         final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;

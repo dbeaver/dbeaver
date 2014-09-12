@@ -26,10 +26,13 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
@@ -47,6 +50,21 @@ import java.util.List;
 public class SQLSemanticProcessor {
 
     private static final String NESTED_QUERY_AlIAS = "z_q";
+
+    static final Log log = LogFactory.getLog(SQLUtils.class);
+
+    public static boolean isSelectQuery(String query)
+    {
+        try {
+            Statement statement = CCJSqlParserUtil.parse(query);
+            return statement instanceof Select &&
+                ((Select) statement).getSelectBody() instanceof PlainSelect &&
+                ((PlainSelect) ((Select) statement).getSelectBody()).getInto() == null;
+        } catch (Exception e) {
+            log.error(e);
+            return false;
+        }
+    }
 
     public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) throws DBException {
         boolean supportSubqueries = dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries();
