@@ -1,4 +1,4 @@
-Firebird, Postgre
+Detect source table for queries (Oracle, Postgresql, etc). Also fixes generate sql for queries.
 BUG: Save navigation filter and use correct nav page index
 
 BUG: open object (F4) with FQ name (schema)
