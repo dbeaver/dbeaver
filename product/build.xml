@@ -563,6 +563,11 @@
                 <replacestring from="${productVersion}" to="${productVersion}-ee"/>
             </filtermapper>
         </copy>
+        <copy todir="${releaseFilesDirectory}">
+            <fileset dir="${distDirectory}">
+                <include name="driver-pack-${productVersion}.zip" />
+            </fileset>
+        </copy>
     </target>
 
     <target name="publish-ea" depends="init">
