@@ -92,10 +92,20 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 value = resultSet.getDouble(index);
                 break;
             case java.sql.Types.FLOAT:
-                value = resultSet.getFloat(index);
+                try {
+                    // Read value with maximum precision. Some drivers reports FLOAT but means double [JDBC:SQLite]
+                    value = resultSet.getDouble(index);
+                } catch (SQLException e) {
+                    value = resultSet.getFloat(index);
+                }
                 break;
             case java.sql.Types.INTEGER:
-                value = resultSet.getInt(index);
+                try {
+                    // Read value with maximum precision. Some drivers reports INTEGER but means long [JDBC:SQLite]
+                    value = resultSet.getLong(index);
+                } catch (SQLException e) {
+                    value = resultSet.getInt(index);
+                }
                 break;
             case java.sql.Types.SMALLINT:
                 value = resultSet.getShort(index);
