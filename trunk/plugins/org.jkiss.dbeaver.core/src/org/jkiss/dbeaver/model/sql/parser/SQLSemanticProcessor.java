@@ -61,7 +61,7 @@ public class SQLSemanticProcessor {
                 ((Select) statement).getSelectBody() instanceof PlainSelect &&
                 ((PlainSelect) ((Select) statement).getSelectBody()).getInto() == null;
         } catch (Exception e) {
-            log.error(e);
+            //log.debug(e);
             return false;
         }
     }
