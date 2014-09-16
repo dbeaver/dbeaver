@@ -120,7 +120,8 @@ public class DataSourceDescriptor
         }
     }
     @NotNull
-    private DataSourceRegistry registry;
+    private final DataSourceRegistry registry;
+    @NotNull
     private DriverDescriptor driver;
     @NotNull
     private DBPConnectionInfo connectionInfo;
@@ -146,6 +147,7 @@ public class DataSourceDescriptor
 
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
+    private volatile boolean disposed = false;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<DBRProcessDescriptor>();
     private DBWTunnel tunnel;
     private String folderPath;
@@ -179,18 +181,20 @@ public class DataSourceDescriptor
 
     public boolean isDisposed()
     {
-        return driver != null;
+        return disposed;
     }
 
     public void dispose()
     {
+        if (disposed) {
+            log.warn("Dispose of already disposed data source");
+            return;
+        }
         synchronized (users) {
             users.clear();
         }
-        if (driver != null) {
-            driver.removeUser(this);
-            driver = null;
-        }
+        driver.removeUser(this);
+        disposed = true;
     }
 
     @NotNull
@@ -199,13 +203,14 @@ public class DataSourceDescriptor
         return id;
     }
 
+    @NotNull
     @Override
     public DriverDescriptor getDriver()
     {
         return driver;
     }
 
-    public void setDriver(DriverDescriptor driver)
+    public void setDriver(@NotNull DriverDescriptor driver)
     {
         if (driver == this.driver) {
             return;
