@@ -46,6 +46,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IData
      * Associated driver
      * @return driver descriptor reference
      */
+    @NotNull
     DBPDriver getDriver();
 
     /**
