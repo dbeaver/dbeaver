@@ -21,18 +21,23 @@ package org.jkiss.dbeaver.model.sql;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Database;
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.update.Update;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.IToken;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockBeginToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockEndToken;
@@ -40,6 +45,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLParameterToken;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,6 +62,7 @@ public class SQLQuery {
     private Object data;
     private SQLQueryType type;
     private Statement statement;
+    private SingleTableMeta singleTableMeta;
 
     public SQLQuery(String query, int offset, int length)
     {
@@ -66,6 +73,25 @@ public class SQLQuery {
             statement = CCJSqlParserUtil.parse(query);
             if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
+                // Detect single source table
+                SelectBody selectBody = ((Select) statement).getSelectBody();
+                if (selectBody instanceof PlainSelect) {
+                    PlainSelect plainSelect = (PlainSelect) selectBody;
+                    if (plainSelect.getFromItem() instanceof Table &&
+                        CommonUtils.isEmpty(plainSelect.getJoins()) &&
+                        CommonUtils.isEmpty(plainSelect.getGroupByColumnReferences()) &&
+                        plainSelect.getInto() == null)
+                    {
+                        Table fromItem = (Table) plainSelect.getFromItem();
+                        Database database = fromItem.getDatabase();
+                        String schemaName = fromItem.getSchemaName();
+                        String tableName = fromItem.getName();
+                        singleTableMeta = new SingleTableMeta(
+                            database == null ? null : database.getDatabaseName(),
+                            schemaName,
+                            tableName);
+                    }
+                }
             } else if (statement instanceof Insert) {
                 type = SQLQueryType.INSERT;
             } else if (statement instanceof Update) {
@@ -121,8 +147,8 @@ public class SQLQuery {
         return type;
     }
 
-    public DBSEntity getSingleSource(DBPDataSource dataSource) {
-        return null;
+    public DBCEntityMetaData getSingleSource() {
+        return singleTableMeta;
     }
 
     public void parseParameters(IDocument document, SQLSyntaxManager syntaxManager)
@@ -163,6 +189,39 @@ public class SQLQuery {
     public String toString()
     {
         return query;
+    }
+
+    private static class SingleTableMeta implements DBCEntityMetaData {
+
+        private final String catalogName;
+        private final String schemaName;
+        private final String tableName;
+
+        private SingleTableMeta(String catalogName, String schemaName, String tableName) {
+            this.catalogName = catalogName;
+            this.schemaName = schemaName;
+            this.tableName = tableName;
+        }
+
+        @Override
+        public String getCatalogName() {
+            return catalogName;
+        }
+
+        @Override
+        public String getSchemaName() {
+            return schemaName;
+        }
+
+        @Override
+        public String getEntityName() {
+            return tableName;
+        }
+
+        @Override
+        public List<? extends DBCAttributeMetaData> getAttributes() {
+            return Collections.emptyList();
+        }
     }
 
 }
