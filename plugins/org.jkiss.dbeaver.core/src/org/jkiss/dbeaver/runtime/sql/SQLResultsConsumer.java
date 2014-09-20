@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 
 /**
  * SQLResultsConsumer
@@ -35,6 +36,6 @@ public interface SQLResultsConsumer
      * @return
      */
     @Nullable
-    DBDDataReceiver getDataReceiver(SQLStatementInfo statement, int resultSetNumber);
+    DBDDataReceiver getDataReceiver(SQLQuery statement, int resultSetNumber);
 
 }

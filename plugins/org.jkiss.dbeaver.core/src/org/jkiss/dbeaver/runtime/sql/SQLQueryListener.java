@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 
 /**
  * SQLQueryListener
@@ -29,7 +31,7 @@ public interface SQLQueryListener
 {
     void onStartScript();
 
-    void onStartQuery(SQLStatementInfo query);
+    void onStartQuery(SQLQuery query);
 
     void onEndQuery(SQLQueryResult result);
 

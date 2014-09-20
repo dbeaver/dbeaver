@@ -63,6 +63,8 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -122,7 +124,7 @@ public class SQLEditor extends SQLEditorBase
 
     private DBSDataSourceContainer dataSourceContainer;
     private final DynamicFindReplaceTarget findReplaceTarget = new DynamicFindReplaceTarget();
-    private final List<SQLStatementInfo> runningQueries = new ArrayList<SQLStatementInfo>();
+    private final List<SQLQuery> runningQueries = new ArrayList<SQLQuery>();
     private CompositeSelectionProvider selectionProvider;
 
     public SQLEditor()
@@ -166,7 +168,7 @@ public class SQLEditor extends SQLEditorBase
                 return null;
             }
             List<Integer> lines = new ArrayList<Integer>(runningQueries.size() * 2);
-            for (SQLStatementInfo statementInfo : runningQueries) {
+            for (SQLQuery statementInfo : runningQueries) {
                 try {
                     int firstLine = document.getLineOfOffset(statementInfo.getOffset());
                     int lastLine = document.getLineOfOffset(statementInfo.getOffset() + statementInfo.getLength());
@@ -485,7 +487,7 @@ public class SQLEditor extends SQLEditorBase
 
     public void explainQueryPlan()
     {
-        final SQLStatementInfo sqlQuery = extractActiveQuery();
+        final SQLQuery sqlQuery = extractActiveQuery();
         if (sqlQuery == null) {
             setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
             return;
@@ -514,7 +516,7 @@ public class SQLEditor extends SQLEditorBase
         }
         if (script) {
             // Execute all SQL statements consequently
-            List<SQLStatementInfo> statementInfos;
+            List<SQLQuery> statementInfos;
             ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
             if (selection.getLength() > 1) {
                 statementInfos = extractScriptQueries(selection.getOffset(), selection.getLength());
@@ -524,7 +526,7 @@ public class SQLEditor extends SQLEditorBase
             processQueries(statementInfos, newTab, false);
         } else {
             // Execute statement under cursor or selected text (if selection present)
-            SQLStatementInfo sqlQuery = extractActiveQuery();
+            SQLQuery sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
                 setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
             } else {
@@ -535,13 +537,13 @@ public class SQLEditor extends SQLEditorBase
 
     public void exportDataFromQuery()
     {
-        SQLStatementInfo sqlQuery = extractActiveQuery();
+        SQLQuery sqlQuery = extractActiveQuery();
         if (sqlQuery != null) {
             processQueries(Collections.singletonList(sqlQuery), false, true);
         }
     }
 
-    private void processQueries(@NotNull final List<SQLStatementInfo> queries, final boolean newTab, final boolean export)
+    private void processQueries(@NotNull final List<SQLQuery> queries, final boolean newTab, final boolean export)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -571,7 +573,7 @@ public class SQLEditor extends SQLEditorBase
         if (newTab) {
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
-                SQLStatementInfo query = queries.get(i);
+                SQLQuery query = queries.get(i);
                 QueryProcessor queryProcessor = (i == 0 && !isSingleQuery ? curQueryProcessor : createQueryProcessor(queries.size() == 1));
                 queryProcessor.processQueries(Collections.singletonList(query), true, export);
             }
@@ -583,7 +585,7 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private List<SQLStatementInfo> extractScriptQueries(int startOffset, int length)
+    private List<SQLQuery> extractScriptQueries(int startOffset, int length)
     {
         IDocument document = getDocument();
 /*
@@ -601,7 +603,7 @@ public class SQLEditor extends SQLEditorBase
 */
         SQLSyntaxManager syntaxManager = getSyntaxManager();
 
-        List<SQLStatementInfo> queryList = new ArrayList<SQLStatementInfo>();
+        List<SQLQuery> queryList = new ArrayList<SQLQuery>();
         syntaxManager.setRange(document, startOffset, length);
         int statementStart = startOffset;
         boolean hasValuableTokens = false;
@@ -621,9 +623,7 @@ public class SQLEditor extends SQLEditorBase
                         String query = document.get(statementStart, queryLength);
                         query = query.trim();
                         if (query.length() > 0) {
-                            SQLStatementInfo statementInfo = new SQLStatementInfo(query);
-                            statementInfo.setOffset(statementStart);
-                            statementInfo.setLength(queryLength);
+                            SQLQuery statementInfo = new SQLQuery(query, statementStart, queryLength);
                             queryList.add(statementInfo);
                         }
                     }
@@ -641,8 +641,8 @@ public class SQLEditor extends SQLEditorBase
             }
         }
         // Parse parameters
-        for (SQLStatementInfo statementInfo : queryList) {
-            statementInfo.parseParameters(getDocument(), getSyntaxManager());
+        for (SQLQuery query : queryList) {
+            query.parseParameters(getDocument(), getSyntaxManager());
         }
         return queryList;
     }
@@ -877,7 +877,7 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private void showStatementInEditor(final SQLStatementInfo query, final boolean select)
+    private void showStatementInEditor(final SQLQuery query, final boolean select)
     {
         DBeaverUI.runUIJob("Select SQL query in editor", new DBRRunnableWithProgress() {
             @Override
@@ -957,7 +957,7 @@ public class SQLEditor extends SQLEditorBase
             }
         }
 
-        void processQueries(final List<SQLStatementInfo> queries, final boolean fetchResults, boolean export)
+        void processQueries(final List<SQLQuery> queries, final boolean fetchResults, boolean export)
         {
             if (queries.isEmpty()) {
                 // Nothing to process
@@ -1047,7 +1047,7 @@ public class SQLEditor extends SQLEditorBase
 
         @Nullable
         @Override
-        public DBDDataReceiver getDataReceiver(SQLStatementInfo statement, final int resultSetNumber) {
+        public DBDDataReceiver getDataReceiver(SQLQuery statement, final int resultSetNumber) {
             if (curDataReceiver != null) {
                 return curDataReceiver;
             }
@@ -1246,7 +1246,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public void onStartQuery(final SQLStatementInfo query) {
+        public void onStartQuery(final SQLQuery query) {
             queryProcessor.curJobRunning.incrementAndGet();
             synchronized (runningQueries) {
                 runningQueries.add(query);

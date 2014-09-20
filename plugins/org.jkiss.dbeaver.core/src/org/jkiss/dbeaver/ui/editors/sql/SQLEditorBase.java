@@ -58,7 +58,7 @@ import org.jkiss.dbeaver.ext.ICommentsSupport;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
@@ -433,16 +433,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     }
 
     @Nullable
-    protected SQLStatementInfo extractActiveQuery()
+    protected SQLQuery extractActiveQuery()
     {
-        SQLStatementInfo sqlQuery;
+        SQLQuery sqlQuery;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            sqlQuery = new SQLStatementInfo(selText);
-            sqlQuery.setOffset(selection.getOffset());
-            sqlQuery.setLength(selection.getLength());
+            sqlQuery = new SQLQuery(selText, selection.getOffset(), selection.getLength());
         } else {
             sqlQuery = extractQueryAtPos(selection.getOffset());
         }
@@ -455,7 +453,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         return sqlQuery;
     }
 
-    public SQLStatementInfo extractQueryAtPos(int currentPos)
+    public SQLQuery extractQueryAtPos(int currentPos)
     {
         Document document = getDocument();
         if (document.getLength() == 0) {
@@ -543,9 +541,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                         queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length());
                     }
                     // make script line
-                    SQLStatementInfo statementInfo = new SQLStatementInfo(queryText.trim());
-                    statementInfo.setOffset(statementStart);
-                    statementInfo.setLength(tokenOffset - statementStart);
+                    SQLQuery statementInfo = new SQLQuery(queryText.trim(), statementStart, tokenOffset - statementStart);
                     return statementInfo;
                 } catch (BadLocationException ex) {
                     log.warn("Can't extract query", ex); //$NON-NLS-1$

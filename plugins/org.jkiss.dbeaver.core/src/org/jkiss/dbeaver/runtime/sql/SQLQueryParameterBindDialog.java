@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -54,14 +55,14 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private IWorkbenchPartSite ownerSite;
     private DBPDataSource dataSource;
-    private List<SQLStatementParameter> parameters;
+    private List<SQLQueryParameter> parameters;
     private List<DBSDataType> validDataTypes = new ArrayList<DBSDataType>();
     private TableEditor tableEditor;
     private Table paramTable;
 
     private static Map<String, String> savedParamValues = new HashMap<String, String>();
 
-    protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBPDataSource dataSource, List<SQLStatementParameter> parameters)
+    protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBPDataSource dataSource, List<SQLQueryParameter> parameters)
     {
         super(ownerSite.getShell());
         this.ownerSite = ownerSite;
@@ -91,7 +92,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         });
         // Restore saved values from registry
         SQLQueryParameterRegistry registry = SQLQueryParameterRegistry.getInstance();
-        for (SQLStatementParameter param : this.parameters) {
+        for (SQLQueryParameter param : this.parameters) {
             final DBSDataType dataType = DBUtils.findBestDataType(validDataTypes, DBConstants.DEFAULT_DATATYPE_NAMES);
             if (dataType != null) {
                 param.setParamType(dataType);
@@ -140,7 +141,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Value");
         valueColumn.setWidth(200);
 
-        for (SQLStatementParameter param : parameters) {
+        for (SQLQueryParameter param : parameters) {
             TableItem item = new TableItem(paramTable, SWT.NONE);
             item.setData(param);
             item.setImage(DBIcon.TREE_ATTRIBUTE.getImage());
@@ -179,7 +180,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     }
 
     private void showEditor(final TableItem item) {
-        SQLStatementParameter param = (SQLStatementParameter)item.getData();
+        SQLQueryParameter param = (SQLQueryParameter)item.getData();
         if (!param.isResolved()) {
             return;
         }
@@ -244,7 +245,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         private void showTypeSelector(final TableItem item)
         {
-            final SQLStatementParameter param = (SQLStatementParameter)item.getData();
+            final SQLQueryParameter param = (SQLQueryParameter)item.getData();
             final CCombo typeSelector = new CCombo(paramTable, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             typeSelector.setListVisible(true);
             typeSelector.setVisibleItemCount(15);
@@ -279,11 +280,11 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private class ParameterValueController implements DBDValueController {
 
-        private final SQLStatementParameter parameter;
+        private final SQLQueryParameter parameter;
         private final Composite placeholder;
         private final TableItem item;
 
-        private ParameterValueController(SQLStatementParameter parameter, Composite placeholder, TableItem item)
+        private ParameterValueController(SQLQueryParameter parameter, Composite placeholder, TableItem item)
         {
             this.parameter = parameter;
             this.placeholder = placeholder;
