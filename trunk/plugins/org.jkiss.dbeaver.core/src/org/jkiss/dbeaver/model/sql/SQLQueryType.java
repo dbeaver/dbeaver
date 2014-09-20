@@ -17,12 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.model.sql;
 
 /**
  * Statement type
  */
-public enum SQLStatementType {
+public enum SQLQueryType {
     UNLKNOWN,
     SELECT,
     INSERT,

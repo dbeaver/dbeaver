@@ -37,6 +37,9 @@ import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
+import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -56,7 +59,7 @@ public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
 
-    private final List<SQLStatementInfo> queries;
+    private final List<SQLQuery> queries;
     private final SQLResultsConsumer resultsConsumer;
     private final SQLQueryListener listener;
     private final IWorkbenchPartSite partSite;
@@ -81,7 +84,7 @@ public class SQLQueryJob extends DataSourceJob
         IWorkbenchPartSite partSite,
         String name,
         DBPDataSource dataSource,
-        List<SQLStatementInfo> queries,
+        List<SQLQuery> queries,
         SQLResultsConsumer resultsConsumer,
         SQLQueryListener listener)
     {
@@ -106,7 +109,7 @@ public class SQLQueryJob extends DataSourceJob
         this.fetchResultSets = fetchResultSets;
     }
 
-    public SQLStatementInfo getLastQuery()
+    public SQLQuery getLastQuery()
     {
         return queries.isEmpty() ? null : queries.get(0);
     }
@@ -148,7 +151,7 @@ public class SQLQueryJob extends DataSourceJob
 
                 for (int queryNum = 0; queryNum < queries.size(); ) {
                     // Execute query
-                    SQLStatementInfo query = queries.get(queryNum);
+                    SQLQuery query = queries.get(queryNum);
 
                     boolean runNext = executeSingleQuery(session, query, true);
                     if (!runNext) {
@@ -254,7 +257,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(DBCSession session, SQLStatementInfo sqlStatement, boolean fireEvents)
+    private boolean executeSingleQuery(DBCSession session, SQLQuery sqlStatement, boolean fireEvents)
     {
         lastError = null;
 
@@ -292,8 +295,8 @@ public class SQLQueryJob extends DataSourceJob
             boolean hasParameters = false;
             // Bind parameters
             if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-                List<SQLStatementParameter> unresolvedParams = new ArrayList<SQLStatementParameter>();
-                for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                List<SQLQueryParameter> unresolvedParams = new ArrayList<SQLQueryParameter>();
+                for (SQLQueryParameter param : sqlStatement.getParameters()) {
                     if (!param.isResolved()) {
                         unresolvedParams.add(param);
                     }
@@ -317,7 +320,7 @@ public class SQLQueryJob extends DataSourceJob
 
             if (hasParameters) {
                 // Bind them
-                for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                for (SQLQueryParameter param : sqlStatement.getParameters()) {
                     if (param.isResolved()) {
                         param.getValueHandler().bindValueObject(
                             session,
@@ -331,8 +334,8 @@ public class SQLQueryJob extends DataSourceJob
 /*
             // Bind parameters
             if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-                List<SQLStatementParameter> unresolvedParams = new ArrayList<SQLStatementParameter>();
-                for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                List<SQLQueryParameter> unresolvedParams = new ArrayList<SQLQueryParameter>();
+                for (SQLQueryParameter param : sqlStatement.getParameters()) {
                     if (!param.isResolved()) {
                         unresolvedParams.add(param);
                     }
@@ -341,7 +344,7 @@ public class SQLQueryJob extends DataSourceJob
                 if (!CommonUtils.isEmpty(unresolvedParams)) {
                     if (bindStatementParameters(unresolvedParams)) {
                         // Bind them
-                        for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                        for (SQLQueryParameter param : sqlStatement.getParameters()) {
                             if (param.isResolved()) {
                                 param.getValueHandler().bindValueObject(
                                     session,
@@ -409,7 +412,7 @@ public class SQLQueryJob extends DataSourceJob
 
                 // Release parameters
                 if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-                    for (SQLStatementParameter param : sqlStatement.getParameters()) {
+                    for (SQLQueryParameter param : sqlStatement.getParameters()) {
                         if (param.isResolved()) {
                             param.getValueHandler().releaseValueObject(param.getValue());
                         }
@@ -468,7 +471,7 @@ public class SQLQueryJob extends DataSourceJob
         fetchQueryData(session, fakeResultSet, null, dataReceiver, false);
     }
 
-    private boolean bindStatementParameters(final List<SQLStatementParameter> parameters)
+    private boolean bindStatementParameters(final List<SQLQueryParameter> parameters)
     {
         final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
             @Override
@@ -622,7 +625,7 @@ public class SQLQueryJob extends DataSourceJob
         if (queries.size() != 1) {
             throw new DBCException("Invalid state of SQL Query job");
         }
-        SQLStatementInfo query = queries.get(0);
+        SQLQuery query = queries.get(0);
         session.getProgressMonitor().beginTask(query.getQuery(), 1);
         try {
             boolean result = executeSingleQuery(session, query, true);

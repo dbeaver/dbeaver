@@ -17,43 +17,68 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.model.sql;
 
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.update.Update;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.IToken;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockBeginToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockEndToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLParameterToken;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SQLStatementInfo
+ * SQLQuery
  */
-public class SQLStatementInfo {
+public class SQLQuery {
 
-    static final Log log = LogFactory.getLog(SQLStatementInfo.class);
+    static final Log log = LogFactory.getLog(SQLQuery.class);
 
     private String query;
-    private List<SQLStatementParameter> parameters;
+    private List<SQLQueryParameter> parameters;
     private int offset;
     private int length;
     private Object data;
-    private SQLStatementType type;
+    private SQLQueryType type;
+    private Statement statement;
 
-    public SQLStatementInfo(String query)
+    public SQLQuery(String query, int offset, int length)
     {
-        this(query, null);
-    }
-
-    public SQLStatementInfo(String query, List<SQLStatementParameter> parameters) {
         this.query = query;
-        this.parameters = parameters;
+        this.offset = offset;
+        this.length = length;
+        try {
+            statement = CCJSqlParserUtil.parse(query);
+            if (statement instanceof Select) {
+                type = SQLQueryType.SELECT;
+            } else if (statement instanceof Insert) {
+                type = SQLQueryType.INSERT;
+            } else if (statement instanceof Update) {
+                type = SQLQueryType.UPDATE;
+            } else if (statement instanceof Delete) {
+                type = SQLQueryType.DELETE;
+            } else {
+                type = SQLQueryType.DDL;
+            }
+        } catch (JSQLParserException e) {
+            this.type = SQLQueryType.UNLKNOWN;
+            log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
+        }
     }
 
     public String getQuery()
@@ -61,7 +86,11 @@ public class SQLStatementInfo {
         return query;
     }
 
-    public List<SQLStatementParameter> getParameters() {
+    public Statement getStatement() {
+        return statement;
+    }
+
+    public List<SQLQueryParameter> getParameters() {
         return parameters;
     }
 
@@ -70,17 +99,9 @@ public class SQLStatementInfo {
         return offset;
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
-    }
-
     public int getLength()
     {
         return length;
-    }
-
-    public void setLength(int length) {
-        this.length = length;
     }
 
     /**
@@ -95,14 +116,13 @@ public class SQLStatementInfo {
         this.data = data;
     }
 
-    public SQLStatementType getType()
+    public SQLQueryType getType()
     {
         return type;
     }
 
-    public void setType(SQLStatementType type)
-    {
-        this.type = type;
+    public DBSEntity getSingleSource(DBPDataSource dataSource) {
+        return null;
     }
 
     public void parseParameters(IDocument document, SQLSyntaxManager syntaxManager)
@@ -126,10 +146,10 @@ public class SQLStatementInfo {
                 try {
                     String paramName = document.get(tokenOffset, tokenLength);
                     if (parameters == null) {
-                        parameters = new ArrayList<SQLStatementParameter>();
+                        parameters = new ArrayList<SQLQueryParameter>();
                     }
                     parameters.add(
-                        new SQLStatementParameter(
+                        new SQLQueryParameter(
                             parameters.size(),
                             paramName));
                 } catch (BadLocationException e) {
