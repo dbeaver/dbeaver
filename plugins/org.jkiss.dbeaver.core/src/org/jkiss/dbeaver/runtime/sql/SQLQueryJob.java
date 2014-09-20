@@ -316,7 +316,7 @@ public class SQLQueryJob extends DataSourceJob
                 sqlQuery,
                 rsOffset,
                 rsMaxRows);
-            curStatement.setStatementSource(partSite.getPart());
+            curStatement.setStatementSource(sqlStatement);
 
             if (hasParameters) {
                 // Bind them
