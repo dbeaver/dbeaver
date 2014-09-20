@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -517,6 +518,9 @@ public final class DBUtils {
                 DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
                 DBCEntityMetaData entityMeta = attrMeta.getEntityMetaData();
                 Object metaSource = attrMeta.getSource();
+                if (entityMeta == null && metaSource instanceof SQLQuery) {
+                    entityMeta = ((SQLQuery)metaSource).getSingleSource();
+                }
                 DBSEntity entity = null;
                 if (metaSource instanceof DBSEntity) {
                     entity = (DBSEntity)metaSource;
