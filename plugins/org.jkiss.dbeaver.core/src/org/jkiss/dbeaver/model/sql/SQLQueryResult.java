@@ -17,14 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.model.sql;
 
 /**
  * SQLQueryResult
  */
 public class SQLQueryResult
 {
-    private SQLStatementInfo statement;
+    private SQLQuery statement;
     //private DBCResultSetMetaData metaData;
     //private List<Object[]> rows;
     private Long rowOffset;
@@ -35,12 +35,12 @@ public class SQLQueryResult
     private long queryTime;
     private String resultSetName;
 
-    public SQLQueryResult(SQLStatementInfo statement)
+    public SQLQueryResult(SQLQuery statement)
     {
         this.statement = statement;
     }
 
-    public SQLStatementInfo getStatement() {
+    public SQLQuery getStatement() {
         return statement;
     }
 
