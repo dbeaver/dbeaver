@@ -94,7 +94,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
     @Property(viewable = true, order = 3)
     public OracleTableBase getReferencedTable()
     {
-        return referencedKey.getTable();
+        return referencedKey == null ? null : referencedKey.getTable();
     }
 
     @NotNull
