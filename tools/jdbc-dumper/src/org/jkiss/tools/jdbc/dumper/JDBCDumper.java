@@ -91,7 +91,10 @@ public class JDBCDumper
                     }
                 }
                 for (String schema : schemas) {
-                    dumpResultSet("Tables of " + catalog + "." + schema, metaData.getTables(catalog, schema, "%", null));
+                    List<String> tables = dumpResultSetAndReturn("Tables of " + catalog + "." + schema, metaData.getTables(catalog, schema, "%", null), "TABLE_NAME");
+					for (String table : tables) {
+						dumpResultSet("Columns", metaData.getTables(null, null, null, null));
+					}
                 }
             }
         } catch (SQLException e) {
