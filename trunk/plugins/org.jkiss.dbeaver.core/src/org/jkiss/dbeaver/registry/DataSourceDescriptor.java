@@ -772,7 +772,13 @@ public class DataSourceDescriptor
                         if (job.getState() == Job.RUNNING) {
                             job.cancel();
                             try {
-                                job.join();
+                                // Wait for 3 seconds
+                                for (int i = 0; i < 10; i++) {
+                                    Thread.sleep(300);
+                                    if (job.getState() != Job.RUNNING) {
+                                        break;
+                                    }
+                                }
                             } catch (InterruptedException e) {
                                 // its ok, do nothing
                             }
