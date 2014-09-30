@@ -18,6 +18,7 @@
  */
 package org.jkiss.tools.jdbc.dumper;
 
+import javax.xml.transform.Result;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,23 +59,23 @@ public class JDBCDumper
     private static void dumpMetaDataPlain(DatabaseMetaData metaData) throws SQLException
     {
         try {
-            dumpResultSet("Catalogs", metaData.getCatalogs());
+            dumpResultSet("Catalogs", "", metaData.getCatalogs(), null);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         try {
-            dumpResultSet("Schemas", metaData.getSchemas());
+            dumpResultSet("Schemas", "", metaData.getSchemas(), null);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         try {
-            dumpResultSet("Tables", metaData.getTables(null, null, null, null));
+            dumpResultSet("Tables", "", metaData.getTables(null, null, null, null), null);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private static void dumpMetaDataTree(DatabaseMetaData metaData) throws SQLException
+    private static void dumpMetaDataTree(final DatabaseMetaData metaData) throws SQLException
     {
         try {
             List<String> catalogs = dumpResultSetAndReturn("Catalogs", metaData.getCatalogs(), "TABLE_CAT");
@@ -90,11 +91,23 @@ public class JDBCDumper
                         schemas.add("%");
                     }
                 }
-                for (String schema : schemas) {
-                    List<String> tables = dumpResultSetAndReturn("Tables of " + catalog + "." + schema, metaData.getTables(catalog, schema, "%", null), "TABLE_NAME");
-					for (String table : tables) {
-						dumpResultSet("Columns", metaData.getTables(null, null, null, null));
-					}
+                final String catalogName = catalog;
+                for (final String schema : schemas) {
+                    dumpResultSet("Tables of " + catalog + "." + schema, "", metaData.getTables(catalog, schema, "%", null),
+                        new NestedFetcher() {
+                            @Override
+                            public void readNestedInfo(ResultSet resultSet) throws SQLException {
+                                String tableName = resultSet.getString("TABLE_NAME");
+                                System.out.println("\tColumns:");
+                                dumpResultSet(null, "\t\t", metaData.getColumns(catalogName, schema, tableName, "%"), null);
+                                System.out.println("\tIndexes:");
+                                dumpResultSet(null, "\t\t", metaData.getIndexInfo(catalogName, schema, tableName, false, false), null);
+                                System.out.println("\tImported Keys:");
+                                dumpResultSet(null, "\t\t", metaData.getImportedKeys(catalogName, schema, tableName), null);
+                                System.out.println("\tExported Keys:");
+                                dumpResultSet(null, "\t\t", metaData.getExportedKeys(catalogName, schema, tableName), null);
+                            }
+                        });
                 }
             }
         } catch (SQLException e) {
@@ -102,25 +115,34 @@ public class JDBCDumper
         }
     }
 
-    private static void dumpResultSet(String name, ResultSet dbResult) throws SQLException
+    private static void dumpResultSet(String name, String prefix, ResultSet dbResult, NestedFetcher nestedFetcher) throws SQLException
     {
-        System.out.println("Dump of [" + name + "]");
-        System.out.println("======================================================");
+        if (name != null) {
+            System.out.println(prefix + "Dump of [" + name + "]");
+            System.out.println(prefix + "======================================================");
+        }
 
         ResultSetMetaData rsMeta = dbResult.getMetaData();
         int columnCount = rsMeta.getColumnCount();
+        System.out.print(prefix);
         for (int i = 1; i <= columnCount; i++) {
             System.out.print(rsMeta.getColumnName(i) + " " + rsMeta.getColumnTypeName(i) + "[" + rsMeta.getColumnDisplaySize(i) + "]" + "(" + rsMeta.getColumnType(i) + ")\t");
         }
         System.out.println();
         while (dbResult.next()) {
+            System.out.print(prefix);
             for (int i = 1; i <= columnCount; i++) {
                 System.out.print(dbResult.getObject(i) + "\t");
             }
             System.out.println();
+            if (nestedFetcher != null) {
+                nestedFetcher.readNestedInfo(dbResult);
+            }
         }
 
-        System.out.println("======================================================");
+        if (name != null) {
+            System.out.println(prefix + "======================================================");
+        }
     }
 
     private static List<String> dumpResultSetAndReturn(String name, ResultSet dbResult, String columnName) throws SQLException
@@ -149,6 +171,10 @@ public class JDBCDumper
 
         System.out.println("======================================================");
         return result;
+    }
+
+    public interface NestedFetcher {
+        void readNestedInfo(ResultSet resultSet) throws SQLException;
     }
 
 }
