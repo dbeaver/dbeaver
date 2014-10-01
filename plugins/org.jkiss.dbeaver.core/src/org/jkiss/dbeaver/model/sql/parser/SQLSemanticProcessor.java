@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -124,7 +125,7 @@ public class SQLSemanticProcessor {
             }
             Table orderTable = tableAlias == null ? null : new Table(tableAlias);
             for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
-                Expression orderExpr = new Column(orderTable, co.getAttribute().getName());
+                Expression orderExpr = new Column(orderTable, DBUtils.getObjectFullName(co.getAttribute()));
                 OrderByElement element = new OrderByElement();
                 element.setExpression(orderExpr);
                 if (co.isOrderDescending()) {
