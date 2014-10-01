@@ -124,15 +124,26 @@ public class JDBCDumper
 
         ResultSetMetaData rsMeta = dbResult.getMetaData();
         int columnCount = rsMeta.getColumnCount();
-        System.out.print(prefix);
+        System.out.print(prefix + "# ");
         for (int i = 1; i <= columnCount; i++) {
-            System.out.print(rsMeta.getColumnName(i) + " " + rsMeta.getColumnTypeName(i) + "[" + rsMeta.getColumnDisplaySize(i) + "]" + "(" + rsMeta.getColumnType(i) + ")\t");
+            System.out.print(rsMeta.getColumnName(i) + "\t");
         }
         System.out.println();
+		int index = 0;
         while (dbResult.next()) {
-            System.out.print(prefix);
+			index++;
+            System.out.print(prefix + index + ".");
             for (int i = 1; i <= columnCount; i++) {
-                System.out.print(dbResult.getObject(i) + "\t");
+				Object objValue = dbResult.getObject(i);
+				String value = objValue == null ? "NULL" : objValue.toString();
+				String colName = rsMeta.getColumnName(i);
+                System.out.print(value);
+				if (value.length() < colName.length()) {
+					for (int k = 0; k < colName.length() - value.length(); k++) {
+						System.out.print(' ');
+					}
+				}
+				System.out.print('\t');
             }
             System.out.println();
             if (nestedFetcher != null) {
