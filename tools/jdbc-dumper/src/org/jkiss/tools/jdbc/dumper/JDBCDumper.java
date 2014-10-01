@@ -60,17 +60,17 @@ public class JDBCDumper
     {
         try {
             dumpResultSet("Catalogs", "", metaData.getCatalogs(), null);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
         try {
             dumpResultSet("Schemas", "", metaData.getSchemas(), null);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
         try {
             dumpResultSet("Tables", "", metaData.getTables(null, null, null, null), null);
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -78,15 +78,29 @@ public class JDBCDumper
     private static void dumpMetaDataTree(final DatabaseMetaData metaData) throws SQLException
     {
         try {
-            List<String> catalogs = dumpResultSetAndReturn("Catalogs", metaData.getCatalogs(), "TABLE_CAT");
+            List<String> catalogs = new ArrayList<String>();
+            try {
+                catalogs = dumpResultSetAndReturn("Catalogs", metaData.getCatalogs(), "TABLE_CAT");
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
             if (catalogs.isEmpty()) {
                 catalogs.add("%");
             }
             for (String catalog : catalogs) {
-                List<String> schemas = dumpResultSetAndReturn(catalog + " Schemas", metaData.getSchemas(catalog, "%"), "TABLE_SCHEM");
+                List<String> schemas = new ArrayList<String>();
+                try {
+                    schemas = dumpResultSetAndReturn(catalog + " Schemas", metaData.getSchemas(catalog, "%"), "TABLE_SCHEM");
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
                 if (schemas.isEmpty() && catalogs.size() == 1) {
                     catalog = "%";
-                    schemas = dumpResultSetAndReturn("All Schemas", metaData.getSchemas("%", "%"), "TABLE_SCHEM");
+                    try {
+                        schemas = dumpResultSetAndReturn("All Schemas", metaData.getSchemas("%", "%"), "TABLE_SCHEM");
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
                     if (schemas.isEmpty()) {
                         schemas.add("%");
                     }
@@ -99,18 +113,34 @@ public class JDBCDumper
                             public void readNestedInfo(ResultSet resultSet) throws SQLException {
                                 String tableName = resultSet.getString("TABLE_NAME");
                                 System.out.println("\tColumns:");
-                                dumpResultSet(null, "\t\t", metaData.getColumns(catalogName, schema, tableName, "%"), null);
+                                try {
+                                    dumpResultSet(null, "\t\t", metaData.getColumns(catalogName, schema, tableName, "%"), null);
+                                } catch (Throwable e) {
+                                    e.printStackTrace();
+                                }
                                 System.out.println("\tIndexes:");
-                                dumpResultSet(null, "\t\t", metaData.getIndexInfo(catalogName, schema, tableName, false, false), null);
+                                try {
+                                    dumpResultSet(null, "\t\t", metaData.getIndexInfo(catalogName, schema, tableName, false, false), null);
+                                } catch (Throwable e) {
+                                    e.printStackTrace();
+                                }
                                 System.out.println("\tImported Keys:");
-                                dumpResultSet(null, "\t\t", metaData.getImportedKeys(catalogName, schema, tableName), null);
+                                try {
+                                    dumpResultSet(null, "\t\t", metaData.getImportedKeys(catalogName, schema, tableName), null);
+                                } catch (Throwable e) {
+                                    e.printStackTrace();
+                                }
                                 System.out.println("\tExported Keys:");
-                                dumpResultSet(null, "\t\t", metaData.getExportedKeys(catalogName, schema, tableName), null);
+                                try {
+                                    dumpResultSet(null, "\t\t", metaData.getExportedKeys(catalogName, schema, tableName), null);
+                                } catch (Throwable e) {
+                                    e.printStackTrace();
+                                }
                             }
                         });
                 }
             }
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             e.printStackTrace();
         }
     }
@@ -175,7 +205,7 @@ public class JDBCDumper
             System.out.println();
             try {
                 result.add(dbResult.getString(columnName));
-            } catch (SQLException e) {
+            } catch (Throwable e) {
                 // no such column
             }
         }
