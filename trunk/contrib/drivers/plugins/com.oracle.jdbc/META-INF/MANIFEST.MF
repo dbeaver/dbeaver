@@ -7,7 +7,7 @@ Bundle-ClassPath: ojdbc6.jar,
  xdb6.jar,
  xmlparserv2.jar,
  orai18n.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Oracle Corporation
 Export-Package: oracle.core.lmx,
  oracle.core.lvf,
