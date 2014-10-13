@@ -189,8 +189,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
             } catch (DBException ex) {
                 throw new InvocationTargetException(ex);
-            } finally {
-                testDataSource.dispose();
             }
         }
     }
