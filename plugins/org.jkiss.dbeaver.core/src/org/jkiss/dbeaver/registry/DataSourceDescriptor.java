@@ -636,7 +636,7 @@ public class DataSourceDescriptor
                 savedConnectionInfo = connectionInfo;
                 connectionInfo = tunnelConnectionInfo;
             }
-
+            monitor.subTask("Connect to data source");
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
 
             if (initialize) {
