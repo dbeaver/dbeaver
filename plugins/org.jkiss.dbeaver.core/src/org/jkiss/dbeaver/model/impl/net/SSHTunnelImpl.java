@@ -45,6 +45,8 @@ import java.util.Map;
  */
 public class SSHTunnelImpl implements DBWTunnel {
 
+    private static final int CONNECT_TIMEOUT = 10000;
+    public static final String LOCALHOST_NAME = "127.0.0.1";
     private static transient JSch jsch;
     private transient Session session;
 
@@ -121,8 +123,9 @@ public class SSHTunnelImpl implements DBWTunnel {
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications",
                     privKeyFile != null ? "publickey" : "password");
+            session.setConfig("ConnectTimeout", String.valueOf(CONNECT_TIMEOUT));
             session.setUserInfo(ui);
-            session.connect();
+            session.connect(CONNECT_TIMEOUT);
             try {
                 session.setPortForwardingL(localPort, dbHost, dbPort);
                 if (!CommonUtils.isEmpty(aliveInterval)) {
@@ -138,7 +141,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         connectionInfo = new DBPConnectionInfo(connectionInfo);
         String newPortValue = String.valueOf(localPort);
         // Replace database host/port and URL - let's use localhost
-        connectionInfo.setHostName("127.0.0.1");
+        connectionInfo.setHostName(LOCALHOST_NAME);
         connectionInfo.setHostPort(newPortValue);
         String newURL = configuration.getDriver().getDataSourceProvider().getConnectionURL(
             configuration.getDriver(),
