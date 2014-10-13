@@ -132,6 +132,8 @@
                     description="PostgreSQL standard driver">
                     <file type="jar" path="drivers/postgresql/postgresql-9.1-901.jdbc4.jar" url="*"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" url="*"/>
+                    <property name="loginTimeout" value="10"/>
+
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?"/>
                     <parameter name="active-entity-type" value="schema"/>
