@@ -293,8 +293,8 @@ public class DataSourceDescriptor
     @Override
     public boolean isDefaultAutoCommit()
     {
-        if (getPreferenceStore().contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
-            return getPreferenceStore().getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
+        if (preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
+            return preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
         } else {
             return getConnectionInfo().getConnectionType().isAutocommit();
         }
@@ -329,9 +329,9 @@ public class DataSourceDescriptor
         }
         // Save in preferences
         if (autoCommit == getConnectionInfo().getConnectionType().isAutocommit()) {
-            getPreferenceStore().setToDefault(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
+            preferenceStore.setToDefault(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
         } else {
-            getPreferenceStore().setValue(DBeaverPreferences.DEFAULT_AUTO_COMMIT, autoCommit);
+            preferenceStore.setValue(DBeaverPreferences.DEFAULT_AUTO_COMMIT, autoCommit);
         }
     }
 
@@ -380,7 +380,7 @@ public class DataSourceDescriptor
     {
         try {
             if (isolationLevel == null) {
-                getPreferenceStore().setToDefault(DBeaverPreferences.DEFAULT_ISOLATION);
+                preferenceStore.setToDefault(DBeaverPreferences.DEFAULT_ISOLATION);
             } else {
                 DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
@@ -391,7 +391,7 @@ public class DataSourceDescriptor
                         try {
                             if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
                                 txnManager.setTransactionIsolation(isolationLevel);
-                                getPreferenceStore().setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
+                                preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
                             }
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
@@ -413,11 +413,11 @@ public class DataSourceDescriptor
     }
 
     public String getDefaultActiveObject() {
-        return getPreferenceStore().getString(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT);
+        return preferenceStore.getString(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT);
     }
 
     public void setDefaultActiveObject(String defaultActiveObject) {
-        getPreferenceStore().setValue(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT, defaultActiveObject);
+        preferenceStore.setValue(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT, defaultActiveObject);
     }
 
     public Collection<FilterMapping> getObjectFilters()
@@ -648,20 +648,19 @@ public class DataSourceDescriptor
                     DBCTransactionManager txnManager = session.getTransactionManager();
                     // Set auto-commit
                     boolean autoCommit = txnManager.isAutoCommit();
-                    AbstractPreferenceStore store = getPreferenceStore();
                     boolean newAutoCommit;
-                    if (!store.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
+                    if (!preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
                         newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
                     } else {
-                        newAutoCommit = store.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
+                        newAutoCommit = preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
                     }
                     if (autoCommit != newAutoCommit) {
                         // Change auto-commit state
                         txnManager.setAutoCommit(newAutoCommit);
                     }
                     // Set txn isolation level
-                    if (store.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
-                        int isolationCode = store.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
+                    if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
+                        int isolationCode = preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
                         Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
                         if (!CommonUtils.isEmpty(supportedLevels)) {
                             for (DBPTransactionIsolation level : supportedLevels) {
