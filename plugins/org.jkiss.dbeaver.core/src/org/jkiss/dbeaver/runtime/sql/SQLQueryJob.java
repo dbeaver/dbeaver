@@ -579,8 +579,10 @@ public class SQLQueryJob extends DataSourceJob
     private boolean keepStatementOpen()
     {
         // Only in single query mode and if pref option set to true
+        DBPDataSource dataSource = getDataSource();
         return queries.size() == 1 &&
-            getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN);
+            dataSource != null &&
+            dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN);
     }
 
     private void closeStatement()
