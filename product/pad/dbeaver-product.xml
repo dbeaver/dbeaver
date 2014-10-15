@@ -40,6 +40,19 @@
 
     <versions>
         <version>
+            <number>3.0.2</number>
+            <type>hotfix</type>
+            <date>16.10.2014</date>
+
+            <release-notes>
+                - Custom queries results are now editable
+                - SQL parser/formatter was improved
+                - SSH tunnel connection timeout was added
+                - DBeaver depends on Java6 again
+                - Many minor bugfixes and improvements
+            </release-notes>
+        </version>
+
             <number>3.0.1</number>
             <type>hotfix</type>
             <date>09.09.2014</date>
