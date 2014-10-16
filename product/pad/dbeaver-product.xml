@@ -53,6 +53,7 @@
             </release-notes>
         </version>
 
+        <version>
             <number>3.0.1</number>
             <type>hotfix</type>
             <date>09.09.2014</date>
