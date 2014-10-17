@@ -26,6 +26,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -126,10 +127,12 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         String driverName;
         String driverVersion;
         private final DataSourceDescriptor testDataSource;
+        private boolean initOnTest;
 
         public ConnectionTester(DataSourceDescriptor testDataSource)
         {
             this.testDataSource = testDataSource;
+            this.initOnTest = CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
             productName = null;
             productVersion = null;
         }
@@ -143,7 +146,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             try {
                 testDataSource.setName(testDataSource.getConnectionInfo().getUrl());
                 monitor.worked(1);
-                testDataSource.connect(monitor, false, false);
+                testDataSource.connect(monitor, initOnTest, false);
                 monitor.worked(1);
                 DBPDataSource dataSource = testDataSource.getDataSource();
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
