@@ -52,8 +52,6 @@ public class SQLSemanticProcessor {
 
     private static final String NESTED_QUERY_AlIAS = "z_q";
 
-    static final Log log = LogFactory.getLog(SQLUtils.class);
-
     public static boolean isSelectQuery(String query)
     {
         try {
