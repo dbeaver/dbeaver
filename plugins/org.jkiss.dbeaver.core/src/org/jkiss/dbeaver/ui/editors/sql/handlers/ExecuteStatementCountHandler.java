@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
+import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -32,10 +33,13 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,7 +59,7 @@ public class ExecuteStatementCountHandler extends AbstractHandler implements SQL
     }
 
     @Override
-    public void transformQuery(SQLQuery query) {
+    public void transformQuery(SQLQuery query) throws DBException {
         try {
             Statement statement = CCJSqlParserUtil.parse(query.getQuery());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
@@ -71,11 +75,9 @@ public class ExecuteStatementCountHandler extends AbstractHandler implements SQL
             } else {
                 throw new DBException("Query [" + query.getQuery() + "] can't be modified");
             }
-        } catch (Exception e) {
-            log.error(e);
+        } catch (JSQLParserException e) {
+            throw new DBException("Can't transform query to SELECT count(*)", e);
         }
-
-        System.out.println(query);
     }
 
 }

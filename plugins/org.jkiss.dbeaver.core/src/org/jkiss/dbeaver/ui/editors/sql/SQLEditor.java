@@ -519,34 +519,37 @@ public class SQLEditor extends SQLEditorBase
             setStatus(CoreMessages.editors_sql_status_cant_obtain_document, true);
             return;
         }
+        List<SQLQuery> queries;
         if (script) {
             // Execute all SQL statements consequently
-            List<SQLQuery> queries;
             ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
             if (selection.getLength() > 1) {
                 queries = extractScriptQueries(selection.getOffset(), selection.getLength());
             } else {
                 queries = extractScriptQueries(0, document.getLength());
             }
-            if (transformer != null) {
-                for (SQLQuery query : queries) {
-                    transformer.transformQuery(query);
-                }
-            }
-            processQueries(queries, newTab, false);
         } else {
             // Execute statement under cursor or selected text (if selection present)
             SQLQuery sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
                 setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
+                return;
             } else {
-                if (transformer != null) {
-                    transformer.transformQuery(sqlQuery);
-                }
-
-                processQueries(Collections.singletonList(sqlQuery), newTab, false);
+                queries = Collections.singletonList(sqlQuery);
             }
         }
+        try {
+            if (transformer != null) {
+                for (SQLQuery query : queries) {
+                    transformer.transformQuery(query);
+                }
+            }
+        }
+        catch (DBException e) {
+            UIUtils.showErrorDialog(getSite().getShell(), "Bad query", "Can't execute query", e);
+            return;
+        }
+        processQueries(queries, newTab, false);
     }
 
     public void exportDataFromQuery()
