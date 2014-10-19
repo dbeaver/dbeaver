@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
+import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -507,7 +508,11 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    public void processSQL(boolean newTab, boolean script)
+    public void processSQL(boolean newTab, boolean script) {
+        processSQL(newTab, script, null);
+    }
+
+    public void processSQL(boolean newTab, boolean script, SQLQueryTransformer transformer)
     {
         IDocument document = getDocument();
         if (document == null) {
@@ -516,20 +521,29 @@ public class SQLEditor extends SQLEditorBase
         }
         if (script) {
             // Execute all SQL statements consequently
-            List<SQLQuery> statementInfos;
+            List<SQLQuery> queries;
             ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
             if (selection.getLength() > 1) {
-                statementInfos = extractScriptQueries(selection.getOffset(), selection.getLength());
+                queries = extractScriptQueries(selection.getOffset(), selection.getLength());
             } else {
-                statementInfos = extractScriptQueries(0, document.getLength());
+                queries = extractScriptQueries(0, document.getLength());
             }
-            processQueries(statementInfos, newTab, false);
+            if (transformer != null) {
+                for (SQLQuery query : queries) {
+                    transformer.transformQuery(query);
+                }
+            }
+            processQueries(queries, newTab, false);
         } else {
             // Execute statement under cursor or selected text (if selection present)
             SQLQuery sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
                 setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
             } else {
+                if (transformer != null) {
+                    transformer.transformQuery(sqlQuery);
+                }
+
                 processQueries(Collections.singletonList(sqlQuery), newTab, false);
             }
         }
