@@ -112,6 +112,10 @@ public class SQLQuery {
         return query;
     }
 
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
     public Statement getStatement() {
         return statement;
     }

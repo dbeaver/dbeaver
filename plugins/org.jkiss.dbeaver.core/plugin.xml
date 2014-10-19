@@ -203,6 +203,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.explain" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.validate" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.validate.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.validate.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.analyse" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.analyse.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.analyse.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.count" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.single" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -768,6 +769,15 @@
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.count" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementCountHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -1516,6 +1526,13 @@
                         </with>
                     </visibleWhen>
                 </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
                 <separator name="query" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain">
                     <visibleWhen>
@@ -1576,6 +1593,7 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
             <separator name="other" visible="true"/>
         </menuContribution>
@@ -1649,6 +1667,11 @@
                 contextId="org.jkiss.dbeaver.ui.editors.sql"
                 schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
                 sequence="CTRL+ALT+X"/>
+        <key
+                commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"
+                contextId="org.jkiss.dbeaver.ui.editors.sql"
+                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+                sequence="CTRL+ALT+C"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
