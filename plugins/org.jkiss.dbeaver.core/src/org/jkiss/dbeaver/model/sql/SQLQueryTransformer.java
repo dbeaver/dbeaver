@@ -19,11 +19,13 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.dbeaver.DBException;
+
 /**
  * SQLQuery transformer callback
  */
 public interface SQLQueryTransformer {
 
-    void transformQuery(SQLQuery query);
+    void transformQuery(SQLQuery query) throws DBException;
 
 }
