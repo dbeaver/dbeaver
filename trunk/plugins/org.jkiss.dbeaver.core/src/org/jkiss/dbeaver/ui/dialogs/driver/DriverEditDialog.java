@@ -646,7 +646,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         driver.setModified(true);
 
         // Set libraries
-        for (DriverFileDescriptor lib : libList) {
+        for (DriverFileDescriptor lib : CommonUtils.safeCollection(libList)) {
             driver.addLibrary(lib);
         }
         for (DriverFileDescriptor lib : CommonUtils.copyList(driver.getFiles())) {
