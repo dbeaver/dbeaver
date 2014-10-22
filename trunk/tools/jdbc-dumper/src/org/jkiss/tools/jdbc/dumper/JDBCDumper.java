@@ -105,34 +105,35 @@ public class JDBCDumper
                         schemas.add("%");
                     }
                 }
-                final String catalogName = catalog;
                 for (final String schema : schemas) {
                     dumpResultSet("Tables of " + catalog + "." + schema, "", metaData.getTables(catalog, schema, "%", null),
                         new NestedFetcher() {
                             @Override
                             public void readNestedInfo(ResultSet resultSet) throws SQLException {
                                 String tableName = resultSet.getString("TABLE_NAME");
+                                String catName = resultSet.getString("TABLE_CAT");
+                                String schemaName = resultSet.getString("TABLE_SCHEM");
                                 System.out.println("\tColumns:");
                                 try {
-                                    dumpResultSet(null, "\t\t", metaData.getColumns(catalogName, schema, tableName, "%"), null);
+                                    dumpResultSet(null, "\t\t", metaData.getColumns(catName, schemaName, tableName, "%"), null);
                                 } catch (Throwable e) {
                                     e.printStackTrace();
                                 }
                                 System.out.println("\tIndexes:");
                                 try {
-                                    dumpResultSet(null, "\t\t", metaData.getIndexInfo(catalogName, schema, tableName, false, false), null);
+                                    dumpResultSet(null, "\t\t", metaData.getIndexInfo(catName, schemaName, tableName, false, false), null);
                                 } catch (Throwable e) {
                                     e.printStackTrace();
                                 }
                                 System.out.println("\tImported Keys:");
                                 try {
-                                    dumpResultSet(null, "\t\t", metaData.getImportedKeys(catalogName, schema, tableName), null);
+                                    dumpResultSet(null, "\t\t", metaData.getImportedKeys(catName, schemaName, tableName), null);
                                 } catch (Throwable e) {
                                     e.printStackTrace();
                                 }
                                 System.out.println("\tExported Keys:");
                                 try {
-                                    dumpResultSet(null, "\t\t", metaData.getExportedKeys(catalogName, schema, tableName), null);
+                                    dumpResultSet(null, "\t\t", metaData.getExportedKeys(catName, schemaName, tableName), null);
                                 } catch (Throwable e) {
                                     e.printStackTrace();
                                 }
