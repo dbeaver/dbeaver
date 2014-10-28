@@ -900,6 +900,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
+/*
+        // Try to restore old disabled files
+        if (downloadCandidates.isEmpty() && isFailed) {
+            for (DriverFileDescriptor file : files) {
+                if (file.isDisabled() && !file.isCustom() && file.isLocal()) {
+                    file.setDisabled(false);
+                }
+            }
+        }
+*/
+
         if (!downloadCandidates.isEmpty()) {
             final StringBuilder libNames = new StringBuilder();
             for (DriverFileDescriptor lib : downloadCandidates) {
