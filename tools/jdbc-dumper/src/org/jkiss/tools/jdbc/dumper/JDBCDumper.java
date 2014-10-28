@@ -101,9 +101,16 @@ public class JDBCDumper
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }
-                    if (schemas.isEmpty()) {
-                        schemas.add("%");
+                }
+                if (schemas.isEmpty() && catalogs.size() == 1) {
+                    try {
+                        schemas = dumpResultSetAndReturn(catalog + " Schemas", metaData.getSchemas(), "TABLE_SCHEM");
+                    } catch (Throwable e) {
+                        e.printStackTrace();
                     }
+                }
+                if (schemas.isEmpty()) {
+                    schemas.add("%");
                 }
                 for (final String schema : schemas) {
                     dumpResultSet("Tables of " + catalog + "." + schema, "", metaData.getTables(catalog, schema, "%", null),
