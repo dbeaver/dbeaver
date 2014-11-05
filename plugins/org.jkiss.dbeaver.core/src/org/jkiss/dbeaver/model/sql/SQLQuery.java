@@ -19,14 +19,12 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
@@ -36,6 +34,8 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.IToken;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
@@ -55,16 +55,19 @@ public class SQLQuery {
 
     static final Log log = LogFactory.getLog(SQLQuery.class);
 
+    @NotNull
     private String query;
-    private List<SQLQueryParameter> parameters;
     private int offset;
     private int length;
     private Object data;
+    @NotNull
     private SQLQueryType type;
+    @Nullable
     private Statement statement;
+    private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
 
-    public SQLQuery(String query, int offset, int length)
+    public SQLQuery(@NotNull String query, int offset, int length)
     {
         this.query = query;
         this.offset = offset;
@@ -101,7 +104,7 @@ public class SQLQuery {
             } else {
                 type = SQLQueryType.DDL;
             }
-        } catch (JSQLParserException e) {
+        } catch (Throwable e) {
             this.type = SQLQueryType.UNLKNOWN;
             log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
