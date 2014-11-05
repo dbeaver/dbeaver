@@ -1,3 +1,5 @@
+FEATURE: Full DB text search
+
 BUG: Save navigation filter and use correct nav page index
 
 BUG: open object (F4) with FQ name (schema)

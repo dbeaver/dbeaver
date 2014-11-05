@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
  */
 public class GlobalPropertyTester extends PropertyTester
 {
-    //static final Log log = LogFactory.getLog(ObjectPropertyTester.class);
+    //static final Log log = LogFactory.get vLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.global";
     public static final String PROP_STANDALONE = "standalone";
