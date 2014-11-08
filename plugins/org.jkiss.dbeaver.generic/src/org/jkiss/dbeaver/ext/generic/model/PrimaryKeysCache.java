@@ -71,14 +71,14 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
     }
 
+    protected String getDefaultObjectName(String parentName) {
+        return parentName.toUpperCase() + "_PK";
+    }
+
     @Override
     protected GenericPrimaryKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String pkName, ResultSet dbResult)
         throws SQLException, DBException
     {
-        if (CommonUtils.isEmpty(pkName)) {
-            // [JDBC] Some drivers return empty foreign key names
-            pkName = parent.getName().toUpperCase() + "_PK";
-        }
         return new GenericPrimaryKey(
             parent,
             pkName,
