@@ -228,6 +228,9 @@ public abstract class JDBCCompositeCache<
                         String objectName = objectColumnName instanceof Number ?
                             JDBCUtils.safeGetString(dbResult, ((Number)objectColumnName).intValue()) :
                             JDBCUtils.safeGetString(dbResult, objectColumnName.toString());
+                        if (CommonUtils.isEmpty(objectName)) {
+                            objectName = getDefaultObjectName(parentName);
+                        }
 
                         if (forParent == null && CommonUtils.isEmpty(parentName)) {
                             // No parent - can't evaluate it
@@ -360,6 +363,10 @@ public abstract class JDBCCompositeCache<
             }
         }
 
+    }
+
+    protected String getDefaultObjectName(String parentName) {
+        return parentName == null ? "OBJ" : parentName.toUpperCase() + "_OBJ";
     }
 
 }
