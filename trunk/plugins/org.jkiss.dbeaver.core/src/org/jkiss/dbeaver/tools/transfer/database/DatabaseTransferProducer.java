@@ -80,7 +80,11 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 // Turn off auto-commit in source DB
                 // Auto-commit has to be turned off because some drivers allows to read LOBs and
                 // other complex structures only in transactional mode
-                session.getTransactionManager().setAutoCommit(false);
+                try {
+                    session.getTransactionManager().setAutoCommit(false);
+                } catch (DBCException e) {
+                    log.warn("Can't change auto-commit", e);
+                }
 
             }
             long totalRows = 0;
