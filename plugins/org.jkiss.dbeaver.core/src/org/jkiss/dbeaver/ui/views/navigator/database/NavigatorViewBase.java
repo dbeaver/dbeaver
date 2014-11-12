@@ -220,7 +220,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 return ((DBNDataSource)lastSelection).getDataSourceContainer();
             } else if (((DBNDatabaseNode) lastSelection).getObject() != null) {
                 final DBPDataSource dataSource = ((DBNDatabaseNode) lastSelection).getObject().getDataSource();
-                return dataSource.getContainer();
+                return dataSource == null ? null : dataSource.getContainer();
             }
         }
         return null;
