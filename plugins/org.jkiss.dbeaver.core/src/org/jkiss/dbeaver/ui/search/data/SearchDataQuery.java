@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.search.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
@@ -30,14 +29,10 @@ public class SearchDataQuery implements IObjectSearchQuery {
 
     static final Log log = LogFactory.getLog(SearchDataQuery.class);
 
-    private final DBPDataSource dataSource;
     private final SearchDataParams params;
 
-    private SearchDataQuery(
-        DBPDataSource dataSource,
-        SearchDataParams params)
+    private SearchDataQuery(SearchDataParams params)
     {
-        this.dataSource = dataSource;
         this.params = params;
     }
 
@@ -90,12 +85,10 @@ public class SearchDataQuery implements IObjectSearchQuery {
         }
     }
 
-    public static SearchDataQuery createQuery(
-        DBPDataSource dataSource,
-        SearchDataParams params)
+    public static SearchDataQuery createQuery(SearchDataParams params)
         throws DBException
     {
-        return new SearchDataQuery(dataSource, params);
+        return new SearchDataQuery(params);
     }
 
 

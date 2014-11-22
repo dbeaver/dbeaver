@@ -22,10 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
@@ -35,8 +32,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -149,37 +144,38 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         {
             final DBeaverCore core = DBeaverCore.getInstance();
 
-            Group sourceGroup = UIUtils.createControlGroup(optionsGroup, "Databases", 1, GridData.FILL_BOTH, 0);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            sourceGroup.setLayoutData(gd);
+            UIUtils.createControlLabel(optionsGroup, "Databases");
             final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
             DBNNode rootNode = projectNode == null ? core.getNavigatorModel().getRoot() : projectNode.getDatabases();
-            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE | SWT.CHECK);
+            dataSourceTree = new DatabaseNavigatorTree(optionsGroup, rootNode, SWT.SINGLE | SWT.CHECK);
             dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            dataSourceTree.getViewer().addFilter(new ViewerFilter() {
+            final CheckboxTreeViewer viewer = (CheckboxTreeViewer) dataSourceTree.getViewer();
+            viewer.addFilter(new ViewerFilter() {
                 @Override
-                public boolean select(Viewer viewer, Object parentElement, Object element)
-                {
+                public boolean select(Viewer viewer, Object parentElement, Object element) {
                     if (element instanceof TreeLoadNode) {
                         return true;
                     }
                     if (element instanceof DBNNode) {
                         if (element instanceof DBNDatabaseFolder) {
-                            DBNDatabaseFolder folder = (DBNDatabaseFolder)element;
+                            DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
                             Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
                             return folderItemsClass != null && DBSObjectContainer.class.isAssignableFrom(folderItemsClass);
                         }
                         if (element instanceof DBNLocalFolder ||
                             element instanceof DBNProjectDatabases ||
                             element instanceof DBNDataSource ||
-                            (element instanceof DBSWrapper && ((DBSWrapper)element).getObject() instanceof DBSObjectContainer))
-                        {
+                            (element instanceof DBSWrapper && ((DBSWrapper) element).getObject() instanceof DBSObjectContainer)) {
                             return true;
                         }
                     }
                     return false;
+                }
+            });
+            viewer.addCheckStateListener(new ICheckStateListener() {
+                @Override
+                public void checkStateChanged(CheckStateChangedEvent event) {
+                    updateEnablement();
                 }
             });
         }
@@ -192,36 +188,24 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         }
     }
 
-    private DBNNode getSelectedNode()
+    private List<DBSObject> getSelectedSources()
     {
-        IStructuredSelection selection = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
-        if (!selection.isEmpty()) {
-            return (DBNNode) selection.getFirstElement();
-        }
-        return null;
-    }
-
-    private DBPDataSource getSelectedDataSource()
-    {
-        DBNNode node = getSelectedNode();
-        if (node instanceof DBSWrapper) {
-            DBSObject object = ((DBSWrapper)node).getObject();
-            if (object != null && object.getDataSource() != null) {
-                return object.getDataSource();
+        List<DBSObject> result = new ArrayList<DBSObject>();
+        for (Object sel : ((CheckboxTreeViewer)dataSourceTree.getViewer()).getCheckedElements()) {
+            if (sel instanceof DBSWrapper) {
+                DBSObject object = ((DBSWrapper) sel).getObject();
+                if (object != null && object.getDataSource() != null) {
+                    result.add(object);
+                }
             }
         }
-        return null;
-    }
-
-    private DBSStructureAssistant getSelectedStructureAssistant()
-    {
-        return DBUtils.getAdapter(DBSStructureAssistant.class, getSelectedDataSource());
+        return result;
     }
 
     private void updateEnablement()
     {
         boolean enabled = false;
-        if (getSelectedDataSource() != null) {
+        if (!getSelectedSources().isEmpty()) {
             enabled = true;
         }
         container.setSearchEnabled(enabled);
@@ -245,17 +229,8 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
     @Override
     public SearchDataQuery createQuery() throws DBException
     {
-        DBNNode selectedNode = getSelectedNode();
-        DBSObjectContainer parentObject = null;
-        if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
-            parentObject = (DBSObjectContainer) ((DBSWrapper)selectedNode).getObject();
-        }
+        List<DBSObject> selectedSources = getSelectedSources();
 
-        DBPDataSource dataSource = getSelectedDataSource();
-        DBSStructureAssistant assistant = getSelectedStructureAssistant();
-        if (dataSource == null || assistant == null) {
-            throw new IllegalStateException("No active datasource");
-        }
         String dataSearchString = searchString;
 
         // Save search query
@@ -265,11 +240,11 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         }
 
         SearchDataParams params = new SearchDataParams();
-        params.setParentObject(parentObject);
+        params.setSources(selectedSources);
         params.setSearchString(dataSearchString);
         params.setCaseSensitive(caseSensitive);
         params.setMaxResults(maxResults);
-        return SearchDataQuery.createQuery(dataSource, params);
+        return SearchDataQuery.createQuery(params);
 
     }
 
