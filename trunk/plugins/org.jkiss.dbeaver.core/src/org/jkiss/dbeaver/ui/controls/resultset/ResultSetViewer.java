@@ -1153,6 +1153,8 @@ public class ResultSetViewer extends Viewer
         model.setMetaData(columns);
         if (model.isMetadataChanged()) {
             this.panelValueController = null;
+            this.curAttribute = null;
+            //getSpreadsheet().set
         }
     }
 
