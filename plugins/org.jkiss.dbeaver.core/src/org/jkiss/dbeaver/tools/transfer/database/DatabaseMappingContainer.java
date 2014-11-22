@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -57,7 +58,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     {
         this.source = sourceObject;
         this.target = targetObject;
-        setMappingType(context, DatabaseMappingType.existing);
+        refreshMappingType(context, DatabaseMappingType.existing);
     }
 
     @Override
@@ -77,32 +78,13 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         return mappingType;
     }
 
-    void setMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException
+    void refreshMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException
     {
         this.mappingType = mappingType;
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
         if (!CommonUtils.isEmpty(mappings)) {
-            try {
-                RuntimeUtils.run(context, true, true, new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        for (DatabaseMappingAttribute attr : mappings) {
-                            try {
-                                attr.updateMappingType(monitor);
-                            } catch (DBException e) {
-                                throw new InvocationTargetException(e);
-                            }
-                        }
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                if (e.getTargetException() instanceof DBException) {
-                    throw (DBException)e.getTargetException();
-                }
-                throw new DBCException("Error updating mappings", e.getTargetException());
-            } catch (InterruptedException e) {
-                // skip
+            for (DatabaseMappingAttribute attr : mappings) {
+                attr.updateMappingType(VoidProgressMonitor.INSTANCE);
             }
         }
     }
