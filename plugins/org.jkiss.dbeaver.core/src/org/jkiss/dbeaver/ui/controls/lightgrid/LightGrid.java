@@ -1244,6 +1244,8 @@ public abstract class LightGrid extends Canvas {
     {
         checkWidget();
         deselectAll();
+        vScroll.setSelection(0);
+        hScroll.setSelection(0);
 
         focusItem = -1;
         focusColumn = null;
