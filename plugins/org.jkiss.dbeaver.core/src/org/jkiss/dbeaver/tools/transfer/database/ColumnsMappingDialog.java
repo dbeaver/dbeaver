@@ -22,12 +22,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -85,7 +85,7 @@ public class ColumnsMappingDialog extends StatusDialog {
             " [" + mapping.getSource().getDataSource().getContainer().getName() + "]");
         new Label(composite, SWT.NONE).setText("Target entity: " + mapping.getTargetName() +
             " [" + settings.getTargetDataSource(mapping).getContainer().getName() + "]");
-        mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+        mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
         gd.heightHint = 300;
@@ -93,6 +93,30 @@ public class ColumnsMappingDialog extends StatusDialog {
         mappingViewer.getTable().setLinesVisible(true);
         mappingViewer.getTable().setHeaderVisible(true);
         mappingViewer.setContentProvider(new ListContentProvider());
+        mappingViewer.getTable().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.character == SWT.DEL) {
+                    for (TableItem item : mappingViewer.getTable().getSelection()) {
+                        DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
+                        attribute.setMappingType(DatabaseMappingType.skip);
+                    }
+                    updateStatus(Status.OK_STATUS);
+                    mappingViewer.refresh();
+                } else if (e.character == SWT.SPACE) {
+                    for (TableItem item : mappingViewer.getTable().getSelection()) {
+                        DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
+                        attribute.setMappingType(DatabaseMappingType.existing);
+                        try {
+                            attribute.updateMappingType(VoidProgressMonitor.INSTANCE);
+                        } catch (DBException e1) {
+                            updateStatus(RuntimeUtils.makeExceptionStatus(e1));
+                        }
+                    }
+                    mappingViewer.refresh();
+                }
+            }
+        });
 
         {
             TableViewerColumn columnSource = new TableViewerColumn(mappingViewer, SWT.LEFT);
@@ -155,7 +179,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                             }
                         }
 
-                        items.add(DatabaseConsumerPageMapping.TARGET_NAME_SKIP);
+                        items.add(DatabaseMappingAttribute.TARGET_NAME_SKIP);
                         CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
                             mappingViewer.getTable(),
                             items.toArray(new String[items.size()]),
@@ -186,7 +210,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     try {
                         String name = CommonUtils.toString(value);
                         DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
-                        if (DatabaseConsumerPageMapping.TARGET_NAME_SKIP.equals(name)) {
+                        if (DatabaseMappingAttribute.TARGET_NAME_SKIP.equals(name)) {
                             attrMapping.setMappingType(DatabaseMappingType.skip);
                         } else {
                             if (attrMapping.getParent().getMappingType() == DatabaseMappingType.existing &&

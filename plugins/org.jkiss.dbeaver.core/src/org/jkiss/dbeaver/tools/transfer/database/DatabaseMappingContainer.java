@@ -107,7 +107,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         }
     }
 
-    void setMappingType(DatabaseMappingType mappingType) throws DBException
+    void setMappingType(DatabaseMappingType mappingType)
     {
         this.mappingType = mappingType;
     }
@@ -143,7 +143,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         switch (mappingType) {
             case existing: return DBUtils.getObjectFullName(target);
             case create: return targetName;
-            case skip: return "[skip]";
+            case skip: return DatabaseMappingAttribute.TARGET_NAME_SKIP;
             default: return "?";
         }
     }
