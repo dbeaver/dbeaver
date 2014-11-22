@@ -25,10 +25,7 @@ import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -250,7 +247,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             typesGroup.setLayoutData(gd);
-            typesTable = new Table(typesGroup, SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
+            typesTable = new Table(typesGroup, SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
             typesTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -265,6 +262,13 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
                         }
                     }
                     updateEnablement();
+                }
+            });
+            typesTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDoubleClick(MouseEvent e) {
+                    TableItem tableItem = typesTable.getSelection()[0];
+                    tableItem.setChecked(!tableItem.getChecked());
                 }
             });
             typesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
