@@ -55,13 +55,13 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
 
     static final Log log = LogFactory.getLog(SearchMetadataPage.class);
 
-    private static final String PROP_MASK = "search-view.mask"; //$NON-NLS-1$
-    private static final String PROP_CASE_SENSITIVE = "search-view.case-sensitive"; //$NON-NLS-1$
-    private static final String PROP_MAX_RESULT = "search-view.max-results"; //$NON-NLS-1$
-    private static final String PROP_MATCH_INDEX = "search-view.match-index"; //$NON-NLS-1$
-    private static final String PROP_HISTORY = "search-view.history"; //$NON-NLS-1$
-    private static final String PROP_OBJECT_TYPE = "search-view.object-type"; //$NON-NLS-1$
-    private static final String PROP_SOURCES = "search-view.object-source"; //$NON-NLS-1$
+    private static final String PROP_MASK = "search.metadata.mask"; //$NON-NLS-1$
+    private static final String PROP_CASE_SENSITIVE = "search.metadata.case-sensitive"; //$NON-NLS-1$
+    private static final String PROP_MAX_RESULT = "search.metadata.max-results"; //$NON-NLS-1$
+    private static final String PROP_MATCH_INDEX = "search.metadata.match-index"; //$NON-NLS-1$
+    private static final String PROP_HISTORY = "search.metadata.history"; //$NON-NLS-1$
+    private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
+    private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
 
     private IObjectSearchContainer container;
     private Table typesTable;
