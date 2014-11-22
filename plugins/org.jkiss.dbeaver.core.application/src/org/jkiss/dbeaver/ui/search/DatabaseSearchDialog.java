@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -166,6 +167,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             IObjectSearchPage page = (IObjectSearchPage) item.getData("page");
             page.saveState(store);
         }
+        RuntimeUtils.savePreferenceStore(store);
     }
 
     @Override
