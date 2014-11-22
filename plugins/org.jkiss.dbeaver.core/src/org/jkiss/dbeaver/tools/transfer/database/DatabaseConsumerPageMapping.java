@@ -149,7 +149,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
                                 if (mappingContainer.getMappingType() == DatabaseMappingType.create) {
                                     try {
-                                        mappingContainer.setMappingType(getContainer(), DatabaseMappingType.create);
+                                        mappingContainer.refreshMappingType(getContainer(), DatabaseMappingType.create);
                                     } catch (DBException e1) {
                                         log.error(e1);
                                     }
@@ -218,7 +218,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                                     attribute.setMappingType(DatabaseMappingType.skip);
                                 } else if (data instanceof DatabaseMappingContainer) {
                                     DatabaseMappingContainer container = (DatabaseMappingContainer) data;
-                                    container.setMappingType(getContainer(), DatabaseMappingType.skip);
+                                    container.refreshMappingType(getContainer(), DatabaseMappingType.skip);
                                 }
                             }
                             mappingViewer.refresh();
@@ -473,7 +473,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             if (mapping instanceof DatabaseMappingAttribute) {
                 ((DatabaseMappingAttribute)mapping).setMappingType(DatabaseMappingType.skip);
             } else {
-                ((DatabaseMappingContainer)mapping).setMappingType(getWizard().getContainer(), DatabaseMappingType.skip);
+                ((DatabaseMappingContainer)mapping).refreshMappingType(getWizard().getContainer(), DatabaseMappingType.skip);
             }
         } else if (name.equals(TARGET_NAME_BROWSE)) {
             mapExistingTable((DatabaseMappingContainer) mapping);
@@ -487,12 +487,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     for (DBSObject child : container.getChildren(VoidProgressMonitor.INSTANCE)) {
                         if (child instanceof DBSDataManipulator && name.equalsIgnoreCase(child.getName())) {
                             containerMapping.setTarget((DBSDataManipulator)child);
-                            containerMapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.existing);
+                            containerMapping.refreshMappingType(getWizard().getContainer(), DatabaseMappingType.existing);
                             return;
                         }
                     }
                 }
-                containerMapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.create);
+                containerMapping.refreshMappingType(getWizard().getContainer(), DatabaseMappingType.create);
                 ((DatabaseMappingContainer) mapping).setTargetName(name);
             } else {
                 DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) mapping;
@@ -538,11 +538,11 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 try {
                     if (object instanceof DBSDataManipulator) {
                         mapping.setTarget((DBSDataManipulator) object);
-                        mapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.existing);
+                        mapping.refreshMappingType(getWizard().getContainer(), DatabaseMappingType.existing);
                         mapColumns(mapping);
                     } else {
                         mapping.setTarget(null);
-                        mapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.unspecified);
+                        mapping.refreshMappingType(getWizard().getContainer(), DatabaseMappingType.unspecified);
                     }
                     setErrorMessage(null);
                 } catch (DBException e) {
@@ -564,7 +564,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         if (!CommonUtils.isEmpty(tableName)) {
             try {
                 mapping.setTargetName(tableName);
-                mapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.create);
+                mapping.refreshMappingType(getWizard().getContainer(), DatabaseMappingType.create);
                 mappingViewer.refresh();
                 updatePageCompletion();
             } catch (DBException e) {
