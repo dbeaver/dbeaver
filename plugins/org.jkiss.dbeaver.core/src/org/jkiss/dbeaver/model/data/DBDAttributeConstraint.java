@@ -200,7 +200,11 @@ public class DBDAttributeConstraint {
     public boolean equals(Object obj)
     {
         return obj instanceof DBDAttributeConstraint &&
-            CommonUtils.equalObjects(this.attribute, ((DBDAttributeConstraint) obj).attribute);
+            CommonUtils.equalObjects(this.attribute, ((DBDAttributeConstraint) obj).attribute) &&
+            CommonUtils.equalObjects(this.criteria, ((DBDAttributeConstraint) obj).criteria) &&
+            CommonUtils.equalObjects(this.operator, ((DBDAttributeConstraint) obj).operator) &&
+            CommonUtils.equalObjects(this.reverseOperator, ((DBDAttributeConstraint) obj).reverseOperator) &&
+            CommonUtils.equalObjects(this.value, ((DBDAttributeConstraint) obj).value);
     }
 
     @Override
