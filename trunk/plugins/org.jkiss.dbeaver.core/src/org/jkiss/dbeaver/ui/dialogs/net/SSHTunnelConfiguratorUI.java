@@ -45,6 +45,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Text userNameText;
     private Combo authMethodCombo;
     private Text privateKeyText;
+    private Label pwdLabel;
+    private Composite pwdControlGroup;
     private Text passwordText;
     private Button savePasswordCheckbox;
     private Label privateKeyLabel;
@@ -98,7 +100,18 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             }
         });
 
-        passwordText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
+        pwdLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_password);
+        pwdControlGroup = UIUtils.createPlaceholder(composite, 3);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = 200;
+        pwdControlGroup.setLayoutData(gd);
+
+        passwordText = new Text(pwdControlGroup, SWT.BORDER | SWT.PASSWORD);
+
+        new Label(pwdControlGroup, SWT.NONE).setText("   ");
+        savePasswordCheckbox = UIUtils.createCheckbox(pwdControlGroup, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
+
+        keepAliveText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
 
         authMethodCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -108,11 +121,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 composite.layout();
             }
         });
-        
-        UIUtils.createPlaceholder(composite,1);
-        savePasswordCheckbox = UIUtils.createCheckbox(composite, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
 
-        keepAliveText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -168,12 +177,19 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private void updatePrivateKeyVisibility()
     {
         boolean isPassword = authMethodCombo.getSelectionIndex() == 0;
-        GridData gd = (GridData)pkControlGroup.getLayoutData();
-        gd.exclude = isPassword;
-        gd = (GridData)privateKeyLabel.getLayoutData();
-        gd.exclude = isPassword;
+        ((GridData)pkControlGroup.getLayoutData()).exclude = isPassword;
         pkControlGroup.setVisible(!isPassword);
+        ((GridData)privateKeyLabel.getLayoutData()).exclude = isPassword;
         privateKeyLabel.setVisible(!isPassword);
+
+        pwdControlGroup.setVisible(isPassword);
+        ((GridData)pwdControlGroup.getLayoutData()).exclude = !isPassword;
+        pwdLabel.setVisible(isPassword);
+        ((GridData)pwdLabel.getLayoutData()).exclude = !isPassword;
+
+        if (!isPassword) {
+            savePasswordCheckbox.setSelection(true);
+        }
     }
 
     @Override
