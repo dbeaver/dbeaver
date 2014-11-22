@@ -2331,11 +2331,18 @@
     <extension point="org.jkiss.dbeaver.search">
         <searchProvider
                 id="database_metadata"
-                label="Database Metadata"
+                label="Metadata"
                 description="Search database metadata objects (tables, columns, etc)"
                 icon="icons/tree/table.png"
                 pageClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
                 resultsClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"/>
+        <searchProvider
+                id="database_data"
+                label="Tables Data"
+                description="Search tables data for a string"
+                icon="icons/sql/sql_text.png"
+                pageClass="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
+                resultsClass="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"/>
     </extension>
 
 </plugin>
