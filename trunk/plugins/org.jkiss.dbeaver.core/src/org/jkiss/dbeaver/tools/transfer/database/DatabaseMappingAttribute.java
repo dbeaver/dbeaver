@@ -41,6 +41,7 @@ import java.util.List;
 */
 class DatabaseMappingAttribute implements DatabaseMappingObject {
 
+    public static final String TARGET_NAME_SKIP = "[skip]";
     final DatabaseMappingContainer parent;
     DBSAttributeBase source;
     DBSEntityAttribute target;
@@ -90,7 +91,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         switch (mappingType) {
             case existing: return DBUtils.getObjectFullName(target);
             case create: return targetName;
-            case skip: return "[skip]";
+            case skip: return TARGET_NAME_SKIP;
             default: return "?";
         }
     }
