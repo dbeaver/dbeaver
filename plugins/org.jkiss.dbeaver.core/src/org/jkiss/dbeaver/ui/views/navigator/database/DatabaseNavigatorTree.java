@@ -22,10 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
@@ -94,6 +91,17 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | style;
         if (checkEnabled) {
             this.viewer = new CheckboxTreeViewer(this, treeStyle);
+            ((CheckboxTreeViewer)this.viewer).setCheckStateProvider(new ICheckStateProvider() {
+                @Override
+                public boolean isChecked(Object element) {
+                    return false;
+                }
+
+                @Override
+                public boolean isGrayed(Object element) {
+                    return element instanceof DBNContainer;
+                }
+            });
         } else {
             this.viewer = new TreeViewer(this, treeStyle) {
                 @Override
