@@ -231,7 +231,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                                     attribute.updateMappingType(VoidProgressMonitor.INSTANCE);
                                 } else if (data instanceof DatabaseMappingContainer) {
                                     DatabaseMappingContainer container = (DatabaseMappingContainer) data;
-                                    container.setMappingType(getContainer(), DatabaseMappingType.existing);
+                                    setMappingTarget(container, container.getSource().getName());
                                 }
                             }
                             mappingViewer.refresh();
