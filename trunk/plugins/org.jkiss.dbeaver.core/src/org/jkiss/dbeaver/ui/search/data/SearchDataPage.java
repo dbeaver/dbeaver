@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.ui.search.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
@@ -36,7 +38,6 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -55,16 +56,14 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
 
     static final Log log = LogFactory.getLog(SearchDataPage.class);
 
-    private static final String PROP_MASK = "search-view.mask"; //$NON-NLS-1$
-    private static final String PROP_CASE_SENSITIVE = "search-view.case-sensitive"; //$NON-NLS-1$
-    private static final String PROP_MAX_RESULT = "search-view.max-results"; //$NON-NLS-1$
-    private static final String PROP_MATCH_INDEX = "search-view.match-index"; //$NON-NLS-1$
-    private static final String PROP_HISTORY = "search-view.history"; //$NON-NLS-1$
-    private static final String PROP_OBJECT_TYPE = "search-view.object-type"; //$NON-NLS-1$
-    private static final String PROP_SOURCES = "search-view.object-source"; //$NON-NLS-1$
+    private static final String PROP_MASK = "search.data.mask"; //$NON-NLS-1$
+    private static final String PROP_CASE_SENSITIVE = "search.data.case-sensitive"; //$NON-NLS-1$
+    private static final String PROP_MAX_RESULT = "search.data.max-results"; //$NON-NLS-1$
+    private static final String PROP_MATCH_INDEX = "search.data.match-index"; //$NON-NLS-1$
+    private static final String PROP_HISTORY = "search.data.history"; //$NON-NLS-1$
+    private static final String PROP_SOURCES = "search.data.object-source"; //$NON-NLS-1$
 
     private IObjectSearchContainer container;
-    private Table typesTable;
     private Combo searchText;
     private DatabaseNavigatorTree dataSourceTree;
 
@@ -72,9 +71,7 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
     private boolean caseSensitive;
     private int maxResults;
     private int matchTypeIndex;
-    private Set<DBSObjectType> checkedTypes = new HashSet<DBSObjectType>();
     private Set<String> searchHistory = new LinkedHashSet<String>();
-    private Set<String> savedTypeNames = new HashSet<String>();
     private List<DBNNode> sourceNodes = new ArrayList<DBNNode>();
 
     public SearchDataPage() {
@@ -89,7 +86,7 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         searchGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         searchGroup.setLayout(new GridLayout(3, false));
         setControl(searchGroup);
-        UIUtils.createControlLabel(searchGroup, CoreMessages.dialog_search_objects_label_object_name);
+        UIUtils.createControlLabel(searchGroup, "String");
         searchText = new Combo(searchGroup, SWT.DROP_DOWN);
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (searchString != null) {
@@ -141,7 +138,7 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         }
 
         Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
-        GridLayout layout = new GridLayout(2, true);
+        GridLayout layout = new GridLayout(1, true);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         optionsGroup.setLayout(layout);
@@ -152,13 +149,13 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         {
             final DBeaverCore core = DBeaverCore.getInstance();
 
-            Group sourceGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_objects_source, 1, GridData.FILL_BOTH, 0);
+            Group sourceGroup = UIUtils.createControlGroup(optionsGroup, "Databases", 1, GridData.FILL_BOTH, 0);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             sourceGroup.setLayoutData(gd);
             final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
             DBNNode rootNode = projectNode == null ? core.getNavigatorModel().getRoot() : projectNode.getDatabases();
-            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE);
+            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE | SWT.CHECK);
             dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             dataSourceTree.getViewer().addFilter(new ViewerFilter() {
@@ -185,78 +182,6 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
                     return false;
                 }
             });
-            dataSourceTree.getViewer().addSelectionChangedListener(
-                new ISelectionChangedListener() {
-                    @Override
-                    public void selectionChanged(SelectionChangedEvent event)
-                    {
-                        fillObjectTypes();
-                        updateEnablement();
-                        IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
-                        Object object = structSel.isEmpty() ? null : structSel.getFirstElement();
-                        if (object instanceof DBNNode) {
-                            for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
-                                if (node instanceof DBNDataSource) {
-                                    DBNDataSource dsNode = (DBNDataSource) node;
-                                    dsNode.initializeNode(null, new DBRProcessListener() {
-                                        @Override
-                                        public void onProcessFinish(IStatus status)
-                                        {
-                                            if (status.isOK()) {
-                                                Display.getDefault().asyncExec(new Runnable() {
-                                                    @Override
-                                                    public void run()
-                                                    {
-                                                        if (!dataSourceTree.isDisposed()) {
-                                                            fillObjectTypes();
-                                                        }
-                                                    }
-                                                });
-                                            }
-                                        }
-                                    });
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            );
-        }
-
-        {
-            Group typesGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_object_types, 1, GridData.FILL_BOTH, 0);
-            gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 300;
-            typesGroup.setLayoutData(gd);
-            typesTable = new Table(typesGroup, SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
-            typesTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    //checkedTypes.clear();
-                    for (TableItem item : typesTable.getItems()) {
-                        DBSObjectType objectType = (DBSObjectType) item.getData();
-                        if (item.getChecked()) {
-                            checkedTypes.add(objectType);
-                        } else {
-                            checkedTypes.remove(objectType);
-                        }
-                    }
-                    updateEnablement();
-                }
-            });
-            typesTable.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDoubleClick(MouseEvent e) {
-                    TableItem tableItem = typesTable.getSelection()[0];
-                    tableItem.setChecked(!tableItem.getChecked());
-                }
-            });
-            typesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_type);
-            UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_description);
         }
 
         if (!sourceNodes.isEmpty()) {
@@ -293,48 +218,12 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         return DBUtils.getAdapter(DBSStructureAssistant.class, getSelectedDataSource());
     }
 
-    private void fillObjectTypes()
-    {
-        DBSStructureAssistant assistant = getSelectedStructureAssistant();
-        typesTable.removeAll();
-        if (assistant == null) {
-            // No structure assistant - no object types
-        } else {
-            for (DBSObjectType objectType : assistant.getSupportedObjectTypes()) {
-                TableItem item = new TableItem(typesTable, SWT.NONE);
-                item.setText(objectType.getTypeName());
-                if (objectType.getImage() != null) {
-                    item.setImage(0, objectType.getImage());
-                }
-                if (!CommonUtils.isEmpty(objectType.getDescription())) {
-                    item.setText(1, objectType.getDescription());
-                }
-                item.setData(objectType);
-                if (checkedTypes.contains(objectType)) {
-                    item.setChecked(true);
-                } else if (savedTypeNames.contains(objectType.getTypeClass().getName())) {
-                    item.setChecked(true);
-                    checkedTypes.add(objectType);
-                    savedTypeNames.remove(objectType.getTypeClass().getName());
-                }
-            }
-        }
-        for (TableColumn column : typesTable.getColumns()) {
-            column.pack();
-        }
-        updateEnablement();
-    }
-
     private void updateEnablement()
     {
         boolean enabled = false;
         if (getSelectedDataSource() != null) {
-            enabled = !checkedTypes.isEmpty();
+            enabled = true;
         }
-        if (CommonUtils.isEmpty(searchString)) {
-            enabled = false;
-        }
-
         container.setSearchEnabled(enabled);
     }
 
@@ -366,12 +255,6 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         DBSStructureAssistant assistant = getSelectedStructureAssistant();
         if (dataSource == null || assistant == null) {
             throw new IllegalStateException("No active datasource");
-        }
-        List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
-        for (TableItem item : typesTable.getItems()) {
-            if (item.getChecked()) {
-                objectTypes.add((DBSObjectType) item.getData());
-            }
         }
         String dataSearchString = searchString;
 
@@ -433,16 +316,6 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
                 }
             }
         }
-
-        {
-            String type = store.getString(PROP_OBJECT_TYPE);
-            if (!CommonUtils.isEmpty(type)) {
-                StringTokenizer st = new StringTokenizer(type, "|"); //$NON-NLS-1$
-                while (st.hasMoreTokens()) {
-                    savedTypeNames.add(st.nextToken());
-                }
-            }
-        }
     }
 
     @Override
@@ -476,17 +349,6 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
                 store.setValue(PROP_HISTORY + "." + historyIndex, history); //$NON-NLS-1$
                 historyIndex++;
             }
-        }
-        {
-            // Object types
-            StringBuilder typesString = new StringBuilder();
-            for (DBSObjectType type : checkedTypes) {
-                if (typesString.length() > 0) {
-                    typesString.append("|"); //$NON-NLS-1$
-                }
-                typesString.append(type.getTypeClass().getName());
-            }
-            store.setValue(PROP_OBJECT_TYPE, typesString.toString());
         }
     }
 
