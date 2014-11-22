@@ -2,21 +2,14 @@ FEATURE: Full DB text search
 
 BUG: open object (F4) with FQ name (schema)
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
-NoSQL: in record mode show only existing attrs for dynamic metadata
-NoSQL: hide dynamic columns which presents in less than 50% of records. Show them as arrays??
 SQL folding
 MySQL and Cassandra + SSL.
-
-Expand/collapse All in Grid
-Edit collections
-Edit Mongo data
 
 Plain-text results representation
 Move main toolbar edit control in tab
 Save As+rename. Use external files in workspace
 Paste into multiple cells
 Transaction state in status bar
-Comment/uncomment: extra space after --
 
 Process scripts with external native tool (SQLPlus + mysql)
 Process SQL blocks (begin/end/final delimiter)
@@ -24,13 +17,18 @@ Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 SSL
 Secure-storage for passwords
 
+
+NOSQL:
+Expand/collapse All in Grid
+Edit collections
+Edit Mongo data
+In record mode show only existing attrs for dynamic metadata
+Hide dynamic columns which presents in less than 50% of records. Show them as arrays??
+
+
 4. Query manager fixes. + keep only primitive props + persistence
 5. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
 7. Check on MacOS
-8. HTTP tunnel?
-
-Aster Teradata
-BerkeleyDB
 
 Connection "dirty" flag handle
 Office formats support (xls, doc) for export/import. Possibly office extension.
