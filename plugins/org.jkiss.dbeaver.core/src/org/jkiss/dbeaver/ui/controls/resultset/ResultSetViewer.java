@@ -1038,10 +1038,12 @@ public class ResultSetViewer extends Viewer
     }
 
     private void setNewState(DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter) {
+        // Create filter copy to avoid modifications
+        dataFilter = new DBDDataFilter(dataFilter);
         // Search in history
         for (int i = 0; i < stateHistory.size(); i++) {
             StateItem item = stateHistory.get(i);
-            if (item.dataContainer == dataContainer && item.filter == dataFilter) {
+            if (item.dataContainer == dataContainer && CommonUtils.equalObjects(item.filter, dataFilter)) {
                 curState = item;
                 historyPosition = i;
                 return;
@@ -1999,7 +2001,8 @@ public class ResultSetViewer extends Viewer
                             }
 
                             if (error == null) {
-                                setNewState(dataContainer, useDataFilter);
+                                setNewState(dataContainer, dataFilter != null ? dataFilter :
+                                    (dataContainer == getDataContainer() ? model.getDataFilter() : null));
                             }
 
                             model.setUpdateInProgress(false);
