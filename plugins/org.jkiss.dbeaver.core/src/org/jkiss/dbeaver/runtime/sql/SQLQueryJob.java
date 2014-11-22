@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -420,12 +421,12 @@ public class SQLQueryJob extends DataSourceJob
                 }
             }
         }
-        catch (DBCException ex) {
+        catch (Throwable ex) {
+            if (!(ex instanceof DBException)) {
+                log.error("Unexpected error while processing SQL", ex);
+            }
             curResult.setError(ex);
             lastError = ex;
-        }
-        catch (Throwable ex) {
-            log.error("Unexpected error while processing SQL", ex);
         }
         curResult.setQueryTime(System.currentTimeMillis() - startTime);
 

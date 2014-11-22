@@ -59,7 +59,7 @@ public class SQLSemanticProcessor {
             return statement instanceof Select &&
                 ((Select) statement).getSelectBody() instanceof PlainSelect &&
                 ((PlainSelect) ((Select) statement).getSelectBody()).getInto() == null;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             //log.debug(e);
             return false;
         }
@@ -77,7 +77,7 @@ public class SQLSemanticProcessor {
                 }
             }
             return wrapQuery(dataSource, sqlQuery, dataFilter);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new DBException("SQL parse error", e);
         }
     }
