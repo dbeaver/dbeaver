@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.search.data;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.util.List;
 
@@ -28,7 +27,7 @@ import java.util.List;
  */
 public class SearchDataParams {
 
-    private DBSObject parentObject;
+    private List<DBSObject> sources;
     private String searchString;
     private boolean caseSensitive;
     private int maxResults;
@@ -37,12 +36,12 @@ public class SearchDataParams {
     {
     }
 
-    public DBSObject getParentObject() {
-        return parentObject;
+    public List<DBSObject> getSources() {
+        return sources;
     }
 
-    public void setParentObject(DBSObject parentObject) {
-        this.parentObject = parentObject;
+    public void setSources(List<DBSObject> sources) {
+        this.sources = sources;
     }
 
     public String getSearchString() {
