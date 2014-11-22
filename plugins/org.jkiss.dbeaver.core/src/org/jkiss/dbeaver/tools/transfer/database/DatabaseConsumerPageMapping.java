@@ -25,6 +25,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -61,7 +63,6 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     static final Log log = LogFactory.getLog(DatabaseConsumerPageMapping.class);
 
-    public static final String TARGET_NAME_SKIP = "[skip]";
     public static final String TARGET_NAME_BROWSE = "[browse]";
     private TreeViewer mappingViewer;
 
@@ -205,10 +206,44 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 }
             });
 
+            mappingViewer.getTree().addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyReleased(KeyEvent e) {
+                    try {
+                        if (e.character == SWT.DEL) {
+                            for (TreeItem item : mappingViewer.getTree().getSelection()) {
+                                Object data = item.getData();
+                                if (data instanceof DatabaseMappingAttribute) {
+                                    DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) data;
+                                    attribute.setMappingType(DatabaseMappingType.skip);
+                                } else if (data instanceof DatabaseMappingContainer) {
+                                    DatabaseMappingContainer container = (DatabaseMappingContainer) data;
+                                    container.setMappingType(getContainer(), DatabaseMappingType.skip);
+                                }
+                            }
+                            mappingViewer.refresh();
+                        } else if (e.character == SWT.SPACE) {
+                            for (TreeItem item : mappingViewer.getTree().getSelection()) {
+                                Object data = item.getData();
+                                if (data instanceof DatabaseMappingAttribute) {
+                                    DatabaseMappingAttribute attribute = (DatabaseMappingAttribute) item.getData();
+                                    attribute.setMappingType(DatabaseMappingType.existing);
+                                    attribute.updateMappingType(VoidProgressMonitor.INSTANCE);
+                                } else if (data instanceof DatabaseMappingContainer) {
+                                    DatabaseMappingContainer container = (DatabaseMappingContainer) data;
+                                    container.setMappingType(getContainer(), DatabaseMappingType.existing);
+                                }
+                            }
+                            mappingViewer.refresh();
+                        }
+                    } catch (DBException e1) {
+                        log.error(e1);
+                    }
+                }
+            });
             mappingViewer.addSelectionChangedListener(new ISelectionChangedListener() {
                 @Override
-                public void selectionChanged(SelectionChangedEvent event)
-                {
+                public void selectionChanged(SelectionChangedEvent event) {
                     DatabaseMappingObject mapping = getSelectedMapping();
                     mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
                     createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
@@ -235,13 +270,20 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             });
         }
 
+        {
+            Composite hintPanel = new Composite(composite, SWT.NONE);
+            hintPanel.setLayout(new GridLayout(3, false));
+            hintPanel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            new Label(hintPanel, SWT.NONE).setText("* DEL - skip column(s)  SPACE - map column(s)");
+        }
+
         setControl(composite);
     }
 
     private void createMappingsTree(Composite composite)
     {
         // Mapping table
-        mappingViewer = new TreeViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+        mappingViewer = new TreeViewer(composite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
         mappingViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         mappingViewer.getTree().setLinesVisible(true);
         mappingViewer.getTree().setHeaderVisible(true);
@@ -322,7 +364,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     final DatabaseConsumerSettings settings = getWizard().getPageSettings(DatabaseConsumerPageMapping.this, DatabaseConsumerSettings.class);
                     String name = CommonUtils.toString(value);
                     DBPDataSource dataSource = settings.getTargetDataSource((DatabaseMappingObject) element);
-                    if (!name.equals(TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
+                    if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE) && dataSource != null) {
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
                     setMappingTarget((DatabaseMappingObject) element, name);
@@ -417,7 +459,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             }
 
         }
-        items.add(TARGET_NAME_SKIP);
+        items.add(DatabaseMappingAttribute.TARGET_NAME_SKIP);
         CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
             mappingViewer.getTree(),
             items.toArray(new String[items.size()]),
@@ -427,7 +469,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void setMappingTarget(DatabaseMappingObject mapping, String name) throws DBException
     {
-        if (name.equals(TARGET_NAME_SKIP)) {
+        if (name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP)) {
             if (mapping instanceof DatabaseMappingAttribute) {
                 ((DatabaseMappingAttribute)mapping).setMappingType(DatabaseMappingType.skip);
             } else {
