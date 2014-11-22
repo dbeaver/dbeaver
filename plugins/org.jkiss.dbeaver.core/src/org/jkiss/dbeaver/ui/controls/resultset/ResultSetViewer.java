@@ -1933,12 +1933,8 @@ public class ResultSetViewer extends Viewer
     {
         if (dataPumpJob == null) {
             // Read data
-            DBDDataFilter useDataFilter = dataFilter;
-            if (useDataFilter == null) {
-                if (dataContainer == getDataContainer()) {
-                    useDataFilter = model.getDataFilter();
-                }
-            }
+            final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
+                (dataContainer == getDataContainer() ? model.getDataFilter() : null);
             dataPumpJob = new ResultSetDataPumpJob(
                 dataContainer,
                 useDataFilter,
@@ -2003,7 +1999,7 @@ public class ResultSetViewer extends Viewer
                             }
 
                             if (error == null) {
-                                setNewState(dataContainer, dataFilter);
+                                setNewState(dataContainer, useDataFilter);
                             }
 
                             model.setUpdateInProgress(false);
