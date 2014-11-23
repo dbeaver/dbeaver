@@ -107,57 +107,6 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             }
         });
 
-        {
-            //new Label(searchGroup, SWT.NONE);
-            Composite optionsGroup2 = UIUtils.createPlaceholder(searchGroup, 5, 5);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 3;
-            optionsGroup2.setLayoutData(gd);
-
-            UIUtils.createControlLabel(optionsGroup2, CoreMessages.dialog_search_objects_label_name_match);
-            final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchMetadataConstants.MATCH_INDEX_STARTS_WITH);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchMetadataConstants.MATCH_INDEX_CONTAINS);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchMetadataConstants.MATCH_INDEX_LIKE);
-            matchCombo.select(0);
-            matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            if (matchTypeIndex >= 0) {
-                matchCombo.select(matchTypeIndex);
-            }
-            matchCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    matchTypeIndex = matchCombo.getSelectionIndex();
-                }
-            });
-
-            if (maxResults <= 0) {
-                maxResults = 100;
-            }
-
-            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
-            maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            maxResultsSpinner.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e)
-                {
-                    maxResults = maxResultsSpinner.getSelection();
-                }
-            });
-
-            final Button caseCheckbox = UIUtils.createCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, caseSensitive);
-            maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            caseCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    caseSensitive = caseCheckbox.getSelection();
-                }
-            });
-
-        }
-
         Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
         GridLayout layout = new GridLayout(2, true);
         layout.marginHeight = 0;
@@ -243,11 +192,64 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
         }
 
         {
-            Group typesGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_object_types, 1, GridData.FILL_BOTH, 0);
+            Group settingsGroup = UIUtils.createControlGroup(optionsGroup, "Settings", 2, GridData.FILL_BOTH, 0);
             gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
-            typesGroup.setLayoutData(gd);
-            typesTable = new Table(typesGroup, SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
+            settingsGroup.setLayoutData(gd);
+
+
+            {
+                //new Label(searchGroup, SWT.NONE);
+                UIUtils.createControlLabel(settingsGroup, CoreMessages.dialog_search_objects_label_name_match);
+                final Combo matchCombo = new Combo(settingsGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchMetadataConstants.MATCH_INDEX_STARTS_WITH);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchMetadataConstants.MATCH_INDEX_CONTAINS);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchMetadataConstants.MATCH_INDEX_LIKE);
+                matchCombo.select(0);
+                matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                if (matchTypeIndex >= 0) {
+                    matchCombo.select(matchTypeIndex);
+                }
+                matchCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        matchTypeIndex = matchCombo.getSelectionIndex();
+                    }
+                });
+                matchCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+                if (maxResults <= 0) {
+                    maxResults = 100;
+                }
+
+                final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(settingsGroup, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
+                maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                maxResultsSpinner.addModifyListener(new ModifyListener() {
+                    @Override
+                    public void modifyText(ModifyEvent e)
+                    {
+                        maxResults = maxResultsSpinner.getSelection();
+                    }
+                });
+                maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+                final Button caseCheckbox = UIUtils.createLabelCheckbox(settingsGroup, CoreMessages.dialog_search_objects_case_sensitive, caseSensitive);
+                caseCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        caseSensitive = caseCheckbox.getSelection();
+                    }
+                });
+                caseCheckbox.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            }
+
+            Label otLabel = UIUtils.createControlLabel(settingsGroup, CoreMessages.dialog_search_objects_group_object_types);
+            otLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+
+            typesTable = new Table(settingsGroup, SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION);
             typesTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
