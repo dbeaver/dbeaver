@@ -2338,7 +2338,7 @@
                 resultsClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"/>
         <searchProvider
                 id="database_data"
-                label="Tables Data"
+                label="Full-text"
                 description="Search tables data for a string"
                 icon="icons/sql/sql_text.png"
                 pageClass="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
