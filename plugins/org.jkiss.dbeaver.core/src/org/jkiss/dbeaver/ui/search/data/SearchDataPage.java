@@ -64,6 +64,7 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
 
     private String searchString;
     private boolean caseSensitive;
+    private boolean fastSearch; // Indexed
     private int maxResults;
     private int matchTypeIndex;
     private Set<String> searchHistory = new LinkedHashSet<String>();
@@ -144,10 +145,10 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         {
             final DBeaverCore core = DBeaverCore.getInstance();
 
-            UIUtils.createControlLabel(optionsGroup, "Databases");
+            Group databasesGroup = UIUtils.createControlGroup(optionsGroup, "Databases", 1, GridData.FILL_BOTH, 0);
             final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
             DBNNode rootNode = projectNode == null ? core.getNavigatorModel().getRoot() : projectNode.getDatabases();
-            dataSourceTree = new DatabaseNavigatorTree(optionsGroup, rootNode, SWT.SINGLE | SWT.CHECK);
+            dataSourceTree = new DatabaseNavigatorTree(databasesGroup, rootNode, SWT.SINGLE | SWT.CHECK);
             dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
             final CheckboxTreeViewer viewer = (CheckboxTreeViewer) dataSourceTree.getViewer();
             viewer.addFilter(new ViewerFilter() {
