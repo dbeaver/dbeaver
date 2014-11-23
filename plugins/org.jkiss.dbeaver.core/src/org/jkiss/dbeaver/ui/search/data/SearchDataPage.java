@@ -24,6 +24,7 @@ import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -100,41 +101,8 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
             }
         });
 
-        {
-            //new Label(searchGroup, SWT.NONE);
-            Composite optionsGroup2 = UIUtils.createPlaceholder(searchGroup, 5, 5);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 3;
-            optionsGroup2.setLayoutData(gd);
-
-            if (maxResults <= 0) {
-                maxResults = 100;
-            }
-
-            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
-            maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            maxResultsSpinner.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e)
-                {
-                    maxResults = maxResultsSpinner.getSelection();
-                }
-            });
-
-            final Button caseCheckbox = UIUtils.createCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, caseSensitive);
-            maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            caseCheckbox.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    caseSensitive = caseCheckbox.getSelection();
-                }
-            });
-
-        }
-
-        Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
-        GridLayout layout = new GridLayout(1, true);
+        Composite optionsGroup = new SashForm(searchGroup, SWT.NONE);
+        GridLayout layout = new GridLayout(2, true);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         optionsGroup.setLayout(layout);
@@ -146,6 +114,9 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
             final DBeaverCore core = DBeaverCore.getInstance();
 
             Group databasesGroup = UIUtils.createControlGroup(optionsGroup, "Databases", 1, GridData.FILL_BOTH, 0);
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 300;
+            databasesGroup.setLayoutData(gd);
             final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
             DBNNode rootNode = projectNode == null ? core.getNavigatorModel().getRoot() : projectNode.getDatabases();
             dataSourceTree = new DatabaseNavigatorTree(databasesGroup, rootNode, SWT.SINGLE | SWT.CHECK);
@@ -161,12 +132,16 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
                         if (element instanceof DBNDatabaseFolder) {
                             DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
                             Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
-                            return folderItemsClass != null && DBSObjectContainer.class.isAssignableFrom(folderItemsClass);
+                            return folderItemsClass != null &&
+                                (DBSObjectContainer.class.isAssignableFrom(folderItemsClass) ||
+                                    DBSEntity.class.isAssignableFrom(folderItemsClass));
                         }
                         if (element instanceof DBNLocalFolder ||
                             element instanceof DBNProjectDatabases ||
                             element instanceof DBNDataSource ||
-                            (element instanceof DBSWrapper && ((DBSWrapper) element).getObject() instanceof DBSObjectContainer)) {
+                            (element instanceof DBSWrapper && (((DBSWrapper) element).getObject() instanceof DBSObjectContainer) ||
+                                ((DBSWrapper) element).getObject() instanceof DBSEntity))
+                        {
                             return true;
                         }
                     }
@@ -177,6 +152,66 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event) {
                     updateEnablement();
+                }
+            });
+        }
+        {
+            //new Label(searchGroup, SWT.NONE);
+            Composite optionsGroup2 = UIUtils.createControlGroup(optionsGroup, "Settings", 2, GridData.FILL_BOTH, 0);
+            optionsGroup2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+
+            if (maxResults <= 0) {
+                maxResults = 100;
+            }
+
+            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
+            maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            maxResultsSpinner.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e)
+                {
+                    maxResults = maxResultsSpinner.getSelection();
+                }
+            });
+
+            final Button caseCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, caseSensitive);
+            caseCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            caseCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    caseSensitive = caseCheckbox.getSelection();
+                }
+            });
+
+            final Button fastSearchCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Fast search (indexed)", caseSensitive);
+            fastSearchCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            fastSearchCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    fastSearch = fastSearchCheckbox.getSelection();
+                }
+            });
+
+
+            final Button searchNumbersCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in numbers", caseSensitive);
+            searchNumbersCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            searchNumbersCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+//                    fastSearch = searchNumbersCheckbox.getSelection();
+                }
+            });
+
+            final Button searchLOBCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in LOBs", caseSensitive);
+            searchLOBCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            searchLOBCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+//                    fastSearch = searchNumbersCheckbox.getSelection();
                 }
             });
         }

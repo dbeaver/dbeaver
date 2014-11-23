@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -107,7 +108,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             }
         });
 
-        Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
+        Composite optionsGroup = new SashForm(searchGroup, SWT.NONE);
         GridLayout layout = new GridLayout(2, true);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
