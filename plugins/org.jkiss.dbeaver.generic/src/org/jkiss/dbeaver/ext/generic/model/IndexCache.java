@@ -118,7 +118,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         String columnName = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.COLUMN_NAME);
         String ascOrDesc = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.ASC_OR_DESC);
 
-        GenericTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
+        GenericTableColumn tableColumn = CommonUtils.isEmpty(columnName) ? null : parent.getAttribute(session.getProgressMonitor(), columnName);
         if (tableColumn == null) {
             log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
             return null;
