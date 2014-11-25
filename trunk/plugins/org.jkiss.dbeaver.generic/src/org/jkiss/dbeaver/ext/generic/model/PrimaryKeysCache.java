@@ -96,7 +96,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     {
         String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
         if (CommonUtils.isEmpty(columnName)) {
-            log.warn("Null primary key column for '" + object.getName() + "'");
+            log.debug("Null primary key column for '" + object.getName() + "'");
             return null;
         }
         if (columnName.startsWith("[") && columnName.endsWith("]")) {
