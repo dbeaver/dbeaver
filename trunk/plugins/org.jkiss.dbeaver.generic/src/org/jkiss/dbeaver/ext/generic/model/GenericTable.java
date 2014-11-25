@@ -262,7 +262,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             final Collection<GenericTableIndex> indexList = getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexList)) {
                 for (GenericTableIndex index : indexList) {
-                    if (index.isUnique() || index.getIndexType() == DBSIndexType.STATISTIC) {
+                    if (index.isUnique()/* || index.getIndexType() == DBSIndexType.STATISTIC*/) {
                         final long cardinality = index.getCardinality();
                         if (cardinality > 0) {
                             return cardinality;

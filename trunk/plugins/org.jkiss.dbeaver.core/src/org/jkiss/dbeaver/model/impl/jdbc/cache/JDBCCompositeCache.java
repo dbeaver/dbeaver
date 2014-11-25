@@ -55,6 +55,7 @@ public abstract class JDBCCompositeCache<
     extends AbstractObjectCache<OWNER, OBJECT>
 {
     protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
+    public static final String DEFAULT_OBJECT_NAME = "#DBOBJ";
 
     private final JDBCStructCache<OWNER,?,?> parentCache;
     private final Class<PARENT> parentType;
@@ -228,7 +229,9 @@ public abstract class JDBCCompositeCache<
                         String objectName = objectColumnName instanceof Number ?
                             JDBCUtils.safeGetString(dbResult, ((Number)objectColumnName).intValue()) :
                             JDBCUtils.safeGetString(dbResult, objectColumnName.toString());
+
                         if (CommonUtils.isEmpty(objectName)) {
+                            // Use default name
                             objectName = getDefaultObjectName(parentName);
                         }
 
@@ -262,20 +265,14 @@ public abstract class JDBCCompositeCache<
                             parentObjectMap.put(parent, objectMap);
                         }
 
-                        ObjectInfo objectInfo = CommonUtils.isEmpty(objectName) ? null : objectMap.get(objectName);
+                        ObjectInfo objectInfo = objectMap.get(objectName);
                         if (objectInfo == null) {
                             OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
                             if (object == null) {
                                 // Could not fetch object
                                 continue;
                             }
-                            if (CommonUtils.isEmpty(objectName)) {
-                                objectName = object.getName();
-                            }
-                            if (CommonUtils.isEmpty(objectName)) {
-                                // TODO: that's wrong. Dunno how to handle it
-                                objectName = "UNDEFINED";
-                            }
+                            objectName = object.getName();
                             objectInfo = new ObjectInfo(object);
                             objectMap.put(objectName, objectInfo);
                         }
@@ -366,7 +363,7 @@ public abstract class JDBCCompositeCache<
     }
 
     protected String getDefaultObjectName(String parentName) {
-        return parentName == null ? "OBJ" : parentName.toUpperCase() + "_OBJ";
+        return parentName == null ? DEFAULT_OBJECT_NAME : parentName.toUpperCase() + "_" + DEFAULT_OBJECT_NAME;
     }
 
 }

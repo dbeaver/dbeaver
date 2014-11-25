@@ -87,7 +87,8 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
         DBSIndexType indexType;
         switch (indexTypeNum) {
-            case DatabaseMetaData.tableIndexStatistic: indexType = DBSIndexType.STATISTIC; break;
+            case DatabaseMetaData.tableIndexStatistic: return null; // Table index statistic. Not a real index.
+            // indexType = DBSIndexType.STATISTIC; break;
             case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
             case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
             case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
@@ -115,6 +116,9 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         throws SQLException, DBException
     {
         int ordinalPosition = GenericUtils.safeGetInt(indexObject, dbResult, JDBCConstants.ORDINAL_POSITION);
+        if (ordinalPosition == 0) {
+            return null;
+        }
         String columnName = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.COLUMN_NAME);
         String ascOrDesc = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.ASC_OR_DESC);
 
