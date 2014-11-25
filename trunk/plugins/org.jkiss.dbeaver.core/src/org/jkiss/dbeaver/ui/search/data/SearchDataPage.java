@@ -18,56 +18,56 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.search.IObjectSearchContainer;
-import org.jkiss.dbeaver.ui.search.IObjectSearchPage;
+import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
-public class SearchDataPage extends DialogPage implements IObjectSearchPage {
-
-    static final Log log = LogFactory.getLog(SearchDataPage.class);
+public class SearchDataPage extends AbstractSearchPage {
 
     private static final String PROP_MASK = "search.data.mask"; //$NON-NLS-1$
     private static final String PROP_CASE_SENSITIVE = "search.data.case-sensitive"; //$NON-NLS-1$
     private static final String PROP_MAX_RESULT = "search.data.max-results"; //$NON-NLS-1$
-    private static final String PROP_MATCH_INDEX = "search.data.match-index"; //$NON-NLS-1$
+    private static final String PROP_FAST_SEARCH = "search.data.fast-search"; //$NON-NLS-1$
+    private static final String PROP_SEARCH_NUMBERS = "search.data.search-numbers"; //$NON-NLS-1$
+    private static final String PROP_SEARCH_LOBS = "search.data.search-lobs"; //$NON-NLS-1$
     private static final String PROP_HISTORY = "search.data.history"; //$NON-NLS-1$
     private static final String PROP_SOURCES = "search.data.object-source"; //$NON-NLS-1$
 
-    private IObjectSearchContainer container;
     private Combo searchText;
     private DatabaseNavigatorTree dataSourceTree;
 
     private String searchString;
     private boolean caseSensitive;
     private boolean fastSearch; // Indexed
+    private boolean searchNumbers;
+    private boolean searchLOBs;
     private int maxResults;
-    private int matchTypeIndex;
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private List<DBNNode> sourceNodes = new ArrayList<DBNNode>();
 
@@ -184,7 +184,7 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
                 }
             });
 
-            final Button fastSearchCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Fast search (indexed)", caseSensitive);
+            final Button fastSearchCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Fast search (indexed)", fastSearch);
             fastSearchCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             fastSearchCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -195,23 +195,23 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
             });
 
 
-            final Button searchNumbersCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in numbers", caseSensitive);
+            final Button searchNumbersCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in numbers", searchNumbers);
             searchNumbersCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             searchNumbersCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-//                    fastSearch = searchNumbersCheckbox.getSelection();
+                    searchNumbers = searchNumbersCheckbox.getSelection();
                 }
             });
 
-            final Button searchLOBCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in LOBs", caseSensitive);
+            final Button searchLOBCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in LOBs", searchLOBs);
             searchLOBCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             searchLOBCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-//                    fastSearch = searchNumbersCheckbox.getSelection();
+                    searchLOBs = searchNumbersCheckbox.getSelection();
                 }
             });
         }
@@ -224,48 +224,10 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         }
     }
 
-    private List<DBSObject> getSelectedSources()
-    {
-        List<DBSObject> result = new ArrayList<DBSObject>();
-        for (Object sel : ((CheckboxTreeViewer)dataSourceTree.getViewer()).getCheckedElements()) {
-            if (sel instanceof DBSWrapper) {
-                DBSObject object = ((DBSWrapper) sel).getObject();
-                if (object != null && object.getDataSource() != null) {
-                    result.add(object);
-                }
-            }
-        }
-        return result;
-    }
-
-    private void updateEnablement()
-    {
-        boolean enabled = false;
-        if (!getSelectedSources().isEmpty()) {
-            enabled = true;
-        }
-        container.setSearchEnabled(enabled);
-    }
-
-    @Override
-    public void setSearchContainer(IObjectSearchContainer container)
-    {
-        this.container = container;
-    }
-
-    @Override
-    public void setVisible(boolean visible)
-    {
-        super.setVisible(visible);
-        if (visible) {
-            updateEnablement();
-        }
-    }
-
     @Override
     public SearchDataQuery createQuery() throws DBException
     {
-        List<DBSObject> selectedSources = getSelectedSources();
+        List<DBSObject> selectedSources = getCheckedSources();
 
         String dataSearchString = searchString;
 
@@ -289,8 +251,10 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
     {
         searchString = store.getString(PROP_MASK);
         caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
+        fastSearch = store.getBoolean(PROP_FAST_SEARCH);
+        searchNumbers = store.getBoolean(PROP_SEARCH_NUMBERS);
+        searchLOBs = store.getBoolean(PROP_SEARCH_LOBS);
         maxResults = store.getInt(PROP_MAX_RESULT);
-        matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
         for (int i = 0; ;i++) {
             String history = store.getString(PROP_HISTORY + "." + i); //$NON-NLS-1$
             if (CommonUtils.isEmpty(history)) {
@@ -298,35 +262,7 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
             }
             searchHistory.add(history);
         }
-        {
-            final String sources = store.getString(PROP_SOURCES);
-            if (!CommonUtils.isEmpty(sources)) {
-                try {
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor)
-                        {
-                            StringTokenizer st = new StringTokenizer(sources, "|"); //$NON-NLS-1$
-                            while (st.hasMoreTokens()) {
-                                String nodePath = st.nextToken();
-                                try {
-                                    DBNNode node = DBNModel.getInstance().getNodeByPath(monitor, nodePath);
-                                    if (node != null) {
-                                        sourceNodes.add(node);
-                                    }
-                                } catch (DBException e) {
-                                    log.error(e);
-                                }
-                            }
-                        }
-                    });
-                } catch (InvocationTargetException e) {
-                    log.error(e.getTargetException());
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-            }
-        }
+        sourceNodes = loadTreeState(store, PROP_SOURCES);
     }
 
     @Override
@@ -335,20 +271,10 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
         store.setValue(PROP_MASK, searchString);
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
         store.setValue(PROP_MAX_RESULT, maxResults);
-        store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
-        {
-            // Object sources
-            StringBuilder sourcesString = new StringBuilder();
-            IStructuredSelection ss = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
-            for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
-                DBNNode node = (DBNNode) iter.next();
-                if (sourcesString.length() > 0) {
-                    sourcesString.append("|"); //$NON-NLS-1$
-                }
-                sourcesString.append(node.getNodeItemPath());
-            }
-            store.setValue(PROP_SOURCES, sourcesString.toString());
-        }
+        store.setValue(PROP_FAST_SEARCH, fastSearch);
+        store.setValue(PROP_SEARCH_NUMBERS, searchNumbers);
+        store.setValue(PROP_SEARCH_LOBS, searchLOBs);
+        saveTreeState(store, PROP_SOURCES, dataSourceTree);
 
         {
             // Search history
@@ -361,6 +287,29 @@ public class SearchDataPage extends DialogPage implements IObjectSearchPage {
                 historyIndex++;
             }
         }
+    }
+
+    protected List<DBSObject> getCheckedSources()
+    {
+        List<DBSObject> result = new ArrayList<DBSObject>();
+        for (Object sel : ((CheckboxTreeViewer)dataSourceTree.getViewer()).getCheckedElements()) {
+            if (sel instanceof DBSWrapper) {
+                DBSObject object = ((DBSWrapper) sel).getObject();
+                if (object != null && object.getDataSource() != null) {
+                    result.add(object);
+                }
+            }
+        }
+        return result;
+    }
+
+    protected void updateEnablement()
+    {
+        boolean enabled = false;
+        if (!getCheckedSources().isEmpty()) {
+            enabled = true;
+        }
+        container.setSearchEnabled(enabled);
     }
 
 }
