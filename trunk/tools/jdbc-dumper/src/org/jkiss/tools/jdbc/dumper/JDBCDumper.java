@@ -126,6 +126,12 @@ public class JDBCDumper
                                 } catch (Throwable e) {
                                     e.printStackTrace();
                                 }
+                                System.out.println("\Primary Keys:");
+                                try {
+                                    dumpResultSet(null, "\t\t", metaData.getPrimaryKeys(catalogName, schema, tableName), null);
+                                } catch (Throwable e) {
+                                    e.printStackTrace();
+                                }
                                 System.out.println("\tIndexes:");
                                 try {
                                     dumpResultSet(null, "\t\t", metaData.getIndexInfo(catName, schemaName, tableName, false, false), null);
