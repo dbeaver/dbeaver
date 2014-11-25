@@ -18,10 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search.metadata;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -33,28 +30,21 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.search.IObjectSearchContainer;
-import org.jkiss.dbeaver.ui.search.IObjectSearchPage;
+import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
-public class SearchMetadataPage extends DialogPage implements IObjectSearchPage {
-
-    static final Log log = LogFactory.getLog(SearchMetadataPage.class);
+public class SearchMetadataPage extends AbstractSearchPage {
 
     private static final String PROP_MASK = "search.metadata.mask"; //$NON-NLS-1$
     private static final String PROP_CASE_SENSITIVE = "search.metadata.case-sensitive"; //$NON-NLS-1$
@@ -64,7 +54,6 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
     private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
     private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
 
-    private IObjectSearchContainer container;
     private Table typesTable;
     private Combo searchText;
     private DatabaseNavigatorTree dataSourceTree;
@@ -346,34 +335,6 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
         updateEnablement();
     }
 
-    private void updateEnablement()
-    {
-        boolean enabled = false;
-        if (getSelectedDataSource() != null) {
-            enabled = !checkedTypes.isEmpty();
-        }
-        if (CommonUtils.isEmpty(nameMask)) {
-            enabled = false;
-        }
-
-        container.setSearchEnabled(enabled);
-    }
-
-    @Override
-    public void setSearchContainer(IObjectSearchContainer container)
-    {
-        this.container = container;
-    }
-
-    @Override
-    public void setVisible(boolean visible)
-    {
-        super.setVisible(visible);
-        if (visible) {
-            updateEnablement();
-        }
-    }
-
     @Override
     public SearchMetadataQuery createQuery() throws DBException
     {
@@ -439,35 +400,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             }
             searchHistory.add(history);
         }
-        {
-            final String sources = store.getString(PROP_SOURCES);
-            if (!CommonUtils.isEmpty(sources)) {
-                try {
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor)
-                        {
-                            StringTokenizer st = new StringTokenizer(sources, "|"); //$NON-NLS-1$
-                            while (st.hasMoreTokens()) {
-                                String nodePath = st.nextToken();
-                                try {
-                                    DBNNode node = DBNModel.getInstance().getNodeByPath(monitor, nodePath);
-                                    if (node != null) {
-                                        sourceNodes.add(node);
-                                    }
-                                } catch (DBException e) {
-                                    log.error(e);
-                                }
-                            }
-                        }
-                    });
-                } catch (InvocationTargetException e) {
-                    log.error(e.getTargetException());
-                } catch (InterruptedException e) {
-                    // ignore
-                }
-            }
-        }
+        sourceNodes = loadTreeState(store, PROP_SOURCES);
 
         {
             String type = store.getString(PROP_OBJECT_TYPE);
@@ -487,19 +420,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
-        {
-            // Object sources
-            StringBuilder sourcesString = new StringBuilder();
-            IStructuredSelection ss = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
-            for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
-                DBNNode node = (DBNNode) iter.next();
-                if (sourcesString.length() > 0) {
-                    sourcesString.append("|"); //$NON-NLS-1$
-                }
-                sourcesString.append(node.getNodeItemPath());
-            }
-            store.setValue(PROP_SOURCES, sourcesString.toString());
-        }
+        saveTreeState(store, PROP_SOURCES, dataSourceTree);
 
         {
             // Search history
@@ -523,6 +444,19 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             }
             store.setValue(PROP_OBJECT_TYPE, typesString.toString());
         }
+    }
+
+    protected void updateEnablement()
+    {
+        boolean enabled = false;
+        if (getSelectedDataSource() != null) {
+            enabled = !checkedTypes.isEmpty();
+        }
+        if (CommonUtils.isEmpty(nameMask)) {
+            enabled = false;
+        }
+
+        container.setSearchEnabled(enabled);
     }
 
 }

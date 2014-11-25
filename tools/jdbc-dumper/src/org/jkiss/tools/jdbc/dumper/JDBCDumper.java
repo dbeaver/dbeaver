@@ -18,7 +18,6 @@
  */
 package org.jkiss.tools.jdbc.dumper;
 
-import javax.xml.transform.Result;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -126,9 +125,9 @@ public class JDBCDumper
                                 } catch (Throwable e) {
                                     e.printStackTrace();
                                 }
-                                System.out.println("\Primary Keys:");
+                                System.out.println("\tPrimary Keys:");
                                 try {
-                                    dumpResultSet(null, "\t\t", metaData.getPrimaryKeys(catalogName, schema, tableName), null);
+                                    dumpResultSet(null, "\t\t", metaData.getPrimaryKeys(catName, schema, tableName), null);
                                 } catch (Throwable e) {
                                     e.printStackTrace();
                                 }
