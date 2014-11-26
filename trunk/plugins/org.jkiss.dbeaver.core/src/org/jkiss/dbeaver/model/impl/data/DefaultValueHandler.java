@@ -18,13 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.editors.StringInlineEditor;
@@ -57,7 +52,7 @@ public class DefaultValueHandler extends BaseValueHandler {
         @NotNull DBSTypedObject type,
         int index) throws DBCException
     {
-        return resultSet.getColumnValue(index + 1);
+        return resultSet.getAttributeValue(index + 1);
     }
 
     @Override

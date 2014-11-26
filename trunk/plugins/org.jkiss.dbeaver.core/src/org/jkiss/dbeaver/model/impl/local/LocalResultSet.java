@@ -58,24 +58,24 @@ public class LocalResultSet implements DBCResultSet
     }
 
     @Override
-    public Object getColumnValue(int index) throws DBCException
+    public Object getAttributeValue(int index) throws DBCException
     {
         return rows.get(curPosition)[index - 1];
     }
 
     @Nullable
     @Override
-    public Object getColumnValue(String name) throws DBCException {
+    public Object getAttributeValue(String name) throws DBCException {
         for (int i = 0; i < metaColumns.size(); i++) {
             if (metaColumns.get(i).getName().equals(name)) {
-                return getColumnValue(i);
+                return getAttributeValue(i);
             }
         }
         return null;
     }
 
     @Override
-    public DBDValueMeta getColumnValueMeta(int index) throws DBCException
+    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException
     {
         return null;
     }

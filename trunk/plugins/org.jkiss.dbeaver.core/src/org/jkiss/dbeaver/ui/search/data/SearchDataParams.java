@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.search.data;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,10 +28,13 @@ import java.util.List;
  */
 public class SearchDataParams {
 
-    private List<DBSObject> sources;
-    private String searchString;
-    private boolean caseSensitive;
-    private int maxResults;
+    List<DBSObject> sources = new ArrayList<DBSObject>();
+    String searchString;
+    boolean caseSensitive;
+    boolean fastSearch; // Indexed
+    boolean searchNumbers;
+    boolean searchLOBs;
+    int maxResults;
 
     public SearchDataParams()
     {
@@ -58,6 +62,30 @@ public class SearchDataParams {
 
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+    }
+
+    public boolean isFastSearch() {
+        return fastSearch;
+    }
+
+    public void setFastSearch(boolean fastSearch) {
+        this.fastSearch = fastSearch;
+    }
+
+    public boolean isSearchNumbers() {
+        return searchNumbers;
+    }
+
+    public void setSearchNumbers(boolean searchNumbers) {
+        this.searchNumbers = searchNumbers;
+    }
+
+    public boolean isSearchLOBs() {
+        return searchLOBs;
+    }
+
+    public void setSearchLOBs(boolean searchLOBs) {
+        this.searchLOBs = searchLOBs;
     }
 
     public int getMaxResults() {

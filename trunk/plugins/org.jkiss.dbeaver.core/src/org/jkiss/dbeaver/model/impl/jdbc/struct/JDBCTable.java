@@ -274,7 +274,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             try {
                 if (dbResult.nextRow()) {
-                    Object result = dbResult.getColumnValue(1);
+                    Object result = dbResult.getAttributeValue(1);
                     if (result == null) {
                         return 0;
                     } else if (result instanceof Number) {
