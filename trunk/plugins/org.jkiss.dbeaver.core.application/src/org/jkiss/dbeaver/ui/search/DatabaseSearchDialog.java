@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSearchContainer {
@@ -55,6 +56,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
     static final Log log = LogFactory.getLog(DatabaseSearchDialog.class);
 
     private static final int SEARCH_ID = 1000;
+    private static final String PROVIDER_PREF_NAME = "search.dialog.cur-provider";
     private static final String NEW_TAB_PREF_NAME = "search.dialog.results.newTab";
     private static final String DIALOG_ID = "DBeaver.SearchDialog";//$NON-NLS-1$
 
@@ -64,6 +66,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
     private Button searchButton;
     private TabFolder providersFolder;
     private Button openNewTabCheck;
+    private List<ObjectSearchProvider> providers;
 
 
     private DatabaseSearchDialog(Shell shell, DBSDataSourceContainer currentDataSource)
@@ -101,7 +104,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
 
         providersFolder = new TabFolder(group, SWT.TOP);
         providersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-        List<ObjectSearchProvider> providers = ObjectSearchRegistry.getInstance().getProviders();
+        providers = new ArrayList<ObjectSearchProvider>(ObjectSearchRegistry.getInstance().getProviders());
         for (ObjectSearchProvider provider : providers) {
             IObjectSearchPage searchPage;
             try {
@@ -124,7 +127,14 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             }
             item.setControl(searchPage.getControl());
         }
-        providersFolder.setSelection(0);
+        int provIndex = 0;
+        String curProvider = store.getString(PROVIDER_PREF_NAME);
+        for (int i = 0; i < providers.size(); i++) {
+            if (providers.get(i).getId().equals(curProvider)) {
+                provIndex = i;
+            }
+        }
+        providersFolder.setSelection(provIndex);
 
         return providersFolder;
     }
@@ -167,6 +177,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             IObjectSearchPage page = (IObjectSearchPage) item.getData("page");
             page.saveState(store);
         }
+        store.setValue(PROVIDER_PREF_NAME, providers.get(providersFolder.getSelectionIndex()).getId());
         RuntimeUtils.savePreferenceStore(store);
     }
 
