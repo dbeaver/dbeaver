@@ -1275,6 +1275,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     static class DriversParser implements SAXListener
     {
         DataSourceProviderDescriptor curProvider;

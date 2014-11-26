@@ -35,12 +35,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
+import org.jkiss.dbeaver.ui.views.navigator.database.CheckboxTreeManager;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.utils.CommonUtils;
@@ -145,32 +143,10 @@ public class SearchDataPage extends AbstractSearchPage {
                     return false;
                 }
             });
+            viewer.addCheckStateListener(new CheckboxTreeManager(viewer, new Class[] {DBSDataSearcher.class}));
             viewer.addCheckStateListener(new ICheckStateListener() {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event) {
-                    if (event.getChecked()) {
-                        final DBNNode node = (DBNNode) event.getElement();
-                        if (node instanceof DBNDataSource) {
-                            DBNDataSource dsNode = (DBNDataSource) node;
-                            dsNode.initializeNode(null, new DBRProcessListener() {
-                                @Override
-                                public void onProcessFinish(IStatus status)
-                                {
-                                    if (status.isOK()) {
-                                        Display.getDefault().asyncExec(new Runnable() {
-                                            @Override
-                                            public void run()
-                                            {
-                                                if (!dataSourceTree.isDisposed()) {
-                                                    updateEnablement();
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                    }
                     updateEnablement();
                 }
             });

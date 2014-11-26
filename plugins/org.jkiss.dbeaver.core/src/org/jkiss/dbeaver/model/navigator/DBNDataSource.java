@@ -247,4 +247,8 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         return node;
     }
 
+    @Override
+    public String toString() {
+        return dataSource.toString();
+    }
 }
