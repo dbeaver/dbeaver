@@ -155,4 +155,8 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return childObjects;
     }
 
+    @Override
+    public String toString() {
+        return meta.getChildrenType(getDataSource());
+    }
 }

@@ -91,18 +91,18 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | style;
         if (checkEnabled) {
             this.viewer = new CheckboxTreeViewer(this, treeStyle);
-            ((CheckboxTreeViewer)this.viewer).setCheckStateProvider(new ICheckStateProvider() {
-                @Override
-                public boolean isChecked(Object element) {
-                    TreeItem widget = (TreeItem) viewer.testFindItem(element);
-                    return widget.getChecked();
-                }
-
-                @Override
-                public boolean isGrayed(Object element) {
-                    return element instanceof DBNContainer;
-                }
-            });
+//            ((CheckboxTreeViewer)this.viewer).setCheckStateProvider(new ICheckStateProvider() {
+//                @Override
+//                public boolean isChecked(Object element) {
+//                    TreeItem widget = (TreeItem) viewer.testFindItem(element);
+//                    return widget.getChecked();
+//                }
+//
+//                @Override
+//                public boolean isGrayed(Object element) {
+//                    return element instanceof DBNContainer;
+//                }
+//            });
         } else {
             this.viewer = new TreeViewer(this, treeStyle) {
                 @Override

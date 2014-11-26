@@ -106,6 +106,8 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
         Object[] nodes = tree.getViewer() instanceof CheckboxTreeViewer ?
                 ((CheckboxTreeViewer) tree.getViewer()).getCheckedElements() :
                 ((IStructuredSelection)tree.getViewer().getSelection()).toArray();
+        Object[] grayed = tree.getViewer() instanceof CheckboxTreeViewer ?
+            ((CheckboxTreeViewer) tree.getViewer()).getGrayedElements() : null;
         for (Object obj : nodes) {
             DBNNode node = (DBNNode) obj;
             if (sourcesString.length() > 0) {
