@@ -32,13 +32,17 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
  */
 public interface DBSDataSearcher extends DBSDataContainer {
 
-    public static final long FLAG_SEARCH_LOBS        = 1 >> 16;
-    public static final long FLAG_SEARCH_BINARY      = 1 >> 17;
+    public static final long FLAG_FAST_SEARCH        = 1 >> 16;
+    public static final long FLAG_SEARCH_LOBS        = 1 >> 17;
+    public static final long FLAG_SEARCH_BINARY      = 1 >> 18;
+    public static final long FLAG_CASE_SENSITIVE     = 1 >> 18;
 
     @NotNull
     DBCStatistics findRows(
         @NotNull DBCSession session,
         @NotNull DBDDataReceiver dataReceiver,
+        @NotNull String searchString,
+        int maxResults,
         long flags)
         throws DBCException;
 

@@ -50,7 +50,7 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
             if (resultSet instanceof JDBCResultSet) {
                 return fetchColumnValue(session, (JDBCResultSet) resultSet, type, index + 1);
             } else {
-                return resultSet.getColumnValue(index + 1);
+                return resultSet.getAttributeValue(index + 1);
             }
         }
         catch (SQLException e) {

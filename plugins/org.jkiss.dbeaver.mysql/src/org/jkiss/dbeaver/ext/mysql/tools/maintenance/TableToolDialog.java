@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -60,8 +59,8 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<MySQLTable>
                 Map<String, String> statusMap = new LinkedHashMap<String, String>();
                 while (resultSet.nextRow()) {
                     statusMap.put(
-                        CommonUtils.toString(resultSet.getColumnValue("Msg_type")),
-                        CommonUtils.toString(resultSet.getColumnValue("Msg_text")));
+                        CommonUtils.toString(resultSet.getAttributeValue("Msg_type")),
+                        CommonUtils.toString(resultSet.getAttributeValue("Msg_text")));
                 }
                 TreeItem treeItem = getTreeItem(object);
                 if (treeItem != null && !statusMap.isEmpty()) {

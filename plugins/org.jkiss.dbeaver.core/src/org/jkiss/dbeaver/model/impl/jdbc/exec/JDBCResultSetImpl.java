@@ -127,7 +127,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
-    public Object getColumnValue(int index)
+    public Object getAttributeValue(int index)
         throws DBCException
     {
         checkNotEmpty();
@@ -140,7 +140,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
-    public Object getColumnValue(String name) throws DBCException {
+    public Object getAttributeValue(String name) throws DBCException {
         checkNotEmpty();
         try {
             return original.getObject(name);
@@ -152,7 +152,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     @Nullable
     @Override
-    public DBDValueMeta getColumnValueMeta(int index) throws DBCException
+    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException
     {
         // No meta information in standard JDBC
         return null;
