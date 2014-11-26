@@ -22,14 +22,16 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CheckboxTreeManager implements ICheckStateListener {
@@ -46,41 +48,52 @@ public class CheckboxTreeManager implements ICheckStateListener {
     public void checkStateChanged(CheckStateChangedEvent event) {
         try {
             VoidProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
+            Object element = event.getElement();
+            boolean checked = event.getChecked();
 
-            List<DBNDatabaseNode> targetChildren = new ArrayList<DBNDatabaseNode>();
-            List<DBNDatabaseNode> targetContainers = new ArrayList<DBNDatabaseNode>();
-            collectChildren(monitor, event.getElement(), targetChildren, targetContainers);
-            for (DBNDatabaseNode child : targetChildren) {
-                viewer.setChecked(child, event.getChecked());
-            }
-            for (DBNDatabaseNode container : targetContainers) {
-                viewer.setChecked(container, event.getChecked());
-                if (event.getChecked()) {
-                    boolean missing = false;
-                    List<DBNDatabaseNode> directChildren = container.getChildren(monitor);
-                    if (directChildren != null) {
-                        for (DBNDatabaseNode node : directChildren) {
-                            if (!targetChildren.contains(node)) {
-                                missing = true;
-                                break;
-                            }
-                        }
+            updateElementHierarchy(monitor, element, checked, true);
+
+            if (element instanceof DBNDatabaseNode) {
+                for (DBNNode node = ((DBNDatabaseNode)element).getParentNode(); node != null; node = node.getParentNode()) {
+                    if (node instanceof DBNDatabaseNode) {
+                        updateElementHierarchy(monitor, node, checked, false);
                     }
-                    viewer.setGrayed(container, missing);
-                } else {
-                    viewer.setGrayed(container, false);
+                    if (node instanceof DBNDataSource) {
+                        break;
+                    }
                 }
             }
+
         } catch (DBException e) {
             UIUtils.showErrorDialog(viewer.getControl().getShell(), "Error", "Can't collect child nodes", e);
         }
     }
 
-    private boolean collectChildren(DBRProgressMonitor monitor, final Object element, List<DBNDatabaseNode> targetChildren, List<DBNDatabaseNode> targetContainers) throws DBException {
+    private void updateElementHierarchy(VoidProgressMonitor monitor, Object element, boolean checked, boolean change) throws DBException {
+        List<DBNDatabaseNode> targetChildren = new ArrayList<DBNDatabaseNode>();
+        List<DBNDatabaseNode> targetContainers = new ArrayList<DBNDatabaseNode>();
+        collectChildren(monitor, element, targetChildren, targetContainers, !change);
+        if (change) {
+            for (DBNDatabaseNode child : targetChildren) {
+                viewer.setChecked(child, checked);
+            }
+        }
+        for (DBNDatabaseNode container : change ? targetContainers : Collections.singletonList((DBNDatabaseNode) element)) {
+            List<DBNDatabaseNode> directChildren = CommonUtils.safeList(container.getChildren(monitor));
+            boolean missing = Collections.disjoint(directChildren, targetChildren);
+
+            viewer.setChecked(container, change ? checked : !missing || !Collections.disjoint(directChildren, targetContainers));
+            viewer.setGrayed(container, missing);
+        }
+    }
+
+    private boolean collectChildren(DBRProgressMonitor monitor, final Object element, List<DBNDatabaseNode> targetChildren, List<DBNDatabaseNode> targetContainers, boolean onlyChecked) throws DBException {
         if (element instanceof DBNDatabaseNode) {
             for (Class<?> type : targetTypes) {
                 if (type.isInstance(((DBNDatabaseNode) element).getObject())) {
-                    targetChildren.add((DBNDatabaseNode) element);
+                    if (!onlyChecked || viewer.getChecked(element)) {
+                        targetChildren.add((DBNDatabaseNode) element);
+                    }
                     return true;
                 }
             }
@@ -89,12 +102,14 @@ public class CheckboxTreeManager implements ICheckStateListener {
             if (!CommonUtils.isEmpty(children)) {
                 boolean foundChild = false;
                 for (DBNDatabaseNode child : children) {
-                    if (collectChildren(monitor, child, targetChildren, targetContainers)) {
+                    if (collectChildren(monitor, child, targetChildren, targetContainers, onlyChecked)) {
                         foundChild = true;
                     }
                 }
                 if (foundChild) {
-                    targetContainers.add((DBNDatabaseNode) element);
+                    if (!onlyChecked || viewer.getChecked(element)) {
+                        targetContainers.add((DBNDatabaseNode) element);
+                    }
                 }
                 return foundChild;
             }
