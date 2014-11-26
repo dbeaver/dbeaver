@@ -459,4 +459,18 @@ public class SearchMetadataPage extends AbstractSearchPage {
         container.setSearchEnabled(enabled);
     }
 
+    protected static void saveTreeState(IPreferenceStore store, String propName, DatabaseNavigatorTree tree)
+    {
+        // Object sources
+        StringBuilder sourcesString = new StringBuilder();
+        Object[] nodes = ((IStructuredSelection)tree.getViewer().getSelection()).toArray();
+        for (Object obj : nodes) {
+            DBNNode node = (DBNNode) obj;
+            if (sourcesString.length() > 0) {
+                sourcesString.append("|"); //$NON-NLS-1$
+            }
+            sourcesString.append(node.getNodeItemPath());
+        }
+        store.setValue(propName, sourcesString.toString());
+    }
 }
