@@ -1152,4 +1152,8 @@ public class DataSourceDescriptor
         folderPath = descriptor.folderPath;
     }
 
+    @Override
+    public String toString() {
+        return name + " [" + driver + "]";
+    }
 }

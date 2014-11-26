@@ -64,7 +64,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
         try {
             String searchString = params.getSearchString();
 
-            monitor.subTask("Collect tables");
+            //monitor.subTask("Collect tables");
             List<DBSDataSearcher> searchers = new ArrayList<DBSDataSearcher>();
             for (DBSObject object : params.sources) {
                 addSearchers(monitor, searchers, object);
