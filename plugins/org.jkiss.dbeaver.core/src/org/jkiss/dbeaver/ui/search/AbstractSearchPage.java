@@ -99,23 +99,5 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
         return result;
     }
 
-    protected static void saveTreeState(IPreferenceStore store, String propName, DatabaseNavigatorTree tree)
-    {
-        // Object sources
-        StringBuilder sourcesString = new StringBuilder();
-        Object[] nodes = tree.getViewer() instanceof CheckboxTreeViewer ?
-                ((CheckboxTreeViewer) tree.getViewer()).getCheckedElements() :
-                ((IStructuredSelection)tree.getViewer().getSelection()).toArray();
-        Object[] grayed = tree.getViewer() instanceof CheckboxTreeViewer ?
-            ((CheckboxTreeViewer) tree.getViewer()).getGrayedElements() : null;
-        for (Object obj : nodes) {
-            DBNNode node = (DBNNode) obj;
-            if (sourcesString.length() > 0) {
-                sourcesString.append("|"); //$NON-NLS-1$
-            }
-            sourcesString.append(node.getNodeItemPath());
-        }
-        store.setValue(propName, sourcesString.toString());
-    }
 
 }
