@@ -149,7 +149,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
         // Buttons
         searchButton = createButton(parent, SEARCH_ID, "Search", true);
         searchButton.setEnabled(searchEnabled);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CLOSE_LABEL, false);
     }
 
     @Override

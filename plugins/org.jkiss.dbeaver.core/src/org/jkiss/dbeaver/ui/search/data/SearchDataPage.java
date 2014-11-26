@@ -215,8 +215,8 @@ public class SearchDataPage extends AbstractSearchPage {
         if (!checkedNodes.isEmpty()) {
             for (DBNNode node : checkedNodes) {
                 ((CheckboxTreeViewer)dataSourceTree.getViewer()).setChecked(node, true);
-                checkboxTreeManager.checkStateChanged(new CheckStateChangedEvent((CheckboxTreeViewer)dataSourceTree.getViewer(), node, true));
             }
+            checkboxTreeManager.updateCheckStates();
         }
         updateEnablement();
     }
