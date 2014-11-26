@@ -65,12 +65,8 @@ public class SearchDataQuery implements IObjectSearchQuery {
             String searchString = params.getSearchString();
 
             //monitor.subTask("Collect tables");
-            List<DBSDataSearcher> searchers = new ArrayList<DBSDataSearcher>();
-            for (DBSObject object : params.sources) {
-                addSearchers(monitor, searchers, object);
-            }
             Set<DBPDataSource> dataSources = new HashSet<DBPDataSource>();
-            for (DBSDataSearcher searcher : searchers) {
+            for (DBSDataSearcher searcher : params.sources) {
                 dataSources.add(searcher.getDataSource());
             }
 
@@ -82,10 +78,10 @@ public class SearchDataQuery implements IObjectSearchQuery {
             if (params.searchLOBs) flags |= DBSDataSearcher.FLAG_SEARCH_LOBS;
             int objectsFound = 0;
             monitor.beginTask(
-                "Search \"" + searchString + "\" in " + searchers.size() + " table(s) / " + dataSources.size() + " database(s)",
-                searchers.size());
+                "Search \"" + searchString + "\" in " + params.sources.size() + " table(s) / " + dataSources.size() + " database(s)",
+                params.sources.size());
             try {
-                for (DBSDataSearcher searcher : searchers) {
+                for (DBSDataSearcher searcher : params.sources) {
                     if (monitor.isCanceled()) {
                         break;
                     }

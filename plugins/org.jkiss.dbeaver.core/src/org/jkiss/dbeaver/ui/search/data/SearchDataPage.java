@@ -279,14 +279,30 @@ public class SearchDataPage extends AbstractSearchPage {
         }
     }
 
-    protected List<DBSObject> getCheckedSources()
+    protected static void saveTreeState(IPreferenceStore store, String propName, DatabaseNavigatorTree tree)
     {
-        List<DBSObject> result = new ArrayList<DBSObject>();
+        // Object sources
+        StringBuilder sourcesString = new StringBuilder();
+        for (Object obj : ((CheckboxTreeViewer) tree.getViewer()).getCheckedElements()) {
+            DBNNode node = (DBNNode) obj;
+            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSDataSearcher) {
+                if (sourcesString.length() > 0) {
+                    sourcesString.append("|"); //$NON-NLS-1$
+                }
+                sourcesString.append(node.getNodeItemPath());
+            }
+        }
+        store.setValue(propName, sourcesString.toString());
+    }
+
+    protected List<DBSDataSearcher> getCheckedSources()
+    {
+        List<DBSDataSearcher> result = new ArrayList<DBSDataSearcher>();
         for (Object sel : ((CheckboxTreeViewer)dataSourceTree.getViewer()).getCheckedElements()) {
             if (sel instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper) sel).getObject();
-                if (object != null && object.getDataSource() != null) {
-                    result.add(object);
+                if (object instanceof DBSDataSearcher && object.getDataSource() != null) {
+                    result.add((DBSDataSearcher) object);
                 }
             }
         }
