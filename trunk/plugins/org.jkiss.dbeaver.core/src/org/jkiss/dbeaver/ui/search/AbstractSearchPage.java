@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -102,9 +103,11 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
     {
         // Object sources
         StringBuilder sourcesString = new StringBuilder();
-        IStructuredSelection ss = (IStructuredSelection) tree.getViewer().getSelection();
-        for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
-            DBNNode node = (DBNNode) iter.next();
+        Object[] nodes = tree.getViewer() instanceof CheckboxTreeViewer ?
+                ((CheckboxTreeViewer) tree.getViewer()).getCheckedElements() :
+                ((IStructuredSelection)tree.getViewer().getSelection()).toArray();
+        for (Object obj : nodes) {
+            DBNNode node = (DBNNode) obj;
             if (sourcesString.length() > 0) {
                 sourcesString.append("|"); //$NON-NLS-1$
             }
