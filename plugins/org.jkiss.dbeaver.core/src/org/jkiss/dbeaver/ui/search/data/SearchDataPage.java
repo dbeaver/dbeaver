@@ -149,7 +149,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event) {
                     if (event.getChecked()) {
-                        DBNNode node = (DBNNode) event.getElement();
+                        final DBNNode node = (DBNNode) event.getElement();
                         if (node instanceof DBNDataSource) {
                             DBNDataSource dsNode = (DBNDataSource) node;
                             dsNode.initializeNode(null, new DBRProcessListener() {

@@ -94,7 +94,8 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             ((CheckboxTreeViewer)this.viewer).setCheckStateProvider(new ICheckStateProvider() {
                 @Override
                 public boolean isChecked(Object element) {
-                    return false;
+                    TreeItem widget = (TreeItem) viewer.testFindItem(element);
+                    return widget.getChecked();
                 }
 
                 @Override
