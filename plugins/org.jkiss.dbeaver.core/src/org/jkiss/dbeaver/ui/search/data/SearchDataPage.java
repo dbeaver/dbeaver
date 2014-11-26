@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -62,14 +64,9 @@ public class SearchDataPage extends AbstractSearchPage {
     private Combo searchText;
     private DatabaseNavigatorTree dataSourceTree;
 
-    private String searchString;
-    private boolean caseSensitive;
-    private boolean fastSearch; // Indexed
-    private boolean searchNumbers;
-    private boolean searchLOBs;
-    private int maxResults;
+    private SearchDataParams params = new SearchDataParams();
     private Set<String> searchHistory = new LinkedHashSet<String>();
-    private List<DBNNode> sourceNodes = new ArrayList<DBNNode>();
+    private List<DBNNode> checkedNodes;
 
     public SearchDataPage() {
 		super("Database objects search");
@@ -86,8 +83,8 @@ public class SearchDataPage extends AbstractSearchPage {
         UIUtils.createControlLabel(searchGroup, "String");
         searchText = new Combo(searchGroup, SWT.DROP_DOWN);
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (searchString != null) {
-            searchText.setText(searchString);
+        if (params.searchString != null) {
+            searchText.setText(params.searchString);
         }
         for (String history : searchHistory) {
             searchText.add(history);
@@ -96,7 +93,7 @@ public class SearchDataPage extends AbstractSearchPage {
             @Override
             public void modifyText(ModifyEvent e)
             {
-                searchString = searchText.getText();
+                params.searchString = searchText.getText();
                 updateEnablement();
             }
         });
@@ -151,6 +148,29 @@ public class SearchDataPage extends AbstractSearchPage {
             viewer.addCheckStateListener(new ICheckStateListener() {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event) {
+                    if (event.getChecked()) {
+                        DBNNode node = (DBNNode) event.getElement();
+                        if (node instanceof DBNDataSource) {
+                            DBNDataSource dsNode = (DBNDataSource) node;
+                            dsNode.initializeNode(null, new DBRProcessListener() {
+                                @Override
+                                public void onProcessFinish(IStatus status)
+                                {
+                                    if (status.isOK()) {
+                                        Display.getDefault().asyncExec(new Runnable() {
+                                            @Override
+                                            public void run()
+                                            {
+                                                if (!dataSourceTree.isDisposed()) {
+                                                    updateEnablement();
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                        }
+                    }
                     updateEnablement();
                 }
             });
@@ -160,88 +180,81 @@ public class SearchDataPage extends AbstractSearchPage {
             Composite optionsGroup2 = UIUtils.createControlGroup(optionsGroup, "Settings", 2, GridData.FILL_BOTH, 0);
             optionsGroup2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
-            if (maxResults <= 0) {
-                maxResults = 100;
+            if (params.maxResults <= 0) {
+                params.maxResults = 100;
             }
 
-            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
+            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, params.maxResults, 1, 10000);
             maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             maxResultsSpinner.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e)
                 {
-                    maxResults = maxResultsSpinner.getSelection();
+                    params.maxResults = maxResultsSpinner.getSelection();
                 }
             });
 
-            final Button caseCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, caseSensitive);
+            final Button caseCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, params.caseSensitive);
             caseCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             caseCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    caseSensitive = caseCheckbox.getSelection();
+                    params.caseSensitive = caseCheckbox.getSelection();
                 }
             });
 
-            final Button fastSearchCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Fast search (indexed)", fastSearch);
+            final Button fastSearchCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Fast search (indexed)", params.fastSearch);
             fastSearchCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             fastSearchCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    fastSearch = fastSearchCheckbox.getSelection();
+                    params.fastSearch = fastSearchCheckbox.getSelection();
                 }
             });
 
 
-            final Button searchNumbersCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in numbers", searchNumbers);
+            final Button searchNumbersCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in numbers", params.searchNumbers);
             searchNumbersCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             searchNumbersCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    searchNumbers = searchNumbersCheckbox.getSelection();
+                    params.searchNumbers = searchNumbersCheckbox.getSelection();
                 }
             });
 
-            final Button searchLOBCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in LOBs", searchLOBs);
+            final Button searchLOBCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in LOBs", params.searchLOBs);
             searchLOBCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             searchLOBCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    searchLOBs = searchNumbersCheckbox.getSelection();
+                    params.searchLOBs = searchNumbersCheckbox.getSelection();
                 }
             });
         }
 
-        if (!sourceNodes.isEmpty()) {
-            dataSourceTree.getViewer().setSelection(
-                new StructuredSelection(sourceNodes));
-        } else {
-            updateEnablement();
+        if (!checkedNodes.isEmpty()) {
+            for (DBNNode node : checkedNodes) {
+                ((CheckboxTreeViewer)dataSourceTree.getViewer()).setChecked(node, true);
+            }
         }
+        updateEnablement();
     }
 
     @Override
     public SearchDataQuery createQuery() throws DBException
     {
-        List<DBSObject> selectedSources = getCheckedSources();
-
-        String dataSearchString = searchString;
+        params.sources = getCheckedSources();
 
         // Save search query
-        if (!searchHistory.contains(dataSearchString)) {
-            searchHistory.add(dataSearchString);
-            searchText.add(dataSearchString);
+        if (!searchHistory.contains(params.searchString)) {
+            searchHistory.add(params.searchString);
+            searchText.add(params.searchString);
         }
 
-        SearchDataParams params = new SearchDataParams();
-        params.setSources(selectedSources);
-        params.setSearchString(dataSearchString);
-        params.setCaseSensitive(caseSensitive);
-        params.setMaxResults(maxResults);
         return SearchDataQuery.createQuery(params);
 
     }
@@ -249,12 +262,12 @@ public class SearchDataPage extends AbstractSearchPage {
     @Override
     public void loadState(IPreferenceStore store)
     {
-        searchString = store.getString(PROP_MASK);
-        caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
-        fastSearch = store.getBoolean(PROP_FAST_SEARCH);
-        searchNumbers = store.getBoolean(PROP_SEARCH_NUMBERS);
-        searchLOBs = store.getBoolean(PROP_SEARCH_LOBS);
-        maxResults = store.getInt(PROP_MAX_RESULT);
+        params.searchString = store.getString(PROP_MASK);
+        params.caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
+        params.fastSearch = store.getBoolean(PROP_FAST_SEARCH);
+        params.searchNumbers = store.getBoolean(PROP_SEARCH_NUMBERS);
+        params.searchLOBs = store.getBoolean(PROP_SEARCH_LOBS);
+        params.maxResults = store.getInt(PROP_MAX_RESULT);
         for (int i = 0; ;i++) {
             String history = store.getString(PROP_HISTORY + "." + i); //$NON-NLS-1$
             if (CommonUtils.isEmpty(history)) {
@@ -262,18 +275,18 @@ public class SearchDataPage extends AbstractSearchPage {
             }
             searchHistory.add(history);
         }
-        sourceNodes = loadTreeState(store, PROP_SOURCES);
+        checkedNodes = loadTreeState(store, PROP_SOURCES);
     }
 
     @Override
     public void saveState(IPreferenceStore store)
     {
-        store.setValue(PROP_MASK, searchString);
-        store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
-        store.setValue(PROP_MAX_RESULT, maxResults);
-        store.setValue(PROP_FAST_SEARCH, fastSearch);
-        store.setValue(PROP_SEARCH_NUMBERS, searchNumbers);
-        store.setValue(PROP_SEARCH_LOBS, searchLOBs);
+        store.setValue(PROP_MASK, params.searchString);
+        store.setValue(PROP_CASE_SENSITIVE, params.caseSensitive);
+        store.setValue(PROP_MAX_RESULT, params.maxResults);
+        store.setValue(PROP_FAST_SEARCH, params.fastSearch);
+        store.setValue(PROP_SEARCH_NUMBERS, params.searchNumbers);
+        store.setValue(PROP_SEARCH_LOBS, params.searchLOBs);
         saveTreeState(store, PROP_SOURCES, dataSourceTree);
 
         {

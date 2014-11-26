@@ -108,7 +108,7 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
                         while (resultSet.nextRow()) {
                             subItem = new TreeItem(treeItem, SWT.NONE);
                             for (int i = 0; i < rsMetaData.getColumnCount(); i++) {
-                                subItem.setText(i, CommonUtils.toString(resultSet.getColumnValue(i + 1)));
+                                subItem.setText(i, CommonUtils.toString(resultSet.getAttributeValue(i + 1)));
                             }
                         }
                         treeItem.setExpanded(true);

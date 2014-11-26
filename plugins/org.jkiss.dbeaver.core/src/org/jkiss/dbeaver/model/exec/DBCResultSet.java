@@ -33,13 +33,13 @@ public interface DBCResultSet extends DBPObject
 
     DBCStatement getSourceStatement();
 
-    Object getColumnValue(int index) throws DBCException;
+    Object getAttributeValue(int index) throws DBCException;
 
     @Nullable
-    Object getColumnValue(String name) throws DBCException;
+    Object getAttributeValue(String name) throws DBCException;
 
     @Nullable
-    DBDValueMeta getColumnValueMeta(int index) throws DBCException;
+    DBDValueMeta getAttributeValueMeta(int index) throws DBCException;
 
     @Nullable
     DBDValueMeta getRowMeta() throws DBCException;

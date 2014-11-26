@@ -89,7 +89,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public Object getColumnValue(int index) throws DBCException
+    public Object getAttributeValue(int index) throws DBCException
     {
         try {
             if (index > properties.size()) {
@@ -103,7 +103,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
     @Nullable
     @Override
-    public Object getColumnValue(String name) throws DBCException {
+    public Object getAttributeValue(String name) throws DBCException {
         try {
             return row.getValue(name);
         } catch (WMIException e) {
@@ -112,7 +112,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public DBDValueMeta getColumnValueMeta(int index) throws DBCException
+    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException
     {
         return null;
     }
