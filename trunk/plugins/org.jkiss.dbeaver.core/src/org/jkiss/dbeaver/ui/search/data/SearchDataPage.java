@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -34,7 +33,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
@@ -65,6 +63,7 @@ public class SearchDataPage extends AbstractSearchPage {
     private SearchDataParams params = new SearchDataParams();
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private List<DBNNode> checkedNodes;
+    private CheckboxTreeManager checkboxTreeManager;
 
     public SearchDataPage() {
 		super("Database objects search");
@@ -143,7 +142,8 @@ public class SearchDataPage extends AbstractSearchPage {
                     return false;
                 }
             });
-            viewer.addCheckStateListener(new CheckboxTreeManager(viewer, new Class[] {DBSDataSearcher.class}));
+            checkboxTreeManager = new CheckboxTreeManager(viewer, new Class[]{DBSDataSearcher.class});
+            viewer.addCheckStateListener(checkboxTreeManager);
             viewer.addCheckStateListener(new ICheckStateListener() {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event) {
@@ -215,6 +215,7 @@ public class SearchDataPage extends AbstractSearchPage {
         if (!checkedNodes.isEmpty()) {
             for (DBNNode node : checkedNodes) {
                 ((CheckboxTreeViewer)dataSourceTree.getViewer()).setChecked(node, true);
+                checkboxTreeManager.checkStateChanged(new CheckStateChangedEvent((CheckboxTreeViewer)dataSourceTree.getViewer(), node, true));
             }
         }
         updateEnablement();
