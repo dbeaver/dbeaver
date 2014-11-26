@@ -246,25 +246,27 @@ public class DBNModel implements IResourceChangeListener {
             String item = items.get(i);
             List<? extends DBNNode> children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
-            for (DBNNode child : children) {
-                if (child instanceof DBNDatabaseFolder) {
-                    DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
-                    if (meta != null && !CommonUtils.isEmpty(meta.getType()) && meta.getType().equals(item)) {
+            if (children != null && !children.isEmpty()) {
+                for (DBNNode child : children) {
+                    if (child instanceof DBNDatabaseFolder) {
+                        DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
+                        if (meta != null && !CommonUtils.isEmpty(meta.getType()) && meta.getType().equals(item)) {
+                            nextChild = child;
+                        }
+                    }
+                    if (child.getNodeName().equals(item)) {
                         nextChild = child;
                     }
-                }
-                if (child.getNodeName().equals(item)) {
-                    nextChild = child;
-                }
-                if (nextChild != null) {
-                    if (i < itemsSize - 1) {
-                        nextChild = findNodeByPath(monitor, items, nextChild, i + 1);
-                        if (nextChild != null) {
-                            return nextChild;
+                    if (nextChild != null) {
+                        if (i < itemsSize - 1) {
+                            nextChild = findNodeByPath(monitor, items, nextChild, i + 1);
+                            if (nextChild != null) {
+                                return nextChild;
+                            }
+                            continue;
                         }
-                        continue;
+                        break;
                     }
-                    break;
                 }
             }
             curNode = nextChild;
