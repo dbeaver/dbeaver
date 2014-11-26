@@ -21,9 +21,23 @@ package org.jkiss.dbeaver.ui.search.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSearcher;
+import org.jkiss.dbeaver.model.struct.DBSFolder;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.*;
 
 public class SearchDataQuery implements IObjectSearchQuery {
 
@@ -50,8 +64,52 @@ public class SearchDataQuery implements IObjectSearchQuery {
         try {
             String searchString = params.getSearchString();
 
+            monitor.subTask("Collect tables");
+            List<DBSDataSearcher> searchers = new ArrayList<DBSDataSearcher>();
+            for (DBSObject object : params.sources) {
+                addSearchers(monitor, searchers, object);
+            }
+            Set<DBPDataSource> dataSources = new HashSet<DBPDataSource>();
+            for (DBSDataSearcher searcher : searchers) {
+                dataSources.add(searcher.getDataSource());
+            }
+
+            // Search
+            long flags = 0;
+            if (params.caseSensitive) flags |= DBSDataSearcher.FLAG_CASE_SENSITIVE;
+            if (params.fastSearch) flags |= DBSDataSearcher.FLAG_FAST_SEARCH;
+            if (params.searchNumbers) flags |= DBSDataSearcher.FLAG_SEARCH_NUMBERS;
+            if (params.searchLOBs) flags |= DBSDataSearcher.FLAG_SEARCH_LOBS;
+            int objectsFound = 0;
+            monitor.beginTask(
+                "Search \"" + searchString + "\" in " + searchers.size() + " table(s) / " + dataSources.size() + " database(s)",
+                searchers.size());
+            try {
+                for (DBSDataSearcher searcher : searchers) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+
+                    DBCSession session = searcher.getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, DBUtils.getObjectFullName(searcher));
+                    try {
+                        DBDDataReceiver dataReceiver = new TestDataReceiver();
+                        searcher.findRows(session, dataReceiver, searchString, flags);
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    finally {
+                        session.close();
+                    }
+                    if (objectsFound >= params.maxResults) {
+                        break;
+                    }
+
+                    monitor.worked(1);
+                }
 /*
-            DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
             Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
                 monitor,
                 params.getParentObject(),
@@ -80,8 +138,37 @@ public class SearchDataQuery implements IObjectSearchQuery {
                 listener.objectsFound(monitor, nodes);
             }
 */
+            } finally {
+                monitor.done();
+            }
         } finally {
             listener.searchFinished();
+        }
+    }
+
+    private void addSearchers(DBRProgressMonitor monitor, List<DBSDataSearcher> searchers, DBSObject object) throws DBException {
+        if (monitor.isCanceled()) {
+            return;
+        }
+
+        Collection<? extends DBSObject> children = null;
+        if (object instanceof DBSDataSearcher) {
+            if (!searchers.contains(object)) {
+                searchers.add((DBSDataSearcher) object);
+            }
+        } else if (object instanceof DBSObjectContainer) {
+            children = ((DBSObjectContainer) object).getChildren(monitor);
+        } else if (object instanceof DBSFolder) {
+            children = ((DBSFolder) object).getChildrenObjects(monitor);
+        }
+        if (!CommonUtils.isEmpty(children)) {
+            for (DBSObject child : children) {
+                if (monitor.isCanceled()) {
+                    return;
+                }
+
+                addSearchers(monitor, searchers, child);
+            }
         }
     }
 
@@ -91,5 +178,27 @@ public class SearchDataQuery implements IObjectSearchQuery {
         return new SearchDataQuery(params);
     }
 
+    private class TestDataReceiver implements DBDDataReceiver {
+
+        @Override
+        public void fetchStart(DBCSession session, DBCResultSet resultSet) throws DBCException {
+
+        }
+
+        @Override
+        public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+
+        }
+
+        @Override
+        public void fetchEnd(DBCSession session) throws DBCException {
+
+        }
+
+        @Override
+        public void close() {
+
+        }
+    }
 
 }

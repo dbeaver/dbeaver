@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSDataSearcher;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -52,7 +53,7 @@ import java.util.List;
  */
 public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObjectContainer>
     extends AbstractTable<DATASOURCE, CONTAINER>
-    implements DBSDataManipulator, DBPSaveableObject
+    implements DBSDataManipulator, DBSDataSearcher, DBPSaveableObject
 {
     static final Log log = LogFactory.getLog(JDBCTable.class);
     public static final String DEFAULT_TABLE_ALIAS = "x";
@@ -293,6 +294,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         finally {
             dbStat.close();
         }
+    }
+
+    @Override
+    public DBCStatistics findRows(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull String searchString, long flags) throws DBCException {
+        DBCStatistics statistics = new DBCStatistics();
+
+        return statistics;
     }
 
     @NotNull
