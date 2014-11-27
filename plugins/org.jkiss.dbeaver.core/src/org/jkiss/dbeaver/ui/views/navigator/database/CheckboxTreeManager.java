@@ -114,10 +114,17 @@ public class CheckboxTreeManager implements ICheckStateListener {
                 for (DBNDatabaseNode container : change ? targetContainers : Collections.singletonList((DBNDatabaseNode) element)) {
                     try {
                         List<DBNDatabaseNode> directChildren = CommonUtils.safeList(container.getChildren(VoidProgressMonitor.INSTANCE));
-                        boolean missing = Collections.disjoint(directChildren, targetChildren);
+                        boolean missingOne = false, missingAll = true;
+                        for (DBNDatabaseNode node : directChildren) {
+                            if (!targetChildren.contains(node)) {
+                                missingOne = true;
+                            } else {
+                                missingAll = false;
+                            }
+                        }
 
-                        viewer.setChecked(container, change ? checked : !missing || !Collections.disjoint(directChildren, targetContainers));
-                        viewer.setGrayed(container, missing);
+                        viewer.setChecked(container, change ? checked : !missingAll || !Collections.disjoint(directChildren, targetContainers));
+                        viewer.setGrayed(container, missingOne);
                     } catch (DBException e) {
                         // shouldn't be here
                     }
