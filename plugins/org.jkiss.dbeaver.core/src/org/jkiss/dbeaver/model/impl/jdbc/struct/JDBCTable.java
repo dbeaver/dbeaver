@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -296,11 +297,16 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    /**
+     * Reuses readData with special filter
+     * @throws DBCException
+     */
     @Override
     public DBCStatistics findRows(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull String searchString, long flags) throws DBCException {
-        DBCStatistics statistics = new DBCStatistics();
 
-        return statistics;
+        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
+        DBDDataFilter filter = new DBDDataFilter(constraints);
+        return readData(session, dataReceiver, filter, -1, -1, 0);
     }
 
     @NotNull
