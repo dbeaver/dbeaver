@@ -139,6 +139,8 @@ public class SearchDataPage extends AbstractSearchPage {
                     return false;
                 }
             });
+            checkboxTreeManager = new CheckboxTreeManager(viewer,
+                new Class[]{DBSDataSearcher.class});
             viewer.addCheckStateListener(new ICheckStateListener() {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event) {
@@ -210,9 +212,6 @@ public class SearchDataPage extends AbstractSearchPage {
         getShell().getDisplay().asyncExec(new Runnable() {
             @Override
             public void run() {
-                checkboxTreeManager = new CheckboxTreeManager(
-                    (CheckboxTreeViewer) dataSourceTree.getViewer(),
-                    new Class[]{DBSDataSearcher.class});
                 List<DBNNode> checkedNodes = loadTreeState(store, PROP_SOURCES);
 
                 if (!checkedNodes.isEmpty()) {

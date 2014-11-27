@@ -30,14 +30,12 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSearcher;
-import org.jkiss.dbeaver.model.struct.DBSFolder;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
-import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SearchDataQuery implements IObjectSearchQuery {
 
@@ -85,16 +83,12 @@ public class SearchDataQuery implements IObjectSearchQuery {
                     if (monitor.isCanceled()) {
                         break;
                     }
-
-                    DBCSession session = searcher.getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, DBUtils.getObjectFullName(searcher));
+                    monitor.subTask(DBUtils.getObjectFullName(searcher));
+                    SearchTableMonitor searchMonitor = new SearchTableMonitor();
+                    DBCSession session = searcher.getDataSource().openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows");
                     try {
                         DBDDataReceiver dataReceiver = new TestDataReceiver();
                         searcher.findRows(session, dataReceiver, searchString, flags);
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
                     }
                     finally {
                         session.close();
@@ -142,36 +136,23 @@ public class SearchDataQuery implements IObjectSearchQuery {
         }
     }
 
-    private void addSearchers(DBRProgressMonitor monitor, List<DBSDataSearcher> searchers, DBSObject object) throws DBException {
-        if (monitor.isCanceled()) {
-            return;
-        }
-
-        Collection<? extends DBSObject> children = null;
-        if (object instanceof DBSDataSearcher) {
-            if (!searchers.contains(object)) {
-                searchers.add((DBSDataSearcher) object);
-            }
-        } else if (object instanceof DBSObjectContainer) {
-            children = ((DBSObjectContainer) object).getChildren(monitor);
-        } else if (object instanceof DBSFolder) {
-            children = ((DBSFolder) object).getChildrenObjects(monitor);
-        }
-        if (!CommonUtils.isEmpty(children)) {
-            for (DBSObject child : children) {
-                if (monitor.isCanceled()) {
-                    return;
-                }
-
-                addSearchers(monitor, searchers, child);
-            }
-        }
-    }
-
     public static SearchDataQuery createQuery(SearchDataParams params)
         throws DBException
     {
         return new SearchDataQuery(params);
+    }
+
+    private class SearchTableMonitor extends VoidProgressMonitor {
+
+        private boolean canceled;
+
+        private SearchTableMonitor() {
+        }
+
+        @Override
+        public boolean isCanceled() {
+            return canceled;
+        }
     }
 
     private class TestDataReceiver implements DBDDataReceiver {

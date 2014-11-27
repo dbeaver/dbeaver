@@ -32,7 +32,7 @@ public class VoidProgressMonitor implements DBRProgressMonitor {
 
     private static final IProgressMonitor NESTED_INSTANCE = new NullProgressMonitor();
 
-    private VoidProgressMonitor() {
+    protected VoidProgressMonitor() {
     }
 
     @Override
