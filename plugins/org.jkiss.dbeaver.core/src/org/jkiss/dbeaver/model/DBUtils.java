@@ -1398,4 +1398,19 @@ public final class DBUtils {
             return value;
         }
     }
+
+    public static boolean isIndexedAttribute(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
+        DBSEntity entity = attribute.getParentObject();
+        if (entity instanceof DBSTable) {
+            Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
+            if (!CommonUtils.isEmpty(indexes)) {
+                for (DBSTableIndex index : indexes) {
+                    if (getConstraintColumn(monitor, index, attribute) != null) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

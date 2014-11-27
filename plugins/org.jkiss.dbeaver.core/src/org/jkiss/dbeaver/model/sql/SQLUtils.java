@@ -281,6 +281,7 @@ public final class SQLUtils {
         @NotNull StringBuilder query,
         boolean inlineCriteria)
     {
+        String operator = filter.isAnyConstraint() ? " OR " : " AND ";  //$NON-NLS-1$ $NON-NLS-2$
         boolean hasWhere = false;
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             String condition = getConstraintCondition(dataSource, constraint, inlineCriteria);
@@ -288,7 +289,7 @@ public final class SQLUtils {
                 continue;
             }
 
-            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
+            if (hasWhere) query.append(operator);
             hasWhere = true;
             if (conditionTable != null) {
                 query.append(conditionTable).append('.');
@@ -298,7 +299,7 @@ public final class SQLUtils {
         }
 
         if (!CommonUtils.isEmpty(filter.getWhere())) {
-            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
+            if (hasWhere) query.append(operator);
             query.append(filter.getWhere());
         }
     }

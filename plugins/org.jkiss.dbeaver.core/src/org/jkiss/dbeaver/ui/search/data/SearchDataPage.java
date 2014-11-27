@@ -47,7 +47,7 @@ public class SearchDataPage extends AbstractSearchPage {
 
     private static final String PROP_MASK = "search.data.mask"; //$NON-NLS-1$
     private static final String PROP_CASE_SENSITIVE = "search.data.case-sensitive"; //$NON-NLS-1$
-    private static final String PROP_MAX_RESULT = "search.data.max-results"; //$NON-NLS-1$
+    private static final String PROP_SAMPLE_ROWS = "search.data.sample-rows"; //$NON-NLS-1$
     private static final String PROP_FAST_SEARCH = "search.data.fast-search"; //$NON-NLS-1$
     private static final String PROP_SEARCH_NUMBERS = "search.data.search-numbers"; //$NON-NLS-1$
     private static final String PROP_SEARCH_LOBS = "search.data.search-lobs"; //$NON-NLS-1$
@@ -154,10 +154,10 @@ public class SearchDataPage extends AbstractSearchPage {
             optionsGroup2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
             if (params.maxResults <= 0) {
-                params.maxResults = 100;
+                params.maxResults = 10;
             }
 
-            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, params.maxResults, 1, 10000);
+            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Sample rows", params.maxResults, 1, Integer.MAX_VALUE);
             maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             maxResultsSpinner.addModifyListener(new ModifyListener() {
                 @Override
@@ -247,9 +247,9 @@ public class SearchDataPage extends AbstractSearchPage {
         params.searchString = store.getString(PROP_MASK);
         params.caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
         params.fastSearch = store.getBoolean(PROP_FAST_SEARCH);
-        params.searchNumbers = store.getBoolean(PROP_SEARCH_NUMBERS);
+        params.searchNumbers = store.getString(PROP_SEARCH_NUMBERS) == null || store.getBoolean(PROP_SEARCH_NUMBERS);
         params.searchLOBs = store.getBoolean(PROP_SEARCH_LOBS);
-        params.maxResults = store.getInt(PROP_MAX_RESULT);
+        params.maxResults = store.getInt(PROP_SAMPLE_ROWS);
         for (int i = 0; ;i++) {
             String history = store.getString(PROP_HISTORY + "." + i); //$NON-NLS-1$
             if (CommonUtils.isEmpty(history)) {
@@ -265,7 +265,7 @@ public class SearchDataPage extends AbstractSearchPage {
     {
         store.setValue(PROP_MASK, params.searchString);
         store.setValue(PROP_CASE_SENSITIVE, params.caseSensitive);
-        store.setValue(PROP_MAX_RESULT, params.maxResults);
+        store.setValue(PROP_SAMPLE_ROWS, params.maxResults);
         store.setValue(PROP_FAST_SEARCH, params.fastSearch);
         store.setValue(PROP_SEARCH_NUMBERS, params.searchNumbers);
         store.setValue(PROP_SEARCH_LOBS, params.searchLOBs);
