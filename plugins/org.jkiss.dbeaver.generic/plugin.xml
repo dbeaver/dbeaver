@@ -458,7 +458,11 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
-                    <file type="jar" path="drivers/firebird/jaybird-full-2.1.6.jar" url="*"/>
+                    <file type="jar" path="drivers/firebird/jaybird-full-2.2.5.jar" url="*"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird22.dll" url="*"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird22_x64.dll" url="*"/>
+                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird22.so" url="*"/>
+                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird22_x64.so" url="*"/>
                     <file type="license" path="drivers/firebird/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
