@@ -22,10 +22,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -62,8 +59,8 @@ public class SearchDataPage extends AbstractSearchPage {
 
     private SearchDataParams params = new SearchDataParams();
     private Set<String> searchHistory = new LinkedHashSet<String>();
-    private List<DBNNode> checkedNodes;
     private CheckboxTreeManager checkboxTreeManager;
+    private IPreferenceStore store;
 
     public SearchDataPage() {
 		super("Database objects search");
@@ -142,8 +139,6 @@ public class SearchDataPage extends AbstractSearchPage {
                     return false;
                 }
             });
-            checkboxTreeManager = new CheckboxTreeManager(viewer, new Class[]{DBSDataSearcher.class});
-            viewer.addCheckStateListener(checkboxTreeManager);
             viewer.addCheckStateListener(new ICheckStateListener() {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event) {
@@ -212,13 +207,23 @@ public class SearchDataPage extends AbstractSearchPage {
             });
         }
 
-        if (!checkedNodes.isEmpty()) {
-            for (DBNNode node : checkedNodes) {
-                ((CheckboxTreeViewer)dataSourceTree.getViewer()).setChecked(node, true);
+        getShell().getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                checkboxTreeManager = new CheckboxTreeManager(
+                    (CheckboxTreeViewer) dataSourceTree.getViewer(),
+                    new Class[]{DBSDataSearcher.class});
+                List<DBNNode> checkedNodes = loadTreeState(store, PROP_SOURCES);
+
+                if (!checkedNodes.isEmpty()) {
+                    for (DBNNode node : checkedNodes) {
+                        ((CheckboxTreeViewer) dataSourceTree.getViewer()).setChecked(node, true);
+                    }
+                    checkboxTreeManager.updateCheckStates();
+                }
+                updateEnablement();
             }
-            checkboxTreeManager.updateCheckStates();
-        }
-        updateEnablement();
+        });
     }
 
     @Override
@@ -252,7 +257,7 @@ public class SearchDataPage extends AbstractSearchPage {
             }
             searchHistory.add(history);
         }
-        checkedNodes = loadTreeState(store, PROP_SOURCES);
+        this.store = store;
     }
 
     @Override
