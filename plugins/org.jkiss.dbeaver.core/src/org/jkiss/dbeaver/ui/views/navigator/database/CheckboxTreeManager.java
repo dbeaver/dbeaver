@@ -48,6 +48,7 @@ public class CheckboxTreeManager implements ICheckStateListener {
         this.viewer = viewer;
         this.targetTypes = targetTypes;
         this.filters = viewer.getFilters();
+        viewer.addCheckStateListener(this);
     }
 
     @Override
