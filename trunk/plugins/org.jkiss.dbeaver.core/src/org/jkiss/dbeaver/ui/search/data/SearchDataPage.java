@@ -206,7 +206,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
         }
-
+        dataSourceTree.setEnabled(false);
         getShell().getDisplay().asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -222,6 +222,7 @@ public class SearchDataPage extends AbstractSearchPage {
                     checkboxTreeManager.updateCheckStates();
                 }
                 updateEnablement();
+                dataSourceTree.setEnabled(true);
             }
         });
     }
