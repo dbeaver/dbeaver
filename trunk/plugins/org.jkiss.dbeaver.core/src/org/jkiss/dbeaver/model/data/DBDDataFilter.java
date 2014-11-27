@@ -31,6 +31,7 @@ import java.util.*;
 public class DBDDataFilter {
 
     private final List<DBDAttributeConstraint> constraints;
+    private boolean anyConstraint; // means OR condition
     private String order;
     private String where;
 
@@ -100,6 +101,14 @@ public class DBDDataFilter {
             attributes.add(constraint.getAttribute());
         }
         return attributes;
+    }
+
+    public boolean isAnyConstraint() {
+        return anyConstraint;
+    }
+
+    public void setAnyConstraint(boolean anyConstraint) {
+        this.anyConstraint = anyConstraint;
     }
 
     public String getOrder()
@@ -226,6 +235,9 @@ public class DBDDataFilter {
         if (constraints.size() != source.constraints.size()) {
             return false;
         }
+        if (anyConstraint != source.anyConstraint) {
+            return false;
+        }
         for (int i = 0, orderColumnsSize = source.constraints.size(); i < orderColumnsSize; i++) {
             if (!constraints.get(i).equals(source.constraints.get(i))) {
                 return false;
@@ -242,6 +254,9 @@ public class DBDDataFilter {
      */
     public boolean equalFilters(DBDDataFilter source)
     {
+        if (anyConstraint != source.anyConstraint) {
+            return false;
+        }
         if (constraints.size() != source.constraints.size()) {
             return false;
         }

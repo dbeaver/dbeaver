@@ -28,12 +28,15 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSearcher;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -75,6 +78,8 @@ public class SearchDataQuery implements IObjectSearchQuery {
             if (params.searchNumbers) flags |= DBSDataSearcher.FLAG_SEARCH_NUMBERS;
             if (params.searchLOBs) flags |= DBSDataSearcher.FLAG_SEARCH_LOBS;
             int objectsFound = 0;
+            DBNModel dbnModel = DBNModel.getInstance();
+
             monitor.beginTask(
                 "Search \"" + searchString + "\" in " + params.sources.size() + " table(s) / " + dataSources.size() + " database(s)",
                 params.sources.size());
@@ -83,51 +88,31 @@ public class SearchDataQuery implements IObjectSearchQuery {
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    monitor.subTask(DBUtils.getObjectFullName(searcher));
+                    String objectName = DBUtils.getObjectFullName(searcher);
+                    DBNDatabaseNode node = dbnModel.findNode(searcher);
+                    if (node == null) {
+                        log.warn("Can't find tree node for object \"" + objectName + "\"");
+                        continue;
+                    }
+                    monitor.subTask(objectName);
                     SearchTableMonitor searchMonitor = new SearchTableMonitor();
-                    DBCSession session = searcher.getDataSource().openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows");
+                    DBCSession session = searcher.getDataSource().openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows in " + objectName);
                     try {
-                        DBDDataReceiver dataReceiver = new TestDataReceiver();
+                        TestDataReceiver dataReceiver = new TestDataReceiver(searchMonitor);
                         searcher.findRows(session, dataReceiver, searchString, flags);
-                    }
-                    finally {
+
+                        if (dataReceiver.rowCount > 0) {
+                            SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount);
+                            listener.objectsFound(monitor, Collections.singleton(object));
+                        }
+                    } catch (DBCException e) {
+                        log.error("Error searching string in '" + objectName + "'", e);
+                    } finally {
                         session.close();
-                    }
-                    if (objectsFound >= params.maxResults) {
-                        break;
                     }
 
                     monitor.worked(1);
                 }
-/*
-            Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
-                monitor,
-                params.getParentObject(),
-                objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
-                searchString,
-                params.isCaseSensitive(),
-                params.getMaxResults());
-            List<DBNNode> nodes = new ArrayList<DBNNode>();
-            for (DBSObjectReference reference : objects) {
-                if (monitor.isCanceled()) {
-                    break;
-                }
-                try {
-                    DBSObject object = reference.resolveObject(monitor);
-                    if (object != null) {
-                        DBNNode node = navigatorModel.getNodeByObject(monitor, object, false);
-                        if (node != null) {
-                            nodes.add(node);
-                        }
-                    }
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-            if (!nodes.isEmpty()) {
-                listener.objectsFound(monitor, nodes);
-            }
-*/
             } finally {
                 monitor.done();
             }
@@ -144,7 +129,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
 
     private class SearchTableMonitor extends VoidProgressMonitor {
 
-        private boolean canceled;
+        private volatile boolean canceled;
 
         private SearchTableMonitor() {
         }
@@ -157,6 +142,13 @@ public class SearchDataQuery implements IObjectSearchQuery {
 
     private class TestDataReceiver implements DBDDataReceiver {
 
+        private SearchTableMonitor searchMonitor;
+        private int rowCount = 0;
+
+        public TestDataReceiver(SearchTableMonitor searchMonitor) {
+            this.searchMonitor = searchMonitor;
+        }
+
         @Override
         public void fetchStart(DBCSession session, DBCResultSet resultSet) throws DBCException {
 
@@ -164,7 +156,10 @@ public class SearchDataQuery implements IObjectSearchQuery {
 
         @Override
         public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
-
+            rowCount++;
+            if (rowCount >= params.maxResults) {
+                searchMonitor.canceled = true;
+            }
         }
 
         @Override

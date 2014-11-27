@@ -16,18 +16,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search.metadata;
+package org.jkiss.dbeaver.ui.search.data;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
 
-public class SearchMetadataResultsPage extends AbstractSearchResultsPage<DBNNode> {
+/**
+ * Search parameters
+ */
+public class SearchDataObject implements DBPNamedObject {
 
-    public SearchMetadataResultsPage() {
+    private final int foundRows;
+    private DBNNode node;
+
+    public SearchDataObject(DBNNode node, int foundRows) {
+        this.node = node;
+        this.foundRows = foundRows;
     }
 
+    @Property
     @Override
-    protected DBNNode getNodeFromObject(DBNNode object) {
-        return object;
+    public String getName() {
+        return node.getName();
+    }
+
+    @Property(viewable = true)
+    public int getFoundRows() {
+        return foundRows;
+    }
+
+    public DBNNode getNode() {
+        return node;
     }
 }
