@@ -201,8 +201,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject));
         }
         DBPDataSource dataSource = containerMapping.getTarget().getDataSource();
-        targetContext = settings.isOpenNewConnections() ?
-            dataSource.openIsolatedContext(monitor, "Data transfer consumer") : dataSource;
+        try {
+            targetContext = settings.isOpenNewConnections() ?
+                dataSource.openIsolatedContext(monitor, "Data transfer consumer") : dataSource;
+        } catch (DBException e) {
+            e.printStackTrace();
+        }
         targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
         if (settings.isUseTransactions()) {
             targetSession.getTransactionManager().setAutoCommit(false);

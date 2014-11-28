@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
@@ -38,10 +37,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
@@ -78,6 +77,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     protected Map<String, String> getInternalConnectionProperties()
     {
         return MySQLDataSourceProvider.getConnectionsProps();
+    }
+
+    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
+        useDatabase(monitor, isolatedContext, getSelectedObject());
     }
 
     @Override
@@ -212,47 +215,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         finally {
             session.close();
         }
-
-/*
-        // Construct information folders
-        informationFolders = new ArrayList<MySQLInformationFolder>();
-        informationFolders.add(new MySQLInformationFolder(this, "Session Status") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getSessionStatus(monitor);
-            }
-        });
-        informationFolders.add(new MySQLInformationFolder(this, "Global Status") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getGlobalStatus(monitor);
-            }
-        });
-        informationFolders.add(new MySQLInformationFolder(this, "Session Variables") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getSessionVariables(monitor);
-            }
-        });
-        informationFolders.add(new MySQLInformationFolder(this, "Global Variables") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getGlobalVariables(monitor);
-            }
-        });
-        informationFolders.add(new MySQLInformationFolder(this, "Engines") {
-            public Collection getObjects(DBRProgressMonitor monitor)
-            {
-                return getEngines();
-            }
-        });
-        informationFolders.add(new MySQLInformationFolder(this, "User Privileges") {
-            public Collection getObjects(DBRProgressMonitor monitor) throws DBException
-            {
-                return getPrivileges(monitor);
-            }
-        });
-*/
     }
 
     @Override
@@ -333,9 +295,26 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         if (!(object instanceof MySQLCatalog)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
+        useDatabase(monitor, executionContext, (MySQLCatalog) object);
+        activeCatalogName = object.getName();
+
+        // Send notifications
+        if (oldSelectedEntity != null) {
+            DBUtils.fireObjectSelect(oldSelectedEntity, false);
+        }
+        if (this.activeCatalogName != null) {
+            DBUtils.fireObjectSelect(object, true);
+        }
+    }
+
+    private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, MySQLCatalog catalog) throws DBException {
+        if (catalog == null) {
+            log.debug("Null current database");
+            return;
+        }
+        JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
         try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(object));
+            JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(catalog));
             try {
                 dbStat.execute();
             } finally {
@@ -346,15 +325,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
         finally {
             session.close();
-        }
-        activeCatalogName = object.getName();
-
-        // Send notifications
-        if (oldSelectedEntity != null) {
-            DBUtils.fireObjectSelect(oldSelectedEntity, false);
-        }
-        if (this.activeCatalogName != null) {
-            DBUtils.fireObjectSelect(object, true);
         }
     }
 
