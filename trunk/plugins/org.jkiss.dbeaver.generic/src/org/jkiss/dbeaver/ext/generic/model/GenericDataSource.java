@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -98,6 +99,14 @@ public class GenericDataSource extends JDBCDataSource
         }
 
         isEmbedded = Boolean.TRUE.equals(container.getDriver().getDriverParameter(GenericConstants.PARAM_EMBEDDED));
+    }
+
+    JDBCExecutionContext getExecutionContext() {
+        return executionContext;
+    }
+
+    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
+        setActiveEntityName(monitor, isolatedContext, getSelectedObject());
     }
 
     public String getAllObjectsPattern()
@@ -663,7 +672,7 @@ public class GenericDataSource extends JDBCDataSource
             throw new DBException("Bad child object specified as active: " + object);
         }
 
-        setActiveEntityName(monitor, object);
+        setActiveEntityName(monitor, executionContext, object);
 
         if (oldSelectedEntity != null) {
             DBUtils.fireObjectSelect(oldSelectedEntity, false);
@@ -747,9 +756,13 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    void setActiveEntityName(DBRProgressMonitor monitor, DBSObject entity) throws DBException
+    void setActiveEntityName(DBRProgressMonitor monitor, JDBCExecutionContext context, DBSObject entity) throws DBException
     {
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
+        if (entity == null) {
+            log.debug("Null current entity");
+            return;
+        }
+        JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
         try {
             if (selectedEntityFromAPI) {
                 // Use JDBC API to change entity

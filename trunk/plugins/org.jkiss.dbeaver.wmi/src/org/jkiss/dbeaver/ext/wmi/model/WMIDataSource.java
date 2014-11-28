@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -92,7 +91,7 @@ public class WMIDataSource implements DBPDataSource, SQLDataSource, IAdaptable//
     }
 
     @Override
-    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBCException
+    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBException
     {
         return this;
     }

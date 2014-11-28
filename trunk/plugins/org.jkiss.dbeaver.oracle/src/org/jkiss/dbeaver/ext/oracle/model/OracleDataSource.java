@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -106,6 +107,10 @@ public class OracleDataSource extends JDBCDataSource
 */
 
         return connectionHolder;
+    }
+
+    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
+        setCurrentSchema(monitor, isolatedContext, getSelectedObject());
     }
 
     @Override
@@ -349,15 +354,7 @@ public class OracleDataSource extends JDBCDataSource
         if (!(object instanceof OracleSchema)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
-        try {
-            JDBCUtils.executeSQL(session, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
-        } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
-        }
-        finally {
-            session.close();
-        }
+        setCurrentSchema(monitor, executionContext, (OracleSchema)object);
         activeSchemaName = object.getName();
 
         // Send notifications
@@ -366,6 +363,22 @@ public class OracleDataSource extends JDBCDataSource
         }
         if (this.activeSchemaName != null) {
             DBUtils.fireObjectSelect(object, true);
+        }
+    }
+
+    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, OracleSchema object) throws DBException {
+        if (object == null) {
+            log.debug("Null current schema");
+            return;
+        }
+        JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
+        try {
+            JDBCUtils.executeSQL(session, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
+        } catch (SQLException e) {
+            throw new DBException(e, session.getDataSource());
+        }
+        finally {
+            session.close();
         }
     }
 
