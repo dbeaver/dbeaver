@@ -63,8 +63,8 @@ public abstract class JDBCDataSource
 {
     private final DBSDataSourceContainer container;
 
-    private final JDBCExecutionContext executionContext;
-    private volatile JDBCExecutionContext metaContext;
+    protected final JDBCExecutionContext executionContext;
+    protected volatile JDBCExecutionContext metaContext;
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected volatile SQLDialect sqlDialect;
 
@@ -195,9 +195,15 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBCException
+    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBException
     {
-        return new JDBCExecutionContext(this, purpose, true);
+        JDBCExecutionContext isolatedContext = new JDBCExecutionContext(this, purpose, true);
+        copyContextState(monitor, isolatedContext);
+        return isolatedContext;
+    }
+
+    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
+
     }
 
     protected JDBCConnectionImpl createConnection(

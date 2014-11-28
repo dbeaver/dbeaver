@@ -187,7 +187,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
             throw new DBException("Wrong child object specified as active: " + object);
         }
 
-        getDataSource().setActiveEntityName(monitor, object);
+        getDataSource().setActiveEntityName(monitor, getDataSource().getExecutionContext(), object);
 
         if (oldSelectedEntity != null) {
             DBUtils.fireObjectSelect(oldSelectedEntity, false);
