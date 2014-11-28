@@ -31,6 +31,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
 {
+    /**
+     * Current execution context. Used by global authenticators and network handlers
+     */
     public static final ThreadLocal<DBCExecutionContext> ACTIVE_CONTEXT = new ThreadLocal<DBCExecutionContext>();
 
     String getContextName();
