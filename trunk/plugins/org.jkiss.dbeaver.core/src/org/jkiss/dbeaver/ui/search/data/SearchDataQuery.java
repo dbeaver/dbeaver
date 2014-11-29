@@ -97,7 +97,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         findRows(session, dataContainer, dataReceiver);
 
                         if (dataReceiver.rowCount > 0) {
-                            SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount);
+                            SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount, dataReceiver.filter);
                             listener.objectsFound(monitor, Collections.singleton(object));
                         }
                     } catch (DBCException e) {
@@ -119,7 +119,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
     private DBCStatistics findRows(
         @NotNull DBCSession session,
         @NotNull DBSDataContainer dataContainer,
-        @NotNull DBDDataReceiver dataReceiver) throws DBCException
+        @NotNull TestDataReceiver dataReceiver) throws DBCException
     {
         DBSEntity entity;
         if (dataContainer instanceof DBSEntity) {
@@ -179,9 +179,9 @@ public class SearchDataQuery implements IObjectSearchQuery {
                 constraint.setValue(value);
                 constraints.add(constraint);
             }
-            DBDDataFilter filter = new DBDDataFilter(constraints);
-            filter.setAnyConstraint(true);
-            return dataContainer.readData(session, dataReceiver, filter, -1, -1, 0);
+            dataReceiver.filter = new DBDDataFilter(constraints);
+            dataReceiver.filter.setAnyConstraint(true);
+            return dataContainer.readData(session, dataReceiver, dataReceiver.filter, -1, -1, 0);
         } catch (DBException e) {
             throw new DBCException("Error finding rows", e);
         }
@@ -210,6 +210,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
 
         private SearchTableMonitor searchMonitor;
         private int rowCount = 0;
+        private DBDDataFilter filter;
 
         public TestDataReceiver(SearchTableMonitor searchMonitor) {
             this.searchMonitor = searchMonitor;

@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.search.data;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 
@@ -27,12 +28,14 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
  */
 public class SearchDataObject implements DBPNamedObject {
 
+    private final DBNNode node;
     private final int foundRows;
-    private DBNNode node;
+    private final DBDDataFilter filter;
 
-    public SearchDataObject(DBNNode node, int foundRows) {
+    public SearchDataObject(DBNNode node, int foundRows, DBDDataFilter filter) {
         this.node = node;
         this.foundRows = foundRows;
+        this.filter = filter;
     }
 
     @Property
@@ -48,5 +51,9 @@ public class SearchDataObject implements DBPNamedObject {
 
     public DBNNode getNode() {
         return node;
+    }
+
+    public DBDDataFilter getFilter() {
+        return filter;
     }
 }

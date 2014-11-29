@@ -594,9 +594,10 @@ public class ResultSetViewer extends Viewer
                         }
                     }
                 });
+            } else {
+                updateFiltersText();
             }
         }
-        this.updateFiltersText();
     }
 
     ////////////////////////////////////////////////////////////

@@ -623,7 +623,7 @@ public class ResultSetModel {
         // Check if filter misses some columns
         List<DBDAttributeConstraint> newConstraints = new ArrayList<DBDAttributeConstraint>();
         for (DBDAttributeBinding binding : columns) {
-            if (dataFilter.getConstraint(binding) == null) {
+            if (dataFilter.getConstraint(binding.getAttribute(), false) == null) {
                 addConstraints(newConstraints, binding);
             }
         }
