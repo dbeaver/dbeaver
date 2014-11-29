@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.jkiss.dbeaver.model.struct.DBSDataSearcher;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,7 @@ import java.util.List;
  */
 public class SearchDataParams {
 
-    List<DBSDataSearcher> sources = new ArrayList<DBSDataSearcher>();
+    List<DBSDataContainer> sources = new ArrayList<DBSDataContainer>();
     String searchString;
     boolean caseSensitive;
     boolean fastSearch; // Indexed
@@ -41,11 +40,11 @@ public class SearchDataParams {
     {
     }
 
-    public List<DBSDataSearcher> getSources() {
+    public List<DBSDataContainer> getSources() {
         return sources;
     }
 
-    public void setSources(List<DBSDataSearcher> sources) {
+    public void setSources(List<DBSDataContainer> sources) {
         this.sources = sources;
     }
 

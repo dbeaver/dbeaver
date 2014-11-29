@@ -20,25 +20,26 @@ package org.jkiss.dbeaver.ui.search.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSearcher;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 
 public class SearchDataQuery implements IObjectSearchQuery {
 
@@ -67,39 +68,33 @@ public class SearchDataQuery implements IObjectSearchQuery {
 
             //monitor.subTask("Collect tables");
             Set<DBPDataSource> dataSources = new HashSet<DBPDataSource>();
-            for (DBSDataSearcher searcher : params.sources) {
+            for (DBSDataContainer searcher : params.sources) {
                 dataSources.add(searcher.getDataSource());
             }
 
             // Search
-            long flags = 0;
-            if (params.caseSensitive) flags |= DBSDataSearcher.FLAG_CASE_SENSITIVE;
-            if (params.fastSearch) flags |= DBSDataSearcher.FLAG_FAST_SEARCH;
-            if (params.searchNumbers) flags |= DBSDataSearcher.FLAG_SEARCH_NUMBERS;
-            if (params.searchLOBs) flags |= DBSDataSearcher.FLAG_SEARCH_LOBS;
-            int objectsFound = 0;
             DBNModel dbnModel = DBNModel.getInstance();
 
             monitor.beginTask(
                 "Search \"" + searchString + "\" in " + params.sources.size() + " table(s) / " + dataSources.size() + " database(s)",
                 params.sources.size());
             try {
-                for (DBSDataSearcher searcher : params.sources) {
+                for (DBSDataContainer dataContainer : params.sources) {
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    String objectName = DBUtils.getObjectFullName(searcher);
-                    DBNDatabaseNode node = dbnModel.findNode(searcher);
+                    String objectName = DBUtils.getObjectFullName(dataContainer);
+                    DBNDatabaseNode node = dbnModel.findNode(dataContainer);
                     if (node == null) {
                         log.warn("Can't find tree node for object \"" + objectName + "\"");
                         continue;
                     }
                     monitor.subTask(objectName);
                     SearchTableMonitor searchMonitor = new SearchTableMonitor();
-                    DBCSession session = searcher.getDataSource().openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows in " + objectName);
+                    DBCSession session = dataContainer.getDataSource().openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows in " + objectName);
                     try {
                         TestDataReceiver dataReceiver = new TestDataReceiver(searchMonitor);
-                        searcher.findRows(session, dataReceiver, searchString, flags);
+                        findRows(session, dataContainer, dataReceiver);
 
                         if (dataReceiver.rowCount > 0) {
                             SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount);
@@ -118,6 +113,77 @@ public class SearchDataQuery implements IObjectSearchQuery {
             }
         } finally {
             listener.searchFinished();
+        }
+    }
+
+    private DBCStatistics findRows(
+        @NotNull DBCSession session,
+        @NotNull DBSDataContainer dataContainer,
+        @NotNull DBDDataReceiver dataReceiver) throws DBCException
+    {
+        DBSEntity entity;
+        if (dataContainer instanceof DBSEntity) {
+            entity = (DBSEntity) dataContainer;
+        } else {
+            log.warn("Data container " + dataContainer + " isn't entity");
+            return null;
+        }
+        try {
+
+            List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
+            for (DBSEntityAttribute attribute : entity.getAttributes(session.getProgressMonitor())) {
+                if (params.fastSearch) {
+                    if (!DBUtils.isIndexedAttribute(session.getProgressMonitor(), attribute)) {
+                        continue;
+                    }
+                }
+                DBCLogicalOperator operator;
+                Object value;
+                switch (attribute.getDataKind()) {
+                    case NUMERIC:
+                        if (!params.searchNumbers) {
+                            continue;
+                        }
+                        operator = DBCLogicalOperator.EQUALS;
+                        try {
+                            value = new Integer(params.searchString);
+                        } catch (NumberFormatException e) {
+                            try {
+                                value = new Long(params.searchString);
+                            } catch (NumberFormatException e1) {
+                                try {
+                                    value = new Double(params.searchString);
+                                } catch (NumberFormatException e2) {
+                                    try {
+                                        value = new BigDecimal(params.searchString);
+                                    } catch (Exception e3) {
+                                        value = params.searchString;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case LOB:
+                        if (!params.searchLOBs) {
+                            continue;
+                        }
+                    case STRING:
+                        operator = DBCLogicalOperator.LIKE;
+                        value = "%" + params.searchString + "%";
+                        break;
+                    default:
+                        continue;
+                }
+                DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, constraints.size());
+                constraint.setOperator(operator);
+                constraint.setValue(value);
+                constraints.add(constraint);
+            }
+            DBDDataFilter filter = new DBDDataFilter(constraints);
+            filter.setAnyConstraint(true);
+            return dataContainer.readData(session, dataReceiver, filter, -1, -1, 0);
+        } catch (DBException e) {
+            throw new DBCException("Error finding rows", e);
         }
     }
 
