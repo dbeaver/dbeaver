@@ -21,11 +21,18 @@ package org.jkiss.dbeaver.ui.search.data;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
 
 import java.util.ArrayList;
@@ -62,9 +69,26 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
                 public void doubleClick(DoubleClickEvent event)
                 {
                     // Run default node action
-                    DBNNode dbmNode = NavigatorUtils.getSelectedNode(getItemsViewer());
-                    if (!(dbmNode instanceof DBNDatabaseNode) || !dbmNode.allowsOpen()) {
+                    DBNNode node = NavigatorUtils.getSelectedNode(getItemsViewer());
+                    if (!(node instanceof DBNDatabaseNode) || !node.allowsOpen()) {
                         return;
+                    }
+                    Object objectValue = getObjectValue(node);
+                    if (!(objectValue instanceof SearchDataObject)) {
+                        return;
+                    }
+                    SearchDataObject object = (SearchDataObject) objectValue;
+                    IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
+                        (DBNDatabaseNode) node,
+                        DatabaseDataEditor.class.getName(),
+                        DBeaverUI.getActiveWorkbenchWindow()
+                    );
+                    if (entityEditor instanceof EntityEditor) {
+                        Object selectedPage = ((EntityEditor) entityEditor).getSelectedPage();
+                        if (selectedPage instanceof ResultSetProvider) {
+                            ResultSetViewer resultSetViewer = ((ResultSetProvider) selectedPage).getResultSetViewer();
+                            resultSetViewer.setDataFilter(object.getFilter(), true);
+                        }
                     }
                 }
             });
