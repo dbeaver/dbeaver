@@ -668,6 +668,7 @@ public class ResultSetModel {
         }
         this.dataFilter.setWhere(filter.getWhere());
         this.dataFilter.setOrder(filter.getOrder());
+        this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
     }
 
     void resetOrdering()
