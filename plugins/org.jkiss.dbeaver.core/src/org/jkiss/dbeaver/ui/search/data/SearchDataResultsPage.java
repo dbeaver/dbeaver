@@ -82,7 +82,7 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
                     IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
                         (DBNDatabaseNode) node,
                         DatabaseDataEditor.class.getName(),
-                        Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_SUSPEND_QUERY, true),
+                        Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, object.getFilter()),
                         DBeaverUI.getActiveWorkbenchWindow()
                     );
 /*
