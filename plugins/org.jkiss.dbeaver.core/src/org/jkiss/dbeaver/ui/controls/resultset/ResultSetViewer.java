@@ -1860,6 +1860,16 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    public void refreshWithFilter(DBDDataFilter filter) {
+        runDataPump(
+            getDataContainer(),
+            filter,
+            0,
+            getSegmentMaxRows(),
+            -1,
+            null);
+    }
+
     private boolean isServerSideFiltering()
     {
         return
@@ -2023,6 +2033,8 @@ public class ResultSetViewer extends Viewer
             dataPumpJob.setOffset(offset);
             dataPumpJob.setMaxRows(maxRows);
             dataPumpJob.schedule();
+        } else {
+            log.warn("Data read is in progress - can't run another");
         }
     }
 

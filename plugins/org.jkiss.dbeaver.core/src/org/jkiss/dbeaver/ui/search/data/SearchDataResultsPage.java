@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataObject> {
@@ -81,8 +82,10 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
                     IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
                         (DBNDatabaseNode) node,
                         DatabaseDataEditor.class.getName(),
+                        Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_SUSPEND_QUERY, true),
                         DBeaverUI.getActiveWorkbenchWindow()
                     );
+/*
                     if (entityEditor instanceof EntityEditor) {
                         Object selectedPage = ((EntityEditor) entityEditor).getSelectedPage();
                         if (selectedPage instanceof ResultSetProvider) {
@@ -90,6 +93,7 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
                             resultSetViewer.setDataFilter(object.getFilter(), true);
                         }
                     }
+*/
                 }
             });
         }

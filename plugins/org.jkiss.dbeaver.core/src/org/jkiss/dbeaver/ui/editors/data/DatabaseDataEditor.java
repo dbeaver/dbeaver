@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DatabaseDataEditor
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer>
     implements ResultSetProvider,ResultSetListener
 {
+    public static final String ATTR_SUSPEND_QUERY = "suspendQuery";
 
     private ResultSetViewer resultSetView;
     private boolean loaded = false;
@@ -57,8 +59,8 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
 //        if (action != null) {
 //            action.update();
 //        }
-
-        if (!loaded) {
+        boolean suspendQuery = CommonUtils.toBoolean(getEditorInput().getAttribute(ATTR_SUSPEND_QUERY));
+        if (!loaded && !suspendQuery) {
             if (getDatabaseObject() != null && getDatabaseObject().isPersisted()) {
                 resultSetView.setStatus("Query data from '" + getEditorInput().getDatabaseObject().getName() + "'...");
                 resultSetView.refresh();

@@ -28,6 +28,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -42,12 +43,14 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditorInput;
 import org.jkiss.dbeaver.ui.editors.object.ObjectEditorInput;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -112,6 +115,15 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         @Nullable String defaultPageId,
         IWorkbenchWindow workbenchWindow)
     {
+        return openEntityEditor(selectedNode, defaultPageId, null , workbenchWindow);
+    }
+
+    public static IEditorPart openEntityEditor(
+        @NotNull DBNDatabaseNode selectedNode,
+        @Nullable String defaultPageId,
+        @Nullable Map<String, Object> attributes,
+        IWorkbenchWindow workbenchWindow)
+    {
         if (selectedNode.getObject() instanceof DBEPrivateObjectEditor) {
             ((DBEPrivateObjectEditor)selectedNode.getObject()).editObject(workbenchWindow);
             return null;
@@ -155,19 +167,20 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 if (selectedNode instanceof DBNDatabaseFolder) {
                     FolderEditorInput folderInput = new FolderEditorInput((DBNDatabaseFolder)selectedNode);
                     folderInput.setDefaultPageId(defaultPageId);
+                    setInputAttributes(folderInput, defaultPageId, defaultFolderId, attributes);
                     return workbenchWindow.getActivePage().openEditor(
                         folderInput,
                         FolderEditor.class.getName());
                 } else if (selectedNode instanceof DBNDatabaseObject) {
                     DBNDatabaseObject objectNode = (DBNDatabaseObject) selectedNode;
                     ObjectEditorInput objectInput = new ObjectEditorInput(objectNode);
+                    setInputAttributes(objectInput, defaultPageId, defaultFolderId, attributes);
                     return workbenchWindow.getActivePage().openEditor(
                         objectInput,
                         objectNode.getMeta().getEditorId());
                 } else if (selectedNode.getObject() != null) {
                     EntityEditorInput editorInput = new EntityEditorInput(selectedNode);
-                    editorInput.setDefaultPageId(defaultPageId);
-                    editorInput.setDefaultFolderId(defaultFolderId);
+                    setInputAttributes(editorInput, defaultPageId, defaultFolderId, attributes);
                     return workbenchWindow.getActivePage().openEditor(
                         editorInput,
                         EntityEditor.class.getName());
@@ -186,6 +199,16 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         } catch (Exception ex) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
             return null;
+        }
+    }
+
+    private static void setInputAttributes(DatabaseEditorInput<?> editorInput, String defaultPageId, String defaultFolderId, Map<String, Object> attributes) {
+        editorInput.setDefaultPageId(defaultPageId);
+        editorInput.setDefaultFolderId(defaultFolderId);
+        if (!CommonUtils.isEmpty(attributes)) {
+            for (Map.Entry<String, Object> attr : attributes.entrySet()) {
+                editorInput.setAttribute(attr.getKey(), attr.getValue());
+            }
         }
     }
 

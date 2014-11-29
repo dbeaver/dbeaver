@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Collection;
+
 /**
  * ObjectPropertiesEditorInput
  */
@@ -78,6 +80,21 @@ public class ObjectPropertiesEditorInput extends MultiEditorInput implements IDa
     public IPropertySource2 getPropertySource()
     {
         return mainInput.getPropertySource();
+    }
+
+    @Override
+    public Collection<String> getAttributeNames() {
+        return mainInput.getAttributeNames();
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return mainInput.getAttribute(name);
+    }
+
+    @Override
+    public Object setAttribute(String name, Object value) {
+        return mainInput.setAttribute(name, value);
     }
 
     @Override
