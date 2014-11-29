@@ -32,9 +32,9 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
  */
 public interface DBSDataManipulator extends DBSDataContainer {
 
-    public static final int DATA_INSERT         = 4;
-    public static final int DATA_UPDATE         = 8;
-    public static final int DATA_DELETE         = 16;
+    public static final int DATA_INSERT         = 1 << 16;
+    public static final int DATA_UPDATE         = 1 << 17;
+    public static final int DATA_DELETE         = 1 << 18;
 
     interface ExecuteBatch {
         void add(@NotNull Object[] attributeValues) throws DBCException;

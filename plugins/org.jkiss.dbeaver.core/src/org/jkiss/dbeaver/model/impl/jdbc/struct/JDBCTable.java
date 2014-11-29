@@ -39,13 +39,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -53,7 +52,7 @@ import java.util.List;
  */
 public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObjectContainer>
     extends AbstractTable<DATASOURCE, CONTAINER>
-    implements DBSDataManipulator, DBSDataSearcher, DBPSaveableObject
+    implements DBSDataManipulator, DBPSaveableObject
 {
     static final Log log = LogFactory.getLog(JDBCTable.class);
     public static final String DEFAULT_TABLE_ALIAS = "x";
@@ -97,7 +96,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @Override
     public int getSupportedFeatures()
     {
-        return DATA_COUNT | DATA_INSERT | DATA_UPDATE | DATA_DELETE | DATA_FILTER;
+        return DATA_COUNT | DATA_FILTER | DATA_SEARCH | DATA_INSERT | DATA_UPDATE | DATA_DELETE;
     }
 
     @NotNull
@@ -293,71 +292,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         finally {
             dbStat.close();
-        }
-    }
-
-    /**
-     * Reuses readData with special filter
-     * @throws DBCException
-     */
-    @Override
-    public DBCStatistics findRows(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull String searchString, long flags) throws DBCException {
-
-        try {
-            List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
-            for (DBSEntityAttribute attribute : getAttributes(session.getProgressMonitor())) {
-                if ((flags & FLAG_FAST_SEARCH) != 0) {
-                    if (!DBUtils.isIndexedAttribute(session.getProgressMonitor(), attribute)) {
-                        continue;
-                    }
-                }
-                DBCLogicalOperator operator;
-                Object value;
-                switch (attribute.getDataKind()) {
-                    case NUMERIC:
-                        if ((flags & FLAG_SEARCH_NUMBERS) == 0) {
-                            continue;
-                        }
-                        operator = DBCLogicalOperator.EQUALS;
-                        try {
-                            value = new Integer(searchString);
-                        } catch (NumberFormatException e) {
-                            try {
-                                value = new Long(searchString);
-                            } catch (NumberFormatException e1) {
-                                try {
-                                    value = new Double(searchString);
-                                } catch (NumberFormatException e2) {
-                                    try {
-                                        value = new BigDecimal(searchString);
-                                    } catch (Exception e3) {
-                                        value = searchString;
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    case LOB:
-                        if ((flags & FLAG_SEARCH_LOBS) == 0) {
-                            continue;
-                        }
-                    case STRING:
-                        operator = DBCLogicalOperator.LIKE;
-                        value = "%" + searchString + "%";
-                        break;
-                    default:
-                        continue;
-                }
-                DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, constraints.size());
-                constraint.setOperator(operator);
-                constraint.setValue(value);
-                constraints.add(constraint);
-            }
-            DBDDataFilter filter = new DBDDataFilter(constraints);
-            filter.setAnyConstraint(true);
-            return readData(session, dataReceiver, filter, -1, -1, 0);
-        } catch (DBException e) {
-            throw new DBCException("Error finding rows", e);
         }
     }
 

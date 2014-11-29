@@ -36,10 +36,11 @@ public interface DBSDataContainer extends DBSObject {
 
     public static final int DATA_SELECT         = 0;
     public static final int DATA_COUNT          = 1;
-    public static final int DATA_FILTER         = 2;
+    public static final int DATA_FILTER         = 2 << 1;
+    public static final int DATA_SEARCH         = 4 << 2;
 
     public static final long FLAG_NONE               = 0;
-    public static final long FLAG_READ_PSEUDO        = 1;
+    public static final long FLAG_READ_PSEUDO        = 1 << 1;
 
     /**
      * Features supported by implementation
