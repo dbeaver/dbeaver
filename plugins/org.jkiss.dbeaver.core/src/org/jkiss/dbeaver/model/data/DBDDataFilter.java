@@ -48,6 +48,7 @@ public class DBDDataFilter {
         }
         this.order = source.order;
         this.where = source.where;
+        this.anyConstraint = source.anyConstraint;
     }
 
     public Collection<DBDAttributeConstraint> getConstraints()

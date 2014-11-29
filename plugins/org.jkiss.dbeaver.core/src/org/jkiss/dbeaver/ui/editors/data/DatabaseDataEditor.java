@@ -23,6 +23,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListener;
@@ -38,6 +40,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     implements ResultSetProvider,ResultSetListener
 {
     public static final String ATTR_SUSPEND_QUERY = "suspendQuery";
+    public static final String ATTR_DATA_FILTER = "dataFilter";
 
     private ResultSetViewer resultSetView;
     private boolean loaded = false;
@@ -59,11 +62,17 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
 //        if (action != null) {
 //            action.update();
 //        }
-        boolean suspendQuery = CommonUtils.toBoolean(getEditorInput().getAttribute(ATTR_SUSPEND_QUERY));
+        IDatabaseEditorInput editorInput = getEditorInput();
+        boolean suspendQuery = CommonUtils.toBoolean(editorInput.getAttribute(ATTR_SUSPEND_QUERY));
+        DBDDataFilter dataFilter = (DBDDataFilter) editorInput.getAttribute(ATTR_DATA_FILTER);
         if (!loaded && !suspendQuery) {
             if (getDatabaseObject() != null && getDatabaseObject().isPersisted()) {
-                resultSetView.setStatus("Query data from '" + getEditorInput().getDatabaseObject().getName() + "'...");
-                resultSetView.refresh();
+                resultSetView.setStatus("Query data from '" + editorInput.getDatabaseObject().getName() + "'...");
+                if (dataFilter == null) {
+                    resultSetView.refresh();
+                } else {
+                    resultSetView.refreshWithFilter(dataFilter);
+                }
                 loaded = true;
             }
         }
