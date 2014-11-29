@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 
+import java.util.*;
+
 /**
  * DatabaseEditorInput
  */
@@ -45,6 +47,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private final DBECommandContext commandContext;
     private String defaultPageId;
     private String defaultFolderId;
+    private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
     private PropertySourceEditable propertySource;
 
     protected DatabaseEditorInput(NODE node)
@@ -170,6 +173,25 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     public void setDefaultFolderId(String defaultFolderId)
     {
         this.defaultFolderId = defaultFolderId;
+    }
+
+    @Override
+    public Collection<String> getAttributeNames() {
+        return new ArrayList<String>(attributes.keySet());
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return attributes.get(name);
+    }
+
+    @Override
+    public Object setAttribute(String name, Object value) {
+        if (value == null) {
+            return attributes.remove(name);
+        } else {
+            return attributes.put(name, value);
+        }
     }
 
     @Override
