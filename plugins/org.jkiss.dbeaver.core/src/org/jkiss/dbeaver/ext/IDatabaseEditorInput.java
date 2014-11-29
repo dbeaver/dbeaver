@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.Collection;
+
 /**
  * IDatabaseEditorInput
  */
@@ -57,4 +59,10 @@ public interface IDatabaseEditorInput extends IEditorInput, IDataSourceProvider 
      * @return property source
      */
     IPropertySource2 getPropertySource();
+
+    Collection<String> getAttributeNames();
+
+    Object getAttribute(String name);
+
+    Object setAttribute(String name, Object value);
 }
