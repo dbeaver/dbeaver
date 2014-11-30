@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -89,8 +90,16 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
             for (OBJECT_TYPE object : objects) {
                 nodes.add(getNodeFromObject(object));
             }
+            TreeViewer itemsViewer = (TreeViewer) itemList.getItemsViewer();
+            Collection<DBNNode> oldNodes = itemList.getListData();
+            List<DBNNode> newNodes = new ArrayList<DBNNode>();
+            if (!CommonUtils.isEmpty(oldNodes)) {
+                newNodes.addAll(oldNodes);
+            }
+            newNodes.addAll(nodes);
+            ((ResultsContentProvider)itemsViewer.getContentProvider()).rebuildObjectTree(newNodes);
             itemList.appendListData(nodes);
-            ((TreeViewer)itemList.getItemsViewer()).expandAll();
+            itemsViewer.expandAll();
         }
     }
 
@@ -166,6 +175,9 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
 
         private ResultsNode rootResults;
         private Map<DBNNode,ResultsNode> nodeMap;
+
+        private ResultsContentProvider() {
+        }
 
         @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput)

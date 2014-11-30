@@ -454,6 +454,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         setListData(items, true);
     }
 
+    public Collection<OBJECT_TYPE> getListData() {
+        return objectList;
+    }
+
     public void clearListData()
     {
         for (ObjectColumn column : columns) {
