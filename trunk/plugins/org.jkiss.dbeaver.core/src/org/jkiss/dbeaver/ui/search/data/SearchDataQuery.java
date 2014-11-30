@@ -179,6 +179,9 @@ public class SearchDataQuery implements IObjectSearchQuery {
                 constraint.setValue(value);
                 constraints.add(constraint);
             }
+            if (constraints.isEmpty()) {
+                return null;
+            }
             dataReceiver.filter = new DBDDataFilter(constraints);
             dataReceiver.filter.setAnyConstraint(true);
             return dataContainer.readData(session, dataReceiver, dataReceiver.filter, -1, -1, 0);
