@@ -452,7 +452,7 @@
                 </driver>
                 <driver
                     id="firebird_jaybird"
-                    label="Firebird (JayBird)"
+                    label="Firebird"
                     class="org.firebirdsql.jdbc.FBDriver"
                     sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                     defaultPort="3050"
