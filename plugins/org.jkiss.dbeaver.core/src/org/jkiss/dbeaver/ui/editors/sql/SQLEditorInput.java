@@ -67,12 +67,12 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     @Override
     public String getName()
     {
-        String dsName = "<None>";
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
-            dsName = dataSourceContainer.getName();
+            return "<" + dataSourceContainer.getName() + "> " + scriptName;
+        } else {
+            return scriptName;
         }
-        return scriptName + " (" + dsName + ")";
     }
 
     @Override
