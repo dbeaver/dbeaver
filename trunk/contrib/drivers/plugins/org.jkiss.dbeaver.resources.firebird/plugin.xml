@@ -2,6 +2,6 @@
 <plugin>
 	<extension point="org.jkiss.dbeaver.resources">
 		<resource name="drivers/firebird/LICENSE.txt"/>
-		<resource name="drivers/firebird/jaybird-full-2.1.6.jar"/>
+		<resource name="drivers/firebird/jaybird-full-2.2.5.jar"/>
 	</extension>
 </plugin>
