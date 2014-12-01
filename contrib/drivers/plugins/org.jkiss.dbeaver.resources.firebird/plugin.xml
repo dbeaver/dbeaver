@@ -3,5 +3,9 @@
 	<extension point="org.jkiss.dbeaver.resources">
 		<resource name="drivers/firebird/LICENSE.txt"/>
 		<resource name="drivers/firebird/jaybird-full-2.2.5.jar"/>
+		<resource name="drivers/firebird/jaybird22.dll"/>
+		<resource name="drivers/firebird/jaybird22_x64.dll"/>
+		<resource name="drivers/firebird/libjaybird22.so"/>
+		<resource name="drivers/firebird/libjaybird22_x64.so"/>
 	</extension>
 </plugin>
