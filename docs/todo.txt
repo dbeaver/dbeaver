@@ -1,4 +1,4 @@
-FEATURE: Full DB text search
+FEATURE: persistent filter history
 
 BUG: open object (F4) with FQ name (schema)
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
