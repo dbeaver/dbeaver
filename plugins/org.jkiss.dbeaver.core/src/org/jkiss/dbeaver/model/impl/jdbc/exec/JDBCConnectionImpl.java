@@ -135,9 +135,18 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 // Just simplest statement for scripts
                 // Sometimes prepared statements perform additional checks of queries
                 // (e.g. in Oracle it parses IN/OUT parameters)
-                JDBCStatement statement = createStatement(
-                    scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
-                    updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                JDBCStatement statement;
+                try {
+                    statement = createStatement(
+                        scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                        updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                }
+                catch (UnsupportedOperationException e) {
+                    statement = createStatement();
+                }
+                catch (IncompatibleClassChangeError e) {
+                    statement = createStatement();
+                }
                 if (statement instanceof JDBCStatementImpl) {
                     ((JDBCStatementImpl)statement).setQueryString(sqlQuery);
                 }
@@ -159,11 +168,19 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     return prepareStatement(sqlQuery);
                 }
             } else {
-                // Generic prepared statement
-                return prepareStatement(
-                    sqlQuery,
-                    scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
-                    updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                try {
+                    // Generic prepared statement
+                    return prepareStatement(
+                        sqlQuery,
+                        scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
+                        updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
+                }
+                catch (UnsupportedOperationException e) {
+                    return prepareStatement(sqlQuery);
+                }
+                catch (IncompatibleClassChangeError e) {
+                    return prepareStatement(sqlQuery);
+                }
             }
         }
         catch (SQLException e) {
