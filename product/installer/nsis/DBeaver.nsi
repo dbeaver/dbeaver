@@ -152,7 +152,7 @@ FunctionEnd
 ;--------------------------------
 ;Installer Sections
 
-Section "DBeaver" SecCore
+Section "!DBeaver" SecCore
 
   DetailPrint "Cleanup previous installation in $INSTDIR"
 
@@ -203,6 +203,14 @@ Section "DBeaver" SecCore
   
   !insertmacro MUI_STARTMENU_WRITE_END
 
+  ; Add to installed software list
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DBeaver" "DisplayName" "DBeaver"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DBeaver" "DisplayVersion" "@productVersion@"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DBeaver" "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DBeaver" "Publisher" "JKISS"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DBeaver" "URLInfoAbout" "http://dbeaver.jkiss.org/"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DBeaver" "URLUpdateInfo" "http://dbeaver.jkiss.org/download/"
+
 SectionEnd
 
 Section "JRE" SecJRE
@@ -210,6 +218,13 @@ Section "JRE" SecJRE
   ; JRE and unpack script
   SetOutPath "$INSTDIR"
   File /r "..\raw\win32.@arch@\dbeaver\jre"
+
+SectionEnd
+
+Section /o "Reset Settings" SecCleanup
+
+  ; Reset previous version UI configuration
+  Delete "$PROFILE\.dbeaver\.metadata\.plugins\org.eclipse.e4.workbench\workbench.xmi"
 
 SectionEnd
 
@@ -231,16 +246,18 @@ Section "-UnpackJars" SecUnpackJars
     DetailPrint "Unpack completed"
 SectionEnd
 
+
 ;--------------------------------
 ;Descriptions
 
   ;Language strings
   LangString DESC_SecCore ${LANG_ENGLISH} "DBeaver core executables and resources."
-  LangString DESC_SecJRE ${LANG_ENGLISH} "Java Runtime Environment 1.6."
+  LangString DESC_SecJRE ${LANG_ENGLISH} "Java Runtime Environment 1.7."
+  LangString DESC_SecCleanup ${LANG_ENGLISH} "Cleanup previous version UI settings"
   LangString DESC_SecPlugins ${LANG_ENGLISH} "DBeaver extension plugins."
   LangString DESC_SecGeneric ${LANG_ENGLISH} "Support of generic JDBC drivers."
-  LangString DESC_SecMySQL ${LANG_ENGLISH} "Supports additional features for MySQL 5.x databases. Includes MySQL JDBC driver"
-  LangString DESC_SecOracle ${LANG_ENGLISH} "Supports additional features for Oracle 8.x-11.x databases."
+  LangString DESC_SecMySQL ${LANG_ENGLISH} "Supports additional features for MySQL 5.x and MariaDB databases. Includes MySQL JDBC driver"
+  LangString DESC_SecOracle ${LANG_ENGLISH} "Supports additional features for Oracle 9.x-12.x databases."
   LangString DESC_SecDB2 ${LANG_ENGLISH} "Supports additional features for IBM DB2 LUW databases."
   LangString DESC_SecWMI ${LANG_ENGLISH} "Supports additional features for Windows Management Instrumentation (WMI)."
   LangString DESC_SecNoSQL ${LANG_ENGLISH} "NoSQL databases support (Cassandra)."
@@ -251,6 +268,7 @@ SectionEnd
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${SecCore} $(DESC_SecCore)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecJRE} $(DESC_SecJRE)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecCleanup} $(DESC_SecCleanup)
     !insertmacro MUI_DESCRIPTION_TEXT ${SecPlugins} $(DESC_SecPlugins)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecGeneric} $(DESC_SecGeneric)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecMySQL} $(DESC_SecMySQL)
@@ -273,6 +291,7 @@ Section "Uninstall"
   Delete "$INSTDIR\.eclipseproduct"
   Delete "$INSTDIR\dbeaver.exe"
   Delete "$INSTDIR\readme.txt"
+  Delete "$INSTDIR\dbeaver.ini"
   Delete "$INSTDIR\license.txt"
   Delete "$INSTDIR\*.log"
   RMDir /r "$INSTDIR\configuration"
@@ -280,6 +299,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\plugins"
   RMDir /r "$INSTDIR\drivers"
   RMDir /r "$INSTDIR\jre"
+  RMDir /r "$INSTDIR\licenses"
   RMDir "$INSTDIR"
 
   !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
@@ -290,6 +310,8 @@ Section "Uninstall"
   RMDir "$SMPROGRAMS\$StartMenuFolder"
 
   DeleteRegKey /ifempty HKCU "Software\DBeaver"
+
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\DBeaver"
 
 SectionEnd
 
