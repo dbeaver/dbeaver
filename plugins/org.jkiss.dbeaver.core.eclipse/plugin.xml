@@ -83,22 +83,36 @@
     <extension
           point="org.eclipse.search.searchPages">
        <page
-             class="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataPageAdapter"
-             enabled="true"
-             icon="icons/metadata.png"
-             id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataPageAdapter"
-             label="Database Metadata">
+            class="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataPageAdapter"
+            enabled="true"
+            icon="icons/metadata.png"
+            id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataPageAdapter"
+            label="DB Metadata">
        </page>
+        <page
+            class="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataPageAdapter"
+            enabled="true"
+            icon="icons/metadata.png"
+            id="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataPageAdapter"
+            label="DB Full-Text">
+        </page>
     </extension>
     <extension
           point="org.eclipse.search.searchResultViewPages">
-       <viewPage
-             class="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
-             icon="icons/metadata.png"
-             id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
-             label="Database Metadata Search Result"
-             searchResultClass="org.jkiss.dbeaver.core.eclipse.search.SearchResultAdapter">
-       </viewPage>
+        <viewPage
+            class="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
+            icon="icons/metadata.png"
+            id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
+            label="Database Metadata Search Result"
+            searchResultClass="org.jkiss.dbeaver.core.eclipse.search.SearchResultAdapter">
+        </viewPage>
+        <viewPage
+            class="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataResultPageAdapter"
+            icon="icons/metadata.png"
+            id="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataResultPageAdapter"
+            label="Database Full-Text Search Result"
+            searchResultClass="org.jkiss.dbeaver.core.eclipse.search.SearchResultAdapter">
+        </viewPage>
     </extension>
 
 </plugin>
