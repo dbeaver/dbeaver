@@ -37,6 +37,8 @@ public interface ISpreadsheetController {
 
     boolean isInsertable();
 
+    boolean isRefreshInProgress();
+
     @Nullable
     Control showCellEditor(boolean inline);
 

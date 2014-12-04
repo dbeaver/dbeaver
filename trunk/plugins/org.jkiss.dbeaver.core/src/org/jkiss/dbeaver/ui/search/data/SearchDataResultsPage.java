@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
@@ -85,15 +87,17 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
                         Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, object.getFilter()),
                         DBeaverUI.getActiveWorkbenchWindow()
                     );
-/*
-                    if (entityEditor instanceof EntityEditor) {
-                        Object selectedPage = ((EntityEditor) entityEditor).getSelectedPage();
+
+                    if (entityEditor instanceof MultiPageEditorPart) {
+                        Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
                         if (selectedPage instanceof ResultSetProvider) {
                             ResultSetViewer resultSetViewer = ((ResultSetProvider) selectedPage).getResultSetViewer();
-                            resultSetViewer.setDataFilter(object.getFilter(), true);
+                            if (!resultSetViewer.isRefreshInProgress() && !object.getFilter().equals(resultSetViewer.getModel().getDataFilter())) {
+                                // Set filter directly
+                                resultSetViewer.refreshWithFilter(object.getFilter());
+                            }
                         }
                     }
-*/
                 }
             });
         }

@@ -1308,6 +1308,11 @@ public class ResultSetViewer extends Viewer
             model.getVisibleColumnCount() > 0;
     }
 
+    @Override
+    public boolean isRefreshInProgress() {
+        return dataPumpJob != null;
+    }
+
     @Nullable
     @Override
     public Control showCellEditor(
