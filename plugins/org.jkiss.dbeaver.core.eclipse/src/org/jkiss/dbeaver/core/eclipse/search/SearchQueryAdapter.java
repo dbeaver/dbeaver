@@ -18,7 +18,7 @@ import java.util.Collection;
 /**
  * Search query adapter
  */
-public class SearchQueryAdapter implements ISearchQuery, IObjectSearchListener {
+public abstract class SearchQueryAdapter implements ISearchQuery, IObjectSearchListener {
 
     private final IObjectSearchQuery source;
     private SearchResultAdapter result;
@@ -26,8 +26,10 @@ public class SearchQueryAdapter implements ISearchQuery, IObjectSearchListener {
     public SearchQueryAdapter(IObjectSearchQuery source)
     {
         this.source = source;
-        this.result = new SearchResultAdapter(this);
+        this.result = createResult();
     }
+
+    protected abstract SearchResultAdapter createResult();
 
     @Override
     public IStatus run(IProgressMonitor monitor) throws OperationCanceledException
