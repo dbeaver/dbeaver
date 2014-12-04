@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class ProjectRegistry implements IResourceChangeListener {
+public class ProjectRegistry {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
 
     private static final String PROP_PROJECT_ACTIVE = "project.active";
@@ -58,7 +58,6 @@ public class ProjectRegistry implements IResourceChangeListener {
     public ProjectRegistry(IWorkspace workspace)
     {
         this.workspace = workspace;
-        this.workspace.addResourceChangeListener(this);
     }
 
     public void loadExtensions(IExtensionRegistry registry)
@@ -105,8 +104,8 @@ public class ProjectRegistry implements IResourceChangeListener {
                     setActiveProject(activeProject);
                 } catch (CoreException e) {
                     // Project seems to be corrupted
-                    activeProject = null;
                     projects.remove(activeProject);
+                    activeProject = null;
                 }
             }
         } finally {
@@ -147,10 +146,7 @@ public class ProjectRegistry implements IResourceChangeListener {
         this.rootMapping.clear();
 
         // Remove listeners
-        if (workspace != null) {
-            workspace.removeResourceChangeListener(this);
-            workspace = null;
-        }
+        this.workspace = null;
 
         if (!projectListeners.isEmpty()) {
             log.warn("Some project listeners are still register: " + projectListeners);
@@ -347,31 +343,6 @@ public class ProjectRegistry implements IResourceChangeListener {
             } else {
                 dataSourceRegistry.dispose();
                 projectDatabases.remove(project);
-            }
-        }
-    }
-
-    @Override
-    public void resourceChanged(IResourceChangeEvent event)
-    {
-        IResourceDelta delta = event.getDelta();
-        if (delta == null) {
-            return;
-        }
-        for (IResourceDelta projectDelta : delta.getAffectedChildren()) {
-            if (projectDelta.getResource() instanceof IProject) {
-                IProject project = (IProject)projectDelta.getResource();
-                if (projectDelta.getKind() == IResourceDelta.REMOVED) {
-                    if (project == activeProject) {
-                        setActiveProject(null);
-                    }
-                    GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
-                } else if (projectDelta.getKind() == IResourceDelta.ADDED) {
-                    if (activeProject == null) {
-                        setActiveProject(project);
-                    }
-                    GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
-                }
             }
         }
     }
