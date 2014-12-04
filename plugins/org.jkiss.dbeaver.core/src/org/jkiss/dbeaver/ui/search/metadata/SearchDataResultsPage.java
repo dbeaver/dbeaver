@@ -21,9 +21,9 @@ package org.jkiss.dbeaver.ui.search.metadata;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
 
-public class SearchMetadataResultsPage extends AbstractSearchResultsPage<DBNNode> {
+public class SearchDataResultsPage extends AbstractSearchResultsPage<DBNNode> {
 
-    public SearchMetadataResultsPage() {
+    public SearchDataResultsPage() {
     }
 
     @Override
