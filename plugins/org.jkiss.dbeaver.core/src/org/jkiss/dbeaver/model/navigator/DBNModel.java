@@ -36,9 +36,11 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
+import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -228,7 +230,7 @@ public class DBNModel implements IResourceChangeListener {
     @Nullable
     public DBNNode getNodeByPath(DBRProgressMonitor monitor, String path) throws DBException
     {
-        DBNProject project = getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+        DBNProject project = getRoot().getProject(getProjectRegistry().getActiveProject());
         if (project == null) {
             log.debug("Node project");
             return null;
@@ -467,6 +469,11 @@ public class DBNModel implements IResourceChangeListener {
                         if (childDelta.getKind() == IResourceDelta.ADDED) {
                             // New projectNode
                             getRoot().addProject(project, true);
+
+                            if (getProjectRegistry().getActiveProject() == null) {
+                                getProjectRegistry().setActiveProject(project);
+                            }
+                            GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                         } else {
                             // Project not found - report an error
                             log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
@@ -475,6 +482,10 @@ public class DBNModel implements IResourceChangeListener {
                         if (childDelta.getKind() == IResourceDelta.REMOVED) {
                             // Project deleted
                             getRoot().removeProject(project);
+                            if (project == getProjectRegistry().getActiveProject()) {
+                                getProjectRegistry().setActiveProject(null);
+                            }
+                            GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                         } else {
                             if (childDelta.getFlags() == IResourceDelta.OPEN) {
                                 //projectNode.openProject();
@@ -522,7 +533,7 @@ public class DBNModel implements IResourceChangeListener {
         Image result = overlayLockImageCache.get(image);
         if (result == null) {
             OverlayImageDescriptor oid = new OverlayImageDescriptor(image.getImageData());
-            oid.setBottomLeft(new ImageDescriptor[] {overlayImage} );
+            oid.setBottomLeft(new ImageDescriptor[]{overlayImage});
             result = oid.createImage();
             overlayLockImageCache.put(image, result);
         }
@@ -535,11 +546,15 @@ public class DBNModel implements IResourceChangeListener {
         Image result = overlayNetworkImageCache.get(image);
         if (result == null) {
             OverlayImageDescriptor oid = new OverlayImageDescriptor(image.getImageData());
-            oid.setTopRight(new ImageDescriptor[] {overlayImage} );
+            oid.setTopRight(new ImageDescriptor[]{overlayImage});
             result = oid.createImage();
             overlayNetworkImageCache.put(image, result);
         }
         return result;
+    }
+
+    private static ProjectRegistry getProjectRegistry() {
+        return DBeaverCore.getInstance().getProjectRegistry();
     }
 
 }
