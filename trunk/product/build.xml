@@ -658,7 +658,7 @@
             </classpath>
 
             <doctitle><![CDATA[<h1>DBeaver Core API</h1>]]></doctitle>
-            <bottom><![CDATA[<i>Copyright &#169; 2013 Serge Rieder and others.</i>]]></bottom>
+            <bottom><![CDATA[<i>Copyright &#169; 2014 Serge Rieder and others.</i>]]></bottom>
         </javadoc>
     </target>
 
