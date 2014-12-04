@@ -75,7 +75,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         IPlaceholderFolderLayout bottomRight = layout.createPlaceholderFolder(
             FOLDER_BOTTOM_RIGHT,
             IPageLayout.BOTTOM,
-            0.2f,
+            0.7f,
             editorArea);
         bottomRight.addPlaceholder(IActionConstants.LOG_VIEW_ID);
         bottomRight.addPlaceholder(QueryManagerView.VIEW_ID);
