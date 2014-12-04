@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.core.eclipse.search;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.search.ui.ISearchPage;
 import org.eclipse.search.ui.ISearchPageContainer;
+import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -11,11 +12,12 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.search.IObjectSearchContainer;
 import org.jkiss.dbeaver.ui.search.IObjectSearchPage;
+import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 
 /**
  * Search page adapter
  */
-public class SearchPageAdapter implements ISearchPage {
+public abstract class SearchPageAdapter implements ISearchPage {
 
     private final IObjectSearchPage source;
 
@@ -30,7 +32,7 @@ public class SearchPageAdapter implements ISearchPage {
         try {
             source.saveState(DBeaverCore.getGlobalPreferenceStore());
 
-            NewSearchUI.runQueryInBackground(new SearchQueryAdapter(source.createQuery()));
+            NewSearchUI.runQueryInBackground(createQueryAdapter(source.createQuery()));
         } catch (Exception e) {
             UIUtils.showErrorDialog(getControl().getShell(),
                 "Search",
@@ -40,6 +42,8 @@ public class SearchPageAdapter implements ISearchPage {
         }
         return true;
     }
+
+    protected abstract ISearchQuery createQueryAdapter(IObjectSearchQuery query);
 
     @Override
     public void setContainer(final ISearchPageContainer container)

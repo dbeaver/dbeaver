@@ -12,13 +12,13 @@ import java.util.List;
 /**
  * Search result
  */
-public class SearchResultAdapter implements ISearchResult {
+public abstract class SearchResultAdapter implements ISearchResult {
 
     private final SearchQueryAdapter queryAdapter;
     private final List<ISearchResultListener> listeners = new ArrayList<ISearchResultListener>();
     private final List<Object> objects = new ArrayList<Object>();
 
-    public SearchResultAdapter(SearchQueryAdapter queryAdapter)
+    protected SearchResultAdapter(SearchQueryAdapter queryAdapter)
     {
         this.queryAdapter = queryAdapter;
     }

@@ -14,7 +14,7 @@ import org.jkiss.dbeaver.ui.search.IObjectSearchResultPage;
 /**
  * Results page adapter
  */
-public class SearchResultPageAdapter implements ISearchResultPage {
+public abstract class SearchResultPageAdapter implements ISearchResultPage {
 
     private final IObjectSearchResultPage source;
 
