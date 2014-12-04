@@ -104,14 +104,14 @@
             icon="icons/metadata.png"
             id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
             label="Database Metadata Search Result"
-            searchResultClass="org.jkiss.dbeaver.core.eclipse.search.SearchResultAdapter">
+            searchResultClass="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultAdapter">
         </viewPage>
         <viewPage
             class="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataResultPageAdapter"
             icon="icons/metadata.png"
             id="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataResultPageAdapter"
             label="Database Full-Text Search Result"
-            searchResultClass="org.jkiss.dbeaver.core.eclipse.search.SearchResultAdapter">
+            searchResultClass="org.jkiss.dbeaver.core.eclipse.search.impl.data.SearchDataResultAdapter">
         </viewPage>
     </extension>
 
