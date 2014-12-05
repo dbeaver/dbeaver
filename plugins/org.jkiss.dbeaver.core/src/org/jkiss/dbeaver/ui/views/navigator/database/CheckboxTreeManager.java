@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -117,14 +118,14 @@ public class CheckboxTreeManager implements ICheckStateListener {
                         List<DBNDatabaseNode> directChildren = CommonUtils.safeList(container.getChildren(VoidProgressMonitor.INSTANCE));
                         boolean missingOne = false, missingAll = true;
                         for (DBNDatabaseNode node : directChildren) {
-                            if (!targetChildren.contains(node)) {
+                            if (!viewer.getChecked(node)) {
                                 missingOne = true;
                             } else {
                                 missingAll = false;
                             }
                         }
 
-                        viewer.setChecked(container, change ? checked : !missingAll || !Collections.disjoint(directChildren, targetContainers));
+                        viewer.setChecked(container, change ? checked : !missingAll);
                         viewer.setGrayed(container, missingOne);
                     } catch (DBException e) {
                         // shouldn't be here
