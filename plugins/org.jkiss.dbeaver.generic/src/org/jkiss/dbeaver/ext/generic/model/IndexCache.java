@@ -87,12 +87,23 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
         DBSIndexType indexType;
         switch (indexTypeNum) {
-            case DatabaseMetaData.tableIndexStatistic: return null; // Table index statistic. Not a real index.
+            case DatabaseMetaData.tableIndexStatistic:
+                // Table index statistic. Not a real index.
+                log.debug("Skip statistics index '" + indexName + "' in '" + DBUtils.getObjectFullName(parent) + "'");
+                return null;
             // indexType = DBSIndexType.STATISTIC; break;
-            case DatabaseMetaData.tableIndexClustered: indexType = DBSIndexType.CLUSTERED; break;
-            case DatabaseMetaData.tableIndexHashed: indexType = DBSIndexType.HASHED; break;
-            case DatabaseMetaData.tableIndexOther: indexType = DBSIndexType.OTHER; break;
-            default: indexType = DBSIndexType.UNKNOWN; break;
+            case DatabaseMetaData.tableIndexClustered:
+                indexType = DBSIndexType.CLUSTERED;
+                break;
+            case DatabaseMetaData.tableIndexHashed:
+                indexType = DBSIndexType.HASHED;
+                break;
+            case DatabaseMetaData.tableIndexOther:
+                indexType = DBSIndexType.OTHER;
+                break;
+            default:
+                indexType = DBSIndexType.UNKNOWN;
+                break;
         }
         if (CommonUtils.isEmpty(indexName)) {
             // [JDBC] Some drivers return empty index names
@@ -116,13 +127,14 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         throws SQLException, DBException
     {
         int ordinalPosition = GenericUtils.safeGetInt(indexObject, dbResult, JDBCConstants.ORDINAL_POSITION);
-        if (ordinalPosition == 0) {
-            return null;
-        }
         String columnName = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.COLUMN_NAME);
         String ascOrDesc = GenericUtils.safeGetStringTrimmed(indexObject, dbResult, JDBCConstants.ASC_OR_DESC);
 
-        GenericTableColumn tableColumn = CommonUtils.isEmpty(columnName) ? null : parent.getAttribute(session.getProgressMonitor(), columnName);
+        if (ordinalPosition == 0 || CommonUtils.isEmpty(columnName)) {
+            // Maybe a statistics index without column
+            return null;
+        }
+        GenericTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
         if (tableColumn == null) {
             log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
             return null;
