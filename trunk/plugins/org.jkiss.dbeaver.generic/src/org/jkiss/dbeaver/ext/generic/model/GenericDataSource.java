@@ -429,23 +429,24 @@ public class GenericDataSource extends JDBCDataSource
             final DBSObjectFilter schemaFilters = getContainer().getObjectFilter(GenericSchema.class, null);
 
             final List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
-            JDBCResultSet dbResult;
+            JDBCResultSet dbResult = null;
             boolean catalogSchemas = false;
             if (catalog != null) {
                 try {
                     dbResult = session.getMetaData().getSchemas(
-                        catalog == null ? null : catalog.getName(),
+                        catalog.getName(),
                         schemaFilters != null && schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : getAllObjectsPattern());
                     catalogSchemas = true;
                 } catch (Throwable e) {
                     // This method not supported (may be old driver version)
                     // Use general schema reading method
-                    log.debug(e);
-                    dbResult = session.getMetaData().getSchemas();
+                    log.debug("Error reading schemas in catalog '" + catalog.getName() + "'", e);
                 }
-            } else {
+            }
+            if (dbResult == null) {
                 dbResult = session.getMetaData().getSchemas();
             }
+
 
             try {
                 while (dbResult.next()) {
