@@ -31,9 +31,7 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
@@ -86,7 +84,25 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        if (syntaxManager.getDialect().getKeywordType(wordRegion.identifier) == DBPKeywordType.KEYWORD) {
+        String fullName = wordRegion.identifier;
+        String tableName = wordRegion.word;
+        boolean caseSensitive = false;
+        if (wordDetector.isQuoted(tableName)) {
+            tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteSymbol());
+            caseSensitive = true;
+        }
+        String containerName = null;
+        if (!CommonUtils.equalObjects(fullName, tableName)) {
+            int divPos = fullName.indexOf(syntaxManager.getStructSeparator());
+            if (divPos != -1) {
+                containerName = fullName.substring(0, divPos);
+                if (wordDetector.isQuoted(containerName)) {
+                    containerName = DBUtils.getUnQuotedIdentifier(containerName, syntaxManager.getQuoteSymbol());
+                }
+            }
+        }
+
+        if (syntaxManager.getDialect().getKeywordType(fullName) == DBPKeywordType.KEYWORD) {
             // Skip keywords
             return null;
         }
@@ -95,13 +111,12 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             return null;
         }
 
-        String tableName = wordRegion.word;
-        ObjectLookupCache tlc = linksCache.get(tableName);
+        ObjectLookupCache tlc = linksCache.get(fullName);
         if (tlc == null) {
             // Start new word finder job
             tlc = new ObjectLookupCache();
-            linksCache.put(tableName, tlc);
-            TablesFinderJob job = new TablesFinderJob(structureAssistant, tableName, wordDetector.isQuoted(wordRegion.identifier), tlc);
+            linksCache.put(fullName, tlc);
+            TablesFinderJob job = new TablesFinderJob(structureAssistant, containerName, tableName, caseSensitive, tlc);
             job.schedule();
         }
         if (tlc.loading) {
@@ -126,13 +141,8 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             if (tlc.references.isEmpty()) {
                 return null;
             }
-            if (tlc.references.isEmpty()) {
-                // No more references remains - try next time
-                linksCache.remove(tableName);
-                return null;
-            }
             // Create hyperlinks based on references
-            final IRegion hlRegion = new Region(wordRegion.wordStart, wordRegion.wordEnd - wordRegion.wordStart);
+            final IRegion hlRegion = new Region(wordRegion.identStart, wordRegion.identEnd - wordRegion.identStart);
             IHyperlink[] links = new IHyperlink[tlc.references.size()];
             for (int i = 0, objectsSize = tlc.references.size(); i < objectsSize; i++) {
                 links[i] = new EntityHyperlink(tlc.references.get(i), hlRegion);
@@ -150,15 +160,17 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
     private class TablesFinderJob extends DataSourceJob {
 
-        private DBSStructureAssistant structureAssistant;
-        private String word;
-        private ObjectLookupCache cache;
-        private boolean caseSensitive;
+        private final DBSStructureAssistant structureAssistant;
+        private final String containerName;
+        private final String word;
+        private final ObjectLookupCache cache;
+        private final boolean caseSensitive;
 
-        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String word, boolean caseSensitive, ObjectLookupCache cache)
+        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String containerName, String word, boolean caseSensitive, ObjectLookupCache cache)
         {
             super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataSourceProvider.getDataSource());
             this.structureAssistant = structureAssistant;
+            this.containerName = containerName;
             this.word = word;
             this.caseSensitive = caseSensitive;
             this.cache = cache;
@@ -171,8 +183,23 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         {
             cache.references = new ArrayList<DBSObjectReference>();
             try {
+
+                DBSObjectContainer container = null;
+                if (!CommonUtils.isEmpty(containerName)) {
+                    DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSourceProvider.getDataSource());
+                    if (dsContainer != null) {
+                        DBSObject childContainer = dsContainer.getChild(monitor, containerName);
+                        if (childContainer instanceof DBSObjectContainer) {
+                            container = (DBSObjectContainer) childContainer;
+                        } else {
+                            // Bad container - stop search
+                            return Status.CANCEL_STATUS;
+                        }
+                    }
+                }
+
                 DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
-                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, caseSensitive, 10);
+                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, container, objectTypes, word, caseSensitive, 10);
                 if (!CommonUtils.isEmpty(objects)) {
                     cache.references.addAll(objects);
                 }

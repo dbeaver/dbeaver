@@ -27,14 +27,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.BaseEntityIdentifier;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -55,7 +53,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -98,6 +95,14 @@ public final class DBUtils {
             if (quote != null && str.startsWith(quote) && str.endsWith(quote)) {
                 return str.substring(quote.length(), str.length() - quote.length());
             }
+        }
+        return str;
+    }
+
+    public static String getUnQuotedIdentifier(String str, String quote)
+    {
+        if (quote != null && str.startsWith(quote) && str.endsWith(quote)) {
+            return str.substring(quote.length(), str.length() - quote.length());
         }
         return str;
     }
@@ -249,7 +254,7 @@ public final class DBUtils {
      * @param rootSC container
      * @param catalogName catalog name (optional)
      * @param schemaName schema name (optional)
-     * @param tableName table name (optional)
+     * @param objectName table name (optional)
      * @return found object or null
      * @throws DBException
      */
@@ -259,7 +264,7 @@ public final class DBUtils {
             DBSObjectContainer rootSC,
             String catalogName,
             String schemaName,
-            String tableName)
+            String objectName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(catalogName)) {
@@ -276,20 +281,20 @@ public final class DBUtils {
             }
             rootSC = (DBSObjectContainer) schema;
         }
-        if (tableName == null) {
+        if (objectName == null) {
             return rootSC;
         }
         Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
         if (DBSTable.class.isAssignableFrom(childType)) {
-            return rootSC.getChild(monitor, tableName);
+            return rootSC.getChild(monitor, objectName);
         } else {
             // Child is not a table. May be catalog/schema names was omitted.
             // Try to use active child
             DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, rootSC);
             if (objectSelector != null) {
                 DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
-                if (objectContainer != null && DBSTable.class.isAssignableFrom(objectContainer.getChildType(monitor))) {
-                    return objectContainer.getChild(monitor, tableName);
+                if (objectContainer != null) {
+                    return objectContainer.getChild(monitor, objectName);
                 }
             }
 
