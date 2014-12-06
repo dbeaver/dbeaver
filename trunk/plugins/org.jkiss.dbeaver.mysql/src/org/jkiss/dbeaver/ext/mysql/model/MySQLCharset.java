@@ -50,7 +50,7 @@ public class MySQLCharset extends MySQLInformation {
     {
         this.name = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARSET);
         this.description = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DESCRIPTION);
-        this.maxLength = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_MAX_LENGTH);
+        this.maxLength = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_MAX_LEN);
     }
 
     void addCollation(MySQLCollation collation)
