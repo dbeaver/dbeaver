@@ -541,7 +541,7 @@ public final class DBUtils {
                             entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
                         }
                         if (entityObject == null) {
-                            log.debug("Table '" + entityName + "' not found in metadata catalog");
+                            log.debug("Table '" + DBUtils.getSimpleQualifiedName(catalogName, schemaName, entityName) + "' not found in metadata catalog");
                         } else if (entityObject instanceof DBSEntity) {
                             entity = (DBSEntity) entityObject;
                         } else {
