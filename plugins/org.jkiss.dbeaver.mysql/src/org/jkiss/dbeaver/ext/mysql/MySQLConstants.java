@@ -155,7 +155,7 @@ public class MySQLConstants {
 
     public static final String COL_CHARSET = "CHARSET";
     public static final String COL_DESCRIPTION = "DESCRIPTION";
-    public static final String COL_MAX_LENGTH = "MAXLENGTH";
+    public static final String COL_MAX_LEN = "MAXLEN";
     public static final String COL_ID = "ID";
     public static final String COL_DEFAULT = "DEFAULT";
     public static final String COL_COMPILED = "COMPILED";
