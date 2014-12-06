@@ -1,6 +1,5 @@
 FEATURE: persistent filter history
 
-BUG: open object (F4) with FQ name (schema)
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
 SQL folding
 MySQL and Cassandra + SSL.
