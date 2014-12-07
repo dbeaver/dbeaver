@@ -39,6 +39,24 @@
     </company>
 
     <versions>
+
+        <version>
+            <number>3.1.0</number>
+            <type>major</type>
+            <date>07.12.2014</date>
+
+            <release-notes>
+                - Full-text database search feature added
+                - SQL queries parser was fixed
+                - DBeaver perspective and initial windows layout were improved
+                - SQL hyperlinks and object navigation now supports fully-qualified names
+                - Data export (in isolated connection) has been fixed
+                - Primary keys/indexes read has been fixed (MSS SQL, DB2 z/OS, and SQLite)
+                - Resultset navigation has been fixed (now it keeps filter settings)
+                - Many other minor UI fixes
+            </release-notes>
+        </version>
+
         <version>
             <number>3.0.2</number>
             <type>hotfix</type>
