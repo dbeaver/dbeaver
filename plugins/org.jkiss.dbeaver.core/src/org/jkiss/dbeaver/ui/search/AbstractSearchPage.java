@@ -26,6 +26,7 @@ import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,10 +35,7 @@ import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public abstract class AbstractSearchPage extends DialogPage implements IObjectSearchPage {
 
@@ -76,13 +74,24 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
                     @Override
                     public void run(DBRProgressMonitor monitor)
                     {
+                        // Keep broken datasources to make connect attempt only once
+                        Set<DBNDataSource> brokenDataSources = new HashSet<DBNDataSource>();
+
+                        // Find all nodes
                         StringTokenizer st = new StringTokenizer(sources, "|"); //$NON-NLS-1$
                         while (st.hasMoreTokens()) {
                             String nodePath = st.nextToken();
                             try {
+                                DBNDataSource dsNode = DBNModel.getInstance().getDataSourceByPath(nodePath);
+                                if (brokenDataSources.contains(dsNode)) {
+                                    continue;
+                                }
+
                                 DBNNode node = DBNModel.getInstance().getNodeByPath(monitor, nodePath);
                                 if (node != null) {
                                     result.add(node);
+                                } else {
+                                    brokenDataSources.add(dsNode);
                                 }
                             } catch (DBException e) {
                                 log.error(e);
