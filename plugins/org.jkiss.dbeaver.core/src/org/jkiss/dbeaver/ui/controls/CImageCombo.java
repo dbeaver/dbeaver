@@ -949,6 +949,8 @@ public class CImageCombo extends Composite {
 
     void createPopup(int selectionIndex)
     {
+        Shell oldPopup = this.popup;
+
         // create shell and list
         this.popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP);
         int style = getStyle();
@@ -963,11 +965,22 @@ public class CImageCombo extends Composite {
             listStyle |= SWT.LEFT_TO_RIGHT;
         }
         // create a table instead of a list.
+        Table oldTable = this.table;
         this.table = new Table(this.popup, listStyle);
         if (this.font != null) {
             this.table.setFont(this.font);
         }
         new TableColumn(table, SWT.LEFT);
+        if (oldTable != null) {
+            for (TableItem oldItem : oldTable.getItems()) {
+                TableItem newItem = new TableItem(this.table, oldItem.getStyle());
+                newItem.setText(oldItem.getText());
+                newItem.setImage(oldItem.getImage());
+                newItem.setData(oldItem.getData());
+                newItem.setBackground(oldItem.getBackground());
+                newItem.setForeground(oldItem.getForeground());
+            }
+        }
 
         int[] popupEvents = {SWT.Close, SWT.Paint, SWT.Deactivate};
         for (int popupEvent : popupEvents) {
@@ -980,6 +993,9 @@ public class CImageCombo extends Composite {
 
         if (selectionIndex != -1) {
             this.table.setSelection(selectionIndex);
+        }
+        if (oldPopup != null) {
+            oldPopup.dispose();
         }
     }
 
@@ -1004,9 +1020,6 @@ public class CImageCombo extends Composite {
         if (getShell() != this.popup.getParent()) {
             int selectionIndex = this.table.getSelectionIndex();
             this.table.removeListener(SWT.Dispose, this.listener);
-            this.popup.dispose();
-            this.popup = null;
-            this.table = null;
             createPopup(selectionIndex);
         }
 
