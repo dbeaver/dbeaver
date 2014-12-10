@@ -744,7 +744,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
         connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null, null);
         connectionCombo.select(0);
-        fillDataSourceList(true);
         connectionCombo.addSelectionListener(new SelectionListener()
         {
             @Override
@@ -783,7 +782,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 widgetSelected(e);
             }
         });
-        updateDatabaseList(true);
 
         resultSetSize = new Text(comboGroup, SWT.BORDER);
         resultSetSize.setTextLimit(10);
@@ -818,9 +816,14 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
         });
 
-        if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
-            setActivePart(workbenchWindow.getActivePage().getActivePart());
-        }
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
+                    setActivePart(workbenchWindow.getActivePage().getActivePart());
+                }
+            }
+        });
 
         return comboGroup;
     }
