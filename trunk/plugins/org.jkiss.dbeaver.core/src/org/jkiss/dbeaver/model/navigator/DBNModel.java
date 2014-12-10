@@ -228,11 +228,22 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
+    public DBNDataSource getDataSourceByPath(String path) throws DBException
+    {
+        DBNProject project = getRoot().getProject(getProjectRegistry().getActiveProject());
+        if (project == null) {
+            log.debug("Project node not found");
+            return null;
+        }
+        return project.getDatabases().getDataSource(CommonUtils.splitString(path, '/').get(0));
+    }
+
+    @Nullable
     public DBNNode getNodeByPath(DBRProgressMonitor monitor, String path) throws DBException
     {
         DBNProject project = getRoot().getProject(getProjectRegistry().getActiveProject());
         if (project == null) {
-            log.debug("Node project");
+            log.debug("Project node not found");
             return null;
         }
         List<String> items = CommonUtils.splitString(path, '/');
