@@ -31,15 +31,14 @@ import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
@@ -70,14 +69,13 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.sql.*;
+import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
+import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
+import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
-import org.jkiss.dbeaver.ui.DynamicFindReplaceTarget;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -293,10 +291,22 @@ public class SQLEditor extends SQLEditorBase
         selectionProvider = new CompositeSelectionProvider();
         getSite().setSelectionProvider(selectionProvider);
 
+        final StyledText textWidget = getTextViewer().getTextWidget();
+
+        // TODO: it is a hack. We change selection on each caret move to trigger toolbar elements update.
+        // TODO: without this hack toolbar won't update Execute* commands.
+        // TODO: Need some better solution or workaround.
+        textWidget.addCaretListener(new CaretListener() {
+            @Override
+            public void caretMoved(CaretEvent event) {
+                ((SQLEditorSourceViewer)getSourceViewer()).refreshTextSelection();
+            }
+        });
+
         createResultTabs();
 
         // Find/replace target activation
-        getViewer().getTextWidget().addFocusListener(new FocusAdapter() {
+        textWidget.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
                 findReplaceTarget.setTarget(getViewer().getFindReplaceTarget());

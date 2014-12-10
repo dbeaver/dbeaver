@@ -421,6 +421,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         if (CommonUtils.isEmpty(selText)) {
             Document document = getDocument();
             try {
+                ;
                 IRegion lineRegion = document.getLineInformationOfOffset(selection.getOffset());
                 selText = document.get(lineRegion.getOffset(), lineRegion.getLength());
             } catch (BadLocationException e) {
@@ -555,11 +556,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 return null;
             }
         }
-    }
-
-    public void doOperation(int operation)
-    {
-        ((SQLEditorSourceViewer) getSourceViewer()).doOperation(operation);
     }
 
     public synchronized void updateFoldingStructure(int offset, int length, List<Position> positions)
