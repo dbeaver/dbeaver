@@ -52,7 +52,7 @@ public enum DB2PlanOperatorType implements DBPNamedObject {
 
     REBAL("Rebalance rows between SMP subagents"),
 
-    RETURN("Result"),
+    RETURN("Return"),
 
     RIDSCN("RID Scan"),
 
