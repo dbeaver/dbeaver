@@ -146,6 +146,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         if (!closeActiveTransactions()) {
             return false;
         }
+/*
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         DBRProgressMonitor nullMonitor = VoidProgressMonitor.INSTANCE;
         for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
@@ -169,6 +170,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                 }
             }
         }
+*/
 
         return true;
     }
