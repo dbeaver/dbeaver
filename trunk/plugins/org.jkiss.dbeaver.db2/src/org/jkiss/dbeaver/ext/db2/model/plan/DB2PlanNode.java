@@ -33,6 +33,14 @@ public abstract class DB2PlanNode implements DBCPlanNode {
     private DB2PlanNode parent;
     private Collection<DB2PlanNode> listNestedNodes = new ArrayList<DB2PlanNode>(64);
 
+    protected DB2PlanNode() {
+    }
+
+    protected DB2PlanNode(DB2PlanNode node) {
+        this.parent = node.parent;
+        this.listNestedNodes.addAll(node.listNestedNodes);
+    }
+
     // --------------------
     // DB2PlanNode Contract
     // --------------------

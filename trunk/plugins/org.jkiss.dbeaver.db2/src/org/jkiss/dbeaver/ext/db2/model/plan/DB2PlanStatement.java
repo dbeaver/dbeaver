@@ -27,12 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DB2 EXPLAIN_STATEMENT table
@@ -128,7 +123,7 @@ public class DB2PlanStatement {
             // Get Source Node
             if (planStream.getSourceType().equals(DB2PlanNodeType.D)) {
                 sourceNode = mapDataObjects.get(planStream.getSourceName());
-                sourceNode = ((DB2PlanObject) sourceNode).clone();
+                sourceNode = new DB2PlanObject((DB2PlanObject) sourceNode);
             } else {
                 sourceNode = mapOperators.get(planStream.getSourceName());
             }
@@ -136,7 +131,7 @@ public class DB2PlanStatement {
             // Get Target Node
             if (planStream.getTargetType().equals(DB2PlanNodeType.D)) {
                 targetNode = mapDataObjects.get(planStream.getTargetName());
-                targetNode = ((DB2PlanObject) targetNode).clone();
+                targetNode = new DB2PlanObject((DB2PlanObject) targetNode);
 
                 // Inverse target <-> source
                 sourceNode.getNested().add(targetNode);
@@ -152,7 +147,10 @@ public class DB2PlanStatement {
         }
 
         // Return "root" node, ie the operator with id=1
-        return Collections.singletonList((DB2PlanNode) mapOperators.get("1"));
+        DB2PlanNode rootNode = mapOperators.get("1");
+        return rootNode == null ?
+            Collections.<DB2PlanNode>emptyList() :
+            Collections.singletonList(rootNode);
     }
 
     // -------------
