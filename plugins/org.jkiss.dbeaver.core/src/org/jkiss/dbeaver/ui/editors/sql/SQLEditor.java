@@ -855,7 +855,7 @@ public class SQLEditor extends SQLEditorBase
                 }
             }
         }
-        return ISaveablePart2.YES;
+        return ISaveablePart2.DEFAULT;
     }
 
     @Nullable
