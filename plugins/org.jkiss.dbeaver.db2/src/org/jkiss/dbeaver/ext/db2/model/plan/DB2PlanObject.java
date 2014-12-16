@@ -123,18 +123,58 @@ public class DB2PlanObject extends DB2PlanNode {
         this.numDataPart = JDBCUtils.safeGetInteger(dbResult, "NUM_DATA_PART");
         this.nullKeys = JDBCUtils.safeGetString(dbResult, "NULLKEYS");
 
-        nodeName = buildName(objectSchema, objectName);
+        this.nodeName = buildName(objectSchema, objectName);
 
-        StringBuilder sb2 = new StringBuilder(64);
-        sb2.append(objectType);
-        sb2.append(": ");
-        sb2.append(nodeName);
-        displayName = sb2.toString();
+        this.displayName = objectType + ": " + nodeName;
     }
 
-    public DB2PlanObject()
+    DB2PlanObject(DB2PlanObject copy)
     {
+//        super(copy);
+
+        this.displayName = copy.getDisplayName();
+        this.nodeName = copy.getNodeName();
+        // this.objectSchema=copy.getObjectSc();
+        // this.objectName=copy.getObjectType()
+        this.objectType = copy.getObjectType();
+        this.createTime = copy.getCreateTime();
+        this.statsTime = copy.getStatsTime();
+        this.columnsCount = copy.getColumnsCount();
+        this.rowCount = copy.getRowCount();
+        this.width = copy.getWidth();
+        this.pages = copy.getPages();
+        this.distinct = copy.getDistinct();
+        this.tablespaceName = copy.getDisplayName();
+        this.overHead = copy.getOverHead();
+        this.transferRate = copy.getTransferRate();
+        this.prefetchSize = copy.getPrefetchSize();
+        this.extentSize = copy.getExtentSize();
+        this.cluster = copy.getCluster();
+        this.nLeaf = copy.getnLeaf();
+        this.nLevels = copy.getnLevels();
+        this.fullKeyCard = copy.getFullKeyCard();
+        this.overFlow = copy.getOverFlow();
+        this.firstKeyCard = copy.getFirstKeyCard();
+        this.first2KeyCard = copy.getFirst2KeyCard();
+        this.first3KeyCard = copy.getFirst3KeyCard();
+        this.first4KeyCard = copy.getFirst4KeyCard();
+        this.sequentialPages = copy.getSequentialPages();
+        this.density = copy.getDensity();
+        this.statsSrc = copy.getStatsSrc();
+        this.avgSequenceGap = copy.getAvgSequenceGap();
+        this.avgSequenceFetchGap = copy.getAvgSequenceFetchGap();
+        this.avgSequencePages = copy.getAvgSequencePages();
+        this.avgSequenceFetchPages = copy.getAvgSequenceFetchPages();
+        this.avgRandomPages = copy.getAvgRandomPages();
+        this.avgRandomFetchPages = copy.getAvgRandomFetchPages();
+        this.numRIDs = copy.getNumRIDs();
+        this.numRIDsDeleted = copy.getNumRIDsDeleted();
+        this.numEmptyLeafs = copy.getNumEmptyLeafs();
+        this.activeBlocks = copy.getActiveBlocks();
+        this.numDataPart = copy.getNumDataPart();
+        this.nullKeys = copy.getNullKeys();
     }
+
 
     // -----------------
     // Business Contract
@@ -158,55 +198,6 @@ public class DB2PlanObject extends DB2PlanNode {
     public static String buildName(String objectSchema, String objectName)
     {
         return objectSchema + "." + objectName;
-    }
-
-    public DB2PlanObject clone()
-    {
-        DB2PlanObject clone = new DB2PlanObject();
-
-        clone.displayName = this.getDisplayName();
-        clone.nodeName = this.getNodeName();
-        // clone.objectSchema=this.getObjectSc();
-        // clone.objectName=this.getObjectType()
-        clone.objectType = this.getObjectType();
-        clone.createTime = this.getCreateTime();
-        clone.statsTime = this.getStatsTime();
-        clone.columnsCount = this.getColumnsCount();
-        clone.rowCount = this.getRowCount();
-        clone.width = this.getWidth();
-        clone.pages = this.getPages();
-        clone.distinct = this.getDistinct();
-        clone.tablespaceName = this.getDisplayName();
-        clone.overHead = this.getOverHead();
-        clone.transferRate = this.getTransferRate();
-        clone.prefetchSize = this.getPrefetchSize();
-        clone.extentSize = this.getExtentSize();
-        clone.cluster = this.getCluster();
-        clone.nLeaf = this.getnLeaf();
-        clone.nLevels = this.getnLevels();
-        clone.fullKeyCard = this.getFullKeyCard();
-        clone.overFlow = this.getOverFlow();
-        clone.firstKeyCard = this.getFirstKeyCard();
-        clone.first2KeyCard = this.getFirst2KeyCard();
-        clone.first3KeyCard = this.getFirst3KeyCard();
-        clone.first4KeyCard = this.getFirst4KeyCard();
-        clone.sequentialPages = this.getSequentialPages();
-        clone.density = this.getDensity();
-        clone.statsSrc = this.getStatsSrc();
-        clone.avgSequenceGap = this.getAvgSequenceGap();
-        clone.avgSequenceFetchGap = this.getAvgSequenceFetchGap();
-        clone.avgSequencePages = this.getAvgSequencePages();
-        clone.avgSequenceFetchPages = this.getAvgSequenceFetchPages();
-        clone.avgRandomPages = this.getAvgRandomPages();
-        clone.avgRandomFetchPages = this.getAvgRandomFetchPages();
-        clone.numRIDs = this.getNumRIDs();
-        clone.numRIDsDeleted = this.getNumRIDsDeleted();
-        clone.numEmptyLeafs = this.getNumEmptyLeafs();
-        clone.activeBlocks = this.getActiveBlocks();
-        clone.numDataPart = this.getNumDataPart();
-        clone.nullKeys = this.getNullKeys();
-
-        return clone;
     }
 
     // ----------------
