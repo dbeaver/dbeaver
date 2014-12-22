@@ -41,6 +41,19 @@
     <versions>
 
         <version>
+            <number>3.1.1</number>
+            <type>hotfix</type>
+            <date>23.12.2014</date>
+
+            <release-notes>
+                - Connection list combo fixed
+                - SQL editor toolbar fixed
+                - SQL editors auto-save fixed
+                - Data search UI fix
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.1.0</number>
             <type>major</type>
             <date>07.12.2014</date>
