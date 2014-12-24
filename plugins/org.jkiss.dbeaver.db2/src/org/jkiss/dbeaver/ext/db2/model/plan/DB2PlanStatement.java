@@ -27,7 +27,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 EXPLAIN_STATEMENT table
@@ -60,6 +65,8 @@ public class DB2PlanStatement {
     private Map<String, DB2PlanOperator> mapOperators;
     private Map<String, DB2PlanObject> mapDataObjects;
     private List<DB2PlanStream> listStreams;
+
+    private DB2PlanNode rootNode;
 
     private DB2PlanInstance planInstance;
     private String planTableSchema;
@@ -106,7 +113,7 @@ public class DB2PlanStatement {
     public Collection<DB2PlanNode> buildNodes()
     {
         // Based on streams, establish relationships between nodes
-        // DF: VEry Important!: The Stream MUST be order by STREAM_ID DESC for the viewer to display things right (from the list
+        // DF: Very Important!: The Stream MUST be order by STREAM_ID DESC for the viewer to display things right (from the list
         // order)
 
         DB2PlanNode sourceNode;
@@ -146,11 +153,8 @@ public class DB2PlanStatement {
 
         }
 
-        // Return "root" node, ie the operator with id=1
-        DB2PlanNode rootNode = mapOperators.get("1");
-        return rootNode == null ?
-            Collections.<DB2PlanNode>emptyList() :
-            Collections.singletonList(rootNode);
+        // return rootNode == null ? Collections.<DB2PlanNode> emptyList() : Collections.singletonList(rootNode);
+        return Collections.singletonList(rootNode);
     }
 
     // -------------
@@ -188,6 +192,9 @@ public class DB2PlanStatement {
                 while (res.next()) {
                     db2PlanOperator = new DB2PlanOperator(session, res, this, planTableSchema);
                     mapOperators.put(db2PlanOperator.getNodeName(), db2PlanOperator);
+                    if (db2PlanOperator.getOperatorType() == DB2PlanOperatorType.RETURN) {
+                        rootNode = db2PlanOperator;
+                    }
                 }
             } finally {
                 res.close();
