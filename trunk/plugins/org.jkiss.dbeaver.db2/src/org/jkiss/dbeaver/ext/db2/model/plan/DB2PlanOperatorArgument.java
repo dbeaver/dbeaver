@@ -86,7 +86,6 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
         ARGUMENT_TYPES.put("BLDLEVEL", "Build Level");
         ARGUMENT_TYPES.put("HEAPUSE", "Heap Use");
         ARGUMENT_TYPES.put("PREPTIME", "Preparation Time");
-        ARGUMENT_TYPES.put("SPEED", "Scan Speed");
 
         ARGUMENT_TYPES.put("AGGMODE", "Aggregate Mode");
         ARGUMENT_TYPES.put("APREUSE", "Reuse Bind Option?");
@@ -144,6 +143,7 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
         ARGUMENT_TYPES.put("OVERHEAD", "Optimizer used OVERHEAD value");
         ARGUMENT_TYPES.put("PARTCOLS", "Partitioning columns for operator");
         ARGUMENT_TYPES.put("PBLKLOCK", "Positioning scan table lock intent");
+        ARGUMENT_TYPES.put("PFTCHSZ", "Prefetch Size");
         ARGUMENT_TYPES.put("PGLOLOCK", "Positioning scan global table lock intent");
         ARGUMENT_TYPES.put("PLANID", "Id uniquely representing a query plan configuration for a given statement");
         ARGUMENT_TYPES.put("PREFETCH", "Prefetch");
