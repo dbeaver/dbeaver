@@ -82,7 +82,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet) throws DBCException
+    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
     {
         initExporter(session);
 

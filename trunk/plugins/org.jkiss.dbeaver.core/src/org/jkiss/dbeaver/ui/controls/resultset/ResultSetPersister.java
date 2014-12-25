@@ -492,7 +492,7 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchStart(DBCSession session, DBCResultSet resultSet)
+        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows)
             throws DBCException
         {
 

@@ -82,7 +82,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet) throws DBCException
+    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
     {
         initExporter(session.getProgressMonitor());
         DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();

@@ -448,7 +448,7 @@ public class WMIClass extends WMIContainer
             WMIResultSet resultSet = new WMIResultSet(session, this, sink.getObjectList());
             long resultCount = 0;
             try {
-                dataReceiver.fetchStart(session, resultSet);
+                dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
                 while (resultSet.nextRow()) {
                     resultCount++;
                     dataReceiver.fetchRow(session, resultSet);

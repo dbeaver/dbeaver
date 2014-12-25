@@ -505,7 +505,7 @@ public class SQLQueryJob extends DataSourceJob
         monitor.subTask("Fetch result set");
         long rowCount = 0;
 
-        dataReceiver.fetchStart(session, resultSet);
+        dataReceiver.fetchStart(session, resultSet, rsOffset, rsMaxRows);
 
         try {
             // Retrieve source entity
