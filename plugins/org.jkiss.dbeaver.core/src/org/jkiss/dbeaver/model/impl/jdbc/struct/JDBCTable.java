@@ -193,7 +193,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                                 }
                             }
                         }
-                        dataReceiver.fetchStart(session, dbResult);
+                        dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
 
                         try {
                             startTime = System.currentTimeMillis();

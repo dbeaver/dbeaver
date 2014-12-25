@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
  */
 public interface DBDDataReceiver {
 
-    void fetchStart(DBCSession session, DBCResultSet resultSet)
+    void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows)
         throws DBCException;
 
     void fetchRow(DBCSession session, DBCResultSet resultSet)

@@ -44,6 +44,8 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     private List<Object[]> rows = new ArrayList<Object[]>();
     private boolean hasMoreData;
     private boolean nextSegmentRead;
+    private long offset;
+    private long maxRows;
 
     private Map<DBCAttributeMetaData, List<DBCException>> errors = new HashMap<DBCAttributeMetaData, List<DBCException>>();
 
@@ -65,10 +67,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet)
+    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows)
         throws DBCException
     {
-        rows.clear();
+        this.rows.clear();
+        this.offset = offset;
+        this.maxRows = maxRows;
 
         if (!nextSegmentRead) {
             // Get columns metadata
@@ -128,8 +132,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         }
 
         final List<Object[]> tmpRows = rows;
-        int segmentSize = resultSetViewer.getSegmentMaxRows();
-        hasMoreData = segmentSize > 0 && tmpRows.size() >= segmentSize;
+        hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
         Control control = resultSetViewer.getControl();

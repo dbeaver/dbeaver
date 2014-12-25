@@ -156,7 +156,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
             DBCResultSet dbResult = value;
             try {
                 long startTime = System.currentTimeMillis();
-                dataReceiver.fetchStart(session, dbResult);
+                dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
                 long rowCount;
                 try {
                     rowCount = 0;
