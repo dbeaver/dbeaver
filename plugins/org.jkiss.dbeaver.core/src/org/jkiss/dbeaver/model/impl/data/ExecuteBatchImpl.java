@@ -153,7 +153,7 @@ public class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatch {
             return;
         }
         try {
-            keysReceiver.fetchStart(session, dbResult);
+            keysReceiver.fetchStart(session, dbResult, -1, -1);
             try {
                 while (dbResult.nextRow()) {
                     keysReceiver.fetchRow(session, dbResult);

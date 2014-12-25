@@ -46,7 +46,6 @@ public class TestService {
     void test()
     {
         try {
-            //service.connect("bq", "aelita", "jurgen", "CityMan78&", null, "\\root\\cimv2");
             {
                 Thread testThread = new Thread() {
                     @Override
