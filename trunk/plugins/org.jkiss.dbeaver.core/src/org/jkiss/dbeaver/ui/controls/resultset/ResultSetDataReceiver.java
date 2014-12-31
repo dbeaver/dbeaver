@@ -132,7 +132,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         }
 
         final List<Object[]> tmpRows = rows;
-        hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
         Control control = resultSetViewer.getControl();
@@ -141,13 +140,14 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 @Override
                 public void run()
                 {
-                    // Check for more data
                     // Push data into viewer
                     if (!nextSegmentRead) {
                         resultSetViewer.setData(tmpRows);
                     } else {
                         resultSetViewer.appendData(tmpRows);
                     }
+                    // Check for more data
+                    hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
                 }
             });
         }
