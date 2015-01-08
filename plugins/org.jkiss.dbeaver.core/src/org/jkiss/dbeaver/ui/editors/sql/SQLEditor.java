@@ -650,7 +650,7 @@ public class SQLEditor extends SQLEditorBase
                         String query = document.get(statementStart, queryLength);
                         query = query.trim();
                         if (query.length() > 0) {
-                            SQLQuery statementInfo = new SQLQuery(query, statementStart, queryLength);
+                            SQLQuery statementInfo = new SQLQuery(this, query, statementStart, queryLength);
                             queryList.add(statementInfo);
                         }
                     }

@@ -56,6 +56,8 @@ public class SQLQuery {
     static final Log log = LogFactory.getLog(SQLQuery.class);
 
     @NotNull
+    private final Object source;
+    @NotNull
     private String query;
     private int offset;
     private int length;
@@ -67,8 +69,9 @@ public class SQLQuery {
     private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
 
-    public SQLQuery(@NotNull String query, int offset, int length)
+    public SQLQuery(@NotNull Object source, @NotNull String query, int offset, int length)
     {
+        this.source = source;
         this.query = query;
         this.offset = offset;
         this.length = length;
@@ -108,6 +111,10 @@ public class SQLQuery {
             this.type = SQLQueryType.UNLKNOWN;
             log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
+    }
+
+    public Object getSource() {
+        return source;
     }
 
     public String getQuery()
