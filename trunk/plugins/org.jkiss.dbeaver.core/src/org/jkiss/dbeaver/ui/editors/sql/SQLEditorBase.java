@@ -441,7 +441,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            sqlQuery = new SQLQuery(selText, selection.getOffset(), selection.getLength());
+            sqlQuery = new SQLQuery(this, selText, selection.getOffset(), selection.getLength());
         } else {
             sqlQuery = extractQueryAtPos(selection.getOffset());
         }
@@ -542,7 +542,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                         queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length());
                     }
                     // make script line
-                    SQLQuery statementInfo = new SQLQuery(queryText.trim(), statementStart, tokenOffset - statementStart);
+                    SQLQuery statementInfo = new SQLQuery(this, queryText.trim(), statementStart, tokenOffset - statementStart);
                     return statementInfo;
                 } catch (BadLocationException ex) {
                     log.warn("Can't extract query", ex); //$NON-NLS-1$
