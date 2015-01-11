@@ -41,6 +41,16 @@
     <versions>
 
         <version>
+            <number>3.1.2</number>
+            <type>minor</type>
+            <date>11.01.2015</date>
+
+            <release-notes>
+                -
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.1.1</number>
             <type>hotfix</type>
             <date>23.12.2014</date>
