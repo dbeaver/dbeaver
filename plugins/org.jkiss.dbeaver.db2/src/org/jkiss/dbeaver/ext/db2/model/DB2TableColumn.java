@@ -57,8 +57,13 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     private DB2TableColumnCompression compress;
     private Boolean rowBegin;
     private Boolean rowEnd;
+    private String transactionStartId;
     private String collationSchema;
     private String collationNane;
+
+    private String typeStringUnits;
+    private Integer stringUnitsLength;
+    private String stringLength;
 
     private Integer keySeq;
     private Integer partKeySeq;
@@ -67,7 +72,11 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     private String high2key;
     private String low2key;
     private Integer avgLength;
+    private Integer nbQuantiles;
+    private Integer nbMostFreq;
     private Long nbNulls;
+    private Integer pctInlined;
+    private Integer pctEncoded;
 
     // -----------------
     // Constructors
@@ -105,10 +114,27 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         if (db2DataSource.isAtLeastV9_5()) {
             this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
             this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+            this.nbQuantiles = JDBCUtils.safeGetInteger(dbResult, "NQUANTILES");
+            this.nbMostFreq = JDBCUtils.safeGetInteger(dbResult, "NMOSTFREQ");
+        }
+        if (db2DataSource.isAtLeastV9_7()) {
+            this.pctInlined = JDBCUtils.safeGetInteger(dbResult, "PCTINLINED");
         }
         if (db2DataSource.isAtLeastV10_1()) {
             this.rowBegin = JDBCUtils.safeGetBoolean(dbResult, "ROWBEGIN", DB2YesNo.Y.name());
             this.rowEnd = JDBCUtils.safeGetBoolean(dbResult, "ROWEND", DB2YesNo.Y.name());
+            this.transactionStartId = JDBCUtils.safeGetStringTrimmed(dbResult, "TRANSACTIONSTARTID");
+        }
+        if (db2DataSource.isAtLeastV10_5()) {
+            this.typeStringUnits = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESTRINGUNITS");
+            this.stringUnitsLength = JDBCUtils.safeGetInteger(dbResult, "STRINGUNITSLENGTH");
+            this.pctEncoded = JDBCUtils.safeGetInteger(dbResult, "PCTENCODED");
+
+            if (typeStringUnits == null) {
+                stringLength = "";
+            } else {
+                stringLength = stringUnitsLength + " " + typeStringUnits;
+            }
         }
 
         // Set DataTypes data
@@ -223,40 +249,58 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         return super.getScale();
     }
 
+    @Property(viewable = true, order = 40)
+    public String getStringLength()
+    {
+        return stringLength;
+    }
+
+    // @Property(viewable = true, order = 40)
+    // public Integer getStringUnitsLength()
+    // {
+    // return stringUnitsLength;
+    // }
+    //
+    // @Property(viewable = true, order = 41)
+    // public String getTypeStringUnits()
+    // {
+    // return typeStringUnits;
+    // }
+
     @Override
-    @Property(viewable = false, order = 40)
+    @Property(viewable = false, order = 42)
     public int getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, order = 41, editable = true, updatable = true)
+    @Property(viewable = true, order = 43, editable = true, updatable = true)
     public boolean isRequired()
     {
         return super.isRequired();
     }
 
     @Override
-    @Property(viewable = true, order = 42, editable = true)
+    @Property(viewable = true, order = 44, editable = true)
     public String getDefaultValue()
     {
         return super.getDefaultValue();
     }
 
-    @Property(viewable = true, order = 43)
+    @Property(viewable = true, order = 45)
     public Boolean getIdentity()
     {
         return identity;
     }
 
-    @Property(viewable = true, order = 44)
+    @Property(viewable = true, order = 46)
     public DB2TableColumnGenerated getGenerated()
     {
         return generated;
     }
 
-    @Property(viewable = false, order = 45)
+    @Property(viewable = false, order = 47)
     public String getGeneratedText()
     {
         return generatedText;
@@ -311,16 +355,16 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         return rowEnd;
     }
 
+    @Property(viewable = false, order = 139)
+    public String getTransactionStartId()
+    {
+        return transactionStartId;
+    }
+
     @Property(viewable = false, order = 150, category = DB2Constants.CAT_STATS)
     public Long getColcard()
     {
         return colcard;
-    }
-
-    @Property(viewable = false, order = 151, category = DB2Constants.CAT_STATS)
-    public Long getNbNulls()
-    {
-        return nbNulls;
     }
 
     @Property(viewable = false, order = 152, category = DB2Constants.CAT_STATS)
@@ -339,6 +383,36 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     public String getHigh2key()
     {
         return high2key;
+    }
+
+    @Property(viewable = false, order = 155, category = DB2Constants.CAT_STATS)
+    public Integer getPctInlined()
+    {
+        return pctInlined;
+    }
+
+    @Property(viewable = false, order = 156, category = DB2Constants.CAT_STATS)
+    public Integer getPctEncoded()
+    {
+        return pctEncoded;
+    }
+
+    @Property(viewable = false, order = 157, category = DB2Constants.CAT_STATS)
+    public Integer getNbQuantiles()
+    {
+        return nbQuantiles;
+    }
+
+    @Property(viewable = false, order = 158, category = DB2Constants.CAT_STATS)
+    public Integer getNbMostFreq()
+    {
+        return nbMostFreq;
+    }
+
+    @Property(viewable = false, order = 159, category = DB2Constants.CAT_STATS)
+    public Long getNbNulls()
+    {
+        return nbNulls;
     }
 
     @Property(viewable = false, order = 180, category = DB2Constants.CAT_COLLATION)
