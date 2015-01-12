@@ -43,7 +43,7 @@
         <version>
             <number>3.1.2</number>
             <type>minor</type>
-            <date>11.01.2015</date>
+            <date>12.01.2015</date>
 
             <release-notes>
                 - Cassandra 2.1.x support
