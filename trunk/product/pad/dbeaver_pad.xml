@@ -37,10 +37,10 @@
     </Company_Info>
     <Program_Info>
         <Program_Name>DBeaver</Program_Name>
-        <Program_Version>3.1.1</Program_Version>
-        <Program_Release_Month>12</Program_Release_Month>
-        <Program_Release_Day>23</Program_Release_Day>
-        <Program_Release_Year>2014</Program_Release_Year>
+        <Program_Version>3.1.2</Program_Version>
+        <Program_Release_Month>01</Program_Release_Month>
+        <Program_Release_Day>12</Program_Release_Day>
+        <Program_Release_Year>2015</Program_Release_Year>
         <Program_Cost_Dollars>0</Program_Cost_Dollars>
         <Program_Type>Freeware</Program_Type>
         <Program_Release_Status>New Release</Program_Release_Status>
@@ -50,14 +50,12 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            - Full-text database search feature added
-            - SQL queries parser was fixed
-            - DBeaver perspective and initial windows layout were improved
-            - SQL hyperlinks and object navigation now supports fully-qualified names
-            - Data export (in isolated connection) has been fixed
-            - Primary keys/indexes read has been fixed (MSS SQL, DB2 z/OS, and SQLite)
-            - Resultset navigation has been fixed (now it keeps filter settings)
-            - Many other minor UI fixes
+            - Cassandra 2.1.x support
+            - Apache Derby driver updated
+            - ResultSet scrolling bug was fixed
+            - Data export wizard was fixed
+            - DB2 execution plan was fixed
+            - SQL editor execution log was fixed
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -80,8 +78,8 @@
             <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
         </Application_URLs>
         <Download_URLs>
-            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.1.1-x86-setup.exe</Primary_Download_URL>
-            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.1.1-x86_64-setup.exe
+            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.1.2-x86-setup.exe</Primary_Download_URL>
+            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.1.2-x86_64-setup.exe
             </Secondary_Download_URL>
             <Additional_Download_URL_1></Additional_Download_URL_1>
             <Additional_Download_URL_2></Additional_Download_URL_2>
