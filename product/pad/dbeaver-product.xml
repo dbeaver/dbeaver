@@ -46,7 +46,12 @@
             <date>11.01.2015</date>
 
             <release-notes>
-                -
+                - Cassandra 2.1.x support
+                - Apache Derby driver updated
+                - ResultSet scrolling bug was fixed
+                - Data export wizard was fixed
+                - DB2 execution plan was fixed
+                - SQL editor execution log was fixed
             </release-notes>
         </version>
 
