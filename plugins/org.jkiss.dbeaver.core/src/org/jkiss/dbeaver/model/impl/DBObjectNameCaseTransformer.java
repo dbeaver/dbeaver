@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -48,8 +49,12 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
             return value;
         }
         final SQLDialect dialect = ((SQLDataSource)dataSource).getSQLDialect();
-        if (!dialect.supportsQuotedMixedCase() && !dialect.supportsUnquotedMixedCase()) {
-            // Mixed case not supported - so leave it as is
+        if (DBUtils.isQuotedIdentifier(dataSource, value)) {
+            if (dialect.supportsQuotedMixedCase()) {
+                return value;
+            }
+        }
+        if (dialect.supportsUnquotedMixedCase()) {
             return value;
         }
         return dialect.storesUnquotedCase().transform(value);
