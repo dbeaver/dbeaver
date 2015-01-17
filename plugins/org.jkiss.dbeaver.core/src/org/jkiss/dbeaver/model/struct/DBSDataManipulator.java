@@ -40,7 +40,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
         void add(@NotNull Object[] attributeValues) throws DBCException;
 
         @NotNull
-        DBCStatistics execute() throws DBCException;
+        DBCStatistics execute(@NotNull DBCSession session) throws DBCException;
 
         void close();
     }
