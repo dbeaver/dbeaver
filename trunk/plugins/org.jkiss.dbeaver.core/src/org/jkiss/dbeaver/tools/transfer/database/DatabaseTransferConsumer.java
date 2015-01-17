@@ -134,7 +134,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             boolean retryInsert = false;
             do {
                 try {
-                    executeBatch.execute();
+                    executeBatch.execute(targetSession);
                 } catch (Throwable e) {
                     log.error("Error inserting row", e);
                     if (!ignoreErrors) {
