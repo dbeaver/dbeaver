@@ -366,7 +366,7 @@ class ResultSetPersister {
                                 DBDAttributeValue.getAttributes(statement.keyAttributes));
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
-                                deleteStats.accumulate(batch.execute());
+                                deleteStats.accumulate(batch.execute(session));
                             } finally {
                                 batch.close();
                             }
@@ -388,7 +388,7 @@ class ResultSetPersister {
                                 statement.needKeys() ? new KeyDataReceiver(statement) : null);
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
-                                insertStats.accumulate(batch.execute());
+                                insertStats.accumulate(batch.execute(session));
                             } finally {
                                 batch.close();
                             }
@@ -420,7 +420,7 @@ class ResultSetPersister {
                                 }
                                 // Execute
                                 batch.add(attributes);
-                                updateStats.accumulate(batch.execute());
+                                updateStats.accumulate(batch.execute(session));
                             } finally {
                                 batch.close();
                             }
