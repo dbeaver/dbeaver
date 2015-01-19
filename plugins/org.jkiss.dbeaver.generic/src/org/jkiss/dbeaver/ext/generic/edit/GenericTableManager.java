@@ -60,7 +60,11 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
     protected GenericTable createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, GenericStructContainer parent, Object copyFrom)
     {
         final GenericTable table = new GenericTable(parent);
-        table.setName(DBObjectNameCaseTransformer.transformName(parent, "NewTable"));
+        try {
+            setTableName(parent, table);
+        } catch (DBException e) {
+            log.error(e);
+        }
 
         return table;
     }

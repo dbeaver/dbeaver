@@ -57,9 +57,13 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     @Override
     protected OracleTable createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
-        return new OracleTable(
-            parent,
-            DBObjectNameCaseTransformer.transformName(parent, "NewTable")); //$NON-NLS-1$
+        OracleTable table = new OracleTable(parent, "");
+        try {
+            setTableName(parent, table);
+        } catch (DBException e) {
+            log.error(e);
+        }
+        return table; //$NON-NLS-1$
     }
 
     @Override
