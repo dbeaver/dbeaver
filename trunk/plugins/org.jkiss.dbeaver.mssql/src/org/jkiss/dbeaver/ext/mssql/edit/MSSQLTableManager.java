@@ -57,13 +57,13 @@ public class MSSQLTableManager extends JDBCTableManager<MSSQLTableBase, MSSQLCat
     protected MSSQLTable createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, MSSQLCatalog parent, Object copyFrom)
     {
         final MSSQLTable table = new MSSQLTable(parent);
-        table.setName(DBObjectNameCaseTransformer.transformName(parent, "NewTable")); //$NON-NLS-1$
         try {
+            setTableName(parent, table);
             final MSSQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
             additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
             additionalInfo.setCharset(parent.getDefaultCharset());
             additionalInfo.setCollation(parent.getDefaultCollation());
-        } catch (DBCException e) {
+        } catch (DBException e) {
             // Never be here
             log.error(e);
         }

@@ -57,13 +57,13 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
     protected MySQLTable createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
         final MySQLTable table = new MySQLTable(parent);
-        table.setName(DBObjectNameCaseTransformer.transformName(parent, "NewTable")); //$NON-NLS-1$
         try {
+            setTableName(parent, table);
             final MySQLTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
             additionalInfo.setEngine(parent.getDataSource().getDefaultEngine());
             additionalInfo.setCharset(parent.getDefaultCharset());
             additionalInfo.setCollation(parent.getDefaultCollation());
-        } catch (DBCException e) {
+        } catch (DBException e) {
             // Never be here
             log.error(e);
         }

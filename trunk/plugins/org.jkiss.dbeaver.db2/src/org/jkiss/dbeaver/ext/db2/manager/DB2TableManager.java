@@ -94,7 +94,13 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     public DB2Table createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Schema db2Schema,
         Object copyFrom)
     {
-        return new DB2Table(db2Schema, NEW_TABLE_NAME);
+        DB2Table table = new DB2Table(db2Schema, NEW_TABLE_NAME);
+        try {
+            setTableName(db2Schema, table);
+        } catch (DBException e) {
+            log.error(e);
+        }
+        return table;
     }
 
     @Override

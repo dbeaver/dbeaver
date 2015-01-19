@@ -18,11 +18,15 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,6 +40,9 @@ import java.util.List;
 public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSObjectContainer>
     extends JDBCStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
 {
+
+    private static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
+
     @Override
     public long getMakerOptions()
     {
@@ -109,5 +116,16 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
 
     }
 
+    protected void setTableName(CONTAINER_TYPE container, OBJECT_TYPE table) throws DBException {
+        table.setName(DBObjectNameCaseTransformer.transformName(container, BASE_TABLE_NAME));
+        for (int i = 0; ; i++) {
+            String tableName = i == 0 ? BASE_TABLE_NAME : (BASE_TABLE_NAME + "_" + i);
+            DBSObject child = container.getChild(VoidProgressMonitor.INSTANCE, tableName);
+            if (child == null) {
+                table.setName(DBObjectNameCaseTransformer.transformName(container, tableName));
+                break;
+            }
+        }
+    }
 }
 
