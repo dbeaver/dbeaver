@@ -35,6 +35,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * PropertySourceEditable
@@ -85,29 +87,9 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (prop.getValueTransformer() != null) {
             newValue = prop.getValueTransformer().transform(editableValue, newValue);
         }
-        DBSObjectCache cache = null;
-        if (prop.getId().equals(DBConstants.PROP_ID_NAME) && editableValue instanceof DBSObject) {
-            DBEObjectMaker objectManager = getObjectEditor(DBEObjectMaker.class);
-            if (objectManager != null) {
-                DBSObject object = (DBSObject) editableValue;
-                cache = objectManager.getObjectsCache(object);
-            }
-        }
         final Object oldValue = getPropertyValue(editableValue, prop);
-        if (cache != null) {
-            // If we perform rename then we should remove object from cache and then add it back
-            // To update name-based cache
-            cache.removeObject((DBSObject) editableValue);
-        }
-        try {
-            if (!updatePropertyValue(editableValue, prop, newValue, false)) {
-                return;
-            }
-        } finally {
-            if (cache != null) {
-                // Add it back
-                cache.cacheObject((DBSObject) editableValue);
-            }
+        if (!updatePropertyValue(editableValue, prop, newValue, false)) {
+            return;
         }
         if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
             final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor(DBEObjectEditor.class);
@@ -125,6 +107,20 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             lastCommand.setNewValue(newValue);
             getCommandContext().updateCommand(lastCommand, commandReflector);
         }
+
+        // If we perform rename then we should refresh object cache
+        // To update name-based cache
+        if (prop.getId().equals(DBConstants.PROP_ID_NAME) && editableValue instanceof DBSObject) {
+            DBEObjectMaker objectManager = getObjectEditor(DBEObjectMaker.class);
+            if (objectManager != null) {
+                DBSObjectCache cache = objectManager.getObjectsCache((DBSObject) editableValue);
+                if (cache.isCached()) {
+                    List<? extends DBSObject> cachedObjects = CommonUtils.copyList(cache.getCachedObjects());
+                    cache.setCache(cachedObjects);
+                }
+            }
+        }
+
 /*
         // Notify listeners
         for (IPropertySourceListener listener : listeners) {
