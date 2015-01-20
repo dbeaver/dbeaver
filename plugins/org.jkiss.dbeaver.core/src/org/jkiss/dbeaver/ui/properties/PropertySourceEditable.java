@@ -95,6 +95,8 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         }
         final Object oldValue = getPropertyValue(editableValue, prop);
         if (cache != null) {
+            // If we perform rename then we should remove object from cache and then add it back
+            // To update name-based cache
             cache.removeObject((DBSObject) editableValue);
         }
         try {
@@ -103,6 +105,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             }
         } finally {
             if (cache != null) {
+                // Add it back
                 cache.cacheObject((DBSObject) editableValue);
             }
         }
