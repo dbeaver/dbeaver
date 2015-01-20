@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Objects cache
@@ -50,6 +51,12 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
      * @param object object to cache
      */
     void cacheObject(OBJECT object);
+
+    /**
+     * Sets new cache contents. setCache(getCachedObjects()) will reset named cache
+     * @param objects new cache contents
+     */
+    void setCache(List<OBJECT> objects);
 
     /**
      * Removes specified object from cache
