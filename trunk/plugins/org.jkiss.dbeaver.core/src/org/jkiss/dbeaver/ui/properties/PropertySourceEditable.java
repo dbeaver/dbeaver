@@ -19,14 +19,17 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -53,12 +56,12 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     @Override
     public boolean isEditable(Object object)
     {
-        DBEObjectEditor objectEditor = getObjectEditor();
+        DBEObjectEditor objectEditor = getObjectEditor(DBEObjectEditor.class);
         return commandContext != null && objectEditor != null &&
             object instanceof DBPObject && objectEditor.canEditObject((DBPObject) object);
     }
 
-    private DBEObjectEditor getObjectEditor()
+    private <T> T getObjectEditor(Class<T> managerType)
     {
         final Object editableValue = getEditableValue();
         if (editableValue == null) {
@@ -66,7 +69,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         }
         return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(
             editableValue.getClass(),
-            DBEObjectEditor.class);
+            managerType);
     }
 
     @Override
@@ -76,17 +79,35 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void setPropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object newValue)
     {
         if (prop.getValueTransformer() != null) {
             newValue = prop.getValueTransformer().transform(editableValue, newValue);
         }
+        DBSObjectCache cache = null;
+        if (prop.getId().equals(DBConstants.PROP_ID_NAME) && editableValue instanceof DBSObject) {
+            DBEObjectMaker objectManager = getObjectEditor(DBEObjectMaker.class);
+            if (objectManager != null) {
+                DBSObject object = (DBSObject) editableValue;
+                cache = objectManager.getObjectsCache(object);
+            }
+        }
         final Object oldValue = getPropertyValue(editableValue, prop);
-        if (!updatePropertyValue(editableValue, prop, newValue, false)) {
-            return;
+        if (cache != null) {
+            cache.removeObject((DBSObject) editableValue);
+        }
+        try {
+            if (!updatePropertyValue(editableValue, prop, newValue, false)) {
+                return;
+            }
+        } finally {
+            if (cache != null) {
+                cache.cacheObject((DBSObject) editableValue);
+            }
         }
         if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
-            final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor();
+            final DBEObjectEditor<DBPObject> objectEditor = getObjectEditor(DBEObjectEditor.class);
             if (objectEditor == null) {
                 log.error("Can't obtain object editor for " + getEditableValue());
                 return;
