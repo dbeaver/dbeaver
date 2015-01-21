@@ -25,12 +25,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.progress.IProgressConstants;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
  * ConnectJob
@@ -88,9 +91,19 @@ public class ConnectJob extends EventProcessorJob
 
     public IStatus runSync(DBRProgressMonitor monitor)
     {
-        setThread(Thread.currentThread());
-        reflect = false;
-        return run(monitor);
+        AbstractJob curJob = CURRENT_JOB.get();
+        if (curJob != null) {
+            curJob.setAttachedJob(this);
+        }
+        try {
+            setThread(Thread.currentThread());
+            reflect = false;
+            return run(monitor);
+        } finally {
+            if (curJob != null) {
+                curJob.setAttachedJob(null);
+            }
+        }
     }
 
     @Override
