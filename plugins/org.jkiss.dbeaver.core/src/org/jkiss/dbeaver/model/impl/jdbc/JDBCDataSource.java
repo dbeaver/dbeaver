@@ -256,12 +256,14 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public synchronized void initialize(DBRProgressMonitor monitor)
+    public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!isEmbeddedDataSource() && container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {
-            this.metaContext = new JDBCExecutionContext(this, "Metadata reader", false);
-            this.metaContext.connect(monitor, true, null);
+            synchronized (this) {
+                this.metaContext = new JDBCExecutionContext(this, "Metadata reader", false);
+                this.metaContext.connect(monitor, true, null);
+            }
         }
         JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {
