@@ -447,7 +447,6 @@ public class GenericDataSource extends JDBCDataSource
                 dbResult = session.getMetaData().getSchemas();
             }
 
-
             try {
                 while (dbResult.next()) {
                     if (session.getProgressMonitor().isCanceled()) {
@@ -493,7 +492,7 @@ public class GenericDataSource extends JDBCDataSource
             } finally {
                 dbResult.close();
             }
-            if (catalog == null && tmpSchemas.size() == 1) {
+            if (catalog == null && tmpSchemas.size() == 1 && (schemaFilters == null || schemaFilters.isEmpty())) {
                 // Only one schema and no catalogs
                 // Most likely it is a fake one, let's skip it
                 // Anyway using "%" instead is ok
