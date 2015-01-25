@@ -135,13 +135,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         if (element instanceof DBNDataSource) {
             DataSourceDescriptor ds = ((DBNDatabaseNode) element).getDataSourceContainer();
             if (ds != null) {
-                Color color = ds.getConnectionInfo().getColor();
-                if (color.getBlue() == 255 && color.getRed() == 255 && color.getGreen() == 255) {
-                    // For white color return just null to avoid explicit color set.
-                    // It is important for dark themes
-                    return null;
-                }
-                return color;
+                return ds.getConnectionInfo().getColor();
             }
         }
         return null;
