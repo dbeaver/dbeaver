@@ -351,14 +351,14 @@ public abstract class LightGrid extends Canvas {
         sizingGC = new GC(this);
         fontMetrics = sizingGC.getFontMetrics();
         normalFont = getFont();
-         columnHeaderRenderer = new GridColumnRenderer(this);
+        columnHeaderRenderer = new GridColumnRenderer(this);
         rowHeaderRenderer = new GridRowRenderer(this);
         cellRenderer = new GridCellRenderer(this);
 
         final Display display = getDisplay();
         setLineColor(JFaceColors.getErrorBackground(display));
-        setForeground(JFaceColors.getBannerForeground(display));
-        setBackground(JFaceColors.getBannerBackground(display));
+        //setForeground(JFaceColors.getBannerForeground(display));
+        //setBackground(JFaceColors.getBannerBackground(display));
 /*
         ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
         setLineColor(colorRegistry.get(JFacePreferences.QUALIFIER_COLOR));
@@ -582,6 +582,9 @@ public abstract class LightGrid extends Canvas {
     @Override
     public Color getBackground()
     {
+        if (backgroundColor == null) {
+            backgroundColor = super.getBackground();
+        }
         return backgroundColor;
     }
 
@@ -589,9 +592,6 @@ public abstract class LightGrid extends Canvas {
     public void setBackground(Color color)
     {
         super.setBackground(backgroundColor = color);
-        if (backgroundColor == null) {
-            backgroundColor = super.getBackground();
-        }
     }
 
     ///////////////////////////////////
@@ -599,15 +599,16 @@ public abstract class LightGrid extends Canvas {
 
     @Override
     public Color getForeground() {
+        if (foregroundColor == null) {
+            foregroundColor = super.getForeground();
+        }
         return foregroundColor;
     }
 
     @Override
     public void setForeground(Color color) {
         super.setForeground(foregroundColor = color);
-        if (foregroundColor == null) {
-            foregroundColor = super.getForeground();
-        }
+        getContentProvider().resetColors();
     }
 
 

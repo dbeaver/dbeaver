@@ -195,9 +195,9 @@ public class ResultSetViewer extends Viewer
     private Color backgroundAdded;
     private Color backgroundDeleted;
     private Color backgroundModified;
+    private Color backgroundNormal;
     private Color backgroundOdd;
     private Color backgroundReadOnly;
-    private final Color foregroundNull;
     private final Font boldFont;
 
     private volatile ResultSetDataPumpJob dataPumpJob;
@@ -226,7 +226,6 @@ public class ResultSetViewer extends Viewer
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-        this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
@@ -236,6 +235,7 @@ public class ResultSetViewer extends Viewer
 
         {
             resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
+            resultsSash.setBackgroundMode(SWT.INHERIT_FORCE);
             resultsSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultsSash.setSashWidth(5);
             //resultsSash.setBackground(resultsSash.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -2633,6 +2633,13 @@ public class ResultSetViewer extends Viewer
 
     private class ContentProvider implements IGridContentProvider {
 
+        private Color foregroundDefault;
+        private Color foregroundNull;
+
+        private ContentProvider() {
+            this.foregroundNull = getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
+        }
+
         @NotNull
         @Override
         public Object[] getElements(boolean horizontal) {
@@ -2809,7 +2816,10 @@ public class ResultSetViewer extends Viewer
             if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
-                return null;
+                if (this.foregroundDefault == null) {
+                    this.foregroundDefault = filtersText.getForeground();
+                }
+                return this.foregroundDefault;
             }
         }
 
@@ -2836,7 +2846,17 @@ public class ResultSetViewer extends Viewer
             if (!recordMode && odd && showOddRows) {
                 return backgroundOdd;
             }
-            return null;
+
+            if (backgroundNormal == null) {
+                backgroundNormal = filtersText.getBackground();
+            }
+            return backgroundNormal;
+        }
+
+        @Override
+        public void resetColors() {
+            backgroundNormal = null;
+            foregroundDefault = null;
         }
     }
 

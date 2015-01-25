@@ -62,4 +62,7 @@ public interface IGridContentProvider extends IContentProvider {
     @Nullable
     Color getCellBackground(Object colElement, Object rowElement);
 
+    // Resets all cached colors
+    void resetColors();
+
 }
