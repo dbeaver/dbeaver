@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -355,9 +356,15 @@ public abstract class LightGrid extends Canvas {
         cellRenderer = new GridCellRenderer(this);
 
         final Display display = getDisplay();
-        setLineColor(display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-        setForeground(display.getSystemColor(SWT.COLOR_LIST_FOREGROUND));
-        setBackground(display.getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        setLineColor(JFaceColors.getErrorBackground(display));
+        setForeground(JFaceColors.getBannerForeground(display));
+        setBackground(JFaceColors.getBannerBackground(display));
+/*
+        ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+        setLineColor(colorRegistry.get(JFacePreferences.QUALIFIER_COLOR));
+        setForeground(colorRegistry.get(JFacePreferences.CONTENT_ASSIST_FOREGROUND_COLOR));
+        setBackground(colorRegistry.get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR));
+*/
         sortCursor = display.getSystemCursor(SWT.CURSOR_HAND);
 
         if ((style & SWT.MULTI) != 0) {
@@ -581,8 +588,10 @@ public abstract class LightGrid extends Canvas {
     @Override
     public void setBackground(Color color)
     {
-        backgroundColor = color;
-        redraw();
+        super.setBackground(backgroundColor = color);
+        if (backgroundColor == null) {
+            backgroundColor = super.getBackground();
+        }
     }
 
     ///////////////////////////////////
@@ -595,8 +604,10 @@ public abstract class LightGrid extends Canvas {
 
     @Override
     public void setForeground(Color color) {
-        foregroundColor = color;
-        super.setForeground(color);
+        super.setForeground(foregroundColor = color);
+        if (foregroundColor == null) {
+            foregroundColor = super.getForeground();
+        }
     }
 
 
@@ -1928,6 +1939,7 @@ public abstract class LightGrid extends Canvas {
     {
         final GC gc = e.gc;
         gc.setBackground(getBackground());
+
         this.drawBackground(gc, 0, 0, getSize().x, getSize().y);
 
         if (scrollValuesObsolete) {
@@ -4118,7 +4130,10 @@ public abstract class LightGrid extends Canvas {
             gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
         } else {
             if (isEnabled()) {
-                gc.setBackground(getBackground());
+                Color background = getBackground();
+                if (background != null) {
+                    gc.setBackground(background);
+                }
             } else {
                 gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             }
