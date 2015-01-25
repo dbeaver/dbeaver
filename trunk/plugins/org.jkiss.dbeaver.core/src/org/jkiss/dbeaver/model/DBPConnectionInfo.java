@@ -225,7 +225,13 @@ public class DBPConnectionInfo implements DBPObject
 
     public Color getColor()
     {
-        return connectionColor != null ? connectionColor : connectionType.getColor();
+        Color color = connectionColor != null ? connectionColor : connectionType.getColor();
+        if (color.getBlue() == 255 && color.getRed() == 255 && color.getGreen() == 255) {
+            // For white color return just null to avoid explicit color set.
+            // It is important for dark themes
+            return null;
+        }
+        return color;
     }
 
     public Color getConnectionColor()

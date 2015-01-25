@@ -218,13 +218,10 @@ public class CImageCombo extends Composite {
     {
         if (force || enabled != isEnabled()) {
             super.setEnabled(enabled);
-            if (!enabled) {
-                setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-            } else if (table != null) {
+            text.setEnabled(enabled);
+            if (enabled && table != null) {
                 if (getSelectionIndex() >= 0) {
                     select(getSelectionIndex());
-                } else {
-                    setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
                 }
             }
         }
