@@ -20,6 +20,9 @@
 /* ############################# DBeaver preferences ############################# */
 
  IEclipsePreferences#org-eclipse-pde-ui {
-	preferences:
-		'org.jkiss.dbeaver.sql.resultset.color.cell.odd.background=128,128,128'
+        preferences:
+            'org.jkiss.dbeaver.sql.resultset.color.cell.odd.background=128,128,128'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.modified.background=128,128,128'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.new.background=128,128,128'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background=128,128,128'
 }
