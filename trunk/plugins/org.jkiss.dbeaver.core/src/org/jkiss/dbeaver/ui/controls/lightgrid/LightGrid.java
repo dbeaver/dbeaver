@@ -1941,7 +1941,7 @@ public abstract class LightGrid extends Canvas {
         final GC gc = e.gc;
         gc.setBackground(getBackground());
 
-        this.drawBackground(gc, 0, 0, getSize().x, getSize().y);
+        //this.drawBackground(gc, 0, 0, getSize().x, getSize().y);
 
         if (scrollValuesObsolete) {
             updateScrollbars();
@@ -1971,10 +1971,7 @@ public abstract class LightGrid extends Canvas {
         int row = firstVisibleIndex;
         final int hScrollSelectionInPixels = getHScrollSelectionInPixels();
         final GridPos testPos = new GridPos(-1, -1);
-        final GridCell testCell = new GridCell(NULL_ELEMENT, NULL_ELEMENT);
         final Rectangle cellBounds = new Rectangle(0, 0, 0, 0);
-        //final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
-        boolean isGridInFocus = this.isFocusControl();
 
         for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
 
@@ -2023,7 +2020,7 @@ public abstract class LightGrid extends Canvas {
                 }
 
                 if (x < clientArea.width) {
-                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, getItemHeight(), false);
+                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, getItemHeight());
                 }
 
                 x = 0;
@@ -2058,11 +2055,11 @@ public abstract class LightGrid extends Canvas {
                 }
 
                 for (GridColumn column : columns) {
-                    drawEmptyCell(gc, x, y, column.getWidth(), getItemHeight(), false);
+                    drawEmptyCell(gc, x, y, column.getWidth(), getItemHeight());
                     x += column.getWidth();
                 }
                 if (x < clientArea.width) {
-                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, getItemHeight(), false);
+                    drawEmptyCell(gc, x, y, clientArea.width - x + 1, getItemHeight());
                 }
 
                 x = 0;
@@ -4124,22 +4121,16 @@ public abstract class LightGrid extends Canvas {
             y + height - 1);
     }
 
-    public void drawEmptyCell(GC gc, int x, int y, int width, int height, boolean selected) {
-
-        if (selected) {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
-        } else {
-            if (isEnabled()) {
-                Color background = getBackground();
-                if (background != null) {
-                    gc.setBackground(background);
-                }
-            } else {
-                gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+    public void drawEmptyCell(GC gc, int x, int y, int width, int height) {
+        if (isEnabled()) {
+            Color background = getBackground();
+            if (background != null) {
+                gc.setBackground(background);
             }
-            gc.setForeground(getForeground());
+        } else {
+            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         }
+        gc.setForeground(getForeground());
 
         gc.fillRectangle(x, y, width + 1, height);
 
