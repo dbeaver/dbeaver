@@ -120,9 +120,10 @@ import java.util.List;
  * TODO: ipatheditorinput issue
  */
 public class ResultSetViewer extends Viewer
-    implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable
+    implements IDataSourceProvider, ISpreadsheetController, ISaveablePart2, IAdaptable
 {
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
+    private final IPropertyChangeListener themeChangeListener;
 
     private ResultSetValueController panelValueController;
 
@@ -198,6 +199,8 @@ public class ResultSetViewer extends Viewer
     private Color backgroundNormal;
     private Color backgroundOdd;
     private Color backgroundReadOnly;
+    private Color foregroundDefault;
+    private Color foregroundNull;
     private final Font boldFont;
 
     private volatile ResultSetDataPumpJob dataPumpJob;
@@ -227,6 +230,7 @@ public class ResultSetViewer extends Viewer
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
+        this.foregroundNull = getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
@@ -286,7 +290,15 @@ public class ResultSetViewer extends Viewer
         createStatusBar(viewerPanel);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
-        this.themeManager.addPropertyChangeListener(this);
+        this.themeChangeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event) {
+                if (event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX)) {
+                    applyThemeSettings();
+                }
+            }
+        };
+        this.themeManager.addPropertyChangeListener(themeChangeListener);
         this.spreadsheet.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e)
@@ -936,7 +948,7 @@ public class ResultSetViewer extends Viewer
         closeEditors();
         clearData();
 
-        themeManager.removePropertyChangeListener(ResultSetViewer.this);
+        themeManager.removePropertyChangeListener(themeChangeListener);
 
         UIUtils.dispose(this.boldFont);
         if (toolBarManager != null) {
@@ -970,14 +982,6 @@ public class ResultSetViewer extends Viewer
         this.backgroundReadOnly = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
 
         this.spreadsheet.recalculateSizes();
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent event)
-    {
-        if (event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX)) {
-            applyThemeSettings();
-        }
     }
 
     void scrollToRow(RowPosition position)
@@ -2633,13 +2637,6 @@ public class ResultSetViewer extends Viewer
 
     private class ContentProvider implements IGridContentProvider {
 
-        private Color foregroundDefault;
-        private Color foregroundNull;
-
-        private ContentProvider() {
-            this.foregroundNull = getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
-        }
-
         @NotNull
         @Override
         public Object[] getElements(boolean horizontal) {
@@ -2816,10 +2813,10 @@ public class ResultSetViewer extends Viewer
             if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
-                if (this.foregroundDefault == null) {
-                    this.foregroundDefault = filtersText.getForeground();
+                if (foregroundDefault == null) {
+                    foregroundDefault = filtersText.getForeground();
                 }
-                return this.foregroundDefault;
+                return foregroundDefault;
             }
         }
 
@@ -2874,12 +2871,29 @@ public class ResultSetViewer extends Viewer
         @Nullable
         @Override
         public Color getForeground(Object element) {
+/*
+            if (foregroundDefault == null) {
+                foregroundDefault = filtersText.getForeground();
+            }
+            return foregroundDefault;
+*/
             return null;
         }
 
         @Nullable
         @Override
         public Color getBackground(Object element) {
+/*
+            RowData row = (RowData) (!recordMode ?  element : curRow);
+            boolean odd = row != null && row.getVisualNumber() % 2 == 0;
+            if (!recordMode && odd && showOddRows) {
+                return backgroundOdd;
+            }
+            if (backgroundNormal == null) {
+                backgroundNormal = filtersText.getBackground();
+            }
+            return backgroundNormal;
+*/
             return null;
         }
 
