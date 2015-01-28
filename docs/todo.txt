@@ -1,3 +1,6 @@
+SSH - support passphrase for private key + check auth problems (http://dbeaver.jkiss.org/forum/posting.php?mode=reply&f=2&t=1398)
+Permanent download links (ln -s after build)
+
 FEATURE: persistent filter history
 
 BUG: insert explicit values for auto-increment columns in data transfer (configurable)
