@@ -166,13 +166,56 @@
                 id="org.jkiss.dbeaver.erd.diagram.font">
             <description>The diagram font is used for diagram entity and attribute names.</description>
         </fontDefinition>
-        <!--colorDefinition
-                label="Diagram entity background"
+        <colorDefinition
+                label="Diagram background"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
-                id="org.jkiss.dbeaver.erd.diagram.entity.bg"
-                value="COLOR_LIST_SELECTION">
-            <description>Entity background</description>
-        </colorDefinition-->
+                id="org.jkiss.dbeaver.erd.diagram.background"
+                value="COLOR_LIST_BACKGROUND">
+            <description>Diagram background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Entity background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.entity.regular.background"
+                value="COLOR_INFO_BACKGROUND">
+            <description>Regular entity background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Primary entity background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.entity.primary.background"
+                value="255, 226, 255">
+            <description>Primary entity background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Association entity background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.entity.association.background"
+                value="COLOR_LIST_BACKGROUND">
+            <description>Association entity background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Entity name foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.entity.name.foreground"
+                value="COLOR_LIST_FOREGROUND">
+            <description>Entity name foreground</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Attributes background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.attributes.background"
+                value="COLOR_LIST_BACKGROUND">
+            <description>Attribute name background</description>
+        </colorDefinition>
+        <colorDefinition
+                label="Attributes foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.attributes.foreground"
+                value="COLOR_LIST_FOREGROUND">
+            <description>Attribute name foreground</description>
+        </colorDefinition>
+
     </extension>
 
 
