@@ -1116,8 +1116,8 @@ public class ResultSetViewer extends Viewer
         }
         if (error) {
             statusLabel.setForeground(colorRed);
-        } else {
-            statusLabel.setForeground(null);
+        } else if (colorRed.equals(statusLabel.getForeground())) {
+            statusLabel.setForeground(filtersText.getForeground());
         }
         if (status == null) {
             status = "???"; //$NON-NLS-1$
