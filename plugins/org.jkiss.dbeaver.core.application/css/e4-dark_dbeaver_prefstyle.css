@@ -19,7 +19,7 @@
 
 /* ############################# DBeaver preferences ############################# */
 
- IEclipsePreferences#org-eclipse-pde-ui {
+ IEclipsePreferences#org-eclipse-ui-workbench {
         preferences:
             'org.jkiss.dbeaver.sql.resultset.color.cell.odd.background=128,128,128'
             'org.jkiss.dbeaver.sql.resultset.color.cell.modified.background=128,128,128'

@@ -2008,13 +2008,6 @@
 
     </extension>
 
-    <extension point="org.eclipse.e4.ui.css.swt.theme">
-        <stylesheet uri="css/e4-dark_dbeaver_prefstyle.css">
-            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark">
-            </themeid>
-        </stylesheet>
-    </extension>
-
     <extension point="org.eclipse.ui.exportWizards">
         <category id="org.jkiss.dbeaver.core.export.resources" name="DBeaver"/>
         <wizard
