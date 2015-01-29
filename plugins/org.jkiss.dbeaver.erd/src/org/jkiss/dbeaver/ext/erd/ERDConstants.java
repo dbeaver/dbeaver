@@ -43,6 +43,13 @@ public class ERDConstants {
     public static final String PREF_GRID_WIDTH = "erd.grid.width";
     public static final String PREF_GRID_HEIGHT = "erd.grid.height";
     public static final String PREF_ATTR_VISIBILITY = "erd.attr.visibility";
+    public static final String COLOR_ERD_DIAGRAM_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.background";
+    public static final String COLOR_ERD_ENTITY_PRIMARY_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.primary.background";
+    public static final String COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.association.background";
+    public static final String COLOR_ERD_ENTITY_REGULAR_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.regular.background";
+    public static final String COLOR_ERD_ENTITY_NAME_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.entity.name.foreground";
+    public static final String COLOR_ERD_ATTR_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.background";
+    public static final String COLOR_ERD_ATTR_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.foreground";
 
     public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false);
 }
