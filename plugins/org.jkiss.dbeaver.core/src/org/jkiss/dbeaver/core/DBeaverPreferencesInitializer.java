@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.core.runtime.preferences.DefaultScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverConstants;
@@ -51,6 +53,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
   @Override
   public void initializeDefaultPreferences() {
+      IEclipsePreferences node = DefaultScope.INSTANCE.getNode(DBeaverConstants.PLUGIN_ID);
+
       boolean isMac = Platform.getOS().toLowerCase().contains("macos");
 
       // Init default preferences
