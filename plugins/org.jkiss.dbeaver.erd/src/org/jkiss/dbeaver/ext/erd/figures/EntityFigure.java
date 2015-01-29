@@ -22,8 +22,10 @@
 package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -35,17 +37,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
  */
 public class EntityFigure extends Figure {
 
-    public static Color primaryTableColor = new Color(null, 255, 226, 255);
-    public static Color associationTableColor = new Color(null, 255, 255, 255);
-    public static Color commonTableColor = new Color(null, 0xff, 0xff, 0xe1);
-    public static Color tableNameColor = new Color(null, 0, 0, 0);
-
+    private final ERDEntity entity;
     private AttributeListFigure keyFigure;
     private AttributeListFigure attributeFigure;
     private EditableLabel nameLabel;
 
     public EntityFigure(ERDEntity entity)
     {
+        this.entity = entity;
+
         Image tableImage = entity.getObject().getEntityType().getIcon();
 
         keyFigure = new AttributeListFigure(entity, true);
@@ -61,14 +61,6 @@ public class EntityFigure extends Figure {
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
         setBorder(new LineBorder(ColorConstants.black, 1));
-        if (entity.isPrimary()) {
-            setBackgroundColor(primaryTableColor);
-        } else if (entity.getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
-            setBackgroundColor(associationTableColor);
-        } else {
-            setBackgroundColor(commonTableColor);
-        }
-        setForegroundColor(tableNameColor);
         setOpaque(true);
 
         add(nameLabel);
@@ -78,6 +70,20 @@ public class EntityFigure extends Figure {
         Label toolTip = new Label(DBUtils.getObjectFullName(entity.getObject()));
         toolTip.setIcon(tableImage);
         setToolTip(toolTip);
+        setColors();
+    }
+
+    private void setColors() {
+        ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+
+        if (entity.isPrimary()) {
+            setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_PRIMARY_BACKGROUND));
+        } else if (entity.getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
+            setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND));
+        } else {
+            setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
+        }
+        setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND));
     }
 
     public void setSelected(boolean isSelected)
