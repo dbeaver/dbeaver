@@ -2871,26 +2871,30 @@ public class ResultSetViewer extends Viewer
         @Nullable
         @Override
         public Color getForeground(Object element) {
-/*
-            if (foregroundDefault == null) {
-                foregroundDefault = filtersText.getForeground();
+            if (element == null) {
+                if (foregroundDefault == null) {
+                    foregroundDefault = filtersText.getForeground();
+                }
+                return foregroundDefault;
             }
-            return foregroundDefault;
-*/
             return null;
         }
 
         @Nullable
         @Override
         public Color getBackground(Object element) {
+            if (backgroundNormal == null) {
+                backgroundNormal = filtersText.getBackground();
+            }
+            if (element == null) {
+                return backgroundNormal;
+            }
+
 /*
             RowData row = (RowData) (!recordMode ?  element : curRow);
             boolean odd = row != null && row.getVisualNumber() % 2 == 0;
             if (!recordMode && odd && showOddRows) {
                 return backgroundOdd;
-            }
-            if (backgroundNormal == null) {
-                backgroundNormal = filtersText.getBackground();
             }
             return backgroundNormal;
 */
