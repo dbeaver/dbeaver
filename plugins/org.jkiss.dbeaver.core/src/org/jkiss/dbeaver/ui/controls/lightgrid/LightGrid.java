@@ -4122,15 +4122,18 @@ public abstract class LightGrid extends Canvas {
     }
 
     public void drawEmptyCell(GC gc, int x, int y, int width, int height) {
+        IGridLabelProvider labelProvider = getLabelProvider();
+        Color foreground = labelProvider.getForeground(null);
+        Color background = labelProvider.getBackground(null);
         if (isEnabled()) {
-            Color background = getBackground();
+            //Color background = getBackground();
             if (background != null) {
                 gc.setBackground(background);
             }
         } else {
             gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         }
-        gc.setForeground(getForeground());
+        gc.setForeground(foreground);
 
         gc.fillRectangle(x, y, width + 1, height);
 
