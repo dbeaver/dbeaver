@@ -25,4 +25,13 @@
             'org.jkiss.dbeaver.sql.resultset.color.cell.modified.background=180,128,128'
             'org.jkiss.dbeaver.sql.resultset.color.cell.new.background=128,180,128'
             'org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background=128,128,180'
+            'org.jkiss.dbeaver.sql.editor.color.text.foreground=221,221,221'
+            'org.jkiss.dbeaver.sql.editor.color.text.background=65,70,74'
+            'org.jkiss.dbeaver.sql.editor.color.disabled.background=0,0,0'
+            'org.jkiss.dbeaver.sql.editor.color.keyword.foreground=255,128,64'
+            'org.jkiss.dbeaver.sql.editor.color.datatype.foreground=255,255,128'
+            'org.jkiss.dbeaver.sql.editor.color.string.foreground=COLOR_DARK_GREEN'
+            'org.jkiss.dbeaver.sql.editor.color.number.foreground=0,128,128'
+            'org.jkiss.dbeaver.sql.editor.color.comment.foreground=COLOR_DARK_GRAY'
+            'org.jkiss.dbeaver.sql.editor.color.delimiter.foreground=COLOR_RED'
 }
