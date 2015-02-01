@@ -942,11 +942,11 @@ public final class DBUtils {
         long offset,
         long maxRows) throws DBCException
     {
-        final boolean dataModifyQuery = !SQLSemanticProcessor.isSelectQuery(query);
-        final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
+        final boolean selectQuery = SQLSemanticProcessor.isSelectQuery(query);
+        final boolean hasLimits = selectQuery && offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
-        if (!dataModifyQuery) {
+        if (selectQuery) {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
                 if (hasLimits) {
@@ -968,7 +968,7 @@ public final class DBUtils {
             createStatement(session, query) :
             prepareStatement(session, query);
 
-        if (hasLimits) {
+        if (hasLimits || offset > 0) {
             if (limitTransformer == null) {
                 dbStat.setLimit(offset, maxRows);
             } else {
