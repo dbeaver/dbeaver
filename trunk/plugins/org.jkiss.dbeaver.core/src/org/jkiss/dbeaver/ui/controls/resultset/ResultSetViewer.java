@@ -415,6 +415,7 @@ public class ResultSetViewer extends Viewer
         // Handle all shortcuts by filters editor, not by host editor
         this.filtersText.addFocusListener(new FocusListener() {
             private boolean activated = false;
+            @SuppressWarnings("deprecation")
             @Override
             public void focusGained(FocusEvent e)
             {
@@ -423,6 +424,7 @@ public class ResultSetViewer extends Viewer
                     activated = true;
                 }
             }
+            @SuppressWarnings("deprecation")
             @Override
             public void focusLost(FocusEvent e)
             {
