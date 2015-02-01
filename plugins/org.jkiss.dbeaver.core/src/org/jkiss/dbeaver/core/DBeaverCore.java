@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
@@ -38,7 +37,6 @@ import org.jkiss.dbeaver.registry.transfer.DataTransferRegistry;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
-import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
@@ -305,7 +303,7 @@ public class DBeaverCore implements DBPApplication {
             this.editorsAdapter = null;
         }
 
-        if (isStandalone()) {
+        if (isStandalone() && workspace != null) {
             try {
                 workspace.save(true, monitor);
             } catch (CoreException ex) {
