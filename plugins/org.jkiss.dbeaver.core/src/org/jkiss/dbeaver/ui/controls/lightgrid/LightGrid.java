@@ -4088,9 +4088,16 @@ public abstract class LightGrid extends Canvas {
         return new Rectangle(origin.x, origin.y, column.getWidth(), getItemHeight());
     }
 
+    void setDefaultBackground(GC gc) {
+        Color background = getLabelProvider().getBackground(null);
+        if (background != null) {
+            gc.setBackground(background);
+        }
+    }
+
     private void drawEmptyColumnHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        setDefaultBackground(gc);
 
         gc.fillRectangle(
             x, 
@@ -4101,7 +4108,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyRowHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        setDefaultBackground(gc);
 
         gc.fillRectangle(x, y, width, height + 1);
 
@@ -4124,15 +4131,7 @@ public abstract class LightGrid extends Canvas {
     public void drawEmptyCell(GC gc, int x, int y, int width, int height) {
         IGridLabelProvider labelProvider = getLabelProvider();
         Color foreground = labelProvider.getForeground(null);
-        Color background = labelProvider.getBackground(null);
-        if (isEnabled()) {
-            //Color background = getBackground();
-            if (background != null) {
-                gc.setBackground(background);
-            }
-        } else {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-        }
+        setDefaultBackground(gc);
         gc.setForeground(foreground);
 
         gc.fillRectangle(x, y, width + 1, height);

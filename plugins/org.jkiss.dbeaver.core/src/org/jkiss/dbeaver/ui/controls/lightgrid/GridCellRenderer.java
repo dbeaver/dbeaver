@@ -43,7 +43,6 @@ class GridCellRenderer extends AbstractRenderer
 
     protected Color colorSelected;
     protected Color colorSelectedText;
-    protected Color colorBackgroundDisabled;
     protected Color colorLineForeground;
     protected Color colorLineFocused;
 
@@ -57,7 +56,6 @@ class GridCellRenderer extends AbstractRenderer
         colorSelected = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
         colorSelectedRGB = colorSelected.getRGB();
         colorLineForeground = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-        colorBackgroundDisabled = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
     }
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean focus, Object col, Object row)
@@ -87,7 +85,7 @@ class GridCellRenderer extends AbstractRenderer
                     drawBackground = false;
                 }
             } else {
-                gc.setBackground(colorBackgroundDisabled);
+                grid.setDefaultBackground(gc);
             }
             gc.setForeground(grid.getCellForeground(col, row));
         }
