@@ -1354,11 +1354,11 @@ public class SQLEditor extends SQLEditorBase
                     tabItem.setToolTipText(result.getStatement().getQuery());
                     if (!CommonUtils.isEmpty(result.getResultSetName())) {
                         tabItem.setText(result.getResultSetName());
-                    } else {
+                    }/* else {
                         int queryIndex = queryProcessors.indexOf(queryProcessor);
                         tabItem.setText(
                                 CoreMessages.editors_sql_data_grid + (queryIndex == 0 ? "" : " " + (queryIndex + 1)));
-                    }
+                    }*/
                 }
             }
 
