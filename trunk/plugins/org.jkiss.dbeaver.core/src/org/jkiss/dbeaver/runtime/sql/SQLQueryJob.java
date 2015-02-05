@@ -80,6 +80,7 @@ public class SQLQueryJob extends DataSourceJob
 
     private DBCStatistics statistics;
     private int fetchResultSetNumber;
+    private int resultSetNumber;
 
     public SQLQueryJob(
         IWorkbenchPartSite partSite,
@@ -139,7 +140,7 @@ public class SQLQueryJob extends DataSourceJob
                 DBCTransactionManager txnManager = session.getTransactionManager();
                 boolean oldAutoCommit = txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
-                if (!oldAutoCommit && newAutoCommit != oldAutoCommit) {
+                if (!oldAutoCommit && newAutoCommit) {
                     txnManager.setAutoCommit(newAutoCommit);
                 }
 
@@ -150,10 +151,12 @@ public class SQLQueryJob extends DataSourceJob
                     listener.onStartScript();
                 }
 
+                resultSetNumber = 0;
                 for (int queryNum = 0; queryNum < queries.size(); ) {
                     // Execute query
                     SQLQuery query = queries.get(queryNum);
 
+                    fetchResultSetNumber = resultSetNumber;
                     boolean runNext = executeSingleQuery(session, query, true);
                     if (!runNext) {
                         // Ask to continue
@@ -202,15 +205,8 @@ public class SQLQueryJob extends DataSourceJob
                     monitor.worked(1);
                     queryNum++;
                 }
+                showExecutionResult(session);
                 monitor.done();
-
-                {
-                    // Fetch script execution results
-                    DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(null, 0);
-                    if (dataReceiver != null) {
-                        fetchExecutionResult(session, dataReceiver);
-                    }
-                }
 
                 // Commit data
                 if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
@@ -293,23 +289,7 @@ public class SQLQueryJob extends DataSourceJob
                 connectionInvalidated = true;
             }
 
-            boolean hasParameters = false;
-            // Bind parameters
-            if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-                List<SQLQueryParameter> unresolvedParams = new ArrayList<SQLQueryParameter>();
-                for (SQLQueryParameter param : sqlStatement.getParameters()) {
-                    if (!param.isResolved()) {
-                        unresolvedParams.add(param);
-                    }
-                }
-                if (!CommonUtils.isEmpty(unresolvedParams)) {
-                    // Resolve parameters
-                    hasParameters = bindStatementParameters(unresolvedParams);
-                } else {
-                    // Set values for all parameters
-                    hasParameters = true;
-                }
-            }
+            boolean hasParameters = prepareStatementParameters(sqlStatement);
 
             curStatement = DBUtils.prepareStatement(
                 session,
@@ -320,89 +300,52 @@ public class SQLQueryJob extends DataSourceJob
             curStatement.setStatementSource(sqlStatement);
 
             if (hasParameters) {
-                // Bind them
-                for (SQLQueryParameter param : sqlStatement.getParameters()) {
-                    if (param.isResolved()) {
-                        param.getValueHandler().bindValueObject(
-                            session,
-                            curStatement,
-                            param,
-                            param.getOrdinalPosition(),
-                            param.getValue());
-                    }
-                }
+                bindStatementParameters(session, sqlStatement);
             }
-/*
-            // Bind parameters
-            if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-                List<SQLQueryParameter> unresolvedParams = new ArrayList<SQLQueryParameter>();
-                for (SQLQueryParameter param : sqlStatement.getParameters()) {
-                    if (!param.isResolved()) {
-                        unresolvedParams.add(param);
-                    }
-                }
 
-                if (!CommonUtils.isEmpty(unresolvedParams)) {
-                    if (bindStatementParameters(unresolvedParams)) {
-                        // Bind them
-                        for (SQLQueryParameter param : sqlStatement.getParameters()) {
-                            if (param.isResolved()) {
-                                param.getValueHandler().bindValueObject(
-                                    session,
-                                    curStatement,
-                                    param,
-                                    param.getIndex(),
-                                    param.getCellValue());
-                            }
-                        }
-                    }
-                }
-            }
-*/
             // Execute statement
             try {
                 boolean hasResultSet = curStatement.executeStatement();
                 curResult.setHasResultSet(hasResultSet);
                 statistics.addExecuteTime(System.currentTimeMillis() - startTime);
-                statistics.addStatementsCount();
 
-                int resultSetNumber = 0;
-                while (hasResultSet || resultSetNumber == 0) {
+                long updateCount = -1;
+                while (hasResultSet || resultSetNumber == 0 || updateCount >= 0) {
                     // Fetch data only if we have to fetch all results or if it is rs requested
                     if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
-                        DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlStatement, resultSetNumber);
-                        // Show results only if we are not in the script execution
-                        // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
-                        // return messy results here
-                        if (hasResultSet && fetchResultSets && dataReceiver != null) {
-                            hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
-                        }
-                        long updateCount = -1;
-                        if (!hasResultSet) {
-                            try {
-                                updateCount = curStatement.getUpdateRowCount();
-                                if (updateCount >= 0) {
-                                    curResult.setUpdateCount(updateCount);
-                                    statistics.addRowsUpdated(updateCount);
-                                }
-                            } catch (DBCException e) {
-                                // In some cases we can't read update count
-                                // This is bad but we can live with it
-                                // Just print a warning
-                                log.warn("Can't obtain update count", e);
+                        if (hasResultSet && fetchResultSets) {
+                            DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlStatement, resultSetNumber);
+                            if (dataReceiver != null) {
+                                hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
                             }
-                            if (fetchResultSets && dataReceiver != null) {
-                                fetchExecutionResult(session, dataReceiver);
-                            }
-                        }
-                        if (!hasResultSet && updateCount < 0) {
-                            // Something is wrong
-                            // Possibly driver is broken and we are in infinite loop
-                            break;
                         }
                     }
+                    if (!hasResultSet) {
+                        try {
+                            updateCount = curStatement.getUpdateRowCount();
+                            if (updateCount >= 0) {
+                                curResult.setUpdateCount(updateCount);
+                                statistics.addRowsUpdated(updateCount);
+                            }
+                        } catch (DBCException e) {
+                            // In some cases we can't read update count
+                            // This is bad but we can live with it
+                            // Just print a warning
+                            log.warn("Can't obtain update count", e);
+                        }
+                    }
+                    if (hasResultSet && fetchResultSets) {
+                        resultSetNumber++;
+                    }
+                    if (!hasResultSet && updateCount < 0) {
+                        // Nothing else to fetch
+                        break;
+                    }
+
+                    statistics.addStatementsCount();
                     hasResultSet = curStatement.nextResults();
-                    resultSetNumber++;
+                    // We have results - reset update count to avoid infinite loop
+                    updateCount = hasResultSet ? -1 : 0;
                 }
             }
             finally {
@@ -442,10 +385,22 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
-    private void fetchExecutionResult(DBCSession session, DBDDataReceiver dataReceiver) throws DBCException
+    private void showExecutionResult(DBCSession session) throws DBCException {
+        if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
+            SQLQuery query = new SQLQuery(this, "", -1, -1);
+            query.setData("Statistics");
+            DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);
+            if (fetchResultSets && dataReceiver != null) {
+                fetchExecutionResult(session, dataReceiver, query);
+            }
+        }
+    }
+
+    private void fetchExecutionResult(DBCSession session, DBDDataReceiver dataReceiver, SQLQuery query) throws DBCException
     {
         // Fetch fake result set
         LocalResultSet fakeResultSet = new LocalResultSet(session, curStatement);
+        SQLQueryResult resultInfo = new SQLQueryResult(query);
         if (statistics.getStatementsCount() > 1) {
             // Multiple statements - show script statistics
             fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
@@ -459,6 +414,7 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.getExecuteTime(),
                 statistics.getFetchTime(),
                 statistics.getTotalTime());
+            resultInfo.setResultSetName("Statistics");
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
@@ -468,11 +424,31 @@ public class SQLQueryJob extends DataSourceJob
             } else {
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
+            resultInfo.setResultSetName("Result");
         }
-        fetchQueryData(session, fakeResultSet, null, dataReceiver, false);
+        fetchQueryData(session, fakeResultSet, resultInfo, dataReceiver, false);
     }
 
-    private boolean bindStatementParameters(final List<SQLQueryParameter> parameters)
+    private boolean prepareStatementParameters(SQLQuery sqlStatement) {
+        // Bind parameters
+        if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
+            List<SQLQueryParameter> unresolvedParams = new ArrayList<SQLQueryParameter>();
+            for (SQLQueryParameter param : sqlStatement.getParameters()) {
+                if (!param.isResolved()) {
+                    unresolvedParams.add(param);
+                }
+            }
+            if (!CommonUtils.isEmpty(unresolvedParams)) {
+                // Resolve parameters
+                return prepareStatementParameters(unresolvedParams);
+            }
+            // Set values for all parameters
+            return true;
+        }
+        return false;
+    }
+
+    private boolean prepareStatementParameters(final List<SQLQueryParameter> parameters)
     {
         final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
             @Override
@@ -487,6 +463,20 @@ public class SQLQueryJob extends DataSourceJob
         };
         UIUtils.runInUI(partSite.getShell(), binder);
         return binder.getResult();
+    }
+
+    private void bindStatementParameters(DBCSession session, SQLQuery sqlStatement) throws DBCException {
+        // Bind them
+        for (SQLQueryParameter param : sqlStatement.getParameters()) {
+            if (param.isResolved()) {
+                param.getValueHandler().bindValueObject(
+                    session,
+                    curStatement,
+                    param,
+                    param.getOrdinalPosition(),
+                    param.getValue());
+            }
+        }
     }
 
     private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, DBDDataReceiver dataReceiver, boolean updateStatistics)
@@ -628,6 +618,7 @@ public class SQLQueryJob extends DataSourceJob
         if (queries.size() != 1) {
             throw new DBCException("Invalid state of SQL Query job");
         }
+        resultSetNumber = 0;
         SQLQuery query = queries.get(0);
         session.getProgressMonitor().beginTask(query.getQuery(), 1);
         try {
@@ -638,6 +629,8 @@ public class SQLQueryJob extends DataSourceJob
                 } else {
                     throw new DBCException(lastError, getDataSource());
                 }
+            } else {
+                showExecutionResult(session);
             }
         } finally {
             session.getProgressMonitor().done();

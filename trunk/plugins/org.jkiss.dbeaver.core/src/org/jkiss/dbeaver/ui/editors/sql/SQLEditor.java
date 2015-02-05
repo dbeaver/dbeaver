@@ -951,8 +951,10 @@ public class SQLEditor extends SQLEditorBase
             createResultsProvider(0);
         }
 
-        private void createResultsProvider(int resultSetNumber) {
-            resultProviders.add(new QueryResultsProvider(this, resultSetNumber));
+        private QueryResultsProvider createResultsProvider(int resultSetNumber) {
+            QueryResultsProvider resultsProvider = new QueryResultsProvider(this, resultSetNumber);
+            resultProviders.add(resultsProvider);
+            return resultsProvider;
         }
         @NotNull
         QueryResultsProvider getFirstResults()
@@ -1074,7 +1076,7 @@ public class SQLEditor extends SQLEditorBase
 
         @Nullable
         @Override
-        public DBDDataReceiver getDataReceiver(SQLQuery statement, final int resultSetNumber) {
+        public DBDDataReceiver getDataReceiver(final SQLQuery statement, final int resultSetNumber) {
             if (curDataReceiver != null) {
                 return curDataReceiver;
             }
@@ -1083,7 +1085,13 @@ public class SQLEditor extends SQLEditorBase
                 getSite().getShell().getDisplay().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        createResultsProvider(resultSetNumber);
+                        QueryResultsProvider resultsProvider = createResultsProvider(resultSetNumber);
+                        if (statement != null) {
+                            resultsProvider.tabItem.setToolTipText(statement.getQuery());
+                            if (statement.getData() instanceof String) {
+                                resultsProvider.tabItem.setText(statement.getData().toString());
+                            }
+                        }
                     }
                 });
             }
@@ -1297,14 +1305,12 @@ public class SQLEditor extends SQLEditorBase
             if (result.hasError()) {
                 showStatementInEditor(result.getStatement(), true);
             }
-            if (!scriptMode) {
-                DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        processQueryResult(result);
-                    }
-                });
-            }
+            DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    processQueryResult(result);
+                }
+            });
         }
 
         private void processQueryResult(SQLQueryResult result) {
