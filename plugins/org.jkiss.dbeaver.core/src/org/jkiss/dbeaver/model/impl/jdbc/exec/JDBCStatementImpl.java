@@ -301,15 +301,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     protected boolean handleExecuteResult(boolean result)
     {
-        if (!result) {
-            try {
-                updateCount = getOriginal().getUpdateCount();
-            } catch (SQLException e) {
-                log.warn("Could not obtain update count", e); //$NON-NLS-1$
-            }
-        } else {
-            updateCount = 0;
-        }
         return result;
     }
 
@@ -340,7 +331,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     protected void beforeExecute()
     {
-        this.updateCount = 0;
+        this.updateCount = -1;
         this.executeError = null;
         if (isQMLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleStatementExecuteBegin(this);
@@ -636,10 +627,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     @Override
     public int getUpdateCount() throws SQLException
     {
-        if (updateCount >= 0) {
-            return updateCount;
-        }
-        return getOriginal().getUpdateCount();
+        return (updateCount = getOriginal().getUpdateCount());
     }
 
     @Override
