@@ -125,8 +125,7 @@ public class SSHTunnelImpl implements DBWTunnel {
 
             session = jsch.getSession(sshUser, sshHost, sshPortNum);
             session.setConfig("StrictHostKeyChecking", "no");
-            session.setConfig("PreferredAuthentications",
-                    privKeyFile != null ? "publickey" : "password");
+            session.setConfig("PreferredAuthentications", "password,publickey,keyboard-interactive");
             session.setConfig("ConnectTimeout", String.valueOf(CONNECT_TIMEOUT));
             session.setUserInfo(ui);
             session.connect(CONNECT_TIMEOUT);
