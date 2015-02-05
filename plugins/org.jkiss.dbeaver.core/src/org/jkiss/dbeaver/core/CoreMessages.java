@@ -1125,6 +1125,7 @@ public class CoreMessages extends NLS {
 	public static String model_ssh_configurator_label_host_ip;
 
 	public static String model_ssh_configurator_label_password;
+	public static String model_ssh_configurator_label_passphrase;
 
 	public static String model_ssh_configurator_label_port;
 

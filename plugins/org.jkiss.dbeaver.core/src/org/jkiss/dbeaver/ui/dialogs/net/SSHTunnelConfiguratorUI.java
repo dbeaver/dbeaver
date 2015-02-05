@@ -182,14 +182,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         ((GridData)privateKeyLabel.getLayoutData()).exclude = isPassword;
         privateKeyLabel.setVisible(!isPassword);
 
-        pwdControlGroup.setVisible(isPassword);
-        ((GridData)pwdControlGroup.getLayoutData()).exclude = !isPassword;
-        pwdLabel.setVisible(isPassword);
-        ((GridData)pwdLabel.getLayoutData()).exclude = !isPassword;
-
-        if (!isPassword) {
-            savePasswordCheckbox.setSelection(true);
-        }
+//        pwdControlGroup.setVisible(isPassword);
+//        ((GridData)pwdControlGroup.getLayoutData()).exclude = !isPassword;
+//        pwdLabel.setVisible(isPassword);
+//        ((GridData)pwdLabel.getLayoutData()).exclude = !isPassword;
+//
+//        if (!isPassword) {
+//            savePasswordCheckbox.setSelection(true);
+//        }
+        pwdLabel.setText(isPassword ? CoreMessages.model_ssh_configurator_label_password : CoreMessages.model_ssh_configurator_label_passphrase);
     }
 
     @Override

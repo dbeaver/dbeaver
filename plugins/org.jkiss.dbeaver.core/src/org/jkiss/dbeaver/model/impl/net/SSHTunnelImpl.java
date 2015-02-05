@@ -116,7 +116,11 @@ public class SSHTunnelImpl implements DBWTunnel {
                 jsch = new JSch();
             }
             if (privKeyFile != null) {
-                jsch.addIdentity(privKeyFile.getAbsolutePath());
+                if (!CommonUtils.isEmpty(ui.getPassphrase())) {
+                    jsch.addIdentity(privKeyFile.getAbsolutePath(), ui.getPassphrase());
+                } else {
+                    jsch.addIdentity(privKeyFile.getAbsolutePath());
+                }
             }
 
             session = jsch.getSession(sshUser, sshHost, sshPortNum);
