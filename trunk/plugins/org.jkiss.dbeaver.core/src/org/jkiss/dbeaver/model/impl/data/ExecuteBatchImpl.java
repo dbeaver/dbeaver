@@ -48,7 +48,13 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     protected final DBDDataReceiver keysReceiver;
     protected final boolean reuseStatement;
 
-    public ExecuteBatchImpl(@NotNull DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, boolean reuseStatement)
+    /**
+     * Constructs new batch
+     * @param attributes array of attributes used in batch
+     * @param keysReceiver keys receiver (or null)
+     * @param reuseStatement true if engine should reuse single prepared statement for each execution.
+     */
+    protected ExecuteBatchImpl(@NotNull DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, boolean reuseStatement)
     {
         this.attributes = attributes;
         this.keysReceiver = keysReceiver;
