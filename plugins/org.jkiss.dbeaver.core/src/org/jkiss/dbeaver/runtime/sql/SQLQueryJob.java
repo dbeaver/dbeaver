@@ -355,13 +355,7 @@ public class SQLQueryJob extends DataSourceJob
                 }
 
                 // Release parameters
-                if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-                    for (SQLQueryParameter param : sqlStatement.getParameters()) {
-                        if (param.isResolved()) {
-                            param.getValueHandler().releaseValueObject(param.getValue());
-                        }
-                    }
-                }
+                releaseStatementParameters(sqlStatement);
             }
         }
         catch (Throwable ex) {
@@ -475,6 +469,16 @@ public class SQLQueryJob extends DataSourceJob
                     param,
                     param.getOrdinalPosition(),
                     param.getValue());
+            }
+        }
+    }
+
+    private void releaseStatementParameters(SQLQuery sqlStatement) {
+        if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
+            for (SQLQueryParameter param : sqlStatement.getParameters()) {
+                if (param.isResolved()) {
+                    param.getValueHandler().releaseValueObject(param.getValue());
+                }
             }
         }
     }
