@@ -961,6 +961,15 @@ public class SQLEditor extends SQLEditorBase
         {
             return resultProviders.get(0);
         }
+        @Nullable
+        QueryResultsProvider getResults(SQLQuery query) {
+            for (QueryResultsProvider provider : resultProviders) {
+                if (provider.query == query) {
+                    return provider;
+                }
+            }
+            return null;
+        }
         @NotNull
         QueryResultsProvider getCurrentResults()
         {
@@ -1085,13 +1094,7 @@ public class SQLEditor extends SQLEditorBase
                 getSite().getShell().getDisplay().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        QueryResultsProvider resultsProvider = createResultsProvider(resultSetNumber);
-                        if (statement != null) {
-                            resultsProvider.tabItem.setToolTipText(statement.getQuery());
-                            if (statement.getData() instanceof String) {
-                                resultsProvider.tabItem.setText(statement.getData().toString());
-                            }
-                        }
+                        createResultsProvider(resultSetNumber);
                     }
                 });
             }
@@ -1099,7 +1102,22 @@ public class SQLEditor extends SQLEditorBase
                 // Editor seems to be disposed - no data receiver
                 return null;
             }
-            return resultProviders.get(resultSetNumber).getResultSetViewer().getDataReceiver();
+            final QueryResultsProvider resultsProvider = resultProviders.get(resultSetNumber);
+            // Open new results processor in UI thread
+            getSite().getShell().getDisplay().syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if (statement != null) {
+                        resultsProvider.query = statement;
+                        resultsProvider.tabItem.setToolTipText(statement.getQuery());
+                        // Special statements (not real statements) have their name in data
+                        if (statement.getData() instanceof String) {
+                            resultsProvider.tabItem.setText(statement.getData().toString());
+                        }
+                    }
+                }
+            });
+            return resultsProvider.getResultSetViewer().getDataReceiver();
         }
 
     }
@@ -1110,6 +1128,7 @@ public class SQLEditor extends SQLEditorBase
         private final CTabItem tabItem;
         private final ResultSetViewer viewer;
         private final int resultSetNumber;
+        private SQLQuery query = null;
 
         private QueryResultsProvider(QueryProcessor queryProcessor, int resultSetNumber)
         {
@@ -1328,8 +1347,8 @@ public class SQLEditor extends SQLEditorBase
                 getSelectionProvider().setSelection(originalSelection);
             }
             // Get results window (it is possible that it was closed till that moment
-            QueryResultsProvider results = queryProcessor.getFirstResults();
-            {
+            QueryResultsProvider results = queryProcessor.getResults(result.getStatement());
+            if (results != null) {
                 CTabItem tabItem = results.tabItem;
                 if (!tabItem.isDisposed()) {
                     tabItem.setToolTipText(result.getStatement().getQuery());
