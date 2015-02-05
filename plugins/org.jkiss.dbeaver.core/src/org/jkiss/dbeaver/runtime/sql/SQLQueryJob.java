@@ -384,7 +384,7 @@ public class SQLQueryJob extends DataSourceJob
             SQLQuery query = new SQLQuery(this, "", -1, -1);
             query.setData("Statistics"); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);
-            if (fetchResultSets && dataReceiver != null) {
+            if (dataReceiver != null) {
                 fetchExecutionResult(session, dataReceiver, query);
             }
         }
