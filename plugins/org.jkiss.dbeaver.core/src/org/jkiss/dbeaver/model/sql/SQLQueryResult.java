@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.Nullable;
+
 /**
  * SQLQueryResult
  */
@@ -40,6 +42,7 @@ public class SQLQueryResult
         this.statement = statement;
     }
 
+    @Nullable
     public SQLQuery getStatement() {
         return statement;
     }
@@ -52,6 +55,7 @@ public class SQLQueryResult
         this.rowOffset = rowOffset;
     }
 
+    @Nullable
     public Long getRowCount()
     {
         return rowCount;
@@ -62,6 +66,7 @@ public class SQLQueryResult
         this.rowCount = rowCount;
     }
 
+    @Nullable
     public Long getUpdateCount()
     {
         return updateCount;
@@ -87,6 +92,7 @@ public class SQLQueryResult
         return error != null;
     }
 
+    @Nullable
     public Throwable getError()
     {
         return error;
@@ -107,6 +113,7 @@ public class SQLQueryResult
         this.queryTime = queryTime;
     }
 
+    @Nullable
     public String getResultSetName()
     {
         return resultSetName;

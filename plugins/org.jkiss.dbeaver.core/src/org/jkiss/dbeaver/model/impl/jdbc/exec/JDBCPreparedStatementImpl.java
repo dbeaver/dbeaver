@@ -119,7 +119,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     {
         this.beforeExecute();
         try {
-            return handleExecuteResult(getOriginal().executeUpdate());
+            return getOriginal().executeUpdate();
         } catch (Throwable e) {
             throw super.handleExecuteError(e);
         } finally {
@@ -133,7 +133,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     {
         this.beforeExecute();
         try {
-            return handleExecuteResult(getOriginal().execute());
+            return getOriginal().execute();
         } catch (Throwable e) {
             throw super.handleExecuteError(e);
         } finally {
