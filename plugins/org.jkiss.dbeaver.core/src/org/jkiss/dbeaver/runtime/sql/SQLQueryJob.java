@@ -388,7 +388,7 @@ public class SQLQueryJob extends DataSourceJob
     private void showExecutionResult(DBCSession session) throws DBCException {
         if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
             SQLQuery query = new SQLQuery(this, "", -1, -1);
-            query.setData("Statistics");
+            query.setData("Statistics"); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);
             if (fetchResultSets && dataReceiver != null) {
                 fetchExecutionResult(session, dataReceiver, query);
