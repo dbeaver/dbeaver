@@ -38,9 +38,9 @@ class GridRowRenderer extends AbstractRenderer {
     public static final int EXPANDER_SPACING = 2;
     public static final int LEVEL_SPACING = EXPANDED_BOUNDS.width;
 
-    private final Color DEFAULT_BACKGROUND;
-    private final Color DEFAULT_FOREGROUND;
-    private final Color DEFAULT_FOREGROUND_TEXT;
+    final Color DEFAULT_BACKGROUND;
+    final Color DEFAULT_FOREGROUND;
+    final Color DEFAULT_FOREGROUND_TEXT;
 
     public GridRowRenderer(LightGrid grid) {
         super(grid);
