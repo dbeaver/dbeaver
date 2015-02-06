@@ -1109,7 +1109,7 @@ public class SQLEditor extends SQLEditorBase
                 public void run() {
                     if (statement != null) {
                         resultsProvider.query = statement;
-                        resultsProvider.tabItem.setToolTipText(statement.getQuery());
+                        resultsProvider.tabItem.setToolTipText(CommonUtils.truncateString(statement.getQuery(), 1000));
                         // Special statements (not real statements) have their name in data
                         if (statement.getData() instanceof String) {
                             resultsProvider.tabItem.setText(statement.getData().toString());
@@ -1351,7 +1351,6 @@ public class SQLEditor extends SQLEditorBase
             if (results != null) {
                 CTabItem tabItem = results.tabItem;
                 if (!tabItem.isDisposed()) {
-                    tabItem.setToolTipText(result.getStatement().getQuery());
                     if (!CommonUtils.isEmpty(result.getResultSetName())) {
                         tabItem.setText(result.getResultSetName());
                     }/* else {
