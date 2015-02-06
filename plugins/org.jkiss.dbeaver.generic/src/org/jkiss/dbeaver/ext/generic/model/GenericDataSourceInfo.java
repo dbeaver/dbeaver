@@ -31,17 +31,24 @@ import org.jkiss.utils.CommonUtils;
 class GenericDataSourceInfo extends JDBCDataSourceInfo {
 
     private final boolean supportsLimits;
+    private boolean supportsMultipleResults;
 
     public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
     {
         super(metaData);
         supportsLimits = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_LIMITS), true);
         setSupportsResultSetScroll(CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_SCROLL), false));
+        supportsMultipleResults = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_SUPPORTS_MULTIPLE_RESULTS), false);
     }
 
     @Override
     public boolean supportsResultSetLimit() {
         return supportsLimits;
+    }
+
+    @Override
+    public boolean supportsMultipleResults() {
+        return supportsMultipleResults;
     }
 
 }
