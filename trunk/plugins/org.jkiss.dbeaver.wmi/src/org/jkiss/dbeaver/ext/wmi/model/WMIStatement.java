@@ -127,7 +127,7 @@ public class WMIStatement implements DBCStatement {
     @Override
     public int getUpdateRowCount() throws DBCException
     {
-        return 0;
+        return -1;
     }
 
     @Override

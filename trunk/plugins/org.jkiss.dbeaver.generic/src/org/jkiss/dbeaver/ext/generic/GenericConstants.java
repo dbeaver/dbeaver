@@ -36,6 +36,7 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_LIMITS = "supports-limits";
     public static final String PARAM_SUPPORTS_SCROLL = "supports-scroll";
     public static final String PARAM_SUPPORTS_STRUCT_CACHE = "supports-struct-cache";
+    public static final String PARAM_SUPPORTS_MULTIPLE_RESULTS = "supports-multiple-results";
     public static final String PARAM_OMIT_TYPE_CACHE = "omit-type-cache";
     public static final String PARAM_OMIT_CATALOG = "omit-catalog";
     public static final String PARAM_ALL_OBJECTS_PATTERN = "all-objects-pattern";

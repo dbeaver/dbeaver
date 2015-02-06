@@ -150,4 +150,8 @@ public interface DBPDataSourceInfo
      */
     boolean isDynamicMetadata();
 
+    /**
+     * Checks whether this data source supports multiple results for a single statement
+     */
+    boolean supportsMultipleResults();
 }

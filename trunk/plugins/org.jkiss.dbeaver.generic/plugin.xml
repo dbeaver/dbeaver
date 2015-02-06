@@ -107,6 +107,7 @@
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
+                    <property id="supports-multiple-results" label="Driver supports multiple results" description="Driver supports multiple results for a single query." type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-struct-cache" label="Driver supports structure cache" description="Driver supports structure cache reading. Enables schema columns, keys, etc." type="boolean" required="false" defaultValue="true"/>
                     <property id="embedded" label="Embedded database" description="True for embedded databases (in-process server or local fs database)." type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
@@ -243,6 +244,7 @@
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-scroll" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
                     <file type="jar" path="drivers/jtds/jtds-1.3.1.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="*"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="*"/>
@@ -261,6 +263,7 @@
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="script-delimiter" value="go"/>
+                    <parameter name="supports-multiple-results" value="true"/>
                     <file type="jar" path="drivers/mssql/sqljdbc4.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" url="*"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" url="*"/>
@@ -281,6 +284,7 @@
                     <parameter name="query-set-active-db">use ?</query-->
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
                     <file type="jar" path="drivers/jtds/jtds-1.3.1.jar" url="*"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
                 </driver>

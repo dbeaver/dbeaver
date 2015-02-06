@@ -343,9 +343,13 @@ public class SQLQueryJob extends DataSourceJob
                     }
 
                     statistics.addStatementsCount();
-                    hasResultSet = curStatement.nextResults();
-                    // We have results - reset update count to avoid infinite loop
-                    updateCount = hasResultSet ? -1 : 0;
+
+                    if (dataSource.getInfo().supportsMultipleResults()) {
+                        hasResultSet = curStatement.nextResults();
+                        updateCount = hasResultSet ? -1 : 0;
+                    } else {
+                        break;
+                    }
                 }
             }
             finally {
