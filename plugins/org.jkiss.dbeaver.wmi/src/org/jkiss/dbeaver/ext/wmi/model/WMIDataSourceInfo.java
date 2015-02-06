@@ -147,4 +147,9 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     public boolean isDynamicMetadata() {
         return false;
     }
+
+    @Override
+    public boolean supportsMultipleResults() {
+        return false;
+    }
 }
