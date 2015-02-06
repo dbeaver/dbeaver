@@ -4108,13 +4108,11 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyRowHeader(GC gc, int x, int y, int width, int height)
     {
-        setDefaultBackground(gc);
+        gc.setBackground(rowHeaderRenderer.DEFAULT_BACKGROUND);
 
         gc.fillRectangle(x, y, width, height + 1);
 
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
-
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        gc.setForeground(rowHeaderRenderer.DEFAULT_FOREGROUND);
 
         gc.drawLine(
             x + width - 1,
@@ -4152,7 +4150,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawTopLeftCell(GC gc, int x, int y, int width, int height) {
         int sortOrder = getContentProvider().getSortOrder(null);
-        gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        gc.setBackground(rowHeaderRenderer.DEFAULT_BACKGROUND);
 
         gc.fillRectangle(
             x,
@@ -4160,7 +4158,7 @@ public abstract class LightGrid extends Canvas {
             width - 1,
             height + 1);
 
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+        gc.setForeground(rowHeaderRenderer.DEFAULT_FOREGROUND);
 
         gc.drawLine(
             x + width - 1,
