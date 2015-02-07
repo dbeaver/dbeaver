@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -29,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
 import org.jkiss.utils.CommonUtils;
@@ -45,6 +47,8 @@ import java.util.List;
  */
 public class SelectObjectDialog<T> extends Dialog {
 
+    private static final String DIALOG_ID = "DBeaver.SelectObjectDialog";//$NON-NLS-1$
+
     private String title;
     private Collection<T> objects;
     private List<T> selectedObjects = new ArrayList<T>();
@@ -56,6 +60,12 @@ public class SelectObjectDialog<T> extends Dialog {
         this.title = title;
         this.singleSelection = singleSelection;
         this.objects = objects;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
