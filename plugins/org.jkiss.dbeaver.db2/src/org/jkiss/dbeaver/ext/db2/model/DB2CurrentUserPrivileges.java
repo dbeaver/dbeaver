@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -36,7 +35,7 @@ import java.util.List;
  */
 public class DB2CurrentUserPrivileges {
 
-    private static final Log LOG = LogFactory.getLog(DB2CurrentUserPrivileges.class);
+    private static final Log LOG = Log.getLog(DB2CurrentUserPrivileges.class);
 
     private static final String SYSMON = "SYSMON";
     private static final String SYSMAINT = "SYSMAINT";

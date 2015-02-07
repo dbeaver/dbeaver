@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -44,7 +43,7 @@ import java.util.Collection;
 public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCatalog>
     implements DBPNamedObject2,DBPRefreshableObject
 {
-    static final Log log = LogFactory.getLog(MySQLTableBase.class);
+    static final Log log = Log.getLog(MySQLTableBase.class);
 
     protected MySQLTableBase(MySQLCatalog catalog)
     {

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -49,7 +48,7 @@ import java.sql.SQLException;
  */
 public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
 
-    static final Log log = LogFactory.getLog(JDBCContentCLOB.class);
+    static final Log log = Log.getLog(JDBCContentCLOB.class);
 
     private Clob clob;
     private Reader tmpReader;

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
@@ -48,7 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class DatabaseEditorInputFactory implements IElementFactory
 {
-    static final Log log = LogFactory.getLog(DatabaseEditorInputFactory.class);
+    static final Log log = Log.getLog(DatabaseEditorInputFactory.class);
 
     public static final String ID_FACTORY = DatabaseEditorInputFactory.class.getName(); //$NON-NLS-1$
 

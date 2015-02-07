@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -62,7 +61,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
             DBIcon.PROGRESS4, DBIcon.PROGRESS5, DBIcon.PROGRESS6, DBIcon.PROGRESS7,
             DBIcon.PROGRESS8, DBIcon.PROGRESS9
     };
-    static final Log log = LogFactory.getLog(ResultSetDataPumpJob.class);
+    static final Log log = Log.getLog(ResultSetDataPumpJob.class);
 
     private DBSDataContainer dataContainer;
     private DBDDataFilter dataFilter;

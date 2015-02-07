@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
@@ -37,7 +36,7 @@ import java.net.URL;
  */
 public class DriverFileDescriptor implements DBPDriverFile
 {
-    static final Log log = LogFactory.getLog(DriverFileDescriptor.class);
+    static final Log log = Log.getLog(DriverFileDescriptor.class);
 
     private final DriverDescriptor driver;
     private final DBPDriverFileType type;

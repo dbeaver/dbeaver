@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -43,7 +42,7 @@ import java.util.*;
  */
 public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject> extends
     JDBCObjectCache<OWNER, OBJECT> implements DBSStructCache<OWNER, OBJECT, CHILD> {
-    static final Log log = LogFactory.getLog(JDBCStructCache.class);
+    static final Log log = Log.getLog(JDBCStructCache.class);
 
     private final Object objectNameColumn;
     private volatile boolean childrenCached = false;

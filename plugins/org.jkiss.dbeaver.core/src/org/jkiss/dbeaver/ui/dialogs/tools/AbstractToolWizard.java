@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
@@ -47,7 +46,7 @@ import java.util.List;
 public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         extends Wizard implements DBRRunnableWithProgress {
 
-    static final Log log = LogFactory.getLog(AbstractToolWizard.class);
+    static final Log log = Log.getLog(AbstractToolWizard.class);
 
     private final BASE_OBJECT databaseObject;
     private DBPClientHome clientHome;

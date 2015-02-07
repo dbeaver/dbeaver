@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -36,7 +35,7 @@ import java.util.Map;
  */
 public class BinaryClipboard {
 
-    static final Log log = LogFactory.getLog(HexEditControl.class);
+    static final Log log = Log.getLog(HexEditControl.class);
 
     static class FileByteArrayTransfer extends ByteArrayTransfer {
 

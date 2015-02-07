@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
  */
 class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshablePart
 {
-    //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
+    //static final Log log = Log.getLog(EntityNodeEditor.class);
 
     private IDatabaseEditor editor;
     private DBNNode node;

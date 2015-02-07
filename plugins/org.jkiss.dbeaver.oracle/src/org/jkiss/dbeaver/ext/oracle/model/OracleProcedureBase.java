@@ -40,7 +40,7 @@ import java.util.Iterator;
  */
 public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> extends OracleObject<PARENT> implements DBSProcedure
 {
-    //static final Log log = LogFactory.getLog(OracleProcedure.class);
+    //static final Log log = Log.getLog(OracleProcedure.class);
 
     private DBSProcedureType procedureType;
     private final ArgumentsCache argumentsCache = new ArgumentsCache();

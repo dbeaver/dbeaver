@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
  */
 class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigatorModelView, IDatabaseEditor, IActiveWorkbenchPart
 {
-    //static final Log log = LogFactory.getLog(EntityNodeEditor.class);
+    //static final Log log = Log.getLog(EntityNodeEditor.class);
 
     private DBNNode node;
     private DBXTreeNode metaNode;

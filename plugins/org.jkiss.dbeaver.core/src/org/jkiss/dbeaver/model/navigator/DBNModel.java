@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -55,7 +54,7 @@ import java.util.*;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBNModel implements IResourceChangeListener {
-    static final Log log = LogFactory.getLog(DBNModel.class);
+    static final Log log = Log.getLog(DBNModel.class);
 
     private static Map<Image, Map<DBSObjectState, Image>> overlayStateImageCache = new IdentityHashMap<Image, Map<DBSObjectState, Image>>();
     private static Map<Image, Image> overlayLockImageCache = new IdentityHashMap<Image, Image>();

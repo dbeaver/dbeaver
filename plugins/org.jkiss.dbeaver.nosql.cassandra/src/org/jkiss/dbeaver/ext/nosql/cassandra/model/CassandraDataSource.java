@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -53,7 +52,7 @@ import java.util.List;
 public class CassandraDataSource extends JDBCDataSource
     implements DBSObjectSelector, IDatabaseTermProvider, IAdaptable
 {
-    static final Log log = LogFactory.getLog(CassandraDataSource.class);
+    static final Log log = Log.getLog(CassandraDataSource.class);
 
     private final JDBCBasicDataTypeCache dataTypeCache;
     private List<CassandraKeyspace> keyspaces;

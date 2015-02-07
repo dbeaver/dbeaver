@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -62,7 +61,7 @@ import java.util.Map;
 public class OracleDataSource extends JDBCDataSource
     implements DBSObjectSelector, DBCServerOutputReader, DBCQueryPlanner, IAdaptable
 {
-    static final Log log = LogFactory.getLog(OracleDataSource.class);
+    static final Log log = Log.getLog(OracleDataSource.class);
 
     //private final static Map<String, OCIClassLoader> ociClassLoadersCache = new HashMap<String, OCIClassLoader>();
 

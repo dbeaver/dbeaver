@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -42,7 +41,7 @@ import java.sql.SQLException;
  */
 public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
 {
-    static final Log log = LogFactory.getLog(JDBCExecutionContext.class);
+    static final Log log = Log.getLog(JDBCExecutionContext.class);
 
     private final JDBCDataSource dataSource;
     private final boolean copyState;

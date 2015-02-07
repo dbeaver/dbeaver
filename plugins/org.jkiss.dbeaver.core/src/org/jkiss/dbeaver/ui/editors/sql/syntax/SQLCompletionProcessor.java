@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.TextPresentation;
@@ -59,7 +58,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
-    static final Log log = LogFactory.getLog(SQLCompletionProcessor.class);
+    static final Log log = Log.getLog(SQLCompletionProcessor.class);
 
     private static enum QueryType {
         TABLE,

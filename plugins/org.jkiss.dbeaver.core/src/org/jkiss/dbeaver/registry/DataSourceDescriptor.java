@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -81,7 +80,7 @@ public class DataSourceDescriptor
         DBSObjectStateful,
         DBPRefreshableObject
 {
-    static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
+    static final Log log = Log.getLog(DataSourceDescriptor.class);
 
     public static class FilterMapping {
         public final Class<?> type;

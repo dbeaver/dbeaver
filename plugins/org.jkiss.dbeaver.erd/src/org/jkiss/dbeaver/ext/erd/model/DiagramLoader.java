@@ -21,8 +21,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Bendpoint;
@@ -64,7 +63,7 @@ import java.util.*;
  */
 public class DiagramLoader
 {
-    static final Log log = LogFactory.getLog(DiagramLoader.class);
+    static final Log log = Log.getLog(DiagramLoader.class);
 
     public static final String TAG_DIAGRAM = "diagram";
     public static final String TAG_ENTITIES = "entities";

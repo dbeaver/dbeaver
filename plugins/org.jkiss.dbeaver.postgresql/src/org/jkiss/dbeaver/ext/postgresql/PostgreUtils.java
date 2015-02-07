@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -36,7 +35,7 @@ import java.sql.SQLException;
  */
 public class PostgreUtils {
 
-    static final Log log = LogFactory.getLog(PostgreUtils.class);
+    static final Log log = Log.getLog(PostgreUtils.class);
 
     public static String getProcedureSource(DBRProgressMonitor monitor, PostgreProcedure procedure)
         throws DBException

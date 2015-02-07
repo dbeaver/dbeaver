@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.Dialog;
@@ -43,7 +42,7 @@ import java.util.List;
  */
 public class ViewerColumnController {
 
-    static final Log log = LogFactory.getLog(ViewerColumnController.class);
+    static final Log log = Log.getLog(ViewerColumnController.class);
 
     private static final String DATA_KEY = ViewerColumnController.class.getSimpleName();
 

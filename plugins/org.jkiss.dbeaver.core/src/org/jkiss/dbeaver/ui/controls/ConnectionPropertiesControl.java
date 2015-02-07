@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -43,7 +42,7 @@ import java.util.*;
  */
 public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
-    static final Log log = LogFactory.getLog(ConnectionPropertiesControl.class);
+    static final Log log = Log.getLog(ConnectionPropertiesControl.class);
 
     public static final String USER_PROPERTIES_CATEGORY = CoreMessages.controls_connection_properties_category_user_properties;
 

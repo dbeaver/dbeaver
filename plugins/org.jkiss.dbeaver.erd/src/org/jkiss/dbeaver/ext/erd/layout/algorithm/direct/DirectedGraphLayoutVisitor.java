@@ -22,8 +22,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.layout.algorithm.direct;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
@@ -49,7 +48,7 @@ import java.util.Map;
  * @author Serge Rieder
  */
 public class DirectedGraphLayoutVisitor {
-    static final Log log = LogFactory.getLog(DirectedGraphLayoutVisitor.class);
+    static final Log log = Log.getLog(DirectedGraphLayoutVisitor.class);
 
     Map<EditPart, Object> partToNodesMap;
     DirectedGraph graph;

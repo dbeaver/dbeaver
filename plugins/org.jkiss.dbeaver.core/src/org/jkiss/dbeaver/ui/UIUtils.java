@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.IAction;
@@ -77,7 +76,7 @@ import java.util.*;
  */
 public class UIUtils {
 
-    static final Log log = LogFactory.getLog(UIUtils.class);
+    static final Log log = Log.getLog(UIUtils.class);
 
     public static final char PARAGRAPH_CHAR = (char) 182;
     public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";

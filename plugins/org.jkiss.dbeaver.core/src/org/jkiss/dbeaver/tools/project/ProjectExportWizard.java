@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.project;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
@@ -52,7 +51,7 @@ import java.util.zip.ZipOutputStream;
 
 public class ProjectExportWizard extends Wizard implements IExportWizard {
 
-    static final Log log = LogFactory.getLog(ProjectExportWizard.class);
+    static final Log log = Log.getLog(ProjectExportWizard.class);
 
     public static final int COPY_BUFFER_SIZE = 5000;
     public static final String PROJECT_DESC_FILE = ".project";

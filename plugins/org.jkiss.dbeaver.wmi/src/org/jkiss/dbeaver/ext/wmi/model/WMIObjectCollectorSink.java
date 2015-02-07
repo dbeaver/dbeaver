@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.wmi.service.*;
 
@@ -29,7 +28,7 @@ import java.util.List;
 
 class WMIObjectCollectorSink implements WMIObjectSink
 {
-    static final Log log = LogFactory.getLog(WMIObjectCollectorSink.class);
+    static final Log log = Log.getLog(WMIObjectCollectorSink.class);
 
     private final DBRProgressMonitor monitor;
     private final WMIService service;

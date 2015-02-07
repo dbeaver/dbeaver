@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
@@ -44,7 +43,7 @@ import java.util.regex.Pattern;
  */
 public class MSSQLTableColumn extends JDBCTableColumn<MSSQLTableBase> implements DBSTableColumn
 {
-    static final Log log = LogFactory.getLog(MSSQLTableColumn.class);
+    static final Log log = Log.getLog(MSSQLTableColumn.class);
 
     private static Pattern enumPattern = Pattern.compile("'([^']*)'");
 

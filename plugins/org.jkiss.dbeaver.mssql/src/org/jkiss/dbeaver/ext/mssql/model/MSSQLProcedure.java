@@ -38,7 +38,7 @@ import java.util.Collection;
  */
 public class MSSQLProcedure extends AbstractProcedure<MSSQLDataSource, MSSQLCatalog> implements MSSQLSourceObject
 {
-    //static final Log log = LogFactory.getLog(MSSQLProcedure.class);
+    //static final Log log = Log.getLog(MSSQLProcedure.class);
 
     private DBSProcedureType procedureType;
     private String resultType;

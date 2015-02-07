@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -58,7 +57,7 @@ import java.util.zip.ZipOutputStream;
 */
 public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings, IStreamDataExporter> {
 
-    static final Log log = LogFactory.getLog(StreamTransferConsumer.class);
+    static final Log log = Log.getLog(StreamTransferConsumer.class);
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 

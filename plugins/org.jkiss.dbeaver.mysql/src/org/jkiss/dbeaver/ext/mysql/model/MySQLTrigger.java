@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -38,7 +37,7 @@ import java.sql.ResultSet;
  */
 public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
 {
-    static final Log log = LogFactory.getLog(MySQLTrigger.class);
+    static final Log log = Log.getLog(MySQLTrigger.class);
 
     private MySQLCatalog catalog;
     private MySQLTable table;

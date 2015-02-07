@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.ContributionItem;
@@ -68,7 +67,7 @@ import java.util.List;
 
 public class GenerateSQLContributor extends CompoundContributionItem {
 
-    static protected final Log log = LogFactory.getLog(GenerateSQLContributor.class);
+    static protected final Log log = Log.getLog(GenerateSQLContributor.class);
 
     @Override
     protected IContributionItem[] getContributionItems()

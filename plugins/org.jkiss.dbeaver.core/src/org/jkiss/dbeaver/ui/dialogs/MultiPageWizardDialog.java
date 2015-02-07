@@ -163,7 +163,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         // Progress monitor
-        monitorPart = new ProgressMonitorPart(composite, null, true);
+        monitorPart = new ProgressMonitorPart(composite, null, true) {
+            @Override
+            public void setCanceled(boolean b) {
+                super.setCanceled(b);
+                if (b) {
+                    cancelCurrentOperation();
+                }
+            }
+        };
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
         gd.horizontalIndent = 20;
@@ -172,6 +180,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         monitorPart.setVisible(false);
 
         return composite;
+    }
+
+    protected void cancelCurrentOperation() {
+
     }
 
     private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize)

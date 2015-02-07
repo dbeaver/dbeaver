@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.text.Document;
@@ -50,7 +49,7 @@ import java.nio.charset.CodingErrorAction;
  */
 public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
-    static final Log log = LogFactory.getLog(FileRefDocumentProvider.class);
+    static final Log log = Log.getLog(FileRefDocumentProvider.class);
 
     private static final int DEFAULT_BUFFER_SIZE = 10000;
 

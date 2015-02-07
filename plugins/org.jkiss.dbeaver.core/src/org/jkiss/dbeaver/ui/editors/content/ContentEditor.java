@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -94,7 +93,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     //public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
     //public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
 
-    static final Log log = LogFactory.getLog(ContentEditor.class);
+    static final Log log = Log.getLog(ContentEditor.class);
 
     @Override
     public DBPDataSource getDataSource()

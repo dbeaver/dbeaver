@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.DBException;
@@ -44,7 +43,7 @@ import java.util.*;
  */
 public class DBECommandContextImpl implements DBECommandContext {
 
-    static final Log log = LogFactory.getLog(DBECommandContextImpl.class);
+    static final Log log = Log.getLog(DBECommandContextImpl.class);
 
     private final DBSDataSourceContainer dataSourceContainer;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();

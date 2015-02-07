@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -49,7 +48,7 @@ import java.sql.DatabaseMetaData;
  */
 
 public abstract class ConnectionWizard extends Wizard implements INewWizard {
-    static final Log log = LogFactory.getLog(ConnectionWizard.class);
+    static final Log log = Log.getLog(ConnectionWizard.class);
 
     // protected final IProject project;
     protected final DataSourceRegistry dataSourceRegistry;

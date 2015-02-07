@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
@@ -74,7 +73,7 @@ import java.util.List;
  */
 public abstract class ValueViewDialog extends Dialog implements DBDValueEditorStandalone {
 
-    static final Log log = LogFactory.getLog(ValueViewDialog.class);
+    static final Log log = Log.getLog(ValueViewDialog.class);
 
     private static int dialogCount = 0;
     public static final String SETTINGS_SECTION_DI = "ValueViewDialog";

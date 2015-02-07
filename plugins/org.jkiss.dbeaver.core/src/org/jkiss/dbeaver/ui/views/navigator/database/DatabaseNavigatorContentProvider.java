@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -41,7 +40,7 @@ import java.util.List;
  * DatabaseNavigatorContentProvider
 */
 class DatabaseNavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-    static final Log log = LogFactory.getLog(DatabaseNavigatorContentProvider.class);
+    static final Log log = Log.getLog(DatabaseNavigatorContentProvider.class);
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
 

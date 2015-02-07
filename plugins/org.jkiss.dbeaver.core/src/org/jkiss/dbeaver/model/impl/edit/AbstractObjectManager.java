@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
@@ -33,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> implements DBEObjectManager<OBJECT_TYPE> {
 
-    protected static final Log log = LogFactory.getLog(AbstractObjectManager.class);
+    protected static final Log log = Log.getLog(AbstractObjectManager.class);
 
     public static abstract class AbstractObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
         private final DBEObjectMaker<OBJECT_TYPE, ? extends DBSObject> objectMaker;

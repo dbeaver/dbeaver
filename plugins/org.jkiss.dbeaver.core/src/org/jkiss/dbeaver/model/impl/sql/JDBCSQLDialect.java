@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
@@ -42,7 +41,7 @@ import java.util.*;
  */
 public class JDBCSQLDialect extends BasicSQLDialect {
 
-    static final Log log = LogFactory.getLog(JDBCSQLDialect.class);
+    static final Log log = Log.getLog(JDBCSQLDialect.class);
 
     private final JDBCDataSource dataSource;
     private String name;

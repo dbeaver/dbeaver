@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 
 import java.net.URL;
@@ -31,7 +30,7 @@ public class ExternalResourceDescriptor extends AbstractDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resources"; //$NON-NLS-1$
 
-    static final Log log = LogFactory.getLog(ExternalResourceDescriptor.class);
+    static final Log log = Log.getLog(ExternalResourceDescriptor.class);
     private final String name;
 
     public ExternalResourceDescriptor(IConfigurationElement config)

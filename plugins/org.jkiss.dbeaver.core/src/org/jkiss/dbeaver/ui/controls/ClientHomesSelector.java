@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -43,7 +42,7 @@ import java.util.Set;
  */
 public class ClientHomesSelector extends Composite
 {
-    static final Log log = LogFactory.getLog(ClientHomesSelector.class);
+    static final Log log = Log.getLog(ClientHomesSelector.class);
 
     private Combo homesCombo;
     //private Label versionLabel;

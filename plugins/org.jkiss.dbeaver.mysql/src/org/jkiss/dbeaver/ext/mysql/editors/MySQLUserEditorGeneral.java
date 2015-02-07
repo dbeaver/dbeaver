@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
 {
-    //static final Log log = LogFactory.getLog(MySQLUserEditorGeneral.class);
+    //static final Log log = Log.getLog(MySQLUserEditorGeneral.class);
     public static final String DEF_PASSWORD_VALUE = "**********"; //$NON-NLS-1$
 
     private PageControl pageControl;

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.perspective;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
@@ -77,7 +76,7 @@ import java.util.List;
  * DataSource Toolbar
  */
 public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
-    static final Log log = LogFactory.getLog(DataSourceManagementToolbar.class);
+    static final Log log = Log.getLog(DataSourceManagementToolbar.class);
 
     public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
 

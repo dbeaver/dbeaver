@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
@@ -35,7 +34,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
  */
 public class FireBirdMetaModel extends GenericMetaModel
 {
-    static final Log log = LogFactory.getLog(FireBirdMetaModel.class);
+    static final Log log = Log.getLog(FireBirdMetaModel.class);
 
     public FireBirdMetaModel(IConfigurationElement cfg) {
         super(cfg);

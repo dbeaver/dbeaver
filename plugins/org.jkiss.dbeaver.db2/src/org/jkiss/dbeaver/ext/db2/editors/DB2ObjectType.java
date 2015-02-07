@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
@@ -306,7 +305,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     });
 
-    private final static Log LOG = LogFactory.getLog(DB2ObjectType.class);
+    private final static Log LOG = Log.getLog(DB2ObjectType.class);
     private final static String SPLIT_DOT = "\\.";
 
     private final Image image;

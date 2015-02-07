@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -44,7 +43,7 @@ import java.util.List;
  */
 public abstract class LightGrid extends Canvas {
 
-    static final Log log = LogFactory.getLog(LightGrid.class);
+    static final Log log = Log.getLog(LightGrid.class);
 
     public static final int MAX_TOOLTIP_LENGTH = 1000;
 

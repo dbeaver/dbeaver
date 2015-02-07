@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -43,7 +42,7 @@ import java.util.List;
  */
 public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleSourceObject
 {
-    static final Log log = LogFactory.getLog(OracleTrigger.class);
+    static final Log log = Log.getLog(OracleTrigger.class);
 
     public static enum BaseObjectType {
         TABLE,

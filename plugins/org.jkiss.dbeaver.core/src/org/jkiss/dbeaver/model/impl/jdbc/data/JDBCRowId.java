@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
 
@@ -30,7 +29,7 @@ import java.sql.RowId;
  */
 public class JDBCRowId implements DBDValue {
 
-    static final Log log = LogFactory.getLog(JDBCRowId.class);
+    static final Log log = Log.getLog(JDBCRowId.class);
 
     private RowId value;
 

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +36,7 @@ public enum ERDAttributeVisibility
 
     private final String title;
 
-    static final Log log = LogFactory.getLog(ERDAttributeVisibility.class);
+    static final Log log = Log.getLog(ERDAttributeVisibility.class);
 
     ERDAttributeVisibility(String title)
     {

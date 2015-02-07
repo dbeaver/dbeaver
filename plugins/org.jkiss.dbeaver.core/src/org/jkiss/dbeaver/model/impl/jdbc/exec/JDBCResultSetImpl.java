@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
@@ -43,7 +42,7 @@ import java.util.Map;
  */
 public class JDBCResultSetImpl implements JDBCResultSet {
 
-    static final Log log = LogFactory.getLog(JDBCResultSetImpl.class);
+    static final Log log = Log.getLog(JDBCResultSetImpl.class);
 
     private JDBCSession session;
     private JDBCStatementImpl statement;

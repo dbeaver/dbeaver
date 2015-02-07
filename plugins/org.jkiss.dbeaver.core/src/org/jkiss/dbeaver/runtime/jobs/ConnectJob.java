@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime.jobs;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -40,7 +39,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
  */
 public class ConnectJob extends EventProcessorJob
 {
-    static final Log log = LogFactory.getLog(ConnectJob.class);
+    static final Log log = Log.getLog(ConnectJob.class);
 
     private volatile Thread connectThread;
     private boolean reflect = true;

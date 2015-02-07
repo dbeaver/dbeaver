@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.actions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -38,7 +37,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
  */
 public class DataSourcePropertyTester extends PropertyTester
 {
-    static final Log log = LogFactory.getLog(DataSourcePropertyTester.class);
+    static final Log log = Log.getLog(DataSourcePropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasource";
     public static final String PROP_CONNECTED = "connected";

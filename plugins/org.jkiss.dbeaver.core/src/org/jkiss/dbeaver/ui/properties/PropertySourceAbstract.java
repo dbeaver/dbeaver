@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IFilter;
@@ -46,7 +45,7 @@ import java.util.*;
  */
 public abstract class PropertySourceAbstract implements IPropertySourceMulti
 {
-    static final Log log = LogFactory.getLog(PropertySourceAbstract.class);
+    static final Log log = Log.getLog(PropertySourceAbstract.class);
 
     private Object sourceObject;
     private Object object;

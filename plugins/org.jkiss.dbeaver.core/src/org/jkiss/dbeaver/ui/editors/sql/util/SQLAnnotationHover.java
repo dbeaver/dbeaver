@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.source.Annotation;
@@ -42,7 +41,7 @@ import java.util.List;
 public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     implements ITextHover, IAnnotationHover, ITextHoverExtension, ITextHoverExtension2
 {
-    static final Log log = LogFactory.getLog(SQLAnnotationHover.class);
+    static final Log log = Log.getLog(SQLAnnotationHover.class);
 
     private List<Annotation> annotations = new ArrayList<Annotation>();
     private SQLEditorBase editor;

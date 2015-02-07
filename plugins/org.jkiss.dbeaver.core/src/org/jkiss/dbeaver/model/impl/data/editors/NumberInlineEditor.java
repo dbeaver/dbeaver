@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -40,7 +39,7 @@ import java.text.ParseException;
 */
 public class NumberInlineEditor extends BaseValueEditor<Text> {
 
-    static final Log log = LogFactory.getLog(NumberInlineEditor.class);
+    static final Log log = Log.getLog(NumberInlineEditor.class);
     private static final int MAX_NUMBER_LENGTH = 100;
     private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
     private final NumberEditorHelper helper;

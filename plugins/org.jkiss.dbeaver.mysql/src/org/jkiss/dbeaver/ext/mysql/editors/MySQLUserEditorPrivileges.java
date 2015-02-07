@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -49,7 +48,7 @@ import java.util.List;
  */
 public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 {
-    static final Log log = LogFactory.getLog(MySQLUserEditorPrivileges.class);
+    static final Log log = Log.getLog(MySQLUserEditorPrivileges.class);
 
     private PageControl pageControl;
     private Table catalogsTable;

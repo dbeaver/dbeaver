@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.link.*;
 import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
@@ -43,7 +42,7 @@ import java.util.List;
 
 public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener {
 
-    static protected final Log log = LogFactory.getLog(SQLSymbolInserter.class);
+    static protected final Log log = Log.getLog(SQLSymbolInserter.class);
 
     private boolean closeSingleQuotes = true;
     private boolean closeDoubleQuotes = true;

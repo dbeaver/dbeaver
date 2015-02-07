@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -33,7 +32,7 @@ import java.io.*;
  */
 public class ExternalContentStorage implements DBDContentStorage {
 
-    static final Log log = LogFactory.getLog(ExternalContentStorage.class);
+    static final Log log = Log.getLog(ExternalContentStorage.class);
 
     private File file;
     private String charset;

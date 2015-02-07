@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Composite;
@@ -50,7 +49,7 @@ import java.nio.ByteBuffer;
 */
 public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDValueEditorStandalone {
 
-    static final Log log = LogFactory.getLog(ContentPanelEditor.class);
+    static final Log log = Log.getLog(ContentPanelEditor.class);
 
     public ContentPanelEditor(DBDValueController controller) {
         super(controller);

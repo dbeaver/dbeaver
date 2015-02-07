@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -122,7 +121,7 @@ import java.util.List;
 public class ResultSetViewer extends Viewer
     implements IDataSourceProvider, ISpreadsheetController, ISaveablePart2, IAdaptable
 {
-    static final Log log = LogFactory.getLog(ResultSetViewer.class);
+    static final Log log = Log.getLog(ResultSetViewer.class);
     private final IPropertyChangeListener themeChangeListener;
 
     private ResultSetValueController panelValueController;

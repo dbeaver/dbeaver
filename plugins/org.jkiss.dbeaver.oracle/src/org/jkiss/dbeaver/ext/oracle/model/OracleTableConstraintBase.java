@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
@@ -35,7 +34,7 @@ import java.util.List;
  */
 public abstract class OracleTableConstraintBase extends JDBCTableConstraint<OracleTableBase> {
 
-    static final Log log = LogFactory.getLog(OracleTableConstraintBase.class);
+    static final Log log = Log.getLog(OracleTableConstraintBase.class);
 
     private OracleObjectStatus status;
     private List<OracleTableConstraintColumn> columns;

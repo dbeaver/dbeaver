@@ -20,8 +20,7 @@
 package org.jkiss.dbeaver.registry.tree;
 
 import org.apache.commons.jexl2.Expression;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -31,7 +30,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
  */
 public class DBXTreeIcon
 {
-    static final Log log = LogFactory.getLog(DBXTreeIcon.class);
+    static final Log log = Log.getLog(DBXTreeIcon.class);
 
     private String exprString;
     private Image icon;

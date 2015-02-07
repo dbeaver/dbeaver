@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
@@ -29,7 +28,7 @@ import java.util.List;
 
 public class ObjectSearchRegistry
 {
-    static final Log log = LogFactory.getLog(ObjectSearchRegistry.class);
+    static final Log log = Log.getLog(ObjectSearchRegistry.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.search"; //$NON-NLS-1$
 

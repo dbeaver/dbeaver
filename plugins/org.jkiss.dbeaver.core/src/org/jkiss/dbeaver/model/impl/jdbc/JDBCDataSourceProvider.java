@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -38,7 +37,7 @@ import java.util.Properties;
  * JDBCDataSourceProvider
  */
 public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
-    static final protected Log log = LogFactory.getLog(JDBCDataSourceProvider.class);
+    static final protected Log log = Log.getLog(JDBCDataSourceProvider.class);
 
     @Override
     public void close() {

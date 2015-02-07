@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.swt.widgets.Display;
@@ -37,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 public class ProjectRegistry {
-    static final Log log = LogFactory.getLog(ProjectRegistry.class);
+    static final Log log = Log.getLog(ProjectRegistry.class);
 
     private static final String PROP_PROJECT_ACTIVE = "project.active";
     private static final String[] IGNORED_FILES = {

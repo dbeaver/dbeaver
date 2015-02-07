@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.compare;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -45,7 +44,7 @@ import java.util.List;
 
 public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
-    static final Log log = LogFactory.getLog(CompareObjectsWizard.class);
+    static final Log log = Log.getLog(CompareObjectsWizard.class);
 
     private static final String RS_COMPARE_WIZARD_DIALOG_SETTINGS = "CompareWizard";//$NON-NLS-1$
 

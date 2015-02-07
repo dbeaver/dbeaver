@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.content.parts;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -47,7 +46,7 @@ import java.io.InputStream;
  */
 public class ContentImageEditorPart extends EditorPart implements ContentEditorPart, IResourceChangeListener {
 
-    static final Log log = LogFactory.getLog(ContentImageEditorPart.class);
+    static final Log log = Log.getLog(ContentImageEditorPart.class);
 
     private ImageEditor imageViewer;
     private boolean contentValid;

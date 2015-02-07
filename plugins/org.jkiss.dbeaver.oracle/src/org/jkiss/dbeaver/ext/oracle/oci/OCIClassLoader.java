@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.oci;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -29,7 +28,7 @@ import java.io.FilenameFilter;
  */
 public class OCIClassLoader extends ClassLoader
 {
-    static final Log log = LogFactory.getLog(OCIClassLoader.class);
+    static final Log log = Log.getLog(OCIClassLoader.class);
 
     //private OracleHomeDescriptor oracleHomeDescriptor;
     private File[] oraHomeLibraries;

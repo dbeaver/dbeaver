@@ -51,7 +51,7 @@ import java.util.Map;
  */
 public class OracleConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
-    //static final Log log = LogFactory.getLog(OracleConnectionPage.class);
+    //static final Log log = Log.getLog(OracleConnectionPage.class);
 
     private Text hostText;
     private Text portText;

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.MSSQLConstants;
@@ -38,7 +37,7 @@ import java.sql.ResultSet;
  */
 public class MSSQLTrigger extends AbstractTrigger implements MSSQLSourceObject
 {
-    static final Log log = LogFactory.getLog(MSSQLTrigger.class);
+    static final Log log = Log.getLog(MSSQLTrigger.class);
 
     private MSSQLCatalog catalog;
     private MSSQLTable table;

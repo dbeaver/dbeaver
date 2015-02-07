@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -53,7 +52,7 @@ import java.util.Collection;
 public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema>
     implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject
 {
-    static final Log log = LogFactory.getLog(OracleTableBase.class);
+    static final Log log = Log.getLog(OracleTableBase.class);
 
     public static class TableAdditionalInfo {
         volatile boolean loaded = false;

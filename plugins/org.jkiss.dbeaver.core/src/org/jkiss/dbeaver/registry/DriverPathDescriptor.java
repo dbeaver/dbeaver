@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDriverLocalPath;
 
 /**
@@ -27,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPDriverLocalPath;
  */
 public class DriverPathDescriptor implements DBPDriverLocalPath
 {
-    static final Log log = LogFactory.getLog(DriverPathDescriptor.class);
+    static final Log log = Log.getLog(DriverPathDescriptor.class);
 
     private String path;
     private String comment;

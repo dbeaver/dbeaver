@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -32,7 +31,7 @@ import java.util.Arrays;
  */
 public class BytesContentStorage implements DBDContentStorage {
 
-    static final Log log = LogFactory.getLog(BytesContentStorage.class);
+    static final Log log = Log.getLog(BytesContentStorage.class);
 
     private byte[] data;
     private String encoding;

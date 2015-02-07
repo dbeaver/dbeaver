@@ -19,14 +19,19 @@
 
 package org.jkiss.dbeaver.model.exec.compile;
 
-import org.apache.commons.logging.Log;
+import org.jkiss.dbeaver.core.Log;
 
 import java.util.Collection;
 
 /**
  * Oracle compile log
  */
-public interface DBCCompileLog extends Log {
+public interface DBCCompileLog {
+
+    void trace(String trace);
+    void info(String trace);
+    void warn(DBCCompileError error);
+    void error(DBCCompileError error);
 
     Throwable getError();
 

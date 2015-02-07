@@ -21,8 +21,7 @@ package org.jkiss.dbeaver.registry.tree;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -40,7 +39,7 @@ import java.util.List;
  */
 public abstract class DBXTreeNode
 {
-    static final Log log = LogFactory.getLog(DBXTreeNode.class);
+    static final Log log = Log.getLog(DBXTreeNode.class);
 
     private final AbstractDescriptor source;
     private final DBXTreeNode parent;

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -35,7 +34,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTypeProvider"; //$NON-NLS-1$
 
-    static final Log log = LogFactory.getLog(DataTypeProviderDescriptor.class);
+    static final Log log = Log.getLog(DataTypeProviderDescriptor.class);
 
     private static final String ALL_TYPES_PATTERN = "*";
 

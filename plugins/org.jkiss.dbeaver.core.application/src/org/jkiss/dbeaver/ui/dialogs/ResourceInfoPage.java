@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
@@ -56,7 +55,7 @@ import java.util.Date;
  * resource.
  */
 public class ResourceInfoPage extends PropertyPage {
-    static final Log log = LogFactory.getLog(ResourceInfoPage.class);
+    static final Log log = Log.getLog(ResourceInfoPage.class);
     private static String BYTES_LABEL = "{0} Bytes";
     private static String FILE_LABEL = "File";
     private static String FILE_NOT_EXIST_TEXT = "File not exist";

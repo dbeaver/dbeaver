@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -35,7 +34,7 @@ import java.sql.ResultSet;
 public abstract class OracleDataTypeMember implements DBSEntityElement
 {
 
-    static final Log log = LogFactory.getLog(OracleDataTypeMember.class);
+    static final Log log = Log.getLog(OracleDataTypeMember.class);
 
     private OracleDataType dataType;
     protected String name;

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -52,7 +51,7 @@ import java.util.Map;
  */
 public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
 
-    static final Log log = LogFactory.getLog(ConnectionPageNetwork.class);
+    static final Log log = Log.getLog(ConnectionPageNetwork.class);
     private TabFolder handlersFolder;
 
     private static class HandlerBlock {

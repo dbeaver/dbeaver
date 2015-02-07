@@ -6,13 +6,7 @@ Bundle-Version: 3.1.3
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Export-Package: org.apache.commons.logging,
- org.apache.commons.logging.impl;
-  uses:="org.apache.log,
-   org.apache.commons.logging,
-   org.apache.log4j,
-   org.apache.avalon.framework.logger",
- org.jkiss.dbeaver,
+Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.ext,
  org.jkiss.dbeaver.ext.ui,
@@ -120,9 +114,7 @@ Export-Package: org.apache.commons.logging,
  org.jkiss.dbeaver.ui.views.qm,
  org.jkiss.dbeaver.ui.views.session,
  org.jkiss.dbeaver.utils
-Bundle-ClassPath: lib/commons-logging-1.0.4.jar,
- lib/commons-jexl-2.0.1.jar,
- .
+Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
@@ -138,6 +130,8 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.utils;visibility:=reexport,
  com.jcraft.jsch,
  org.objectweb.asm,
- net.sf.jsqlparser
+ net.sf.jsqlparser,
+ org.apache.commons.logging,
+ org.apache.commons.jexl
 Bundle-Vendor: JKISS
 Bundle-Localization: plugin

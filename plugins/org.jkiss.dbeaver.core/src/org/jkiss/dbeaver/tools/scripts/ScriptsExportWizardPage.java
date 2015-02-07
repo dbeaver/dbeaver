@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -55,7 +54,7 @@ import java.util.Set;
 
 class ScriptsExportWizardPage extends WizardPage {
 
-    static final Log log = LogFactory.getLog(ScriptsExportWizardPage.class);
+    static final Log log = Log.getLog(ScriptsExportWizardPage.class);
 
     static final String PREF_SCRIPTS_EXPORT_OUT_DIR = "export.scripts.out.dir"; //$NON-NLS-1$
 

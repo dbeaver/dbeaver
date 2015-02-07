@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -41,7 +40,7 @@ import java.util.Map;
  */
 public class DB2PlanStatement {
 
-    private static final Log LOG = LogFactory.getLog(DB2PlanAnalyser.class);
+    private static final Log LOG = Log.getLog(DB2PlanAnalyser.class);
 
     private static final String SEL_BASE_SELECT;
 

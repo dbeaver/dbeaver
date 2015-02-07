@@ -48,7 +48,7 @@ import java.util.Collection;
  */
 public class ObjectPropertyTester extends PropertyTester
 {
-    //static final Log log = LogFactory.getLog(ObjectPropertyTester.class);
+    //static final Log log = Log.getLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.object";
     public static final String PROP_CAN_OPEN = "canOpen";

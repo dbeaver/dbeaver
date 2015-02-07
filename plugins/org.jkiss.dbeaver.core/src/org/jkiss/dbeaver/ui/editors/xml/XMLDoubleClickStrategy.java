@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.xml;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
@@ -27,7 +26,7 @@ import org.eclipse.jface.text.ITextViewer;
 
 
 public class XMLDoubleClickStrategy implements ITextDoubleClickStrategy {
-    static final Log log = LogFactory.getLog(XMLDoubleClickStrategy.class);
+    static final Log log = Log.getLog(XMLDoubleClickStrategy.class);
 
 	protected ITextViewer fText;
 

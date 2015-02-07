@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
 import org.jkiss.utils.IOUtils;
@@ -33,7 +32,7 @@ import java.io.InputStreamReader;
  */
 public class MySQLServerHome extends JDBCClientHome {
 
-    static final Log log = LogFactory.getLog(MySQLServerHome.class);
+    static final Log log = Log.getLog(MySQLServerHome.class);
 
     private String name;
     private String version;

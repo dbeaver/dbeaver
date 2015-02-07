@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -56,7 +55,7 @@ import java.util.Map;
 public class OracleDataType extends OracleObject<DBSObject>
     implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObjectEx {
 
-    static final Log log = LogFactory.getLog(OracleTableForeignKey.class);
+    static final Log log = Log.getLog(OracleTableForeignKey.class);
     public static final String TYPE_CODE_COLLECTION = "COLLECTION";
     public static final String TYPE_CODE_OBJECT = "OBJECT";
 

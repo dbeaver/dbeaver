@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 
@@ -30,7 +29,7 @@ import java.io.IOException;
  */
 public class SQLTemplatesRegistry {
 
-    static final Log log = LogFactory.getLog(SQLTemplatesRegistry.class);
+    static final Log log = Log.getLog(SQLTemplatesRegistry.class);
     private static SQLTemplatesRegistry instance;
 
     private ContextTypeRegistry templateContextTypeRegistry;

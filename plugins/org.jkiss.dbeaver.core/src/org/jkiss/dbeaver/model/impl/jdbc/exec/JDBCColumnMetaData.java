@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -43,7 +42,7 @@ import java.sql.SQLException;
  * JDBCColumnMetaData
  */
 public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImageProvider {
-    static final Log log = LogFactory.getLog(JDBCColumnMetaData.class);
+    static final Log log = Log.getLog(JDBCColumnMetaData.class);
 
     public static final String PROP_CATEGORY_COLUMN = "Column";
 

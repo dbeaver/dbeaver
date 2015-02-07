@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextDoubleClickStrategy;
@@ -29,7 +28,7 @@ import org.eclipse.jface.text.ITextViewer;
  * Process double clicks in the SQL content.
  */
 public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
-    static final Log log = LogFactory.getLog(SQLDoubleClickStrategy.class);
+    static final Log log = Log.getLog(SQLDoubleClickStrategy.class);
 
     protected ITextViewer fText;
     protected int curPos;

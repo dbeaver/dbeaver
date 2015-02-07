@@ -24,8 +24,7 @@ package org.jkiss.dbeaver.ext.erd.layout;
 
 /*
 import org.jkiss.utils.CommonUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.PolylineConnection;
@@ -57,7 +56,7 @@ public class ZestGraphLayout
 {
 
 /*
-    static final Log log = LogFactory.getLog(ZestGraphLayout.class);
+    static final Log log = Log.getLog(ZestGraphLayout.class);
 
     List<LayoutEntity> entities = new ArrayList<LayoutEntity>();
     List<LayoutRelationship> relationships = new ArrayList<LayoutRelationship>();

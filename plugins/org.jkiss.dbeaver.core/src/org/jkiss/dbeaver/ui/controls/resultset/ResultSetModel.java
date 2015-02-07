@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -40,7 +39,7 @@ import java.util.*;
  */
 public class ResultSetModel {
 
-    static final Log log = LogFactory.getLog(ResultSetModel.class);
+    static final Log log = Log.getLog(ResultSetModel.class);
 
     // Columns
     private DBDAttributeBinding[] columns = new DBDAttributeBinding[0];

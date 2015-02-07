@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -38,7 +37,7 @@ import java.util.List;
 public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyValueListProvider<Object>
 {
 
-    static final Log log = LogFactory.getLog(PropertyDescriptorEx.class);
+    static final Log log = Log.getLog(PropertyDescriptorEx.class);
 
     public static final String TAG_PROPERTY_GROUP = "propertyGroup"; //NON-NLS-1
     public static final String NAME_UNDEFINED = "<undefined>"; //NON-NLS-1

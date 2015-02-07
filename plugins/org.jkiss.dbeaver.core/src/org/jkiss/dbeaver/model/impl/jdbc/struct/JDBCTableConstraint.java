@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -50,7 +49,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
     extends AbstractTableConstraint<TABLE>
     implements DBSConstraintEnumerable, DBPSaveableObject
 {
-    static final Log log = LogFactory.getLog(JDBCTableConstraint.class);
+    static final Log log = Log.getLog(JDBCTableConstraint.class);
 
     private boolean persisted;
 

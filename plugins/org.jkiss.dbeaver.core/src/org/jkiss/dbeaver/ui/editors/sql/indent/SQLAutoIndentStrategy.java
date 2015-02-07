@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -31,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
-    static final Log log = LogFactory.getLog(SQLAutoIndentStrategy.class);
+    static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
 
     private String partitioning;
 

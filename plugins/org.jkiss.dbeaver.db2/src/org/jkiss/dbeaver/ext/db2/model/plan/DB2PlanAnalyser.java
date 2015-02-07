@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -38,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class DB2PlanAnalyser implements DBCPlan {
 
-    private static final Log LOG = LogFactory.getLog(DB2PlanAnalyser.class);
+    private static final Log LOG = Log.getLog(DB2PlanAnalyser.class);
 
     // See init below
     private static String PT_DELETE;

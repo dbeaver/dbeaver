@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.runtime;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.JexlException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
@@ -41,6 +39,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -69,7 +68,7 @@ import java.util.Map;
  * RuntimeUtils
  */
 public class RuntimeUtils {
-    static final Log log = LogFactory.getLog(RuntimeUtils.class);
+    static final Log log = Log.getLog(RuntimeUtils.class);
 
     private static JexlEngine jexlEngine;
 
@@ -370,7 +369,7 @@ public class RuntimeUtils {
     {
         synchronized (RuntimeUtils.class) {
             if (jexlEngine == null) {
-                jexlEngine = new JexlEngine(null, null, null, log);
+                jexlEngine = new JexlEngine(null, null, null, null);
                 jexlEngine.setCache(100);
             }
         }

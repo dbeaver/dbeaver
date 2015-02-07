@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -46,7 +45,7 @@ import java.util.*;
 */
 public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
 
-    static final Log log = LogFactory.getLog(DatabaseTransferConsumer.class);
+    static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
     private DBSDataContainer sourceObject;
     private DBSDataManipulator targetObject;

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
@@ -39,7 +38,7 @@ import java.util.List;
  */
 public class PairListControl<ELEMENT> extends Composite
 {
-    static final Log log = LogFactory.getLog(PairListControl.class);
+    static final Log log = Log.getLog(PairListControl.class);
 
     public static final int MOVE_LEFT = 0;
     public static final int MOVE_RIGHT = 1;

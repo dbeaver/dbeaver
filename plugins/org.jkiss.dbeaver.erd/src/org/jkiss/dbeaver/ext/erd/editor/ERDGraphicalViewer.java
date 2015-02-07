@@ -21,8 +21,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalViewer;
@@ -65,7 +64,7 @@ import java.util.*;
  * @author Serge Rieder
  */
 public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPropertyChangeListener, DBPEventListener {
-    static final Log log = LogFactory.getLog(ERDGraphicalViewer.class);
+    static final Log log = Log.getLog(ERDGraphicalViewer.class);
 
     private ERDEditorPart editor;
 	private ValidationMessageHandler messageHandler;

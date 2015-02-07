@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -40,7 +39,7 @@ import java.util.*;
  */
 public class DiagramObjectCollector {
 
-    static final Log log = LogFactory.getLog(DiagramObjectCollector.class);
+    static final Log log = Log.getLog(DiagramObjectCollector.class);
 
     private final EntityDiagram diagram;
     private final List<ERDEntity> erdEntities = new ArrayList<ERDEntity>();

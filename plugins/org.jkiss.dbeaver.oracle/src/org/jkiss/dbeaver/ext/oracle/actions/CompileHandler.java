@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.actions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -69,7 +68,7 @@ import java.util.Map;
 
 public class CompileHandler extends AbstractHandler implements IElementUpdater
 {
-    static final Log log = LogFactory.getLog(CompileHandler.class);
+    static final Log log = Log.getLog(CompileHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
@@ -217,7 +216,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
         }
     }
 
-    public static boolean compileUnit(DBRProgressMonitor monitor, Log compileLog, OracleSourceObject unit) throws DBCException
+    public static boolean compileUnit(DBRProgressMonitor monitor, DBCCompileLog compileLog, OracleSourceObject unit) throws DBCException
     {
         final IDatabasePersistAction[] compileActions = unit.getCompileActions();
         if (ArrayUtils.isEmpty(compileActions)) {
@@ -272,7 +271,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
 
     public static boolean logObjectErrors(
         JDBCSession session,
-        Log compileLog,
+        DBCCompileLog compileLog,
         OracleSourceObject unit,
         OracleObjectType objectType)
     {

@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -46,7 +45,7 @@ import java.util.*;
  */
 public class DataSourceProviderDescriptor extends AbstractDescriptor
 {
-    static final Log log = LogFactory.getLog(DataSourceProviderDescriptor.class);
+    static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 

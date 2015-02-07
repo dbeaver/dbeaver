@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.resources;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -50,7 +49,7 @@ import java.util.List;
  */
 public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
-    static final Log log = LogFactory.getLog(ScriptsHandlerImpl.class);
+    static final Log log = Log.getLog(ScriptsHandlerImpl.class);
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
