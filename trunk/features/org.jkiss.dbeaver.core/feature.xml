@@ -30,10 +30,6 @@
         <import plugin="org.eclipse.jface"/>
         <import plugin="org.eclipse.jface.text"/>
         <import plugin="org.eclipse.ui.views"/>
-        <import plugin="org.eclipse.gef"/>
-        <import plugin="org.apache.commons.logging"/>
-        <import plugin="com.jcraft.jsch"/>
-        <import plugin="org.objectweb.asm"/>
     </requires>
 
     <plugin
@@ -72,7 +68,42 @@
             unpack="false"/>
 
     <plugin
+            id="com.jcraft.jsch"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
+            id="org.apache.commons.logging"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
             id="org.apache.commons.jexl"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
+            id="org.objectweb.asm"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
+            id="org.eclipse.draw2d"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
+            id="org.eclipse.gef"
             download-size="0"
             install-size="0"
             version="0.0.0"
