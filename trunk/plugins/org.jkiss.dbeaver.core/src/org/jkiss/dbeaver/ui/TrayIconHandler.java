@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -37,7 +36,7 @@ import java.net.URL;
  */
 public class TrayIconHandler {
 
-    static final Log log = LogFactory.getLog(TrayIconHandler.class);
+    static final Log log = Log.getLog(TrayIconHandler.class);
 
     // AWT tray icon. SWT TrayItem do not support displayMessage function
     private TrayIcon trayItem;

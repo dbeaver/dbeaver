@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -54,7 +53,7 @@ import java.util.StringTokenizer;
  * General connection page (common for all connection types)
  */
 class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
-    static final Log log = LogFactory.getLog(ConnectionPageGeneral.class);
+    static final Log log = Log.getLog(ConnectionPageGeneral.class);
 
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;

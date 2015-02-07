@@ -11,8 +11,7 @@
  *******************************************************************************/
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -50,7 +49,7 @@ import java.util.ResourceBundle;
  */
 public class SQLTemplateStore extends TemplateStore {
 
-    static final Log log = LogFactory.getLog(SQLTemplateStore.class);
+    static final Log log = Log.getLog(SQLTemplateStore.class);
     public static final String PREF_STORE_KEY = "org.jkiss.dbeaver.core.sql_templates";
 
     public SQLTemplateStore(ContextTypeRegistry registry)

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -39,7 +38,7 @@ import java.util.List;
 
 class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
 
-    static final Log log = LogFactory.getLog(DataTransferPageFinal.class);
+    static final Log log = Log.getLog(DataTransferPageFinal.class);
 
     private Table resultTable;
     private boolean activated = false;

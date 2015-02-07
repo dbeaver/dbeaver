@@ -29,8 +29,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -47,7 +46,7 @@ import java.util.List;
 
 public class ExecuteStatementCountHandler extends AbstractHandler implements SQLQueryTransformer {
 
-    static final Log log = LogFactory.getLog(ExecuteStatementCountHandler.class);
+    static final Log log = Log.getLog(ExecuteStatementCountHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

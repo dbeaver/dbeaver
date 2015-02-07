@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -38,7 +37,7 @@ import java.sql.Array;
  */
 public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCArrayValueHandler.class);
+    static final Log log = Log.getLog(JDBCArrayValueHandler.class);
 
     public static final JDBCArrayValueHandler INSTANCE = new JDBCArrayValueHandler();
 

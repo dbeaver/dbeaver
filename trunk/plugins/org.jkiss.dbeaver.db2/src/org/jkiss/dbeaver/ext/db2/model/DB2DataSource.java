@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
@@ -81,7 +80,7 @@ import java.util.Map;
  */
 public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
 
-    private static final Log LOG = LogFactory.getLog(DB2DataSource.class);
+    private static final Log LOG = Log.getLog(DB2DataSource.class);
 
     private static final String GET_CURRENT_USER = "VALUES(SYSTEM_USER)";
     private static final String GET_CURRENT_SCHEMA = "VALUES(CURRENT SCHEMA)";

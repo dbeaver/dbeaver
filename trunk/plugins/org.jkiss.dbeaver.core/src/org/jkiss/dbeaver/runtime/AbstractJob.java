@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -33,7 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public abstract class AbstractJob extends Job
 {
-    static final Log log = LogFactory.getLog(AbstractJob.class);
+    static final Log log = Log.getLog(AbstractJob.class);
 
     public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 500;
 

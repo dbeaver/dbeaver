@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.properties.tabbed;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.events.DisposeEvent;
@@ -46,7 +45,7 @@ import org.jkiss.dbeaver.ui.editors.SubEditorSite;
  */
 public class EditorWrapperSection extends AbstractPropertySection implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable {
 
-    static final Log log = LogFactory.getLog(EditorWrapperSection.class);
+    static final Log log = Log.getLog(EditorWrapperSection.class);
 
     private IDatabaseEditor mainEditor;
     private EntityEditorDescriptor editorDescriptor;

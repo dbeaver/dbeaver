@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -59,7 +58,7 @@ import java.util.List;
 public class GenericDataSource extends JDBCDataSource
     implements DBSObjectSelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
 {
-    static final Log log = LogFactory.getLog(GenericDataSource.class);
+    static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
     private final JDBCBasicDataTypeCache dataTypeCache;

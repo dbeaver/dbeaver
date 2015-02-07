@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateVariableResolver;
 import org.jkiss.dbeaver.DBException;
@@ -40,7 +39,7 @@ import java.util.List;
  */
 public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVariableResolver {
 
-    static final Log log = LogFactory.getLog(SQLObjectResolver.class);
+    static final Log log = Log.getLog(SQLObjectResolver.class);
 
     public SQLObjectResolver(String type, String description)
     {

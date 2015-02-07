@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -38,7 +37,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
  */
 class ScriptsExportUtils {
 
-    static final Log log = LogFactory.getLog(ScriptsExportUtils.class);
+    static final Log log = Log.getLog(ScriptsExportUtils.class);
 
     static DBNNode getScriptsNode()
     {

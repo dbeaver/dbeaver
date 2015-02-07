@@ -10,8 +10,7 @@
  *******************************************************************************/
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
@@ -31,7 +30,7 @@ import org.eclipse.swt.graphics.Point;
  */
 public class SQLTemplateCompletionProposal implements ICompletionProposal, ICompletionProposalExtension, ICompletionProposalExtension2, ICompletionProposalExtension3 {
 
-    static final Log log = LogFactory.getLog(SQLTemplateCompletionProposal.class);
+    static final Log log = Log.getLog(SQLTemplateCompletionProposal.class);
 
     private final Template fTemplate;
     private final SQLContext fContext;

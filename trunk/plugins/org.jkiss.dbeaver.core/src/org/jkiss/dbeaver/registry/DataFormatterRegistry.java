@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.jkiss.code.Nullable;
@@ -43,7 +42,7 @@ import java.util.Map;
 
 public class DataFormatterRegistry
 {
-    static final Log log = LogFactory.getLog(DataFormatterRegistry.class);
+    static final Log log = Log.getLog(DataFormatterRegistry.class);
 
     public static final String CONFIG_FILE_NAME = "dataformat-profiles.xml"; //$NON-NLS-1$
 

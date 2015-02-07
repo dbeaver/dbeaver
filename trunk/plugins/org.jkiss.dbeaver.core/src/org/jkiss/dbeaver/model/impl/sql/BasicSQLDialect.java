@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -40,7 +39,7 @@ import java.util.*;
  */
 public class BasicSQLDialect implements SQLDialect {
 
-    static final Log log = LogFactory.getLog(BasicSQLDialect.class);
+    static final Log log = Log.getLog(BasicSQLDialect.class);
 
     private static final String[] DEFAULT_LINE_COMMENTS = {"--"};
 

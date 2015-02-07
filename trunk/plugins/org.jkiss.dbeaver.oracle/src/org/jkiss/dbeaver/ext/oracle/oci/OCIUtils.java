@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.oci;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -37,7 +36,7 @@ import java.util.Map;
 
 public class OCIUtils
 {
-    static final Log log = LogFactory.getLog(OCIUtils.class);
+    static final Log log = Log.getLog(OCIUtils.class);
 
     public static final String WIN_REG_ORACLE = "SOFTWARE\\ORACLE";
     public static final String WIN_REG_ORA_HOME = "ORACLE_HOME";

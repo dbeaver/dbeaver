@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.templates.TemplateContext;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -38,7 +37,7 @@ import java.util.List;
  */
 public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjectResolver<T> {
 
-    static final Log log = LogFactory.getLog(SQLContainerResolver.class);
+    static final Log log = Log.getLog(SQLContainerResolver.class);
     public static final String VAR_NAME_SCHEMA = "schema";
     public static final String VAR_NAME_CATALOG = "catalog";
 

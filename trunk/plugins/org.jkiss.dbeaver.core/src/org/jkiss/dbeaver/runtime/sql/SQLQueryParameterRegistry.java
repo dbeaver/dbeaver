@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -37,7 +36,7 @@ import java.util.Map;
 
 public class SQLQueryParameterRegistry
 {
-    static final Log log = LogFactory.getLog(SQLQueryParameterRegistry.class);
+    static final Log log = Log.getLog(SQLQueryParameterRegistry.class);
 
     public static final String CONFIG_FILE_NAME = "parameter-bindings.xml"; //$NON-NLS-1$
     public static final String TAG_PARAMETER = "parameter";

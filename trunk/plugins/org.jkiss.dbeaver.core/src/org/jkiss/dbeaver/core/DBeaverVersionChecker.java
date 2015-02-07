@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.core;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Shell;
@@ -35,7 +34,7 @@ import java.io.IOException;
  */
 public class DBeaverVersionChecker extends AbstractJob {
 
-    static final Log log = LogFactory.getLog(DBeaverVersionChecker.class);
+    static final Log log = Log.getLog(DBeaverVersionChecker.class);
 
     private final boolean showAlways;
 

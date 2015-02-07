@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
@@ -28,7 +27,7 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 
 public class ObjectSearchProvider extends AbstractDescriptor
 {
-    static final Log log = LogFactory.getLog(ObjectSearchProvider.class);
+    static final Log log = Log.getLog(ObjectSearchProvider.class);
 
     private String id;
     private String label;

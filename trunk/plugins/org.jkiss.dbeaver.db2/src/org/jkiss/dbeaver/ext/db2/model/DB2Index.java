@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -48,7 +47,7 @@ import java.util.List;
  */
 public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
 
-    private static final Log LOG = LogFactory.getLog(DB2Index.class);
+    private static final Log LOG = Log.getLog(DB2Index.class);
 
     // Structure
     private DB2UniqueRule uniqueRule;

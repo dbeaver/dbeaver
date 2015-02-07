@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -53,7 +52,7 @@ import java.util.*;
  */
 public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable
 {
-    static final Log log = LogFactory.getLog(MSSQLDataSource.class);
+    static final Log log = Log.getLog(MSSQLDataSource.class);
 
     private final JDBCBasicDataTypeCache dataTypeCache;
     private List<MSSQLEngine> engines;

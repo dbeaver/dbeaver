@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -43,7 +42,7 @@ import java.util.List;
  */
 public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn, DBPHiddenObject
 {
-    static final Log log = LogFactory.getLog(OracleTableColumn.class);
+    static final Log log = Log.getLog(OracleTableColumn.class);
 
     private OracleDataType type;
     private OracleDataTypeModifier typeMod;

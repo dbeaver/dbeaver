@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -34,7 +33,7 @@ import java.io.ByteArrayInputStream;
 
 public class SQLEditorInputFactory implements IElementFactory
 {
-    static final Log log = LogFactory.getLog(SQLEditorInputFactory.class);
+    static final Log log = Log.getLog(SQLEditorInputFactory.class);
 
     private static final String ID_FACTORY = SQLEditorInputFactory.class.getName(); //$NON-NLS-1$
 

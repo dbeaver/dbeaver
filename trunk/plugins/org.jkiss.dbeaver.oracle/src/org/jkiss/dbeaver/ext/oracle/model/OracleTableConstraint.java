@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -33,7 +32,7 @@ import java.sql.ResultSet;
  */
 public class OracleTableConstraint extends OracleTableConstraintBase {
 
-    static final Log log = LogFactory.getLog(OracleTableConstraint.class);
+    static final Log log = Log.getLog(OracleTableConstraint.class);
 
     private String searchCondition;
 

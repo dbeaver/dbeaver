@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -42,7 +41,7 @@ import java.util.*;
 
 public class NavigatorHandlerRefresh extends AbstractHandler {
 
-    static final Log log = LogFactory.getLog(NavigatorHandlerRefresh.class);
+    static final Log log = Log.getLog(NavigatorHandlerRefresh.class);
 
     public NavigatorHandlerRefresh() {
 

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
@@ -64,7 +63,7 @@ import java.util.List;
  */
 public class DB2Utils {
 
-    private static final Log LOG = LogFactory.getLog(DB2Utils.class);
+    private static final Log LOG = Log.getLog(DB2Utils.class);
 
     private static final String LINE_SEP = ";\n";
 

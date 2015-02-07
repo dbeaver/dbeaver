@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -41,7 +40,7 @@ import java.sql.SQLException;
  */
 public class PostgreMetaModel extends GenericMetaModel
 {
-    static final Log log = LogFactory.getLog(PostgreMetaModel.class);
+    static final Log log = Log.getLog(PostgreMetaModel.class);
 
     public PostgreMetaModel(IConfigurationElement cfg) {
         super(cfg);

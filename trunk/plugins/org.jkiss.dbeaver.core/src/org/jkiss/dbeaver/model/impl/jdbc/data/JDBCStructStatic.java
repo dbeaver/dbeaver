@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -45,7 +44,7 @@ import java.util.*;
  */
 public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
 
-    static final Log log = LogFactory.getLog(JDBCStructStatic.class);
+    static final Log log = Log.getLog(JDBCStructStatic.class);
 
     @NotNull
     private DBSDataType type;

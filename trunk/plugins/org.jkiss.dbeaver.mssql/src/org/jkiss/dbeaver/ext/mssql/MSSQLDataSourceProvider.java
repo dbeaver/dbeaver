@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLDataSource;
@@ -36,7 +35,7 @@ import java.util.*;
 
 public class MSSQLDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
 
-    static final Log log = LogFactory.getLog(MSSQLDataSourceProvider.class);
+    static final Log log = Log.getLog(MSSQLDataSourceProvider.class);
 
     private static final String REGISTRY_ROOT_32 = "SOFTWARE\\MSSQL AB";
     private static final String REGISTRY_ROOT_64 = "SOFTWARE\\Wow6432Node\\MYSQL AB";

@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ext.firebird;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -36,7 +35,7 @@ import java.sql.SQLException;
  */
 public class FireBirdUtils {
 
-    static final Log log = LogFactory.getLog(FireBirdUtils.class);
+    static final Log log = Log.getLog(FireBirdUtils.class);
 
     public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure)
         throws DBException

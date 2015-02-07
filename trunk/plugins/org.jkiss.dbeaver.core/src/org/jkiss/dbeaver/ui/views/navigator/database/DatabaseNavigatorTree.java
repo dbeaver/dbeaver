@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.*;
@@ -51,7 +50,7 @@ import java.util.List;
 
 public class DatabaseNavigatorTree extends Composite implements IDBNListener
 {
-    static final Log log = LogFactory.getLog(DatabaseNavigatorTree.class);
+    static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
     private TreeViewer viewer;
     private DBNModel model;

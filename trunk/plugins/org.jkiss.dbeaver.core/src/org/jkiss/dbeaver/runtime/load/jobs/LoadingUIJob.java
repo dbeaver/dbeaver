@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime.load.jobs;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -28,7 +27,7 @@ import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 
 class LoadingUIJob<RESULT> extends AbstractUIJob {
-    static final Log log = LogFactory.getLog(LoadingUIJob.class);
+    static final Log log = Log.getLog(LoadingUIJob.class);
 
     private static final long DELAY = 200;
 

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -60,7 +59,7 @@ import java.util.*;
  */
 public final class DBUtils {
 
-    static final Log log = LogFactory.getLog(DBUtils.class);
+    static final Log log = Log.getLog(DBUtils.class);
 
     public static <TYPE extends DBSObject> Comparator<TYPE> nameComparator()
     {

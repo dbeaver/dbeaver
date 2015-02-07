@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
@@ -52,7 +51,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ComplexObjectEditor extends TreeViewer {
 
-    static final Log log = LogFactory.getLog(ComplexObjectEditor.class);
+    static final Log log = Log.getLog(ComplexObjectEditor.class);
 
     private IWorkbenchPartSite partSite;
     private DBPDataSource dataSource;

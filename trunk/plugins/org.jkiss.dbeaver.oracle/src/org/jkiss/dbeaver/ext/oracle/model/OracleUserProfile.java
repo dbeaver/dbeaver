@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -35,7 +34,7 @@ import java.util.List;
  */
 public class OracleUserProfile extends OracleGlobalObject
 {
-    static final Log log = LogFactory.getLog(OracleUserProfile.class);
+    static final Log log = Log.getLog(OracleUserProfile.class);
 
     private String name;
     private List<ProfileResource> resources;
@@ -75,7 +74,7 @@ public class OracleUserProfile extends OracleGlobalObject
      */
     public static class ProfileResource extends OracleObject<OracleUserProfile>
     {
-        static final Log log = LogFactory.getLog(ProfileResource.class);
+        static final Log log = Log.getLog(ProfileResource.class);
 
         private String type;
         private String limit;

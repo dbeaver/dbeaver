@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.ResourceAttributes;
@@ -50,7 +49,7 @@ import java.io.*;
  */
 public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider, IDataSourceContainerProvider
 {
-    static final Log log = LogFactory.getLog(ContentEditorInput.class);
+    static final Log log = Log.getLog(ContentEditorInput.class);
 
     private DBDValueController valueController;
     private ContentEditorPart[] editorParts;

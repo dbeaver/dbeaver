@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.project;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -32,7 +31,7 @@ import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
 {
 
-    static final Log log = LogFactory.getLog(ProjectNavigatorView.class);
+    static final Log log = Log.getLog(ProjectNavigatorView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectNavigator";
 

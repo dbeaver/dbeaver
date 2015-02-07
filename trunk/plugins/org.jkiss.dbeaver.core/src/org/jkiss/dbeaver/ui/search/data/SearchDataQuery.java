@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -43,7 +42,7 @@ import java.util.*;
 
 public class SearchDataQuery implements IObjectSearchQuery {
 
-    static final Log log = LogFactory.getLog(SearchDataQuery.class);
+    static final Log log = Log.getLog(SearchDataQuery.class);
 
     private final SearchDataParams params;
 

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -54,7 +53,7 @@ public abstract class JDBCCompositeCache<
     ROW_REF extends DBSObject>
     extends AbstractObjectCache<OWNER, OBJECT>
 {
-    protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
+    protected static final Log log = Log.getLog(JDBCCompositeCache.class);
     public static final String DEFAULT_OBJECT_NAME = "#DBOBJ";
 
     private final JDBCStructCache<OWNER,?,?> parentCache;

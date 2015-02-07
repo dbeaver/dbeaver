@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,7 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> extends AbstractObjectManager<OBJECT_TYPE> {
 
-    protected static final Log log = LogFactory.getLog(JDBCObjectManager.class);
+    protected static final Log log = Log.getLog(JDBCObjectManager.class);
 
     @Override
     public void executePersistAction(DBCSession session, DBECommand<OBJECT_TYPE> command, IDatabasePersistAction action) throws DBException

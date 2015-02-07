@@ -19,8 +19,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -46,7 +45,7 @@ import java.util.*;
  */
 public class DataTransferSettings {
 
-    static final Log log = LogFactory.getLog(DataTransferSettings.class);
+    static final Log log = Log.getLog(DataTransferSettings.class);
 
     private static final int DEFAULT_THREADS_NUM = 1;
 

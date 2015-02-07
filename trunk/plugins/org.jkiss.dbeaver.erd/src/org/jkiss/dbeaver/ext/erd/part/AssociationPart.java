@@ -21,8 +21,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -54,7 +53,7 @@ import java.util.*;
  * @author Serge Rieder
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
-    static final Log log = LogFactory.getLog(AssociationPart.class);
+    static final Log log = Log.getLog(AssociationPart.class);
 
     public AssociationPart()
     {

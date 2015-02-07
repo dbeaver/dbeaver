@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -51,7 +50,7 @@ import java.util.List;
  * @author Denis Forveille
  */
 public class DB2StructureAssistant implements DBSStructureAssistant {
-    private static final Log LOG = LogFactory.getLog(DB2StructureAssistant.class);
+    private static final Log LOG = Log.getLog(DB2StructureAssistant.class);
 
     // TODO DF: Work in progess
 

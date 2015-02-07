@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
@@ -59,7 +58,7 @@ import java.util.List;
 
 public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
-    static final Log log = LogFactory.getLog(NavigatorHandlerObjectBase.class);
+    static final Log log = Log.getLog(NavigatorHandlerObjectBase.class);
 
     static boolean updateUI = true;
 

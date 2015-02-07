@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
@@ -35,7 +34,7 @@ import java.sql.ResultSet;
  */
 public class MySQLPrivilege implements DBAPrivilege
 {
-    static final Log log = LogFactory.getLog(MySQLPrivilege.class);
+    static final Log log = Log.getLog(MySQLPrivilege.class);
 
     public static final String GRANT_PRIVILEGE = "Grant Option";
     public static final String ALL_PRIVILEGES = "All Privileges";

@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -53,7 +52,7 @@ import java.util.List;
  */
 public class DBeaverCore implements DBPApplication {
 
-    static final Log log = LogFactory.getLog(DBeaverCore.class);
+    static final Log log = Log.getLog(DBeaverCore.class);
 
     private static final String LOB_DIR = ".lob"; //$NON-NLS-1$
     public static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$

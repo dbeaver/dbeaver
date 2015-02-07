@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.IFindReplaceTargetExtension;
 import org.eclipse.jface.text.IFindReplaceTargetExtension3;
@@ -43,7 +42,7 @@ import java.util.regex.PatternSyntaxException;
  */
 class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
 
-    static final Log log = LogFactory.getLog(ResultSetFindReplaceTarget.class);
+    static final Log log = Log.getLog(ResultSetFindReplaceTarget.class);
 
     private final ResultSetViewer resultSet;
     private Pattern searchPattern;

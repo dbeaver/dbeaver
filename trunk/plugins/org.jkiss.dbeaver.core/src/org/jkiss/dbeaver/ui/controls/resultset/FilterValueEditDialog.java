@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
@@ -38,7 +37,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 class FilterValueEditDialog extends BaseDialog {
 
-    static final Log log = LogFactory.getLog(FilterValueEditDialog.class);
+    static final Log log = Log.getLog(FilterValueEditDialog.class);
 
     private final ResultSetViewer viewer;
     private final DBDAttributeBinding attr;

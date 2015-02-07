@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -48,7 +47,7 @@ import java.util.regex.Matcher;
  */
 public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObject
 {
-    static final Log log = LogFactory.getLog(MySQLUser.class);
+    static final Log log = Log.getLog(MySQLUser.class);
 
     private MySQLDataSource dataSource;
     private String userName;

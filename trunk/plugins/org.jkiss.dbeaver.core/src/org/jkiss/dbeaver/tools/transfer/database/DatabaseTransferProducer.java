@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,7 +37,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
  */
 public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseProducerSettings> {
 
-    static final Log log = LogFactory.getLog(DatabaseTransferProducer.class);
+    static final Log log = Log.getLog(DatabaseTransferProducer.class);
 
     @NotNull
     private DBSDataContainer dataContainer;

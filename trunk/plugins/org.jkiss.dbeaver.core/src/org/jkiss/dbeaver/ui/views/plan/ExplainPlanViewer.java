@@ -56,7 +56,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class ExplainPlanViewer implements IPropertyChangeListener
 {
-    //static final Log log = LogFactory.getLog(ResultSetViewer.class);
+    //static final Log log = Log.getLog(ResultSetViewer.class);
     private IDataSourceProvider dataSourceProvider;
     private SashForm planPanel;
     private Text sqlText;

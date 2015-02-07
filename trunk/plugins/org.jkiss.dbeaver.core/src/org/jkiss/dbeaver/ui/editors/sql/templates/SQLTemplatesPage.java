@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -50,7 +49,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
  */
 public class SQLTemplatesPage extends AbstractTemplatesPage {
 
-    static final Log log = LogFactory.getLog(SQLTemplatesPage.class);
+    static final Log log = Log.getLog(SQLTemplatesPage.class);
 
     private static final String PREFERENCE_PAGE_ID = "org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage"; //$NON-NLS-1$
 

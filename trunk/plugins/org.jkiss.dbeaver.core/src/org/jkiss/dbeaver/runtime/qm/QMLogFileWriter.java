@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -41,7 +40,7 @@ import java.util.List;
  */
 public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener {
 
-    static final Log log = LogFactory.getLog(QMLogFileWriter.class);
+    static final Log log = Log.getLog(QMLogFileWriter.class);
 
     private File logFile;
     private boolean enabled;

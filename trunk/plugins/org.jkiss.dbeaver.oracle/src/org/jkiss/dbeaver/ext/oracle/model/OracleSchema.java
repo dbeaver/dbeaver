@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -52,7 +51,7 @@ import java.util.List;
  */
 public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject
 {
-    static final Log log = LogFactory.getLog(OracleSchema.class);
+    static final Log log = Log.getLog(OracleSchema.class);
 
     final public TableCache tableCache = new TableCache();
     final public MViewCache mviewCache = new MViewCache();

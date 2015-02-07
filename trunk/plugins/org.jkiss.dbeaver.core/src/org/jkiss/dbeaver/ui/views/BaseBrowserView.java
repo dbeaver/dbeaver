@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ui.views;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -40,7 +39,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 public class BaseBrowserView extends ViewPart {
 
-    static final Log log = LogFactory.getLog(BaseBrowserView.class);
+    static final Log log = Log.getLog(BaseBrowserView.class);
 
     public static final String MEMENTO_URL = "url"; //$NON-NLS-1$
 

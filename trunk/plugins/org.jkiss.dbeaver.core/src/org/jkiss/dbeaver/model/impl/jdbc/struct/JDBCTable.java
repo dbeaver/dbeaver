@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -54,7 +53,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     extends AbstractTable<DATASOURCE, CONTAINER>
     implements DBSDataManipulator, DBPSaveableObject
 {
-    static final Log log = LogFactory.getLog(JDBCTable.class);
+    static final Log log = Log.getLog(JDBCTable.class);
     public static final String DEFAULT_TABLE_ALIAS = "x";
     public static final int DEFAULT_READ_FETCH_SIZE = 10000;
 

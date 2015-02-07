@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -48,7 +47,7 @@ import java.util.regex.Matcher;
  */
 public class MSSQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObject
 {
-    static final Log log = LogFactory.getLog(MSSQLUser.class);
+    static final Log log = Log.getLog(MSSQLUser.class);
 
     private MSSQLDataSource dataSource;
     private String userName;

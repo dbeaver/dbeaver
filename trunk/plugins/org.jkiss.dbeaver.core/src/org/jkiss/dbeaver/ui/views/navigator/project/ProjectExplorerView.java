@@ -46,7 +46,7 @@ import java.util.Date;
 public class ProjectExplorerView extends NavigatorViewBase implements DBPProjectListener
 {
 
-    //static final Log log = LogFactory.getLog(ProjectExplorerView.class);
+    //static final Log log = Log.getLog(ProjectExplorerView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
 

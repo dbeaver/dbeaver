@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -36,7 +35,7 @@ import java.util.List;
  */
 public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
 {
-    static final Log log = LogFactory.getLog(DBNNode.class);
+    static final Log log = Log.getLog(DBNNode.class);
 
     private DBNNode parentNode;
 

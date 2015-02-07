@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -48,7 +47,7 @@ import java.util.concurrent.Executor;
  */
 public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, DBRBlockingObject {
 
-    static final Log log = LogFactory.getLog(JDBCConnectionImpl.class);
+    static final Log log = Log.getLog(JDBCConnectionImpl.class);
 
     private final JDBCConnector connector;
 

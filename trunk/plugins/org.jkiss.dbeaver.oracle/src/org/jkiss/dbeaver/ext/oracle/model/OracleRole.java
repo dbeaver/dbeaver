@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.access.DBARole;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -31,7 +30,7 @@ import java.sql.ResultSet;
  */
 public class OracleRole extends OracleGrantee implements DBARole
 {
-    static final Log log = LogFactory.getLog(OracleRole.class);
+    static final Log log = Log.getLog(OracleRole.class);
 
     private String name;
     private String authentication;

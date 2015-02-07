@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;
@@ -31,7 +30,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 
 public class NavigatorActiveProjectContributor extends ContributionItem
 {
-    static final Log log = LogFactory.getLog(NavigatorActiveProjectContributor.class);
+    static final Log log = Log.getLog(NavigatorActiveProjectContributor.class);
 
     @Override
     public void fill(Menu menu, int index)

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.oci;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
 import org.jkiss.utils.CommonUtils;
 
@@ -29,7 +28,7 @@ import java.util.List;
 
 public class OracleHomeDescriptor extends JDBCClientHome
 {
-    static final Log log = LogFactory.getLog(OracleHomeDescriptor.class);
+    static final Log log = Log.getLog(OracleHomeDescriptor.class);
 
 /*
     private static final String JAR_OJDBC6 = "ojdbc6.jar";

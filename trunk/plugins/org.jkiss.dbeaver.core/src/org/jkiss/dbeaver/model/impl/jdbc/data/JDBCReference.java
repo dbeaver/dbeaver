@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDReference;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -35,7 +34,7 @@ import java.sql.SQLException;
  */
 public class JDBCReference implements DBDReference {
 
-    static final Log log = LogFactory.getLog(JDBCReference.class);
+    static final Log log = Log.getLog(JDBCReference.class);
 
     private DBSDataType type;
     private Ref value;

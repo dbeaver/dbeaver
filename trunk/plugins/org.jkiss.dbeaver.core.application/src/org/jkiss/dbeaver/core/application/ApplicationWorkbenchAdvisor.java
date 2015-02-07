@@ -18,12 +18,8 @@
  */
 package org.jkiss.dbeaver.core.application;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.TrayDialog;
-import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -33,13 +29,11 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.DBeaverVersionChecker;
-import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
@@ -51,7 +45,7 @@ import java.util.Random;
  */
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 {
-    static final Log log = LogFactory.getLog(ApplicationWorkbenchAdvisor.class);
+    static final Log log = Log.getLog(ApplicationWorkbenchAdvisor.class);
 
     private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
     public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$

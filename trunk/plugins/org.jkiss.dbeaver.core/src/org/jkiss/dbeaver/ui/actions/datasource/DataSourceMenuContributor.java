@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -31,7 +30,7 @@ import java.util.List;
 
 public abstract class DataSourceMenuContributor extends CompoundContributionItem
 {
-    static final Log log = LogFactory.getLog(DataSourceMenuContributor.class);
+    static final Log log = Log.getLog(DataSourceMenuContributor.class);
 
     @Override
     protected IContributionItem[] getContributionItems()

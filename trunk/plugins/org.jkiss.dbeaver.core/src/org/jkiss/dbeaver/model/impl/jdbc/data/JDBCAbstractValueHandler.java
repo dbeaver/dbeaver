@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -40,7 +39,7 @@ import java.sql.SQLException;
  */
 public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
+    static final Log log = Log.getLog(JDBCAbstractValueHandler.class);
 
     @Override
     public final Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index)

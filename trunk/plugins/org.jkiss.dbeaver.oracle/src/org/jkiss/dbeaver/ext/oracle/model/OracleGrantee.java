@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
@@ -40,7 +39,7 @@ import java.util.Collection;
  */
 public abstract class OracleGrantee extends OracleGlobalObject implements DBAUser, DBPSaveableObject
 {
-    static final Log log = LogFactory.getLog(OracleGrantee.class);
+    static final Log log = Log.getLog(OracleGrantee.class);
 
     final RolePrivCache rolePrivCache = new RolePrivCache();
     final SystemPrivCache systemPrivCache = new SystemPrivCache();

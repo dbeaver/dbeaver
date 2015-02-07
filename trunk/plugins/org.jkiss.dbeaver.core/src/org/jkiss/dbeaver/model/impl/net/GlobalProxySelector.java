@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -37,7 +36,7 @@ import java.util.Map;
  */
 public class GlobalProxySelector extends ProxySelector {
 
-    static final Log log = LogFactory.getLog(GlobalProxySelector.class);
+    static final Log log = Log.getLog(GlobalProxySelector.class);
 
     private final ProxySelector parent;
 
