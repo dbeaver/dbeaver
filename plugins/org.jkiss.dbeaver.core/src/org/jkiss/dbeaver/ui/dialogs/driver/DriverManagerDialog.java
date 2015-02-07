@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
+import org.jkiss.dbeaver.ui.controls.DriverTreeViewer;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -64,7 +64,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button newButton;
     private Button editButton;
     private Button deleteButton;
-    private DriverTreeControl treeControl;
+    private DriverTreeViewer treeControl;
     private Image dialogImage;
     //private Label driverDescription;
     private ProgressMonitorPart monitorPart;
@@ -103,7 +103,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            treeControl = new DriverTreeControl(group);
+            treeControl = new DriverTreeViewer(group);
             treeControl.initDrivers(this, providers, false);
             treeControl.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
@@ -253,9 +253,9 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 this.selectedCategory = selectedDriver.getCategory();
             } else if (selectedObject instanceof DataSourceProviderDescriptor) {
                 this.selectedProvider = (DataSourceProviderDescriptor)selectedObject;
-            } else if (selectedObject instanceof DriverTreeControl.DriverCategory) {
+            } else if (selectedObject instanceof DriverTreeViewer.DriverCategory) {
                 this.selectedProvider = null;
-                this.selectedCategory = ((DriverTreeControl.DriverCategory) selectedObject).getName();
+                this.selectedCategory = ((DriverTreeViewer.DriverCategory) selectedObject).getName();
             }
         }
         //super.updateStatus(new Status(Status.INFO, DBeaverConstants.PLUGIN_ID, selectedDriver == null ? "" : selectedDriver.getDescription()));

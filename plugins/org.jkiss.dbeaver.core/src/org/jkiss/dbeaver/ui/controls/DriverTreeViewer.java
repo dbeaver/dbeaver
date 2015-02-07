@@ -37,11 +37,11 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 /**
- * DriverTreeControl
+ * DriverTreeViewer
  *
  * @author Serge Rieder
  */
-public class DriverTreeControl extends TreeViewer implements ISelectionChangedListener, IDoubleClickListener {
+public class DriverTreeViewer extends TreeViewer implements ISelectionChangedListener, IDoubleClickListener {
 
     private Object site;
     private List<DataSourceProviderDescriptor> providers;
@@ -88,7 +88,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         }
     }
 
-    public DriverTreeControl(Composite parent)
+    public DriverTreeViewer(Composite parent)
     {
         super(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
