@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 import org.jkiss.dbeaver.ui.controls.DriverTreeViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -50,12 +51,10 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-        DriverTreeViewer driverTreeViewer = new DriverTreeViewer(placeholder);
-        driverTreeViewer.initDrivers(this, wizard.getAvailableProvides(), true);
-        Control control = driverTreeViewer.getControl();
+        DriverTreeControl driverTreeControl = new DriverTreeControl(placeholder, this, wizard.getAvailableProvides(), true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 200;
-        control.setLayoutData(gd);
+        driverTreeControl.setLayoutData(gd);
         setControl(placeholder);
 
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);

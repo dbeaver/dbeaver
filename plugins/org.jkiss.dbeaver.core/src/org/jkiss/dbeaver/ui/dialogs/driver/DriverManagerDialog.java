@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 import org.jkiss.dbeaver.ui.controls.DriverTreeViewer;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
@@ -64,7 +65,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button newButton;
     private Button editButton;
     private Button deleteButton;
-    private DriverTreeViewer treeControl;
+    private DriverTreeControl treeControl;
     private Image dialogImage;
     //private Label driverDescription;
     private ProgressMonitorPart monitorPart;
@@ -103,9 +104,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            treeControl = new DriverTreeViewer(group);
-            treeControl.initDrivers(this, providers, false);
-            treeControl.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+            treeControl = new DriverTreeControl(group, this, providers, false);
+            treeControl.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
         {
@@ -296,7 +296,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             }
             DriverEditDialog dialog = new DriverEditDialog(getShell(), provider, selectedCategory);
             if (dialog.open() == IDialogConstants.OK_ID) {
-                treeControl.refresh();
+                treeControl.getViewer().refresh();
             }
         }
     }
@@ -311,7 +311,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             if (dialog.open() == IDialogConstants.OK_ID) {
                 // Do nothing
             }
-            treeControl.refresh(driver);
+            treeControl.getViewer().refresh(driver);
         }
     }
 
@@ -333,7 +333,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         {
             selectedDriver.getProviderDescriptor().removeDriver(selectedDriver);
             selectedDriver.getProviderDescriptor().getRegistry().saveDrivers();
-            treeControl.refresh();
+            treeControl.getViewer().refresh();
         }
     }
 
