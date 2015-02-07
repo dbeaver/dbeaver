@@ -18,6 +18,9 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
@@ -33,23 +36,39 @@ import java.util.List;
  */
 public class DriverTreeControl extends FilteredTree {
 
-    private static PatternFilter filter = new PatternFilter();
-    private final boolean expandRecent;
-    private final Object site;
-    private final List<DataSourceProviderDescriptor> providers;
+    public static final String DRIVER_INIT_DATA = "driverInitData";
 
     public DriverTreeControl(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
-        super(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER, filter, true);
-        this.site = site;
-        this.providers = providers;
-        this.expandRecent = expandRecent;
+        super(
+            saveInitParameters(parent, site, providers, expandRecent),
+            SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER,
+            new DriverFilter(),
+            true);
+    }
+
+    private static Composite saveInitParameters(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
+        parent.setData("driverInitData", new Object[] {site, providers, expandRecent} );
+        return parent;
     }
 
     @Override
     protected DriverTreeViewer doCreateTreeViewer(Composite parent, int style) {
+        Object[] initData = (Object[]) getParent().getData(DRIVER_INIT_DATA);
+        parent.setData(DRIVER_INIT_DATA, null);
         DriverTreeViewer viewer = new DriverTreeViewer(parent, style);
-        viewer.initDrivers(site, providers, expandRecent);
+        viewer.initDrivers(initData[0], (List<DataSourceProviderDescriptor>) initData[1], (Boolean) initData[2]);
         return viewer;
     }
 
+    private static class DriverFilter extends PatternFilter {
+        @Override
+        public boolean isElementVisible(Viewer viewer, Object element) {
+            Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) viewer)
+                .getContentProvider()).getParent(element);
+            if (parent != null && isLeafMatch(viewer, parent)) {
+                return true;
+            }
+            return isParentMatch(viewer, element) || isLeafMatch(viewer, element);
+        }
+    }
 }

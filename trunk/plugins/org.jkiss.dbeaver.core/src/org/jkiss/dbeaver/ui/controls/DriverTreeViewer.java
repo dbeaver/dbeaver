@@ -99,13 +99,9 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         });
     }
 
-    public DriverTreeViewer(Composite parent)
-    {
-        this(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-    }
-
     public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent)
     {
+        getTree().setHeaderVisible(true);
         this.site = site;
         this.providers = providers;
         if (this.providers == null) {
@@ -116,7 +112,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         nameColumn.setText("Name");
 
         TreeColumn usersColumn = new TreeColumn(getTree(), SWT.RIGHT);
-        usersColumn.setText("Connections");
+        usersColumn.setText("#");
 
         this.setContentProvider(new ViewContentProvider());
         this.setLabelProvider(new ViewLabelProvider());
@@ -246,6 +242,12 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         @Override
         public Object getParent(Object child)
         {
+            if (child instanceof DriverDescriptor) {
+                DriverDescriptor driver = (DriverDescriptor) child;
+                if (driver.getCategory() != null) {
+                    return categories.get(driver.getCategory());
+                }
+            }
             return null;
         }
 
