@@ -40,6 +40,9 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         DBSDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+        if (dataSourceContainer == null) {
+            return null;
+        }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         IFolder scriptFolder = getCurrentFolder(event);
         openRecentScript(workbenchWindow, dataSourceContainer, scriptFolder);

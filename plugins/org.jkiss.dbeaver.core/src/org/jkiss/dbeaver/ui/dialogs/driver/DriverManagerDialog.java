@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
@@ -57,6 +58,8 @@ import java.util.List;
  */
 public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener, IRunnableContext {
 
+    private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
+
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
     private String selectedCategory;
@@ -73,6 +76,13 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     public DriverManagerDialog(Shell shell)
     {
         super(shell, IHelpContextIds.CTX_DRIVER_MANAGER);
+
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override

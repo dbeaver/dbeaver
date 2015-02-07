@@ -103,7 +103,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
 
     public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent)
     {
-        getTree().setHeaderVisible(true);
+//        getTree().setHeaderVisible(true);
         this.site = site;
         this.providers = providers;
         if (this.providers == null) {
@@ -127,10 +127,19 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         this.setInput(drivers);
         this.expandAll();
         getTree().addListener(SWT.Resize, new Listener() {
+            volatile boolean resizing = false;
+
             @Override
             public void handleEvent(Event event) {
-                UIUtils.packColumns(getTree(), true, new float[] {0.9f, 0.1f});
-                getTree().removeListener(SWT.Resize, this);
+                if (resizing) {
+                    return;
+                }
+                resizing = true;
+                try {
+                    UIUtils.packColumns(getTree(), true, new float[] {0.9f, 0.1f});
+                } finally {
+                    resizing = false;
+                }
             }
         });
 
