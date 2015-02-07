@@ -6,14 +6,6 @@ README
 
 Thank you for downloading DBeaver!
 
-DBeaver is a multi-platform universal database manager and SQL Client. 
-It supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, Mimer, HSQLDB, 
-Derby, and any database that has a JDBC driver. 
-
-It is a GUI program that allows to view/edit the structure of a database, 
-execute SQL queries and scripts, browse and export table data, 
-handle BLOB/CLOB values, modify database meta objects, etc. 
-
 Installing DBeaver
 ========================
   Use automatic installer distribution (Windows and Linux versions)
@@ -48,10 +40,7 @@ Command line parameters
 
 Licensing
 ==========================
-  DBeaver is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
+  GPL
 
 Home Page
 ==========
@@ -60,9 +49,8 @@ Home Page
 Authors
 ==========
   Architect, main programmer, team leader - Serge Rieder (serge@jkiss.org)
-  Programmer, localizations manager, Russian localization - Eugene Fradkin (eugene.fradkin@gmail.com)
-  Chinese localization - Brook.Tran (Brook.Tran.C@gmail.com)
-  Italian localization - Roberto Rossi (impiastro@gmail.com)
+  DB2 extension developer - Denis Forveille (titou10.titou10@gmail.com)
+  Programmer, localizations manager - Eugene Fradkin (eugene.fradkin@gmail.com)
 
 Support
 =======
