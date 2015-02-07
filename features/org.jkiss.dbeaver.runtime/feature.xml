@@ -1,48 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jkiss.dbeaver.runtime"
-      label="%featureName"
-      version="3.1.3"
-      provider-name="%providerName"
-      plugin="org.jkiss.dbeaver.core.eclipse">
+        id="org.jkiss.dbeaver.runtime"
+        label="%featureName"
+        version="3.1.3"
+        provider-name="%providerName"
+        plugin="org.jkiss.dbeaver.core.eclipse">
 
-   <description>
-      %description
-   </description>
+    <description>
+        %description
+    </description>
 
-   <copyright>
-      %copyright
-   </copyright>
+    <copyright>
+        %copyright
+    </copyright>
 
-   <license url="%licenseURL">
-      %license
-   </license>
+    <license url="%licenseURL">
+        %license
+    </license>
 
-   <includes
-         id="org.jkiss.dbeaver.core"
-         version="0.0.0"/>
+    <includes
+            id="org.jkiss.dbeaver.core"
+            version="0.0.0"/>
 
-   <requires>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.core.expressions"/>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.ui.workbench"/>
-      <import plugin="org.eclipse.ui.workbench.texteditor"/>
-      <import plugin="org.eclipse.ui.views.properties.tabbed"/>
-      <import plugin="org.eclipse.swt"/>
-      <import plugin="org.eclipse.jface"/>
-      <import plugin="org.eclipse.jface.text"/>
-      <import plugin="com.jcraft.jsch"/>
-      <import plugin="org.eclipse.ui.views"/>
-      <import plugin="org.eclipse.gef"/>
-   </requires>
+    <requires>
+        <import plugin="org.eclipse.core.runtime"/>
+        <import plugin="org.eclipse.core.resources"/>
+        <import plugin="org.eclipse.core.expressions"/>
+        <import plugin="org.eclipse.ui"/>
+        <import plugin="org.eclipse.ui.workbench"/>
+        <import plugin="org.eclipse.ui.workbench.texteditor"/>
+        <import plugin="org.eclipse.ui.views.properties.tabbed"/>
+        <import plugin="org.eclipse.swt"/>
+        <import plugin="org.eclipse.jface"/>
+        <import plugin="org.eclipse.jface.text"/>
+        <import plugin="org.eclipse.ui.views"/>
+        <import plugin="org.eclipse.gef"/>
+        <import plugin="org.apache.commons.logging"/>
+        <import plugin="com.jcraft.jsch"/>
+        <import plugin="org.objectweb.asm"/>
+    </requires>
 
-   <plugin
-         id="org.jkiss.dbeaver.core.eclipse"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+    <plugin
+            id="org.jkiss.dbeaver.core.eclipse"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
 
 </feature>
