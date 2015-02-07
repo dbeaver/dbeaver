@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class DriverTreeControl extends FilteredTree {
 
-    public static final String DRIVER_INIT_DATA = "driverInitData";
+    private static final String DRIVER_INIT_DATA = "driverInitData";
 
     public DriverTreeControl(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
         super(
