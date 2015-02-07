@@ -88,17 +88,20 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         }
     }
 
-    public DriverTreeViewer(Composite parent)
-    {
-        super(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+    public DriverTreeViewer(Composite parent, int style) {
+        super(parent, style);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         parent.addDisposeListener(new DisposeListener() {
             @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
+            public void widgetDisposed(DisposeEvent e) {
                 UIUtils.dispose(boldFont);
             }
         });
+    }
+
+    public DriverTreeViewer(Composite parent)
+    {
+        this(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
     }
 
     public void initDrivers(Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent)
@@ -268,14 +271,14 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         }
     }
 
-    class ViewLabelProvider extends CellLabelProvider
+    class ViewLabelProvider extends CellLabelProvider implements ILabelProvider
     {
 
         @Override
         public void update(ViewerCell cell) {
             switch (cell.getColumnIndex()) {
                 case 0:
-                    cell.setText(getLabel(cell.getElement()));
+                    cell.setText(getText(cell.getElement()));
                     break;
                 case 1:
                     final int count = getConnectionCount(cell.getElement());
@@ -290,19 +293,6 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
                 //cell.setFont(boldFont);
             } else {
                 cell.setFont(null);
-            }
-        }
-
-        public String getLabel(Object obj)
-        {
-            if (obj instanceof DataSourceProviderDescriptor) {
-                return ((DataSourceProviderDescriptor) obj).getName();
-            } else if (obj instanceof DriverCategory) {
-                return ((DriverCategory) obj).name;
-            } else if (obj instanceof DriverDescriptor) {
-                return ((DriverDescriptor) obj).getName();
-            } else {
-                return obj.toString();
             }
         }
 
@@ -339,6 +329,24 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
             }
 
             return defImage;
+        }
+
+        @Override
+        public Image getImage(Object element) {
+            return getImage(element, 0);
+        }
+
+        @Override
+        public String getText(Object element) {
+            if (element instanceof DataSourceProviderDescriptor) {
+                return ((DataSourceProviderDescriptor) element).getName();
+            } else if (element instanceof DriverCategory) {
+                return ((DriverCategory) element).name;
+            } else if (element instanceof DriverDescriptor) {
+                return ((DriverDescriptor) element).getName();
+            } else {
+                return element.toString();
+            }
         }
     }
 
