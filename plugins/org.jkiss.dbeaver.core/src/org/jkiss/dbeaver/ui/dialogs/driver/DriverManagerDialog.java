@@ -175,10 +175,6 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 }
             });
 
-//            UIUtils
-//                .createHelpButton(this, buttonBar, DBeaverConstants.PLUGIN_ID, IHelpContextIds.CTX_DRIVER_MANAGER)
-//                .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
             {
                 final Composite legend = UIUtils.createPlaceholder(buttonBar, 2, 5);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
