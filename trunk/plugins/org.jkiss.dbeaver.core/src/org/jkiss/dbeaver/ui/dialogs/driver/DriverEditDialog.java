@@ -56,9 +56,12 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -680,6 +683,9 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private class ClassFindJob implements IRunnableWithProgress {
 
+        public static final String SQL_DRIVER_CLASS_NAME = "java/sql/Driver";
+        public static final String OBJECT_CLASS_NAME = "java/lang/Object";
+        public static final String CLASS_FILE_EXT = ".class";
         private java.util.List<String> driverClassNames = new ArrayList<String>();
 
         private ClassFindJob() {
@@ -734,18 +740,12 @@ public class DriverEditDialog extends HelpEnabledDialog
                         }
                         JarEntry current = (JarEntry) e.nextElement();
                         String fileName = current.getName();
-                        if (fileName.endsWith(".class") && fileName.indexOf("$") == -1) { //$NON-NLS-1$ //$NON-NLS-2$
-                            String className = fileName.replaceAll("/", ".").replace(".class", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                        if (fileName.endsWith(CLASS_FILE_EXT) && !fileName.contains("$")) { //$NON-NLS-1$ //$NON-NLS-2$
+                            String className = fileName.replaceAll("/", ".").replace(CLASS_FILE_EXT, ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                             monitor.subTask(className);
                             try {
-                                Class<?> aClass = Class.forName(className, false, findCL);
-                                final int modifiers = aClass.getModifiers();
-                                if (java.sql.Driver.class.isAssignableFrom(aClass) &&
-                                    !Modifier.isAbstract(modifiers) &&
-                                    !Modifier.isStatic(modifiers) &&
-                                    Modifier.isPublic(modifiers))
-                                {
-                                    driverClassNames.add(aClass.getName());
+                                if (implementsDriver(currentFile, current, 0)) {
+                                    driverClassNames.add(className);
                                 }
                             } catch (Throwable e1) {
                                 // do nothing
@@ -758,6 +758,30 @@ public class DriverEditDialog extends HelpEnabledDialog
             } catch (IOException e) {
                 log.debug(e);
             }
+        }
+
+        private boolean implementsDriver(JarFile currentFile, JarEntry current, int depth) throws IOException {
+            InputStream classStream = currentFile.getInputStream(current);
+            try {
+                ClassReader cr = new ClassReader(classStream);
+                int access = cr.getAccess();
+                if (depth == 0 && ((access & Opcodes.ACC_PUBLIC) == 0 || (access & Opcodes.ACC_ABSTRACT) != 0)) {
+                    return false;
+                }
+                String[] interfaces = cr.getInterfaces();
+                if (ArrayUtils.contains(interfaces, SQL_DRIVER_CLASS_NAME)) {
+                    return true;
+                } else if (!CommonUtils.isEmpty(cr.getSuperName()) && !cr.getSuperName().equals(OBJECT_CLASS_NAME)) {
+                    // Check recursively
+                    JarEntry jarEntry = currentFile.getJarEntry(cr.getSuperName() + CLASS_FILE_EXT);
+                    if (jarEntry != null) {
+                        return implementsDriver(currentFile, jarEntry, depth + 1);
+                    }
+                }
+            } finally {
+                classStream.close();
+            }
+            return false;
         }
 
     }
