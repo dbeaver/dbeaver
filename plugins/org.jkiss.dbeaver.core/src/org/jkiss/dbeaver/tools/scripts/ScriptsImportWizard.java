@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
@@ -52,7 +51,7 @@ import java.util.regex.Pattern;
 
 public class ScriptsImportWizard extends Wizard implements IImportWizard {
 
-    static final Log log = LogFactory.getLog(ScriptsImportWizard.class);
+    static final Log log = Log.getLog(ScriptsImportWizard.class);
     private ScriptsImportWizardPage pageMain;
 
     public ScriptsImportWizard() {

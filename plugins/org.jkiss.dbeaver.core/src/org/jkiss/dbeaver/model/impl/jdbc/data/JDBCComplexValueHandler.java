@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -43,7 +42,7 @@ import java.sql.SQLException;
  */
 public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCComplexValueHandler.class);
+    static final Log log = Log.getLog(JDBCComplexValueHandler.class);
 
     public static final String PROP_CATEGORY_COMPLEX = "Complex";
 

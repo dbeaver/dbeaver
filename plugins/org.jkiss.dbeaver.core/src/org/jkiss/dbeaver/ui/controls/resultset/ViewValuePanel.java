@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -42,7 +41,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 abstract class ViewValuePanel extends Composite {
 
-    static final Log log = LogFactory.getLog(ViewValuePanel.class);
+    static final Log log = Log.getLog(ViewValuePanel.class);
 
     private final Label columnImageLabel;
     private final Label columnNameLabel;

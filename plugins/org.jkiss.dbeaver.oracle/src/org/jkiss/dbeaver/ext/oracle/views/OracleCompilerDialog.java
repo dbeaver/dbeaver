@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.views;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.actions.CompileHandler;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -56,7 +56,7 @@ import java.util.List;
  */
 public class OracleCompilerDialog extends TrayDialog
 {
-    static final Log log = LogFactory.getLog(OracleCompilerDialog.class);
+    static final Log log = Log.getLog(OracleCompilerDialog.class);
 
     private static final int COMPILE_ID = 1000;
     private static final int COMPILE_ALL_ID = 1001;
@@ -172,7 +172,6 @@ public class OracleCompilerDialog extends TrayDialog
             infoGroup.setLayout(new GridLayout(1, false));
 
             compileLog = new ObjectCompilerLogViewer(infoGroup, true);
-            compileLog.setLevel(ObjectCompilerLogViewer.LOG_LEVEL_ALL);
         }
 
         return composite;

@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  */
 public final class SQLUtils {
 
-    //static final Log log = LogFactory.getLog(SQLUtils.class);
+    //static final Log log = Log.getLog(SQLUtils.class);
 
     public static final String TOKEN_TRANSFORM_START = "/*DB[*/";
     public static final String TOKEN_TRANSFORM_END = "/*]DB*/";

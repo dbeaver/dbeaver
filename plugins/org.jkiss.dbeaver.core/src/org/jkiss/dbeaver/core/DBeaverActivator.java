@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.core;
 
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
@@ -68,7 +67,6 @@ public class DBeaverActivator extends AbstractUIPlugin
 
         instance = this;
 
-        LogFactory.getFactory().setAttribute("org.apache.commons.logging.Log", DBeaverLogger.class.getName()); //$NON-NLS-1$
         try {
             resourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
         } catch (MissingResourceException x) {

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
@@ -36,7 +35,7 @@ import java.util.Map;
  */
 class ResultSetDataReceiver implements DBDDataReceiver {
 
-    static final Log log = LogFactory.getLog(ResultSetDataReceiver.class);
+    static final Log log = Log.getLog(ResultSetDataReceiver.class);
 
     private ResultSetViewer resultSetViewer;
     private int columnsCount;

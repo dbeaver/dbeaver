@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -78,7 +77,7 @@ public class ContentUtils {
 
     static final int STREAM_COPY_BUFFER_SIZE = 10000;
 
-    static final Log log = LogFactory.getLog(ContentUtils.class);
+    static final Log log = Log.getLog(ContentUtils.class);
     public static final String DEFAULT_FILE_CHARSET_NAME = "UTF-8";
 
     public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");

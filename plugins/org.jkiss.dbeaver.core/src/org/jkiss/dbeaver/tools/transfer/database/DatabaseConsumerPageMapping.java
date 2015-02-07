@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -61,7 +60,7 @@ import java.util.Map;
 
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
 
-    static final Log log = LogFactory.getLog(DatabaseConsumerPageMapping.class);
+    static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     public static final String TARGET_NAME_BROWSE = "[browse]";
     private TreeViewer mappingViewer;

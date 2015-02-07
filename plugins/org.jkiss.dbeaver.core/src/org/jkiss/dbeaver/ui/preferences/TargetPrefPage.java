@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.Dialog;
@@ -55,7 +54,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
  */
 public abstract class TargetPrefPage extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    static final Log log = LogFactory.getLog(TargetPrefPage.class);
+    static final Log log = Log.getLog(TargetPrefPage.class);
 
     private DBNDataSource containerNode;
     private Composite parentComposite;

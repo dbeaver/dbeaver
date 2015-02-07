@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -44,7 +43,7 @@ import java.sql.Types;
  */
 public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCReferenceValueHandler.class);
+    static final Log log = Log.getLog(JDBCReferenceValueHandler.class);
 
     public static final JDBCReferenceValueHandler INSTANCE = new JDBCReferenceValueHandler();
 

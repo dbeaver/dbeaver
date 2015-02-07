@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.tabbed.ISection;
@@ -57,7 +56,7 @@ import java.util.List;
  */
 public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
 
-    static final Log log = LogFactory.getLog(PropertyTabDescriptorProvider.class);
+    static final Log log = Log.getLog(PropertyTabDescriptorProvider.class);
     public static final String CONTRIBUTOR_ID = "org.jkiss.dbeaver.core.propertyViewContributor"; //$NON-NLS-1$
 
     private ISelection curSelection;

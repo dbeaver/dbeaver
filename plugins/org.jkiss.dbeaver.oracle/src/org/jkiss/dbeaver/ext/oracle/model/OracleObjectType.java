@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -153,7 +152,7 @@ public enum OracleObjectType implements DBSObjectType {
 	WINDOW_GROUP("WINDOW GROUP", null, DBSObject.class, null),
 	XML_SCHEMA("XML SCHEMA", null, DBSObject.class, null);
     
-    static final Log log = LogFactory.getLog(OracleObjectType.class);
+    static final Log log = Log.getLog(OracleObjectType.class);
 
     private static Map<String, OracleObjectType> typeMap = new HashMap<String, OracleObjectType>();
 

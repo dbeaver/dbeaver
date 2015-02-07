@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.text.handlers;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.BadLocationException;
@@ -36,7 +35,7 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
  */
 public abstract class AbstractCommentHandler extends AbstractTextHandler {
 
-    static protected final Log log = LogFactory.getLog(AbstractCommentHandler.class);
+    static protected final Log log = Log.getLog(AbstractCommentHandler.class);
 
     public final Object execute(ExecutionEvent event) throws ExecutionException {
         BaseTextEditor textEditor = getEditor(event);

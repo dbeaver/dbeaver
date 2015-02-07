@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -57,7 +56,7 @@ import java.util.*;
  */
 class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage
 {
-    static final Log log = LogFactory.getLog(DriverDescriptor.class);
+    static final Log log = Log.getLog(DriverDescriptor.class);
 
     @NotNull
     private final ConnectionWizard wizard;

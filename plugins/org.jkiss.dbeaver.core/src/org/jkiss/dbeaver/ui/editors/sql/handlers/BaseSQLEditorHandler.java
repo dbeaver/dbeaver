@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -38,7 +37,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 
 public abstract class BaseSQLEditorHandler extends DataSourceHandler {
 
-    static final Log log = LogFactory.getLog(BaseSQLEditorHandler.class);
+    static final Log log = Log.getLog(BaseSQLEditorHandler.class);
 
     @Nullable
     protected DBSDataSourceContainer getCurrentConnection(ExecutionEvent event)

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -33,7 +32,7 @@ import java.util.List;
  */
 public class SpreadsheetSelectionProvider implements ISelectionProvider
 {
-    static final Log log = LogFactory.getLog(SpreadsheetSelectionProvider.class);
+    static final Log log = Log.getLog(SpreadsheetSelectionProvider.class);
 
     private Spreadsheet grid;
     private List<ISelectionChangedListener> listeners;

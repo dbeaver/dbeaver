@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -43,7 +42,7 @@ import java.util.List;
  */
 public class OracleStructureAssistant implements DBSStructureAssistant
 {
-    static protected final Log log = LogFactory.getLog(OracleStructureAssistant.class);
+    static protected final Log log = Log.getLog(OracleStructureAssistant.class);
 
     private final OracleDataSource dataSource;
 

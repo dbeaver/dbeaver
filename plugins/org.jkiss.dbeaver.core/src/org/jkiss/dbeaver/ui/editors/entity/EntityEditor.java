@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
@@ -81,7 +80,7 @@ import java.util.*;
 public class EntityEditor extends MultiPageDatabaseEditor
     implements INavigatorModelView, IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderedPart
 {
-    static final Log log = LogFactory.getLog(EntityEditor.class);
+    static final Log log = Log.getLog(EntityEditor.class);
 
     private static class EditorDefaults {
         String pageId;

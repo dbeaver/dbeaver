@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -43,7 +42,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class PrefPageResources extends PreferencePage implements IWorkbenchPreferencePage
 {
-    static final Log log = LogFactory.getLog(PrefPageResources.class);
+    static final Log log = Log.getLog(PrefPageResources.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.resources"; //$NON-NLS-1$
 

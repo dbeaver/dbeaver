@@ -65,7 +65,7 @@ import java.util.Map;
 public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObject>
     implements IRefreshablePart, IProgressControlProvider, IFolderedPart, ISearchContextProvider, IRefreshableContainer
 {
-    //static final Log log = LogFactory.getLog(ObjectPropertiesEditor.class);
+    //static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
     private PropertyPageTabbed properties;
     private ObjectEditorPageControl pageControl;

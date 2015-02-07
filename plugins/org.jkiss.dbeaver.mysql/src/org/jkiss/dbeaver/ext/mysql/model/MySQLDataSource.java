@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
@@ -55,7 +54,7 @@ import java.util.*;
  */
 public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable
 {
-    static final Log log = LogFactory.getLog(MySQLDataSource.class);
+    static final Log log = Log.getLog(MySQLDataSource.class);
 
     private final JDBCBasicDataTypeCache dataTypeCache;
     private List<MySQLEngine> engines;

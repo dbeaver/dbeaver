@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -51,7 +50,7 @@ import java.util.Date;
  */
 public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEntity, DBSDataType {
 
-    static final Log log = LogFactory.getLog(JDBCStructDynamic.class);
+    static final Log log = Log.getLog(JDBCStructDynamic.class);
 
     public static final int MAX_ITEMS_IN_STRING = 100;
 

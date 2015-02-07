@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -55,7 +54,7 @@ import java.util.Map;
  */
 public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DBPQualifiedObject {
 
-    private static final Log LOG = LogFactory.getLog(DB2DataType.class);
+    private static final Log LOG = Log.getLog(DB2DataType.class);
 
     private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>(32); // See init below
 

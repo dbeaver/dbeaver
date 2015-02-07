@@ -38,7 +38,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLUtilsPropertyTester extends PropertyTester
 {
-    //static final Log log = LogFactory.getLog(SQLEditorPropertyTester.class);
+    //static final Log log = Log.getLog(SQLEditorPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql.util";
     public static final String PROP_CAN_GENERATE = "canGenerate";

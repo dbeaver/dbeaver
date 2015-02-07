@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.core;
 
-import org.apache.commons.logging.Log;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
@@ -26,30 +25,25 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.io.PrintStream;
-import java.io.Serializable;
 import java.util.Date;
 
 /**
- * DBeaverLogger
+ * Log
  */
-public class DBeaverLogger implements Log, Serializable
+public class Log
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4079924783238318027L;
-    private static String corePluginID;
+    private static String corePluginID = DBeaverActivator.getInstance().getBundle().getSymbolicName();
 
-    private String name;
+    private final String name;
+    private final ILog eclipseLog;
 
-    public DBeaverLogger()
-    {
-        corePluginID = DBeaverActivator.getInstance().getBundle().getSymbolicName();
+    public static Log getLog(Class<?> forClass) {
+        return new Log(forClass.getName());
     }
 
-    public DBeaverLogger(String name)
+    private Log(String name)
     {
-        this();
+        eclipseLog = DBeaverActivator.getInstance().getLog();
         this.name = name;
     }
 
@@ -58,53 +52,44 @@ public class DBeaverLogger implements Log, Serializable
         return name;
     }
 
-    @Override
     public boolean isDebugEnabled()
     {
         return true;
     }
 
-    @Override
     public boolean isErrorEnabled()
     {
         return true;
     }
 
-    @Override
     public boolean isFatalEnabled()
     {
         return true;
     }
 
-    @Override
     public boolean isInfoEnabled()
     {
         return true;
     }
 
-    @Override
     public boolean isTraceEnabled()
     {
         return false;
     }
 
-    @Override
     public boolean isWarnEnabled()
     {
         return true;
     }
 
-    @Override
     public void trace(Object message)
     {
     }
 
-    @Override
     public void trace(Object message, Throwable t)
     {
     }
 
-    @Override
     public void debug(Object message)
     {
         if (message instanceof Throwable) {
@@ -114,7 +99,6 @@ public class DBeaverLogger implements Log, Serializable
         }
     }
 
-    @Override
     public void debug(Object message, Throwable t)
     {
         DBeaverActivator activator = DBeaverActivator.getInstance();
@@ -125,7 +109,7 @@ public class DBeaverLogger implements Log, Serializable
             debugWriter = activator.getDebugWriter();
         }
         if (debugWriter != null) {
-            synchronized (DBeaverLogger.class) {
+            synchronized (Log.class) {
                 debugWriter.print(new Date().toString());
                 debugWriter.print(" - "); //$NON-NLS-1$
                 if (t == null) {
@@ -138,26 +122,23 @@ public class DBeaverLogger implements Log, Serializable
         }
     }
 
-    @Override
     public void info(Object message)
     {
         if (message instanceof Throwable) {
             info(message.toString(), (Throwable)message);
             return;
         }
-        DBeaverActivator.getInstance().getLog().log(new Status(
+        eclipseLog.log(new Status(
             Status.INFO,
             corePluginID,
             message == null ? null : message.toString()));
     }
 
-    @Override
     public void info(Object message, Throwable t)
     {
         writeExceptionStatus(Status.INFO, message, t);
     }
 
-    @Override
     public void warn(Object message)
     {
         if (message instanceof Throwable) {
@@ -170,13 +151,11 @@ public class DBeaverLogger implements Log, Serializable
             message == null ? null : message.toString()));
     }
 
-    @Override
     public void warn(Object message, Throwable t)
     {
         writeExceptionStatus(Status.WARNING, message, t);
     }
 
-    @Override
     public void error(Object message)
     {
         if (message instanceof Throwable) {
@@ -189,19 +168,16 @@ public class DBeaverLogger implements Log, Serializable
             message == null ? null : message.toString()));
     }
 
-    @Override
     public void error(Object message, Throwable t)
     {
         writeExceptionStatus(Status.ERROR, message, t);
     }
 
-    @Override
     public void fatal(Object message)
     {
         error(message);
     }
 
-    @Override
     public void fatal(Object message, Throwable t)
     {
         error(message, t);

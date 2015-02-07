@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -77,7 +76,7 @@ import java.util.jar.JarFile;
  */
 public class DriverEditDialog extends HelpEnabledDialog
 {
-    static final Log log = LogFactory.getLog(DriverEditDialog.class);
+    static final Log log = Log.getLog(DriverEditDialog.class);
 
     private DataSourceProviderDescriptor provider;
     private String defaultCategory;

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -46,7 +45,7 @@ import java.util.List;
 
 public class ScriptsExportWizard extends Wizard implements IExportWizard {
 
-    static final Log log = LogFactory.getLog(ScriptsExportWizard.class);
+    static final Log log = Log.getLog(ScriptsExportWizard.class);
 
     private ScriptsExportWizardPage mainPage;
 

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -58,7 +57,7 @@ import java.util.List;
  */
 public class SQLQueryJob extends DataSourceJob
 {
-    static final Log log = LogFactory.getLog(SQLQueryJob.class);
+    static final Log log = Log.getLog(SQLQueryJob.class);
 
     private final List<SQLQuery> queries;
     private final SQLResultsConsumer resultsConsumer;

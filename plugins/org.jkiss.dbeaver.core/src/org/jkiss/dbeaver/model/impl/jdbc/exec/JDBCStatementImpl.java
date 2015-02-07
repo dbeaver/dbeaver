@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -41,7 +40,7 @@ import java.sql.*;
  */
 public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCStatement {
 
-    static final Log log = LogFactory.getLog(JDBCStatementImpl.class);
+    static final Log log = Log.getLog(JDBCStatementImpl.class);
 
     protected final JDBCSession connection;
     protected final STATEMENT original;

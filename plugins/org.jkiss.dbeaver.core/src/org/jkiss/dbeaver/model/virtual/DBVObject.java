@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -30,7 +29,7 @@ import java.io.IOException;
  */
 public abstract class DBVObject implements DBSObject {
 
-    static final Log log = LogFactory.getLog(DBVObject.class);
+    static final Log log = Log.getLog(DBVObject.class);
 
     @Override
     public abstract DBVContainer getParentObject();

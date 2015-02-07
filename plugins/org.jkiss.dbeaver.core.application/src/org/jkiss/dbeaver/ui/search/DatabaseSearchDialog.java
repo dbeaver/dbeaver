@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.ControlEnableState;
@@ -53,7 +52,7 @@ import java.util.List;
 
 public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSearchContainer {
 
-    static final Log log = LogFactory.getLog(DatabaseSearchDialog.class);
+    static final Log log = Log.getLog(DatabaseSearchDialog.class);
 
     private static final int SEARCH_ID = 1000;
     private static final String PROVIDER_PREF_NAME = "search.dialog.cur-provider";

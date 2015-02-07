@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
@@ -38,7 +37,7 @@ import java.util.List;
  */
 class CollectionElementData {
 
-    static final Log log = LogFactory.getLog(CollectionElementData.class);
+    static final Log log = Log.getLog(CollectionElementData.class);
 
     final DBDAttributeBinding collectionBinding;
     final DBDAttributeBindingElement[] elements;

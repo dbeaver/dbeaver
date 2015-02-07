@@ -29,8 +29,7 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.update.Update;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.IToken;
@@ -53,7 +52,7 @@ import java.util.List;
  */
 public class SQLQuery {
 
-    static final Log log = LogFactory.getLog(SQLQuery.class);
+    static final Log log = Log.getLog(SQLQuery.class);
 
     @NotNull
     private final Object source;

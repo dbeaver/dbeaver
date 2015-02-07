@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -41,7 +40,7 @@ import java.nio.ByteBuffer;
 */
 public class ContentInlineEditor extends BaseValueEditor<Text> {
     private static final int MAX_STRING_LENGTH = 0xfffff;
-    static final Log log = LogFactory.getLog(ContentInlineEditor.class);
+    static final Log log = Log.getLog(ContentInlineEditor.class);
 
     private final boolean isText;
 

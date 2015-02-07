@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
@@ -46,7 +45,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ContentEditorContributor extends MultiPageEditorActionBarContributor
 {
-    static final Log log = LogFactory.getLog(ContentEditorContributor.class);
+    static final Log log = Log.getLog(ContentEditorContributor.class);
 
     private final BasicTextEditorActionContributor textContributor;
     private ContentEditor activeEditor;

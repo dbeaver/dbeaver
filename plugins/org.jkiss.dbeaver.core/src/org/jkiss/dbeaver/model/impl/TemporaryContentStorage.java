@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -38,7 +37,7 @@ import java.io.Reader;
  */
 public class TemporaryContentStorage implements DBDContentStorageLocal {
 
-    static final Log log = LogFactory.getLog(TemporaryContentStorage.class);
+    static final Log log = Log.getLog(TemporaryContentStorage.class);
 
     private IFile file;
 

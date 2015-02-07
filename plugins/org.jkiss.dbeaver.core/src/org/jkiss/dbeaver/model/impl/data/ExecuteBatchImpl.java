@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -41,7 +40,7 @@ import java.util.List;
 */
 public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatch {
 
-    static final Log log = LogFactory.getLog(ExecuteBatchImpl.class);
+    static final Log log = Log.getLog(ExecuteBatchImpl.class);
 
     protected final DBSAttributeBase[] attributes;
     protected final List<Object[]> values = new ArrayList<Object[]>();

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -39,7 +38,7 @@ import java.util.Collection;
  */
 public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>
 {
-    static final Log log = LogFactory.getLog(OracleUser.class);
+    static final Log log = Log.getLog(OracleUser.class);
 
     private long id;
     private String name;

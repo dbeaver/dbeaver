@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.editors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
@@ -47,7 +46,7 @@ import java.util.Collections;
  */
 public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
 {
-    static final Log log = LogFactory.getLog(MySQLSessionEditor.class);
+    static final Log log = Log.getLog(MySQLSessionEditor.class);
 
     private SessionManagerViewer sessionsViewer;
     private KillSessionAction killSessionAction;

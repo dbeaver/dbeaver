@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
@@ -31,7 +30,7 @@ import java.sql.Savepoint;
  */
 public class JDBCSavepointImpl implements DBCSavepoint, Savepoint {
 
-    static final Log log = LogFactory.getLog(JDBCSavepointImpl.class);
+    static final Log log = Log.getLog(JDBCSavepointImpl.class);
 
     private JDBCConnectionImpl connection;
     private Savepoint original;

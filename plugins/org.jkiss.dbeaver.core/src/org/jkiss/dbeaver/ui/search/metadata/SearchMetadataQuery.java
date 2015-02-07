@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search.metadata;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -40,7 +39,7 @@ import java.util.List;
 
 public class SearchMetadataQuery implements IObjectSearchQuery {
 
-    static final Log log = LogFactory.getLog(SearchMetadataQuery.class);
+    static final Log log = Log.getLog(SearchMetadataQuery.class);
 
     private final DBSStructureAssistant structureAssistant;
     private final SearchMetadataParams params;

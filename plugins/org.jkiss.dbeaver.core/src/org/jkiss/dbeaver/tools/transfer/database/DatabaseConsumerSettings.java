@@ -19,8 +19,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.code.Nullable;
@@ -49,7 +48,7 @@ import java.util.Map;
  */
 public class DatabaseConsumerSettings implements IDataTransferSettings {
 
-    static final Log log = LogFactory.getLog(DatabaseConsumerSettings.class);
+    static final Log log = Log.getLog(DatabaseConsumerSettings.class);
 
     private DBNDatabaseNode containerNode;
     private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<DBSDataContainer, DatabaseMappingContainer>();

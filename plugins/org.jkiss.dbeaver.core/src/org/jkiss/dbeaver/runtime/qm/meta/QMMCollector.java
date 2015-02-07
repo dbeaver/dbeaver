@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime.qm.meta;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.exec.*;
@@ -39,7 +38,7 @@ import java.util.*;
  */
 public class QMMCollector extends DefaultExecutionHandler {
 
-    static final Log log = LogFactory.getLog(QMMCollector.class);
+    static final Log log = Log.getLog(QMMCollector.class);
 
     private static final long EVENT_DISPATCH_PERIOD = 250;
 

@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.runtime.load;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -35,7 +34,7 @@ import java.lang.reflect.Modifier;
  */
 public class LoadingUtils {
 
-    static final Log log = LogFactory.getLog(LoadingUtils.class);
+    static final Log log = Log.getLog(LoadingUtils.class);
 
     public static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName)
         throws DBException

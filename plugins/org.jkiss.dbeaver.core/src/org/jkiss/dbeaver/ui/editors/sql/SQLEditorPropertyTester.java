@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLIdentifierDetector;
  */
 public class SQLEditorPropertyTester extends PropertyTester
 {
-    //static final Log log = LogFactory.getLog(SQLEditorPropertyTester.class);
+    //static final Log log = Log.getLog(SQLEditorPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql";
     public static final String PROP_CAN_EXECUTE = "canExecute";

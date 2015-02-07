@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.help;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.help.IContext;
@@ -41,7 +40,7 @@ import java.util.Enumeration;
  */
 public class LightweightHelpUI extends AbstractHelpUI {
 
-    static final Log log = LogFactory.getLog(LightweightHelpUI.class);
+    static final Log log = Log.getLog(LightweightHelpUI.class);
 
     private boolean useHelpView = true;
 

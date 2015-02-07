@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.core;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -49,7 +48,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class DBeaverUI {
 
-    static final Log log = LogFactory.getLog(DBeaverUI.class);
+    static final Log log = Log.getLog(DBeaverUI.class);
 
     private static DBeaverUI instance;
 

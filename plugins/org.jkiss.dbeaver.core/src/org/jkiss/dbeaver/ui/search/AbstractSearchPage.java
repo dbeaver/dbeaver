@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
@@ -39,7 +38,7 @@ import java.util.*;
 
 public abstract class AbstractSearchPage extends DialogPage implements IObjectSearchPage {
 
-    static final protected Log log = LogFactory.getLog(AbstractSearchPage.class);
+    static final protected Log log = Log.getLog(AbstractSearchPage.class);
 
     protected IObjectSearchContainer container;
 

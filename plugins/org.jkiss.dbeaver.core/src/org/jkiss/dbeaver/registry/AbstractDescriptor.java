@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
@@ -42,7 +41,7 @@ import java.net.URL;
  */
 public abstract class AbstractDescriptor {
 
-    static final Log log = LogFactory.getLog(AbstractDescriptor.class);
+    static final Log log = Log.getLog(AbstractDescriptor.class);
 
     protected class ObjectType {
         private final String implName;

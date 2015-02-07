@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -42,7 +41,7 @@ import java.util.List;
  * JDBCUtils
  */
 public class JDBCUtils {
-    static final Log log = LogFactory.getLog(JDBCUtils.class);
+    static final Log log = Log.getLog(JDBCUtils.class);
     public static final int CONNECTION_VALIDATION_TIMEOUT = 5000;
 
     @Nullable

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -42,7 +41,7 @@ import java.util.Set;
  */
 public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> {
 
-    static final Log log = LogFactory.getLog(TableCache.class);
+    static final Log log = Log.getLog(TableCache.class);
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects

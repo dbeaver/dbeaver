@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -50,7 +49,7 @@ import java.sql.SQLException;
  */
 public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCObjectValueHandler.class);
+    static final Log log = Log.getLog(JDBCObjectValueHandler.class);
 
     public static final JDBCObjectValueHandler INSTANCE = new JDBCObjectValueHandler();
 

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -30,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class MSSQLParameter implements DBSObject
 {
-    static final Log log = LogFactory.getLog(MSSQLParameter.class);
+    static final Log log = Log.getLog(MSSQLParameter.class);
 
     private final MSSQLDataSource dataSource;
     private final String name;

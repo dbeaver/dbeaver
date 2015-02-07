@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -48,7 +47,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 {
     public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
 
-    static final Log log = LogFactory.getLog(SQLEditorInput.class);
+    static final Log log = Log.getLog(SQLEditorInput.class);
 
     private String scriptName;
 

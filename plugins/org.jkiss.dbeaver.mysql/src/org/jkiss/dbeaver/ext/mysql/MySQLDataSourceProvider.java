@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -36,7 +35,7 @@ import java.util.*;
 
 public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
 
-    static final Log log = LogFactory.getLog(MySQLDataSourceProvider.class);
+    static final Log log = Log.getLog(MySQLDataSourceProvider.class);
 
     private static final String REGISTRY_ROOT_32 = "SOFTWARE\\MySQL AB";
     private static final String REGISTRY_ROOT_64 = "SOFTWARE\\Wow6432Node\\MYSQL AB";

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -44,7 +43,7 @@ import java.sql.SQLException;
  */
 public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JDBCContentLOB {
 
-    static final Log log = LogFactory.getLog(OracleContentOpaque.class);
+    static final Log log = Log.getLog(OracleContentOpaque.class);
 
     private OPAQUE_TYPE opaque;
     private InputStream tmpStream;

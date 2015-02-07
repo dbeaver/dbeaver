@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
@@ -37,7 +36,7 @@ import java.util.List;
  */
 public class BaseEntityIdentifier implements DBCEntityIdentifier {
 
-    static final Log log = LogFactory.getLog(BaseEntityIdentifier.class);
+    static final Log log = Log.getLog(BaseEntityIdentifier.class);
 
     private DBSEntityReferrer referrer;
 

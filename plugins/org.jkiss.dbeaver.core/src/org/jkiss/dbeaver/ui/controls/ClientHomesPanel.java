@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -52,7 +51,7 @@ import java.util.Set;
  */
 public class ClientHomesPanel extends Composite
 {
-    static final Log log = LogFactory.getLog(ClientHomesPanel.class);
+    static final Log log = Log.getLog(ClientHomesPanel.class);
 
     private static String lastHomeDirectory;
 

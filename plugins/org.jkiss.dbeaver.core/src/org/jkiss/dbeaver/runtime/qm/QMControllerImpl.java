@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
@@ -36,7 +35,7 @@ import java.util.List;
  */
 public class QMControllerImpl implements QMController {
 
-    static final Log log = LogFactory.getLog(QMControllerImpl.class);
+    static final Log log = Log.getLog(QMControllerImpl.class);
 
     private QMExecutionHandler defaultHandler;
     private QMMCollector metaHandler;

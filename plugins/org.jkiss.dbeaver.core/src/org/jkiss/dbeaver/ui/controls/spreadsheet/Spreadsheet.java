@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.*;
  * ResultSetControl
  */
 public class Spreadsheet extends LightGrid implements Listener {
-    //static final Log log = LogFactory.getLog(Spreadsheet.class);
+    //static final Log log = Log.getLog(Spreadsheet.class);
 
     public enum DoubleClickBehavior {
         NONE,

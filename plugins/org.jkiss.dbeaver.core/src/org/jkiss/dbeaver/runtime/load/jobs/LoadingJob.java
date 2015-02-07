@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime.load.jobs;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBeaverConstants;
@@ -34,7 +33,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class LoadingJob<RESULT>  extends AbstractJob {
 
-    static final Log log = LogFactory.getLog(LoadingJob.class);
+    static final Log log = Log.getLog(LoadingJob.class);
 
     public static final Object LOADING_FAMILY = new Object();
 

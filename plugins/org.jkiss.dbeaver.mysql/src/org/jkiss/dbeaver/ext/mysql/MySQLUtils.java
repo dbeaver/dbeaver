@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -37,7 +36,7 @@ import java.util.*;
  */
 public class MySQLUtils {
 
-    static final Log log = LogFactory.getLog(MySQLUtils.class);
+    static final Log log = Log.getLog(MySQLUtils.class);
 
     private static Map<String, Integer> typeMap = new HashMap<String, Integer>();
     public static final String COLUMN_POSTFIX_PRIV = "_priv";

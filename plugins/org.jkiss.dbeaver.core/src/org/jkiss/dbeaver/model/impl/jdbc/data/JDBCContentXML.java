@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -44,7 +43,7 @@ import java.sql.SQLXML;
  */
 public class JDBCContentXML extends JDBCContentLOB {
 
-    static final Log log = LogFactory.getLog(JDBCContentXML.class);
+    static final Log log = Log.getLog(JDBCContentXML.class);
 
     private SQLXML xml;
     protected Reader tmpReader;

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.project;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.QualifiedName;
@@ -52,7 +51,7 @@ import java.util.zip.ZipFile;
 
 public class ProjectImportWizard extends Wizard implements IImportWizard {
 
-    static final Log log = LogFactory.getLog(ProjectImportWizard.class);
+    static final Log log = Log.getLog(ProjectImportWizard.class);
 
     private ProjectImportData data = new ProjectImportData();
 

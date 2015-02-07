@@ -37,7 +37,7 @@ import java.text.Collator;
  * ObjectListControl
  */
 public abstract class ObjectViewerRenderer {
-    //static final Log log = LogFactory.getLog(ObjectViewerRenderer.class);
+    //static final Log log = Log.getLog(ObjectViewerRenderer.class);
 
     private boolean isTree;
     // Current selection coordinates

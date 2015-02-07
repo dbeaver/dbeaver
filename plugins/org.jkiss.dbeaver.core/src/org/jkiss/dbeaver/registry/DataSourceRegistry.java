@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -62,7 +61,7 @@ import java.util.*;
 
 public class DataSourceRegistry implements DBPDataSourceRegistry
 {
-    static final Log log = LogFactory.getLog(DataSourceRegistry.class);
+    static final Log log = Log.getLog(DataSourceRegistry.class);
 
     public static final String CONFIG_FILE_NAME = ".dbeaver-data-sources.xml"; //$NON-NLS-1$
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$

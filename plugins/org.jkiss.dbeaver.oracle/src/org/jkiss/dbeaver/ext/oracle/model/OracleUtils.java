@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -51,7 +50,7 @@ import java.util.regex.Matcher;
  */
 public class OracleUtils {
 
-    static final Log log = LogFactory.getLog(OracleUtils.class);
+    static final Log log = Log.getLog(OracleUtils.class);
 
     public static String getDDL(
         DBRProgressMonitor monitor,

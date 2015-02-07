@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -52,7 +51,7 @@ import java.util.List;
  */
 public class HexEditControl extends Composite {
 
-    static final Log log = LogFactory.getLog(HexEditControl.class);
+    static final Log log = Log.getLog(HexEditControl.class);
 
     public static final String DEFAULT_FONT_NAME = "Courier New"; //$NON-NLS-1$"
     public static final FontData DEFAULT_FONT_DATA = new FontData(DEFAULT_FONT_NAME, 10, SWT.NORMAL);

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.xml;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.presentation.IPresentationDamager;
 import org.eclipse.jface.text.presentation.IPresentationRepairer;
@@ -27,7 +26,7 @@ import org.eclipse.swt.custom.StyleRange;
 
 public class NonRuleBasedDamagerRepairer implements IPresentationDamager, IPresentationRepairer {
 
-    static final Log log = LogFactory.getLog(NonRuleBasedDamagerRepairer.class);
+    static final Log log = Log.getLog(NonRuleBasedDamagerRepairer.class);
 
 	/** The document this object works on */
 	protected IDocument fDocument;

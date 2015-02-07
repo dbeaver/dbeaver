@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -48,7 +47,7 @@ import java.sql.SQLException;
  */
 public class JDBCContentBLOB extends JDBCContentLOB {
 
-    static final Log log = LogFactory.getLog(JDBCContentBLOB.class);
+    static final Log log = Log.getLog(JDBCContentBLOB.class);
 
     private Blob blob;
     private InputStream tmpStream;

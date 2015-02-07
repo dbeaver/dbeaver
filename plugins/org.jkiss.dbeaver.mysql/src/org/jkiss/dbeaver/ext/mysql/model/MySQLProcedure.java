@@ -38,7 +38,7 @@ import java.util.Collection;
  */
 public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject
 {
-    //static final Log log = LogFactory.getLog(MySQLProcedure.class);
+    //static final Log log = Log.getLog(MySQLProcedure.class);
 
     private DBSProcedureType procedureType;
     private String resultType;

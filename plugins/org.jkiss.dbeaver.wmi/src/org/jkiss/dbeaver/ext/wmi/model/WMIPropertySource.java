@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.PropertyDescriptor;
@@ -36,7 +35,7 @@ import java.util.Collection;
  */
 public abstract class WMIPropertySource implements IPropertySource
 {
-    static final Log log = LogFactory.getLog(WMIPropertySource.class);
+    static final Log log = Log.getLog(WMIPropertySource.class);
     private static final IPropertyDescriptor[] EMPTY_PROPERTIES = new IPropertyDescriptor[0];
 
     protected abstract WMIQualifiedObject getQualifiedObject();

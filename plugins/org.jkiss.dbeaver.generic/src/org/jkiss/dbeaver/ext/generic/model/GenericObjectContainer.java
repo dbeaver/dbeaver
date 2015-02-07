@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -37,7 +36,7 @@ import java.util.List;
  */
 public abstract class GenericObjectContainer implements GenericStructContainer,DBPRefreshableObject
 {
-    static final Log log = LogFactory.getLog(GenericObjectContainer.class);
+    static final Log log = Log.getLog(GenericObjectContainer.class);
 
     private GenericDataSource dataSource;
     private final TableCache tableCache;

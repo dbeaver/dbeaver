@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -70,7 +69,7 @@ import java.util.*;
  */
 public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 {
-    static final Log log = LogFactory.getLog(DriverDescriptor.class);
+    static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
 

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,7 +41,7 @@ import java.sql.Struct;
  */
 public class JDBCStructValueHandler extends JDBCComplexValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCStructValueHandler.class);
+    static final Log log = Log.getLog(JDBCStructValueHandler.class);
 
     public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
 

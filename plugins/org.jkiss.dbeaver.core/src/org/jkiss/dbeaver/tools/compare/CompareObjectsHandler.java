@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.tools.compare;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -38,7 +37,7 @@ import java.util.List;
 
 public class CompareObjectsHandler extends AbstractHandler {
 
-    static final Log log = LogFactory.getLog(CompareObjectsHandler.class);
+    static final Log log = Log.getLog(CompareObjectsHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

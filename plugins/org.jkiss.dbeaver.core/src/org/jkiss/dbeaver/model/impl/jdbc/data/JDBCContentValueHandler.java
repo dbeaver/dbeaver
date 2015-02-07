@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Shell;
@@ -71,7 +70,7 @@ import java.util.List;
  */
 public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCContentValueHandler.class);
+    static final Log log = Log.getLog(JDBCContentValueHandler.class);
 
     public static final JDBCContentValueHandler INSTANCE = new JDBCContentValueHandler();
 

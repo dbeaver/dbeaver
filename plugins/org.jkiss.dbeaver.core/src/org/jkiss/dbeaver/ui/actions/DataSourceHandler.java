@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.viewers.ISelection;
@@ -37,7 +36,7 @@ import org.jkiss.dbeaver.ui.NavigatorUtils;
 
 public abstract class DataSourceHandler extends AbstractHandler {
 
-    static protected final Log log = LogFactory.getLog(DataSourceHandler.class);
+    static protected final Log log = Log.getLog(DataSourceHandler.class);
 
     protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor)
     {

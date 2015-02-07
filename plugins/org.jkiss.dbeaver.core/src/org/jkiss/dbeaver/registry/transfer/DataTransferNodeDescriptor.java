@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.registry.transfer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.graphics.Image;
@@ -40,7 +39,7 @@ import java.util.List;
  */
 public class DataTransferNodeDescriptor extends AbstractDescriptor
 {
-    static final Log log = LogFactory.getLog(DataTransferNodeDescriptor.class);
+    static final Log log = Log.getLog(DataTransferNodeDescriptor.class);
 
     enum NodeType {
         PRODUCER,

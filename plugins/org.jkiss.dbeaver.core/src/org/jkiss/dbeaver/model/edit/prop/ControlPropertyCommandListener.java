@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.edit.prop;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -37,7 +36,7 @@ import java.util.Date;
  */
 public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
 
-    static final Log log = LogFactory.getLog(ControlPropertyCommandListener.class);
+    static final Log log = Log.getLog(ControlPropertyCommandListener.class);
 
     private final AbstractDatabaseObjectEditor<OBJECT_TYPE> objectEditor;
     private final Widget widget;

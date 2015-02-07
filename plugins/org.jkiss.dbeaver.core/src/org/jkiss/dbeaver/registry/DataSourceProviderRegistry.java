@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.jface.resource.StringConverter;
@@ -44,7 +43,7 @@ import java.util.*;
 
 public class DataSourceProviderRegistry
 {
-    static final Log log = LogFactory.getLog(DataSourceProviderRegistry.class);
+    static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();

@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
@@ -101,7 +100,7 @@ import java.util.*;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements DBPDataSourceUser, ISearchContextProvider, IRefreshablePart
 {
-    static final Log log = LogFactory.getLog(ERDEditorPart.class);
+    static final Log log = Log.getLog(ERDEditorPart.class);
 
     protected ProgressControl progressControl;
 

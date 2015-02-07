@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -47,7 +46,7 @@ import java.util.Arrays;
  */
 public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentStorage, DBDContentCached {
 
-    static final Log log = LogFactory.getLog(JDBCContentBytes.class);
+    static final Log log = Log.getLog(JDBCContentBytes.class);
 
     private byte[] originalData;
     private byte[] data;

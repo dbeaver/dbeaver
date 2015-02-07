@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -53,7 +52,7 @@ import java.util.*;
  */
 public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject
 {
-    static final Log log = LogFactory.getLog(GenericTable.class);
+    static final Log log = Log.getLog(GenericTable.class);
 
     private String tableType;
     private boolean isView;

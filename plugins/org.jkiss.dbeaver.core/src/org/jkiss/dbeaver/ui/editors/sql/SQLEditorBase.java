@@ -19,8 +19,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -75,7 +74,7 @@ import java.util.*;
  * SQL Executor
  */
 public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider, IDataSourceContainerProvider {
-    static protected final Log log = LogFactory.getLog(SQLEditorBase.class);
+    static protected final Log log = Log.getLog(SQLEditorBase.class);
 
     @NotNull
     private final SQLSyntaxManager syntaxManager;

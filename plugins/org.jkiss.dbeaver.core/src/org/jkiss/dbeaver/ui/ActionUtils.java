@@ -19,8 +19,7 @@
 
 package org.jkiss.dbeaver.ui;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.jface.action.Action;
@@ -46,7 +45,7 @@ import org.jkiss.code.Nullable;
  */
 public class ActionUtils
 {
-    static final Log log = LogFactory.getLog(ActionUtils.class);
+    static final Log log = Log.getLog(ActionUtils.class);
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId)
     {

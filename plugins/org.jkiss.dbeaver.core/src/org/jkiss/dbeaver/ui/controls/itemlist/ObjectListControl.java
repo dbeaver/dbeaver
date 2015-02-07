@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -56,7 +55,7 @@ import java.util.List;
  * ObjectListControl
  */
 public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl {
-    static final Log log = LogFactory.getLog(ObjectListControl.class);
+    static final Log log = Log.getLog(ObjectListControl.class);
 
     private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
     private final static String DATA_OBJECT_COLUMN = "objectColumn"; //$NON-NLS-1$

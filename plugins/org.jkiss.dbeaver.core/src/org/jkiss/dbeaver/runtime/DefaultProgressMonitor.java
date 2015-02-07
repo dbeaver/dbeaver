@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,7 +31,7 @@ import java.util.List;
  */
 public class DefaultProgressMonitor implements DBRProgressMonitor {
 
-    static final Log log = LogFactory.getLog(DefaultProgressMonitor.class);
+    static final Log log = Log.getLog(DefaultProgressMonitor.class);
 
     private IProgressMonitor nestedMonitor;
     private List<DBRBlockingObject> blocks = null;

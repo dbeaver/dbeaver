@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -55,7 +54,7 @@ import java.util.Set;
 
 public class BinaryEditor extends EditorPart implements ISelectionProvider, IMenuListener, IResourceChangeListener {
 
-    static final Log log = LogFactory.getLog(HexEditControl.class);
+    static final Log log = Log.getLog(HexEditControl.class);
 
     //static final String textSavingFilePleaseWait = "Saving file, please wait";
 

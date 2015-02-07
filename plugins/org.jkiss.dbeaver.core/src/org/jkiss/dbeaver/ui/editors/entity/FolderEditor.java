@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
  */
 public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> implements INavigatorModelView, ISearchContextProvider
 {
-    //static final Log log = LogFactory.getLog(FolderEditor.class);
+    //static final Log log = Log.getLog(FolderEditor.class);
 
     private ItemListControl itemControl;
 

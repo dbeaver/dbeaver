@@ -65,7 +65,7 @@ import java.util.Set;
  * NodeListControl
  */
 public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener, IMenuListener {
-    //static final Log log = LogFactory.getLog(NodeListControl.class);
+    //static final Log log = Log.getLog(NodeListControl.class);
 
     private final IWorkbenchSite workbenchSite;
     private final DBNNode rootNode;
