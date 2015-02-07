@@ -26,6 +26,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -111,7 +113,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         TreeColumn nameColumn = new TreeColumn(getTree(), SWT.LEFT);
         nameColumn.setText("Name");
 
-        TreeColumn usersColumn = new TreeColumn(getTree(), SWT.RIGHT);
+        TreeColumn usersColumn = new TreeColumn(getTree(), SWT.LEFT);
         usersColumn.setText("#");
 
         this.setContentProvider(new ViewContentProvider());
@@ -124,7 +126,13 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         Collection<Object> drivers = collectDrivers();
         this.setInput(drivers);
         this.expandAll();
-        UIUtils.packColumns(getTree());
+        getTree().addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                UIUtils.packColumns(getTree(), true, new float[] {0.9f, 0.1f});
+                getTree().removeListener(SWT.Resize, this);
+            }
+        });
 
         if (expandRecent) {
             // Expand used driver categories
