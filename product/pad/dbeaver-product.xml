@@ -43,10 +43,21 @@
         <version>
             <number>3.1.2</number>
             <type>minor</type>
-            <date>05.02.2015</date>
+            <date>09.02.2015</date>
 
             <release-notes>
-                -
+                - Dark theme support was added
+                - Resultset scrolling was fixed
+                - Multiple results fetch (SQL Server, Sybase) was fixed
+                - Driver tree was redesigned
+                - SSH tunnel private key passphrase support was added
+                - JDBC driver class discovery was improved
+                - Schema filter was fixed
+                - Table/column creation was fixed
+                - NULL values insert was fixed
+                - Datasource configuration save was fixed
+                - H2 driver was updated
+                - Many minor UI problems were fixes
             </release-notes>
         </version>
 
