@@ -38,8 +38,8 @@
     <Program_Info>
         <Program_Name>DBeaver</Program_Name>
         <Program_Version>3.1.3</Program_Version>
-        <Program_Release_Month>01</Program_Release_Month>
-        <Program_Release_Day>12</Program_Release_Day>
+        <Program_Release_Month>02</Program_Release_Month>
+        <Program_Release_Day>09</Program_Release_Day>
         <Program_Release_Year>2015</Program_Release_Year>
         <Program_Cost_Dollars>0</Program_Cost_Dollars>
         <Program_Type>Freeware</Program_Type>
@@ -50,12 +50,18 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            - Cassandra 2.1.x support
-            - Apache Derby driver updated
-            - ResultSet scrolling bug was fixed
-            - Data export wizard was fixed
-            - DB2 execution plan was fixed
-            - SQL editor execution log was fixed
+            - Dark theme support was added
+            - Resultset scrolling was fixed
+            - Multiple results fetch (SQL Server, Sybase) was fixed
+            - Driver tree was redesigned
+            - SSH tunnel private key passphrase support was added
+            - JDBC driver class discovery was improved
+            - Schema filter was fixed
+            - Table/column creation was fixed
+            - NULL values insert was fixed
+            - Datasource configuration save was fixed
+            - H2 driver was updated
+            - Many minor UI problems were fixes
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
