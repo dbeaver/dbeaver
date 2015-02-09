@@ -9,7 +9,7 @@
     <path id="classpath">
         <!--pathelement location="../../plugins/org.jkiss.dbeaver.core/bin"/-->
         <pathelement location="build"/>
-	<fileset dir="../../plugins/org.jkiss.dbeaver.core/lib/" includes="*.jar"/>
+	<fileset dir="../../plugins/org.jkiss.dbeaver.core/" includes="*.jar"/>
     </path>
 
     <target name="build">
