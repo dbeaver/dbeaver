@@ -18,15 +18,13 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
+import com.jcraft.jsch.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
@@ -44,6 +42,8 @@ import java.util.Map;
  * SSH tunnel
  */
 public class SSHTunnelImpl implements DBWTunnel {
+
+    static final Log log = Log.getLog(SSHTunnelImpl.class);
 
     private static final int CONNECT_TIMEOUT = 10000;
     public static final String LOCALHOST_NAME = "127.0.0.1";
@@ -114,6 +114,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         try {
             if (jsch == null) {
                 jsch = new JSch();
+                JSch.setLogger(new LoggerProxy());
             }
             if (privKeyFile != null) {
                 if (!CommonUtils.isEmpty(ui.getPassphrase())) {
@@ -123,11 +124,13 @@ public class SSHTunnelImpl implements DBWTunnel {
                 }
             }
 
+            log.debug("Instantiate SSH tunnel");
             session = jsch.getSession(sshUser, sshHost, sshPortNum);
             session.setConfig("StrictHostKeyChecking", "no");
             session.setConfig("PreferredAuthentications", "password,publickey,keyboard-interactive");
             session.setConfig("ConnectTimeout", String.valueOf(CONNECT_TIMEOUT));
             session.setUserInfo(ui);
+            log.debug("Connect to tunnel host");
             session.connect(CONNECT_TIMEOUT);
             try {
                 session.setPortForwardingL(localPort, dbHost, dbPort);
@@ -225,6 +228,30 @@ public class SSHTunnelImpl implements DBWTunnel {
         public void showMessage(String message)
         {
             UIUtils.showMessageBox(null, "SSH Tunnel", message, SWT.ICON_INFORMATION);
+        }
+    }
+
+    private class LoggerProxy implements Logger {
+        @Override
+        public boolean isEnabled(int level) {
+            return true;
+        }
+
+        @Override
+        public void log(int level, String message) {
+            String levelStr = "";
+            switch (level) {
+                case INFO: levelStr = "INFO"; break;
+                case WARN: levelStr = "WARN"; break;
+                case ERROR: levelStr = "ERROR"; break;
+                case FATAL: levelStr = "FATAL"; break;
+                case DEBUG:
+                default:
+                    levelStr = "DEBUG";
+                    break;
+            }
+            log.debug(levelStr + ": " + message);
+
         }
     }
 }
