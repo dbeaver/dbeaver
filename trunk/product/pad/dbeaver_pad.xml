@@ -61,7 +61,7 @@
             - NULL values insert was fixed
             - Datasource configuration save was fixed
             - H2 driver was updated
-            - Many minor UI problems were fixes
+            - Many minor UI problems were fixed
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
