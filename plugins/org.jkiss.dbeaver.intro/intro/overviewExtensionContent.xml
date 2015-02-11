@@ -23,7 +23,7 @@
 	<group id="content-group" style-id="content-group">
 	  <link label="Connect to your Database"
 			url="http://org.eclipse.ui.intro/runAction?pluginId=org.jkiss.dbeaver.help.ui&amp;class=org.jkiss.dbeaver.internal.tasks.ui.actions.WelcomeIntroAction&amp;id=org.jkiss.dbeaver.doc.legend.show.action"
-			id="mylyn-overview" style-id="content-link">
+			id="dbeaver-overview" style-id="content-link">
 		<text>Open the Database perspective and add a repository</text>
 	  </link>
 	</group>

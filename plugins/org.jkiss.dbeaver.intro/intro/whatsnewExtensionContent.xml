@@ -18,12 +18,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   -->
 <introContent>
-  <extensionContent id="org.eclipse.mylyn" name="Mylyn"
+  <extensionContent id="org.eclipse.mylyn" name="DBeaver"
 					style="css/whatsnew.css" alt-style="css/whatsnew.properties" path="whatsnew/@">
 	<group id="content-group" style-id="content-group">
 	  <link label="Mylyn Application Lifecycle Tools"
 			url="http://dbeaver.jkiss.org/download/"
-			id="mylyn-noteworthy" style-id="content-link">
+			id="dbeaver-whatsnew" style-id="content-link">
 		<text>
 		  Visit the DBeaver download
 		</text>
