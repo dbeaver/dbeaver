@@ -941,11 +941,17 @@ public final class DBUtils {
         long offset,
         long maxRows) throws DBCException
     {
-        final boolean selectQuery = SQLSemanticProcessor.isSelectQuery(query);
-        final boolean hasLimits = selectQuery && offset >= 0 && maxRows > 0;
+        // We need to detect whether it is a plain select statement
+        // or some DML. For DML statements we mustn't set limits
+        // because it sets update rows limit [SQL Server]
+        boolean dataModifyQuery = !SQLSemanticProcessor.isSelectQuery(query);
+        if (query.trim().startsWith("SELECT")) {
+            dataModifyQuery = query.contains("INTO");
+        }
+        final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
-        if (selectQuery) {
+        if (!dataModifyQuery) {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
                 if (hasLimits) {
@@ -967,7 +973,7 @@ public final class DBUtils {
             createStatement(session, query) :
             prepareStatement(session, query);
 
-        if (hasLimits || offset > 0) {
+        if (hasLimits) {
             if (limitTransformer == null) {
                 dbStat.setLimit(offset, maxRows);
             } else {
