@@ -21,11 +21,13 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
+import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
 /**
  * ResultSetCommandHandler
@@ -49,7 +51,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        ResultSetViewer resultSet = getResultSet(event);
+        ResultSetViewer resultSet = getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
             return null;
         }
@@ -96,17 +98,14 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         return null;
     }
 
-    @Nullable
-    protected ResultSetViewer getResultSet(ExecutionEvent event)
-    {
-        Spreadsheet spreadsheet = getActiveSpreadsheet(event);
-        if (spreadsheet == null) {
-            return null;
+    public static ResultSetViewer getActiveResultSet(IWorkbenchPart activePart) {
+        //IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+        if (activePart instanceof ResultSetProvider) {
+            return ((ResultSetProvider) activePart).getResultSetViewer();
+        } else if (activePart instanceof MultiPageAbstractEditor) {
+            return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
         }
-        if (!(spreadsheet.getController() instanceof ResultSetViewer)) {
-            return null;
-        }
-        return (ResultSetViewer) spreadsheet.getController();
+        return null;
     }
 
 }

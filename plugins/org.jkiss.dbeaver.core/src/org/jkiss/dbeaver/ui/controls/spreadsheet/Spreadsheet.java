@@ -99,9 +99,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.setHeaderVisible(true);
         super.setMaxColumnDefWidth(MAX_DEF_COLUMN_WIDTH);
 
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        super.setLayoutData(gd);
-
         super.addListener(SWT.MouseDoubleClick, this);
         super.addListener(SWT.MouseDown, this);
         super.addListener(SWT.KeyDown, this);

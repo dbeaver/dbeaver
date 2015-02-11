@@ -18,12 +18,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   -->
 <introContent>
-  <extensionContent id="org.jkiss.dbeaver" name="Mylyn"
+  <extensionContent id="org.jkiss.dbeaver" name="DBeaver"
 					style="css/tutorials.css" alt-style="css/tutorials.properties" path="tutorials/@">
 	<group label="Database managing" id="dbeaver" style-id="content-group">
 	  <link
 		 url="http://dbeaver.jkiss.org/about/"
-		 label="Visit the DBeaver homepage" id="mylyn-task" style-id="content-link">
+		 label="Visit the DBeaver homepage" id="dbeaver-task" style-id="content-link">
 		<text>Learn about the benefits of database managing with DBeaver</text>
 	  </link>
 	</group>
