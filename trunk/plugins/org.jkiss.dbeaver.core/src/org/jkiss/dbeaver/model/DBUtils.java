@@ -53,6 +53,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * DBUtils
@@ -60,6 +61,9 @@ import java.util.*;
 public final class DBUtils {
 
     static final Log log = Log.getLog(DBUtils.class);
+
+    static final Pattern SELECT_QUERY_PATTERN = Pattern.compile("\\s*SELECT.+");
+    static final Pattern SELECT_INTO_PATTERN = Pattern.compile("\\s*SELECT.+\\s+INTO\\s+");
 
     public static <TYPE extends DBSObject> Comparator<TYPE> nameComparator()
     {
@@ -945,8 +949,9 @@ public final class DBUtils {
         // or some DML. For DML statements we mustn't set limits
         // because it sets update rows limit [SQL Server]
         boolean dataModifyQuery = !SQLSemanticProcessor.isSelectQuery(query);
-        if (query.trim().startsWith("SELECT")) {
-            dataModifyQuery = query.contains("INTO");
+        String testQuery = query.replace("\\n", "").toUpperCase();
+        if (SELECT_QUERY_PATTERN.matcher(testQuery).find()) {
+            dataModifyQuery = SELECT_INTO_PATTERN.matcher(testQuery).find();
         }
         final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
 
