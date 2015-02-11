@@ -18,25 +18,21 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.*;
-import org.eclipse.ui.internal.ErrorEditorPart;
-import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
 import org.jkiss.dbeaver.ext.ui.IFolderListener;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
-import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -58,7 +54,6 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -78,7 +73,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements INavigatorModelView, IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderedPart
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderedPart
 {
     static final Log log = Log.getLog(EntityEditor.class);
 
@@ -796,22 +791,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Update main editor image
             setPageImage(0, getEditorInput().getTreeNode().getNodeIconDefault());
         }
-    }
-
-    @Override
-    public DBNNode getRootNode() {
-        return getEditorInput().getTreeNode();
-    }
-
-    @Nullable
-    @Override
-    public Viewer getNavigatorViewer()
-    {
-        IWorkbenchPart activePart = getActiveEditor();
-        if (activePart instanceof INavigatorModelView) {
-            return ((INavigatorModelView)activePart).getNavigatorViewer();
-        }
-        return null;
     }
 
     @Override

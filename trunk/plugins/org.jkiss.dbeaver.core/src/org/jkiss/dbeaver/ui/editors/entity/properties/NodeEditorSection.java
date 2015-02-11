@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
@@ -27,10 +28,7 @@ import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
-import org.jkiss.dbeaver.ext.ui.IRefreshableContainer;
-import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.ext.ui.*;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
@@ -42,7 +40,7 @@ import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 /**
  * EntityNodeEditor
  */
-class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshablePart
+class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshablePart, INavigatorModelView
 {
     //static final Log log = Log.getLog(EntityNodeEditor.class);
 
@@ -220,5 +218,15 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
                 itemControl.loadData(false);
             }
         }
+    }
+
+    @Override
+    public DBNNode getRootNode() {
+        return itemControl.getRootNode();
+    }
+
+    @Override
+    public Viewer getNavigatorViewer() {
+        return itemControl.getNavigatorViewer();
     }
 }

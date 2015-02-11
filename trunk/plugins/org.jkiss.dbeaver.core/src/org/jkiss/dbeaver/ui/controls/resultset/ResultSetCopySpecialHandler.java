@@ -45,7 +45,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        ResultSetViewer resultSet = getResultSet(event);
+        ResultSetViewer resultSet = getActiveResultSet(HandlerUtil.getActivePart(event));
         if (resultSet == null) {
             return null;
         }

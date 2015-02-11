@@ -796,6 +796,9 @@ public class ResultSetViewer extends Viewer
 
         toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
 
+        // Add presentation switcher
+        //toolBarManager.add(new Comb);
+
         // handle own commands
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES));

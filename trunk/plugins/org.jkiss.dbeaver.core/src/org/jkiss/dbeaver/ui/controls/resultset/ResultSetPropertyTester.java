@@ -19,10 +19,9 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
-import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 
 /**
  * DatabaseEditorPropertyTester
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 public class ResultSetPropertyTester extends PropertyTester
 {
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resultset";
+    public static final String PROP_ACTIVE = "active";
     public static final String PROP_HAS_DATA = "hasData";
     public static final String PROP_CAN_COPY = "canCopy";
     public static final String PROP_CAN_PASTE = "canPaste";
@@ -41,17 +41,15 @@ public class ResultSetPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        Spreadsheet spreadsheet = (Spreadsheet) receiver;
-        if (spreadsheet == null) {
-            return false;
-        }
-        ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
-        return checkResultSetProperty(rsv, property, expectedValue);
+        ResultSetViewer rsv = ResultSetCommandHandler.getActiveResultSet((IWorkbenchPart)receiver);
+        return rsv != null && checkResultSetProperty(rsv, property, expectedValue);
     }
 
     private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
     {
-        if (PROP_HAS_DATA.equals(property)) {
+        if (PROP_ACTIVE.equals(property)) {
+            return true;
+        } else if (PROP_HAS_DATA.equals(property)) {
             return rsv.getModel().getRowCount() > 0;
         } else if (PROP_CAN_COPY.equals(property)) {
             return rsv.getFocusAttribute() != null && rsv.getFocusRow() != null;
