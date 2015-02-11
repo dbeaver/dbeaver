@@ -797,7 +797,7 @@ public class ResultSetViewer extends Viewer
         toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
 
         // Add presentation switcher
-        //toolBarManager.add(new Comb);
+        toolBarManager.add(new PresentationSwitchCombo());
 
         // handle own commands
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
@@ -1453,8 +1453,8 @@ public class ResultSetViewer extends Viewer
     @Override
     public void fillContextMenu(@Nullable Object colObject, @Nullable Object rowObject, @NotNull IMenuManager manager)
     {
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(colObject instanceof DBDAttributeBinding ? colObject : rowObject);
-        final RowData row = (RowData)(colObject instanceof RowData? colObject : rowObject);
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowObject : colObject);
+        final RowData row = (RowData)(recordMode ? colObject : rowObject);
         // Custom oldValue items
         if (attr != null && row != null) {
             final ResultSetValueController valueController = new ResultSetValueController(
@@ -3356,6 +3356,32 @@ public class ResultSetViewer extends Viewer
                 int newPosition = back ? historyPosition - 1 : historyPosition + 1;
                 navigateHistory(newPosition);
             }
+        }
+    }
+
+    private class PresentationSwitchCombo extends ContributionItem {
+        private ToolItem toolitem;
+        private Combo combo;
+
+        @Override
+        public void fill(ToolBar parent, int index) {
+            toolitem = new ToolItem(parent, SWT.SEPARATOR, index);
+            Control control = createControl(parent);
+            toolitem.setControl(control);
+        }
+
+        @Override
+        public void fill(Composite parent) {
+            createControl(parent);
+        }
+
+        protected Control  createControl(Composite parent) {
+            combo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
+            combo.add("Grid");
+            combo.add("Text");
+            combo.select(0);
+            toolitem.setWidth(combo.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
+            return combo;
         }
     }
 }
