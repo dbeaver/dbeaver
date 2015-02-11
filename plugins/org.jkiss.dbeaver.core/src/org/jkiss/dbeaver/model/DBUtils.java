@@ -948,15 +948,19 @@ public final class DBUtils {
         // We need to detect whether it is a plain select statement
         // or some DML. For DML statements we mustn't set limits
         // because it sets update rows limit [SQL Server]
-        boolean dataModifyQuery = !SQLSemanticProcessor.isSelectQuery(query);
-        String testQuery = query.replace("\\n", "").toUpperCase();
-        if (SELECT_QUERY_PATTERN.matcher(testQuery).find()) {
-            dataModifyQuery = SELECT_INTO_PATTERN.matcher(testQuery).find();
-        }
-        final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
+//        boolean dataModifyQuery = !SQLSemanticProcessor.isSelectQuery(query);
+        final boolean selectQuery = SQLSemanticProcessor.isSelectQuery(query);
+        final boolean hasLimits = selectQuery && offset >= 0 && maxRows > 0;
+
+
+//        String testQuery = query.replace("\\n", "").toUpperCase();
+//        if (SELECT_QUERY_PATTERN.matcher(testQuery).find()) {
+//            dataModifyQuery = SELECT_INTO_PATTERN.matcher(testQuery).find();
+//        }
+//        final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
-        if (!dataModifyQuery) {
+        if (selectQuery) {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
                 if (hasLimits) {
@@ -978,7 +982,7 @@ public final class DBUtils {
             createStatement(session, query) :
             prepareStatement(session, query);
 
-        if (hasLimits) {
+        if (hasLimits || offset > 0) {
             if (limitTransformer == null) {
                 dbStat.setLimit(offset, maxRows);
             } else {
