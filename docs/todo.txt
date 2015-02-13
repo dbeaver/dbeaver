@@ -1,4 +1,4 @@
-Vertical tabs switcher
+Get rid of properties.tabbed (+ exclude org.eclipse.ui.forms)
 Intro plugin
 Permanent download links (ln -s after build)
 Autocomplete - do not replace word after cursor
