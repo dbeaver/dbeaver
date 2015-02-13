@@ -197,14 +197,14 @@
     </extension>
 
     <extension id="product" point="org.eclipse.core.runtime.products">
-        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver">
-            <property name="aboutText" value="DBeaver - Universal Database Manager"/>
+        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver Enterprise">
+            <property name="aboutText" value="DBeaver - Enterprise Database Manager"/>
             <property name="copyright" value="%productCopyright"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
             <property name="windowImages" value="icons/dbeaver.png"/>
-            <property name="appName" value="DBeaver"/>
+            <property name="appName" value="DBeaver Enterprise"/>
             <property name="startupForegroundColor" value="000000"/>
             <property name="startupMessageRect" value="25,25,200,15"/>
             <property name="startupProgressRect" value="25,45,150,15"/>
@@ -283,13 +283,6 @@
     <extension point="org.eclipse.ui.helpSupport">
         <config class="org.jkiss.dbeaver.ui.help.LightweightHelpUI">
         </config>
-    </extension>
-
-    <extension point="org.eclipse.e4.ui.css.swt.theme">
-        <stylesheet uri="css/e4-dark_dbeaver_prefstyle.css">
-            <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark">
-            </themeid>
-        </stylesheet>
     </extension>
 
 </plugin>
