@@ -68,6 +68,13 @@
         <import plugin="org.objectweb.asm"/>
     </requires>
 
+    <!-- Include org.eclipse.ui.themes because it was added only in 4.4 -->
+    <plugin
+            id="org.eclipse.ui.themes"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"/>
+
     <plugin
             id="org.jkiss.dbeaver.core.application"
             download-size="0"
