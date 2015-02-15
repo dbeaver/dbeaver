@@ -37,9 +37,9 @@
     </Company_Info>
     <Program_Info>
         <Program_Name>DBeaver</Program_Name>
-        <Program_Version>3.1.3</Program_Version>
+        <Program_Version>3.1.4</Program_Version>
         <Program_Release_Month>02</Program_Release_Month>
-        <Program_Release_Day>09</Program_Release_Day>
+        <Program_Release_Day>16</Program_Release_Day>
         <Program_Release_Year>2015</Program_Release_Year>
         <Program_Cost_Dollars>0</Program_Cost_Dollars>
         <Program_Type>Freeware</Program_Type>
@@ -50,18 +50,12 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            - Dark theme support was added
-            - Resultset scrolling was fixed
-            - Multiple results fetch (SQL Server, Sybase) was fixed
-            - Driver tree was redesigned
-            - SSH tunnel private key passphrase support was added
-            - JDBC driver class discovery was improved
-            - Schema filter was fixed
-            - Table/column creation was fixed
-            - NULL values insert was fixed
-            - Datasource configuration save was fixed
-            - H2 driver was updated
-            - Many minor UI problems were fixed
+            - Eclipse plugin version now works for older Eclipse versions
+            - SSH auth fixed
+            - SSH logging added
+            - Max rows issue fixed (MS SQL)
+            - MS Access driver fixed
+            - Results control toolbar fixed
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -84,8 +78,8 @@
             <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
         </Application_URLs>
         <Download_URLs>
-            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.1.3-x86-setup.exe</Primary_Download_URL>
-            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.1.3-x86_64-setup.exe
+            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.1.4-x86-setup.exe</Primary_Download_URL>
+            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.1.4-x86_64-setup.exe
             </Secondary_Download_URL>
             <Additional_Download_URL_1></Additional_Download_URL_1>
             <Additional_Download_URL_2></Additional_Download_URL_2>
