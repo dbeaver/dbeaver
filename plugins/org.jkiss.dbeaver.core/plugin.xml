@@ -340,7 +340,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
             <with variable="activePart">
-                <test property="org.jkiss.dbeaver.core.navigator.active"/>
+                <test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">
@@ -350,7 +350,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
             <with variable="activePart">
-                <test property="org.jkiss.dbeaver.core.resultset.active"/>
+                <test property="org.jkiss.dbeaver.core.resultset.active" forcePluginActivation="true"/>
             </with>
         </definition>
     </extension>
