@@ -595,7 +595,7 @@ public class TabbedPropertyList extends Composite {
      *
      * @param index the index of the element to select.
      */
-    protected void select(int index) {
+    public void select(int index) {
         if (getSelectionIndex() == index) {
 			/*
 			 * this index is already selected.
