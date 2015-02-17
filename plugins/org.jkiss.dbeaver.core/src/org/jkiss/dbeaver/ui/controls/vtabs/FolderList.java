@@ -50,7 +50,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  * @author Anthony Hunter
  * @author Serge Rieder
  */
-public class TabbedPropertyList extends Composite {
+public class FolderList extends Composite {
 
     private static final ListElement[] ELEMENTS_EMPTY = new ListElement[0];
 
@@ -93,7 +93,7 @@ public class TabbedPropertyList extends Composite {
      */
     public class ListElement extends Canvas {
 
-        private ITabItem tab;
+        private IFolderDescription tab;
         private int index;
         private boolean selected;
         private boolean hover;
@@ -105,7 +105,7 @@ public class TabbedPropertyList extends Composite {
          * @param tab    the tab item for the element.
          * @param index  the index in the list.
          */
-        public ListElement(Composite parent, final ITabItem tab, int index) {
+        public ListElement(Composite parent, final IFolderDescription tab, int index) {
             super(parent, SWT.NO_FOCUS);
             this.tab = tab;
             hover = false;
@@ -136,6 +136,10 @@ public class TabbedPropertyList extends Composite {
             addMouseMoveListener(new MouseMoveListener() {
 
                 public void mouseMove(MouseEvent e) {
+                    String tooltip = tab.getTooltip();
+                    if (tooltip != null) {
+                        setToolTipText(tooltip);
+                    }
                     if (!hover) {
                         hover = true;
                         redraw();
@@ -233,7 +237,7 @@ public class TabbedPropertyList extends Composite {
                 e.gc.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
             }
             e.gc.drawText(tab.getText(), textIndent, textMiddle, true);
-            if (((TabbedPropertyList) getParent()).focus && selected) {
+            if (((FolderList) getParent()).focus && selected) {
 				/* draw a line if the tab has focus */
                 Point point = e.gc.textExtent(tab.getText());
                 e.gc.drawLine(textIndent, bounds.height - 4, textIndent + point.x, bounds.height - 4);
@@ -251,7 +255,7 @@ public class TabbedPropertyList extends Composite {
          *
          * @return the tab item.
          */
-        public ITabItem getTabItem() {
+        public IFolderDescription getTabItem() {
             return tab;
         }
 
@@ -428,7 +432,7 @@ public class TabbedPropertyList extends Composite {
         }
     }
 
-    public TabbedPropertyList(Composite parent) {
+    public FolderList(Composite parent) {
         super(parent, SWT.NO_FOCUS);
         removeAll();
         setLayout(new FormLayout());
@@ -548,7 +552,7 @@ public class TabbedPropertyList extends Composite {
     /**
      * Sets the new list elements.
      */
-    public void setElements(ITabItem[] children) {
+    public void setFolders(IFolderDescription[] children) {
         if (elements != ELEMENTS_EMPTY) {
             removeAll();
         }
@@ -574,7 +578,7 @@ public class TabbedPropertyList extends Composite {
         computeTopAndBottomTab();
     }
 
-    private int getTabWidth(ITabItem tabItem) {
+    private int getTabWidth(IFolderDescription tabItem) {
         int width = getTextDimension(tabItem.getText()).x;
 		/*
 		 * To anticipate for the icon placement we should always keep the
