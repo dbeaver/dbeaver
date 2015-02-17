@@ -17,16 +17,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.controls.vtabs;
+package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.IFolderListener;
 
 /**
  * IFolderedPart
  */
-public interface IFolderedContainer
+public interface IFolderContainer
 {
     @Nullable
     Object getActiveFolder();
