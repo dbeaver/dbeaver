@@ -586,7 +586,7 @@ public class FolderList extends Composite {
 		 * an icon the width of the tab doesn't change.
 		 */
         if (tabItem.getImage() != null) {
-            width = width + tabItem.getImage().getBounds().x + 4;
+            width = width + tabItem.getImage().getBounds().width + 4;
         }
         if (tabItem.isIndented()) {
             width = width + INDENT;
