@@ -94,14 +94,9 @@ public class TabbedPropertyList extends Composite {
     public class ListElement extends Canvas {
 
         private ITabItem tab;
-
         private int index;
-
         private boolean selected;
-
         private boolean hover;
-
-        private Color textColor = widgetForeground;
 
         /**
          * Constructor for ListElement.
@@ -193,16 +188,14 @@ public class TabbedPropertyList extends Composite {
             } else if (hover) {
                 e.gc.setForeground(hoverGradientStart);
                 e.gc.setBackground(hoverGradientEnd);
-                e.gc.fillGradientRectangle(0, 2, bounds.width - 1,
-                    bounds.height - 1, true);
+                e.gc.fillGradientRectangle(0, 2, bounds.width - 1, bounds.height - 1, true);
             } else if (tab.isIndented()) {
                 e.gc.setBackground(indentedDefaultBackground);
                 e.gc.fillRectangle(0, 2, bounds.width - 1, bounds.height - 1);
             } else {
                 e.gc.setForeground(defaultGradientStart);
                 e.gc.setBackground(defaultGradientEnd);
-                e.gc.fillGradientRectangle(0, 2, bounds.width - 1,
-                    bounds.height - 1, true);
+                e.gc.fillGradientRectangle(0, 2, bounds.width - 1, bounds.height - 1, true);
             }
 
             if (!selected) {
@@ -234,25 +227,22 @@ public class TabbedPropertyList extends Composite {
             }
 
 			/* draw the text */
-            e.gc.setForeground(textColor);
+            e.gc.setForeground(widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
-                e.gc.setFont(JFaceResources.getFontRegistry().getBold(
-                    JFaceResources.DEFAULT_FONT));
+                e.gc.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
             }
             e.gc.drawText(tab.getText(), textIndent, textMiddle, true);
             if (((TabbedPropertyList) getParent()).focus && selected) {
 				/* draw a line if the tab has focus */
                 Point point = e.gc.textExtent(tab.getText());
-                e.gc.drawLine(textIndent, bounds.height - 4, textIndent
-                    + point.x, bounds.height - 4);
+                e.gc.drawLine(textIndent, bounds.height - 4, textIndent + point.x, bounds.height - 4);
             }
 
 			/* draw the bottom line on the tab for selected and default */
             if (!hover) {
                 e.gc.setForeground(listBackground);
-                e.gc.drawLine(0, bounds.height - 1, bounds.width - 2,
-                    bounds.height - 1);
+                e.gc.drawLine(0, bounds.height - 1, bounds.width - 2, bounds.height - 1);
             }
         }
 
@@ -592,7 +582,7 @@ public class TabbedPropertyList extends Composite {
 		 * an icon the width of the tab doesn't change.
 		 */
         if (tabItem.getImage() != null) {
-            width = width + 16 + 4;
+            width = width + tabItem.getImage().getBounds().x + 4;
         }
         if (tabItem.isIndented()) {
             width = width + INDENT;
@@ -813,9 +803,6 @@ public class TabbedPropertyList extends Composite {
      * Layout the tabs.
      */
     private void layoutTabs() {
-        //System.out.println("TabFit " + tabsThatFitInComposite + " length "
-        //	+ elements.length + " top " + topVisibleIndex + " bottom "
-        //	+ bottomVisibleIndex);
         if (tabsThatFitInComposite == NONE || elements.length == 0) {
             FormData formData = new FormData();
             formData.left = new FormAttachment(0, 0);
@@ -898,15 +885,13 @@ public class TabbedPropertyList extends Composite {
 
             public void getName(AccessibleEvent e) {
                 if (getSelectionIndex() != NONE) {
-                    e.result = elements[getSelectionIndex()].getTabItem()
-                        .getText();
+                    e.result = elements[getSelectionIndex()].getTabItem().getText();
                 }
             }
 
             public void getHelp(AccessibleEvent e) {
                 if (getSelectionIndex() != NONE) {
-                    e.result = elements[getSelectionIndex()].getTabItem()
-                        .getText();
+                    e.result = elements[getSelectionIndex()].getTabItem().getText();
                 }
             }
         });
@@ -915,14 +900,12 @@ public class TabbedPropertyList extends Composite {
 
             public void getChildAtPoint(AccessibleControlEvent e) {
                 Point pt = toControl(new Point(e.x, e.y));
-                e.childID = (getBounds().contains(pt)) ? ACC.CHILDID_SELF
-                    : ACC.CHILDID_NONE;
+                e.childID = (getBounds().contains(pt)) ? ACC.CHILDID_SELF : ACC.CHILDID_NONE;
             }
 
             public void getLocation(AccessibleControlEvent e) {
                 if (getSelectionIndex() != NONE) {
-                    Rectangle location = elements[getSelectionIndex()]
-                        .getBounds();
+                    Rectangle location = elements[getSelectionIndex()].getBounds();
                     Point pt = toDisplay(new Point(location.x, location.y));
                     e.x = pt.x;
                     e.y = pt.y;
