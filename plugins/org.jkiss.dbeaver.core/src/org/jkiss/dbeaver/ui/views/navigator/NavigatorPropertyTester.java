@@ -20,13 +20,8 @@ package org.jkiss.dbeaver.ui.views.navigator;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ext.ui.IFolderedPart;
+import org.jkiss.dbeaver.ui.controls.vtabs.IFolderedContainer;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.dbeaver.ui.controls.resultset.RowData;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
 /**
@@ -57,8 +52,8 @@ public class NavigatorPropertyTester extends PropertyTester
             return ((INavigatorModelView) activePart);
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveNavigator(((MultiPageAbstractEditor) activePart).getActiveEditor());
-        } else if (activePart instanceof IFolderedPart) {
-            Object activeFolder = ((IFolderedPart) activePart).getActiveFolder();
+        } else if (activePart instanceof IFolderedContainer) {
+            Object activeFolder = ((IFolderedContainer) activePart).getActiveFolder();
             if (activeFolder instanceof INavigatorModelView) {
                 return (INavigatorModelView)activeFolder;
             } else if (activeFolder instanceof IWorkbenchPart) {
