@@ -21,9 +21,7 @@ package org.jkiss.dbeaver.ext.test.ui;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.folders.FolderComposite;
 import org.jkiss.dbeaver.ui.controls.folders.FolderDescription;
@@ -41,22 +39,22 @@ public class TestDialog extends TrayDialog {
         tabs = new IFolderDescription[3];
         tabs[0] = new FolderDescription("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage(), "Tooltip 1") {
             @Override
-            public Composite createControl(Composite parent) {
-                return null;
+            public Control createControl(Composite parent) {
+                return new Text(parent, SWT.NONE);
             }
         };
         tabs[1] = new FolderDescription("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage(), "Tooltip 2") {
 
             @Override
-            public Composite createControl(Composite parent) {
-                return null;
+            public Control createControl(Composite parent) {
+                return new Label(parent, SWT.NONE);
             }
         };
         tabs[2] = new FolderDescription("tab3", "Example", DBIcon.PROJECT.getImage(), "123123") {
 
             @Override
-            public Composite createControl(Composite parent) {
-                return null;
+            public Control createControl(Composite parent) {
+                return new Text(parent, SWT.V_SCROLL | SWT.H_SCROLL);
             }
         };
     }
