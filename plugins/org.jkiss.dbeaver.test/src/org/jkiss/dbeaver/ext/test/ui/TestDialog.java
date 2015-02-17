@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.vtabs.FolderList;
-import org.jkiss.dbeaver.ui.controls.vtabs.IFolderDescription;
+import org.jkiss.dbeaver.ui.controls.folders.FolderList;
+import org.jkiss.dbeaver.ui.controls.folders.IFolderDescription;
 
 public class TestDialog extends TrayDialog {
 
