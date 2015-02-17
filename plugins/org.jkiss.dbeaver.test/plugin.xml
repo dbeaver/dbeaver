@@ -23,10 +23,18 @@
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.test.object.validate" name="Test - Validate"/>
+        <command id="org.jkiss.dbeaver.test.dialog" name="Show dialog"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.test.object.validate" class="org.jkiss.dbeaver.ext.test.handlers.HandlerObjectValidate">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.test.dialog" class="org.jkiss.dbeaver.ext.test.handlers.HandlerDialog">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -45,6 +53,13 @@
                </visibleWhen>
             </command>
         </menuContribution>
+       <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="test" label="Test">
+                <command commandId="org.jkiss.dbeaver.test.dialog"/>
+            </menu>
+       </menuContribution>
+
+
    </extension>
 
 

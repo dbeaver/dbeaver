@@ -28,6 +28,7 @@
 package org.jkiss.dbeaver.ui.controls.vtabs;
 
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
 
 /**
  * Represents a tab to be displayed in the tab list in the tabbed property sheet
@@ -65,4 +66,10 @@ public interface ITabItem {
 	 * @return <code>true</code> if this tab is indented.
 	 */
 	public boolean isIndented();
+
+    /**
+     * Creates tab contents
+     */
+    public Composite createControl(Composite parent);
+
 }
