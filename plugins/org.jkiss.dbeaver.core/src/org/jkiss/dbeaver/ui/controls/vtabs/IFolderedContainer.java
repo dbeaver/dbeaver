@@ -17,22 +17,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.ui.controls.vtabs;
 
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.ui.IFolderListener;
 
 /**
  * IFolderedPart
  */
-public interface IFolderedPart extends IWorkbenchPart
+public interface IFolderedContainer
 {
     @Nullable
     Object getActiveFolder();
 
     void switchFolder(String folderId);
 
-    void addFolderListener(IFolderListener  listener);
+    void addFolderListener(IFolderListener listener);
 
     void removeFolderListener(IFolderListener  listener);
 
