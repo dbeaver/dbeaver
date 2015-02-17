@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ui.controls.vtabs.IFolderedContainer;
+import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -149,7 +149,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     }
                     if (editorInput instanceof EntityEditorInput && ((EntityEditorInput) editorInput).getTreeNode() == selectedNode) {
                         final IEditorPart editor = ref.getEditor(true);
-                        if (editor instanceof IFolderedContainer) {
+                        if (editor instanceof IFolderContainer) {
                             // Activate default folder
                             //((IFolderedPart)editor).switchFolder(defaultFolderId);
                         }
