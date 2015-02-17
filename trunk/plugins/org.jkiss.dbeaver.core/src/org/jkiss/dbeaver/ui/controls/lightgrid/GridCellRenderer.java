@@ -67,7 +67,7 @@ class GridCellRenderer extends AbstractRenderer
             if (cellBackground.equals(grid.getBackground())) {
                 gc.setBackground(colorSelected);
             } else {
-                RGB cellSel = LightGrid.blend(
+                RGB cellSel = UIUtils.blend(
                     cellBackground.getRGB(),
                     colorSelectedRGB,
                     50);
