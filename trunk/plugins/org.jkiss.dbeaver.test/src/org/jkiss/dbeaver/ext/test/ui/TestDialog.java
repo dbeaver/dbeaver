@@ -21,29 +21,28 @@ package org.jkiss.dbeaver.ext.test.ui;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.vtabs.ITabItem;
-import org.jkiss.dbeaver.ui.controls.vtabs.TabbedPropertyList;
+import org.jkiss.dbeaver.ui.controls.vtabs.FolderList;
+import org.jkiss.dbeaver.ui.controls.vtabs.IFolderDescription;
 
 public class TestDialog extends TrayDialog {
 
-    private ITabItem[] tabs;
+    private IFolderDescription[] tabs;
 
     public TestDialog(Shell shell)
     {
         super(shell);
 
-        tabs = new ITabItem[2];
-        tabs[0] = new TabItemImpl("Tab 1", DBIcon.TREE_TABLE.getImage());
-        tabs[1] = new TabItemImpl("Tab with long-long name", DBIcon.TREE_COLUMNS.getImage());
+        tabs = new IFolderDescription[3];
+        tabs[0] = new FolderDescriptionImpl("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage());
+        tabs[1] = new FolderDescriptionImpl("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage());
+        tabs[2] = new FolderDescriptionImpl("tab3", "Example", DBIcon.PROJECT.getImage());
     }
 
     @Override
@@ -62,13 +61,13 @@ public class TestDialog extends TrayDialog {
         Composite sheet = UIUtils.createPlaceholder(group, 2);
         sheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        TabbedPropertyList tabbedPropertyList = new TabbedPropertyList(sheet);
+        FolderList folderList = new FolderList(sheet);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 500;
-        tabbedPropertyList.setLayoutData(gd);
-        tabbedPropertyList.setElements(tabs);
-        tabbedPropertyList.select(0);
+        folderList.setLayoutData(gd);
+        folderList.setFolders(tabs);
+        folderList.select(0);
 
         Text pane = new Text(sheet, SWT.NONE);
         pane.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -83,11 +82,13 @@ public class TestDialog extends TrayDialog {
         return group;
     }
 
-    private static class TabItemImpl implements ITabItem {
+    private static class FolderDescriptionImpl implements IFolderDescription {
+        private String id;
         private String text;
         private Image image;
 
-        private TabItemImpl(String text, Image image) {
+        private FolderDescriptionImpl(String id, String text, Image image) {
+            this.id = id;
             this.text = text;
             this.image = image;
         }
@@ -98,13 +99,18 @@ public class TestDialog extends TrayDialog {
         }
 
         @Override
-        public String getText() {
-            return text;
+        public String getTooltip() {
+            return text + " information";
         }
 
         @Override
-        public boolean isSelected() {
-            return false;
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public String getText() {
+            return text;
         }
 
         @Override
