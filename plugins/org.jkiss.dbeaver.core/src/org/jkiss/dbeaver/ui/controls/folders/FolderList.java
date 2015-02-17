@@ -947,4 +947,12 @@ public class FolderList extends Composite {
             }
         });
     }
+
+    public void addSelectionListener(SelectionListener listener) {
+        checkWidget ();
+        TypedListener typedListener = new TypedListener (listener);
+        addListener (SWT.Selection,typedListener);
+        addListener (SWT.DefaultSelection,typedListener);
+    }
+
 }
