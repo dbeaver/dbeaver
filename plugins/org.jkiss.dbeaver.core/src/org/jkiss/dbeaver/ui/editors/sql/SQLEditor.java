@@ -866,7 +866,7 @@ public class SQLEditor extends SQLEditorBase
             return null;
         }
         CTabItem curTab = resultTabs.getSelection();
-        if (curTab != null && curTab.getData() instanceof QueryResultsProvider) {
+        if (curTab != null && !curTab.isDisposed() && curTab.getData() instanceof QueryResultsProvider) {
             return ((QueryResultsProvider)curTab.getData()).getResultSetViewer();
         }
 
