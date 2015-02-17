@@ -20,29 +20,45 @@ package org.jkiss.dbeaver.ext.test.ui;
 
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.folders.FolderList;
+import org.jkiss.dbeaver.ui.controls.folders.FolderComposite;
+import org.jkiss.dbeaver.ui.controls.folders.FolderDescription;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderDescription;
 
 public class TestDialog extends TrayDialog {
 
-    private IFolderDescription[] tabs;
+    private FolderComposite folderComposite;
+    private final IFolderDescription[] tabs;
 
     public TestDialog(Shell shell)
     {
         super(shell);
 
         tabs = new IFolderDescription[3];
-        tabs[0] = new FolderDescriptionImpl("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage());
-        tabs[1] = new FolderDescriptionImpl("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage());
-        tabs[2] = new FolderDescriptionImpl("tab3", "Example", DBIcon.PROJECT.getImage());
+        tabs[0] = new FolderDescription("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage(), "Tooltip 1") {
+            @Override
+            public Composite createControl(Composite parent) {
+                return null;
+            }
+        };
+        tabs[1] = new FolderDescription("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage(), "Tooltip 2") {
+
+            @Override
+            public Composite createControl(Composite parent) {
+                return null;
+            }
+        };
+        tabs[2] = new FolderDescription("tab3", "Example", DBIcon.PROJECT.getImage(), "123123") {
+
+            @Override
+            public Composite createControl(Composite parent) {
+                return null;
+            }
+        };
     }
 
     @Override
@@ -58,69 +74,14 @@ public class TestDialog extends TrayDialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        Composite sheet = UIUtils.createPlaceholder(group, 2);
-        sheet.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        FolderList folderList = new FolderList(sheet);
+        folderComposite = new FolderComposite(group, SWT.BORDER);
         gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 300;
         gd.heightHint = 300;
-        gd.widthHint = 500;
-        folderList.setLayoutData(gd);
-        folderList.setFolders(tabs);
-        folderList.select(0);
+        folderComposite.setLayoutData(gd);
+        folderComposite.setFolders(tabs);
 
-        Text pane = new Text(sheet, SWT.NONE);
-        pane.setLayoutData(new GridData(GridData.FILL_BOTH));
-        //pane.setLayout(new FillLayout());
-
-/*
-        Composite propsGroup = new Composite(group, SWT.NONE);
-        propsGroup.setLayout(new GridLayout(2, false));
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        propsGroup.setLayoutData(gd);
-*/
         return group;
     }
 
-    private static class FolderDescriptionImpl implements IFolderDescription {
-        private String id;
-        private String text;
-        private Image image;
-
-        private FolderDescriptionImpl(String id, String text, Image image) {
-            this.id = id;
-            this.text = text;
-            this.image = image;
-        }
-
-        @Override
-        public Image getImage() {
-            return image;
-        }
-
-        @Override
-        public String getTooltip() {
-            return text + " information";
-        }
-
-        @Override
-        public String getId() {
-            return id;
-        }
-
-        @Override
-        public String getText() {
-            return text;
-        }
-
-        @Override
-        public boolean isIndented() {
-            return false;
-        }
-
-        @Override
-        public Composite createControl(Composite parent) {
-            return new Composite(parent, SWT.BORDER);
-        }
-    }
 }

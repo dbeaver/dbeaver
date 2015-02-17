@@ -30,55 +30,47 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-
+import org.eclipse.swt.graphics.Image;
 
 /**
  * Folders composite
  */
-public class FolderComposite extends Composite {
+public abstract class FolderDescription implements IFolderDescription {
 
+    private String id;
+    private String text;
+    private Image image;
+    private String tooltip;
 
-    private final FolderList folderList;
-    private final Composite pane;
-    private Composite curFolder;
-
-    public FolderComposite(Composite parent, int style) {
-        super(parent, style);
-        GridLayout gl = new GridLayout(2, false);
-        gl.horizontalSpacing = 0;
-        gl.verticalSpacing = 0;
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        setLayout(gl);
-
-        folderList = new FolderList(this);
-        folderList.setLayoutData(new GridData(GridData.FILL_BOTH));
-        pane = new Composite(this, SWT.NONE);
-        pane.setLayout(new FillLayout());
-        pane.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        folderList.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                switchFolder(folderList.getElementAt(folderList.getSelectionIndex()).getTabItem());
-            }
-        });
+    public FolderDescription(String id, String text, Image image, String tooltip) {
+        this.id = id;
+        this.text = text;
+        this.image = image;
+        this.tooltip = tooltip;
     }
 
-    private void switchFolder(IFolderDescription folder) {
-
+    @Override
+    public String getId() {
+        return id;
     }
 
-    public void setFolders(IFolderDescription[] folders) {
-        folderList.setFolders(folders);
-        folderList.select(0);
+    @Override
+    public String getText() {
+        return text;
     }
 
+    @Override
+    public Image getImage() {
+        return image;
+    }
+
+    @Override
+    public String getTooltip() {
+        return tooltip;
+    }
+
+    @Override
+    public boolean isIndented() {
+        return false;
+    }
 }
