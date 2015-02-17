@@ -390,7 +390,7 @@ public abstract class LightGrid extends Canvas {
 
         recalculateSizes();
 
-        RGB cellSel = blend(
+        RGB cellSel = UIUtils.blend(
             display.getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB(),
             new RGB(255, 255, 255),
             50);
@@ -3870,19 +3870,6 @@ public abstract class LightGrid extends Canvas {
                 iterItem++;
             }
         } while (true);
-    }
-
-    private static int blend(int v1, int v2, int ratio)
-    {
-        return (ratio * v1 + (100 - ratio) * v2) / 100;
-    }
-
-    public static RGB blend(RGB c1, RGB c2, int ratio)
-    {
-        int r = blend(c1.red, c2.red, ratio);
-        int g = blend(c1.green, c2.green, ratio);
-        int b = blend(c1.blue, c2.blue, ratio);
-        return new RGB(r, g, b);
     }
 
     /**
