@@ -37,6 +37,10 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -47,7 +51,8 @@ public class FolderComposite extends Composite {
 
     private final FolderList folderList;
     private final Composite pane;
-    private Composite curFolder;
+    private final Map<IFolderDescription, Control> contentsMap = new HashMap<IFolderDescription, Control>();
+    private Control curContent;
 
     public FolderComposite(Composite parent, int style) {
         super(parent, style);
@@ -61,7 +66,12 @@ public class FolderComposite extends Composite {
         folderList = new FolderList(this);
         folderList.setLayoutData(new GridData(GridData.FILL_BOTH));
         pane = new Composite(this, SWT.NONE);
-        pane.setLayout(new FillLayout());
+        gl = new GridLayout(1, false);
+        gl.horizontalSpacing = 0;
+        gl.verticalSpacing = 0;
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        pane.setLayout(gl);
         pane.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         folderList.addSelectionListener(new SelectionAdapter() {
@@ -73,7 +83,20 @@ public class FolderComposite extends Composite {
     }
 
     private void switchFolder(IFolderDescription folder) {
-
+        Control newContent = contentsMap.get(folder);
+        if (newContent == null) {
+            newContent = folder.createControl(pane);
+            newContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+            contentsMap.put(folder, newContent);
+        }
+        if (curContent != null) {
+            curContent.setVisible(false);
+            ((GridData)curContent.getLayoutData()).exclude = true;
+        }
+        ((GridData)newContent.getLayoutData()).exclude = false;
+        newContent.setVisible(true);
+        curContent = newContent;
+        pane.layout();
     }
 
     public void setFolders(IFolderDescription[] folders) {
