@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.IFolderListener;
 
 /**
  * IFolderedPart
