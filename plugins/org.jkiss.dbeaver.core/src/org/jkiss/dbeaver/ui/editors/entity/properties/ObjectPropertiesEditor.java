@@ -25,14 +25,12 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.*;
-import org.eclipse.ui.part.IPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -171,12 +169,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Load properties
-        IFolderDescription[] folders = collectFolders(this);
+        FolderInfo[] folders = collectFolders(this);
         folderComposite.setFolders(folders);
 
         // Collect section contributors
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
-        for (IFolderDescription folder : folderComposite.getFolders()) {
+        for (FolderInfo folder : folderComposite.getFolders()) {
             IFolder page = folder.getContents();
             if (page instanceof IDatabaseEditorContributorUser) {
                 IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) page).getContributor(contributorManager);
@@ -407,19 +405,19 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         return result == null ? super.getAdapter(adapter) : result;
     }
 
-    public IFolderDescription[] collectFolders(IWorkbenchPart part)
+    public FolderInfo[] collectFolders(IWorkbenchPart part)
     {
-        List<IFolderDescription> tabList = new ArrayList<IFolderDescription>();
+        List<FolderInfo> tabList = new ArrayList<FolderInfo>();
         makeStandardPropertiesTabs(tabList);
         if (part instanceof IDatabaseEditor) {
             makeDatabaseEditorTabs((IDatabaseEditor)part, tabList);
         }
-        return tabList.toArray(new IFolderDescription[tabList.size()]);
+        return tabList.toArray(new FolderInfo[tabList.size()]);
     }
 
-    private void makeStandardPropertiesTabs(List<IFolderDescription> tabList)
+    private void makeStandardPropertiesTabs(List<FolderInfo> tabList)
     {
-        tabList.add(new FolderDescription(
+        tabList.add(new FolderInfo(
             //PropertiesContributor.CATEGORY_INFO,
             PropertiesContributor.TAB_STANDARD,
             CoreMessages.ui_properties_category_information,
@@ -428,7 +426,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             new FolderPageProperties(getEditorInput())));
     }
 
-    private void makeDatabaseEditorTabs(IDatabaseEditor part, List<IFolderDescription> tabList)
+    private void makeDatabaseEditorTabs(IDatabaseEditor part, List<FolderInfo> tabList)
     {
         final DBNDatabaseNode node = part.getEditorInput().getTreeNode();
         final DBSObject object = node.getObject();
@@ -463,7 +461,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (!CommonUtils.isEmpty(editors)) {
             for (EntityEditorDescriptor descriptor : editors) {
                 if (descriptor.getType() == EntityEditorDescriptor.Type.folder) {
-                    tabList.add(new FolderDescription(
+                    tabList.add(new FolderInfo(
                         //PropertiesContributor.CATEGORY_STRUCT,
                         descriptor.getId(),
                         descriptor.getName(),
@@ -475,9 +473,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-    private void addNavigatorNodeTab(final IDatabaseEditor part, List<IFolderDescription> tabList, final NavigatorTabInfo tabInfo)
+    private void addNavigatorNodeTab(final IDatabaseEditor part, List<FolderInfo> tabList, final NavigatorTabInfo tabInfo)
     {
-        tabList.add(new FolderDescription(
+        tabList.add(new FolderInfo(
             //PropertiesContributor.CATEGORY_STRUCT,
             tabInfo.getName(),
             tabInfo.getName(),

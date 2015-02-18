@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.rcp"
         label="RCP"
-        version="2.0.1">
+        version="2.0.2">
 
     <description>
         Feature for standalone DBeaver RCP
@@ -658,13 +658,6 @@
 
     <plugin
             id="org.eclipse.ui.views.log"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="org.eclipse.ui.views.properties.tabbed"
             download-size="0"
             install-size="0"
             version="0.0.0"
