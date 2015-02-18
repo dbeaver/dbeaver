@@ -1879,12 +1879,6 @@
         <factory id="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory"/>
     </extension>
 
-    <extension point="org.eclipse.ui.views.properties.tabbed.propertyContributor">
-        <propertyContributor contributorId="org.jkiss.dbeaver.core.propertyViewContributor" tabDescriptorProvider="org.jkiss.dbeaver.ui.editors.entity.properties.PropertyTabDescriptorProvider">
-            <propertyCategory category="core-properties"/>
-        </propertyContributor>
-    </extension>
-
     <extension point="org.eclipse.ui.themes">
         <themeElementCategory label="SQL Editor" id="org.jkiss.dbeaver.ui.presentation.sql">
             <description>SQL Editor</description>

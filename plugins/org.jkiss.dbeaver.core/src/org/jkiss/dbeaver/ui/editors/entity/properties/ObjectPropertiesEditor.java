@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,31 +32,41 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.*;
-import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
-import org.eclipse.ui.views.properties.tabbed.ITabSelectionListener;
-import org.eclipse.ui.views.properties.tabbed.TabContents;
+import org.eclipse.ui.part.IPage;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshableContainer;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.ProxyPageSite;
+import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
+import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
+import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderListener;
+import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.entity.GlobalContributorManager;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,18 +78,16 @@ import java.util.Map;
 public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObject>
     implements IRefreshablePart, IProgressControlProvider, IFolderContainer, ISearchContextProvider, IRefreshableContainer
 {
-    //static final Log log = Log.getLog(ObjectPropertiesEditor.class);
+    static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
-    private PropertyPageTabbed properties;
+    private FolderComposite folderComposite;
     private ObjectEditorPageControl pageControl;
     private final List<IFolderListener> folderListeners = new ArrayList<IFolderListener>();
     private String curFolderId;
 
     private final List<IRefreshablePart> refreshClients = new ArrayList<IRefreshablePart>();
     private final List<ISaveablePart> nestedSaveable = new ArrayList<ISaveablePart>();
-    private final Map<ISection, IEditorActionBarContributor> sectionContributors = new HashMap<ISection, IEditorActionBarContributor>();
-    //private Text nameText;
-    //private Text descriptionText;
+    private final Map<IFolder, IEditorActionBarContributor> pageContributors = new HashMap<IFolder, IEditorActionBarContributor>();
 
     public ObjectPropertiesEditor()
     {
@@ -153,57 +160,55 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
         propsPlaceholder.setLayoutData(gd);
-        propsPlaceholder.setLayout(new FormLayout());
+        GridLayout gl = new GridLayout(1, false);
+        gl.horizontalSpacing = 0;
+        gl.verticalSpacing = 0;
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        propsPlaceholder.setLayout(gl);
 
-        //final PropertyCollector propertyCollector = new PropertyCollector(itemObject);
-        //List<ObjectPropertyDescriptor> annoProps = ObjectPropertyDescriptor.extractAnnotations(itemObject);
-
-        properties = new PropertyPageTabbed();
-        properties.init(new ProxyPageSite(getSite()));
-        properties.createControl(propsPlaceholder);
+        folderComposite = new FolderComposite(propsPlaceholder, SWT.BORDER);
+        folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Load properties
-        loadObjectProperties();
+        IFolderDescription[] folders = collectFolders(this);
+        folderComposite.setFolders(folders);
 
         // Collect section contributors
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
-        for (ITabDescriptor tab : properties.getActiveTabs()) {
-            final ISection[] tabSections = properties.getTabSections(tab);
-            if (!ArrayUtils.isEmpty(tabSections)) {
-                for (ISection section : tabSections) {
-                    if (section instanceof IDatabaseEditorContributorUser) {
-                        IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) section).getContributor(contributorManager);
-                        if (contributor != null) {
-                            contributorManager.addContributor(contributor, this);
-                            sectionContributors.put(section, contributor);
-                        }
-                    }
-                    if (section instanceof ISaveablePart) {
-                        nestedSaveable.add((ISaveablePart) section);
-                    }
+        for (IFolderDescription folder : folderComposite.getFolders()) {
+            IFolder page = folder.getContents();
+            if (page instanceof IDatabaseEditorContributorUser) {
+                IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) page).getContributor(contributorManager);
+                if (contributor != null) {
+                    contributorManager.addContributor(contributor, this);
+                    pageContributors.put(page, contributor);
                 }
+            }
+            if (page instanceof ISaveablePart) {
+                nestedSaveable.add((ISaveablePart) page);
             }
         }
 
         final String folderId = getEditorInput().getDefaultFolderId();
         if (folderId != null) {
-            properties.setSelectedTab(folderId);
+            folderComposite.switchFolder(folderId);
         }
 
-        properties.addTabSelectionListener(new ITabSelectionListener() {
+        folderComposite.addFolderListener(new IFolderListener() {
             @Override
-            public void tabSelected(ITabDescriptor tabDescriptor)
-            {
-                if (CommonUtils.equalObjects(curFolderId, tabDescriptor.getId())) {
+            public void folderSelected(String folderId) {
+                if (CommonUtils.equalObjects(curFolderId, folderId)) {
                     return;
                 }
                 synchronized (folderListeners) {
-                    curFolderId = tabDescriptor.getId();
+                    curFolderId = folderId;
                     for (IFolderListener listener : folderListeners) {
-                        listener.folderSelected(tabDescriptor.getId());
+                        listener.folderSelected(folderId);
                     }
                 }
             }
+
         });
     }
 
@@ -213,56 +218,16 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         //getSite().setSelectionProvider();
     }
 
-    private void loadObjectProperties()
-    {
-        properties.selectionChanged(
-            this,
-            new StructuredSelection(
-                getEditorInput().getPropertySource()));
-    }
-
-/*
-    private void createNamePanel(DBNNode node, Composite container)
-    {
-        // General options
-        Group infoGroup = UIUtils.createControlGroup(container, "General", 2, GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        UIUtils.createControlLabel(infoGroup, "Name");
-        nameText = new Text(infoGroup, SWT.BORDER);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.widthHint = 200;
-        nameText.setLayoutData(gd);
-        nameText.setText(node.getNodeName());
-        nameText.setEditable(isNameEditable());
-
-        Label descriptionLabel = UIUtils.createControlLabel(infoGroup, "Description");
-        descriptionLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        descriptionText = new Text(infoGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = 200;
-        gd.heightHint = descriptionLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).y * 3;
-        descriptionText.setLayoutData(gd);
-        if (!CommonUtils.isEmpty(node.getNodeDescription())) {
-            descriptionText.setText(node.getNodeDescription());
-        }
-        descriptionText.setEditable(isDescriptionEditable());
-    }
-*/
-
     @Override
     public void dispose()
     {
         // Remove contributors
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
-        for (IEditorActionBarContributor contributor : sectionContributors.values()) {
+        for (IEditorActionBarContributor contributor : pageContributors.values()) {
             contributorManager.removeContributor(contributor, this);
         }
-        sectionContributors.clear();
+        pageContributors.clear();
         //PropertiesContributor.getInstance().removeLazyListener(this);
-
-        if (properties != null) {
-            properties.dispose();
-            properties = null;
-        }
 
         super.dispose();
     }
@@ -270,18 +235,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public void setFocus()
     {
-        properties.setFocus();
-        ITabDescriptor selectedTab = properties.getSelectedTab();
-        if (selectedTab != null) {
-            final ISection[] tabSections = properties.getTabSections(selectedTab);
-            if (!ArrayUtils.isEmpty(tabSections)) {
-                for (ISection section : tabSections) {
-                    IEditorActionBarContributor contributor = sectionContributors.get(section);
-                    if (contributor != null) {
-                        section.aboutToBeShown();
-                    }
-                }
-            }
+        folderComposite.setFocus();
+        IFolder selectedPage = folderComposite.getActiveFolder();
+        if (selectedPage != null) {
+            selectedPage.setFocus();
+//            IEditorActionBarContributor contributor = pageContributors.get(selectedPage);
         }
     }
 
@@ -344,22 +302,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-/*
-    public void handlePropertyLoad(final Object object, final Object propertyId, final Object propertyValue, final boolean completed)
-    {
-        if (completed && object == getTreeNode()) {
-            if ("description".equals(propertyId)) {
-                Display.getDefault().asyncExec(new Runnable() {
-                    public void run()
-                    {
-                        descriptionText.setText(CommonUtils.toString(propertyValue));
-                    }
-                });
-            }
-        }
-    }
-*/
-
     @Nullable
     @Override
     public ProgressPageControl getProgressControl()
@@ -369,26 +311,15 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Nullable
     @Override
-    public Object getActiveFolder()
+    public IFolder getActiveFolder()
     {
-        TabContents currentTab = properties.getCurrentTab();
-        if (currentTab != null) {
-            ISection[] sections = currentTab.getSections();
-            if (ArrayUtils.isEmpty(sections)) {
-                return null;
-            } else if (sections.length == 1) {
-                return sections[0];
-            } else {
-                return sections;
-            }
-        }
-        return null;
+        return folderComposite.getActiveFolder();
     }
 
     @Override
     public void switchFolder(String folderId)
     {
-        properties.setSelectedTab(folderId);
+        folderComposite.switchFolder(folderId);
     }
 
     @Override
@@ -474,6 +405,148 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             }
         }
         return result == null ? super.getAdapter(adapter) : result;
+    }
+
+    public IFolderDescription[] collectFolders(IWorkbenchPart part)
+    {
+        List<IFolderDescription> tabList = new ArrayList<IFolderDescription>();
+        makeStandardPropertiesTabs(tabList);
+        if (part instanceof IDatabaseEditor) {
+            makeDatabaseEditorTabs((IDatabaseEditor)part, tabList);
+        }
+        return tabList.toArray(new IFolderDescription[tabList.size()]);
+    }
+
+    private void makeStandardPropertiesTabs(List<IFolderDescription> tabList)
+    {
+        tabList.add(new FolderDescription(
+            //PropertiesContributor.CATEGORY_INFO,
+            PropertiesContributor.TAB_STANDARD,
+            CoreMessages.ui_properties_category_information,
+            DBIcon.TREE_INFO.getImage(),
+            null,
+            new FolderPageProperties(getEditorInput())));
+    }
+
+    private void makeDatabaseEditorTabs(IDatabaseEditor part, List<IFolderDescription> tabList)
+    {
+        final DBNDatabaseNode node = part.getEditorInput().getTreeNode();
+        final DBSObject object = node.getObject();
+
+        // Collect tabs from navigator tree model
+        final List<NavigatorTabInfo> tabs = new ArrayList<NavigatorTabInfo>();
+        DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor)
+            {
+                tabs.addAll(collectNavigatorTabs(monitor, node));
+            }
+        };
+        try {
+            if (node.isLazyNode()) {
+                DBeaverUI.runInProgressService(tabsCollector);
+            } else {
+                tabsCollector.run(VoidProgressMonitor.INSTANCE);
+            }
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        } catch (InterruptedException e) {
+            // just go further
+        }
+
+        for (NavigatorTabInfo tab : tabs) {
+            addNavigatorNodeTab(part, tabList, tab);
+        }
+
+        // Query for entity editors
+        List<EntityEditorDescriptor> editors = DBeaverCore.getInstance().getEditorsRegistry().getEntityEditors(object, null);
+        if (!CommonUtils.isEmpty(editors)) {
+            for (EntityEditorDescriptor descriptor : editors) {
+                if (descriptor.getType() == EntityEditorDescriptor.Type.folder) {
+                    tabList.add(new FolderDescription(
+                        //PropertiesContributor.CATEGORY_STRUCT,
+                        descriptor.getId(),
+                        descriptor.getName(),
+                        descriptor.getIcon(),
+                        descriptor.getDescription(),
+                        new FolderPageEditor(this, descriptor)));
+                }
+            }
+        }
+    }
+
+    private void addNavigatorNodeTab(final IDatabaseEditor part, List<IFolderDescription> tabList, final NavigatorTabInfo tabInfo)
+    {
+        tabList.add(new FolderDescription(
+            //PropertiesContributor.CATEGORY_STRUCT,
+            tabInfo.getName(),
+            tabInfo.getName(),
+            tabInfo.node.getNodeIconDefault(),
+            null,
+            new FolderPageNode(part, tabInfo.node, tabInfo.meta)));
+    }
+
+    private static class NavigatorTabInfo {
+        final DBNDatabaseNode node;
+        final DBXTreeNode meta;
+        private NavigatorTabInfo(DBNDatabaseNode node)
+        {
+            this(node, null);
+        }
+        private NavigatorTabInfo(DBNDatabaseNode node, DBXTreeNode meta)
+        {
+            this.node = node;
+            this.meta = meta;
+        }
+        public String getName()
+        {
+            return meta == null ? node.getNodeName() : meta.getChildrenType(node.getObject().getDataSource());
+        }
+    }
+
+
+    private static List<NavigatorTabInfo> collectNavigatorTabs(DBRProgressMonitor monitor, DBNNode node)
+    {
+        List<NavigatorTabInfo> tabs = new ArrayList<NavigatorTabInfo>();
+
+        // Add all nested folders as tabs
+        if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
+            // Do not add children tabs
+        } else if (node != null) {
+            try {
+                List<? extends DBNNode> children = node.getChildren(monitor);
+                if (children != null) {
+                    for (DBNNode child : children) {
+                        if (child instanceof DBNDatabaseFolder) {
+                            monitor.subTask(CoreMessages.ui_properties_task_add_folder + child.getNodeName() + "'"); //$NON-NLS-2$
+                            tabs.add(new NavigatorTabInfo((DBNDatabaseFolder)child));
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.error("Error initializing property tabs", e); //$NON-NLS-1$
+            }
+            // Add itself as tab (if it has child items)
+            if (node instanceof DBNDatabaseNode) {
+                DBNDatabaseNode databaseNode = (DBNDatabaseNode)node;
+                List<DBXTreeNode> subNodes = databaseNode.getMeta().getChildren(databaseNode);
+                if (subNodes != null) {
+                    for (DBXTreeNode child : subNodes) {
+                        if (child instanceof DBXTreeItem) {
+                            try {
+                                if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
+                                    monitor.subTask(CoreMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
+                                    tabs.add(new NavigatorTabInfo((DBNDatabaseNode)node, child));
+                                }
+                            } catch (DBException e) {
+                                log.debug("Can't add child items tab", e); //$NON-NLS-1$
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return tabs;
     }
 
 }

@@ -64,6 +64,6 @@ public interface IFolderDescription {
     /**
      * Creates tab contents
      */
-    public IPage getContents();
+    public IFolder getContents();
 
 }

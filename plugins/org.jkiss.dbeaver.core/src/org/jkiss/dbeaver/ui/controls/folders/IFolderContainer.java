@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
+import org.eclipse.ui.part.IPage;
+import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.code.Nullable;
 
 /**
@@ -26,8 +28,9 @@ import org.jkiss.code.Nullable;
  */
 public interface IFolderContainer
 {
+
     @Nullable
-    Object getActiveFolder();
+    IFolder getActiveFolder();
 
     void switchFolder(String folderId);
 

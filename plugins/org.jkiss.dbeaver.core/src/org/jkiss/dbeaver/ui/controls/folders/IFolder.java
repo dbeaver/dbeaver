@@ -16,41 +16,23 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.properties.tabbed;
 
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.tabbed.AbstractSectionDescriptor;
+package org.jkiss.dbeaver.ui.controls.folders;
+
+import org.eclipse.swt.widgets.Composite;
 
 /**
- * Section descriptor
+ * IFolder
  */
-public abstract class SectionDescriptor extends AbstractSectionDescriptor {
+public interface IFolder
+{
+    void createControl(Composite parent);
 
-    private String id;
-    private String targetTab;
+    void aboutToBeShown();
 
-    protected SectionDescriptor(String id, String targetTab)
-    {
-        this.id = id;
-        this.targetTab = targetTab;
-    }
+    void aboutToBeHidden();
 
-    @Override
-    public String getId()
-    {
-        return id;
-    }
+    void setFocus();
 
-    @Override
-    public String getTargetTab()
-    {
-        return targetTab;
-    }
-
-    @Override
-    public boolean appliesTo(IWorkbenchPart part, ISelection selection)
-    {
-        return true;
-    }
+    void dispose();
 }

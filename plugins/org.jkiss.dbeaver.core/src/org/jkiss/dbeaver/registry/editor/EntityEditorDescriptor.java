@@ -54,7 +54,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
 
     public static enum Type {
         editor,
-        section
+        folder
     }
 
     private String id;

@@ -84,7 +84,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -98,7 +97,7 @@ import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 

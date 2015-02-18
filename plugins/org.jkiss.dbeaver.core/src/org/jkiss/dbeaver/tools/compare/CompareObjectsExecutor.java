@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.properties.DataSourcePropertyFilter;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
+import org.jkiss.dbeaver.ui.editors.entity.properties.PropertiesContributor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;

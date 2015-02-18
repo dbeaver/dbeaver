@@ -16,69 +16,59 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.properties.tabbed;
+package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
-import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
-import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.properties.IPropertyDescriptorEx;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
-import org.jkiss.utils.CommonUtils;
 
 /**
- * StandardPropertiesSection
+ * FolderPageProperties
  */
-public class StandardPropertiesSection extends AbstractPropertySection implements ILazyPropertyLoadListener, DBPEventListener {
+public class FolderPageProperties extends FolderPage implements ILazyPropertyLoadListener, DBPEventListener {
 
+    protected IDatabaseEditorInput input;
 	protected PropertyTreeViewer propertyTree;
-    private IPropertySource curPropertySource;
     private Font boldFont;
     private UIJob refreshJob = null;
+    private IPropertySource curPropertySource;
+
+    public FolderPageProperties(IDatabaseEditorInput input) {
+        this.input = input;
+    }
 
     @Override
-    public void createControls(Composite parent, final TabbedPropertySheetPage tabbedPropertySheetPage)
+    public void createControl(Composite parent)
     {
-		super.createControls(parent, tabbedPropertySheetPage);
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
 		propertyTree = new PropertyTreeViewer(parent, SWT.NONE);
         propertyTree.setExtraLabelProvider(new PropertyLabelProvider());
         PropertiesContributor.getInstance().addLazyListener(this);
-	}
 
-	@Override
-    public void setInput(IWorkbenchPart part, ISelection newSelection) {
-        if (!CommonUtils.equalObjects(getSelection(), newSelection)) {
-		    super.setInput(part, newSelection);
-            if (!newSelection.isEmpty() && newSelection instanceof IStructuredSelection) {
-                Object element = ((IStructuredSelection) newSelection).getFirstElement();
-                if (element instanceof IPropertySource && element != curPropertySource) {
-                    curPropertySource = (IPropertySource)element;
-                    propertyTree.loadProperties(curPropertySource);
-                    if (curPropertySource.getEditableValue() instanceof DBSObject) {
-                        DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).addDataSourceListener(this);
-                    }
-                }
-            }
+        curPropertySource = input.getPropertySource();
+
+        propertyTree.loadProperties(curPropertySource);
+        if (curPropertySource.getEditableValue() instanceof DBSObject) {
+            DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).addDataSourceListener(this);
         }
 	}
 
@@ -91,33 +81,6 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
         PropertiesContributor.getInstance().removeLazyListener(this);
 		super.dispose();
 	}
-
-	@Override
-    public void refresh() {
-		//propertyTree.refresh();
-	}
-
-	@Override
-    public boolean shouldUseExtraSpace()
-    {
-		return true;
-	}
-
-    @Override
-    public void aboutToBeShown()
-    {
-        getPart().getSite().setSelectionProvider(propertyTree);
-        //propertyTree.setSelection(propertyTree.getSelection());
-//        if (editor instanceof IProgressControlProvider) {
-//            ((IProgressControlProvider)editor).getProgressControl().activate(true);
-//        }
-    }
-
-    @Override
-    public void aboutToBeHidden()
-    {
-
-    }
 
     @Override
     public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
@@ -171,7 +134,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
                 propertyTree.getControl().redraw();
             }
 
-            synchronized (StandardPropertiesSection.this) {
+            synchronized (FolderPageProperties.this) {
                 refreshJob = null;
             }
             return Status.OK_STATUS;

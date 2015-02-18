@@ -42,9 +42,9 @@ public class FolderDescription implements IFolderDescription {
     private String text;
     private Image image;
     private String tooltip;
-    private IPage contents;
+    private IFolder contents;
 
-    public FolderDescription(String id, String text, Image image, String tooltip, IPage contents) {
+    public FolderDescription(String id, String text, Image image, String tooltip, IFolder contents) {
         this.id = id;
         this.text = text;
         this.image = image;
@@ -78,7 +78,7 @@ public class FolderDescription implements IFolderDescription {
     }
 
     @Override
-    public IPage getContents() {
+    public IFolder getContents() {
         return contents;
     }
 }

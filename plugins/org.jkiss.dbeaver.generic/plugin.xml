@@ -647,12 +647,12 @@
                 description="Table DDL"
                 position="additions_end"
                 icon="#sql_text"
-                type="section">
+                type="folder">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
         </editor>
         <editor id="source.view" class="org.jkiss.dbeaver.ext.generic.edit.GenericSourceViewEditor"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode"/>
         </editor>
 

@@ -16,13 +16,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.properties.tabbed;
+package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.editors.entity.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 import org.jkiss.utils.ArrayUtils;
 
