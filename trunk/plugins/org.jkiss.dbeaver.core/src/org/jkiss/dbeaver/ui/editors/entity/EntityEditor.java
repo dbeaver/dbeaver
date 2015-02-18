@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
-import org.jkiss.dbeaver.ext.ui.IFolderListener;
+import org.jkiss.dbeaver.ui.controls.folders.IFolderListener;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
 import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;

@@ -19,8 +19,7 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.part.IPage;
 
 /**
  * Represents a tab to be displayed in the tab list in the tabbed property sheet
@@ -65,6 +64,6 @@ public interface IFolderDescription {
     /**
      * Creates tab contents
      */
-    public Control createControl(Composite parent);
+    public IPage getContents();
 
 }

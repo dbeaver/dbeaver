@@ -31,28 +31,32 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 /**
  * Folders composite
  */
-public class FolderComposite extends Composite {
+public class FolderComposite extends Composite implements IFolderContainer {
 
 
     private final FolderList folderList;
     private final Composite pane;
     private final Map<IFolderDescription, Control> contentsMap = new HashMap<IFolderDescription, Control>();
     private Control curContent;
+    private List<IFolderListener> listeners = new ArrayList<IFolderListener>();
 
     public FolderComposite(Composite parent, int style) {
         super(parent, style);
@@ -77,15 +81,25 @@ public class FolderComposite extends Composite {
         folderList.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                switchFolder(folderList.getElementAt(folderList.getSelectionIndex()).getTabItem());
+                onFolderSwitch(folderList.getElementAt(folderList.getSelectionIndex()).getTabItem());
+            }
+        });
+
+        addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                for (IFolderDescription folderDescription : contentsMap.keySet()) {
+                    folderDescription.getContents().dispose();
+                }
             }
         });
     }
 
-    private void switchFolder(IFolderDescription folder) {
+    private void onFolderSwitch(IFolderDescription folder) {
         Control newContent = contentsMap.get(folder);
         if (newContent == null) {
-            newContent = folder.createControl(pane);
+            folder.getContents().createControl(pane);
+            newContent = folder.getContents().getControl();
             newContent.setLayoutData(new GridData(GridData.FILL_BOTH));
             contentsMap.put(folder, newContent);
         }
@@ -97,6 +111,10 @@ public class FolderComposite extends Composite {
         newContent.setVisible(true);
         curContent = newContent;
         pane.layout();
+
+        for (IFolderListener listener : listeners) {
+            listener.folderSelected(folder.getId());
+        }
     }
 
     public void setFolders(IFolderDescription[] folders) {
@@ -104,4 +122,28 @@ public class FolderComposite extends Composite {
         folderList.select(0);
     }
 
+    @Override
+    public Object getActiveFolder() {
+        return folderList.getElementAt(folderList.getSelectionIndex()).getTabItem();
+    }
+
+    @Override
+    public void switchFolder(String folderId) {
+        for (int i = 0; i < folderList.getNumberOfElements(); i++) {
+            if (folderList.getElementAt(i).getTabItem().getId().equals(folderId)) {
+                folderList.select(i);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void addFolderListener(IFolderListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void removeFolderListener(IFolderListener listener) {
+        listeners.remove(listener);
+    }
 }

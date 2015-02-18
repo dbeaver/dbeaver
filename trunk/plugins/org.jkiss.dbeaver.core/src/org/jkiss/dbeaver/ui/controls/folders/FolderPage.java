@@ -30,55 +30,32 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.part.IPage;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.part.Page;
 
 /**
- * Folders composite
+ * Abstract folder page
  */
-public class FolderDescription implements IFolderDescription {
+public abstract class FolderPage extends Page {
 
-    private String id;
-    private String text;
-    private Image image;
-    private String tooltip;
-    private IPage contents;
+    private Control control;
 
-    public FolderDescription(String id, String text, Image image, String tooltip, IPage contents) {
-        this.id = id;
-        this.text = text;
-        this.image = image;
-        this.tooltip = tooltip;
-        this.contents = contents;
+    @Override
+    public void createControl(Composite parent) {
+        control = createPageControl(parent);
     }
 
     @Override
-    public String getId() {
-        return id;
+    public Control getControl() {
+        return control;
     }
 
     @Override
-    public String getText() {
-        return text;
+    public void setFocus() {
+        control.setFocus();
     }
 
-    @Override
-    public Image getImage() {
-        return image;
-    }
+    protected abstract Control createPageControl(Composite parent);
 
-    @Override
-    public String getTooltip() {
-        return tooltip;
-    }
-
-    @Override
-    public boolean isIndented() {
-        return false;
-    }
-
-    @Override
-    public IPage getContents() {
-        return contents;
-    }
 }
