@@ -39,6 +39,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -523,6 +524,15 @@ public class FolderList extends Composite {
         return null;
     }
 
+    public IFolderDescription[] getElements() {
+        IFolderDescription[] tabs = new IFolderDescription[elements.length];
+        for (int i = 0; i < elements.length; i++) {
+            tabs[i] = elements[i].getTabItem();
+        }
+        return tabs;
+    }
+
+
     /**
      * Returns the zero-relative index of the item which is currently selected
      * in the receiver, or -1 if no item is selected.
@@ -574,7 +584,11 @@ public class FolderList extends Composite {
                 }
             }
         }
-
+        int maxTabWidth = getTabWidth(children[widestLabelIndex]);
+        Object layoutData = getLayoutData();
+        if (layoutData instanceof GridData) {
+            ((GridData) layoutData).widthHint = maxTabWidth;
+        }
         computeTopAndBottomTab();
     }
 

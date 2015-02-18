@@ -18,14 +18,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.views.properties.tabbed.ISection;
-import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.*;
@@ -35,25 +31,22 @@ import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 
 /**
  * EntityNodeEditor
  */
-class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshablePart, INavigatorModelView
+class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefreshablePart, INavigatorModelView
 {
-    //static final Log log = Log.getLog(EntityNodeEditor.class);
 
     private IDatabaseEditor editor;
     private DBNNode node;
     private DBXTreeNode metaNode;
     private ItemListControl itemControl;
     private boolean activated;
-    //private ISelectionProvider prevSelectionProvider;
 
-    private Composite parent;
-
-    NodeEditorSection(IDatabaseEditor editor, DBNNode node, DBXTreeNode metaNode)
+    FolderPageNode(IDatabaseEditor editor, DBNNode node, DBXTreeNode metaNode)
     {
         this.editor = editor;
         this.node = node;
@@ -72,30 +65,32 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         }
     }
 
-    @Override
-    public void createControls(Composite parent, TabbedPropertySheetPage tabbedPropertySheetPage)
-    {
-        this.parent = parent;
-    }
-
     public void setFocus()
     {
+        itemControl.setFocus();
     }
 
     @Override
-    public void setInput(IWorkbenchPart part, ISelection selection)
-    {
-        this.editor = (IDatabaseEditor)part;
+    public void createControl(Composite parent) {
+        itemControl = new ItemListControl(parent, SWT.SHEET, editor.getSite(), node, metaNode);
+        //itemControl.getLayout().marginHeight = 0;
+        //itemControl.getLayout().marginWidth = 0;
+        ProgressPageControl progressControl = null;
+        if (editor instanceof IProgressControlProvider) {
+            progressControl = ((IProgressControlProvider)editor).getProgressControl();
+        }
+        if (progressControl != null) {
+            itemControl.substituteProgressPanel(progressControl);
+        } else {
+            itemControl.createProgressPanel();
+        }
+
+        parent.layout();
     }
 
     @Override
     public void aboutToBeShown()
     {
-        if (itemControl == null) {
-            createSectionControls();
-        }
-
-        //prevSelectionProvider = editor.getSite().getSelectionProvider();
         // Update selection provider and selection
         final ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
         editor.getSite().setSelectionProvider(selectionProvider);
@@ -115,55 +110,6 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         if (itemControl != null) {
             itemControl.activate(false);
         }
-/*
-        if (prevSelectionProvider != null) {
-            editor.getSite().setSelectionProvider(prevSelectionProvider);
-        }
-*/
-    }
-
-    private void createSectionControls()
-    {
-        if (itemControl != null) {
-            return;
-        }
-
-        itemControl = new ItemListControl(parent, SWT.SHEET, editor.getSite(), node, metaNode);
-        //itemControl.getLayout().marginHeight = 0;
-        //itemControl.getLayout().marginWidth = 0;
-        ProgressPageControl progressControl = null;
-        if (editor instanceof IProgressControlProvider) {
-            progressControl = ((IProgressControlProvider)editor).getProgressControl();
-        }
-        if (progressControl != null) {
-            itemControl.substituteProgressPanel(progressControl);
-        } else {
-            itemControl.createProgressPanel();
-        }
-
-        //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
-        //editor.getSite().setSelectionProvider(itemControl.getSelectionProvider());
-
-        parent.layout();
-    }
-
-    @Override
-    public int getMinimumHeight()
-    {
-        return SWT.DEFAULT;
-    }
-
-    @Override
-    public boolean shouldUseExtraSpace()
-    {
-        return true;
-    }
-
-    @Override
-    public void refresh()
-    {
-        // Do nothing
-        // Property tab section is refreshed on every activation so just skip it
     }
 
     public IDatabaseEditorInput getEditorInput()
@@ -213,10 +159,8 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
                 loadNewData = false;
             }
         }
-        if (!itemControl.isDisposed()) {
-            if (loadNewData) {
-                itemControl.loadData(false);
-            }
+        if (loadNewData && !itemControl.isDisposed()) {
+            itemControl.loadData(false);
         }
     }
 

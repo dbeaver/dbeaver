@@ -363,7 +363,7 @@
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor id="source.declaration" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceDeclarationEditor"
             label="%editor.package.declaration.name" description="%editor.package.declaration.description" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleView"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone"/>
@@ -373,13 +373,13 @@
         </editor>
         <editor id="source.definition" class="org.jkiss.dbeaver.ext.oracle.editors.OracleSourceDefinitionEditor"
             label="%editor.package.body.name" description="%editor.package.body.description" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
         </editor>
         <editor id="source.ddl" class="org.jkiss.dbeaver.ext.oracle.editors.OracleObjectDDLEditor"
             label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
         </editor>
         <manager

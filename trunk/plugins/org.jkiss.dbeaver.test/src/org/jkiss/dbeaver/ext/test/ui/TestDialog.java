@@ -40,22 +40,22 @@ public class TestDialog extends TrayDialog {
         tabs = new IFolderDescription[3];
         tabs[0] = new FolderDescription("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage(), "Tooltip 1", new FolderPage() {
             @Override
-            public Control createPageControl(Composite parent) {
-                return new Text(parent, SWT.NONE);
+            public void createControl(Composite parent) {
+                new Text(parent, SWT.NONE);
             }
         });
         tabs[1] = new FolderDescription("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage(), "Tooltip 2", new FolderPage() {
 
             @Override
-            public Control createPageControl(Composite parent) {
-                return new Label(parent, SWT.NONE);
+            public void createControl(Composite parent) {
+                new Label(parent, SWT.NONE);
             }
         });
         tabs[2] = new FolderDescription("tab3", "Example", DBIcon.PROJECT.getImage(), "123123", new FolderPage() {
 
             @Override
-            public Control createPageControl(Composite parent) {
-                return new Text(parent, SWT.V_SCROLL | SWT.H_SCROLL);
+            public void createControl(Composite parent) {
+                new Text(parent, SWT.V_SCROLL | SWT.H_SCROLL);
             }
         });
     }

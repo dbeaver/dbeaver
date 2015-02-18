@@ -201,12 +201,12 @@
 
         <editor id="source.view" class="org.jkiss.dbeaver.ext.mssql.editors.MSSQLSourceViewEditor"
             label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.MSSQLSourceObject"/>
         </editor>
         <editor id="source.ddl" class="org.jkiss.dbeaver.ext.mssql.editors.MSSQLDDLViewEditor"
             label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
-            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.mssql.model.MSSQLTable"/>
         </editor>
     </extension>

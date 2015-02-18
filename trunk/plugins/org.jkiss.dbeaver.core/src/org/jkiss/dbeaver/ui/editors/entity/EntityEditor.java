@@ -30,8 +30,6 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderListener;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
 import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -59,6 +57,9 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.folders.IFolder;
+import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
+import org.jkiss.dbeaver.ui.controls.folders.IFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -581,7 +582,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Nullable
     @Override
-    public Object getActiveFolder()
+    public IFolder getActiveFolder()
     {
         if (getActiveEditor() instanceof IFolderContainer) {
             ((IFolderContainer)getActiveEditor()).getActiveFolder();
