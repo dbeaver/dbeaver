@@ -245,7 +245,6 @@ public class GoToDialog extends Dialog {
      */
     private void createDialogShell()
     {
-//	dialogShell = new Shell(/*XXX getParent(),*/ SWT.MODELESS | SWT.DIALOG_TRIM);
         dialogShell = new Shell(getParent(), SWT.APPLICATION_MODAL | SWT.DIALOG_TRIM);
         dialogShell.setText(CoreMessages.dialog_go_to_title);
         FormLayout formLayout = new FormLayout();
