@@ -24,34 +24,33 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.folders.FolderComposite;
-import org.jkiss.dbeaver.ui.controls.folders.FolderDescription;
+import org.jkiss.dbeaver.ui.controls.folders.FolderInfo;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderDescription;
 
 public class TestDialog extends TrayDialog {
 
     private FolderComposite folderComposite;
-    private final IFolderDescription[] tabs;
+    private final FolderInfo[] tabs;
 
     public TestDialog(Shell shell)
     {
         super(shell);
 
-        tabs = new IFolderDescription[3];
-        tabs[0] = new FolderDescription("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage(), "Tooltip 1", new FolderPage() {
+        tabs = new FolderInfo[3];
+        tabs[0] = new FolderInfo("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage(), "Tooltip 1", new FolderPage() {
             @Override
             public void createControl(Composite parent) {
                 new Text(parent, SWT.NONE);
             }
         });
-        tabs[1] = new FolderDescription("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage(), "Tooltip 2", new FolderPage() {
+        tabs[1] = new FolderInfo("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage(), "Tooltip 2", new FolderPage() {
 
             @Override
             public void createControl(Composite parent) {
                 new Label(parent, SWT.NONE);
             }
         });
-        tabs[2] = new FolderDescription("tab3", "Example", DBIcon.PROJECT.getImage(), "123123", new FolderPage() {
+        tabs[2] = new FolderInfo("tab3", "Example", DBIcon.PROJECT.getImage(), "123123", new FolderPage() {
 
             @Override
             public void createControl(Composite parent) {

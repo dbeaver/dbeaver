@@ -31,12 +31,11 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.part.IPage;
 
 /**
- * Folders composite
+ * Folder info
  */
-public class FolderDescription implements IFolderDescription {
+public class FolderInfo {
 
     private String id;
     private String text;
@@ -44,7 +43,7 @@ public class FolderDescription implements IFolderDescription {
     private String tooltip;
     private IFolder contents;
 
-    public FolderDescription(String id, String text, Image image, String tooltip, IFolder contents) {
+    public FolderInfo(String id, String text, Image image, String tooltip, IFolder contents) {
         this.id = id;
         this.text = text;
         this.image = image;
@@ -52,32 +51,26 @@ public class FolderDescription implements IFolderDescription {
         this.contents = contents;
     }
 
-    @Override
     public String getId() {
         return id;
     }
 
-    @Override
     public String getText() {
         return text;
     }
 
-    @Override
     public Image getImage() {
         return image;
     }
 
-    @Override
     public String getTooltip() {
         return tooltip;
     }
 
-    @Override
     public boolean isIndented() {
         return false;
     }
 
-    @Override
     public IFolder getContents() {
         return contents;
     }

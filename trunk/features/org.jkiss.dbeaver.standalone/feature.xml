@@ -57,7 +57,6 @@
         <import plugin="org.eclipse.ui"/>
         <import plugin="org.eclipse.ui.workbench"/>
         <import plugin="org.eclipse.ui.workbench.texteditor"/>
-        <import plugin="org.eclipse.ui.views.properties.tabbed"/>
         <import plugin="org.eclipse.swt"/>
         <import plugin="org.eclipse.jface"/>
         <import plugin="org.eclipse.jface.text"/>

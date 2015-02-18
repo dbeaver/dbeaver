@@ -19,8 +19,6 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.ui.part.IPage;
-import org.eclipse.ui.views.properties.tabbed.ITabDescriptor;
 import org.jkiss.code.Nullable;
 
 /**
