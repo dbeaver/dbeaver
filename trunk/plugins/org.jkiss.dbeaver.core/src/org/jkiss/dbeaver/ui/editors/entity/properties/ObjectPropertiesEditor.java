@@ -165,7 +165,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         gl.marginWidth = 0;
         propsPlaceholder.setLayout(gl);
 
-        folderComposite = new FolderComposite(propsPlaceholder, SWT.BORDER);
+        folderComposite = new FolderComposite(propsPlaceholder, SWT.NONE);
         folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Load properties
