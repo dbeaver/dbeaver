@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.folders.FolderComposite;
 import org.jkiss.dbeaver.ui.controls.folders.FolderDescription;
+import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderDescription;
 
 public class TestDialog extends TrayDialog {
@@ -37,26 +38,26 @@ public class TestDialog extends TrayDialog {
         super(shell);
 
         tabs = new IFolderDescription[3];
-        tabs[0] = new FolderDescription("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage(), "Tooltip 1") {
+        tabs[0] = new FolderDescription("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage(), "Tooltip 1", new FolderPage() {
             @Override
-            public Control createControl(Composite parent) {
+            public Control createPageControl(Composite parent) {
                 return new Text(parent, SWT.NONE);
             }
-        };
-        tabs[1] = new FolderDescription("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage(), "Tooltip 2") {
+        });
+        tabs[1] = new FolderDescription("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage(), "Tooltip 2", new FolderPage() {
 
             @Override
-            public Control createControl(Composite parent) {
+            public Control createPageControl(Composite parent) {
                 return new Label(parent, SWT.NONE);
             }
-        };
-        tabs[2] = new FolderDescription("tab3", "Example", DBIcon.PROJECT.getImage(), "123123") {
+        });
+        tabs[2] = new FolderDescription("tab3", "Example", DBIcon.PROJECT.getImage(), "123123", new FolderPage() {
 
             @Override
-            public Control createControl(Composite parent) {
+            public Control createPageControl(Composite parent) {
                 return new Text(parent, SWT.V_SCROLL | SWT.H_SCROLL);
             }
-        };
+        });
     }
 
     @Override

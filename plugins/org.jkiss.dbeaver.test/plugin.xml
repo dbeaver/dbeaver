@@ -35,11 +35,6 @@
             </activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.test.dialog" class="org.jkiss.dbeaver.ext.test.handlers.HandlerDialog">
-            <activeWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                </with>
-            </activeWhen>
         </handler>
    </extension>
 
