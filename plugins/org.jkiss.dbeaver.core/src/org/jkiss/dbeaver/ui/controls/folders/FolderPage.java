@@ -30,32 +30,27 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.part.Page;
-
 /**
  * Abstract folder page
  */
-public abstract class FolderPage extends Page {
-
-    private Control control;
-
-    @Override
-    public void createControl(Composite parent) {
-        control = createPageControl(parent);
-    }
-
-    @Override
-    public Control getControl() {
-        return control;
-    }
+public abstract class FolderPage implements IFolder {
 
     @Override
     public void setFocus() {
-        control.setFocus();
     }
 
-    protected abstract Control createPageControl(Composite parent);
+    @Override
+    public void aboutToBeShown() {
 
+    }
+
+    @Override
+    public void aboutToBeHidden() {
+
+    }
+
+    @Override
+    public void dispose() {
+
+    }
 }

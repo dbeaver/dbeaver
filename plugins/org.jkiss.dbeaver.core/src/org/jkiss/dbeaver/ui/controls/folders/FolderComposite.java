@@ -35,10 +35,12 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,7 +56,8 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
     private final FolderList folderList;
     private final Composite pane;
-    private final Map<IFolderDescription, Control> contentsMap = new HashMap<IFolderDescription, Control>();
+    private final Map<IFolderDescription, Composite> contentsMap = new HashMap<IFolderDescription, Composite>();
+    private IFolder curFolder;
     private Control curContent;
     private List<IFolderListener> listeners = new ArrayList<IFolderListener>();
 
@@ -68,7 +71,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
         setLayout(gl);
 
         folderList = new FolderList(this);
-        folderList.setLayoutData(new GridData(GridData.FILL_BOTH));
+        folderList.setLayoutData(new GridData(GridData.FILL_VERTICAL));
         pane = new Composite(this, SWT.NONE);
         gl = new GridLayout(1, false);
         gl.horizontalSpacing = 0;
@@ -96,20 +99,26 @@ public class FolderComposite extends Composite implements IFolderContainer {
     }
 
     private void onFolderSwitch(IFolderDescription folder) {
-        Control newContent = contentsMap.get(folder);
+        Composite newContent = contentsMap.get(folder);
+        IFolder newFolder = folder.getContents();
         if (newContent == null) {
-            folder.getContents().createControl(pane);
-            newContent = folder.getContents().getControl();
+            newContent = new Composite(pane, SWT.NONE);
             newContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+            newContent.setLayout(new FillLayout());
+            newFolder.createControl(newContent);
             contentsMap.put(folder, newContent);
         }
         if (curContent != null) {
             curContent.setVisible(false);
+            curFolder.aboutToBeHidden();
             ((GridData)curContent.getLayoutData()).exclude = true;
         }
         ((GridData)newContent.getLayoutData()).exclude = false;
+        newFolder.aboutToBeShown();
         newContent.setVisible(true);
         curContent = newContent;
+        curFolder = newFolder;
+
         pane.layout();
 
         for (IFolderListener listener : listeners) {
@@ -118,13 +127,21 @@ public class FolderComposite extends Composite implements IFolderContainer {
     }
 
     public void setFolders(IFolderDescription[] folders) {
+        boolean firstTime = folderList.getNumberOfElements() == 0;
         folderList.setFolders(folders);
         folderList.select(0);
+        if (firstTime) {
+            layout();
+        }
+    }
+
+    public IFolderDescription[] getFolders() {
+        return folderList.getElements();
     }
 
     @Override
-    public Object getActiveFolder() {
-        return folderList.getElementAt(folderList.getSelectionIndex()).getTabItem();
+    public IFolder getActiveFolder() {
+        return folderList.getElementAt(folderList.getSelectionIndex()).getTabItem().getContents();
     }
 
     @Override
@@ -146,4 +163,5 @@ public class FolderComposite extends Composite implements IFolderContainer {
     public void removeFolderListener(IFolderListener listener) {
         listeners.remove(listener);
     }
+
 }

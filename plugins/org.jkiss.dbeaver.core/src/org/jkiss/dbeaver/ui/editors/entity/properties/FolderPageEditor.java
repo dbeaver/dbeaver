@@ -16,9 +16,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.properties.tabbed;
+package org.jkiss.dbeaver.ui.editors.entity.properties;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.events.DisposeEvent;
@@ -28,8 +27,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.services.INestable;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
-import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorContributorManager;
 import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
@@ -38,23 +36,23 @@ import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 
 /**
  * EditorWrapperSection
  */
-public class EditorWrapperSection extends AbstractPropertySection implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable {
+public class FolderPageEditor extends FolderPage implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable {
 
-    static final Log log = Log.getLog(EditorWrapperSection.class);
+    static final Log log = Log.getLog(FolderPageEditor.class);
 
     private IDatabaseEditor mainEditor;
     private EntityEditorDescriptor editorDescriptor;
     private IEditorPart editor;
     private IEditorActionBarContributor actionContributor;
-    private Composite parent;
     private IEditorSite nestedEditorSite;
 
-    public EditorWrapperSection(IDatabaseEditor mainEditor, EntityEditorDescriptor editorDescriptor)
+    public FolderPageEditor(IDatabaseEditor mainEditor, EntityEditorDescriptor editorDescriptor)
     {
         this.mainEditor = mainEditor;
         this.editorDescriptor = editorDescriptor;
@@ -66,30 +64,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
     }
 
     @Override
-    public void createControls(Composite parent, final TabbedPropertySheetPage tabbedPropertySheetPage)
-    {
-		super.createControls(parent, tabbedPropertySheetPage);
-        this.parent = parent;
-	}
-
-    @Override
-    public void dispose()
-    {
-        if (nestedEditorSite instanceof MultiPageEditorSite) {
-            ((MultiPageEditorSite) nestedEditorSite).dispose();
-            nestedEditorSite = null;
-        }
-        super.dispose();
-    }
-
-    @Override
-    public boolean shouldUseExtraSpace()
-    {
-		return true;
-	}
-
-    private void createEditor()
-    {
+    public void createControl(Composite parent) {
         editor = editorDescriptor.createEditor();
 
         final IWorkbenchPartSite ownerSite = this.mainEditor.getSite();
@@ -132,11 +107,18 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
     }
 
     @Override
+    public void dispose()
+    {
+        if (nestedEditorSite instanceof MultiPageEditorSite) {
+            ((MultiPageEditorSite) nestedEditorSite).dispose();
+            nestedEditorSite = null;
+        }
+        super.dispose();
+    }
+
+    @Override
     public void aboutToBeShown()
     {
-        if (editor == null) {
-            createEditor();
-        }
         if (editor instanceof IActiveWorkbenchPart) {
             ((IActiveWorkbenchPart) editor).activatePart();
         }

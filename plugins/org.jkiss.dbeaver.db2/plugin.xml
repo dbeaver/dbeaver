@@ -439,7 +439,7 @@
                 icon="#sql_text" 
                 position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
-                type="section">
+                type="folder">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
