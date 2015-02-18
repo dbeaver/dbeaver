@@ -94,7 +94,7 @@ public class FolderList extends Composite {
      */
     public class ListElement extends Canvas {
 
-        private IFolderDescription tab;
+        private FolderInfo tab;
         private int index;
         private boolean selected;
         private boolean hover;
@@ -106,7 +106,7 @@ public class FolderList extends Composite {
          * @param tab    the tab item for the element.
          * @param index  the index in the list.
          */
-        public ListElement(Composite parent, final IFolderDescription tab, int index) {
+        public ListElement(Composite parent, final FolderInfo tab, int index) {
             super(parent, SWT.NO_FOCUS);
             this.tab = tab;
             hover = false;
@@ -256,7 +256,7 @@ public class FolderList extends Composite {
          *
          * @return the tab item.
          */
-        public IFolderDescription getTabItem() {
+        public FolderInfo getInfo() {
             return tab;
         }
 
@@ -524,10 +524,10 @@ public class FolderList extends Composite {
         return null;
     }
 
-    public IFolderDescription[] getElements() {
-        IFolderDescription[] tabs = new IFolderDescription[elements.length];
+    public FolderInfo[] getElements() {
+        FolderInfo[] tabs = new FolderInfo[elements.length];
         for (int i = 0; i < elements.length; i++) {
-            tabs[i] = elements[i].getTabItem();
+            tabs[i] = elements[i].getInfo();
         }
         return tabs;
     }
@@ -562,7 +562,7 @@ public class FolderList extends Composite {
     /**
      * Sets the new list elements.
      */
-    public void setFolders(IFolderDescription[] children) {
+    public void setFolders(FolderInfo[] children) {
         if (elements != ELEMENTS_EMPTY) {
             removeAll();
         }
@@ -592,17 +592,17 @@ public class FolderList extends Composite {
         computeTopAndBottomTab();
     }
 
-    private int getTabWidth(IFolderDescription tabItem) {
-        int width = getTextDimension(tabItem.getText()).x;
+    private int getTabWidth(FolderInfo folderInfo) {
+        int width = getTextDimension(folderInfo.getText()).x;
 		/*
 		 * To anticipate for the icon placement we should always keep the
 		 * space available after the label. So when the active tab includes
 		 * an icon the width of the tab doesn't change.
 		 */
-        if (tabItem.getImage() != null) {
-            width = width + tabItem.getImage().getBounds().width + 4;
+        if (folderInfo.getImage() != null) {
+            width = width + folderInfo.getImage().getBounds().width + 4;
         }
-        if (tabItem.isIndented()) {
+        if (folderInfo.isIndented()) {
             width = width + INDENT;
         }
         return width;
@@ -667,7 +667,7 @@ public class FolderList extends Composite {
 			/*
 			 * Add INDENT pixels to the left of the longest tab as a margin.
 			 */
-            int width = getTabWidth(elements[widestLabelIndex].getTabItem()) + INDENT;
+            int width = getTabWidth(elements[widestLabelIndex].getInfo()) + INDENT;
 			/*
 			 * Add 10 pixels to the right of the longest tab as a margin.
 			 */
@@ -903,13 +903,13 @@ public class FolderList extends Composite {
 
             public void getName(AccessibleEvent e) {
                 if (getSelectionIndex() != NONE) {
-                    e.result = elements[getSelectionIndex()].getTabItem().getText();
+                    e.result = elements[getSelectionIndex()].getInfo().getText();
                 }
             }
 
             public void getHelp(AccessibleEvent e) {
                 if (getSelectionIndex() != NONE) {
-                    e.result = elements[getSelectionIndex()].getTabItem().getText();
+                    e.result = elements[getSelectionIndex()].getInfo().getText();
                 }
             }
         });
