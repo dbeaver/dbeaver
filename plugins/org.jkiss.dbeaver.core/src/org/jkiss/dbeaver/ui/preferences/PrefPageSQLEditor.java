@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
@@ -45,7 +46,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor"; //$NON-NLS-1$
 
-    private Button autoFoldersCheck;
     private Button csAutoActivationCheck;
     private Spinner csAutoActivationDelaySpinner;
     private Button csAutoInsertCheck;
@@ -55,6 +55,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
     private Button acBracketsCheck;
+    private Button autoFoldersCheck;
+    private Text scriptTitlePattern;
 
     public PrefPageSQLEditor()
     {
@@ -67,6 +69,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS) ||
+            store.contains(DBeaverPreferences.SCRIPT_TITLE_PATTERN) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS)
@@ -115,7 +118,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csHideDuplicates = UIUtils.createLabelCheckbox(assistGroup, "Hide duplicate names from\nnon-active schemas", false);
         }
 
-        // Reulers
+        // Rulers
         {
             Composite rulersGroup = UIUtils.createControlGroup(composite2, "Rulers", 2, GridData.FILL_HORIZONTAL, 0);
             rulersGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
@@ -144,6 +147,20 @@ public class PrefPageSQLEditor extends TargetPrefPage
             ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
 
             autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, false);
+            scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
+
+            String[] vars = new String[] {SQLEditorInput.VAR_CONNECTION_NAME, SQLEditorInput.VAR_DRIVER_NAME, SQLEditorInput.VAR_FILE_NAME, SQLEditorInput.VAR_FILE_EXT};
+            String[] explain = new String[] {"Connection name", "Database driver name", "File name", "File extension"};
+            StringBuilder legend = new StringBuilder("Supported variables: ");
+            for (int i = 0; i <vars.length; i++) {
+                legend.append("\n\t- ${").append(vars[i]).append("}:  ").append(explain[i]);
+            }
+
+            Label legendLabel = new Label(scriptsGroup, SWT.NONE);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            legendLabel.setLayoutData(gd);
+            legendLabel.setText(legend.toString());
         }
         return composite;
     }
@@ -152,7 +169,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
             csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
@@ -169,6 +185,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 entry.getValue().setSelection(adapter.isEnabled(entry.getKey()));
             }
 
+            autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
+            scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -184,8 +202,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
             store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
 
-            store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
-
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
@@ -196,6 +212,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             for (Map.Entry<RulerColumnDescriptor, Button> entry : rulerChecks.entrySet()) {
                 adapter.setEnabled(entry.getKey(), entry.getValue().getSelection());
             }
+
+            store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
+            store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -211,11 +230,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
         store.setToDefault(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS);
 
-        store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
-
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
+
+        store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
+        store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
     }
 
     @Override
