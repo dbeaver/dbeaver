@@ -1839,6 +1839,14 @@
               </or>
            </enabledWhen>
         </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" id="org.jkiss.dbeaver.preferences.main.sqlexecute" name="SQL Processing">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
+                </or>
+            </enabledWhen>
+        </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" id="org.jkiss.dbeaver.preferences.main.sqleditor" name="SQL Editor">
             <enabledWhen>
                 <or>
