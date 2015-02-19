@@ -417,7 +417,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         }
         ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
         String selText = selection.getText();
-        if (CommonUtils.isEmpty(selText)) {
+        if (CommonUtils.isEmpty(selText) && selection.getOffset() >= 0) {
             Document document = getDocument();
             try {
                 ;
@@ -441,8 +441,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
             sqlQuery = new SQLQuery(this, selText, selection.getOffset(), selection.getLength());
-        } else {
+        } else if (selection.getOffset() >= 0) {
             sqlQuery = extractQueryAtPos(selection.getOffset());
+        } else {
+            sqlQuery = null;
         }
         // Check query do not ends with delimiter
         // (this may occur if user selected statement including delimiter)
