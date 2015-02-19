@@ -130,8 +130,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
         if (needCommit && executeBatch != null) {
-            boolean retryInsert = false;
+            boolean retryInsert;
             do {
+                retryInsert = false;
                 try {
                     executeBatch.execute(targetSession);
                 } catch (Throwable e) {
