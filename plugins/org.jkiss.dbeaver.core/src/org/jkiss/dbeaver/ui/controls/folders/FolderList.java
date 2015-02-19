@@ -30,7 +30,6 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.jface.preference.JFacePreferences;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.source.ISharedTextColors;
@@ -44,7 +43,6 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -699,19 +697,37 @@ public class FolderList extends Composite {
 
         ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
-        listBackground = JFaceResources.getColorRegistry().get(
-            JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR);
-        //listBackground = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+/*
+        Map<String, Color> colors = new TreeMap<String, Color>();
+        for (String id : colorRegistry.getKeySet()) {
+            colors.put(id, colorRegistry.get(id));
+        }
+        System.out.println("==============================");
+        for (Map.Entry<String,Color> e : colors.entrySet()) {
+            System.out.println(e.getKey() + "=" + e.getValue());
+        }
+*/
+
+/*
+        listBackground = JFaceResources.getColorRegistry().get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR);
         widgetBackground = getBackground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-        widgetForeground = getForeground();//colorRegistry.get(IWorkbenchThemeConstants.ACTIVE_TAB_TEXT_COLOR);
+        widgetForeground = getForeground();
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         RGB infoBackground = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
         RGB white = JFaceResources.getColorRegistry().get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR).getRGB();
-        //RGB white = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND).getRGB();
         RGB black = colorRegistry.get(IWorkbenchThemeConstants.ACTIVE_TAB_TEXT_COLOR).getRGB();
-        //RGB black = display.getSystemColor(SWT.COLOR_LIST_FOREGROUND).getRGB();
+*/
+        listBackground = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        widgetBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
+        widgetForeground = display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
+        widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+
+        RGB infoBackground = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
+        RGB white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
+        RGB black = display.getSystemColor(SWT.COLOR_BLACK).getRGB();
 
 		/*
 		 * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
