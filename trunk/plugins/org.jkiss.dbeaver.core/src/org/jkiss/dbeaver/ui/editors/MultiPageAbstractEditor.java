@@ -149,7 +149,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     @Override
     public IEditorPart getActiveEditor()
     {
-        if (getContainer().isVisible()) {
+        if (getContainer().isDisposed()) {
             return null;
         }
         return super.getActiveEditor();

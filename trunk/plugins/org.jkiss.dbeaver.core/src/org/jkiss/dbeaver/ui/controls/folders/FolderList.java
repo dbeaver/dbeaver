@@ -30,6 +30,8 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
+import org.eclipse.jface.preference.JFacePreferences;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.SWT;
@@ -41,6 +43,8 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -614,12 +618,6 @@ public class FolderList extends Composite {
      * @param index the index of the element to select.
      */
     public void select(int index) {
-        if (getSelectionIndex() == index) {
-			/*
-			 * this index is already selected.
-			 */
-            return;
-        }
         if (index >= 0 && index < elements.length) {
             int lastSelected = getSelectionIndex();
             elements[index].setSelected(true);
@@ -699,15 +697,21 @@ public class FolderList extends Composite {
         Display display = Display.getCurrent();
         ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
 
-        listBackground = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
-        widgetBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+
+        listBackground = JFaceResources.getColorRegistry().get(
+            JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR);
+        //listBackground = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
+        widgetBackground = getBackground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-        widgetForeground = display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
+        widgetForeground = getForeground();//colorRegistry.get(IWorkbenchThemeConstants.ACTIVE_TAB_TEXT_COLOR);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         RGB infoBackground = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
-        RGB white = display.getSystemColor(SWT.COLOR_WHITE).getRGB();
-        RGB black = display.getSystemColor(SWT.COLOR_BLACK).getRGB();
+        RGB white = JFaceResources.getColorRegistry().get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR).getRGB();
+        //RGB white = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND).getRGB();
+        RGB black = colorRegistry.get(IWorkbenchThemeConstants.ACTIVE_TAB_TEXT_COLOR).getRGB();
+        //RGB black = display.getSystemColor(SWT.COLOR_LIST_FOREGROUND).getRGB();
 
 		/*
 		 * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
@@ -734,6 +738,18 @@ public class FolderList extends Composite {
 
         indentedDefaultBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 10));
         indentedHoverBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 75));
+    }
+
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                initColours();
+                select(getSelectionIndex());
+            }
+        });
     }
 
     /**
