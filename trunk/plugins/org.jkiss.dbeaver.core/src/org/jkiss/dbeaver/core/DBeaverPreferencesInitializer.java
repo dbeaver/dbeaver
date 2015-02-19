@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -87,6 +88,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, false);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_AUTO_FOLDERS, false);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_TITLE_PATTERN, SQLEditorInput.DEFAULT_PATTERN);
 
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 10 * 1000);

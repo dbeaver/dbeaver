@@ -44,6 +44,7 @@ public final class DBeaverPreferences
     public static final String SCRIPT_ERROR_HANDLING = "script.error.handling"; //$NON-NLS-1$
     public static final String SCRIPT_FETCH_RESULT_SETS = "script.fetch.resultset"; //$NON-NLS-1$
     public static final String SCRIPT_AUTO_FOLDERS = "script.auto.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_TITLE_PATTERN = "script.title.pattern"; //$NON-NLS-1$
 
     public static final String STATEMENT_INVALIDATE_BEFORE_EXECUTE = "statement.invalidate.before.execute"; //$NON-NLS-1$
     public static final String STATEMENT_TIMEOUT = "statement.timeout"; //$NON-NLS-1$

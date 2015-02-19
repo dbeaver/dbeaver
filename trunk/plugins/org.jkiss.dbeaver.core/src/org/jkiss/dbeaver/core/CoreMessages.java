@@ -1245,7 +1245,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_query_manager_label_entries_per_page;
 
 	public static String pref_page_sql_editor_checkbox_fetch_resultsets;
-
+	public static String pref_page_sql_editor_title_pattern;
 	public static String pref_page_sql_editor_checkbox_put_new_scripts;
 
 	public static String pref_page_sql_editor_combo_item_each_line_autocommit;
