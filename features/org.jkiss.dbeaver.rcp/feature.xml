@@ -738,4 +738,25 @@
             version="0.0.0"
             unpack="false"/>
 
+    <plugin
+            id="com.jcraft.jsch"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
+            id="org.apache.commons.logging"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
+            id="org.objectweb.asm"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
 </feature>
