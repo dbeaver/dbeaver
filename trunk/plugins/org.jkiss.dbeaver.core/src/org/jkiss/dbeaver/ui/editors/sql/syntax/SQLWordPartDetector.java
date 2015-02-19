@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,9 +102,8 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 }
 
                 String prevWord = document.get(prevOffset, prevStartOffset - prevOffset);
-                if (syntaxManager.getDialect().getKeywordType(prevWord) == DBPKeywordType.KEYWORD &&
-                    !prevWord.equalsIgnoreCase("as"))
-                {
+                SQLDialect dialect = syntaxManager.getDialect();
+                if (dialect.isEntityQueryWord(prevWord) || dialect.isAttributeQueryWord(prevWord)) {
                     this.prevKeyWord = prevWord.toUpperCase();
                     break;
                 }

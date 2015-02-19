@@ -358,9 +358,6 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             functions.addAll(allFunctions);
         }
         catch (Throwable e) {
-            if (e instanceof InvocationTargetException) {
-                e = ((InvocationTargetException)e).getTargetException();
-            }
             log.error(e);
         }
 
