@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Used to scan and detect for SQL keywords
+ * Used to scan and detect for SQL keywords.
  */
 public class SQLWordPartDetector extends SQLIdentifierDetector
 {
@@ -163,6 +163,10 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         return endOffset - startOffset;
     }
 
+    /**
+     * Previous valuable entity or attribute manipulation keyword.
+     * All functions, aggregate operators and other keywords are ignored.
+     */
     public String getPrevKeyWord()
     {
         return prevKeyWord;

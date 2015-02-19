@@ -91,6 +91,7 @@ public class EditConnectionWizard extends ConnectionWizard
         addPage(pageNetwork);
         addPage(pageEvents);
 
+        addPreferencePage(new PrefPageSQLEditor(), "SQL Processing", "SQL processing settings");
         addPreferencePage(new PrefPageMetaData(), "Metadata", "Metadata reading preferences");
         addPreferencePage(new PrefPageDataFormat(), "Data Formatting", "Data formatting preferences");
         addPreferencePage(new PrefPageResultSet(), "Result Sets", "Result Set preferences");
