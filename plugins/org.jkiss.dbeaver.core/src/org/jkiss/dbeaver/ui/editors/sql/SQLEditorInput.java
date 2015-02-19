@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
@@ -36,9 +38,12 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
 import java.io.ByteArrayInputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * SQLEditorInput
@@ -48,6 +53,13 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
 
     static final Log log = Log.getLog(SQLEditorInput.class);
+
+    public static final String VAR_CONNECTION_NAME = "connectionName";
+    public static final String VAR_FILE_NAME = "fileName";
+    public static final String VAR_FILE_EXT = "fileExt";
+    public static final String VAR_DRIVER_NAME = "driverName";
+
+    public static final String DEFAULT_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
 
     private String scriptName;
 
@@ -67,11 +79,19 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public String getName()
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        IPreferenceStore preferenceStore;
         if (dataSourceContainer != null) {
-            return "<" + dataSourceContainer.getName() + "> " + scriptName;
+            preferenceStore = dataSourceContainer.getPreferenceStore();
         } else {
-            return scriptName;
+            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
         }
+        String pattern = preferenceStore.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getName());
+        vars.put(VAR_FILE_NAME, scriptName);
+        vars.put(VAR_FILE_EXT, getFile().getFullPath().getFileExtension());
+        vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
+        return TextUtils.replaceVariables(pattern, vars);
     }
 
     @Override
