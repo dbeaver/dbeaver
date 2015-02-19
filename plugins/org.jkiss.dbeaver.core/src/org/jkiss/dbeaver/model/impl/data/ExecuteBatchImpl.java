@@ -78,7 +78,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             handlers[i] = DBUtils.findValueHandler(session, attributes[i]);
         }
 
-        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates();
+        boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement;
         if (values.size() <= 1) {
             useBatch = false;
         }
@@ -88,7 +88,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
         try {
             for (Object[] rowValues : values) {
-                if (statement == null) {
+                if (statement == null || !reuseStatement) {
                     statement = prepareStatement(session, rowValues);
                     statistics.setQueryText(statement.getQueryString());
                 }
@@ -115,7 +115,6 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 } finally {
                     if (!reuseStatement) {
                         statement.close();
-                        statement = null;
                     }
                 }
             }
@@ -133,9 +132,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 }
             }
         } finally {
-            if (statement != null) {
+            if (reuseStatement && statement != null) {
                 statement.close();
-                statement = null;
             }
         }
 
