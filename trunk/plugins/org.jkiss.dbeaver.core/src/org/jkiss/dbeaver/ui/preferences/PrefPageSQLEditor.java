@@ -91,6 +91,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             Composite assistGroup = UIUtils.createControlGroup(composite2, "Content assistant", 2, GridData.FILL_HORIZONTAL, 0);
             assistGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
+            ((GridData)assistGroup.getLayoutData()).horizontalSpan = 2;
 
             csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", "Enables the content assistant's auto activation", false);
             UIUtils.createControlLabel(assistGroup, "Auto activation delay");
@@ -111,16 +112,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csInsertCase.add("Upper case");
             csInsertCase.add("Lower case");
 
-            csHideDuplicates = UIUtils.createLabelCheckbox(assistGroup, "Hide duplicate names\nfrom non-active schemas", false);
-        }
-
-        // Autoclose
-        {
-            Composite acGroup = UIUtils.createControlGroup(composite2, "Auto close", 2, GridData.FILL_BOTH, 0);
-
-            acSingleQuotesCheck = UIUtils.createLabelCheckbox(acGroup, "Single quotes", false);
-            acDoubleQuotesCheck = UIUtils.createLabelCheckbox(acGroup, "Double quotes", false);
-            acBracketsCheck = UIUtils.createLabelCheckbox(acGroup, "Brackets", false);
+            csHideDuplicates = UIUtils.createLabelCheckbox(assistGroup, "Hide duplicate names from\nnon-active schemas", false);
         }
 
         // Reulers
@@ -137,9 +129,19 @@ public class PrefPageSQLEditor extends TargetPrefPage
             }
         }
 
+        // Autoclose
+        {
+            Composite acGroup = UIUtils.createControlGroup(composite2, "Auto close", 2, GridData.FILL_BOTH, 0);
+
+            acSingleQuotesCheck = UIUtils.createLabelCheckbox(acGroup, "Single quotes", false);
+            acDoubleQuotesCheck = UIUtils.createLabelCheckbox(acGroup, "Double quotes", false);
+            acBracketsCheck = UIUtils.createLabelCheckbox(acGroup, "Brackets", false);
+        }
+
         // Scripts
         {
             Composite scriptsGroup = UIUtils.createControlGroup(composite2, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_BOTH, 0);
+            ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
 
             autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, false);
         }
