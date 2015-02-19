@@ -747,7 +747,11 @@ public class FolderList extends Composite {
             @Override
             public void run() {
                 initColours();
-                select(getSelectionIndex());
+                for (ListElement e : elements) {
+                    e.redraw();
+                }
+                topNavigationElement.redraw();
+                bottomNavigationElement.redraw();
             }
         });
     }
