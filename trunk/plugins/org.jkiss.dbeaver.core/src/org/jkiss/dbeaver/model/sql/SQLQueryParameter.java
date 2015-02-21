@@ -127,9 +127,6 @@ public class SQLQueryParameter implements DBSAttributeBase {
     public void setValue(Object value)
     {
         this.value = value;
-        if (this.previous != null) {
-            this.previous.setValue(value);
-        }
     }
 
     @Override

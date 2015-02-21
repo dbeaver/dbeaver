@@ -101,9 +101,11 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 param.setParamType(dataType);
                 param.resolve();
             }
-            String value = registry.getParameter(param.getName());
-            if (value != null) {
-                param.setValue(value);
+            if (param.isNamed()) {
+                String value = registry.getParameter(param.getName());
+                if (value != null) {
+                    param.setValue(value);
+                }
             }
         }
     }
@@ -332,7 +334,15 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         @Override
         public void updateValue(Object value)
         {
-            parameter.setValue(value);
+            if (parameter.isNamed()) {
+                for (SQLQueryParameter param : parameters) {
+                    if (param.getName().equals(parameter.getName())) {
+                        param.setValue(value);
+                    }
+                }
+            } else {
+                parameter.setValue(value);
+            }
             String displayString = getValueHandler().getValueDisplayString(parameter, value, DBDDisplayFormat.NATIVE);
             item.setText(3, displayString);
             String paramName = parameter.getName();
@@ -345,7 +355,6 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             if (!isNumber && parameter.isNamed()) {
                 savedParamValues.put(paramName, displayString);
             }
-            //parameter.getIndex()
 
             updateStatus(Status.OK_STATUS);
 
