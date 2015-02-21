@@ -280,7 +280,10 @@ public class SQLQueryJob extends DataSourceJob
                 sqlQuery = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(dataSource, sqlQuery, dataFilter);
             }
 
-            boolean hasParameters = prepareStatementParameters(sqlStatement);
+            Boolean hasParameters = prepareStatementParameters(sqlStatement);
+            if (hasParameters == null) {
+                return false;
+            }
 
             if (fireEvents && listener != null) {
                 // Notify query start
@@ -426,7 +429,7 @@ public class SQLQueryJob extends DataSourceJob
         fetchQueryData(session, fakeResultSet, resultInfo, dataReceiver, false);
     }
 
-    private boolean prepareStatementParameters(SQLQuery sqlStatement) {
+    private Boolean prepareStatementParameters(SQLQuery sqlStatement) {
         // Bind parameters
         if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
             List<SQLQueryParameter> unresolvedParams = new ArrayList<SQLQueryParameter>();
@@ -437,7 +440,9 @@ public class SQLQueryJob extends DataSourceJob
             }
             if (!CommonUtils.isEmpty(unresolvedParams)) {
                 // Resolve parameters
-                return prepareStatementParameters(unresolvedParams);
+                if (!fillStatementParameters(unresolvedParams)) {
+                    return null;
+                }
             }
             // Set values for all parameters
             return true;
@@ -445,7 +450,7 @@ public class SQLQueryJob extends DataSourceJob
         return false;
     }
 
-    private boolean prepareStatementParameters(final List<SQLQueryParameter> parameters)
+    private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
     {
         final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
             @Override
@@ -636,7 +641,7 @@ public class SQLQueryJob extends DataSourceJob
                 } else {
                     throw new DBCException(lastError, getDataSource());
                 }
-            } else {
+            } else if (result) {
                 showExecutionResult(session);
             }
         } finally {
