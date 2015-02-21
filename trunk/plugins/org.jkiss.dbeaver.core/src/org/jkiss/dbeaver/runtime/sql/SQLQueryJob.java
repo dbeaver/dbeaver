@@ -140,7 +140,7 @@ public class SQLQueryJob extends DataSourceJob
                 boolean oldAutoCommit = txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
                 if (!oldAutoCommit && newAutoCommit) {
-                    txnManager.setAutoCommit(newAutoCommit);
+                    txnManager.setAutoCommit(true);
                 }
 
                 monitor.beginTask(this.getName(), queries.size());
@@ -224,7 +224,7 @@ public class SQLQueryJob extends DataSourceJob
 
                 // Restore transactions settings
                 if (!oldAutoCommit && newAutoCommit) {
-                    txnManager.setAutoCommit(oldAutoCommit);
+                    txnManager.setAutoCommit(false);
                 }
 
                 QMUtils.getDefaultHandler().handleScriptEnd(session);
@@ -257,28 +257,15 @@ public class SQLQueryJob extends DataSourceJob
     {
         lastError = null;
 
-        if (fireEvents && listener != null) {
-            // Notify query start
-            listener.onStartQuery(sqlStatement);
-        }
-
-        long startTime = System.currentTimeMillis();
         String sqlQuery = sqlStatement.getQuery();
         DBPDataSource dataSource = getDataSource();
-        statistics.setQueryText(sqlQuery);
         SQLQueryResult curResult = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
         }
-        //if (rsMaxRows > 0) {
-        //    result.setRowCount(rsMaxRows);
-        //}
+        long startTime = System.currentTimeMillis();
 
         try {
-            if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
-                sqlQuery = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(dataSource, sqlQuery, dataFilter);
-            }
-
             // Prepare statement
             closeStatement();
 
@@ -288,8 +275,21 @@ public class SQLQueryJob extends DataSourceJob
                 connectionInvalidated = true;
             }
 
+            // Modify query (filters + parameters)
+            if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
+                sqlQuery = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(dataSource, sqlQuery, dataFilter);
+            }
+
             boolean hasParameters = prepareStatementParameters(sqlStatement);
 
+            if (fireEvents && listener != null) {
+                // Notify query start
+                listener.onStartQuery(sqlStatement);
+            }
+
+            statistics.setQueryText(sqlQuery);
+
+            startTime = System.currentTimeMillis();
             curStatement = DBUtils.prepareStatement(
                 session,
                 hasParameters ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,

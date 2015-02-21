@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.runtime.sql;
 
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
@@ -52,6 +53,8 @@ import java.util.List;
  * Parameter binding
  */
 public class SQLQueryParameterBindDialog extends StatusDialog {
+
+    private static final String DIALOG_ID = "DBeaver.SQLQueryParameterBindDialog";//$NON-NLS-1$
 
     private IWorkbenchPartSite ownerSite;
     private DBPDataSource dataSource;
@@ -103,6 +106,12 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 param.setValue(value);
             }
         }
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override

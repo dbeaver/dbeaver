@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
@@ -49,6 +50,8 @@ import java.util.Comparator;
 
 class FilterSettingsDialog extends HelpEnabledDialog {
 
+    private static final String DIALOG_ID = "DBeaver.FilterSettingsDialog";//$NON-NLS-1$
+
     private final ResultSetViewer resultSetViewer;
 
     private CheckboxTableViewer columnsViewer;
@@ -71,6 +74,12 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 return o1.getVisualPosition() - o2.getVisualPosition();
             }
         });
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
