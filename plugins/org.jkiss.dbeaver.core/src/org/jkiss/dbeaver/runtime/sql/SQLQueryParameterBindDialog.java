@@ -151,6 +151,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         valueColumn.setWidth(200);
 
         for (SQLQueryParameter param : parameters) {
+            if (param.getPrevious() != null) {
+                // Skip duplicates
+                continue;
+            }
             TableItem item = new TableItem(paramTable, SWT.NONE);
             item.setData(param);
             item.setImage(DBIcon.TREE_ATTRIBUTE.getImage());
@@ -331,14 +335,14 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             parameter.setValue(value);
             String displayString = getValueHandler().getValueDisplayString(parameter, value, DBDDisplayFormat.NATIVE);
             item.setText(3, displayString);
-            String paramName = parameter.getName().trim();
+            String paramName = parameter.getName();
             boolean isNumber = true;
             try {
                 Integer.parseInt(paramName);
             } catch (NumberFormatException e) {
                 isNumber = false;
             }
-            if (!isNumber && !paramName.equals("?")) {
+            if (!isNumber && parameter.isNamed()) {
                 savedParamValues.put(paramName, displayString);
             }
             //parameter.getIndex()

@@ -36,11 +36,12 @@ public class SQLQueryParameter implements DBSAttributeBase {
     private Object value;
     private int tokenOffset;
     private int tokenLength;
+    private SQLQueryParameter previous;
 
     public SQLQueryParameter(int ordinalPosition, String name, int tokenOffset, int tokenLength)
     {
         this.ordinalPosition = ordinalPosition;
-        this.name = name;
+        this.name = name.trim();
         this.tokenOffset = tokenOffset;
         this.tokenLength = tokenLength;
     }
@@ -48,6 +49,10 @@ public class SQLQueryParameter implements DBSAttributeBase {
     public boolean isResolved()
     {
         return valueHandler != null;
+    }
+
+    public boolean isNamed() {
+        return !name.equals("?");
     }
 
     public void resolve()
@@ -67,6 +72,14 @@ public class SQLQueryParameter implements DBSAttributeBase {
 
     public int getTokenLength() {
         return tokenLength;
+    }
+
+    public SQLQueryParameter getPrevious() {
+        return previous;
+    }
+
+    public void setPrevious(SQLQueryParameter previous) {
+        this.previous = previous;
     }
 
     public DBDValueHandler getValueHandler()
@@ -114,6 +127,9 @@ public class SQLQueryParameter implements DBSAttributeBase {
     public void setValue(Object value)
     {
         this.value = value;
+        if (this.previous != null) {
+            this.previous.setValue(value);
+        }
     }
 
     @Override
