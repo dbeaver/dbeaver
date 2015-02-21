@@ -57,6 +57,8 @@ public class SQLQuery {
     @NotNull
     private final Object source;
     @NotNull
+    private final String originalQuery;
+    @NotNull
     private String query;
     private int offset;
     private int length;
@@ -71,7 +73,7 @@ public class SQLQuery {
     public SQLQuery(@NotNull Object source, @NotNull String query, int offset, int length)
     {
         this.source = source;
-        this.query = query;
+        this.originalQuery = this.query = query;
         this.offset = offset;
         this.length = length;
         try {
@@ -114,6 +116,10 @@ public class SQLQuery {
 
     public Object getSource() {
         return source;
+    }
+
+    public String getOriginalQuery() {
+        return originalQuery;
     }
 
     public String getQuery()
