@@ -189,16 +189,28 @@ public class SQLQuery {
             }
             if (token instanceof SQLParameterToken && tokenLength > 0 && blockDepth <= 0) {
                 try {
-                    String paramName = document.get(tokenOffset, tokenLength);
                     if (parameters == null) {
                         parameters = new ArrayList<SQLQueryParameter>();
                     }
-                    parameters.add(
-                        new SQLQueryParameter(
-                            parameters.size(),
-                            paramName,
-                            tokenOffset - offset,
-                            tokenLength));
+
+                    String paramName = document.get(tokenOffset, tokenLength);
+                    SQLQueryParameter parameter = new SQLQueryParameter(
+                        parameters.size(),
+                        paramName,
+                        tokenOffset - offset,
+                        tokenLength);
+
+                    SQLQueryParameter previous = null;
+                    if (parameter.isNamed()) {
+                        for (int i = parameters.size(); i > 0; i--) {
+                            if (parameters.get(i - 1).getName().equals(paramName)) {
+                                previous = parameters.get(i - 1);
+                                break;
+                            }
+                        }
+                    }
+                    parameter.setPrevious(previous);
+                    parameters.add(parameter);
                 } catch (BadLocationException e) {
                     log.warn("Can't extract query parameter", e);
                 }
