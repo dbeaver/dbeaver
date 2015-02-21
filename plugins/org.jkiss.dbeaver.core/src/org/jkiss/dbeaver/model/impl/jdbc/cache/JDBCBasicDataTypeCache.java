@@ -33,6 +33,10 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataType> {
     private final DBSObject owner;
@@ -72,42 +76,27 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
     // plus a few de-facto standard types
     public void fillStandardTypes(DBSObject owner)
     {
-        cacheObject(new JDBCDataType(
-            owner, Types.INTEGER, "INTEGER", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.FLOAT, "FLOAT", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.REAL, "REAL", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.DOUBLE, "DOUBLE PRECISION", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.NUMERIC, "NUMBER", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.DECIMAL, "DECIMAL", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.SMALLINT, "SMALLINT", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.BIGINT, "BIGINT", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.BIT, "BIT", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.VARCHAR, "VARCHAR", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.VARBINARY, "VARBINARY", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.DATE, "DATE", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.TIME, "TIME", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.TIMESTAMP, "TIMESTAMP", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.BLOB, "BLOB", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.CLOB, "CLOB", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.BOOLEAN, "BOOLEAN", null, false, true, 0, 0, 0));
-        cacheObject(new JDBCDataType(
-            owner, Types.OTHER, "OBJECT", null, false, true, 0, 0, 0));
+        List<DBSDataType> standardTypes = new ArrayList<DBSDataType>();
+        Collections.addAll(standardTypes,
+            new JDBCDataType(owner, Types.INTEGER, "INTEGER", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.FLOAT, "FLOAT", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.REAL, "REAL", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.DOUBLE, "DOUBLE PRECISION", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.NUMERIC, "NUMBER", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.DECIMAL, "DECIMAL", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.SMALLINT, "SMALLINT", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.BIGINT, "BIGINT", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.BIT, "BIT", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.VARCHAR, "VARCHAR", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.VARBINARY, "VARBINARY", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.DATE, "DATE", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.TIME, "TIME", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.TIMESTAMP, "TIMESTAMP", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.BLOB, "BLOB", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.CLOB, "CLOB", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.BOOLEAN, "BOOLEAN", null, false, true, 0, 0, 0),
+            new JDBCDataType(owner, Types.OTHER, "OBJECT", null, false, true, 0, 0, 0));
+        setCache(standardTypes);
     }
 
 }
