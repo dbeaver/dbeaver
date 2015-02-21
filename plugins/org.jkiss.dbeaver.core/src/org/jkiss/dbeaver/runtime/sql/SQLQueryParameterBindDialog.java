@@ -269,7 +269,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         private void showTypeSelector(final TableItem item)
         {
             final SQLQueryParameter param = (SQLQueryParameter)item.getData();
-            final CCombo typeSelector = new CCombo(paramTable, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            final CCombo typeSelector = new CCombo(paramTable, SWT.BORDER | SWT.DROP_DOWN);
             typeSelector.setListVisible(true);
             typeSelector.setVisibleItemCount(15);
             int selectionIndex = 0;
@@ -307,6 +307,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
             tableEditor.minimumHeight = typeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
             tableEditor.setEditor(typeSelector, item, 2);
+            typeSelector.setListVisible(true);
         }
     }
 
