@@ -19,10 +19,11 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -31,7 +32,7 @@ import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class SQLQueryParameterRegistry
@@ -42,7 +43,19 @@ public class SQLQueryParameterRegistry
     public static final String TAG_PARAMETER = "parameter";
 
     private static SQLQueryParameterRegistry registry;
-    private final Map<String, String> parameterMap = new HashMap<String, String>();
+    private final Map<String, ParameterInfo> parameterMap = new LinkedHashMap<String, ParameterInfo>();
+
+    public static class ParameterInfo {
+        public String name;
+        public String type;
+        public String value;
+
+        public ParameterInfo(String name, String type, String value) {
+            this.name = name;
+            this.type = type;
+            this.value = value;
+        }
+    }
 
     private SQLQueryParameterRegistry()
     {
@@ -57,14 +70,14 @@ public class SQLQueryParameterRegistry
         return registry;
     }
 
-    public String getParameter(String name)
+    public ParameterInfo getParameter(String name)
     {
         return parameterMap.get(name.toUpperCase());
     }
 
-    public void setParameter(String name, String value)
+    public void setParameter(String name, String type, String value)
     {
-        parameterMap.put(name.toUpperCase(), value);
+        parameterMap.put(name.toUpperCase(), new ParameterInfo(name, type, value));
     }
 
     private void loadProfiles()
@@ -108,10 +121,13 @@ public class SQLQueryParameterRegistry
                 XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
                 xml.setButify(true);
                 xml.startElement("bindings");
-                for (Map.Entry<String, String> binding : parameterMap.entrySet()) {
+                for (Map.Entry<String, ParameterInfo> binding : parameterMap.entrySet()) {
                     xml.startElement(TAG_PARAMETER);
-                    xml.addAttribute(RegistryConstants.ATTR_NAME, binding.getKey());
-                    xml.addText(binding.getValue());
+                    xml.addAttribute(RegistryConstants.ATTR_NAME, binding.getValue().name);
+                    if (binding.getValue().type != null) {
+                        xml.addAttribute(RegistryConstants.ATTR_TYPE, binding.getValue().type);
+                    }
+                    xml.addText(binding.getValue().value);
                     xml.endElement();
                 }
                 xml.endElement();
@@ -129,6 +145,7 @@ public class SQLQueryParameterRegistry
     private class ParametersParser implements SAXListener
     {
         private String curParameterName;
+        private String curParameterType;
         private StringBuilder curParameterValue = new StringBuilder();
 
         @Override
@@ -137,6 +154,7 @@ public class SQLQueryParameterRegistry
         {
             if (localName.equals(TAG_PARAMETER)) {
                 curParameterName = atts.getValue(RegistryConstants.ATTR_NAME);
+                curParameterType = atts.getValue(RegistryConstants.ATTR_TYPE);
             }
         }
 
@@ -154,7 +172,9 @@ public class SQLQueryParameterRegistry
             throws XMLException
         {
             if (localName.equals(TAG_PARAMETER) && curParameterName != null) {
-                parameterMap.put(curParameterName.toUpperCase(), curParameterValue.toString());
+                parameterMap.put(
+                    curParameterName.toUpperCase(),
+                    new ParameterInfo(curParameterName, curParameterType, curParameterValue.toString()));
                 curParameterName = null;
                 curParameterValue.setLength(0);
             }
