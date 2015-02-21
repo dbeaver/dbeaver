@@ -471,12 +471,15 @@ public class SQLQueryJob extends DataSourceJob
         // Bind them
         for (SQLQueryParameter param : sqlStatement.getParameters()) {
             if (param.isResolved()) {
+                // convert value to native form
+                Object realValue = param.getValueHandler().getValueFromObject(session, param, param.getValue(), false);
+                // bind
                 param.getValueHandler().bindValueObject(
                     session,
                     curStatement,
                     param,
                     param.getOrdinalPosition(),
-                    param.getValue());
+                    realValue);
             }
         }
     }
