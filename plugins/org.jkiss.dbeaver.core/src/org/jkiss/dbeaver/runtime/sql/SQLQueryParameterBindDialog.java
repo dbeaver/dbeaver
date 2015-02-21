@@ -63,7 +63,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private TableEditor tableEditor;
     private Table paramTable;
 
-    private static Map<String, String> savedParamValues = new HashMap<String, String>();
+    private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<String, SQLQueryParameterRegistry.ParameterInfo>();
 
     protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBPDataSource dataSource, List<SQLQueryParameter> parameters)
     {
@@ -96,15 +96,22 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         // Restore saved values from registry
         SQLQueryParameterRegistry registry = SQLQueryParameterRegistry.getInstance();
         for (SQLQueryParameter param : this.parameters) {
-            final DBSDataType dataType = DBUtils.findBestDataType(validDataTypes, DBConstants.DEFAULT_DATATYPE_NAMES);
+            DBSDataType dataType = DBUtils.findBestDataType(validDataTypes, DBConstants.DEFAULT_DATATYPE_NAMES);
             if (dataType != null) {
                 param.setParamType(dataType);
                 param.resolve();
             }
             if (param.isNamed()) {
-                String value = registry.getParameter(param.getName());
-                if (value != null) {
-                    param.setValue(value);
+                SQLQueryParameterRegistry.ParameterInfo paramInfo = registry.getParameter(param.getName());
+                if (paramInfo != null) {
+                    if (paramInfo.type != null) {
+                        dataType = DBUtils.findBestDataType(validDataTypes, paramInfo.type);
+                        if (dataType != null) {
+                            param.setParamType(dataType);
+                            param.resolve();
+                        }
+                    }
+                    param.setValue(paramInfo.value);
                 }
             }
         }
@@ -181,8 +188,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     protected void okPressed()
     {
         SQLQueryParameterRegistry registry = SQLQueryParameterRegistry.getInstance();
-        for (Map.Entry<String, String> param : savedParamValues.entrySet()) {
-            registry.setParameter(param.getKey(), param.getValue());
+        for (SQLQueryParameterRegistry.ParameterInfo param : savedParamValues.values()) {
+            registry.setParameter(param.name, param.type, param.value);
         }
         registry.save();
         super.okPressed();
@@ -281,11 +288,20 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     if (param.getParamType() == null || param.getParamType().getDataKind() != paramType.getDataKind()) {
                         param.setValue(null);
                     }
-                    param.setParamType(paramType);
+                    if (param.isNamed()) {
+                        for (SQLQueryParameter p : parameters) {
+                            if (p.getName().equals(param.getName())) {
+                                p.setParamType(paramType);
+                                p.resolve();
+                            }
+                        }
+                    } else {
+                        param.setParamType(paramType);
+                        param.resolve();
+                    }
                     item.setText(2, paramType.getName());
                     item.setText(3, param.getValueHandler() == null ? "" :
                         param.getValueHandler().getValueDisplayString(param, param.getValue(), DBDDisplayFormat.UI));
-                    param.resolve();
                 }
             });
 
@@ -353,7 +369,14 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 isNumber = false;
             }
             if (!isNumber && parameter.isNamed()) {
-                savedParamValues.put(paramName, displayString);
+                SQLQueryParameterRegistry.ParameterInfo info = savedParamValues.get(paramName.toUpperCase());
+                if (info == null) {
+                    info = new SQLQueryParameterRegistry.ParameterInfo(paramName, parameter.getTypeName(), displayString);
+                    savedParamValues.put(paramName.toUpperCase(), info);
+                } else {
+                    info.type = parameter.getTypeName();
+                    info.value = displayString;
+                }
             }
 
             updateStatus(Status.OK_STATUS);
