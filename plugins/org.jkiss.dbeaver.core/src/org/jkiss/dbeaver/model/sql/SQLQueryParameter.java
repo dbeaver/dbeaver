@@ -34,11 +34,15 @@ public class SQLQueryParameter implements DBSAttributeBase {
     private int ordinalPosition;
     private String name;
     private Object value;
+    private int tokenOffset;
+    private int tokenLength;
 
-    public SQLQueryParameter(int ordinalPosition, String name)
+    public SQLQueryParameter(int ordinalPosition, String name, int tokenOffset, int tokenLength)
     {
         this.ordinalPosition = ordinalPosition;
         this.name = name;
+        this.tokenOffset = tokenOffset;
+        this.tokenLength = tokenLength;
     }
 
     public boolean isResolved()
@@ -55,6 +59,14 @@ public class SQLQueryParameter implements DBSAttributeBase {
             paramType.getDataSource(),
             paramType.getDataSource().getContainer(),
             paramType);
+    }
+
+    public int getTokenOffset() {
+        return tokenOffset;
+    }
+
+    public int getTokenLength() {
+        return tokenLength;
     }
 
     public DBDValueHandler getValueHandler()
