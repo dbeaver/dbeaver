@@ -190,10 +190,19 @@ public class SQLQuery {
                     parameters.add(
                         new SQLQueryParameter(
                             parameters.size(),
-                            paramName));
+                            paramName,
+                            tokenOffset - offset,
+                            tokenLength));
                 } catch (BadLocationException e) {
                     log.warn("Can't extract query parameter", e);
                 }
+            }
+        }
+        if (parameters != null) {
+            // Replace parameter tokens with "?" symbol
+            for (int i = parameters.size(); i > 0; i--) {
+                SQLQueryParameter parameter = parameters.get(i - 1);
+                query = query.substring(0, parameter.getTokenOffset()) + "?" + query.substring(parameter.getTokenOffset() + parameter.getTokenLength());
             }
         }
     }
