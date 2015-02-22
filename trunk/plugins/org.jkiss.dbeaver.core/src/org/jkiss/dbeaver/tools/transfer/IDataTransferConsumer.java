@@ -36,7 +36,12 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
 
     void startTransfer(DBRProgressMonitor monitor) throws DBException;
 
-    void finishTransfer(boolean last);
+    /**
+     * Finishes this transfer
+     * @param monitor monitor
+     * @param last called in the very end of all transfers
+     */
+    void finishTransfer(DBRProgressMonitor monitor, boolean last);
 
     String getTargetName();
 

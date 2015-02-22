@@ -60,7 +60,7 @@ public class DataTransferJob extends AbstractJob {
         boolean hasErrors = false;
         long startTime = System.currentTimeMillis();
         for (; ;) {
-            DataTransferPipe transferPipe = settings.acquireDataPipe();
+            DataTransferPipe transferPipe = settings.acquireDataPipe(monitor);
             if (transferPipe == null) {
                 break;
             }
@@ -106,7 +106,7 @@ public class DataTransferJob extends AbstractJob {
                 monitor,
                 consumer,
                 nodeSettings);
-            consumer.finishTransfer(false);
+            consumer.finishTransfer(monitor, false);
             return true;
         } catch (Exception e) {
             new DataTransferErrorJob(e).schedule();

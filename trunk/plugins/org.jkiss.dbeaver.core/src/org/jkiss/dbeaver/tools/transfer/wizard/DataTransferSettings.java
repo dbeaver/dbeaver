@@ -27,6 +27,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferRegistry;
@@ -248,13 +249,13 @@ public class DataTransferSettings {
         return dataPipes;
     }
 
-    public synchronized DataTransferPipe acquireDataPipe()
+    public synchronized DataTransferPipe acquireDataPipe(DBRProgressMonitor monitor)
     {
         if (curPipeNum >= dataPipes.size()) {
             // End of transfer
             // Signal last pipe about it
             if (!dataPipes.isEmpty()) {
-                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(true);
+                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(monitor, true);
             }
             return null;
         }

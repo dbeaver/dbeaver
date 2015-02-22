@@ -75,6 +75,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private StreamExportSite exportSite;
     private Map<Object, Object> processorProperties;
     private StringWriter outputBuffer;
+    private boolean initialized = false;
 
     public StreamTransferConsumer()
     {
@@ -83,7 +84,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
     {
-        initExporter(session);
+        if (!initialized) {
+            // Can be invoked multiple times in case of per-segment transfer
+            initExporter(session);
+        }
 
         // Prepare columns
         metaColumns = new ArrayList<DBDAttributeBinding>();
@@ -94,13 +98,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
         row = new Object[metaColumns.size()];
 
-        try {
-            processor.exportHeader(session.getProgressMonitor());
-        } catch (DBException e) {
-            log.warn("Error while exporting table header", e);
-        } catch (IOException e) {
-            throw new DBCException("IO error", e);
+        if (!initialized) {
+            try {
+                processor.exportHeader(session.getProgressMonitor());
+            } catch (DBException e) {
+                log.warn("Error while exporting table header", e);
+            } catch (IOException e) {
+                throw new DBCException("IO error", e);
+            }
         }
+
+
+        initialized = true;
     }
 
     @Override
@@ -143,15 +152,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     @Override
     public void fetchEnd(DBCSession session) throws DBCException
     {
-        try {
-            processor.exportFooter(session.getProgressMonitor());
-        } catch (DBException e) {
-            log.warn("Error while exporting table footer", e);
-        } catch (IOException e) {
-            throw new DBCException("IO error", e);
-        }
-
-        closeExporter();
     }
 
     @Override
@@ -289,11 +289,19 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void finishTransfer(boolean last)
+    public void finishTransfer(DBRProgressMonitor monitor, boolean last)
     {
         if (!last) {
+            try {
+                processor.exportFooter(monitor);
+            } catch (Exception e) {
+                log.warn("Error while exporting table footer", e);
+            }
+
+            closeExporter();
             return;
         }
+
         if (settings.isOutputClipboard()) {
             UIUtils.runInUI(null, new Runnable() {
                 @Override
