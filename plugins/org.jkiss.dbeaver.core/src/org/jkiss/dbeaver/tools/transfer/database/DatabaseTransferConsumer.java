@@ -396,7 +396,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void finishTransfer(boolean last)
+    public void finishTransfer(DBRProgressMonitor monitor, boolean last)
     {
         if (!last && settings.isOpenTableOnFinish()) {
             if (containerMapping != null && containerMapping.getTarget() != null) {
