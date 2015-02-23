@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 Serge Rieder
+ * Copyright (C) 2010-2015 Serge Rieder
  * serge@jkiss.org
  * eugene.fradkin@gmail.com
  *
