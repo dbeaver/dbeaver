@@ -10,7 +10,7 @@
  *     Mariot Chauvin <mariot.chauvin@obeo.fr> - bug 259553
  *     Amit Joglekar <joglekar@us.ibm.com> - Support for dynamic images (bug 385795)
  *
- * Copyright (C) 2010-2014 Serge Rieder
+ * Copyright (C) 2010-2015 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or

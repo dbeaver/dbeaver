@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 Serge Rieder
+ * Copyright (C) 2010-2015 Serge Rieder
  * eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- * Copyright (C) 2010-2014 Serge Rieder
+ * Copyright (C) 2010-2015 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -39,6 +39,16 @@
     </company>
 
     <versions>
+
+        <version>
+            <number>3.1.5</number>
+            <type>hotfix</type>
+            <date>24.02.2015</date>
+
+            <release-notes>
+                -
+            </release-notes>
+        </version>
 
         <version>
             <number>3.1.4</number>
