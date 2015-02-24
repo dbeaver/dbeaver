@@ -46,7 +46,14 @@
             <date>24.02.2015</date>
 
             <release-notes>
-                -
+                - Eclipse plugin update site was fixed
+                - Parameters binding dialog was fixed
+                - Data export was fixed (by-segment reading)
+                - Data types load fix (PostgreSQL)
+                - Copy/paste in resultset was fixed
+                - SQL autocomplete was fixed
+                - Scripts titles are now configurable
+                - A few minor UI bug was fixed
             </release-notes>
         </version>
 

@@ -31,7 +31,14 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            - 
+            - Eclipse plugin update site was fixed
+            - Parameters binding dialog was fixed
+            - Data export was fixed (by-segment reading)
+            - Data types load fix (PostgreSQL)
+            - Copy/paste in resultset was fixed
+            - SQL autocomplete was fixed
+            - Scripts titles are now configurable
+            - A few minor UI bug was fixed
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
