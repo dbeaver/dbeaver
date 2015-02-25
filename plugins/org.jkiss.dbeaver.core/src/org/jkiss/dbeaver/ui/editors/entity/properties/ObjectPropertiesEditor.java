@@ -154,7 +154,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private void createPropertyBrowser(Composite container)
     {
         // Properties
-        Composite propsPlaceholder = new Composite(container, SWT.BORDER);
+        Composite propsPlaceholder = new Composite(container, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
         propsPlaceholder.setLayoutData(gd);

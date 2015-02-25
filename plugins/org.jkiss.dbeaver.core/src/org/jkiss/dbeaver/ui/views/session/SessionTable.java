@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
@@ -102,12 +103,17 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCSession session = sessionManager.getDataSource().openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve server sessions");
+                DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(getProgressMonitor(), "View sessions");
                 try {
-                    return sessionManager.getSessions(session, null);
-                }
-                finally {
-                    session.close();
+                    DBCSession session = isolatedContext.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve server sessions");
+                    try {
+                        return sessionManager.getSessions(session, null);
+                    }
+                    finally {
+                        session.close();
+                    }
+                } finally {
+                    isolatedContext.close();
                 }
             } catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {
@@ -135,13 +141,17 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCSession session = sessionManager.getDataSource().openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Kill server session");
+                DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(getProgressMonitor(), "View sessions");
                 try {
-                    sessionManager.alterSession(session, this.session, options);
-                    return null;
-                }
-                finally {
-                    session.close();
+                    DBCSession session = isolatedContext.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Kill server session");
+                    try {
+                        sessionManager.alterSession(session, this.session, options);
+                        return null;
+                    } finally {
+                        session.close();
+                    }
+                } finally {
+                    isolatedContext.close();
                 }
             } catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {
