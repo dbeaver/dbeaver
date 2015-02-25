@@ -35,6 +35,7 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
     private final Table table;
     private final TableEditor tableEditor;
     private int columnIndex;
+    protected int firstTraverseIndex = -1, lastTraverseIndex = -1;
 
     public CustomTableEditor(Table table) {
         this.table = table;
@@ -112,13 +113,24 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
             e.doit = false;
             e.detail = SWT.TRAVERSE_NONE;
         } else if (e.detail == SWT.TRAVERSE_TAB_NEXT && editor != null) {
-            if (tableEditor.getItem() != null) {
-                if (columnIndex < table.getColumnCount() - 1) {
+            TableItem item = tableEditor.getItem();
+            if (item != null) {
+                saveEditorValue(editor, columnIndex, item);
+                closeEditor();
+
+                int lastColumn = lastTraverseIndex > 0 ? lastTraverseIndex : table.getColumnCount() - 1;
+                if (columnIndex < lastColumn) {
                     columnIndex++;
                 } else {
-                    columnIndex = 0;
+                    item = UIUtils.getNextTableItem(table, tableEditor.getItem());
+                    if (item != null) {
+                        columnIndex = firstTraverseIndex > 0 ? firstTraverseIndex : 0;
+                    } else {
+                        return;
+                    }
                 }
-                showEditor(tableEditor.getItem());
+                showEditor(item);
+                table.setSelection(item);
                 e.doit = false;
                 e.detail = SWT.TRAVERSE_NONE;
             }

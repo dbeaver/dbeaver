@@ -23,10 +23,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -114,7 +112,11 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_order);
             criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_criteria);
 
-            final CustomTableEditor tableEditor = new CustomTableEditor(columnsTable) {
+            new CustomTableEditor(columnsTable) {
+                {
+                    firstTraverseIndex = 3;
+                    lastTraverseIndex = 3;
+                }
                 @Override
                 protected Control createEditor(Table table, int index, TableItem item) {
                     if (index == 2) {
