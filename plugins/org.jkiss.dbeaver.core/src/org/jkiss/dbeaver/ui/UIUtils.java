@@ -359,6 +359,16 @@ public class UIUtils {
         }
     }
 
+    public static TableItem getNextTableItem(Table table, TableItem item) {
+        TableItem[] items = table.getItems();
+        for (int i = 0; i < items.length - 1; i++) {
+            if (items[i] == item) {
+                return items[i + 1];
+            }
+        }
+        return null;
+    }
+
     public static void dispose(Widget widget)
     {
         if (widget != null && !widget.isDisposed()) {
