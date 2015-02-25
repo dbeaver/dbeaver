@@ -288,7 +288,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     {
         if (this.loadingJob != null) {
             try {
-                loadingJob.join();
+                for (int i = 0; i < 3; i++) {
+                    Thread.sleep(500);
+                    if (this.loadingJob == null) {
+                        break;
+                    }
+                }
             } catch (InterruptedException e) {
                 // interrupted
             }
