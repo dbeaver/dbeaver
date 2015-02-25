@@ -155,6 +155,16 @@ public class DBPConnectionInfo implements DBPObject
         this.userPassword = userPassword;
     }
 
+    public Object getProperty(Object name)
+    {
+        return properties.get(name);
+    }
+
+    public void setProperty(Object name, Object value)
+    {
+        properties.put(name, value);
+    }
+
     public Map<Object, Object> getProperties()
     {
         return properties;

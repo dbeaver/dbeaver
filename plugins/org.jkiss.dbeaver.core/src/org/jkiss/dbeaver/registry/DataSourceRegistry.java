@@ -698,7 +698,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         atts.getValue(RegistryConstants.ATTR_NAME),
                         atts.getValue(RegistryConstants.ATTR_VALUE));
                 } else if (curDataSource != null) {
-                    curDataSource.getConnectionInfo().getProperties().put(
+                    curDataSource.getConnectionInfo().setProperty(
                         atts.getValue(RegistryConstants.ATTR_NAME),
                         atts.getValue(RegistryConstants.ATTR_VALUE));
                 }

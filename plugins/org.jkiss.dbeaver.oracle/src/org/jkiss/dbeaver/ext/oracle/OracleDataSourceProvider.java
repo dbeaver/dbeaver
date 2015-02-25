@@ -69,7 +69,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType;
-        Object conTypeProperty = connectionInfo.getProperties().get(OracleConstants.PROP_CONNECTION_TYPE);
+        Object conTypeProperty = connectionInfo.getProperty(OracleConstants.PROP_CONNECTION_TYPE);
         if (conTypeProperty != null) {
             connectionType = OracleConstants.ConnectionType.valueOf(CommonUtils.toString(conTypeProperty));
         } else {
@@ -91,7 +91,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             url.append(connectionInfo.getDatabaseName());
         } else {
             // Basic connection info specified
-            boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE));
+            boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProperty(OracleConstants.PROP_SID_SERVICE));
             if (!isSID) {
                 url.append("//"); //$NON-NLS-1$
             }

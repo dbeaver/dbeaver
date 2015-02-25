@@ -80,11 +80,11 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
         fillProcessParameters(cmd);
         DBPConnectionInfo conInfo = getConnectionInfo();
         String url;
-        if ("TNS".equals(conInfo.getProperties().get(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$
+        if ("TNS".equals(conInfo.getProperty(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$
             url = conInfo.getServerName();
         }
         else {
-            boolean isSID = OracleConnectionType.SID.name().equals(conInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE));
+            boolean isSID = OracleConnectionType.SID.name().equals(conInfo.getProperty(OracleConstants.PROP_SID_SERVICE));
             String port = conInfo.getHostPort();
             if (isSID) {
                 url = "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=" + conInfo.getHostName() + ")(Port=" + port + "))(CONNECT_DATA=(SID=" + conInfo.getDatabaseName() + ")))";
@@ -92,7 +92,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
                 url = "//" + conInfo.getHostName() + (port != null ? ":" + port : "") + "/" + conInfo.getDatabaseName(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
             }
         }
-        final Object role = conInfo.getProperties().get(OracleConstants.PROP_INTERNAL_LOGON);
+        final Object role = conInfo.getProperty(OracleConstants.PROP_INTERNAL_LOGON);
         if (role != null) {
             url += (" AS " + role);
         }
