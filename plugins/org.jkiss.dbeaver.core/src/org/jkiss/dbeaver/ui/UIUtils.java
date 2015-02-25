@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.IAction;
@@ -32,7 +31,6 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
@@ -52,10 +50,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.*;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -1163,54 +1158,6 @@ public class UIUtils {
         int g = blend(c1.green, c2.green, ratio);
         int b = blend(c1.blue, c2.blue, ratio);
         return new RGB(r, g, b);
-    }
-
-    public interface TableEditorController {
-        void showEditor(TableItem item);
-
-        void closeEditor(TableEditor tableEditor);
-    }
-
-    public static class ColumnTextEditorTraverseListener implements TraverseListener {
-        private final Table table;
-        private final TableEditor tableEditor;
-        private final int columnIndex;
-        private final TableEditorController controller;
-
-        public ColumnTextEditorTraverseListener(Table table, TableEditor tableEditor, int columnIndex,
-            TableEditorController controller)
-        {
-            this.table = table;
-            this.tableEditor = tableEditor;
-            this.columnIndex = columnIndex;
-            this.controller = controller;
-        }
-
-        @Override
-        public void keyTraversed(TraverseEvent e)
-        {
-            Text editor = (Text) tableEditor.getEditor();
-            if (editor != null && editor.isDisposed()) {
-                editor = null;
-            }
-            if (e.detail == SWT.TRAVERSE_RETURN) {
-                if (editor != null) {
-                    tableEditor.getItem().setText(columnIndex, editor.getText());
-                    controller.closeEditor(tableEditor);
-                } else {
-                    TableItem[] selection = table.getSelection();
-                    if (selection != null && selection.length >= 1) {
-                        controller.showEditor(selection[0]);
-                    }
-                }
-                e.doit = false;
-                e.detail = SWT.TRAVERSE_NONE;
-            } else if (e.detail == SWT.TRAVERSE_ESCAPE && editor != null) {
-                controller.closeEditor(tableEditor);
-                e.doit = false;
-                e.detail = SWT.TRAVERSE_NONE;
-            }
-        }
     }
 
 }

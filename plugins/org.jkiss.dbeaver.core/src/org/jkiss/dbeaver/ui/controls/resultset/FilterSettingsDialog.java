@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
@@ -113,25 +114,61 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_order);
             criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_criteria);
 
-            //columnsTable.addListener(SWT.PaintItem, new ColumnPaintListener());
-            final TableEditor tableEditor = new TableEditor(columnsTable);
-            tableEditor.horizontalAlignment = SWT.CENTER;
-            tableEditor.verticalAlignment = SWT.TOP;
-            tableEditor.grabHorizontal = true;
-            tableEditor.minimumWidth = 50;
+            final CustomTableEditor tableEditor = new CustomTableEditor(columnsTable) {
+                @Override
+                protected Control createEditor(Table table, int index, TableItem item) {
+                    if (index == 2) {
+                        toggleColumnOrder(item);
+                        return null;
+                    } else if (index == 3 && resultSetViewer.supportsDataFilter()) {
+                        Text text = new Text(columnsTable, SWT.BORDER);
+                        text.setText(item.getText(index));
+                        text.selectAll();
+                        return text;
+                    }
+                    return null;
+                }
+                @Override
+                protected void saveEditorValue(Control control, int index, TableItem item) {
+                    Text text = (Text) control;
+                    String criteria = text.getText().trim();
+                    DBDAttributeConstraint constraint = (DBDAttributeConstraint) item.getData();
+                    if (CommonUtils.isEmpty(criteria)) {
+                        constraint.setCriteria(null);
+                    } else {
+                        constraint.setCriteria(criteria);
+                    }
+                    item.setText(3, criteria);
+                }
+                private void toggleColumnOrder(TableItem item)
+                {
+                    DBDAttributeConstraint constraint = (DBDAttributeConstraint) item.getData();
+                    if (constraint.getOrderPosition() == 0) {
+                        // Add new ordered column
+                        constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
+                        constraint.setOrderDescending(false);
+                    } else if (!constraint.isOrderDescending()) {
+                        constraint.setOrderDescending(true);
+                    } else {
+                        // Remove ordered column
+                        for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
+                            if (con2.getOrderPosition() > constraint.getOrderPosition()) {
+                                con2.setOrderPosition(con2.getOrderPosition() - 1);
+                            }
+                        }
+                        constraint.setOrderPosition(0);
+                        constraint.setOrderDescending(false);
+                    }
+                    columnsViewer.refresh();
+                }
+            };
 
             columnsViewer.addCheckStateListener(new ICheckStateListener() {
                 @Override
-                public void checkStateChanged(CheckStateChangedEvent event)
-                {
+                public void checkStateChanged(CheckStateChangedEvent event) {
                     ((DBDAttributeConstraint) event.getElement()).setVisible(event.getChecked());
                 }
             });
-
-            ColumnsMouseListener mouseListener = new ColumnsMouseListener(tableEditor, columnsTable);
-            columnsTable.addMouseListener(mouseListener);
-            columnsTable.addTraverseListener(
-                new UIUtils.ColumnTextEditorTraverseListener(columnsTable, tableEditor, 3, mouseListener));
 
             {
                 Composite controlGroup = new Composite(columnsGroup, SWT.NONE);
@@ -367,97 +404,6 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 }
                 default: return ""; //$NON-NLS-1$
             }
-        }
-
-    }
-
-    private class ColumnsMouseListener extends MouseAdapter implements UIUtils.TableEditorController {
-        private final TableEditor tableEditor;
-        private final Table columnsTable;
-
-        public ColumnsMouseListener(TableEditor tableEditor, Table columnsTable)
-        {
-            this.tableEditor = tableEditor;
-            this.columnsTable = columnsTable;
-        }
-
-        @Override
-        public void mouseUp(MouseEvent e)
-        {
-            // Clean up any previous editor control
-            closeEditor(tableEditor);
-
-            TableItem item = columnsTable.getItem(new Point(e.x, e.y));
-            if (item == null) {
-                return;
-            }
-            int columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
-            if (columnIndex <= 0) {
-                return;
-            }
-            if (columnIndex == 2) {
-                //if (isDef) {
-                    toggleColumnOrder(item);
-                //}
-            } else if (columnIndex == 3 && resultSetViewer.supportsDataFilter()) {
-                showEditor(item);
-            }
-        }
-
-        private void toggleColumnOrder(TableItem item)
-        {
-            DBDAttributeConstraint constraint = (DBDAttributeConstraint) item.getData();
-            if (constraint.getOrderPosition() == 0) {
-                // Add new ordered column
-                constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
-                constraint.setOrderDescending(false);
-            } else if (!constraint.isOrderDescending()) {
-                constraint.setOrderDescending(true);
-            } else {
-                // Remove ordered column
-                for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
-                    if (con2.getOrderPosition() > constraint.getOrderPosition()) {
-                        con2.setOrderPosition(con2.getOrderPosition() - 1);
-                    }
-                }
-                constraint.setOrderPosition(0);
-                constraint.setOrderDescending(false);
-            }
-            columnsViewer.refresh();
-        }
-
-        @Override
-        public void showEditor(final TableItem item) {
-            // Identify the selected row
-            Text text = new Text(columnsTable, SWT.BORDER);
-            text.setText(item.getText(3));
-            text.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    Text text = (Text) tableEditor.getEditor();
-                    String criteria = text.getText().trim();
-                    DBDAttributeConstraint constraint = (DBDAttributeConstraint) item.getData();
-                    if (CommonUtils.isEmpty(criteria)) {
-                        constraint.setCriteria(null);
-                    } else {
-                        constraint.setCriteria(criteria);
-                    }
-                    tableEditor.getItem().setText(3, criteria);
-                }
-            });
-            text.selectAll();
-
-            // Selected by mouse
-            text.setFocus();
-
-            tableEditor.setEditor(text, item, 3);
-        }
-
-        @Override
-        public void closeEditor(TableEditor tableEditor)
-        {
-            Control oldEditor = this.tableEditor.getEditor();
-            if (oldEditor != null) oldEditor.dispose();
         }
 
     }

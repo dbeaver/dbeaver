@@ -72,6 +72,9 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         closeEditor();
         table.showItem(item);
         final Control editor = createEditor(table, columnIndex, item);
+        if (editor == null) {
+            return;
+        }
         editor.setFocus();
         editor.addFocusListener(new FocusAdapter() {
             @Override

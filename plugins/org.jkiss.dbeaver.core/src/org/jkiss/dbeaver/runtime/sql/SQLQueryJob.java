@@ -265,6 +265,11 @@ public class SQLQueryJob extends DataSourceJob
         }
         long startTime = System.currentTimeMillis();
 
+        if (fireEvents && listener != null) {
+            // Notify query start
+            listener.onStartQuery(sqlStatement);
+        }
+
         try {
             // Prepare statement
             closeStatement();
@@ -275,19 +280,18 @@ public class SQLQueryJob extends DataSourceJob
                 connectionInvalidated = true;
             }
 
-            // Modify query (filters + parameters)
-            if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
-                sqlQuery = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(dataSource, sqlQuery, dataFilter);
+            try {
+                // Modify query (filters + parameters)
+                if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
+                    sqlQuery = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(dataSource, sqlQuery, dataFilter);
+                }
+            } catch (DBException e) {
+                throw new DBCException("Can't apply query filter", e);
             }
 
             Boolean hasParameters = prepareStatementParameters(sqlStatement);
             if (hasParameters == null) {
                 return false;
-            }
-
-            if (fireEvents && listener != null) {
-                // Notify query start
-                listener.onStartQuery(sqlStatement);
             }
 
             statistics.setQueryText(sqlQuery);

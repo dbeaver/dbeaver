@@ -26,12 +26,10 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.FromItem;
 import net.sf.jsqlparser.statement.select.OrderByElement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -105,7 +103,12 @@ public class SQLSemanticProcessor {
         if (filter.hasConditions()) {
             StringBuilder whereString = new StringBuilder();
             SQLUtils.appendConditionString(filter, dataSource, tableAlias, whereString, true);
-            Expression filterWhere = CCJSqlParserUtil.parseCondExpression(whereString.toString());
+            Expression filterWhere;
+            try {
+                filterWhere = CCJSqlParserUtil.parseCondExpression(whereString.toString());
+            } catch (JSQLParserException e) {
+                throw new JSQLParserException("Bad query condition: [" + whereString + "]", e);
+            }
             Expression sourceWhere = select.getWhere();
             if (sourceWhere == null) {
                 select.setWhere(filterWhere);
