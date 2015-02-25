@@ -218,10 +218,10 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
 
-        final boolean useSSL = CommonUtils.toBoolean(connectionInfo.getProperties().get(MySQLConstants.PROP_USE_SSL));
+        final boolean useSSL = CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL));
         useSslButton.setSelection(useSSL);
         if (sslCertText != null) {
-            sslCertText.setText(CommonUtils.toString(connectionInfo.getProperties().get(MySQLConstants.PROP_SSL_CERT)));
+            sslCertText.setText(CommonUtils.toString(connectionInfo.getProperty(MySQLConstants.PROP_SSL_CERT)));
             sslCertText.setEnabled(useSSL);
         }
 
@@ -251,7 +251,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
 
-        connectionInfo.getProperties().put(MySQLConstants.PROP_USE_SSL, useSslButton.getSelection());
+        connectionInfo.setProperty(MySQLConstants.PROP_USE_SSL, useSslButton.getSelection());
         super.saveSettings(dataSource);
     }
 
