@@ -98,7 +98,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
             url.append(":").append(connectionInfo.getHostPort());
         }
         url.append("/").append(connectionInfo.getDatabaseName());
-        if (CommonUtils.toBoolean(connectionInfo.getProperties().get(MySQLConstants.PROP_USE_SSL))) {
+        if (CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL))) {
             url.append("?useSSL=true&requireSSL=true");
         }
         return url.toString();

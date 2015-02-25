@@ -54,7 +54,7 @@ public abstract class MySQLDatabaseWizardPageSettings<WIZARD extends AbstractToo
             String authUser = null;
             String authPassword = null;
             {
-                Object authValue = connectionInfo.getProperties().get(authProperty);
+                Object authValue = connectionInfo.getProperty(authProperty);
                 if (authValue != null) {
                     String authCredentials = encrypter.decrypt(authValue.toString());
                     int divPos = authCredentials.indexOf(':');
@@ -91,7 +91,7 @@ public abstract class MySQLDatabaseWizardPageSettings<WIZARD extends AbstractToo
                         wizard.setToolUserPassword(authDialog.getUserPassword());
                         if (authDialog.isSavePassword()) {
                             try {
-                                connectionInfo.getProperties().put(
+                                connectionInfo.setProperty(
                                     authProperty,
                                     encrypter.encrypt(wizard.getToolUserName() + ':' + wizard.getToolUserPassword()));
                             } catch (EncryptionException e1) {
