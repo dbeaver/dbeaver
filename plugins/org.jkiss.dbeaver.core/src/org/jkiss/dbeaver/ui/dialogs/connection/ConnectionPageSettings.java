@@ -100,7 +100,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public void activatePage()
     {
-        setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getName()));
+        setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
         DataSourceDescriptor connectionInfo = getActiveDataSource();
         if (!activated.contains(connectionInfo)) {
             if (this.connectionEditor != null) {
