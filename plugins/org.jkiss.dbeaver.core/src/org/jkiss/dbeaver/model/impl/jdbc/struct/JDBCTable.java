@@ -366,6 +366,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBSAttributeBase[] attributes = ArrayUtils.concatArrays(updateAttributes, keyAttributes);
 
         return new ExecuteBatchImpl(attributes, keysReceiver, false) {
+            @NotNull
             @Override
             protected DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException {
                 String tableAlias = null;
@@ -429,6 +430,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         readRequiredMeta(session.getProgressMonitor());
 
         return new ExecuteBatchImpl(keyAttributes, null, false) {
+            @NotNull
             @Override
             protected DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException {
                 String tableAlias = null;
