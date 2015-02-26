@@ -18,15 +18,12 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.Collection;
 
 /**
  * Row identifier.
@@ -37,27 +34,31 @@ public class DBDRowIdentifier implements DBPObject {
     private DBSEntity entity;
     private DBCEntityIdentifier entityIdentifier;
 
-    public DBDRowIdentifier(DBSEntity entity, DBCEntityIdentifier entityIdentifier)
+    public DBDRowIdentifier(@NotNull DBSEntity entity, @NotNull DBCEntityIdentifier entityIdentifier)
     {
         this.entity = entity;
         this.entityIdentifier = entityIdentifier;
     }
 
+    @NotNull
     @Property(viewable = true, order = 1)
     public DBSEntity getEntity() {
         return entity;
     }
 
+    @NotNull
     @Property(viewable = true, order = 2)
     public DBSEntityConstraint getUniqueKey() {
         return entityIdentifier.getReferrer();
     }
 
+    @NotNull
     public DBCEntityIdentifier getEntityIdentifier()
     {
         return entityIdentifier;
     }
 
+    @NotNull
     public String getKeyType()
     {
         return entityIdentifier.getReferrer().getConstraintType().getName();

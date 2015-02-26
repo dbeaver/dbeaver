@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -375,7 +374,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     Collection<GenericPrimaryKey> uniqueKeys = this.getConstraints(monitor);
                     if (uniqueKeys != null) {
                         for (GenericPrimaryKey pkConstraint : uniqueKeys) {
-                            if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintColumn(monitor, pkConstraint, pkColumn) != null) {
+                            if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
                                 pk = pkConstraint;
                                 break;
                             }
