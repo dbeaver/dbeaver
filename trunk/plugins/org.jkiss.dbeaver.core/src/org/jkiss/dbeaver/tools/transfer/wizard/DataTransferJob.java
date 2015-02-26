@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -82,7 +83,7 @@ public class DataTransferJob extends AbstractJob {
                 UIUtils.showMessageBox(
                     shell,
                     "Data transfer",
-                    "Data transfer completed " +  (hasErrors ? "with errors " : "") + "(" + time + "ms)",
+                    "Data transfer completed " +  (hasErrors ? "with errors " : "") + "(" + RuntimeUtils.formatExecutionTime(time) + ")",
                     hasErrors ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
             }
         });
