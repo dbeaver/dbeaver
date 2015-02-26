@@ -2346,15 +2346,15 @@ public class ResultSetViewer extends Viewer
     // Virtual identifier management
 
     @Nullable
-    DBCEntityIdentifier getVirtualEntityIdentifier()
+    DBDRowIdentifier getVirtualEntityIdentifier()
     {
         if (!model.isSingleSource() || model.getVisibleColumnCount() == 0) {
             return null;
         }
         DBDRowIdentifier rowIdentifier = model.getVisibleColumn(0).getRowIdentifier();
-        DBCEntityIdentifier identifier = rowIdentifier == null ? null : rowIdentifier.getEntityIdentifier();
-        if (identifier != null && identifier.getReferrer() instanceof DBVEntityConstraint) {
-            return identifier;
+        DBSEntityReferrer identifier = rowIdentifier == null ? null : rowIdentifier.getUniqueKey();
+        if (identifier != null && identifier instanceof DBVEntityConstraint) {
+            return rowIdentifier;
         } else {
             return null;
         }
@@ -2364,7 +2364,7 @@ public class ResultSetViewer extends Viewer
     {
         // Check for value locators
         // Probably we have only virtual one with empty column set
-        final DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
+        final DBDRowIdentifier identifier = getVirtualEntityIdentifier();
         if (identifier != null) {
             if (CommonUtils.isEmpty(identifier.getAttributes())) {
                 // Empty identifier. We have to define it
@@ -2384,12 +2384,12 @@ public class ResultSetViewer extends Viewer
 
     boolean editEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
-        DBCEntityIdentifier virtualEntityIdentifier = getVirtualEntityIdentifier();
+        DBDRowIdentifier virtualEntityIdentifier = getVirtualEntityIdentifier();
         if (virtualEntityIdentifier == null) {
             log.warn("No virtual identifier");
             return false;
         }
-        DBVEntityConstraint constraint = (DBVEntityConstraint) virtualEntityIdentifier.getReferrer();
+        DBVEntityConstraint constraint = (DBVEntityConstraint) virtualEntityIdentifier.getUniqueKey();
 
         EditConstraintDialog dialog = new EditConstraintDialog(
             getControl().getShell(),
@@ -2420,10 +2420,9 @@ public class ResultSetViewer extends Viewer
         DBDAttributeBinding firstColumn = model.getVisibleColumn(0);
         DBDRowIdentifier rowIdentifier = firstColumn.getRowIdentifier();
         if (rowIdentifier != null) {
-            DBCEntityIdentifier identifier = rowIdentifier.getEntityIdentifier();
-            DBVEntityConstraint virtualKey = (DBVEntityConstraint) identifier.getReferrer();
+            DBVEntityConstraint virtualKey = (DBVEntityConstraint) rowIdentifier.getUniqueKey();;
             virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
-            identifier.reloadAttributes(monitor, model.getColumns());
+            rowIdentifier.reloadAttributes(monitor, model.getColumns());
             virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
         }
 
@@ -3202,7 +3201,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public boolean isEnabled()
         {
-            DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
+            DBDRowIdentifier identifier = getVirtualEntityIdentifier();
             return identifier != null && (define || !CommonUtils.isEmpty(identifier.getAttributes()));
         }
 
