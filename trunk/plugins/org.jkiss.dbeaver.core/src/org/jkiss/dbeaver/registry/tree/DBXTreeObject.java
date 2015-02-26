@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 
 /**
- * DBXTreeItem
+ * DBXTreeObject
  */
 public class DBXTreeObject extends DBXTreeNode
 {

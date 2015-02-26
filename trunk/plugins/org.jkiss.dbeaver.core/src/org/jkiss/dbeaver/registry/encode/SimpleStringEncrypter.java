@@ -64,7 +64,7 @@ public class SimpleStringEncrypter implements PasswordEncrypter {
     @Override
     public String encrypt(String unencryptedString) throws EncryptionException
     {
-        if (unencryptedString == null || unencryptedString.trim().length() == 0) {
+        if (unencryptedString == null) {
             throw new IllegalArgumentException("Empty string");
         }
 
