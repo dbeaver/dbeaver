@@ -108,14 +108,13 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: links in both directions, multiple links support (context menu)
+ * TODO: not-editable cells (struct owners in record mode)
  * TODO: PROBLEM. Multiple occurrences of the same struct type in a single table.
  * Need to make wrapper over DBSAttributeBase or something. Or maybe it is not a problem
  * because we search for binding by attribute only in constraints and for unique key columns which are unique?
  * But what PK has struct type?
  *
- * TODO: fix command handlers. Replace activeControl handler with activeEditor. It also fixes standard shortcuts problem (http://dbeaver.jkiss.org/forum/posting.php?mode=reply&f=2&t=1247)
- * TODO: links in both directions, multiple links support (context menu)
- * TODO: not-editable cells (struct owners in record mode)
  */
 public class ResultSetViewer extends Viewer
     implements IDataSourceProvider, ISpreadsheetController, ISaveablePart2, IAdaptable
@@ -1618,7 +1617,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void changeSorting(@NotNull Object columnElement, final int state)
+    public void changeSorting(Object columnElement, final int state)
     {
         if (columnElement == null) {
             columnOrder = columnOrder == SWT.DEFAULT ? SWT.DOWN : (columnOrder == SWT.DOWN ? SWT.UP : SWT.DEFAULT);
@@ -1678,7 +1677,7 @@ public class ResultSetViewer extends Viewer
         final RowData row = (RowData)(recordMode ? cell.col : cell.row);
 
         List<DBSEntityReferrer> referrers = attr.getReferrers();
-        if (!CommonUtils.isEmpty(referrers)) {
+        if (referrers != null) {
             for (final DBSEntityReferrer referrer : referrers) {
                 if (referrer instanceof DBSEntityAssociation) {
                     try {
@@ -2419,11 +2418,14 @@ public class ResultSetViewer extends Viewer
     void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
         DBDAttributeBinding firstColumn = model.getVisibleColumn(0);
-        DBCEntityIdentifier identifier = firstColumn.getRowIdentifier().getEntityIdentifier();
-        DBVEntityConstraint virtualKey = (DBVEntityConstraint) identifier.getReferrer();
-        virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
-        identifier.reloadAttributes(monitor, model.getColumns());
-        virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
+        DBDRowIdentifier rowIdentifier = firstColumn.getRowIdentifier();
+        if (rowIdentifier != null) {
+            DBCEntityIdentifier identifier = rowIdentifier.getEntityIdentifier();
+            DBVEntityConstraint virtualKey = (DBVEntityConstraint) identifier.getReferrer();
+            virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
+            identifier.reloadAttributes(monitor, model.getColumns());
+            virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
+        }
 
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
