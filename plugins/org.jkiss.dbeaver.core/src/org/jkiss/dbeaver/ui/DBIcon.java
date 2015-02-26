@@ -63,6 +63,7 @@ public enum DBIcon
     TREE_FOLDER_VIEW("folder_view", "icons/tree/folder_view.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FOLDER_USER("folder_user", "icons/tree/folder_user.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_FOLDER_ADMIN("folder_admin", "icons/tree/folder_admin.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_SESSIONS("sessions", "icons/tree/sessions.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_PACKAGE("package", "icons/tree/package.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_DATA_TYPE("data_type", "icons/tree/data_type.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_SEQUENCE("sequence", "icons/tree/sequence.png"), //$NON-NLS-1$ //$NON-NLS-2$

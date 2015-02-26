@@ -37,12 +37,12 @@ public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseObject>
     public ImageDescriptor getImageDescriptor()
     {
         DBNDatabaseObject node = getTreeNode();
-        IEditorDescriptor editorDescriptor = node.getEditorDescriptor();
-        if (editorDescriptor != null) {
-            return editorDescriptor.getImageDescriptor();
-        } else {
+//        IEditorDescriptor editorDescriptor = node.getEditorDescriptor();
+//        if (editorDescriptor != null) {
+//            return editorDescriptor.getImageDescriptor();
+//        } else {
             return ImageDescriptor.createFromImage(node.getNodeIconDefault());
-        }
+//        }
     }
 
     @Override

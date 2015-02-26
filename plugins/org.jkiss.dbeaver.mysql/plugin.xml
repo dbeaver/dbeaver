@@ -105,7 +105,7 @@
                     <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
                 </folder>
                 <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
-                    <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="%tree.sessions.node.name" icon="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
+                    <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
                 </folder>
 
                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLInformation" label="%tree.system_info.node.name" icon="#folder_info" description="Database system information">
@@ -334,7 +334,7 @@
     <extension point="org.eclipse.ui.editors">
         <editor
             name="%editor.session_manager.name"
-            icon="icons/sessions.png"
+            icon="#sessions"
             class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
             id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor">
         </editor>
