@@ -395,7 +395,7 @@ public class MSSQLTable extends MSSQLTableBase
                         Collection<MSSQLTableConstraint> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
                             for (MSSQLTableConstraint pkConstraint : constraints) {
-                                if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintColumn(monitor, pkConstraint, pkColumn) != null) {
+                                if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
                                     pk = pkConstraint;
                                     break;
                                 }

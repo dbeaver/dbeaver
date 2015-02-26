@@ -67,7 +67,6 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
         });
     }
 
-    @Nullable
     public DBPDataSource getDataSource()
     {
         return dataSourceContainer.getDataSource();
