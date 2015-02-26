@@ -99,7 +99,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     } else {
                         // Execute each row separately
                         long startTime = System.currentTimeMillis();
-                        statement.executeStatement();
+                        executeStatement(statement);
                         statistics.addExecuteTime(System.currentTimeMillis() - startTime);
 
                         long rowCount = statement.getUpdateRowCount();
@@ -180,5 +180,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     protected abstract DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException;
 
     protected abstract void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException;
+
+    protected void executeStatement(DBCStatement statement) throws DBCException {
+        statement.executeStatement();
+    }
 
 }
