@@ -457,6 +457,9 @@ public class ResultSetModel {
                         singleSourceCells = false;
                         break;
                     }
+                } else {
+                    singleSourceCells = false;
+                    break;
                 }
             }
         }

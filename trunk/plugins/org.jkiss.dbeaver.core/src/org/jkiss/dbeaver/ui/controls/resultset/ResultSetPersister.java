@@ -47,9 +47,12 @@ import java.util.*;
 class ResultSetPersister {
 
     static final Log log = Log.getLog(ResultSetPersister.class);
-
+    @NotNull
     private final ResultSetViewer viewer;
+    @NotNull
     private final ResultSetModel model;
+    @NotNull
+    private final DBDAttributeBinding[] columns;
 
     private final List<RowData> deletedRows = new ArrayList<RowData>();
     private final List<RowData> addedRows = new ArrayList<RowData>();
@@ -58,9 +61,8 @@ class ResultSetPersister {
     private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> updateStatements = new ArrayList<DataStatementInfo>();
-    private final DBDAttributeBinding[] columns;
 
-    ResultSetPersister(ResultSetViewer viewer)
+    ResultSetPersister(@NotNull ResultSetViewer viewer)
     {
         this.viewer = viewer;
         this.model = viewer.getModel();
@@ -280,6 +282,16 @@ class ResultSetPersister {
         return rowIdentifier;
     }
 
+    @NotNull
+    private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException
+    {
+        if (entity instanceof DBSDataManipulator) {
+            return (DBSDataManipulator)entity;
+        } else {
+            throw new DBCException("Entity " + entity.getName() + " doesn't support data manipulation");
+        }
+    }
+
     private class DataUpdaterJob extends DataSourceJob {
         private final DataUpdateListener listener;
         private boolean autocommit;
@@ -483,15 +495,6 @@ class ResultSetPersister {
 
     }
 
-    private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException
-    {
-        if (entity instanceof DBSDataManipulator) {
-            return (DBSDataManipulator)entity;
-        } else {
-            throw new DBCException("Entity " + entity.getName() + " doesn't support data manipulation");
-        }
-    }
-
     /**
     * Key data receiver
     */
@@ -576,15 +579,18 @@ class ResultSetPersister {
     * Data statement
     */
     static class DataStatementInfo {
-        DBSManipulationType type;
-        RowData row;
-        DBSEntity entity;
-        List<DBDAttributeValue> keyAttributes = new ArrayList<DBDAttributeValue>();
-        List<DBDAttributeValue> updateAttributes = new ArrayList<DBDAttributeValue>();
+        @NotNull
+        final DBSManipulationType type;
+        @NotNull
+        final RowData row;
+        @NotNull
+        final DBSEntity entity;
+        final List<DBDAttributeValue> keyAttributes = new ArrayList<DBDAttributeValue>();
+        final List<DBDAttributeValue> updateAttributes = new ArrayList<DBDAttributeValue>();
         boolean executed = false;
-        Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
+        final Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
 
-        DataStatementInfo(DBSManipulationType type, RowData row, DBSEntity entity)
+        DataStatementInfo(@NotNull DBSManipulationType type, @NotNull RowData row, @NotNull DBSEntity entity)
         {
             this.type = type;
             this.row = row;
