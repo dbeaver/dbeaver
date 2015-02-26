@@ -186,7 +186,7 @@
         <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+G"/>
         <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
         <key commandId="org.eclipse.ui.edit.text.moveLineUp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_UP"/>
-        <key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Y"/>
+        <!--<key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Y"/>-->
         <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+J"/>
 
         <key commandId="org.eclipse.ui.edit.text.upperCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+U"/>
