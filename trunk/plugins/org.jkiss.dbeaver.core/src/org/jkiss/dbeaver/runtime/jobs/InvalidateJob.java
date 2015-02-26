@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
@@ -31,10 +32,26 @@ import java.text.MessageFormat;
  */
 public class InvalidateJob extends DataSourceJob
 {
+    private long timeSpent;
+    private DBCExecutionContext.InvalidateResult invalidateResult;
+    private Exception invalidateError;
+
     public InvalidateJob(
         DBPDataSource dataSource)
     {
         super("Invalidate " + dataSource.getContainer().getName(), null, dataSource);
+    }
+
+    public DBCExecutionContext.InvalidateResult getInvalidateResult() {
+        return invalidateResult;
+    }
+
+    public Exception getInvalidateError() {
+        return invalidateError;
+    }
+
+    public long getTimeSpent() {
+        return timeSpent;
     }
 
     @Override
@@ -43,17 +60,18 @@ public class InvalidateJob extends DataSourceJob
         try {
             // Close datasource
             monitor.subTask("Invalidate datasource");
-            getDataSource().invalidateContext(monitor);
+            long startTime = System.currentTimeMillis();
+            try {
+                invalidateResult = getDataSource().invalidateContext(monitor);
+            } finally {
+                timeSpent = System.currentTimeMillis() - startTime;
+            }
 
-            return Status.OK_STATUS;
         }
         catch (Exception ex) {
-            return RuntimeUtils.makeExceptionStatus(
-                MessageFormat.format(
-                    "Error invalidating datasource ''{0}''",
-                    getDataSource().getContainer().getName()),
-                ex);
+            invalidateError = ex;
         }
+        return Status.OK_STATUS;
     }
 
     @Override

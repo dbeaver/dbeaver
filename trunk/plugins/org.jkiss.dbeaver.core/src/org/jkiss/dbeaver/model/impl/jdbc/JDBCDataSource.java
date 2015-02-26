@@ -246,13 +246,14 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public void invalidateContext(DBRProgressMonitor monitor)
+    public InvalidateResult invalidateContext(DBRProgressMonitor monitor)
         throws DBException
     {
-        this.executionContext.invalidateContext(monitor);
+        InvalidateResult result = this.executionContext.invalidateContext(monitor);
         if (metaContext != null && metaContext.isConnected()) {
-            metaContext.invalidateContext(monitor);
+            result = metaContext.invalidateContext(monitor);
         }
+        return result;
     }
 
     @Override
