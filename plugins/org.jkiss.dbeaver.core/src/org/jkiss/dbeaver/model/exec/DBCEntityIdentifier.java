@@ -18,13 +18,12 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -36,13 +35,15 @@ public interface DBCEntityIdentifier {
      * Entity referrer (constraint or index)
      * @return referrer
      */
+    @NotNull
     DBSEntityReferrer getReferrer();
 
     /**
      * Result set columns
      * @return list of result set columns.
      */
+    @NotNull
     List<DBDAttributeBinding> getAttributes();
 
-    void reloadAttributes(DBRProgressMonitor monitor, DBDAttributeBinding[] bindings) throws DBException;
+    void reloadAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding[] bindings) throws DBException;
 }

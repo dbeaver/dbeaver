@@ -83,7 +83,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             // Extract column info
             metaColumns = new DBDAttributeBindingMeta[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
-                metaColumns[i] = DBUtils.getColumnBinding(session, rsAttributes.get(i));
+                metaColumns[i] = DBUtils.getAttributeBinding(session, rsAttributes.get(i));
             }
 
             resultSetViewer.setMetaData(metaColumns);
@@ -125,10 +125,8 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     public void fetchEnd(DBCSession session)
         throws DBCException
     {
-        {
-            // Read locators' metadata
-            DBUtils.findValueLocators(session, metaColumns, rows);
-        }
+        // Read locators' metadata
+        ResultSetUtils.findValueLocators(session, metaColumns, rows);
 
         final List<Object[]> tmpRows = rows;
 

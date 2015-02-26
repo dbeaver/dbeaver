@@ -563,7 +563,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                 if (tableColumn == null) {
                     return Status.OK_STATUS;
                 }
-                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintColumn(monitor, refConstraint, tableColumn);
+                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(monitor, refConstraint, tableColumn);
                 if (fkColumn == null) {
                     return Status.OK_STATUS;
                 }
