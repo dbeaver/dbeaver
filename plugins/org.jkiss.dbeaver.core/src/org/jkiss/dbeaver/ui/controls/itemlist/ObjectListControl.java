@@ -288,7 +288,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     {
         if (this.loadingJob != null) {
             try {
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < 4; i++) {
                     Thread.sleep(500);
                     if (this.loadingJob == null) {
                         break;
@@ -298,7 +298,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 // interrupted
             }
             if (loadingJob != null) {
-                log.warn("Can't start new loading service because old one still running"); //$NON-NLS-1$
+                UIUtils.showMessageBox(getShell(), "Load", "Service is busy", SWT.ICON_WARNING);
                 return;
             }
             return;
