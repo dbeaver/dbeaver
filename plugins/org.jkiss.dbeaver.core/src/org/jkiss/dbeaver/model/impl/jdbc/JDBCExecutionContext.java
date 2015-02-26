@@ -145,12 +145,12 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     }
 
     @Override
-    public void invalidateContext(DBRProgressMonitor monitor)
+    public InvalidateResult invalidateContext(DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.connectionHolder == null) {
             connect(monitor);
-            return;
+            return InvalidateResult.CONNECTED;
         }
 
         if (!JDBCUtils.isConnectionAlive(this.connectionHolder.getConnection())) {
@@ -159,7 +159,9 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
             close();
             connect(monitor, prevAutocommit, txnLevel);
             invalidateState(monitor);
+            return InvalidateResult.RECONNECTED;
         }
+        return InvalidateResult.ALIVE;
     }
 
     protected void invalidateState(DBRProgressMonitor monitor)
