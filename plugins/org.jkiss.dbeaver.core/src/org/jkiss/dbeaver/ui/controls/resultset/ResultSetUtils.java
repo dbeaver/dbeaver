@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -113,7 +112,7 @@ class ResultSetUtils
                 DBSEntity entity = attr.getParentObject();
                 DBDRowIdentifier rowIdentifier = locatorMap.get(entity);
                 if (rowIdentifier == null) {
-                    DBCEntityIdentifier entityIdentifier = getBestIdentifier(session.getProgressMonitor(), entity, bindings);
+                    DBSEntityReferrer entityIdentifier = getBestIdentifier(session.getProgressMonitor(), entity, bindings);
                     if (entityIdentifier != null) {
                         rowIdentifier = new DBDRowIdentifier(
                             entity,
@@ -128,21 +127,25 @@ class ResultSetUtils
             for (DBDAttributeBinding binding : bindings) {
                 binding.lateBinding(session, rows);
             }
+            // Reload attributes in row identifiers
+            for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
+                rowIdentifier.reloadAttributes(session.getProgressMonitor(), bindings);
+            }
         }
         catch (DBException e) {
             log.error("Can't extract column identifier info", e);
         }
     }
 
-    private static DBCEntityIdentifier getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
+    private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
         throws DBException
     {
-        List<BaseEntityIdentifier> identifiers = new ArrayList<BaseEntityIdentifier>(2);
+        List<DBSEntityReferrer> identifiers = new ArrayList<DBSEntityReferrer>(2);
         // Check for pseudo attrs (ROWID)
         for (DBDAttributeBinding column : bindings) {
             DBDPseudoAttribute pseudoAttribute = column.getMetaAttribute().getPseudoAttribute();
             if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
-                identifiers.add(new BaseEntityIdentifier(monitor, new DBDPseudoReferrer(table, column), bindings));
+                identifiers.add(new DBDPseudoReferrer(table, column));
                 break;
             }
         }
@@ -157,8 +160,7 @@ class ResultSetUtils
             if (constraints != null) {
                 for (DBSEntityConstraint constraint : constraints) {
                     if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
-                        identifiers.add(
-                            new BaseEntityIdentifier(monitor, (DBSEntityReferrer)constraint, bindings));
+                        identifiers.add((DBSEntityReferrer)constraint);
                     }
                 }
             }
@@ -169,8 +171,7 @@ class ResultSetUtils
                     if (!CommonUtils.isEmpty(indexes)) {
                         for (DBSTableIndex index : indexes) {
                             if (index.isUnique()) {
-                                identifiers.add(
-                                    new BaseEntityIdentifier(monitor, index, bindings));
+                                identifiers.add(index);
                                 break;
                             }
                         }
@@ -186,20 +187,19 @@ class ResultSetUtils
             // No physical identifiers
             // Make new or use existing virtual identifier
             DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table, true);
-            identifiers.add(new BaseEntityIdentifier(monitor, virtualEntity.getBestIdentifier(), bindings));
+            identifiers.add(virtualEntity.getBestIdentifier());
         }
         if (!CommonUtils.isEmpty(identifiers)) {
             // Find PK or unique key
-            BaseEntityIdentifier uniqueId = null;
-            for (BaseEntityIdentifier id : identifiers) {
-                DBSEntityReferrer referrer = id.getReferrer();
+            DBSEntityReferrer uniqueId = null;
+            for (DBSEntityReferrer referrer : identifiers) {
                 if (isGoodReferrer(monitor, bindings, referrer)) {
                     if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                        return id;
+                        return referrer;
                     } else if (referrer.getConstraintType().isUnique() ||
                         (referrer instanceof DBSTableIndex && ((DBSTableIndex) referrer).isUnique()))
                     {
-                        uniqueId = id;
+                        uniqueId = referrer;
                     }
                 }
             }
@@ -227,45 +227,4 @@ class ResultSetUtils
         return true;
     }
 
-    /**
-     * Basic entity identifier
-     */
-    public static class BaseEntityIdentifier implements DBCEntityIdentifier {
-
-        private final DBSEntityReferrer referrer;
-
-        private final List<DBDAttributeBinding> attributes = new ArrayList<DBDAttributeBinding>();
-
-        public BaseEntityIdentifier(DBRProgressMonitor monitor, DBSEntityReferrer referrer, DBDAttributeBinding[] bindings) throws DBException
-        {
-            this.referrer = referrer;
-            reloadAttributes(monitor, bindings);
-        }
-
-        public void reloadAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding[] bindings) throws DBException
-        {
-            this.attributes.clear();
-            Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(referrer.getAttributeReferences(monitor));
-            for (DBSEntityAttributeRef cColumn : refs) {
-                for (DBDAttributeBinding binding : bindings) {
-                    if (binding.matches(cColumn.getAttribute(), false)) {
-                        this.attributes.add(binding);
-                        break;
-                    }
-                }
-            }
-        }
-
-        @NotNull
-        public DBSEntityReferrer getReferrer()
-        {
-            return referrer;
-        }
-
-        @NotNull
-        @Override
-        public List<DBDAttributeBinding> getAttributes() {
-            return attributes;
-        }
-    }
 }

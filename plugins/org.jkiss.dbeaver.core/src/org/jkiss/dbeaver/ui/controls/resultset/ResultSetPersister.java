@@ -123,7 +123,7 @@ class ResultSetPersister {
         DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
         for (RowData row : deletedRows) {
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, row, rowIdentifier.getEntity());
-            List<DBDAttributeBinding> keyColumns = rowIdentifier.getEntityIdentifier().getAttributes();
+            List<DBDAttributeBinding> keyColumns = rowIdentifier.getAttributes();
             for (DBDAttributeBinding binding : keyColumns) {
                 statement.keyAttributes.add(
                     new DBDAttributeValue(
@@ -169,7 +169,7 @@ class ResultSetPersister {
                             model.getCellValue(changedAttr, row)));
                 }
                 // Key columns
-                List<DBDAttributeBinding> idColumns = rowIdentifier.getEntityIdentifier().getAttributes();
+                List<DBDAttributeBinding> idColumns = rowIdentifier.getAttributes();
                 for (DBDAttributeBinding metaColumn : idColumns) {
                     Object keyValue = model.getCellValue(metaColumn, row);
                     // Try to find old key oldValue
