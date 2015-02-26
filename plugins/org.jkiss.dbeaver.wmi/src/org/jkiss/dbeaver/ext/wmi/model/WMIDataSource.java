@@ -97,8 +97,9 @@ public class WMIDataSource implements DBPDataSource, SQLDataSource, IAdaptable//
     }
 
     @Override
-    public void invalidateContext(DBRProgressMonitor monitor) throws DBException
+    public InvalidateResult invalidateContext(DBRProgressMonitor monitor) throws DBException
     {
+        throw new DBException("Connection invalidate not supported");
     }
 
     @Override

@@ -36,6 +36,13 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      */
     public static final ThreadLocal<DBCExecutionContext> ACTIVE_CONTEXT = new ThreadLocal<DBCExecutionContext>();
 
+    public enum InvalidateResult {
+        DISCONNECTED,
+        CONNECTED,
+        RECONNECTED,
+        ALIVE
+    }
+
     String getContextName();
     /**
      * Owner datasource
@@ -64,7 +71,8 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      *
      * @throws org.jkiss.dbeaver.DBException on any error
      * @param monitor progress monitor
+     * @return true if reconnect was applied false if connection is alive and nothing was done.
      */
-    void invalidateContext(DBRProgressMonitor monitor) throws DBException;
+    InvalidateResult invalidateContext(DBRProgressMonitor monitor) throws DBException;
 
 }
