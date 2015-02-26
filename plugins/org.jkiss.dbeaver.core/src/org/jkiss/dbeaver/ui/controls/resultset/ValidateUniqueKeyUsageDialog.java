@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
+import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -48,7 +48,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             viewer.getControl().getShell(),
             "Possible multiple rows modification",
             null,
-            "There is no physical unique key defined for  '" + DBUtils.getObjectFullName(viewer.getVirtualEntityIdentifier().getReferrer().getParentObject()) +
+            "There is no physical unique key defined for  '" + DBUtils.getObjectFullName(viewer.getVirtualEntityIdentifier().getUniqueKey().getParentObject()) +
                 "'.\nDBeaver will use all columns as unique key. Possible multiple rows modification. \nAre you sure you want to proceed?",
             WARNING,
             new String[]{"Use All Columns", "Custom Unique Key", IDialogConstants.CANCEL_LABEL},
@@ -101,8 +101,8 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     private static boolean useAllColumns(Shell shell, ResultSetViewer viewer)
     {
         // Use all columns
-        final DBCEntityIdentifier identifier = viewer.getVirtualEntityIdentifier();
-        DBVEntityConstraint constraint = (DBVEntityConstraint) viewer.getVirtualEntityIdentifier().getReferrer();
+        final DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
+        DBVEntityConstraint constraint = (DBVEntityConstraint) identifier.getUniqueKey();
         List<DBSEntityAttribute> uniqueColumns = new ArrayList<DBSEntityAttribute>();
         for (DBDAttributeBinding binding : viewer.getModel().getColumns()) {
             if (binding.getEntityAttribute() != null) {
@@ -129,7 +129,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
 
     public static boolean validateUniqueKey(ResultSetViewer viewer)
     {
-        final DBCEntityIdentifier identifier = viewer.getVirtualEntityIdentifier();
+        final DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
         if (identifier == null) {
             // No key
             return false;

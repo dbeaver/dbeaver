@@ -19,11 +19,19 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Row identifier.
@@ -31,10 +39,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
  */
 public class DBDRowIdentifier implements DBPObject {
 
-    private DBSEntity entity;
-    private DBCEntityIdentifier entityIdentifier;
+    private final DBSEntity entity;
+    private final DBSEntityReferrer entityIdentifier;
+    private final List<DBDAttributeBinding> attributes = new ArrayList<DBDAttributeBinding>();
 
-    public DBDRowIdentifier(@NotNull DBSEntity entity, @NotNull DBCEntityIdentifier entityIdentifier)
+    public DBDRowIdentifier(@NotNull DBSEntity entity, @NotNull DBSEntityReferrer entityIdentifier)
     {
         this.entity = entity;
         this.entityIdentifier = entityIdentifier;
@@ -48,22 +57,34 @@ public class DBDRowIdentifier implements DBPObject {
 
     @NotNull
     @Property(viewable = true, order = 2)
-    public DBSEntityConstraint getUniqueKey() {
-        return entityIdentifier.getReferrer();
-    }
-
-    @NotNull
-    public DBCEntityIdentifier getEntityIdentifier()
-    {
+    public DBSEntityReferrer getUniqueKey() {
         return entityIdentifier;
     }
 
     @NotNull
     public String getKeyType()
     {
-        return entityIdentifier.getReferrer().getConstraintType().getName();
+        return entityIdentifier.getConstraintType().getName();
     }
 
+    @NotNull
+    public List<DBDAttributeBinding> getAttributes() {
+        return attributes;
+    }
+
+    public void reloadAttributes(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding[] bindings) throws DBException
+    {
+        this.attributes.clear();
+        Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(entityIdentifier.getAttributeReferences(monitor));
+        for (DBSEntityAttributeRef cColumn : refs) {
+            for (DBDAttributeBinding binding : bindings) {
+                if (binding.matches(cColumn.getAttribute(), false)) {
+                    this.attributes.add(binding);
+                    break;
+                }
+            }
+        }
+    }
 /*
     public Object[] getKeyValues(Object[] row) {
         Object[] keyValues = new Object[keyColumns.size()];
