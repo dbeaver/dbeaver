@@ -46,7 +46,7 @@ public interface ISpreadsheetController {
 
     void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager);
 
-    void changeSorting(@NotNull Object columnElement, int state);
+    void changeSorting(Object columnElement, int state);
 
     void navigateLink(@NotNull GridCell cell, int state);
 
