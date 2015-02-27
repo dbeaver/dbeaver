@@ -420,7 +420,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         if (CommonUtils.isEmpty(selText) && selection.getOffset() >= 0) {
             Document document = getDocument();
             try {
-                ;
                 IRegion lineRegion = document.getLineInformationOfOffset(selection.getOffset());
                 selText = document.get(lineRegion.getOffset(), lineRegion.getLength());
             } catch (BadLocationException e) {
