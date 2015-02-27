@@ -542,9 +542,10 @@ public class SQLQueryJob extends DataSourceJob
                     }
                 }
 */
-                if (!CommonUtils.isEmpty(sourceName)) {
-                    result.setResultSetName(sourceName);
+                if (CommonUtils.isEmpty(sourceName)) {
+                    sourceName = "Result";
                 }
+                result.setResultSetName(sourceName);
             }
             long fetchStartTime = System.currentTimeMillis();
 

@@ -86,9 +86,11 @@ public class BasicSQLDialect implements SQLDialect {
 
     public void addKeywords(Collection<String> set, DBPKeywordType type)
     {
-        for (String keyword : set) {
-            reservedWords.add(keyword);
-            allKeywords.put(keyword, type);
+        if (set != null) {
+            for (String keyword : set) {
+                reservedWords.add(keyword);
+                allKeywords.put(keyword, type);
+            }
         }
     }
 
