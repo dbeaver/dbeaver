@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
+import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -480,7 +481,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             tabInfo.getName(),
             tabInfo.getName(),
             tabInfo.node.getNodeIconDefault(),
-            null,
+            tabInfo.getDescription(),
             new FolderPageNode(part, tabInfo.node, tabInfo.meta)));
     }
 
@@ -499,6 +500,13 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         public String getName()
         {
             return meta == null ? node.getNodeName() : meta.getChildrenType(node.getObject().getDataSource());
+        }
+        public String getDescription()
+        {
+            if (node instanceof DBSObject) {
+                return ((DBSObject) node).getDescription();
+            }
+            return node.getNodeDescription();
         }
     }
 
