@@ -84,9 +84,10 @@ public class BasicSQLDialect implements SQLDialect {
         allKeywords.put(keyword, DBPKeywordType.KEYWORD);
     }
 
-    public void addKeywords(Set<String> set, DBPKeywordType type)
+    public void addKeywords(Collection<String> set, DBPKeywordType type)
     {
         for (String keyword : set) {
+            reservedWords.add(keyword);
             allKeywords.put(keyword, type);
         }
     }
@@ -291,16 +292,11 @@ public class BasicSQLDialect implements SQLDialect {
         Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
 
         final Collection<String> executeKeywords = getExecuteKeywords();
-        if (executeKeywords != null) {
-            for (String keyword : executeKeywords) {
-                reservedWords.add(keyword.toUpperCase());
-            }
-        }
+        addKeywords(executeKeywords, DBPKeywordType.KEYWORD);
 
         // Add default types
         Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
 
-        addKeywords(reservedWords, DBPKeywordType.KEYWORD);
         addKeywords(types, DBPKeywordType.TYPE);
     }
 
