@@ -1,3 +1,4 @@
+DBCStatement-> executeQuery + executeUpdate
 Intro plugin
 Permanent download links (ln -s after build)
 Autocomplete - do not replace word after cursor
