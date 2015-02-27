@@ -509,13 +509,29 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         // Parse range
         syntaxManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
+        int bracketDepth = 0;
         for (; ; ) {
             IToken token = syntaxManager.nextToken();
             int tokenOffset = syntaxManager.getTokenOffset();
             final int tokenLength = syntaxManager.getTokenLength();
-            if (token.isEOF() ||
-                (token instanceof SQLDelimiterToken && tokenOffset >= currentPos) ||
-                tokenOffset > endPos) {
+            boolean isDelimiter = token instanceof SQLDelimiterToken;
+            if (tokenLength == 1) {
+                try {
+                    char aChar = document.getChar(tokenOffset);
+                    if (aChar == '(' || aChar == '{' || aChar == '[') {
+                        bracketDepth++;
+                    } else if (aChar == ')' || aChar == '}' || aChar == ']') {
+                        bracketDepth--;
+                    }
+                } catch (BadLocationException e) {
+                    log.warn(e);
+                }
+            }
+            if (isDelimiter && bracketDepth > 0) {
+                // Delimiter in some brackets - ignore it
+                continue;
+            }
+            if (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos) {
                 // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
@@ -549,7 +565,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                     return null;
                 }
             }
-            if (token instanceof SQLDelimiterToken) {
+            if (isDelimiter) {
                 statementStart = tokenOffset + tokenLength;
             }
             if (token.isEOF()) {
