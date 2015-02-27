@@ -1351,8 +1351,10 @@ public class SQLEditor extends SQLEditorBase
             if (results != null) {
                 CTabItem tabItem = results.tabItem;
                 if (!tabItem.isDisposed()) {
-                    if (!CommonUtils.isEmpty(result.getResultSetName())) {
-                        tabItem.setText(result.getResultSetName());
+                    //int queryIndex = queryProcessors.indexOf(queryProcessor);
+                    String resultSetName = result.getResultSetName();
+                    if (!CommonUtils.isEmpty(resultSetName)) {
+                        tabItem.setText(resultSetName);
                     }/* else {
                         int queryIndex = queryProcessors.indexOf(queryProcessor);
                         tabItem.setText(
