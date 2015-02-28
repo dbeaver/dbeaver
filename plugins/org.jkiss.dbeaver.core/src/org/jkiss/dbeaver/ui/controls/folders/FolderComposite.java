@@ -53,7 +53,7 @@ import java.util.Map;
 public class FolderComposite extends Composite implements IFolderContainer {
 
 
-    private final FolderList folderList;
+    private FolderList folderList;
     private final Composite pane;
     private final Map<FolderInfo, Composite> contentsMap = new HashMap<FolderInfo, Composite>();
     private IFolder curFolder;
@@ -69,8 +69,10 @@ public class FolderComposite extends Composite implements IFolderContainer {
         gl.marginWidth = 0;
         setLayout(gl);
 
-        folderList = new FolderList(this);
-        folderList.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        if ((style & SWT.LEFT) != 0 || (style & SWT.RIGHT) == 0) {
+            folderList = new FolderList(this);
+            folderList.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        }
         pane = new Composite(this, SWT.NONE);
         gl = new GridLayout(1, false);
         gl.horizontalSpacing = 0;
@@ -79,6 +81,10 @@ public class FolderComposite extends Composite implements IFolderContainer {
         gl.marginWidth = 0;
         pane.setLayout(gl);
         pane.setLayoutData(new GridData(GridData.FILL_BOTH));
+        if ((style & SWT.RIGHT) != 0) {
+            folderList = new FolderList(this);
+            folderList.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        }
 
         folderList.addSelectionListener(new SelectionAdapter() {
             @Override
