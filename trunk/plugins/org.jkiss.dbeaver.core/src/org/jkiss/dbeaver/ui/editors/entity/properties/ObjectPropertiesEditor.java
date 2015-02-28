@@ -99,7 +99,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         // Add lazy props listener
         //PropertiesContributor.getInstance().addLazyListener(this);
 
-        pageControl = new ObjectEditorPageControl(parent, SWT.NONE, this);
+        pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this);
+        pageControl.setShowDivider(true);
 
         DBNNode node = getEditorInput().getTreeNode();
 
@@ -116,50 +117,15 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (node == null) {
             return;
         }
-        createPathPanel(node, container);
-        //createNamePanel(node, container);
-
         pageControl.createProgressPanel();
 
         createPropertyBrowser(container);
     }
 
-    private void createPathPanel(DBNNode node, Composite container)
-    {
-        // Path
-        Composite infoGroup = new Composite(container, SWT.NONE);//createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        infoGroup.setLayout(new RowLayout());
-
-        List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
-        for (DBNNode n = node; n != null; n = n.getParentNode()) {
-            if (n instanceof DBNDatabaseNode) {
-                nodeList.add(0, (DBNDatabaseNode)n);
-            }
-        }
-        for (final DBNDatabaseNode databaseNode : nodeList) {
-            createPathRow(
-                infoGroup,
-                databaseNode.getNodeIconDefault(),
-                databaseNode.getNodeType(),
-                databaseNode.getNodeName(),
-                databaseNode == node ? null : new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-                    }
-                });
-        }
-
-//        Label div = new Label(container, SWT.HORIZONTAL | SWT.SEPARATOR);
-//        div.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    }
-
     private void createPropertyBrowser(Composite container)
     {
         // Properties
-        Composite propsPlaceholder = new Composite(container, SWT.BORDER);
+        Composite propsPlaceholder = new Composite(container, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         //gd.horizontalSpan = 2;
         propsPlaceholder.setLayoutData(gd);
@@ -288,22 +254,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         return false;
     }
 
-    private void createPathRow(Composite infoGroup, Image image, String label, String value, @Nullable SelectionListener selectionListener)
-    {
-        UIUtils.createImageLabel(infoGroup, image);
-        //UIUtils.createControlLabel(infoGroup, label);
-
-        Link objectLink = new Link(infoGroup, SWT.NONE);
-        //objectLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (selectionListener == null) {
-            objectLink.setText(value);
-            objectLink.setToolTipText(label);
-        } else {
-            objectLink.setText("<A>" + value + "</A>   ");
-            objectLink.addSelectionListener(selectionListener);
-            objectLink.setToolTipText("Open " + label + " Editor");
-        }
-    }
 
     @Nullable
     @Override

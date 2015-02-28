@@ -20,6 +20,16 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -56,6 +66,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.IFolder;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
@@ -812,6 +823,55 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
         return null;
+    }
+
+    @Override
+    protected Control createTopRightControl(Composite composite) {
+        // Path
+        Composite infoGroup = new Composite(composite, SWT.NONE);//createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        infoGroup.setLayout(new RowLayout());
+
+        DBNDatabaseNode node = getEditorInput().getTreeNode();
+
+        List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
+        for (DBNNode n = node; n != null; n = n.getParentNode()) {
+            if (n instanceof DBNDatabaseNode) {
+                nodeList.add(0, (DBNDatabaseNode)n);
+            }
+        }
+        for (final DBNDatabaseNode databaseNode : nodeList) {
+            createPathRow(
+                infoGroup,
+                databaseNode.getNodeIconDefault(),
+                databaseNode.getNodeType(),
+                databaseNode.getNodeName(),
+                databaseNode == node ? null : new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                    }
+                });
+        }
+        return infoGroup;
+    }
+
+    private void createPathRow(Composite infoGroup, Image image, String label, String value, @Nullable SelectionListener selectionListener)
+    {
+        UIUtils.createImageLabel(infoGroup, image);
+        //UIUtils.createControlLabel(infoGroup, label);
+
+        Link objectLink = new Link(infoGroup, SWT.NONE);
+        //objectLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (selectionListener == null) {
+            objectLink.setText(value);
+            objectLink.setToolTipText(label);
+        } else {
+            objectLink.setText("<A>" + value + "</A>   ");
+            objectLink.addSelectionListener(selectionListener);
+            objectLink.setToolTipText("Open " + label + " Editor");
+        }
     }
 
     private class ChangesPreviewer implements Runnable {
