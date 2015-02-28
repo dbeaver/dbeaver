@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.accessibility.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -70,7 +69,7 @@ public class CImageCombo extends Composite {
 
     private Composite comboComposite;
     private Label imageLabel;
-    private Text text;
+    private Label text;
     private Table table;
     private int visibleItemCount = 4;
     private int widthHint = SWT.DEFAULT;
@@ -136,9 +135,11 @@ public class CImageCombo extends Composite {
         this.imageLabel = new Label(this.comboComposite, SWT.NONE);
         this.imageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-        this.text = new Text(this.comboComposite, SWT.READ_ONLY);
-        this.text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        this.text.setEditable(false);
+        this.text = new Label(this.comboComposite, SWT.NONE);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalIndent = 3;
+        this.text.setLayoutData(gd);
+        //this.text.setEditable(false);
 
         this.comboComposite.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 
@@ -218,6 +219,7 @@ public class CImageCombo extends Composite {
     {
         if (force || enabled != isEnabled()) {
             super.setEnabled(enabled);
+            imageLabel.setEnabled(enabled);
             text.setEnabled(enabled);
             if (enabled && table != null) {
                 if (getSelectionIndex() >= 0) {
@@ -351,8 +353,7 @@ public class CImageCombo extends Composite {
         checkWidget();
         addListener(SWT.Selection, new Listener() {
             @Override
-            public void handleEvent(Event event)
-            {
+            public void handleEvent(Event event) {
                 listener.widgetSelected(new SelectionEvent(event));
             }
         });
@@ -460,7 +461,6 @@ public class CImageCombo extends Composite {
     public void deselectAll()
     {
         checkWidget();
-        this.text.clearSelection();
         this.table.deselectAll();
     }
 
@@ -884,22 +884,6 @@ public class CImageCombo extends Composite {
         this.visibleItemCount = count;
     }
 
-    /**
-     * Gets the editable state.
-     *
-     * @return whether or not the receiver is editable
-     * @throws SWTException <ul>
-     *                      <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
-     *                      <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
-     *                      </ul>
-     * @since 3.0
-     */
-    public boolean getEditable()
-    {
-        checkWidget();
-        return this.text.getEditable();
-    }
-
     void handleFocus(int type)
     {
         if (isDisposed()) {
@@ -910,9 +894,9 @@ public class CImageCombo extends Composite {
                 if (this.hasFocus) {
                     return;
                 }
-                if (getEditable()) {
-                    this.text.selectAll();
-                }
+//                if (getEditable()) {
+//                    this.text.selectAll();
+//                }
                 this.hasFocus = true;
                 Shell shell = getShell();
                 shell.removeListener(SWT.Deactivate, this.listener);
@@ -1077,7 +1061,7 @@ public class CImageCombo extends Composite {
                 }
                 TableItem item = this.table.getItem(index);
                 this.text.setText(item.getText());
-                this.text.selectAll();
+                //this.text.selectAll();
                 if (item.getImage() != null) {
                     this.imageLabel.setImage(item.getImage());
                 }
@@ -1293,138 +1277,6 @@ public class CImageCombo extends Composite {
         return string;
     }
 
-    void initAccessible()
-    {
-        AccessibleAdapter accessibleAdapter = new AccessibleAdapter() {
-            @Override
-            public void getName(AccessibleEvent e)
-            {
-                String name = null;
-                Label label = getAssociatedLabel();
-                if (label != null) {
-                    name = stripMnemonic(label.getText());
-                }
-                e.result = name;
-            }
-
-            @Override
-            public void getKeyboardShortcut(AccessibleEvent e)
-            {
-                String shortcut = null;
-                Label label = getAssociatedLabel();
-                if (label != null) {
-                    String text = label.getText();
-                    if (text != null) {
-                        char mnemonic = getMnemonic(text);
-                        if (mnemonic != '\0') {
-                            shortcut = "Alt+" + mnemonic; //$NON-NLS-1$
-                        }
-                    }
-                }
-                e.result = shortcut;
-            }
-
-            @Override
-            public void getHelp(AccessibleEvent e)
-            {
-                e.result = getToolTipText();
-            }
-        };
-        getAccessible().addAccessibleListener(accessibleAdapter);
-        this.comboComposite.getAccessible().addAccessibleListener(accessibleAdapter);
-        this.table.getAccessible().addAccessibleListener(accessibleAdapter);
-
-        this.arrow.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-            @Override
-            public void getName(AccessibleEvent e)
-            {
-                e.result = isDropped() ? SWT.getMessage("SWT_Close") : SWT.getMessage("SWT_Open"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-
-            @Override
-            public void getKeyboardShortcut(AccessibleEvent e)
-            {
-                e.result = "Alt+Down Arrow"; //$NON-NLS-1$
-            }
-
-            @Override
-            public void getHelp(AccessibleEvent e)
-            {
-                e.result = getToolTipText();
-            }
-        });
-
-        getAccessible().addAccessibleTextListener(new AccessibleTextAdapter() {
-            @Override
-            public void getCaretOffset(AccessibleTextEvent e)
-            {
-                e.offset = CImageCombo.this.text.getCaretPosition();
-            }
-        });
-
-        getAccessible().addAccessibleControlListener(new AccessibleControlAdapter() {
-            @Override
-            public void getChildAtPoint(AccessibleControlEvent e)
-            {
-                Point testPoint = toControl(e.x, e.y);
-                if (getBounds().contains(testPoint)) {
-                    e.childID = ACC.CHILDID_SELF;
-                }
-            }
-
-            @Override
-            public void getLocation(AccessibleControlEvent e)
-            {
-                Rectangle location = getBounds();
-                Point pt = toDisplay(location.x, location.y);
-                e.x = pt.x;
-                e.y = pt.y;
-                e.width = location.width;
-                e.height = location.height;
-            }
-
-            @Override
-            public void getChildCount(AccessibleControlEvent e)
-            {
-                e.detail = 0;
-            }
-
-            @Override
-            public void getRole(AccessibleControlEvent e)
-            {
-                e.detail = ACC.ROLE_COMBOBOX;
-            }
-
-            @Override
-            public void getState(AccessibleControlEvent e)
-            {
-                e.detail = ACC.STATE_NORMAL;
-            }
-
-            @Override
-            public void getValue(AccessibleControlEvent e)
-            {
-                e.result = getText();
-            }
-        });
-
-        this.text.getAccessible().addAccessibleControlListener(new AccessibleControlAdapter() {
-            @Override
-            public void getRole(AccessibleControlEvent e)
-            {
-                e.detail = ACC.ROLE_LABEL;
-            }
-        });
-
-        this.arrow.getAccessible().addAccessibleControlListener(new AccessibleControlAdapter() {
-            @Override
-            public void getDefaultAction(AccessibleControlEvent e)
-            {
-                e.result = isDropped() ? SWT.getMessage("SWT_Close") : SWT.getMessage("SWT_Open"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        });
-    }
-
     void textEvent(Event event)
     {
         switch (event.type) {
@@ -1450,7 +1302,7 @@ public class CImageCombo extends Composite {
                     event.doit = false;
                     if ((event.stateMask & SWT.ALT) != 0) {
                         boolean dropped = isDropped();
-                        this.text.selectAll();
+                        //this.text.selectAll();
                         if (!dropped) {
                             setFocus();
                         }
@@ -1508,16 +1360,8 @@ public class CImageCombo extends Composite {
                 if (event.button != 1) {
                     return;
                 }
-                if (this.text.getEditable()) {
-                    return;
-                }
                 boolean dropped = isDropped();
-                this.text.selectAll();
-                if (!dropped) {
-                    if (getEditable()) {
-                        setFocus();
-                    }
-                }
+                //this.text.selectAll();
                 dropDown(!dropped);
                 break;
             }
@@ -1525,10 +1369,6 @@ public class CImageCombo extends Composite {
                 if (event.button != 1) {
                     return;
                 }
-                if (this.text.getEditable()) {
-                    return;
-                }
-                this.text.selectAll();
                 break;
             }
             case SWT.Traverse: {
