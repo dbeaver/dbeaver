@@ -168,9 +168,11 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void createPartControl(Composite parent)
     {
-        progressControl = new ProgressControl(parent, SWT.NONE);
+        progressControl = new ProgressControl(parent, SWT.SHEET);
+        progressControl.setShowDivider(true);
 
-        super.createPartControl(progressControl.createContentContainer());
+        Composite contentContainer = progressControl.createContentContainer();
+        super.createPartControl(contentContainer);
 
         progressControl.createProgressPanel();
     }

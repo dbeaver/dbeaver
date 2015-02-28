@@ -204,7 +204,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         new ToolBar(searchControlsComposite, SWT.NONE);
 
         customControlsComposite = new Composite(controlsComposite, SWT.NONE);
-        customControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        //gd.verticalIndent = 3;
+        customControlsComposite.setLayoutData(gd);
         gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
