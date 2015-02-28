@@ -94,9 +94,11 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         Composite pageContainer = getContainer();
         if (pageContainer instanceof CTabFolder) {
             CTabFolder tabFolder = (CTabFolder)pageContainer;
-            tabFolder.setSimple(false);
+            tabFolder.setSimple(true);
+            tabFolder.setMRUVisible(true);
+//            tabFolder.set
             tabFolder.setTabPosition(SWT.TOP);
-            tabFolder.setBorderVisible(true);
+            //tabFolder.setBorderVisible(true);
             Layout parentLayout = tabFolder.getParent().getLayout();
             if (parentLayout instanceof FillLayout) {
                 ((FillLayout)parentLayout).marginHeight = 5;
