@@ -29,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
@@ -103,7 +104,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         DBNNode node = getEditorInput().getTreeNode();
 
         Composite container = new Composite(pageControl, SWT.NONE);
-        GridLayout gl = new GridLayout(2, false);
+        GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 5;
         gl.horizontalSpacing = 0;
         gl.marginHeight = 0;
@@ -126,7 +127,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private void createPathPanel(DBNNode node, Composite container)
     {
         // Path
-        Composite infoGroup = new Composite(container, SWT.BORDER);//createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        Composite infoGroup = new Composite(container, SWT.NONE);//createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
         infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         infoGroup.setLayout(new RowLayout());
 
@@ -150,14 +151,17 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     }
                 });
         }
+
+//        Label div = new Label(container, SWT.HORIZONTAL | SWT.SEPARATOR);
+//        div.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
     }
 
     private void createPropertyBrowser(Composite container)
     {
         // Properties
-        Composite propsPlaceholder = new Composite(container, SWT.NONE);
+        Composite propsPlaceholder = new Composite(container, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.horizontalSpan = 2;
+        //gd.horizontalSpan = 2;
         propsPlaceholder.setLayoutData(gd);
         GridLayout gl = new GridLayout(1, false);
         gl.horizontalSpacing = 0;
@@ -166,7 +170,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         gl.marginWidth = 0;
         propsPlaceholder.setLayout(gl);
 
-        folderComposite = new FolderComposite(propsPlaceholder, SWT.NONE);
+        folderComposite = new FolderComposite(propsPlaceholder, SWT.LEFT);
         folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Load properties
