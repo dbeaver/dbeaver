@@ -618,6 +618,9 @@ public class FolderList extends Composite {
     public void select(int index) {
         if (index >= 0 && index < elements.length) {
             int lastSelected = getSelectionIndex();
+            if (index == lastSelected) {
+                return;
+            }
             elements[index].setSelected(true);
             selectedElementIndex = index;
             if (lastSelected != NONE) {
