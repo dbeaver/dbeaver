@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.swt.custom.CTabFolder;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -84,6 +85,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -796,7 +798,7 @@ public class ResultSetViewer extends Viewer
         toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
 
         // Add presentation switcher
-        //toolBarManager.add(new PresentationSwitchCombo());
+        toolBarManager.add(new PresentationSwitchCombo());
 
         // handle own commands
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
@@ -3362,7 +3364,7 @@ public class ResultSetViewer extends Viewer
 
     private class PresentationSwitchCombo extends ContributionItem {
         private ToolItem toolitem;
-        private Combo combo;
+        private CImageCombo combo;
 
         @Override
         public void fill(ToolBar parent, int index) {
@@ -3377,11 +3379,11 @@ public class ResultSetViewer extends Viewer
         }
 
         protected Control  createControl(Composite parent) {
-            combo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            combo.add("GRID");
-            combo.add("TEXT");
-//            combo.add(DBIcon.RS_GRID.getImage(), "GRID", null, null);
-//            combo.add(DBIcon.TYPE_TEXT.getImage(), "TEXT", null, null);
+            combo = new CImageCombo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+//            combo.add("GRID");
+//            combo.add("TEXT");
+            combo.add(DBIcon.RS_GRID.getImage(), "GRID", null, null);
+            combo.add(DBIcon.TYPE_TEXT.getImage(), "TEXT", null, null);
             combo.select(0);
             toolitem.setWidth(combo.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
             return combo;

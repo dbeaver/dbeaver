@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -159,6 +160,17 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
             return null;
         }
         return super.getActiveEditor();
+    }
+
+    protected IEditorPart getEditor(int pageIndex) {
+        Item item = ((CTabFolder)getContainer()).getItem(pageIndex);
+        if (item != null && !item.isDisposed()) {
+            Object data = item.getData();
+            if (data instanceof IEditorPart) {
+                return (IEditorPart) data;
+            }
+        }
+        return null;
     }
 
     protected Control createTopRightControl(Composite composite) {

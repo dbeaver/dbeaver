@@ -428,7 +428,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             }
         }
 
-        return !CommonUtils.isEmpty(selText.trim());
+        return !CommonUtils.isEmptyTrimmed(selText);
     }
 
     @Nullable

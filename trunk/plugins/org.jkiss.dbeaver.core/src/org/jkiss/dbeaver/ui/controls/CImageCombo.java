@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -126,20 +127,18 @@ public class CImageCombo extends Composite {
 */
 
         this.comboComposite = new Composite(this, SWT.NONE);
+        this.comboComposite.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
         GridLayout gridLayout = new GridLayout(2, false);
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
-        gridLayout.horizontalSpacing = 0;
+        gridLayout.horizontalSpacing = 3;
         this.comboComposite.setLayout(gridLayout);
 
         this.imageLabel = new Label(this.comboComposite, SWT.NONE);
-        this.imageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
 
         this.text = new Label(this.comboComposite, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalIndent = 3;
-        this.text.setLayoutData(gd);
-        //this.text.setEditable(false);
+        this.text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
 
         this.comboComposite.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 
@@ -945,6 +944,7 @@ public class CImageCombo extends Composite {
         if ((style & SWT.LEFT_TO_RIGHT) != 0) {
             listStyle |= SWT.LEFT_TO_RIGHT;
         }
+        this.popup.setLayout(new FillLayout());
         // create a table instead of a list.
         Table oldTable = this.table;
         this.table = new Table(this.popup, listStyle);
@@ -1004,11 +1004,16 @@ public class CImageCombo extends Composite {
             createPopup(selectionIndex);
         }
 
+        // Commented because it increased table size on each dropdown
         Point size = getSize();
         int itemCount = this.table.getItemCount();
         itemCount = (itemCount == 0) ? this.visibleItemCount : Math.min(this.visibleItemCount, itemCount);
         int itemHeight = this.table.getItemHeight() * itemCount;
         Point listSize = this.table.computeSize(SWT.DEFAULT, itemHeight, false);
+        ScrollBar verticalBar = table.getVerticalBar();
+        if (verticalBar != null) {
+            listSize.x -= verticalBar.getSize().x;
+        }
         this.table.setBounds(1, 1, Math.max(size.x - 2, listSize.x), listSize.y);
 
         int index = this.table.getSelectionIndex();
@@ -1020,8 +1025,8 @@ public class CImageCombo extends Composite {
         Rectangle parentRect = display.map(getParent(), null, getBounds());
         Point comboSize = getSize();
         Rectangle displayRect = getMonitor().getClientArea();
-        int width = Math.max(comboSize.x, listRect.width + 2);
-        int height = listRect.height + 2;
+        int width = Math.max(comboSize.x, listRect.width);
+        int height = listRect.height;
         int x = parentRect.x;
         int y = parentRect.y + comboSize.y;
         if (y + height > displayRect.y + displayRect.height) {
