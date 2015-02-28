@@ -25,6 +25,7 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -96,7 +97,10 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
             CTabFolder tabFolder = (CTabFolder)pageContainer;
             tabFolder.setSimple(true);
             tabFolder.setMRUVisible(true);
-//            tabFolder.set
+            Control topRight = createTopRightControl(tabFolder);
+            if (topRight != null) {
+                tabFolder.setTopRight(topRight, SWT.RIGHT | SWT.WRAP);
+            }
             tabFolder.setTabPosition(SWT.TOP);
             //tabFolder.setBorderVisible(true);
             Layout parentLayout = tabFolder.getParent().getLayout();
@@ -156,4 +160,9 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
         }
         return super.getActiveEditor();
     }
+
+    protected Control createTopRightControl(Composite composite) {
+        return null;
+    }
+
 }
