@@ -100,8 +100,8 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
 
     public static ResultSetViewer getActiveResultSet(IWorkbenchPart activePart) {
         //IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
-        if (activePart instanceof ResultSetProvider) {
-            return ((ResultSetProvider) activePart).getResultSetViewer();
+        if (activePart instanceof IResultSetProvider) {
+            return ((IResultSetProvider) activePart).getResultSetViewer();
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
         }

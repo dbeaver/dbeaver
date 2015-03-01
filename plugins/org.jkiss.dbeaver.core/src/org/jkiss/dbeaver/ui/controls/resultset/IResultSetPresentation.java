@@ -17,35 +17,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.controls.spreadsheet;
+package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 
 /**
- * GridDataProvider
+ * Result set renderer.
+ * Visualizes result set viewer/editor.
  */
-public interface ISpreadsheetController {
+public interface IResultSetPresentation {
 
-    boolean hasData();
+    void createRenderer(ResultSetViewer viewer, Composite parent);
 
-    boolean isReadOnly();
+    Control getControl();
 
-    @Nullable
-    Control showCellEditor(boolean inline);
-
-    void resetCellValue(@NotNull Object col, @NotNull Object row, boolean delete);
-
-    void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager);
-
-    void changeSorting(Object columnElement, int state);
-
-    void navigateLink(@NotNull GridCell cell, int state);
-
-    @NotNull
-    IPreferenceStore getPreferenceStore();
+    void refreshData();
 }

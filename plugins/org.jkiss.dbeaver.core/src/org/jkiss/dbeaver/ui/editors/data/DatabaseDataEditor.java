@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListener;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.utils.CommonUtils;
@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
  * DatabaseDataEditor
  */
 public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataContainer>
-    implements ResultSetProvider,ResultSetListener
+    implements IResultSetProvider,IResultSetListener
 {
     public static final String ATTR_SUSPEND_QUERY = "suspendQuery";
     public static final String ATTR_DATA_FILTER = "dataFilter";

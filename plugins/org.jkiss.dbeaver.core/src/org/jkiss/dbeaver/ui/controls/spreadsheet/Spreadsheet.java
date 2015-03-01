@@ -28,7 +28,6 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -38,6 +37,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 
 /**
  * ResultSetControl
@@ -60,7 +60,7 @@ public class Spreadsheet extends LightGrid implements Listener {
     @NotNull
     private final IWorkbenchPartSite site;
     @NotNull
-    private final ISpreadsheetController spreadsheetController;
+    private final IResultSetController spreadsheetController;
     @NotNull
     private final IGridContentProvider contentProvider;
     @NotNull
@@ -74,7 +74,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         @NotNull final Composite parent,
         final int style,
         @NotNull final IWorkbenchPartSite site,
-        @NotNull final ISpreadsheetController spreadsheetController,
+        @NotNull final IResultSetController spreadsheetController,
         @NotNull final IGridContentProvider contentProvider,
         @NotNull final IGridLabelProvider labelProvider)
     {
@@ -129,7 +129,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         }
     }
 
-    public ISpreadsheetController getController()
+    public IResultSetController getController()
     {
         return spreadsheetController;
     }

@@ -19,18 +19,10 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-
 /**
- * Result set renderer.
- * Visualizes result set viewer/editor.
+ * Result set provider
  */
-public interface ResultSetRenderer {
+public interface IResultSetListener {
 
-    void createRenderer(ResultSetViewer viewer, Composite parent);
-
-    Control getControl();
-
-    void refreshData();
+    void handleResultSetChange();
 }

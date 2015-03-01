@@ -38,7 +38,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
@@ -77,7 +76,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
@@ -101,7 +100,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SQLEditor extends SQLEditorBase
     implements IDataSourceContainerProviderEx,
-    DBPEventListener, ISaveablePart2, ResultSetProvider, DBPDataSourceUser, DBPDataSourceHandler
+    DBPEventListener, ISaveablePart2, IResultSetProvider, DBPDataSourceUser, DBPDataSourceHandler
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
@@ -1122,7 +1121,7 @@ public class SQLEditor extends SQLEditorBase
 
     }
 
-    public class QueryResultsProvider implements DBSDataContainer, ResultSetProvider {
+    public class QueryResultsProvider implements DBSDataContainer, IResultSetProvider {
 
         private final QueryProcessor queryProcessor;
         private final CTabItem tabItem;
