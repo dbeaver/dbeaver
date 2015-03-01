@@ -30,11 +30,9 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
 
 import java.util.ArrayList;
@@ -90,8 +88,8 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
 
                     if (entityEditor instanceof MultiPageEditorPart) {
                         Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
-                        if (selectedPage instanceof ResultSetProvider) {
-                            ResultSetViewer resultSetViewer = ((ResultSetProvider) selectedPage).getResultSetViewer();
+                        if (selectedPage instanceof IResultSetProvider) {
+                            ResultSetViewer resultSetViewer = ((IResultSetProvider) selectedPage).getResultSetViewer();
                             if (!resultSetViewer.isRefreshInProgress() && !object.getFilter().equals(resultSetViewer.getModel().getDataFilter())) {
                                 // Set filter directly
                                 resultSetViewer.refreshWithFilter(object.getFilter());
