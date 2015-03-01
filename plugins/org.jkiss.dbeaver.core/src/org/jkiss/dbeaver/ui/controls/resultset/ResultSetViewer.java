@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.swt.custom.CTabFolder;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -1307,7 +1306,6 @@ public class ResultSetViewer extends Viewer
      * Checks that current state of result set allows to insert new rows
      * @return true if new rows insert is allowed
      */
-    @Override
     public boolean isInsertable()
     {
         return
@@ -1316,7 +1314,6 @@ public class ResultSetViewer extends Viewer
             model.getVisibleColumnCount() > 0;
     }
 
-    @Override
     public boolean isRefreshInProgress() {
         return dataPumpJob != null;
     }
@@ -3380,8 +3377,6 @@ public class ResultSetViewer extends Viewer
 
         protected Control  createControl(Composite parent) {
             combo = new CImageCombo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-//            combo.add("GRID");
-//            combo.add("TEXT");
             combo.add(DBIcon.RS_GRID.getImage(), "GRID", null, null);
             combo.add(DBIcon.TYPE_TEXT.getImage(), "TEXT", null, null);
             combo.select(0);
