@@ -89,7 +89,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
-import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -118,7 +117,7 @@ import java.util.List;
  *
  */
 public class ResultSetViewer extends Viewer
-    implements IDataSourceProvider, ISpreadsheetController, ISaveablePart2, IAdaptable
+    implements IDataSourceProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
     static final Log log = Log.getLog(ResultSetViewer.class);
     private final IPropertyChangeListener themeChangeListener;
@@ -170,7 +169,7 @@ public class ResultSetViewer extends Viewer
     private final ViewValuePanel previewPane;
 
     @NotNull
-    private final ResultSetProvider resultSetProvider;
+    private final IResultSetProvider resultSetProvider;
     @NotNull
     private final ResultSetDataReceiver dataReceiver;
     @NotNull
@@ -187,7 +186,7 @@ public class ResultSetViewer extends Viewer
     private int columnOrder = SWT.NONE;
 
     private final Map<ResultSetValueController, DBDValueEditorStandalone> openEditors = new HashMap<ResultSetValueController, DBDValueEditorStandalone>();
-    private final List<ResultSetListener> listeners = new ArrayList<ResultSetListener>();
+    private final List<IResultSetListener> listeners = new ArrayList<IResultSetListener>();
 
     // UI modifiers
     private final Color colorRed;
@@ -217,7 +216,7 @@ public class ResultSetViewer extends Viewer
     private ToolItem historyBackButton;
     private ToolItem historyForwardButton;
 
-    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull ResultSetProvider resultSetProvider)
+    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetProvider resultSetProvider)
     {
         super();
 
@@ -673,14 +672,14 @@ public class ResultSetViewer extends Viewer
         return null;
     }
 
-    public void addListener(ResultSetListener listener)
+    public void addListener(IResultSetListener listener)
     {
         synchronized (listeners) {
             listeners.add(listener);
         }
     }
 
-    public void removeListener(ResultSetListener listener)
+    public void removeListener(IResultSetListener listener)
     {
         synchronized (listeners) {
             listeners.remove(listener);
@@ -1041,6 +1040,9 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
+    ///////////////////////////////////////
+    // History
+
     public StateItem getCurrentState() {
         return curState;
     }
@@ -1085,6 +1087,9 @@ public class ResultSetViewer extends Viewer
         runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, null);
     }
 
+    ///////////////////////////////////////
+    // Misc
+
     @Nullable
     public RowData getCurrentRow()
     {
@@ -1106,6 +1111,9 @@ public class ResultSetViewer extends Viewer
             (RowData) spreadsheet.getFocusColumnElement() :
             (RowData) spreadsheet.getFocusRowElement();
     }
+
+    ///////////////////////////////////////
+    // Status
 
     public void setStatus(String status)
     {
@@ -1759,6 +1767,7 @@ public class ResultSetViewer extends Viewer
         return site;
     }
 
+    @Override
     @NotNull
     public ResultSetModel getModel()
     {
@@ -2434,7 +2443,7 @@ public class ResultSetViewer extends Viewer
     void fireResultSetChange() {
         synchronized (listeners) {
             if (!listeners.isEmpty()) {
-                for (ResultSetListener listener : listeners) {
+                for (IResultSetListener listener : listeners) {
                     listener.handleResultSetChange();
                 }
             }

@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.ui.DBIcon;
 
 import java.util.Map;
 
@@ -35,8 +34,8 @@ public class ResultSetModeTogglePreviewHandler extends ResultSetCommandHandler i
     {
         if (element.getServiceLocator() instanceof IWorkbenchPartSite) {
             IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator();
-            if (partSite.getPart() instanceof ResultSetProvider) {
-                ResultSetViewer rsv = ((ResultSetProvider) partSite.getPart()).getResultSetViewer();
+            if (partSite.getPart() instanceof IResultSetProvider) {
+                ResultSetViewer rsv = ((IResultSetProvider) partSite.getPart()).getResultSetViewer();
                 if (rsv != null) {
                     if (rsv.isPreviewVisible()) {
                         element.setText("Hide value view panel");

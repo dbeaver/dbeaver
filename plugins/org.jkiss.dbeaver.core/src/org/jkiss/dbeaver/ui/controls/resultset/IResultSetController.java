@@ -19,18 +19,36 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 
 /**
- * Result set provider
+ * GridDataProvider
  */
-public interface ResultSetProvider {
+public interface IResultSetController {
 
-    ResultSetViewer getResultSetViewer();
+    @NotNull
+    ResultSetModel getModel();
 
-    DBSDataContainer getDataContainer();
+    boolean hasData();
 
-    boolean isReadyToRun();
+    boolean isReadOnly();
 
-    // void
+    @Nullable
+    Control showCellEditor(boolean inline);
+
+    void resetCellValue(@NotNull Object col, @NotNull Object row, boolean delete);
+
+    void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager);
+
+    void changeSorting(Object columnElement, int state);
+
+    void navigateLink(@NotNull GridCell cell, int state);
+
+    @NotNull
+    IPreferenceStore getPreferenceStore();
 }
