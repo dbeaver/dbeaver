@@ -87,6 +87,11 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         DBCStatement statement = null;
 
         try {
+            // Here we'll try to reuse prepared statement.
+            // It makes a great sense in case of data transfer where we need millions of inserts.
+            // We must be aware of nulls because actual insert statements may differ depending on null values.
+            // So if row nulls aren't the same as in previous row we need to prepare new statement and restart batch.
+            // Quite complicated but works.
             boolean[] prevNulls = new boolean[attributes.length];
             boolean[] nulls = new boolean[attributes.length];
             int statementsInBatch = 0;
