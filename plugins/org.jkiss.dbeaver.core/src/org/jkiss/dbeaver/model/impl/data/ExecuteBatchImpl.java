@@ -87,8 +87,27 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         DBCStatement statement = null;
 
         try {
+            boolean[] prevNulls = new boolean[attributes.length];
+            boolean[] nulls = new boolean[attributes.length];
+            int statementsInBatch = 0;
+
             for (Object[] rowValues : values) {
-                if (statement == null || !reuseStatement) {
+                boolean reuse = reuseStatement;
+                if (reuse) {
+                    for (int i = 0; i < rowValues.length; i++) {
+                        nulls[i] = DBUtils.isNullValue(rowValues[i]);
+                    }
+                    if (!Arrays.equals(prevNulls, nulls) && statementsInBatch > 0) {
+                        reuse = false;
+                    }
+                    System.arraycopy(nulls, 0, prevNulls, 0, nulls.length);
+                    if (!reuse && statementsInBatch > 0) {
+                        // Flush batch
+                        flushBatch(statistics, statement);
+                        statementsInBatch = 0;
+                    }
+                }
+                if (statement == null || !reuse) {
                     statement = prepareStatement(session, rowValues);
                     statistics.setQueryText(statement.getQueryString());
                 }
@@ -96,6 +115,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     bindStatement(handlers, statement, rowValues);
                     if (useBatch) {
                         statement.addToBatch();
+                        statementsInBatch++;
                     } else {
                         // Execute each row separately
                         long startTime = System.currentTimeMillis();
@@ -113,23 +133,15 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         }
                     }
                 } finally {
-                    if (!reuseStatement) {
+                    if (!reuse) {
                         statement.close();
                     }
                 }
             }
             values.clear();
 
-            if (useBatch && statement != null) {
-                // Process batch
-                long startTime = System.currentTimeMillis();
-                int[] updatedRows = statement.executeStatementBatch();
-                statistics.addExecuteTime(System.currentTimeMillis() - startTime);
-                if (!ArrayUtils.isEmpty(updatedRows)) {
-                    for (int rows : updatedRows) {
-                        statistics.addRowsUpdated(rows);
-                    }
-                }
+            if (statementsInBatch > 0) {
+                flushBatch(statistics, statement);
             }
         } finally {
             if (reuseStatement && statement != null) {
@@ -138,6 +150,17 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         }
 
         return statistics;
+    }
+
+    private void flushBatch(DBCStatistics statistics, DBCStatement statement) throws DBCException {
+        long startTime = System.currentTimeMillis();
+        int[] updatedRows = statement.executeStatementBatch();
+        statistics.addExecuteTime(System.currentTimeMillis() - startTime);
+        if (!ArrayUtils.isEmpty(updatedRows)) {
+            for (int rows : updatedRows) {
+                statistics.addRowsUpdated(rows);
+            }
+        }
     }
 
     @Override

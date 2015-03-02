@@ -41,15 +41,6 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     public JDBCPreparedStatementImpl(
         JDBCSession connection,
         PreparedStatement original,
-        @Nullable String query)
-    {
-        super(connection, original);
-        setQueryString(query);
-    }
-
-    public JDBCPreparedStatementImpl(
-        JDBCSession connection,
-        PreparedStatement original,
         String query,
         boolean disableLogging)
     {

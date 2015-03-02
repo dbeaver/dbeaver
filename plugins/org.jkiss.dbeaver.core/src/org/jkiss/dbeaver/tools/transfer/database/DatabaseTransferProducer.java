@@ -75,6 +75,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             dataSource.openIsolatedContext(monitor, "Data transfer producer") : dataSource;
         DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask);
         try {
+            session.enableLogging(false);
             if (newConnection) {
                 // Turn off auto-commit in source DB
                 // Auto-commit has to be turned off because some drivers allows to read LOBs and
