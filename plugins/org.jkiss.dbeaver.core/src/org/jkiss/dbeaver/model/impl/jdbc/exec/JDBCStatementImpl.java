@@ -57,11 +57,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     private boolean disableLogging;
 
-    public JDBCStatementImpl(JDBCSession connection, STATEMENT original)
-    {
-        this(connection, original, false);
-    }
-
     public JDBCStatementImpl(JDBCSession connection, STATEMENT original, boolean disableLogging)
     {
         this.connection = connection;

@@ -71,4 +71,9 @@ public interface DBCSession extends DBPCloseableObject, DBDPreferences {
         boolean updatable,
         boolean returnGeneratedKeys) throws DBCException;
 
+    /**
+     * Enables/disables operations logging within this session
+     * @param enable enable
+     */
+    void enableLogging(boolean enable);
 }
