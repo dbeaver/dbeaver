@@ -104,7 +104,10 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     if (!reuse && statementsInBatch > 0) {
                         // Flush batch
                         flushBatch(statistics, statement);
+                        statement.close();
+                        statement = null;
                         statementsInBatch = 0;
+                        reuse = true;
                     }
                 }
                 if (statement == null || !reuse) {
@@ -142,6 +145,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
 
             if (statementsInBatch > 0) {
                 flushBatch(statistics, statement);
+                statement.close();
+                statement = null;
             }
         } finally {
             if (reuseStatement && statement != null) {
