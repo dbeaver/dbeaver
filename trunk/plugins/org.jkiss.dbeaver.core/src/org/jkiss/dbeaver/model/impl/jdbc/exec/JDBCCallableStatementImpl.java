@@ -40,9 +40,10 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     public JDBCCallableStatementImpl(
         JDBCSession connection,
         CallableStatement original,
-        @Nullable String query)
+        @Nullable String query,
+        boolean disableLogging)
     {
-        super(connection, original, query);
+        super(connection, original, query, disableLogging);
     }
 
     @Override

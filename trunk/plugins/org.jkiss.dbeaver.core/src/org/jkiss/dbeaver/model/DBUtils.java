@@ -167,7 +167,7 @@ public final class DBUtils {
 
     public static String getFullQualifiedName(DBPDataSource dataSource, DBPNamedObject ... path)
     {
-        StringBuilder name = new StringBuilder(20);
+        StringBuilder name = new StringBuilder(20 * path.length);
         if (!(dataSource instanceof SQLDataSource)) {
             // It is not SQL identifier, let's just make it simple then
             for (DBPNamedObject namePart : path) {

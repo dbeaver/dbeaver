@@ -208,6 +208,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             e.printStackTrace();
         }
         targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
+        targetSession.enableLogging(false);
         if (settings.isUseTransactions()) {
             targetSession.getTransactionManager().setAutoCommit(false);
         }

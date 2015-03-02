@@ -301,7 +301,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     {
         readRequiredMeta(session.getProgressMonitor());
 
-        return new ExecuteBatchImpl(attributes, keysReceiver, false) {
+        return new ExecuteBatchImpl(attributes, keysReceiver, true) {
+
             @NotNull
             @Override
             protected DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException {

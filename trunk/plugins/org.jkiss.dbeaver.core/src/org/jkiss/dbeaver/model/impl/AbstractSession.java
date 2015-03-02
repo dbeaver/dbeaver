@@ -85,6 +85,11 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     }
 
     @Override
+    public void enableLogging(boolean enable) {
+
+    }
+
+    @Override
     public DBDDataFormatterProfile getDataFormatterProfile()
     {
         if (dataFormatterProfile == null) {

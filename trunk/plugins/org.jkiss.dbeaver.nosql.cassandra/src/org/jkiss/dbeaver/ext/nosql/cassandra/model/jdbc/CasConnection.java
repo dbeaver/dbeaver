@@ -27,7 +27,7 @@ public class CasConnection extends JDBCConnectionImpl {
     protected JDBCStatement createStatementImpl(Statement original)
         throws SQLFeatureNotSupportedException
     {
-        return new JDBCStatementImpl<Statement>(this, original) {
+        return new JDBCStatementImpl<Statement>(this, original, false) {
             @Override
             protected JDBCResultSetImpl createResultSetImpl(ResultSet resultSet)
             {
@@ -40,7 +40,7 @@ public class CasConnection extends JDBCConnectionImpl {
     protected JDBCPreparedStatement createPreparedStatementImpl(PreparedStatement original, String sql)
         throws SQLFeatureNotSupportedException
     {
-        return new JDBCPreparedStatementImpl(this, original, sql) {
+        return new JDBCPreparedStatementImpl(this, original, sql, false) {
             @Override
             protected JDBCResultSetImpl createResultSetImpl(ResultSet resultSet)
             {
