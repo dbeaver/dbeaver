@@ -171,6 +171,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         // TODO: make some smart data type matcher
         // Current solution looks like hack
         String typeName = source.getTypeName();
+        DBPDataKind dataKind = source.getDataKind();
         if (targetDataSource instanceof DBPDataTypeProvider) {
             DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) targetDataSource;
             DBSDataType dataType = dataTypeProvider.getDataType(typeName);
@@ -185,11 +186,11 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                 // Let's try to find something similar
                 List<DBSDataType> possibleTypes = new ArrayList<DBSDataType>();
                 for (DBSDataType type : dataTypeProvider.getDataTypes()) {
-                    if (type.getDataKind() == source.getDataKind()) {
+                    if (type.getDataKind() == dataKind) {
                         possibleTypes.add(type);
                     }
                 }
-                typeName = DBUtils.getDefaultDataTypeName(targetDataSource, source.getDataKind());
+                typeName = DBUtils.getDefaultDataTypeName(targetDataSource, dataKind);
                 if (!possibleTypes.isEmpty()) {
                     DBSDataType targetType = null;
                     for (DBSDataType type : possibleTypes) {
@@ -204,9 +205,12 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                     typeName = targetType.getTypeName();
                 }
             }
+            if (dataType != null) {
+                dataKind = dataType.getDataKind();
+            }
         }
 
-        if (source.getDataKind() == DBPDataKind.STRING) {
+        if (dataKind == DBPDataKind.STRING) {
             typeName += "(" + source.getMaxLength() + ")";
         }
         return typeName;
