@@ -1,4 +1,3 @@
-Comapre objects in menu
 Data transfer DB->DB. Set default export mapping initially
 DBCStatement-> executeQuery + executeUpdate
 Intro plugin
