@@ -27,11 +27,16 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -45,6 +50,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * ColumnsMappingDialog
@@ -74,6 +81,8 @@ public class ColumnsMappingDialog extends StatusDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
+        DBPDataSource targetDataSource = settings.getTargetDataSource(mapping);
+
         getShell().setText("Map columns of " + mapping.getTargetName());
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
@@ -84,7 +93,7 @@ public class ColumnsMappingDialog extends StatusDialog {
         new Label(composite, SWT.NONE).setText("Source entity: " + DBUtils.getObjectFullName(mapping.getSource()) +
             " [" + mapping.getSource().getDataSource().getContainer().getName() + "]");
         new Label(composite, SWT.NONE).setText("Target entity: " + mapping.getTargetName() +
-            " [" + settings.getTargetDataSource(mapping).getContainer().getName() + "]");
+            " [" + (targetDataSource == null ? "?" : targetDataSource.getContainer().getName()) + "]");
         mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 600;
@@ -174,7 +183,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                             mapping.getParent().getTarget() instanceof DBSEntity)
                         {
                             DBSEntity parentEntity = (DBSEntity)mapping.getParent().getTarget();
-                            for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
+                            for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(VoidProgressMonitor.INSTANCE))) {
                                 items.add(attr.getName());
                             }
                         }
@@ -217,7 +226,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                                 attrMapping.getParent().getTarget() instanceof DBSEntity)
                             {
                                 DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
-                                for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
+                                for (DBSEntityAttribute attr : CommonUtils.safeCollection(parentEntity.getAttributes(VoidProgressMonitor.INSTANCE))) {
                                     if (name.equalsIgnoreCase(attr.getName())) {
                                         attrMapping.setTarget(attr);
                                         attrMapping.setMappingType(DatabaseMappingType.existing);
@@ -256,7 +265,18 @@ public class ColumnsMappingDialog extends StatusDialog {
                 @Override
                 protected CellEditor getCellEditor(Object element)
                 {
-                    return new TextCellEditor(mappingViewer.getTable(), SWT.BORDER);
+                    DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
+
+                    Set<String> types = new LinkedHashSet<String>();
+                    DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
+                    if (dataSource instanceof DBPDataTypeProvider) {
+                        for (DBSDataType type : ((DBPDataTypeProvider) dataSource).getDataTypes()) {
+                            types.add(type.getName());
+                        }
+                    }
+                    types.add(attrMapping.getTargetType(dataSource));
+
+                    return new CustomComboBoxCellEditor(mappingViewer.getTable(), types.toArray(new String[types.size()]), SWT.BORDER);
                 }
                 @Override
                 protected boolean canEdit(Object element)
