@@ -340,8 +340,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
             <with variable="activePart">
-                <!-- TODO: Should replace forcePluginActivation with some other non-active way to test property-->
-                <test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>
+                <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">

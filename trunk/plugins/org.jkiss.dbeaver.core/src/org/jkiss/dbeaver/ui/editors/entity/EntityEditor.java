@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -85,7 +87,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer, INavigatorModelView
 {
     static final Log log = Log.getLog(EntityEditor.class);
 
@@ -483,6 +485,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         UIUtils.setHelp(getContainer(), IHelpContextIds.CTX_ENTITY_EDITOR);
     }
 
+/*
     private void addNavigatorTabs()
     {
         // Collect tabs from navigator tree model
@@ -511,6 +514,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             addNodeTab(tab);
         }
     }
+*/
 
     @Override
     protected void pageChange(int newPageIndex) {
@@ -872,6 +876,24 @@ public class EntityEditor extends MultiPageDatabaseEditor
             objectLink.addSelectionListener(selectionListener);
             objectLink.setToolTipText("Open " + label + " Editor");
         }
+    }
+
+    @Override
+    public DBNNode getRootNode() {
+        return getEditorInput().getTreeNode();
+    }
+
+    @Nullable
+    @Override
+    public Viewer getNavigatorViewer()
+    {
+        IWorkbenchPart activePart = getActiveEditor();
+        if (activePart instanceof INavigatorModelView) {
+            return ((INavigatorModelView)activePart).getNavigatorViewer();
+        } else if (getActiveFolder() instanceof INavigatorModelView) {
+            return ((INavigatorModelView)getActiveFolder()).getNavigatorViewer();
+        }
+        return null;
     }
 
     private class ChangesPreviewer implements Runnable {
