@@ -1257,6 +1257,7 @@
                     <dynamic id="org.jkiss.dbeaver.core.menu.txn" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceTransactionModeContributor"/>
                 </menu>
                 <separator name="tools" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.core.compare.objects"/>
                 <menu label="%menu.database.tools" icon="icons/misc/tools.png">
                     <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
                 </menu>
