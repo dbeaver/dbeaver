@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.edit;
 
+import org.jkiss.dbeaver.model.exec.DBCException;
+
 /**
  * Database persist action
  */
@@ -35,7 +37,8 @@ public interface DBEPersistAction {
 
     String getScript();
 
-    void handleExecute(Throwable error);
+    void handleExecute(Throwable error)
+        throws DBCException;
 
     ActionType getType();
 }
