@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
 import java.util.Collection;
 import java.util.Collections;
