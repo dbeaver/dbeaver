@@ -37,17 +37,19 @@ import org.eclipse.swt.graphics.Image;
  */
 public class FolderInfo {
 
-    private String id;
-    private String text;
-    private Image image;
-    private String tooltip;
-    private IFolder contents;
+    private final String id;
+    private final String text;
+    private final Image image;
+    private final String tooltip;
+    private final boolean embeddable;
+    private final IFolder contents;
 
-    public FolderInfo(String id, String text, Image image, String tooltip, IFolder contents) {
+    public FolderInfo(String id, String text, Image image, String tooltip, boolean embeddable, IFolder contents) {
         this.id = id;
         this.text = text;
         this.image = image;
         this.tooltip = tooltip;
+        this.embeddable = embeddable;
         this.contents = contents;
     }
 
@@ -69,6 +71,10 @@ public class FolderInfo {
 
     public boolean isIndented() {
         return false;
+    }
+
+    public boolean isEmbeddable() {
+        return embeddable;
     }
 
     public IFolder getContents() {

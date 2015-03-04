@@ -51,6 +51,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     public static final String POSITION_START = IActionConstants.MB_ADDITIONS_START;
     public static final String POSITION_MIDDLE = IActionConstants.MB_ADDITIONS_MIDDLE;
     public static final String POSITION_END = IActionConstants.MB_ADDITIONS_END;
+    private boolean embeddable;
 
     public static enum Type {
         editor,
@@ -107,6 +108,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         } else {
             this.type = Type.editor;
         }
+        this.embeddable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDABLE));
     }
 
     public String getId()
@@ -142,6 +144,10 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     public Type getType()
     {
         return type;
+    }
+
+    public boolean isEmbeddable() {
+        return embeddable;
     }
 
     private Class<? extends IEditorPart> getEditorClass()

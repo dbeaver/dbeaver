@@ -92,6 +92,8 @@ public class RegistryConstants {
     public static final String ATTR_EXTENSION = "extension"; //$NON-NLS-1$
     public static final String ATTR_SAMPLE_CLASS = "sampleClass"; //$NON-NLS-1$
     public static final String ATTR_SOURCE_TYPE = "sourceType"; //$NON-NLS-1$
+    public static final String ATTR_EMBEDDABLE = "embeddable"; //$NON-NLS-1$
+
     public static final String TAG_FOLDER = "folder"; //$NON-NLS-1$
     public static final String TAG_ITEMS = "items"; //$NON-NLS-1$
     public static final String TAG_OBJECT = "object"; //$NON-NLS-1$
