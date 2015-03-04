@@ -425,16 +425,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             monitor.subTask(CoreMessages.ui_properties_task_add_folder + child.getNodeName() + "'"); //$NON-NLS-2$
-                            String tooltip = node.getNodeDescription();
-                            if (node instanceof DBSObject) {
-                                tooltip = ((DBSObject) node).getDescription();
-                            }
                             tabList.add(
                                 new FolderInfo(
                                     child.getNodeName(),
                                     child.getNodeName(),
                                     child.getNodeIconDefault(),
-                                    tooltip,
+                                    child.getNodeDescription(),
                                     new FolderPageNode(part, child, null)
                                 ));
                         }
@@ -453,16 +449,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
                                     monitor.subTask(CoreMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
-                                    String tooltip = node.getNodeDescription();
-                                    if (node instanceof DBSObject) {
-                                        tooltip = ((DBSObject) node).getDescription();
-                                    }
                                     tabList.add(
                                         new FolderInfo(
                                             node.getNodeName(),
                                             node.getNodeName(),
                                             node.getNodeIconDefault(),
-                                            tooltip,
+                                            node.getNodeDescription(),
                                             new FolderPageNode(part, node, child)));
                                 }
                             } catch (DBException e) {
