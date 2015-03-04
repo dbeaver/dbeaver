@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mssql.MSSQLMessages;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLDataSource;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLUser;
@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
+import org.jkiss.dbeaver.model.impl.edit.SQLScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -98,7 +98,7 @@ public class MSSQLUserManager extends JDBCObjectManager<MSSQLUser> implements DB
         if (!queue.isEmpty()) {
             // Add privileges flush to the tail
             queue.add(
-                new DatabaseObjectScriptCommand<MSSQLUser>(
+                new SQLScriptCommand<MSSQLUser>(
                     queue.getObject(),
                     MSSQLMessages.edit_user_manager_command_flush_privileges,
                     "FLUSH PRIVILEGES")); //$NON-NLS-1$
@@ -119,10 +119,10 @@ public class MSSQLUserManager extends JDBCObjectManager<MSSQLUser> implements DB
             super(user, MSSQLMessages.edit_user_manager_command_drop_user);
         }
         @Override
-        public IDatabasePersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions()
         {
-            return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction(MSSQLMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
+            return new DBEPersistAction[] {
+                new SQLDatabasePersistAction(MSSQLMessages.edit_user_manager_command_drop_user, "DROP USER " + getObject().getFullName()) { //$NON-NLS-2$
                     @Override
                     public void handleExecute(Throwable error)
                     {

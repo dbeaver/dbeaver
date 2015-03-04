@@ -27,12 +27,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -78,21 +78,21 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         String schemaName = command.getObject().getName();
-        AbstractDatabasePersistAction action = new AbstractDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
+        SQLDatabasePersistAction action = new SQLDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
             schemaName));
-        return new IDatabasePersistAction[] { action };
+        return new DBEPersistAction[] { action };
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         String schemaName = command.getObject().getName();
-        IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
+        DBEPersistAction action = new SQLDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
             schemaName));
-        return new IDatabasePersistAction[] { action };
+        return new DBEPersistAction[] { action };
     }
 
     // --------

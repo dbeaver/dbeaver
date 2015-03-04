@@ -22,14 +22,14 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
@@ -80,35 +80,35 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         return createOrReplaceViewQuery(command.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         return createOrReplaceViewQuery(command.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
-    private IDatabasePersistAction[] createOrReplaceViewQuery(OracleTrigger trigger)
+    private DBEPersistAction[] createOrReplaceViewQuery(OracleTrigger trigger)
     {
         String source = OracleUtils.normalizeSourceName(trigger, false);
         if (source == null) {
             return null;
         }
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        actions.add(new AbstractDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
+        actions.add(new SQLDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, trigger);
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
 }

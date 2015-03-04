@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.manager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
@@ -125,7 +125,7 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
     // ------
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         // DF: Throw exception for now
         // Will have to implement it for alter FK query optimisation + TRUST

@@ -21,16 +21,15 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
@@ -72,14 +71,14 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
         query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
         appendTableModifiers(command.getObject(), command, query);
 
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(query.toString())
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(query.toString())
         };
     }
 
@@ -112,10 +111,10 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 "Rename table",
                 "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
                     " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$

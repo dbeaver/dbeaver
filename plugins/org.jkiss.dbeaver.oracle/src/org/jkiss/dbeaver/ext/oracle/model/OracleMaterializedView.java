@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -167,9 +167,9 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
     }
 
     @Override
-    public IDatabasePersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions()
     {
-        return new IDatabasePersistAction[] {
+        return new DBEPersistAction[] {
             new OracleObjectPersistAction(
                 OracleObjectType.MATERIALIZED_VIEW,
                 "Compile materialized view",

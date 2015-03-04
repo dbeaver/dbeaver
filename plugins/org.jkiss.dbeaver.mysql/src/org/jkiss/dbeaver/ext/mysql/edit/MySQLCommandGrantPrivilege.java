@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 
 import java.util.Map;
@@ -57,7 +57,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     }
 
     @Override
-    public IDatabasePersistAction[] getPersistActions()
+    public DBEPersistAction[] getPersistActions()
     {
         String privName = privilege.getName();
         String grantScript = "GRANT " + privName + //$NON-NLS-1$
@@ -66,8 +66,8 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         String revokeScript = "REVOKE " + privName + //$NON-NLS-1$
             " ON " + getObjectName() + //$NON-NLS-1$
             " FROM " + getObject().getFullName() + ""; //$NON-NLS-1$ //$NON-NLS-2$
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 MySQLMessages.edit_command_grant_privilege_action_grant_privilege,
                 grant ? grantScript : revokeScript)
         };

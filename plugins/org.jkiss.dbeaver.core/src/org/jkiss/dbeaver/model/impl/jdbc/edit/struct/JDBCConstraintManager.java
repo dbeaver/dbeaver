@@ -20,10 +20,10 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
@@ -43,21 +43,21 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCTableConstra
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
 
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 CoreMessages.model_jdbc_create_new_constraint,
                 "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 CoreMessages.model_jdbc_drop_constraint,
                 getDropConstraintPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())

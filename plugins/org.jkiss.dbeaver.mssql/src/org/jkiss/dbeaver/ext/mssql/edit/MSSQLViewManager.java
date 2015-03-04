@@ -21,13 +21,13 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLCatalog;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLTableBase;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLView;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -72,26 +72,26 @@ public class MSSQLViewManager extends JDBCObjectEditor<MSSQLTableBase, MSSQLCata
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         return createOrReplaceViewQuery((MSSQLView) command.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         return createOrReplaceViewQuery((MSSQLView) command.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
-    private IDatabasePersistAction[] createOrReplaceViewQuery(MSSQLView view)
+    private DBEPersistAction[] createOrReplaceViewQuery(MSSQLView view)
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
@@ -101,8 +101,8 @@ public class MSSQLViewManager extends JDBCObjectEditor<MSSQLTableBase, MSSQLCata
         if (checkOption != null && checkOption != MSSQLView.CheckOption.NONE) {
             decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create view", decl.toString())
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Create view", decl.toString())
         };
     }
 

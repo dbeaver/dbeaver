@@ -21,14 +21,14 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
@@ -62,23 +62,23 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
     {
         return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
     {
         final OraclePackage object = objectDeleteCommand.getObject();
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop package",
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop package",
                 "DROP PACKAGE " + object.getFullQualifiedName()) //$NON-NLS-1$
         };
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
     {
         return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
     }
@@ -89,31 +89,31 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private IDatabasePersistAction[] createOrReplaceProcedureQuery(OraclePackage pack)
+    private DBEPersistAction[] createOrReplaceProcedureQuery(OraclePackage pack)
     {
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
         String header = OracleUtils.normalizeSourceName(pack, false);
         if (!CommonUtils.isEmpty(header)) {
             actions.add(
-                new AbstractDatabasePersistAction(
+                new SQLDatabasePersistAction(
                     "Create package header",
                     "CREATE OR REPLACE " + header)); //$NON-NLS-1$
         }
         String body = OracleUtils.normalizeSourceName(pack, true);
         if (!CommonUtils.isEmpty(body)) {
             actions.add(
-                new AbstractDatabasePersistAction(
+                new SQLDatabasePersistAction(
                     "Create package body",
                     "CREATE OR REPLACE " + body)); //$NON-NLS-1$
         } else {
             actions.add(
-                new AbstractDatabasePersistAction(
+                new SQLDatabasePersistAction(
                     "Drop package header",
-                    "DROP PACKAGE BODY " + pack.getFullQualifiedName(), IDatabasePersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
+                    "DROP PACKAGE BODY " + pack.getFullQualifiedName(), DBEPersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
                 );
         }
         OracleUtils.addSchemaChangeActions(actions, pack);
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
 }

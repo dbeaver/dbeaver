@@ -18,56 +18,35 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * Object persist action implementation
+ * Script command
  */
-public class AbstractDatabasePersistAction implements IDatabasePersistAction {
+public class SQLScriptCommand<OBJECT_TYPE extends DBSObject> extends DBECommandAbstract<OBJECT_TYPE> {
 
-    private final String title;
-    private final String script;
-    private final ActionType type;
+    private String script;
 
-    public AbstractDatabasePersistAction(String title, String script)
+    public SQLScriptCommand(OBJECT_TYPE object, String title, String script)
     {
-        this(title, script, ActionType.NORMAL);
-    }
-
-    public AbstractDatabasePersistAction(String title, String script, ActionType type)
-    {
-        this.title = title;
+        super(object, title);
         this.script = script;
-        this.type = type;
-    }
-
-    public AbstractDatabasePersistAction(String script)
-    {
-        this("", script, ActionType.NORMAL);
     }
 
     @Override
-    public String getTitle()
+    public void updateModel()
     {
-        return title;
     }
 
     @Override
-    public String getScript()
+    public DBEPersistAction[] getPersistActions()
     {
-        return script;
-    }
-
-    @Override
-    public void handleExecute(Throwable error)
-    {
-        // do nothing
-    }
-
-    @Override
-    public ActionType getType()
-    {
-        return type;
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
+                getTitle(),
+                script)
+        };
     }
 
 }

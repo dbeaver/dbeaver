@@ -21,10 +21,9 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -69,7 +68,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
         return table;
     }
 
-    public IDatabasePersistAction[] getTableDDL(DBRProgressMonitor monitor, GenericTable table) throws DBException
+    public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, GenericTable table) throws DBException
     {
         GenericTableColumnManager tcm = new GenericTableColumnManager();
         GenericPrimaryKeyManager pkm = new GenericPrimaryKeyManager();

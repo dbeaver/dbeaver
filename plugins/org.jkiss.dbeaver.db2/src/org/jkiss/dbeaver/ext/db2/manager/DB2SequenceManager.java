@@ -22,13 +22,13 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
@@ -89,43 +89,43 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
-        List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
+        List<DBEPersistAction> listeCommands = new ArrayList<DBEPersistAction>(2);
 
         String sql = buildStatement(command.getObject(), false);
-        listeCommands.add(new AbstractDatabasePersistAction("Create Sequence", sql));
+        listeCommands.add(new SQLDatabasePersistAction("Create Sequence", sql));
 
         String comment = buildComment(command.getObject());
         if (comment != null) {
-            listeCommands.add(new AbstractDatabasePersistAction("Comment on Sequence", comment));
+            listeCommands.add(new SQLDatabasePersistAction("Comment on Sequence", comment));
         }
 
-        return listeCommands.toArray(new IDatabasePersistAction[listeCommands.size()]);
+        return listeCommands.toArray(new DBEPersistAction[listeCommands.size()]);
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        List<IDatabasePersistAction> listeActions = new ArrayList<IDatabasePersistAction>(2);
+        List<DBEPersistAction> listeActions = new ArrayList<DBEPersistAction>(2);
 
         String sql = buildStatement(command.getObject(), true);
-        listeActions.add(new AbstractDatabasePersistAction("Alter Sequence", sql));
+        listeActions.add(new SQLDatabasePersistAction("Alter Sequence", sql));
 
         String comment = buildComment(command.getObject());
         if (comment != null) {
-            listeActions.add(new AbstractDatabasePersistAction("Comment on Sequence", comment));
+            listeActions.add(new SQLDatabasePersistAction("Comment on Sequence", comment));
         }
 
-        return listeActions.toArray(new IDatabasePersistAction[listeActions.size()]);
+        return listeActions.toArray(new DBEPersistAction[listeActions.size()]);
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         String sql = String.format(SQL_DROP, command.getObject().getFullQualifiedName());
-        IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop Sequence", sql);
-        return new IDatabasePersistAction[]{action};
+        DBEPersistAction action = new SQLDatabasePersistAction("Drop Sequence", sql);
+        return new DBEPersistAction[]{action};
     }
 
     // -------
