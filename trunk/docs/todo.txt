@@ -1,3 +1,4 @@
+Folders on single page
 Data transfer DB->DB. Set default export mapping initially
 DBCStatement-> executeQuery + executeUpdate
 Intro plugin
@@ -11,7 +12,6 @@ SQL folding
 MySQL and Cassandra + SSL.
 
 Plain-text results representation
-Move main toolbar edit control in tab
 Save As+rename. Use external files in workspace
 Paste into multiple cells
 Transaction state in status bar
@@ -19,9 +19,7 @@ Transaction state in status bar
 Process scripts with external native tool (SQLPlus + mysql)
 Process SQL blocks (begin/end/final delimiter)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
-SSL
 Secure-storage for passwords
-
 
 NOSQL:
 Expand/collapse All in Grid
@@ -29,7 +27,6 @@ Edit collections
 Edit Mongo data
 In record mode show only existing attrs for dynamic metadata
 Hide dynamic columns which presents in less than 50% of records. Show them as arrays??
-
 
 4. Query manager fixes. + keep only primitive props + persistence
 5. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
@@ -41,11 +38,8 @@ Office formats support (xls, doc) for export/import. Possibly office extension.
 Search in multiple data sources
 Search results reflect on disconnect
 
-Generic driver config for additional metadata reading (stored procedures, ete).
 Columns ordering/search (record mode)
 DB toolbar visibility config in Eclipse mode
 
-DB specific:
+Rename mysql (generic?) table,column
 
-rename mysql (generic?) table,column
-comment mysql table, column
