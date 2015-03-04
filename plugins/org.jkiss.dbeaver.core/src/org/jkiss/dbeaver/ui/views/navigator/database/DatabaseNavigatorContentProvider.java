@@ -110,7 +110,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         if (!parentNode.allowsNavigableChildren()) {
             return EMPTY_CHILDREN;
         }
-        if (parentNode instanceof DBNDatabaseNode && ((DBNDatabaseNode)parentNode).isLazyNode()) {
+        if (parentNode instanceof DBNDatabaseNode && ((DBNDatabaseNode)parentNode).needsInitialization()) {
             return TreeLoadVisualizer.expandChildren(
                 viewer,
                 new TreeLoadService("Loading", ((DBNDatabaseNode)parentNode)));

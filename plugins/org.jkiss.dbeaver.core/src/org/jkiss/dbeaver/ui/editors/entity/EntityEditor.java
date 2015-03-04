@@ -50,8 +50,6 @@ import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -61,10 +59,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
-import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -499,7 +494,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         };
         DBNDatabaseNode node = getEditorInput().getTreeNode();
         try {
-            if (node.isLazyNode()) {
+            if (node.needsInitialization()) {
                 DBeaverUI.runInProgressService(tabsCollector);
             } else {
                 tabsCollector.run(VoidProgressMonitor.INSTANCE);
@@ -630,6 +625,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public void removeFolderListener(IFolderListener listener)
     {
     }
+/*
 
     private static class TabInfo {
         DBNDatabaseNode node;
@@ -692,6 +688,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         return tabs;
     }
+*/
 
     private void addContributions(String position)
     {
