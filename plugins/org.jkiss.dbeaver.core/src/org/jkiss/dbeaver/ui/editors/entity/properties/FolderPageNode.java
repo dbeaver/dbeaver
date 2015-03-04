@@ -99,7 +99,7 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
 
         if (!activated) {
             activated = true;
-            boolean isLazy = !(node instanceof DBNDatabaseNode) || ((DBNDatabaseNode) node).isLazyNode();
+            boolean isLazy = !(node instanceof DBNDatabaseNode) || ((DBNDatabaseNode) node).needsInitialization();
             itemControl.loadData(isLazy);
         }
     }

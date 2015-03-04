@@ -107,12 +107,6 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     }
 
     @Override
-    public boolean isLazyNode()
-    {
-        return super.isLazyNode();
-    }
-
-    @Override
     public boolean isManagable()
     {
         return true;

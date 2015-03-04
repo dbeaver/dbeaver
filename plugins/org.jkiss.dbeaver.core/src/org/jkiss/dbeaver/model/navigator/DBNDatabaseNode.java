@@ -215,7 +215,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         clearChildren(reflect);
     }
 
-    public boolean isLazyNode()
+    public boolean needsInitialization()
     {
         return childNodes == null && allowsChildren();
     }
@@ -461,7 +461,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                     if (oldChild.getMeta() == meta && equalObjects(oldChild.getObject(), object)) {
                         oldChild.reloadObject(monitor, object);
 
-                        if (oldChild.allowsChildren() && !oldChild.isLazyNode()) {
+                        if (oldChild.allowsChildren() && !oldChild.needsInitialization()) {
                             // Refresh children recursive
                             oldChild.reloadChildren(monitor);
                         }

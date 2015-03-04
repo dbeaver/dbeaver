@@ -21,16 +21,9 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -52,13 +45,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
-import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
@@ -381,22 +371,21 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             new FolderPageProperties(getEditorInput())));
     }
 
-    private void makeDatabaseEditorTabs(IDatabaseEditor part, List<FolderInfo> tabList)
+    private void makeDatabaseEditorTabs(final IDatabaseEditor part, final List<FolderInfo> tabList)
     {
         final DBNDatabaseNode node = part.getEditorInput().getTreeNode();
         final DBSObject object = node.getObject();
 
         // Collect tabs from navigator tree model
-        final List<NavigatorTabInfo> tabs = new ArrayList<NavigatorTabInfo>();
         DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor)
             {
-                tabs.addAll(collectNavigatorTabs(monitor, node));
+                collectNavigatorTabs(monitor, part, node, tabList);
             }
         };
         try {
-            if (node.isLazyNode()) {
+            if (node.needsInitialization()) {
                 DBeaverUI.runInProgressService(tabsCollector);
             } else {
                 tabsCollector.run(VoidProgressMonitor.INSTANCE);
@@ -405,10 +394,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             log.error(e.getTargetException());
         } catch (InterruptedException e) {
             // just go further
-        }
-
-        for (NavigatorTabInfo tab : tabs) {
-            addNavigatorNodeTab(part, tabList, tab);
         }
 
         // Query for entity editors
@@ -428,47 +413,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-    private void addNavigatorNodeTab(final IDatabaseEditor part, List<FolderInfo> tabList, final NavigatorTabInfo tabInfo)
+    private static void collectNavigatorTabs(DBRProgressMonitor monitor, IDatabaseEditor part, DBNNode node, List<FolderInfo> tabList)
     {
-        tabList.add(new FolderInfo(
-            //PropertiesContributor.CATEGORY_STRUCT,
-            tabInfo.getName(),
-            tabInfo.getName(),
-            tabInfo.node.getNodeIconDefault(),
-            tabInfo.getDescription(),
-            new FolderPageNode(part, tabInfo.node, tabInfo.meta)));
-    }
-
-    private static class NavigatorTabInfo {
-        final DBNDatabaseNode node;
-        final DBXTreeNode meta;
-        private NavigatorTabInfo(DBNDatabaseNode node)
-        {
-            this(node, null);
-        }
-        private NavigatorTabInfo(DBNDatabaseNode node, DBXTreeNode meta)
-        {
-            this.node = node;
-            this.meta = meta;
-        }
-        public String getName()
-        {
-            return meta == null ? node.getNodeName() : meta.getChildrenType(node.getObject().getDataSource());
-        }
-        public String getDescription()
-        {
-            if (node instanceof DBSObject) {
-                return ((DBSObject) node).getDescription();
-            }
-            return node.getNodeDescription();
-        }
-    }
-
-
-    private static List<NavigatorTabInfo> collectNavigatorTabs(DBRProgressMonitor monitor, DBNNode node)
-    {
-        List<NavigatorTabInfo> tabs = new ArrayList<NavigatorTabInfo>();
-
         // Add all nested folders as tabs
         if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
             // Do not add children tabs
@@ -479,7 +425,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
                             monitor.subTask(CoreMessages.ui_properties_task_add_folder + child.getNodeName() + "'"); //$NON-NLS-2$
-                            tabs.add(new NavigatorTabInfo((DBNDatabaseFolder)child));
+                            String tooltip = node.getNodeDescription();
+                            if (node instanceof DBSObject) {
+                                tooltip = ((DBSObject) node).getDescription();
+                            }
+                            tabList.add(
+                                new FolderInfo(
+                                    child.getNodeName(),
+                                    child.getNodeName(),
+                                    child.getNodeIconDefault(),
+                                    tooltip,
+                                    new FolderPageNode(part, child, null)
+                                ));
                         }
                     }
                 }
@@ -496,7 +453,17 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
                                     monitor.subTask(CoreMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
-                                    tabs.add(new NavigatorTabInfo((DBNDatabaseNode)node, child));
+                                    String tooltip = node.getNodeDescription();
+                                    if (node instanceof DBSObject) {
+                                        tooltip = ((DBSObject) node).getDescription();
+                                    }
+                                    tabList.add(
+                                        new FolderInfo(
+                                            node.getNodeName(),
+                                            node.getNodeName(),
+                                            node.getNodeIconDefault(),
+                                            tooltip,
+                                            new FolderPageNode(part, node, child)));
                                 }
                             } catch (DBException e) {
                                 log.debug("Can't add child items tab", e); //$NON-NLS-1$
@@ -506,7 +473,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
             }
         }
-        return tabs;
     }
 
 }
