@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
-import org.jkiss.dbeaver.model.impl.sql.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
