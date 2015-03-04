@@ -26,7 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
@@ -1090,11 +1090,11 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String generateScript(IDatabasePersistAction[] persistActions)
+    public static String generateScript(DBEPersistAction[] persistActions)
     {
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         StringBuilder script = new StringBuilder(512);
-        for (IDatabasePersistAction action : ArrayUtils.safeArray(persistActions)) {
+        for (DBEPersistAction action : ArrayUtils.safeArray(persistActions)) {
             if (script.length() > 0) {
                 script.append(lineSeparator);
             }

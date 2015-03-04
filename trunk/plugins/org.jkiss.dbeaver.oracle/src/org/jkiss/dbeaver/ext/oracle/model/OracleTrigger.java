@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -230,9 +230,9 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     }
 
     @Override
-    public IDatabasePersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions()
     {
-        return new IDatabasePersistAction[] {
+        return new DBEPersistAction[] {
             new OracleObjectPersistAction(
                 OracleObjectType.TRIGGER,
                 "Compile trigger",

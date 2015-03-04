@@ -615,7 +615,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public DBXTreeItem getItemsMeta()
     {
         List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
-        if (metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
+        if (metaChildren != null && metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
             return (DBXTreeItem)metaChildren.get(0);
         } else {
             return null;

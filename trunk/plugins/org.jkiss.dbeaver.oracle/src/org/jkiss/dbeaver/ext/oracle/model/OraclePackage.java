@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -154,9 +154,9 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Override
-    public IDatabasePersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions()
     {
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
         /*if (!CommonUtils.isEmpty(sourceDeclaration)) */{
             actions.add(
                 new OracleObjectPersistAction(
@@ -173,7 +173,7 @@ public class OraclePackage extends OracleSchemaObject
                     "ALTER PACKAGE " + getFullQualifiedName() + " COMPILE BODY"
                 ));
         }
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override

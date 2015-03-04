@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -146,17 +146,17 @@ public class OracleUtils {
         }
     }
 
-    public static void addSchemaChangeActions(List<IDatabasePersistAction> actions, OracleSourceObject object)
+    public static void addSchemaChangeActions(List<DBEPersistAction> actions, OracleSourceObject object)
     {
-        actions.add(0, new AbstractDatabasePersistAction(
+        actions.add(0, new SQLDatabasePersistAction(
             "Set target schema",
             "ALTER SESSION SET CURRENT_SCHEMA=" + object.getSchema().getName(),
-            IDatabasePersistAction.ActionType.INITIALIZER));
+            DBEPersistAction.ActionType.INITIALIZER));
         if (object.getSchema() != object.getDataSource().getSelectedObject()) {
-            actions.add(new AbstractDatabasePersistAction(
+            actions.add(new SQLDatabasePersistAction(
                 "Set current schema",
                 "ALTER SESSION SET CURRENT_SCHEMA=" + object.getDataSource().getSelectedObject().getName(),
-                IDatabasePersistAction.ActionType.FINALIZER));
+                DBEPersistAction.ActionType.FINALIZER));
         }
     }
 

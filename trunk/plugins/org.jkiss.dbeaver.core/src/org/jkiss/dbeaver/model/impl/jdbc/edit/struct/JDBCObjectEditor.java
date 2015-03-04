@@ -22,14 +22,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -113,21 +110,21 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         CONTAINER_TYPE parent,
         Object copyFrom);
 
-    protected abstract IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command);
+    protected abstract DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command);
 
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         // Base SQL syntax do not support object properties change
         throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
-    protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
         // Base SQL syntax do not support object properties change
         throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
-    protected abstract IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
+    protected abstract DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
 
     protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
     {
@@ -219,7 +216,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         }
 
         @Override
-        public IDatabasePersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions()
         {
             return makeObjectModifyActions(this);
         }
@@ -249,7 +246,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         }
 
         @Override
-        public IDatabasePersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions()
         {
             return makeObjectCreateActions(this);
         }
@@ -283,7 +280,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         }
 
         @Override
-        public IDatabasePersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions()
         {
             return makeObjectDeleteActions(this);
         }
@@ -321,7 +318,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         }
 
         @Override
-        public IDatabasePersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions()
         {
             return makeObjectRenameActions(this);
         }

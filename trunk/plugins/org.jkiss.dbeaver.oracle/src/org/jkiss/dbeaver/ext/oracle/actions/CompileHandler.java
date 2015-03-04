@@ -33,7 +33,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -218,7 +218,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
 
     public static boolean compileUnit(DBRProgressMonitor monitor, DBCCompileLog compileLog, OracleSourceObject unit) throws DBCException
     {
-        final IDatabasePersistAction[] compileActions = unit.getCompileActions();
+        final DBEPersistAction[] compileActions = unit.getCompileActions();
         if (ArrayUtils.isEmpty(compileActions)) {
             return true;
         }
@@ -229,7 +229,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             "Compile '" + unit.getName() + "'");
         try {
             boolean success = true;
-            for (IDatabasePersistAction action : compileActions) {
+            for (DBEPersistAction action : compileActions) {
                 final String script = action.getScript();
                 compileLog.trace(script);
 

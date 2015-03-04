@@ -21,14 +21,13 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -67,25 +66,25 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         final OracleTable table = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>(2);
         if (!hasComment || command.getProperties().size() > 1) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
             appendTableModifiers(command.getObject(), command, query);
-            actions.add(new AbstractDatabasePersistAction(query.toString()));
+            actions.add(new SQLDatabasePersistAction(query.toString()));
         }
         if (hasComment) {
-            actions.add(new AbstractDatabasePersistAction(
+            actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + table.getFullQualifiedName() +
                     " IS '" + table.getComment() + "'"));
         }
 
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override
@@ -94,10 +93,10 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 "Rename table",
                 "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
                     " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$

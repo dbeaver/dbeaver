@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -38,7 +38,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
     implements DBEStructEditor<OBJECT_TYPE>
 {
 
-    protected abstract IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command);
+    protected abstract DBEPersistAction[] makeStructObjectCreateActions(StructCreateCommand command);
 
     @Override
     public StructCreateCommand makeCreateCommand(OBJECT_TYPE object)
@@ -114,7 +114,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
         }
 
         @Override
-        public IDatabasePersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions()
         {
             return makeStructObjectCreateActions(this);
         }

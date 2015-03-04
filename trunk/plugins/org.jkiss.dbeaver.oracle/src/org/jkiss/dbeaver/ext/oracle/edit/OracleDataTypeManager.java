@@ -21,14 +21,14 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
@@ -67,23 +67,23 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
     {
         return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
     {
         final OracleDataType object = objectDeleteCommand.getObject();
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop type",
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop type",
                 "DROP TYPE " + object.getFullQualifiedName()) //$NON-NLS-1$
         };
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
     {
         return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
     }
@@ -94,25 +94,25 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private IDatabasePersistAction[] createOrReplaceProcedureQuery(OracleDataType dataType)
+    private DBEPersistAction[] createOrReplaceProcedureQuery(OracleDataType dataType)
     {
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
         String header = OracleUtils.normalizeSourceName(dataType, false);
         if (!CommonUtils.isEmpty(header)) {
             actions.add(
-                new AbstractDatabasePersistAction(
+                new SQLDatabasePersistAction(
                     "Create type header",
                     "CREATE OR REPLACE " + header)); //$NON-NLS-1$
         }
         String body = OracleUtils.normalizeSourceName(dataType, true);
         if (!CommonUtils.isEmpty(body)) {
             actions.add(
-                new AbstractDatabasePersistAction(
+                new SQLDatabasePersistAction(
                     "Create type body",
                     "CREATE OR REPLACE " + body)); //$NON-NLS-1$
         }
         OracleUtils.addSchemaChangeActions(actions, dataType);
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
 }

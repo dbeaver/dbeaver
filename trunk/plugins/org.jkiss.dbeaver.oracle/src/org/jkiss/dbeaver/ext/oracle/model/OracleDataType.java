@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -265,9 +265,9 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public IDatabasePersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions()
     {
-        return new IDatabasePersistAction[] {
+        return new DBEPersistAction[] {
             new OracleObjectPersistAction(
                 OracleObjectType.VIEW,
                 "Compile type",

@@ -21,14 +21,14 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
@@ -64,18 +64,18 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Create schema", "CREATE SCHEMA `" + command.getObject().getName() + "`") //$NON-NLS-2$
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Create schema", "CREATE SCHEMA `" + command.getObject().getName() + "`") //$NON-NLS-2$
         };
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop schema", "DROP SCHEMA `" + command.getObject().getName() + "`") //$NON-NLS-2$
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA `" + command.getObject().getName() + "`") //$NON-NLS-2$
         };
     }
 
@@ -96,10 +96,10 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
             super(catalog, "Rename catalog");
             this.newName = newName;
         }
-        public IDatabasePersistAction[] getPersistActions()
+        public DBEPersistAction[] getPersistActions()
         {
-            return new IDatabasePersistAction[] {
-                new AbstractDatabasePersistAction("Rename catalog", "RENAME SCHEMA " + getObject().getName() + " TO " + newName)
+            return new DBEPersistAction[] {
+                new SQLDatabasePersistAction("Rename catalog", "RENAME SCHEMA " + getObject().getName() + " TO " + newName)
             };
         }
 

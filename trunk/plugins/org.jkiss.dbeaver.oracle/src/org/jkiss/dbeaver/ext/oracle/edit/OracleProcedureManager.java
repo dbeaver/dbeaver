@@ -21,13 +21,13 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
@@ -61,23 +61,23 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
     {
         return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
     {
         final OracleProcedureStandalone object = objectDeleteCommand.getObject();
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop procedure",
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop procedure",
                 "DROP " + object.getProcedureType().name() + " " + object.getFullQualifiedName()) //$NON-NLS-1$ //$NON-NLS-2$
         };
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
     {
         return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
     }
@@ -88,16 +88,16 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private IDatabasePersistAction[] createOrReplaceProcedureQuery(OracleProcedureStandalone procedure)
+    private DBEPersistAction[] createOrReplaceProcedureQuery(OracleProcedureStandalone procedure)
     {
         String source = OracleUtils.normalizeSourceName(procedure, false);
         if (source == null) {
             return null;
         }
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        actions.add(new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
+        actions.add(new SQLDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, procedure);
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
 }

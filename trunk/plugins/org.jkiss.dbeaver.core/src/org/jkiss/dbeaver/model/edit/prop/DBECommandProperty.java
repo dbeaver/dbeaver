@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.edit.prop;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -114,7 +114,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
     }
 
     @Override
-    public IDatabasePersistAction[] getPersistActions()
+    public DBEPersistAction[] getPersistActions()
     {
         if (handler instanceof DBEPropertyPersister) {
             return ((DBEPropertyPersister<OBJECT_TYPE>)handler).getPersistActions(getObject(), newValue);

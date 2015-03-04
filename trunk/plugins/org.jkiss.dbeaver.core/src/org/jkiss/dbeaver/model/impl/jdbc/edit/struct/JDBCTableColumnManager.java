@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -128,20 +128,20 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 CoreMessages.model_jdbc_create_new_table_column,
                 "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) }; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 CoreMessages.model_jdbc_drop_table_column, "ALTER TABLE " + command.getObject().getTable().getFullQualifiedName() + //$NON-NLS-2$
                     " DROP " + (hasDDLFeature(command.getObject(), DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         };

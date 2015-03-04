@@ -20,9 +20,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -50,13 +49,13 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     }
 
     @Override
-    protected final IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectChangeCommand)
+    protected final DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand objectChangeCommand)
     {
         throw new IllegalStateException("makeObjectCreateActions should never be called in struct editor");
     }
 
     @Override
-    protected IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
+    protected DBEPersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
     {
         final OBJECT_TYPE table = command.getObject();
         final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
@@ -64,7 +63,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
             log.warn("Object change command not found"); //$NON-NLS-1$
             return null;
         }
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
         final String tableName = table.getFullQualifiedName();
 
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
@@ -85,7 +84,7 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
                 hasNestedDeclarations = true;
             } else {
                 // This command should be executed separately
-                final IDatabasePersistAction[] nestedActions = nestedCommand.getPersistActions();
+                final DBEPersistAction[] nestedActions = nestedCommand.getPersistActions();
                 if (nestedActions != null) {
                     Collections.addAll(actions, nestedActions);
                 }
@@ -95,16 +94,16 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
         createQuery.append(lineSeparator).append(")"); //$NON-NLS-1$
         appendTableModifiers(table, tableProps, createQuery);
 
-        actions.add( 0, new AbstractDatabasePersistAction(CoreMessages.model_jdbc_create_new_table, createQuery.toString()) );
+        actions.add( 0, new SQLDatabasePersistAction(CoreMessages.model_jdbc_create_new_table, createQuery.toString()) );
 
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 CoreMessages.model_jdbc_drop_table,
                 "DROP " + (command.getObject().isView() ? "VIEW" : "TABLE") +
                 " " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
@@ -117,15 +116,18 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     }
 
     protected void setTableName(CONTAINER_TYPE container, OBJECT_TYPE table) throws DBException {
-        table.setName(DBObjectNameCaseTransformer.transformName(container, BASE_TABLE_NAME));
+        table.setName(getTableName(container));
+    }
+
+    protected String getTableName(CONTAINER_TYPE container) throws DBException {
         for (int i = 0; ; i++) {
             String tableName = i == 0 ? BASE_TABLE_NAME : (BASE_TABLE_NAME + "_" + i);
             DBSObject child = container.getChild(VoidProgressMonitor.INSTANCE, tableName);
             if (child == null) {
-                table.setName(DBObjectNameCaseTransformer.transformName(container, tableName));
-                break;
+                return tableName;
             }
         }
     }
+
 }
 

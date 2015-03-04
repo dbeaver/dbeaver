@@ -18,12 +18,12 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 
 /**
  * Oracle persist action
  */
-public class OracleObjectPersistAction extends AbstractDatabasePersistAction {
+public class OracleObjectPersistAction extends SQLDatabasePersistAction {
 
     private final OracleObjectType objectType;
 
