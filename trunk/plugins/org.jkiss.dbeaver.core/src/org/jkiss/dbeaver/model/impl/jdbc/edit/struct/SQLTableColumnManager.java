@@ -34,8 +34,8 @@ import org.jkiss.utils.CommonUtils;
 /**
  * JDBC table column manager
  */
-public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
-    extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
+public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+    extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
     public static final String QUOTE = "'";

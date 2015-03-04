@@ -28,14 +28,14 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLObjectEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * MySQLViewManager
  */
-public class MySQLViewManager extends JDBCObjectEditor<MySQLTableBase, MySQLCatalog> {
+public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatalog> {
 
     @Nullable
     @Override

@@ -28,14 +28,14 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * MySQLProcedureManager
  */
-public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQLCatalog> {
+public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQLCatalog> {
 
     @Nullable
     @Override

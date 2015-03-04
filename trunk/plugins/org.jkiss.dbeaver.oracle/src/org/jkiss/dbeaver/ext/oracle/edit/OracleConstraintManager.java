@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Oracle constraint manager
  */
-public class OracleConstraintManager extends JDBCConstraintManager<OracleTableConstraint, OracleTableBase> {
+public class OracleConstraintManager extends SQLConstraintManager<OracleTableConstraint, OracleTableBase> {
 
     @Nullable
     @Override

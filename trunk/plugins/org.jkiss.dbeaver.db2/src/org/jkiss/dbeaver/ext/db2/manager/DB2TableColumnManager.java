@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -42,7 +42,7 @@ import java.util.Map;
  * 
  * @author Denis Forveille
  */
-public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn, DB2TableBase> {
+public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn, DB2TableBase> {
 
     private static final String SQL_ALTER = "ALTER TABLE %s ALTER COLUMN %s ";
     private static final String SQL_COMMENT = "COMMENT ON COLUMN %s.%s IS '%s'";

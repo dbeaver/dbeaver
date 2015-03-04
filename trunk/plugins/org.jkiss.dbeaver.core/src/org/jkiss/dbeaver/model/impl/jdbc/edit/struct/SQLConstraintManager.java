@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 /**
  * JDBC constraint manager
  */
-public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCTableConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
-    extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
+public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstraint<TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+    extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
     @Override

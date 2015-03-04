@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -40,7 +40,7 @@ import java.util.Collections;
 /**
  * Generic index manager
  */
-public class GenericIndexManager extends JDBCIndexManager<GenericTableIndex, GenericTable> {
+public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, GenericTable> {
 
     @Nullable
     @Override

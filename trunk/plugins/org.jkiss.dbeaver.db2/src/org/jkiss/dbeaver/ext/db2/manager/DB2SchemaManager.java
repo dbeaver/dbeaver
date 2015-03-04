@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  * 
  * @author Denis Forveille
  */
-public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource> {
+public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> {
 
     private static final String SQL_CREATE_SCHEMA = "CREATE SCHEMA %s";
     private static final String SQL_DROP_SCHEMA = "DROP SCHEMA %s RESTRICT";

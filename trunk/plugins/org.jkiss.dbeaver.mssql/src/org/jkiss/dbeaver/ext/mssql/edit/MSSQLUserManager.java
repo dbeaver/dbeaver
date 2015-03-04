@@ -20,20 +20,16 @@ package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mssql.MSSQLMessages;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLDataSource;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLUser;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBECommandFilter;
-import org.jkiss.dbeaver.model.edit.DBECommandQueue;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLScriptCommand;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
@@ -41,7 +37,7 @@ import java.util.Map;
 /**
  * MSSQLUserManager
  */
-public class MSSQLUserManager extends JDBCObjectManager<MSSQLUser> implements DBEObjectMaker<MSSQLUser, MSSQLDataSource>, DBECommandFilter<MSSQLUser> {
+public class MSSQLUserManager extends AbstractObjectManager<MSSQLUser> implements DBEObjectMaker<MSSQLUser, MSSQLDataSource>, DBECommandFilter<MSSQLUser> {
 
     @Override
     public long getMakerOptions()

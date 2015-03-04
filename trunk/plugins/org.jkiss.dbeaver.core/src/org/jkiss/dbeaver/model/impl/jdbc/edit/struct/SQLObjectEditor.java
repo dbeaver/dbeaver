@@ -22,15 +22,14 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.edit.*;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.*;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.properties.ProxyPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -40,8 +39,8 @@ import java.util.Map;
 /**
  * JDBC object editor
  */
-public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveableObject, CONTAINER_TYPE extends DBSObject>
-    extends JDBCObjectManager<OBJECT_TYPE>
+public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveableObject, CONTAINER_TYPE extends DBSObject>
+    extends AbstractObjectManager<OBJECT_TYPE>
     implements
         DBEObjectEditor<OBJECT_TYPE>,
         DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE>
@@ -233,7 +232,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             // It is a trick
             // This method may be invoked from another Editor with different OBJECT_TYPE and CONTAINER_TYPE
             // TODO: May be we should make ObjectChangeCommand static
-            final StringBuilder decl = JDBCObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
+            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
     }
@@ -268,7 +267,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             // It is a trick
             // This method may be invoked from another Editor with different OBJECT_TYPE and CONTAINER_TYPE
             // TODO: May be we should make ObjectChangeCommand static
-            final StringBuilder decl = JDBCObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
+            final StringBuilder decl = SQLObjectEditor.this.getNestedDeclaration((CONTAINER_TYPE) owner, this);
             return CommonUtils.isEmpty(decl) ? null : decl.toString();
         }
     }

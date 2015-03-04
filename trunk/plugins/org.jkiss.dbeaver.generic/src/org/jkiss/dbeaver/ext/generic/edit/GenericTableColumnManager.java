@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -39,7 +39,7 @@ import java.sql.Types;
 /**
  * Generic table column manager
  */
-public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTableColumn, GenericTable> {
+public class GenericTableColumnManager extends SQLTableColumnManager<GenericTableColumn, GenericTable> {
 
     @Nullable
     @Override

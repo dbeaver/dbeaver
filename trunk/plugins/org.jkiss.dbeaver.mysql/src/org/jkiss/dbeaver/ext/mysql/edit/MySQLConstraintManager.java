@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
@@ -35,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * MySQL constraint manager
  */
-public class MySQLConstraintManager extends JDBCConstraintManager<MySQLTableConstraint, MySQLTable> {
+public class MySQLConstraintManager extends SQLConstraintManager<MySQLTableConstraint, MySQLTable> {
 
     @Nullable
     @Override

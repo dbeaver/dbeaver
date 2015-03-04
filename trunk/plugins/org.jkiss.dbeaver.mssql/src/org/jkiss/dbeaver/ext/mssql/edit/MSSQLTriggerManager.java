@@ -20,12 +20,12 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLTrigger;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 
 /**
  * MSSQLTriggerManager
  */
-public class MSSQLTriggerManager extends JDBCObjectManager<MSSQLTrigger> {
+public class MSSQLTriggerManager extends AbstractObjectManager<MSSQLTrigger> {
 
 /*
     @Override
