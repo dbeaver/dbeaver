@@ -30,13 +30,13 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
  * MSSQL table manager
  */
-public class MSSQLTableManager extends JDBCTableManager<MSSQLTableBase, MSSQLCatalog> implements DBEObjectRenamer<MSSQLTableBase> {
+public class MSSQLTableManager extends SQLTableManager<MSSQLTableBase, MSSQLCatalog> implements DBEObjectRenamer<MSSQLTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
         MSSQLTableColumn.class,

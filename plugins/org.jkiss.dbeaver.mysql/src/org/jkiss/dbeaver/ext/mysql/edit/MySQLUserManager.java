@@ -20,17 +20,16 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.edit.*;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLScriptCommand;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
@@ -38,7 +37,7 @@ import java.util.Map;
 /**
  * MySQLUserManager
  */
-public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DBEObjectMaker<MySQLUser, MySQLDataSource>, DBECommandFilter<MySQLUser> {
+public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implements DBEObjectMaker<MySQLUser, MySQLDataSource>, DBECommandFilter<MySQLUser> {
 
     @Override
     public long getMakerOptions()

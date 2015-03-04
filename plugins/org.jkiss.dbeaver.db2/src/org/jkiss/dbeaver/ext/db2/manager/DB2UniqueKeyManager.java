@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -44,7 +44,7 @@ import java.util.List;
  * 
  * @author Denis Forveille
  */
-public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey, DB2Table> {
+public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey, DB2Table> {
 
     private static final String SQL_DROP_PK = "ALTER TABLE %s DROP PRIMARY_KEY ";
     private static final String SQL_DROP_UK = "ALTER TABLE %s DROP UNIQUE %s";

@@ -36,8 +36,8 @@ import java.util.List;
 /**
  * JDBC table manager
  */
-public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSObjectContainer>
-    extends JDBCStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
+public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSObjectContainer>
+    extends SQLStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
 {
 
     private static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$

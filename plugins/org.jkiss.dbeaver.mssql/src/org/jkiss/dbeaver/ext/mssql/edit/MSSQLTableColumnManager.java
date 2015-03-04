@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -39,7 +39,7 @@ import java.sql.Types;
 /**
  * MSSQL table column manager
  */
-public class MSSQLTableColumnManager extends JDBCTableColumnManager<MSSQLTableColumn, MSSQLTableBase> {
+public class MSSQLTableColumnManager extends SQLTableColumnManager<MSSQLTableColumn, MSSQLTableBase> {
 
     @Nullable
     @Override

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
@@ -37,7 +37,7 @@ import java.util.Collections;
 /**
  * MySQL index manager
  */
-public class MySQLIndexManager extends JDBCIndexManager<MySQLTableIndex, MySQLTable> {
+public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTable> {
 
     @Nullable
     @Override

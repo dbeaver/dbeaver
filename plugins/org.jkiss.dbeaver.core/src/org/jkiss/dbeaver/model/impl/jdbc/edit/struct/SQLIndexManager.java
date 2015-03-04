@@ -32,8 +32,8 @@ import org.jkiss.utils.CommonUtils;
 /**
  * JDBC constraint manager
  */
-public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCTableIndex<? extends DBSObjectContainer, TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
-    extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
+public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? extends DBSObjectContainer, TABLE_TYPE>, TABLE_TYPE extends JDBCTable>
+    extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
     @Override

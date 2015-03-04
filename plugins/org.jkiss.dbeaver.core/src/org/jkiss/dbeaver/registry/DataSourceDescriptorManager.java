@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * DataSourceDescriptorManager
  */
-public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor, DataSourceRegistry> {
+public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor, DataSourceRegistry> {
 
     @Override
     public long getMakerOptions()

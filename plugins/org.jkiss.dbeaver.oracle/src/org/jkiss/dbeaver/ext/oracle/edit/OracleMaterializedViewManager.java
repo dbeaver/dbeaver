@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -35,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * OracleMaterializedViewManager
  */
-public class OracleMaterializedViewManager extends JDBCObjectEditor<OracleMaterializedView, OracleSchema> {
+public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMaterializedView, OracleSchema> {
 
     @Override
     public long getMakerOptions()

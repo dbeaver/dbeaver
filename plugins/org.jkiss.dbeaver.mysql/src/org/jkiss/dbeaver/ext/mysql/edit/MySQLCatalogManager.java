@@ -29,14 +29,14 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * MySQLCatalogManager
  */
-public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDataSource> implements DBEObjectRenamer<MySQLCatalog> {
+public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLDataSource> implements DBEObjectRenamer<MySQLCatalog> {
 
     @Override
     public long getMakerOptions()
