@@ -19,12 +19,12 @@
 package org.jkiss.dbeaver.ext.mssql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mssql.MSSQLMessages;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLUser;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -67,13 +67,13 @@ public class MSSQLCommandChangeUser extends DBECommandComposite<MSSQLUser, UserP
     }
 
     @Override
-    public IDatabasePersistAction[] getPersistActions()
+    public DBEPersistAction[] getPersistActions()
     {
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
         boolean newUser = !getObject().isPersisted();
         if (newUser) {
             actions.add(
-                new AbstractDatabasePersistAction(MSSQLMessages.edit_command_change_user_action_create_new_user, "CREATE USER " + getObject().getFullName()) { //$NON-NLS-2$
+                new SQLDatabasePersistAction(MSSQLMessages.edit_command_change_user_action_create_new_user, "CREATE USER " + getObject().getFullName()) { //$NON-NLS-2$
                     @Override
                     public void handleExecute(Throwable error)
                     {
@@ -102,9 +102,9 @@ public class MSSQLCommandChangeUser extends DBECommandComposite<MSSQLUser, UserP
         }
         script.append(" WHERE User='").append(getObject().getUserName()).append("' AND Host='").append(getObject().getHost()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         if (hasSet) {
-            actions.add(new AbstractDatabasePersistAction(MSSQLMessages.edit_command_change_user_action_update_user_record, script.toString()));
+            actions.add(new SQLDatabasePersistAction(MSSQLMessages.edit_command_change_user_action_update_user_record, script.toString()));
         }
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
 }

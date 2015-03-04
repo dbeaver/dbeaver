@@ -22,12 +22,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLCatalog;
 import org.jkiss.dbeaver.ext.mssql.model.MSSQLProcedure;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 import org.jkiss.utils.CommonUtils;
@@ -76,30 +76,30 @@ public class MSSQLProcedureManager extends JDBCObjectEditor<MSSQLProcedure, MSSQ
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         return createOrReplaceProcedureQuery(command.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         return createOrReplaceProcedureQuery(command.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop procedure", "DROP PROCEDURE " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop procedure", "DROP PROCEDURE " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
-    private IDatabasePersistAction[] createOrReplaceProcedureQuery(MSSQLProcedure procedure)
+    private DBEPersistAction[] createOrReplaceProcedureQuery(MSSQLProcedure procedure)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()), //$NON-NLS-2$ //$NON-NLS-3$
-            new AbstractDatabasePersistAction("Create procedure", "CREATE " + procedure.getClientBody()) //$NON-NLS-2$
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()), //$NON-NLS-2$ //$NON-NLS-3$
+            new SQLDatabasePersistAction("Create procedure", "CREATE " + procedure.getClientBody()) //$NON-NLS-2$
         };
     }
 

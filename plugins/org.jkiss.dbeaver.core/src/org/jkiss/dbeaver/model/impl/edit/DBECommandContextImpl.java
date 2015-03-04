@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.*;
@@ -112,10 +112,10 @@ public class DBECommandContextImpl implements DBECommandContext {
                     if (!cmd.executed) {
                         // Persist changes
                         //if (CommonUtils.isEmpty(cmd.persistActions)) {
-                            IDatabasePersistAction[] persistActions = cmd.command.getPersistActions();
+                            DBEPersistAction[] persistActions = cmd.command.getPersistActions();
                             if (!ArrayUtils.isEmpty(persistActions)) {
                                 cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
-                                for (IDatabasePersistAction action : persistActions) {
+                                for (DBEPersistAction action : persistActions) {
                                     cmd.persistActions.add(new PersistInfo(action));
                                 }
                             }
@@ -125,22 +125,22 @@ public class DBECommandContextImpl implements DBECommandContext {
                             try {
                                 DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {
-                                    IDatabasePersistAction.ActionType actionType = persistInfo.action.getType();
-                                    if (persistInfo.executed && actionType == IDatabasePersistAction.ActionType.NORMAL) {
+                                    DBEPersistAction.ActionType actionType = persistInfo.action.getType();
+                                    if (persistInfo.executed && actionType == DBEPersistAction.ActionType.NORMAL) {
                                         continue;
                                     }
                                     if (monitor.isCanceled()) {
                                         break;
                                     }
                                     try {
-                                        if (error == null || actionType == IDatabasePersistAction.ActionType.FINALIZER) {
+                                        if (error == null || actionType == DBEPersistAction.ActionType.FINALIZER) {
                                             queue.objectManager.executePersistAction(session, cmd.command, persistInfo.action);
                                         }
                                         persistInfo.executed = true;
                                     } catch (DBException e) {
                                         persistInfo.error = e;
                                         persistInfo.executed = false;
-                                        if (actionType != IDatabasePersistAction.ActionType.OPTIONAL) {
+                                        if (actionType != DBEPersistAction.ActionType.OPTIONAL) {
                                             error = e;
                                         }
                                     }
@@ -667,11 +667,11 @@ public class DBECommandContextImpl implements DBECommandContext {
     }
 
     private static class PersistInfo {
-        final IDatabasePersistAction action;
+        final DBEPersistAction action;
         boolean executed = false;
         Throwable error;
 
-        public PersistInfo(IDatabasePersistAction action)
+        public PersistInfo(DBEPersistAction action)
         {
             this.action = action;
         }

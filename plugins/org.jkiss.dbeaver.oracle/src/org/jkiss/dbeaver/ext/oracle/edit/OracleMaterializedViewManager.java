@@ -21,12 +21,12 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -70,34 +70,34 @@ public class OracleMaterializedViewManager extends JDBCObjectEditor<OracleMateri
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         return createOrReplaceViewQuery(command.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         return createOrReplaceViewQuery(command.getObject());
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
-    private IDatabasePersistAction[] createOrReplaceViewQuery(OracleMaterializedView view)
+    private DBEPersistAction[] createOrReplaceViewQuery(OracleMaterializedView view)
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = ContentUtils.getDefaultLineSeparator();
         decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
             .append("AS ").append(view.getSourceDeclaration(null)); //$NON-NLS-1$
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullQualifiedName()), //$NON-NLS-2$
-            new AbstractDatabasePersistAction("Create view", decl.toString())
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullQualifiedName()), //$NON-NLS-2$
+            new SQLDatabasePersistAction("Create view", decl.toString())
         };
     }
 

@@ -20,14 +20,14 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -97,17 +97,17 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     // Alter
     // -----
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         DB2TableColumn db2Column = command.getObject();
 
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(3);
+        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>(3);
 
         String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullQualifiedName(), computeDeltaSQL(command));
-        actions.add(new AbstractDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
+        actions.add(new SQLDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
 
         // Comment
-        IDatabasePersistAction commentAction = buildCommentAction(db2Column);
+        DBEPersistAction commentAction = buildCommentAction(db2Column);
         if (commentAction != null) {
             actions.add(commentAction);
         }
@@ -115,7 +115,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
         // Be Safe, Add a reorg action
         actions.add(buildReorgAction(db2Column));
 
-        return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     // -------
@@ -159,23 +159,23 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
         return sb.toString();
     }
 
-    private IDatabasePersistAction buildCommentAction(DB2TableColumn db2Column)
+    private DBEPersistAction buildCommentAction(DB2TableColumn db2Column)
     {
         if (CommonUtils.isNotEmpty(db2Column.getDescription())) {
             String tableName = db2Column.getTable().getFullQualifiedName();
             String columnName = db2Column.getName();
             String comment = db2Column.getDescription();
             String commentSQL = String.format(SQL_COMMENT, tableName, columnName, comment);
-            return new AbstractDatabasePersistAction(CMD_COMMENT, commentSQL);
+            return new SQLDatabasePersistAction(CMD_COMMENT, commentSQL);
         } else {
             return null;
         }
     }
 
-    private IDatabasePersistAction buildReorgAction(DB2TableColumn db2Column)
+    private DBEPersistAction buildReorgAction(DB2TableColumn db2Column)
     {
         String tableName = db2Column.getTable().getFullQualifiedName();
         String reorgSQL = String.format(SQL_REORG, tableName);
-        return new AbstractDatabasePersistAction(CMD_REORG, reorgSQL);
+        return new SQLDatabasePersistAction(CMD_REORG, reorgSQL);
     }
 }

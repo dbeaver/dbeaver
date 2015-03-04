@@ -20,7 +20,7 @@
 package org.jkiss.dbeaver.ext.oracle.model.source;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSourceType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -38,6 +38,6 @@ public interface OracleSourceObject extends OracleStatefulObject {
 
     void setSourceDeclaration(String source);
 
-    IDatabasePersistAction[] getCompileActions();
+    DBEPersistAction[] getCompileActions();
 
 }

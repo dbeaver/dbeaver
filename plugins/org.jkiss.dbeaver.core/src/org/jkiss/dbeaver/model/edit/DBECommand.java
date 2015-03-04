@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 
 import java.util.Map;
@@ -49,6 +48,6 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
         DBECommand<?> prevCommand,
         Map<Object, Object> userParams);
 
-    IDatabasePersistAction[] getPersistActions();
+    DBEPersistAction[] getPersistActions();
 
 }

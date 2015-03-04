@@ -19,10 +19,10 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -55,10 +55,10 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     protected abstract String buildDropStatement(OBJECT_TYPE object);
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop", buildDropStatement(command.getObject()));
-        return new IDatabasePersistAction[] { action };
+        DBEPersistAction action = new SQLDatabasePersistAction("Drop", buildDropStatement(command.getObject()));
+        return new DBEPersistAction[] { action };
     }
 
     @Override
@@ -69,7 +69,7 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         return null;
     }

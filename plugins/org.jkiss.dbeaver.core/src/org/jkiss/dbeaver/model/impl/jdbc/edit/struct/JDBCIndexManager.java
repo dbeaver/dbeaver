@@ -19,9 +19,9 @@
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -43,7 +43,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exte
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
         final OBJECT_TYPE index = command.getObject();
@@ -69,16 +69,16 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exte
         }
         decl.append(")"); //$NON-NLS-1$
 
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(CoreMessages.model_jdbc_create_new_index, decl.toString())
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(CoreMessages.model_jdbc_create_new_index, decl.toString())
         };
     }
 
     @Override
-    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
                 CoreMessages.model_jdbc_drop_index,
                 getDropIndexPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())

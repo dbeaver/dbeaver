@@ -1,7 +1,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,7 +30,7 @@ public class GenericDDLEditor extends SQLEditorNested<GenericTable> {
             return "";
         }
         GenericTableManager tableManager = new GenericTableManager();
-        IDatabasePersistAction[] ddlActions = tableManager.getTableDDL(monitor, sourceObject);
+        DBEPersistAction[] ddlActions = tableManager.getTableDDL(monitor, sourceObject);
         return DBUtils.generateScript(ddlActions);
     }
 

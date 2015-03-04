@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -113,9 +113,9 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     }
 
     @Override
-    public IDatabasePersistAction[] getCompileActions()
+    public DBEPersistAction[] getCompileActions()
     {
-        return new IDatabasePersistAction[] {
+        return new DBEPersistAction[] {
             new OracleObjectPersistAction(
                 getProcedureType() == DBSProcedureType.PROCEDURE ?
                     OracleObjectType.PROCEDURE : OracleObjectType.FUNCTION,

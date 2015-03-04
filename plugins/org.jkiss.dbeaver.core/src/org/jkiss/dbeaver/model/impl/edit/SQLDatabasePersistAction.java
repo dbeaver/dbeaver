@@ -18,30 +18,32 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.edit.DBECommand;
-
-import java.util.Map;
 
 /**
- * Abstract object command
+ * Object persist action implementation
  */
-public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECommand<OBJECT_TYPE> {
-    private final OBJECT_TYPE object;
-    private final String title;
+public class SQLDatabasePersistAction implements DBEPersistAction {
 
-    public DBECommandAbstract(OBJECT_TYPE object, String title)
+    private final String title;
+    private final String script;
+    private final ActionType type;
+
+    public SQLDatabasePersistAction(String title, String script)
     {
-        this.object = object;
-        this.title = title;
+        this(title, script, ActionType.NORMAL);
     }
 
-    @Override
-    public OBJECT_TYPE getObject()
+    public SQLDatabasePersistAction(String title, String script, ActionType type)
     {
-        return object;
+        this.title = title;
+        this.script = script;
+        this.type = type;
+    }
+
+    public SQLDatabasePersistAction(String script)
+    {
+        this("", script, ActionType.NORMAL);
     }
 
     @Override
@@ -51,32 +53,21 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
     }
 
     @Override
-    public boolean isUndoable()
+    public String getScript()
     {
-        return true;
+        return script;
     }
 
     @Override
-    public void validateCommand() throws DBException
+    public void handleExecute(Throwable error)
     {
-        // do nothing by default
+        // do nothing
     }
 
     @Override
-    public void updateModel()
+    public ActionType getType()
     {
-    }
-
-    @Override
-    public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
-    {
-        return this;
-    }
-
-    @Override
-    public DBEPersistAction[] getPersistActions()
-    {
-        return null;
+        return type;
     }
 
 }
