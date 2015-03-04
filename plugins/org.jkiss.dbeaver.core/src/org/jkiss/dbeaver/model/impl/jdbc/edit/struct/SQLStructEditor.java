@@ -33,8 +33,8 @@ import java.util.*;
 /**
  * JDBC struct editor
  */
-public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveableObject, CONTAINER_TYPE extends DBSObject>
-    extends JDBCObjectEditor<OBJECT_TYPE, CONTAINER_TYPE>
+public abstract class SQLStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveableObject, CONTAINER_TYPE extends DBSObject>
+    extends SQLObjectEditor<OBJECT_TYPE, CONTAINER_TYPE>
     implements DBEStructEditor<OBJECT_TYPE>
 {
 

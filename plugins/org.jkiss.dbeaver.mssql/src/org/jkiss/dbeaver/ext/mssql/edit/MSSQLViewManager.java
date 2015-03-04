@@ -28,14 +28,14 @@ import org.jkiss.dbeaver.ext.mssql.model.MSSQLView;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLObjectEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * MSSQLViewManager
  */
-public class MSSQLViewManager extends JDBCObjectEditor<MSSQLTableBase, MSSQLCatalog> {
+public class MSSQLViewManager extends SQLObjectEditor<MSSQLTableBase, MSSQLCatalog> {
 
     @Nullable
     @Override

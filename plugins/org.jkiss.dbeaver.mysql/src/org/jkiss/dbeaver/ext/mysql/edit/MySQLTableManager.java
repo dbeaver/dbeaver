@@ -30,13 +30,13 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
  * MySQL table manager
  */
-public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCatalog> implements DBEObjectRenamer<MySQLTableBase> {
+public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCatalog> implements DBEObjectRenamer<MySQLTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
         MySQLTableColumn.class,

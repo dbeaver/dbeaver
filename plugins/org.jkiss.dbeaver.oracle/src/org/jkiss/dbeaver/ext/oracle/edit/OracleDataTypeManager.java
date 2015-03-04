@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * OracleDataTypeManager
  */
-public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, OracleSchema> {
+public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, OracleSchema> {
 
     @Nullable
     @Override

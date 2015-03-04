@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -33,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Generic table manager
  */
-public class GenericTableManager extends JDBCTableManager<GenericTable, GenericStructContainer> {
+public class GenericTableManager extends SQLTableManager<GenericTable, GenericStructContainer> {
 
     private static final Class<?>[] CHILD_TYPES = {
         GenericTableColumn.class,

@@ -39,14 +39,14 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * OracleSchemaManager
  */
-public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDataSource> implements DBEObjectRenamer<OracleSchema> {
+public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDataSource> implements DBEObjectRenamer<OracleSchema> {
 
     @Override
     public long getMakerOptions()

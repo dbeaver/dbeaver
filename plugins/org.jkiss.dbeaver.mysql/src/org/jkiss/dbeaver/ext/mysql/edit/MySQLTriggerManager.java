@@ -20,12 +20,12 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 
 /**
  * MySQLTriggerManager
  */
-public class MySQLTriggerManager extends JDBCObjectManager<MySQLTrigger> {
+public class MySQLTriggerManager extends AbstractObjectManager<MySQLTrigger> {
 
 /*
     @Override

@@ -36,8 +36,8 @@ import java.util.Collection;
 /**
  * JDBC foreign key manager
  */
-public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCTableConstraint<TABLE_TYPE> & DBSTableForeignKey, TABLE_TYPE extends JDBCTable>
-    extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
+public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstraint<TABLE_TYPE> & DBSTableForeignKey, TABLE_TYPE extends JDBCTable>
+    extends SQLObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
     @Override

@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
+import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * Oracle table column manager
  */
-public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTableColumn, OracleTableBase> {
+public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableColumn, OracleTableBase> {
 
     protected final ColumnModifier<OracleTableColumn> OracleNotNullModifier = new ColumnModifier<OracleTableColumn>() {
         @Override
