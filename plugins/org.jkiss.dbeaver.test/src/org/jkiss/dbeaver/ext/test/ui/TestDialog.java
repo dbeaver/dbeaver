@@ -72,7 +72,7 @@ public class TestDialog extends TrayDialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        folderComposite = new FolderComposite(group, SWT.NONE);
+        folderComposite = new FolderComposite(group, SWT.LEFT | SWT.MULTI);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 300;
         gd.heightHint = 300;

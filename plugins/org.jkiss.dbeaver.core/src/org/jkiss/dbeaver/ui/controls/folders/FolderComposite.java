@@ -48,7 +48,10 @@ import java.util.Map;
 
 
 /**
- * Folders composite
+ * Folders composite.
+ * Styles:
+ * SWT.LEFT, SWT.RIGHT - tabs orientation
+ * SWT.SINGLE, SWT.MULTI - use single-page or multi-page mode
  */
 public class FolderComposite extends Composite implements IFolderContainer {
 
