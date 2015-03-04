@@ -66,6 +66,9 @@ public class EntityManagerDescriptor extends AbstractDescriptor
             return managerInstance;
         }
         Class<? extends DBEObjectManager> clazz = managerType.getObjectClass(DBEObjectManager.class);
+        if (clazz == null) {
+            throw new IllegalStateException("Can't instantiate entity manager '" + managerType.getImplName() + "'");
+        }
         try {
             managerInstance = clazz.newInstance();
         } catch (Throwable ex) {
