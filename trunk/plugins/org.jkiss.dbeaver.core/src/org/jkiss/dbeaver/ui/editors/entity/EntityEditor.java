@@ -746,30 +746,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private void addNodeTab(TabInfo tabInfo)
-    {
-        try {
-            EntityNodeEditor nodeEditor = new EntityNodeEditor(tabInfo.node, tabInfo.meta);
-            int index = addPage(nodeEditor, getEditorInput());
-            if (tabInfo.meta == null) {
-                setPageText(index, tabInfo.node.getNodeName());
-                setPageImage(index, tabInfo.node.getNodeIconDefault());
-                setPageToolTip(index, getEditorInput().getTreeNode().getNodeType() + " " + tabInfo.node.getNodeName()); //$NON-NLS-1$
-            } else {
-                setPageText(index, tabInfo.meta.getChildrenType(getDataSource()));
-                if (tabInfo.meta.getDefaultIcon() != null) {
-                    setPageImage(index, tabInfo.meta.getDefaultIcon());
-                } else {
-                    setPageImage(index, DBIcon.TREE_FOLDER.getImage());
-                }
-                setPageToolTip(index, tabInfo.meta.getChildrenType(getDataSource()));
-            }
-            editorMap.put("node." + tabInfo.getName(), nodeEditor); //$NON-NLS-1$
-        } catch (PartInitException ex) {
-            log.error("Error adding nested editor", ex); //$NON-NLS-1$
-        }
-    }
-
     private void addActionsContributor(IEditorPart editor, Class<? extends IEditorActionBarContributor> contributorClass) throws InstantiationException, IllegalAccessException
     {
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
