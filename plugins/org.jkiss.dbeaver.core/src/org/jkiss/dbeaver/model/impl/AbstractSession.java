@@ -154,7 +154,9 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
         public void setAutoCommit(boolean autoCommit)
             throws DBCException
         {
-            throw new DBCException("Auto-commit change not supported");
+            if (!autoCommit) {
+                throw new DBCException("Transactional mode not supported");
+            }
         }
 
         @Override
