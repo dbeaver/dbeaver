@@ -36,7 +36,7 @@ public class GenericSourceViewEditor extends SQLEditorNested<GenericStoredCode> 
     @Override
     protected boolean isReadOnly()
     {
-        return false;
+        return true;
     }
 
     @Override
