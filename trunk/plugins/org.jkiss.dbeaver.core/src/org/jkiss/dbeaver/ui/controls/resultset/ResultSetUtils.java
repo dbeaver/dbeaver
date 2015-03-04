@@ -227,4 +227,25 @@ class ResultSetUtils
         return true;
     }
 
+    public static boolean equalAttributes(DBSAttributeBase attr1, DBSAttributeBase attr2) {
+        if (attr1 instanceof DBCAttributeMetaData) {
+            // Check attribute metadata props
+            if (attr2 instanceof DBCAttributeMetaData) {
+                if (!CommonUtils.equalObjects(((DBCAttributeMetaData) attr1).getLabel(), ((DBCAttributeMetaData) attr2).getLabel())) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return
+            attr1.getOrdinalPosition() == attr2.getOrdinalPosition() &&
+            attr1.isRequired() == attr2.isRequired() &&
+            attr1.getMaxLength() == attr2.getMaxLength() &&
+            CommonUtils.equalObjects(attr1.getName(), attr2.getName()) &&
+            attr1.getPrecision() == attr2.getPrecision() &&
+            attr1.getScale() == attr2.getScale() &&
+            attr1.getTypeID() == attr2.getTypeID() &&
+            CommonUtils.equalObjects(attr1.getTypeName(), attr2.getTypeName());
+    }
 }

@@ -388,7 +388,7 @@ public class ResultSetModel {
 */
 
             for (int i = 0; i < this.columns.length; i++) {
-                if (!DBUtils.equalAttributes(this.columns[i].getMetaAttribute(), newColumns[i].getMetaAttribute())) {
+                if (!ResultSetUtils.equalAttributes(this.columns[i].getMetaAttribute(), newColumns[i].getMetaAttribute())) {
                     update = true;
                     break;
                 }
