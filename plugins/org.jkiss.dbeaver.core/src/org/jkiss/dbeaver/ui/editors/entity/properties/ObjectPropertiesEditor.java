@@ -126,11 +126,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         gl.marginWidth = 0;
         propsPlaceholder.setLayout(gl);
 
-        folderComposite = new FolderComposite(propsPlaceholder, SWT.LEFT);
+        FolderInfo[] folders = collectFolders(this);
+        boolean single = true;
+        for (FolderInfo fi : folders) {
+            if (!fi.isEmbeddable()) {
+                single = false;
+            }
+        }
+
+        folderComposite = new FolderComposite(propsPlaceholder, SWT.LEFT | (single ? SWT.SINGLE : SWT.MULTI));
         folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Load properties
-        FolderInfo[] folders = collectFolders(this);
         folderComposite.setFolders(folders);
 
         // Collect section contributors
@@ -367,7 +374,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             PropertiesContributor.TAB_STANDARD,
             CoreMessages.ui_properties_category_information,
             DBIcon.TREE_INFO.getImage(),
-            null,
+            "General information",
+            true,
             new FolderPageProperties(getEditorInput())));
     }
 
@@ -402,11 +410,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             for (EntityEditorDescriptor descriptor : editors) {
                 if (descriptor.getType() == EntityEditorDescriptor.Type.folder) {
                     tabList.add(new FolderInfo(
-                        //PropertiesContributor.CATEGORY_STRUCT,
                         descriptor.getId(),
                         descriptor.getName(),
                         descriptor.getIcon(),
                         descriptor.getDescription(),
+                        descriptor.isEmbeddable(),
                         new FolderPageEditor(this, descriptor)));
                 }
             }
@@ -424,14 +432,16 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 if (children != null) {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {
+                            DBNDatabaseFolder folder = (DBNDatabaseFolder)child;
                             monitor.subTask(CoreMessages.ui_properties_task_add_folder + child.getNodeName() + "'"); //$NON-NLS-2$
                             tabList.add(
                                 new FolderInfo(
-                                    child.getNodeName(),
-                                    child.getNodeName(),
-                                    child.getNodeIconDefault(),
+                                    folder.getNodeName(),
+                                    folder.getNodeName(),
+                                    folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
-                                    new FolderPageNode(part, child, null)
+                                    folder.getMeta().isInline(),
+                                    new FolderPageNode(part, folder, null)
                                 ));
                         }
                     }
@@ -455,6 +465,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                             node.getNodeName(),
                                             node.getNodeIconDefault(),
                                             node.getNodeDescription(),
+                                            child.isInline(),
                                             new FolderPageNode(part, node, child)));
                                 }
                             } catch (DBException e) {
