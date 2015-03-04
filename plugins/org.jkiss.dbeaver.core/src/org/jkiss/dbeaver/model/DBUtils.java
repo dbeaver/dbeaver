@@ -1093,12 +1093,16 @@ public final class DBUtils {
     public static String generateScript(DBEPersistAction[] persistActions)
     {
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
-        StringBuilder script = new StringBuilder(512);
+        StringBuilder script = new StringBuilder(64);
         for (DBEPersistAction action : ArrayUtils.safeArray(persistActions)) {
+            String scriptLine = action.getScript();
+            if (CommonUtils.isEmpty(scriptLine)) {
+                continue;
+            }
             if (script.length() > 0) {
                 script.append(lineSeparator);
             }
-            script.append(action.getScript());
+            script.append(scriptLine);
             script.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(lineSeparator);
         }
         return script.toString();
