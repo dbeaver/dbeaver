@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
@@ -124,7 +125,9 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
         }
         //sqlViewer.enableUndoManager(true);
 
-        editor.getSite().setSelectionProvider(editor.getSite().getSelectionProvider());
+        ISelectionProvider selectionProvider = editor.getSite().getSelectionProvider();
+        mainEditor.getSite().setSelectionProvider(selectionProvider);
+        selectionProvider.setSelection(selectionProvider.getSelection());
 
         //selectionProvider.setSelection(new StructuredSelection());
 
