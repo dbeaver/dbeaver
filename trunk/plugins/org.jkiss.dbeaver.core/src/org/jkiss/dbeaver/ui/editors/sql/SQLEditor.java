@@ -591,10 +591,10 @@ public class SQLEditor extends SQLEditorBase
 
         final boolean isSingleQuery = (queries.size() == 1);
 
-        if (newTab && !isSingleQuery) {
+        //if (newTab && !isSingleQuery) {
             // If we execute a script with newTabs - close all previously opened ones
             closeExtraResultTabs(null);
-        }
+        //}
 
         if (newTab) {
             // Execute each query in a new tab
@@ -1088,6 +1088,16 @@ public class SQLEditor extends SQLEditorBase
             if (curDataReceiver != null) {
                 return curDataReceiver;
             }
+            final boolean isStatsResult = (statement != null && statement.getData() == SQLQueryJob.STATS_RESULTS);
+//            if (isStatsResult) {
+//                // Maybe it was already open
+//                for (QueryResultsProvider provider : resultProviders) {
+//                    if (provider.query != null && provider.query.getData() == SQLQueryJob.STATS_RESULTS) {
+//                        resultSetNumber = provider.resultSetNumber;
+//                        break;
+//                    }
+//                }
+//            }
             if (resultSetNumber >= resultProviders.size() && !isDisposed()) {
                 // Open new results processor in UI thread
                 getSite().getShell().getDisplay().syncExec(new Runnable() {
@@ -1110,8 +1120,16 @@ public class SQLEditor extends SQLEditorBase
                         resultsProvider.query = statement;
                         resultsProvider.tabItem.setToolTipText(CommonUtils.truncateString(statement.getQuery(), 1000));
                         // Special statements (not real statements) have their name in data
-                        if (statement.getData() instanceof String) {
-                            resultsProvider.tabItem.setText(statement.getData().toString());
+                        if (isStatsResult) {
+                            String tabName = "Statistics";
+                            int queryIndex = queryProcessors.indexOf(QueryProcessor.this);
+                            if (queryIndex > 0) {
+                                tabName += " - " + (queryIndex + 1);
+                            }
+                            resultsProvider.tabItem.setText(tabName);
+                            if (!CommonUtils.isEmpty(statement.getQuery())) {
+                                resultsProvider.tabItem.setToolTipText(statement.getQuery());
+                            }
                         }
                     }
                 }
@@ -1148,18 +1166,13 @@ public class SQLEditor extends SQLEditorBase
 
             //boolean firstResultSet = queryProcessors.isEmpty();
             int tabIndex = Math.max(resultTabs.getItemCount() - 3, 0);
-            int queryIndex = queryProcessors.indexOf(queryProcessor) + 1;
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
-            String tabName = CoreMessages.editors_sql_data_grid;
-            if (resultSetNumber > 0) {
-                tabName += " " + queryIndex + "/" + (resultSetNumber + 1);
-            } else if (queryIndex > 0) {
-                tabName += " " + queryIndex;
-            }
+            int queryIndex = queryProcessors.indexOf(queryProcessor);
+            String tabName = getResultsTabName(resultSetNumber, queryIndex, null);
             tabItem.setText(tabName);
             tabItem.setImage(IMG_DATA_GRID);
             tabItem.setData(this);
-            if (queryIndex > 1 || resultSetNumber > 0) {
+            if (queryIndex > 0 || resultSetNumber > 0) {
                 tabItem.setShowClose(true);
             }
             tabItem.setControl(viewer.getControl());
@@ -1276,6 +1289,19 @@ public class SQLEditor extends SQLEditorBase
 
     }
 
+    private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
+        String tabName = name;
+        if (CommonUtils.isEmpty(tabName)) {
+            tabName = CoreMessages.editors_sql_data_grid;
+        }
+        if (resultSetNumber > 0) {
+            tabName += " - " + (resultSetNumber + 1);
+        } else if (queryIndex > 0) {
+            tabName += " - " + (queryIndex + 1);
+        }
+        return tabName;
+    }
+
     private class SQLEditorQueryListener implements SQLQueryListener {
         private final QueryProcessor queryProcessor;
         private boolean scriptMode;
@@ -1350,15 +1376,9 @@ public class SQLEditor extends SQLEditorBase
             if (results != null) {
                 CTabItem tabItem = results.tabItem;
                 if (!tabItem.isDisposed()) {
-                    //int queryIndex = queryProcessors.indexOf(queryProcessor);
-                    String resultSetName = result.getResultSetName();
-                    if (!CommonUtils.isEmpty(resultSetName)) {
-                        tabItem.setText(resultSetName);
-                    }/* else {
-                        int queryIndex = queryProcessors.indexOf(queryProcessor);
-                        tabItem.setText(
-                                CoreMessages.editors_sql_data_grid + (queryIndex == 0 ? "" : " " + (queryIndex + 1)));
-                    }*/
+                    int queryIndex = queryProcessors.indexOf(queryProcessor);
+                    String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
+                    tabItem.setText(resultSetName);
                 }
             }
 

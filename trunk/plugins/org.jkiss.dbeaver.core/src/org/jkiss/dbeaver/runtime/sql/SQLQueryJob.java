@@ -59,6 +59,8 @@ public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = Log.getLog(SQLQueryJob.class);
 
+    public static final Object STATS_RESULTS = new Object();
+
     private final List<SQLQuery> queries;
     private final SQLResultsConsumer resultsConsumer;
     private final SQLQueryListener listener;
@@ -392,7 +394,10 @@ public class SQLQueryJob extends DataSourceJob
     private void showExecutionResult(DBCSession session) throws DBCException {
         if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
             SQLQuery query = new SQLQuery(this, "", -1, -1);
-            query.setData("Statistics"); // It will set tab name to "Stats"
+            if (queries != null && queries.size() == 1) {
+                query.setQuery(queries.get(0).getQuery());
+            }
+            query.setData(STATS_RESULTS); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);
             if (dataReceiver != null) {
                 fetchExecutionResult(session, dataReceiver, query);
