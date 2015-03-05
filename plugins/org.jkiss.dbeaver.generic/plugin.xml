@@ -88,7 +88,7 @@
                                 </items>
                             </items>
                             <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
-                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
                             </items>
                         </folder>
                     </items>
@@ -652,7 +652,7 @@
         </editor>
         <editor id="source.view" class="org.jkiss.dbeaver.ext.generic.edit.GenericSourceViewEditor"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
-                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="true">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode"/>
         </editor>
 
