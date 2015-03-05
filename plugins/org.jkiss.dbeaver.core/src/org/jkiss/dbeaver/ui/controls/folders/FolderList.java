@@ -59,7 +59,8 @@ public class FolderList extends Composite {
 
     protected static final int NONE = -1;
 
-    protected static final int INDENT = 7;
+    protected static final int INDENT_LEFT = 7;
+    protected static final int INDENT_RIGHT = 10;
     public static final String LABEL_NA = "N/A";
 
     private boolean focus = false;
@@ -212,9 +213,9 @@ public class FolderList extends Composite {
             }
 
 			/*
-			 * Add INDENT pixels to the left as a margin.
+			 * Add INDENT_LEFT pixels to the left as a margin.
 			 */
-            int textIndent = INDENT;
+            int textIndent = INDENT_LEFT;
             FontMetrics fm = e.gc.getFontMetrics();
             int height = fm.getHeight();
             int textMiddle = (bounds.height - height) / 2;
@@ -223,14 +224,14 @@ public class FolderList extends Composite {
                 && !tab.getImage().isDisposed()) {
 				/* draw the icon for the selected tab */
                 if (tab.isIndented()) {
-                    textIndent = textIndent + INDENT;
+                    textIndent = textIndent + INDENT_LEFT;
                 } else {
                     textIndent = textIndent - 3;
                 }
                 e.gc.drawImage(tab.getImage(), textIndent, textMiddle - 1);
                 textIndent = textIndent + 16 + 4;
             } else if (tab.isIndented()) {
-                textIndent = textIndent + INDENT;
+                textIndent = textIndent + INDENT_LEFT;
             }
 
 			/* draw the text */
@@ -321,7 +322,7 @@ public class FolderList extends Composite {
             } else {
                 e.gc.setBackground(listBackground);
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
-                int textIndent = INDENT;
+                int textIndent = INDENT_LEFT;
                 FontMetrics fm = e.gc.getFontMetrics();
                 int height = fm.getHeight();
                 int textMiddle = (bounds.height - height) / 2;
@@ -589,7 +590,7 @@ public class FolderList extends Composite {
         int maxTabWidth = getTabWidth(children[widestLabelIndex]);
         Object layoutData = getLayoutData();
         if (layoutData instanceof GridData) {
-            ((GridData) layoutData).widthHint = maxTabWidth;
+            ((GridData) layoutData).widthHint = maxTabWidth + INDENT_LEFT + INDENT_RIGHT;
         }
         computeTopAndBottomTab();
     }
@@ -605,7 +606,7 @@ public class FolderList extends Composite {
             width = width + folderInfo.getImage().getBounds().width + 4;
         }
         if (folderInfo.isIndented()) {
-            width = width + INDENT;
+            width = width + INDENT_LEFT;
         }
         return width;
     }
@@ -660,17 +661,20 @@ public class FolderList extends Composite {
 
     public Point computeSize(int wHint, int hHint, boolean changed) {
         Point result = super.computeSize(hHint, wHint, changed);
-        if (widestLabelIndex == -1) {
-            result.x = getTextDimension(LABEL_NA).x + INDENT;
+        Object layoutData = getLayoutData();
+        if (layoutData instanceof GridData && ((GridData) layoutData).widthHint != -1) {
+            result.x = ((GridData) layoutData).widthHint;
+        } else if (widestLabelIndex == -1) {
+            result.x = getTextDimension(LABEL_NA).x + INDENT_LEFT;
         } else {
 			/*
-			 * Add INDENT pixels to the left of the longest tab as a margin.
+			 * Add INDENT_LEFT pixels to the left of the longest tab as a margin.
 			 */
-            int width = getTabWidth(elements[widestLabelIndex].getInfo()) + INDENT;
+            int width = getTabWidth(elements[widestLabelIndex].getInfo()) + INDENT_LEFT;
 			/*
-			 * Add 10 pixels to the right of the longest tab as a margin.
+			 * Add INDENT_RIGHT pixels to the right of the longest tab as a margin.
 			 */
-            result.x = width + 10;
+            result.x = width + INDENT_RIGHT;
         }
         return result;
     }
@@ -782,7 +786,7 @@ public class FolderList extends Composite {
      * @return the height of a tab.
      */
     private int getTabHeight() {
-        int tabHeight = getTextDimension("").y + INDENT; //$NON-NLS-1$
+        int tabHeight = getTextDimension("").y + INDENT_LEFT; //$NON-NLS-1$
         if (tabsThatFitInComposite == 1) {
 			/*
 			 * if only one tab will fix, reduce the size of the tab height so
