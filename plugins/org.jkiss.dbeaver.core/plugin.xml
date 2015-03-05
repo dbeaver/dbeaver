@@ -341,6 +341,7 @@
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
             <with variable="activePart">
                 <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                <!--<test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>-->
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">
