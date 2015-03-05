@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -33,10 +34,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
-import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
-import org.jkiss.dbeaver.ext.ui.IRefreshableContainer;
-import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.ext.ui.*;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -66,7 +64,7 @@ import java.util.Map;
  * ObjectPropertiesEditor
  */
 public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObject>
-    implements IRefreshablePart, IProgressControlProvider, IFolderContainer, ISearchContextProvider, IRefreshableContainer
+    implements IRefreshablePart, IProgressControlProvider, IFolderContainer, ISearchContextProvider, IRefreshableContainer, INavigatorModelView
 {
     static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
@@ -481,4 +479,22 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
+    @Override
+    public DBNNode getRootNode() {
+        IFolder activeFolder = folderComposite.getActiveFolder();
+        if (activeFolder instanceof INavigatorModelView) {
+            return ((INavigatorModelView) activeFolder).getRootNode();
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Viewer getNavigatorViewer() {
+        IFolder activeFolder = folderComposite.getActiveFolder();
+        if (activeFolder instanceof INavigatorModelView) {
+            return ((INavigatorModelView) activeFolder).getNavigatorViewer();
+        }
+        return null;
+    }
 }

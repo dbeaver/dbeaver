@@ -152,10 +152,14 @@ public class FolderComposite extends Composite implements IFolderContainer {
     public void setFolders(@NotNull final FolderInfo[] folders) {
         this.folders = folders;
         if (this.folderList == null) {
+            createFlatFolders(folders);
             getShell().getDisplay().asyncExec(new Runnable() {
                 @Override
                 public void run() {
-                    createFlatFolders(folders);
+                    //createFlatFolders(folders);
+                    for (FolderInfo fi : folders) {
+                        fi.getContents().aboutToBeShown();
+                    }
                 }
             });
         } else {
@@ -189,7 +193,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
             folderPH.setLayout(new FillLayout());
             IFolder contents = folder.getContents();
             contents.createControl(folderPH);
-            contents.aboutToBeShown();
+            //contents.aboutToBeShown();
 
             contentsMap.put(folder, folderPH);
 
@@ -198,13 +202,6 @@ public class FolderComposite extends Composite implements IFolderContainer {
                 gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.heightHint = 5;
                 horizontalLine.setLayoutData(gd);
-/*
-                Composite div = UIUtils.createPlaceholder(folderGroup, 1);
-                Sash sash = new Sash(div, SWT.NONE);
-                gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.heightHint = 5;
-                sash.setLayoutData(gd);
-*/
             }
         }
 
@@ -241,6 +238,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
         for (int i = 0; i < folderList.getNumberOfElements(); i++) {
             if (folderList.getElementAt(i).getInfo().getId().equals(folderId)) {
                 folderList.select(i);
+                //folderList.getElementAt(i).getInfo();
                 break;
             }
         }
