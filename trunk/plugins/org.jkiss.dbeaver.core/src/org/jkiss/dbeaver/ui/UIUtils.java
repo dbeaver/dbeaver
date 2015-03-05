@@ -253,14 +253,18 @@ public class UIUtils {
                 return;
             }
             if (fit) {
-                if (totalWidth > clientArea.width) {
-                    int extraSpace = totalWidth - clientArea.width;
+                int areaWidth = clientArea.width;
+                if (tree.getVerticalBar() != null) {
+                    areaWidth -= tree.getVerticalBar().getSize().x;
+                }
+                if (totalWidth > areaWidth) {
+                    int extraSpace = totalWidth - areaWidth;
                     for (TreeColumn tc : columns) {
                         double ratio = (double) tc.getWidth() / totalWidth;
                         tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
                     }
-                } else if (totalWidth < clientArea.width) {
-                    float extraSpace = clientArea.width - totalWidth;
+                } else if (totalWidth < areaWidth) {
+                    float extraSpace = areaWidth - totalWidth;
                     if (columns.length > 0) {
                         if (ratios == null || ratios.length < columns.length) {
                             extraSpace /= columns.length;

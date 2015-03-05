@@ -127,10 +127,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         propsPlaceholder.setLayout(gl);
 
         FolderInfo[] folders = collectFolders(this);
-        boolean single = true;
-        for (FolderInfo fi : folders) {
-            if (!fi.isEmbeddable()) {
-                single = false;
+        boolean single = folders.length < 4;
+        if (single) {
+            for (FolderInfo fi : folders) {
+                if (!fi.isEmbeddable()) {
+                    single = false;
+                }
             }
         }
 
@@ -142,7 +144,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         // Collect section contributors
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
-        for (FolderInfo folder : folderComposite.getFolders()) {
+        for (FolderInfo folder : folders) {
             IFolder page = folder.getContents();
             if (page instanceof IDatabaseEditorContributorUser) {
                 IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) page).getContributor(contributorManager);
@@ -459,10 +461,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                             try {
                                 if (!((DBXTreeItem)child).isOptional() || databaseNode.hasChildren(monitor, child)) {
                                     monitor.subTask(CoreMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
+                                    String nodeName = child.getChildrenType(databaseNode.getObject().getDataSource());
                                     tabList.add(
                                         new FolderInfo(
-                                            node.getNodeName(),
-                                            node.getNodeName(),
+                                            nodeName,
+                                            nodeName,
                                             node.getNodeIconDefault(),
                                             node.getNodeDescription(),
                                             child.isInline(),

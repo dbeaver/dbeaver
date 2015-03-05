@@ -101,7 +101,8 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (!packing) {
                     packing = true;
                     UIUtils.packColumns(treeControl, true, new float[]{0.2f, 0.8f});
-                    treeControl.removeControlListener(this);
+                    packing = false;
+                    //treeControl.removeControlListener(this);
                 }
             }
         });
