@@ -53,40 +53,31 @@ public class FolderComposite extends Composite implements IFolderContainer {
     private List<IFolderListener> listeners = new ArrayList<IFolderListener>();
     private List<FolderPane> folderPanes = new ArrayList<FolderPane>();
 
-    private class FolderPane extends Composite {
+    private class FolderPane {
         FolderInfo[] folders;
         FolderList folderList;
-        Composite pane;
+        Composite editorPane;
         @Nullable
         private Control curContent;
         @Nullable
         private IFolder curFolder;
 
         public FolderPane(Composite parent, boolean last) {
-            super(parent, SWT.NONE);
-
-            GridData gd = new GridData(SWT.FILL,SWT.FILL,true,true);
-            // Set constant height hint to make all panes the same height
+            this.folderList = new FolderList(parent);
+            GridData gd = new GridData(GridData.FILL_VERTICAL);
+            if (!last) {
+                gd.verticalSpan = 2;
+            }
             gd.heightHint = 100;
-
-            this.setLayoutData(gd);
-            GridLayout gl = new GridLayout(2, false);
-            gl.marginWidth = 0;
-            gl.marginHeight = 0;
-            gl.horizontalSpacing = 0;
-            gl.verticalSpacing = 0;
-            this.setLayout(gl);
-
-            this.folderList = new FolderList(this);
-            gd = new GridData(GridData.FILL_VERTICAL);
-            gd.verticalSpan = 2;
             this.folderList.setLayoutData(gd);
 
-            pane = UIUtils.createPlaceholder(this, 1);
-            pane.setLayoutData(new GridData(GridData.FILL_BOTH));
+            editorPane = UIUtils.createPlaceholder(parent, 1);
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 100;
+            editorPane.setLayoutData(gd);
 
             if (!last) {
-                Sash sash = new Sash(this, SWT.NONE);
+                Sash sash = new Sash(parent, SWT.NONE);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.heightHint = 7;
                 sash.setLayoutData(gd);
@@ -118,7 +109,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
             Composite newContent = contentsMap.get(folder);
             IFolder newFolder = folder.getContents();
             if (newContent == null) {
-                newContent = new Composite(pane, SWT.NONE);
+                newContent = new Composite(editorPane, SWT.NONE);
                 newContent.setLayoutData(new GridData(GridData.FILL_BOTH));
                 newContent.setLayout(new FillLayout());
                 newFolder.createControl(newContent);
@@ -135,7 +126,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
             curContent = newContent;
             curFolder = newFolder;
 
-            pane.layout();
+            editorPane.layout();
 
             for (IFolderListener listener : listeners) {
                 listener.folderSelected(folder.getId());
@@ -154,7 +145,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
         setLayout(gl);
 
         compositePane = new Composite(this, SWT.NONE);
-        gl = new GridLayout(1, false);
+        gl = new GridLayout(2, false);
         gl.horizontalSpacing = 0;
         gl.verticalSpacing = 0;
         gl.marginHeight = 0;
