@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,6 +45,7 @@ import java.util.Map;
  */
 public class FolderComposite extends Composite implements IFolderContainer {
 
+    public static final int MIN_PANE_HEIGHT = 32;
     @NotNull
     private final Composite compositePane;
     @Nullable
@@ -51,7 +53,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
     private final Map<FolderInfo, Composite> contentsMap = new HashMap<FolderInfo, Composite>();
     private List<IFolderListener> listeners = new ArrayList<IFolderListener>();
-    private List<FolderPane> folderPanes = new ArrayList<FolderPane>();
+    private FolderPane[] folderPanes;
 
     private class FolderPane {
         FolderInfo[] folders;
@@ -68,16 +70,16 @@ public class FolderComposite extends Composite implements IFolderContainer {
             if (!last) {
                 gd.verticalSpan = 2;
             }
-            gd.heightHint = 100;
+            //gd.heightHint = 100;
             this.folderList.setLayoutData(gd);
 
             editorPane = UIUtils.createPlaceholder(parent, 1);
             gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 100;
+            gd.heightHint = MIN_PANE_HEIGHT;
             editorPane.setLayoutData(gd);
 
             if (!last) {
-                Sash sash = new Sash(parent, SWT.NONE);
+                final Sash sash = new Sash(parent, SWT.NONE);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.heightHint = FolderList.SECTION_DIV_HEIGHT;
                 sash.setLayoutData(gd);
@@ -90,6 +92,27 @@ public class FolderComposite extends Composite implements IFolderContainer {
                         e.gc.setForeground(folderList.widgetNormalShadow);
                         e.gc.drawLine(0, 0, e.width - 1, 0);
                         e.gc.drawLine(0, e.height - 1, e.width - 1, e.height - 1);
+                    }
+                });
+                sash.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        // Resize folders
+                        Rectangle sashBounds = sash.getBounds();
+
+                        int shift = e.y - sashBounds.y;
+                        if (shift > 0 && shift > getNextFolderPane(FolderPane.this).editorPane.getBounds().height - MIN_PANE_HEIGHT) {
+                            e.doit = false;
+                            return;
+                        }
+                        if (shift < 0 && Math.abs(shift) > editorPane.getBounds().height - MIN_PANE_HEIGHT) {
+                            e.doit = false;
+                            return;
+                        }
+
+                        if (Math.abs(shift) > 0) {
+                            shiftPane(FolderPane.this, shift);
+                        }
                     }
                 });
             }
@@ -138,6 +161,39 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
     }
 
+    private void shiftPane(FolderPane curPane, int shift) {
+        // Set current height to heightHint
+        for (FolderPane pane : folderPanes) {
+            Rectangle bounds = pane.editorPane.getBounds();
+            GridData gd = (GridData) pane.editorPane.getLayoutData();
+            gd.heightHint = bounds.height;
+        }
+
+        FolderPane nextPane = getNextFolderPane(curPane);
+        ((GridData) curPane.editorPane.getLayoutData()).heightHint += shift;
+        ((GridData) nextPane.editorPane.getLayoutData()).heightHint -= shift;
+
+        compositePane.layout();
+/*
+        if (shift < 0) {
+            // Decrease self size and increase next pane's
+            //nextPane.editorPane.
+        } else {
+            // Increase self size and decrease next pane's
+        }
+*/
+        System.out.println(shift);
+    }
+
+    private FolderPane getNextFolderPane(FolderPane pane) {
+        for (int i = 0; i < folderPanes.length - 1; i++) {
+            if (pane == folderPanes[i]) {
+                return folderPanes[i + 1];
+            }
+        }
+        return null;
+    }
+
     public FolderComposite(Composite parent, int style) {
         super(parent, style);
         GridLayout gl = new GridLayout(2, false);
@@ -184,11 +240,12 @@ public class FolderComposite extends Composite implements IFolderContainer {
             }
         }
 
+        folderPanes = new FolderPane[groups.size()];
         for (int i = 0; i < groups.size(); i++) {
             List<FolderInfo> group = groups.get(i);
             FolderPane folderPane = new FolderPane(compositePane, i >= groups.size() - 1);
             folderPane.setFolders(group.toArray(new FolderInfo[group.size()]));
-            folderPanes.add(folderPane);
+            folderPanes[i] = folderPane;
         }
 
         // Make all sub folders the same size
@@ -214,6 +271,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
     @Override
     public IFolder getActiveFolder() {
+        // TODO: implement using focus
         return null;
         //return folderList == null ? null : folderList.getElementAt(folderList.getSelectionIndex()).getInfo().getContents();
     }
