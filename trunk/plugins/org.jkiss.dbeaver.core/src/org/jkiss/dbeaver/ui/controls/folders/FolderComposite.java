@@ -45,7 +45,7 @@ import java.util.Map;
  */
 public class FolderComposite extends Composite implements IFolderContainer {
 
-    public static final int MIN_PANE_HEIGHT = 32;
+    public static final int MIN_PANE_HEIGHT = 60;
     @NotNull
     private final Composite compositePane;
     @Nullable
@@ -109,9 +109,14 @@ public class FolderComposite extends Composite implements IFolderContainer {
                             e.doit = false;
                             return;
                         }
-
+                        //System.out.println(shift + " " + e.detail);
                         if (Math.abs(shift) > 0) {
-                            shiftPane(FolderPane.this, shift);
+                            FolderComposite.this.setRedraw(false);
+                            try {
+                                shiftPane(FolderPane.this, shift);
+                            } finally {
+                                FolderComposite.this.setRedraw(true);
+                            }
                         }
                     }
                 });
@@ -182,7 +187,6 @@ public class FolderComposite extends Composite implements IFolderContainer {
             // Increase self size and decrease next pane's
         }
 */
-        System.out.println(shift);
     }
 
     private FolderPane getNextFolderPane(FolderPane pane) {
