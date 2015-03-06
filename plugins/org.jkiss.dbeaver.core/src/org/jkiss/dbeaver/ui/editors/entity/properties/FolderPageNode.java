@@ -21,6 +21,8 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
@@ -86,17 +88,27 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
         }
 
         parent.layout();
+
+        itemControl.getItemsViewer().getControl().addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                // Update selection provider and selection
+                final ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
+                editor.getSite().setSelectionProvider(selectionProvider);
+                selectionProvider.setSelection(selectionProvider.getSelection());
+                itemControl.activate(true);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                itemControl.activate(false);
+            }
+        });
     }
 
     @Override
     public void aboutToBeShown()
     {
-        // Update selection provider and selection
-        final ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
-        editor.getSite().setSelectionProvider(selectionProvider);
-        selectionProvider.setSelection(selectionProvider.getSelection());
-        itemControl.activate(true);
-
         if (!activated) {
             activated = true;
             boolean isLazy = !(node instanceof DBNDatabaseNode) || ((DBNDatabaseNode) node).needsInitialization();
@@ -107,9 +119,6 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
     @Override
     public void aboutToBeHidden()
     {
-        if (itemControl != null) {
-            itemControl.activate(false);
-        }
     }
 
     public IDatabaseEditorInput getEditorInput()
