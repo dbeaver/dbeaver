@@ -63,7 +63,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
         private IFolder curFolder;
 
         public FolderPane(Composite parent, boolean last) {
-            this.folderList = new FolderList(parent);
+            this.folderList = new FolderList(parent, !last);
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             if (!last) {
                 gd.verticalSpan = 2;
@@ -79,11 +79,14 @@ public class FolderComposite extends Composite implements IFolderContainer {
             if (!last) {
                 Sash sash = new Sash(parent, SWT.NONE);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.heightHint = 7;
+                gd.heightHint = FolderList.SECTION_DIV_HEIGHT;
                 sash.setLayoutData(gd);
                 sash.addPaintListener(new PaintListener() {
                     @Override
                     public void paintControl(PaintEvent e) {
+                        e.gc.setBackground(folderList.widgetBackground);
+                        e.gc.setForeground(folderList.widgetForeground);
+                        e.gc.fillRectangle(0, 1, e.width, e.height - 2);
                         e.gc.setForeground(folderList.widgetNormalShadow);
                         e.gc.drawLine(0, 0, e.width - 1, 0);
                         e.gc.drawLine(0, e.height - 1, e.width - 1, e.height - 1);

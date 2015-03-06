@@ -62,6 +62,8 @@ public class FolderList extends Composite {
     protected static final int INDENT_LEFT = 7;
     protected static final int INDENT_RIGHT = 10;
     public static final String LABEL_NA = "N/A";
+    public static final int SECTION_DIV_HEIGHT = 7;
+    private final boolean section;
 
     private boolean focus = false;
 
@@ -401,8 +403,12 @@ public class FolderList extends Composite {
             if (elements.length != 0) {
                 e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
                 e.gc.setForeground(widgetNormalShadow);
-                e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1,
-                    bounds.height - 1);
+                if (!section || isDownScrollRequired()) {
+                    e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1, bounds.height - 1);
+                } else {
+                    e.gc.drawLine(bounds.width - 1, 0, bounds.width - 1, bounds.height - SECTION_DIV_HEIGHT);
+                    e.gc.drawPoint(bounds.width - 1, bounds.height - 1);
+                }
                 e.gc.drawLine(0, 0, bounds.width - 1, 0);
 
                 e.gc.setForeground(bottomNavigationElementShadowStroke1);
@@ -436,8 +442,9 @@ public class FolderList extends Composite {
         }
     }
 
-    public FolderList(Composite parent) {
+    public FolderList(Composite parent, boolean section) {
         super(parent, SWT.NO_FOCUS);
+        this.section = section;
         removeAll();
         setLayout(new FormLayout());
         initColours();
