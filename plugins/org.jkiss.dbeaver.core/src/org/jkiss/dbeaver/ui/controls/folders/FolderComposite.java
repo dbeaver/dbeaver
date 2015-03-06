@@ -1,15 +1,4 @@
-/*******************************************************************************
- * Copyright (c) 2001, 2012 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Mariot Chauvin <mariot.chauvin@obeo.fr> - bug 259553
- *     Amit Joglekar <joglekar@us.ibm.com> - Support for dynamic images (bug 385795)
- *
+/*
  * Copyright (C) 2010-2015 Serge Rieder
  * serge@jkiss.org
  *
@@ -31,13 +20,15 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Sash;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -53,23 +44,96 @@ import java.util.Map;
  * Folders composite.
  * Styles:
  * SWT.LEFT, SWT.RIGHT - tabs orientation
- * SWT.SINGLE, SWT.MULTI - use single-page or multi-page mode
  */
 public class FolderComposite extends Composite implements IFolderContainer {
 
-    @Nullable
-    private FolderList folderList;
     @NotNull
-    private final Composite pane;
+    private final Composite compositePane;
     @Nullable
     private FolderInfo[] folders;
-    @Nullable
-    private IFolder curFolder;
-    @Nullable
-    private Control curContent;
 
     private final Map<FolderInfo, Composite> contentsMap = new HashMap<FolderInfo, Composite>();
     private List<IFolderListener> listeners = new ArrayList<IFolderListener>();
+    private List<FolderPane> folderPanes = new ArrayList<FolderPane>();
+
+    private class FolderPane extends Composite {
+        FolderInfo[] folders;
+        FolderList folderList;
+        Composite pane;
+        @Nullable
+        private Control curContent;
+        @Nullable
+        private IFolder curFolder;
+
+        public FolderPane(Composite parent) {
+            super(parent, SWT.NONE);
+
+            this.setLayoutData(new GridData(GridData.FILL_BOTH));
+            GridLayout gl = new GridLayout(2, false);
+            gl.marginWidth = 0;
+            gl.marginHeight = 0;
+            gl.horizontalSpacing = 0;
+            gl.verticalSpacing = 0;
+            this.setLayout(gl);
+
+            this.folderList = new FolderList(this);
+            GridData gd = new GridData(GridData.FILL_VERTICAL);
+            gd.verticalSpan = 2;
+            this.folderList.setLayoutData(gd);
+
+            pane = UIUtils.createPlaceholder(this, 1);
+            pane.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            {
+                Sash horizontalLine = new Sash(this, SWT.NONE);
+                gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.heightHint = 5;
+                horizontalLine.setLayoutData(gd);
+            }
+
+            folderList.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    onFolderSwitch(folderList.getElementAt(folderList.getSelectionIndex()).getInfo());
+                }
+            });
+        }
+
+        public void setFolders(FolderInfo[] folders) {
+            this.folders = folders;
+            this.folderList.setFolders(this.folders);
+            this.folderList.select(0);
+        }
+
+        private void onFolderSwitch(FolderInfo folder) {
+            Composite newContent = contentsMap.get(folder);
+            IFolder newFolder = folder.getContents();
+            if (newContent == null) {
+                newContent = new Composite(pane, SWT.NONE);
+                newContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+                newContent.setLayout(new FillLayout());
+                newFolder.createControl(newContent);
+                contentsMap.put(folder, newContent);
+            }
+            if (curContent != null && curFolder != null) {
+                curContent.setVisible(false);
+                curFolder.aboutToBeHidden();
+                ((GridData)curContent.getLayoutData()).exclude = true;
+            }
+            ((GridData)newContent.getLayoutData()).exclude = false;
+            newFolder.aboutToBeShown();
+            newContent.setVisible(true);
+            curContent = newContent;
+            curFolder = newFolder;
+
+            pane.layout();
+
+            for (IFolderListener listener : listeners) {
+                listener.folderSelected(folder.getId());
+            }
+        }
+
+    }
 
     public FolderComposite(Composite parent, int style) {
         super(parent, style);
@@ -80,33 +144,14 @@ public class FolderComposite extends Composite implements IFolderContainer {
         gl.marginWidth = 0;
         setLayout(gl);
 
-        boolean single = (style & SWT.SINGLE) != 0;
-        if (!single && ((style & SWT.LEFT) != 0 || (style & SWT.RIGHT) == 0)) {
-            folderList = new FolderList(this);
-            folderList.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        }
-
-        pane = new Composite(this, SWT.NONE);
+        compositePane = new Composite(this, SWT.NONE);
         gl = new GridLayout(1, false);
         gl.horizontalSpacing = 0;
         gl.verticalSpacing = 0;
         gl.marginHeight = 0;
         gl.marginWidth = 0;
-        pane.setLayout(gl);
-        pane.setLayoutData(new GridData(GridData.FILL_BOTH));
-        if (!single && (style & SWT.RIGHT) != 0) {
-            folderList = new FolderList(this);
-            folderList.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        }
-
-        if (!single) {
-            folderList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    onFolderSwitch(folderList.getElementAt(folderList.getSelectionIndex()).getInfo());
-                }
-            });
-        }
+        compositePane.setLayout(gl);
+        compositePane.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         addDisposeListener(new DisposeListener() {
             @Override
@@ -118,74 +163,64 @@ public class FolderComposite extends Composite implements IFolderContainer {
         });
     }
 
-    private void onFolderSwitch(FolderInfo folder) {
-        Composite newContent = contentsMap.get(folder);
-        IFolder newFolder = folder.getContents();
-        if (newContent == null) {
-            newContent = new Composite(pane, SWT.NONE);
-            newContent.setLayoutData(new GridData(GridData.FILL_BOTH));
-            newContent.setLayout(new FillLayout());
-            newFolder.createControl(newContent);
-            contentsMap.put(folder, newContent);
-        }
-        if (curContent != null && curFolder != null) {
-            curContent.setVisible(false);
-            curFolder.aboutToBeHidden();
-            ((GridData)curContent.getLayoutData()).exclude = true;
-        }
-        ((GridData)newContent.getLayoutData()).exclude = false;
-        newFolder.aboutToBeShown();
-        newContent.setVisible(true);
-        curContent = newContent;
-        curFolder = newFolder;
-
-        pane.layout();
-
-        for (IFolderListener listener : listeners) {
-            listener.folderSelected(folder.getId());
-        }
-    }
-
     public void setFolders(@NotNull final FolderInfo[] folders) {
         this.folders = folders;
-        if (this.folderList == null) {
-            createFlatFolders(folders);
-            getShell().getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    //createFlatFolders(folders);
-                    for (FolderInfo fi : folders) {
-                        fi.getContents().aboutToBeShown();
-                    }
+
+        List<List<FolderInfo>> groups = new ArrayList<List<FolderInfo>>();
+        List<FolderInfo> curGroup = null;
+        for (FolderInfo folder : folders) {
+            if (folder.isEmbeddable()) {
+                groups.add(curGroup = new ArrayList<FolderInfo>());
+                curGroup.add(folder);
+                curGroup = null;
+            } else {
+                if (curGroup == null) {
+                    groups.add(curGroup = new ArrayList<FolderInfo>());
                 }
-            });
-        } else {
-            boolean firstTime = folderList.getNumberOfElements() == 0;
-            folderList.setFolders(folders);
-            folderList.select(0);
-            if (firstTime) {
-                layout();
+                curGroup.add(folder);
             }
         }
+
+        for (List<FolderInfo> group : groups) {
+            FolderPane folderPane = new FolderPane(compositePane);
+            folderPane.setFolders(group.toArray(new FolderInfo[group.size()]));
+            folderPanes.add(folderPane);
+        }
+
+        // Make all sub folders the same size
+        int maxWidth = 0;
+        for (FolderPane folderPane : folderPanes) {
+            int width = folderPane.folderList.computeSize(-1, -1, false).x;
+            if (width > maxWidth) {
+                maxWidth = width;
+            }
+        }
+        for (FolderPane folderPane : folderPanes) {
+            ((GridData)folderPane.folderList.getLayoutData()).widthHint = maxWidth;
+        }
+
+        // Re-layout
+        compositePane.layout();
+
+/*
+        getShell().getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                //createFlatFolders(folders);
+                for (FolderInfo fi : folders) {
+                    fi.getContents().aboutToBeShown();
+                }
+            }
+        });
+*/
     }
 
     private void createFlatFolders(FolderInfo[] folders) {
         FolderList[] subFolders = new FolderList[folders.length];
         for (int i = 0; i < folders.length; i++) {
             FolderInfo folder = folders[i];
-            Composite folderGroup = UIUtils.createPlaceholder(pane, 2);
+            Composite folderGroup = UIUtils.createPlaceholder(compositePane, 2);
             folderGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            folderGroup.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusGained(FocusEvent e) {
-                    super.focusGained(e);
-                }
-
-                @Override
-                public void focusLost(FocusEvent e) {
-                    super.focusLost(e);
-                }
-            });
 
             FolderList nestedFolders = new FolderList(folderGroup);
             GridData gd = new GridData(GridData.FILL_VERTICAL);
@@ -212,20 +247,6 @@ public class FolderComposite extends Composite implements IFolderContainer {
                 horizontalLine.setLayoutData(gd);
             }
         }
-
-        int maxWidth = 0;
-        for (FolderList f : subFolders) {
-            int width = f.computeSize(-1, -1, false).x;
-            if (width > maxWidth) {
-                maxWidth = width;
-            }
-        }
-        for (FolderList f : subFolders) {
-            ((GridData)f.getLayoutData()).widthHint = maxWidth;
-        }
-
-        // Make all sub folders the same size
-        pane.layout();
     }
 
     @Nullable
@@ -235,19 +256,18 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
     @Override
     public IFolder getActiveFolder() {
-        return folderList == null ? null : folderList.getElementAt(folderList.getSelectionIndex()).getInfo().getContents();
+        return null;
+        //return folderList == null ? null : folderList.getElementAt(folderList.getSelectionIndex()).getInfo().getContents();
     }
 
     @Override
     public void switchFolder(String folderId) {
-        if (folderList == null) {
-            return;
-        }
-        for (int i = 0; i < folderList.getNumberOfElements(); i++) {
-            if (folderList.getElementAt(i).getInfo().getId().equals(folderId)) {
-                folderList.select(i);
-                //folderList.getElementAt(i).getInfo();
-                break;
+        for (FolderPane folderPane : folderPanes) {
+            for (int i = 0; i < folderPane.folderList.getNumberOfElements(); i++) {
+                if (folderPane.folderList.getElementAt(i).getInfo().getId().equals(folderId)) {
+                    folderPane.folderList.select(i);
+                    break;
+                }
             }
         }
     }

@@ -375,7 +375,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             CoreMessages.ui_properties_category_information,
             DBIcon.TREE_INFO.getImage(),
             "General information",
-            true,
+            false,
             new FolderPageProperties(getEditorInput())));
     }
 
@@ -440,7 +440,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                     folder.getNodeName(),
                                     folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
-                                    folder.getMeta().isInline(),
+                                    false,//folder.getMeta().isInline(),
                                     new FolderPageNode(part, folder, null)
                                 ));
                         }
@@ -466,7 +466,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                             nodeName,
                                             node.getNodeIconDefault(),
                                             node.getNodeDescription(),
-                                            child.isInline(),
+                                            false,
                                             new FolderPageNode(part, node, child)));
                                 }
                             } catch (DBException e) {
