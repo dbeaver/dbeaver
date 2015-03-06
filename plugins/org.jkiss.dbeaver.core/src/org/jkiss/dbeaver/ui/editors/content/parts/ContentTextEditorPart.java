@@ -56,12 +56,6 @@ public class ContentTextEditorPart extends BaseTextEditor implements ContentEdit
     }
 
     @Override
-    public Control getEditorControl()
-    {
-        return getTextViewer().getTextWidget();
-    }
-
-    @Override
     public String getContentTypeTitle()
     {
         return "Text";

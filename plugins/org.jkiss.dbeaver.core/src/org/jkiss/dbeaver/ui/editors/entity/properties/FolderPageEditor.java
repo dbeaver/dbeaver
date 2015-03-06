@@ -23,17 +23,17 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.services.INestable;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
-import org.jkiss.dbeaver.ext.IDatabaseEditorContributorManager;
-import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
-import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
+import org.jkiss.dbeaver.ext.*;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
@@ -94,6 +94,33 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
             UIUtils.showErrorDialog(parent.getShell(), "Create SQL viewer", null, e);
         }
         editor.createPartControl(parent);
+
+        if (editor instanceof ISingleControlEditor) {
+            // Use focus to active selection provider and contributed actions
+            Control editorControl = ((ISingleControlEditor) editor).getEditorControl();
+            editorControl.addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    ISelectionProvider selectionProvider = editor.getSite().getSelectionProvider();
+                    mainEditor.getSite().setSelectionProvider(selectionProvider);
+                    selectionProvider.setSelection(selectionProvider.getSelection());
+
+                    if (actionContributor != null) {
+                        actionContributor.setActiveEditor(editor);
+                    }
+                    activateNestedSite(true);
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    activateNestedSite(false);
+                    if (actionContributor != null) {
+                        actionContributor.setActiveEditor(null);
+                    }
+                }
+            });
+        }
+
         parent.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
@@ -119,19 +146,6 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
         if (editor instanceof IActiveWorkbenchPart) {
             ((IActiveWorkbenchPart) editor).activatePart();
         }
-        //sqlViewer.enableUndoManager(true);
-
-        ISelectionProvider selectionProvider = editor.getSite().getSelectionProvider();
-        mainEditor.getSite().setSelectionProvider(selectionProvider);
-        selectionProvider.setSelection(selectionProvider.getSelection());
-
-        //selectionProvider.setSelection(new StructuredSelection());
-
-        if (actionContributor != null) {
-            actionContributor.setActiveEditor(editor);
-        }
-        activateSectionSite(true);
-        //sqlViewer.handleActivate();
     }
 
     @Override
@@ -139,17 +153,10 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
         if (editor instanceof IActiveWorkbenchPart) {
             ((IActiveWorkbenchPart) editor).deactivatePart();
         }
-        activateSectionSite(false);
-        if (actionContributor != null) {
-            actionContributor.setActiveEditor(null);
-        }
-//        if (sqlViewer != null) {
-//            //sqlViewer.enableUndoManager(false);
-//        }
     }
 
     @SuppressWarnings("deprecation")
-    private void activateSectionSite(boolean activate) {
+    private void activateNestedSite(boolean activate) {
         if (nestedEditorSite instanceof INestable) {
             if (activate) {
                 ((INestable) nestedEditorSite).activate();
