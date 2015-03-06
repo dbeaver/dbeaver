@@ -165,11 +165,11 @@ public class GenericMetaModel {
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        return "";
+        return "-- View definition not available";
     }
 
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        return "";
+        return "-- Source code not available";
     }
 
     public JDBCBasicDataTypeCache createDataTypeCache(DBSDataSourceContainer container) {
