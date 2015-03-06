@@ -20,10 +20,7 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -89,10 +86,18 @@ public class FolderComposite extends Composite implements IFolderContainer {
             pane.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             if (!last) {
-                Sash horizontalLine = new Sash(this, SWT.NONE);
+                Sash sash = new Sash(this, SWT.NONE);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.heightHint = 5;
-                horizontalLine.setLayoutData(gd);
+                gd.heightHint = 7;
+                sash.setLayoutData(gd);
+                sash.addPaintListener(new PaintListener() {
+                    @Override
+                    public void paintControl(PaintEvent e) {
+                        e.gc.setForeground(folderList.widgetNormalShadow);
+                        e.gc.drawLine(0, 0, e.width - 1, 0);
+                        e.gc.drawLine(0, e.height - 1, e.width - 1, e.height - 1);
+                    }
+                });
             }
 
             folderList.addSelectionListener(new SelectionAdapter() {
@@ -206,52 +211,6 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
         // Re-layout
         compositePane.layout();
-
-/*
-        getShell().getDisplay().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                //createFlatFolders(folders);
-                for (FolderInfo fi : folders) {
-                    fi.getContents().aboutToBeShown();
-                }
-            }
-        });
-*/
-    }
-
-    private void createFlatFolders(FolderInfo[] folders) {
-        FolderList[] subFolders = new FolderList[folders.length];
-        for (int i = 0; i < folders.length; i++) {
-            FolderInfo folder = folders[i];
-            Composite folderGroup = UIUtils.createPlaceholder(compositePane, 2);
-            folderGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            FolderList nestedFolders = new FolderList(folderGroup);
-            GridData gd = new GridData(GridData.FILL_VERTICAL);
-            gd.verticalSpan = 2;
-            gd.widthHint = 250;
-            nestedFolders.setLayoutData(gd);
-            nestedFolders.setFolders(new FolderInfo[]{folder});
-            nestedFolders.select(0);
-            subFolders[i] = nestedFolders;
-
-            Composite folderPH = UIUtils.createPlaceholder(folderGroup, 1);
-            folderPH.setLayoutData(new GridData(GridData.FILL_BOTH));
-            folderPH.setLayout(new FillLayout());
-            IFolder contents = folder.getContents();
-            contents.createControl(folderPH);
-            //contents.aboutToBeShown();
-
-            contentsMap.put(folder, folderPH);
-
-            if (i < folders.length - 1) {
-                Sash horizontalLine = new Sash(folderGroup, SWT.NONE);
-                gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.heightHint = 5;
-                horizontalLine.setLayoutData(gd);
-            }
-        }
     }
 
     @Nullable
