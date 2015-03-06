@@ -111,11 +111,17 @@ public abstract class SQLEditorNested<T extends DBSObject>
     {
         pageControl = new EditorPageControl(parent, SWT.SHEET);
 
-        editorSash = new SashForm(pageControl.createContentContainer(), SWT.VERTICAL | SWT.SMOOTH);
-        super.createPartControl(editorSash);
+        boolean hasCompiler = getCompileCommandId() != null;
 
-        editorControl = editorSash.getChildren()[0];
-        compileLog = new ObjectCompilerLogViewer(editorSash, false);
+        if (hasCompiler) {
+            editorSash = new SashForm(pageControl.createContentContainer(), SWT.VERTICAL | SWT.SMOOTH);
+            super.createPartControl(editorSash);
+
+            editorControl = editorSash.getChildren()[0];
+            compileLog = new ObjectCompilerLogViewer(editorSash, false);
+        } else {
+            super.createPartControl(pageControl.createContentContainer());
+        }
 
         // Create new or substitute progress control
         ProgressPageControl progressControl = null;
@@ -132,8 +138,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
         pageControl.setInfo("Source");
 
-        editorSash.setWeights(new int[] {70, 30});
-        editorSash.setMaximizedControl(editorControl);
+        if (hasCompiler) {
+            editorSash.setWeights(new int[]{70, 30});
+            editorSash.setMaximizedControl(editorControl);
+        }
     }
 
     @Override
