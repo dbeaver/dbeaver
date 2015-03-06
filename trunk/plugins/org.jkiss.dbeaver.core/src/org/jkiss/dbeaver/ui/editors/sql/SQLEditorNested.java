@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
@@ -54,6 +55,7 @@ import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.folders.IFolderEditorSite;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 
 import java.lang.reflect.InvocationTargetException;
@@ -117,8 +119,11 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         // Create new or substitute progress control
         ProgressPageControl progressControl = null;
-        if (getSite() instanceof MultiPageEditorSite && ((MultiPageEditorSite) getSite()).getMultiPageEditor() instanceof IProgressControlProvider) {
-            progressControl = ((IProgressControlProvider)((MultiPageEditorSite) getSite()).getMultiPageEditor()).getProgressControl();
+        IWorkbenchPartSite site = getSite();
+        if (site instanceof IFolderEditorSite && ((IFolderEditorSite) site).getFolderEditor() instanceof IProgressControlProvider) {
+            progressControl = ((IProgressControlProvider)((IFolderEditorSite) site).getFolderEditor()).getProgressControl();
+        } else if (site instanceof MultiPageEditorSite && ((MultiPageEditorSite) site).getMultiPageEditor() instanceof IProgressControlProvider) {
+            progressControl = ((IProgressControlProvider)((MultiPageEditorSite) site).getMultiPageEditor()).getProgressControl();
         }
         if (progressControl != null) {
             pageControl.substituteProgressPanel(progressControl);
