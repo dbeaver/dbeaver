@@ -103,7 +103,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
                 public void focusGained(FocusEvent e) {
                     ISelectionProvider selectionProvider = editor.getSite().getSelectionProvider();
                     mainEditor.getSite().setSelectionProvider(selectionProvider);
-                    selectionProvider.setSelection(selectionProvider.getSelection());
+                    //selectionProvider.setSelection(selectionProvider.getSelection());
 
                     if (actionContributor != null) {
                         actionContributor.setActiveEditor(editor);
