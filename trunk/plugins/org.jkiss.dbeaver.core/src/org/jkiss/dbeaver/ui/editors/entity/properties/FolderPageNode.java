@@ -89,6 +89,7 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
 
         parent.layout();
 
+        // Activate items control on focus
         itemControl.getItemsViewer().getControl().addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {

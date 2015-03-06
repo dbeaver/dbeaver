@@ -57,12 +57,6 @@ public class ContentXMLEditorPart extends XMLEditor implements ContentEditorPart
     }
 
     @Override
-    public Control getEditorControl()
-    {
-        return getTextViewer().getTextWidget();
-    }
-
-    @Override
     public String getContentTypeTitle()
     {
         return "XML";

@@ -29,6 +29,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
@@ -142,6 +144,23 @@ public abstract class SQLEditorNested<T extends DBSObject>
             editorSash.setWeights(new int[]{70, 30});
             editorSash.setMaximizedControl(editorControl);
         }
+
+        // Use focus to activate page control
+        getEditorControl().addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (pageControl != null && !pageControl.isDisposed()) {
+                    pageControl.activate(true);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (pageControl != null && !pageControl.isDisposed()) {
+                    pageControl.activate(false);
+                }
+            }
+        });
     }
 
     @Override
@@ -171,16 +190,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
                 log.error(e);
             }
         }
-        if (pageControl != null && !pageControl.isDisposed()) {
-            pageControl.activate(true);
-        }
     }
 
     @Override
     public void deactivatePart() {
-        if (pageControl != null && !pageControl.isDisposed()) {
-            pageControl.activate(false);
-        }
     }
 
     @Override
