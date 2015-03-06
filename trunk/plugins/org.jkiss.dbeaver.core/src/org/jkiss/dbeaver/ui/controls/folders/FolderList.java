@@ -77,10 +77,10 @@ public class FolderList extends Composite {
     private int widestLabelIndex = NONE;
     private int tabsThatFitInComposite = NONE;
 
-    private Color widgetForeground;
-    private Color widgetBackground;
-    private Color widgetNormalShadow;
-    private Color widgetDarkShadow;
+    Color widgetForeground;
+    Color widgetBackground;
+    Color widgetNormalShadow;
+    Color widgetDarkShadow;
     private Color listBackground;
     private Color hoverGradientStart;
     private Color hoverGradientEnd;
