@@ -28,6 +28,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.internal.services.INestable;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorContributorManager;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
+import org.jkiss.dbeaver.ui.controls.folders.IFolderEditorSite;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 
 /**
@@ -53,14 +55,12 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     private IEditorActionBarContributor actionContributor;
     private IEditorSite nestedEditorSite;
 
-    public FolderPageEditor(IDatabaseEditor mainEditor, EntityEditorDescriptor editorDescriptor)
-    {
+    public FolderPageEditor(IDatabaseEditor mainEditor, EntityEditorDescriptor editorDescriptor) {
         this.mainEditor = mainEditor;
         this.editorDescriptor = editorDescriptor;
     }
 
-    public IEditorPart getEditor()
-    {
+    public IEditorPart getEditor() {
         return editor;
     }
 
@@ -71,16 +71,15 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
         final IWorkbenchPartSite ownerSite = this.mainEditor.getSite();
         if (ownerSite instanceof MultiPageEditorSite) {
             final MultiPageEditorPart ownerMultiPageEditor = ((MultiPageEditorSite) ownerSite).getMultiPageEditor();
-            nestedEditorSite = new MultiPageEditorSite(ownerMultiPageEditor, editor);
+            nestedEditorSite = new FolderPageEditorSite(ownerMultiPageEditor, editor);
 
             // Add property change forwarding
             // We need it to tell owner editor about dirty state change
             if (ownerMultiPageEditor instanceof IPropertyChangeReflector) {
                 editor.addPropertyListener(new IPropertyListener() {
                     @Override
-                    public void propertyChanged(Object source, int propId)
-                    {
-                        ((IPropertyChangeReflector)ownerMultiPageEditor).handlePropertyChange(propId);
+                    public void propertyChanged(Object source, int propId) {
+                        ((IPropertyChangeReflector) ownerMultiPageEditor).handlePropertyChange(propId);
                     }
                 });
             }
@@ -97,8 +96,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
         editor.createPartControl(parent);
         parent.addDisposeListener(new DisposeListener() {
             @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
+            public void widgetDisposed(DisposeEvent e) {
                 if (editor != null) {
                     editor.dispose();
                     editor = null;
@@ -108,8 +106,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         if (nestedEditorSite instanceof MultiPageEditorSite) {
             ((MultiPageEditorSite) nestedEditorSite).dispose();
             nestedEditorSite = null;
@@ -118,8 +115,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     }
 
     @Override
-    public void aboutToBeShown()
-    {
+    public void aboutToBeShown() {
         if (editor instanceof IActiveWorkbenchPart) {
             ((IActiveWorkbenchPart) editor).activatePart();
         }
@@ -139,8 +135,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     }
 
     @Override
-    public void aboutToBeHidden()
-    {
+    public void aboutToBeHidden() {
         if (editor instanceof IActiveWorkbenchPart) {
             ((IActiveWorkbenchPart) editor).deactivatePart();
         }
@@ -154,8 +149,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     }
 
     @SuppressWarnings("deprecation")
-    private void activateSectionSite(boolean activate)
-    {
+    private void activateSectionSite(boolean activate) {
         if (nestedEditorSite instanceof INestable) {
             if (activate) {
                 ((INestable) nestedEditorSite).activate();
@@ -164,8 +158,8 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
             }
         }
         if (nestedEditorSite instanceof MultiPageEditorSite) {
-			final IKeyBindingService keyBindingService = ((MultiPageEditorSite) nestedEditorSite).getMultiPageEditor().getEditorSite()
-					.getKeyBindingService();
+            final IKeyBindingService keyBindingService = ((MultiPageEditorSite) nestedEditorSite).getMultiPageEditor().getEditorSite()
+                .getKeyBindingService();
             if (keyBindingService instanceof INestableKeyBindingService) {
                 ((INestableKeyBindingService) keyBindingService).activateKeyBindingService(activate ? nestedEditorSite : null);
             }
@@ -173,17 +167,15 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     }
 
     @Override
-    public void refreshPart(Object source, boolean force)
-    {
+    public void refreshPart(Object source, boolean force) {
         // Reload sources
         if (editor instanceof IReusableEditor) {
-            ((IReusableEditor)editor).setInput(editorDescriptor.getNestedEditorInput(mainEditor.getEditorInput()));
+            ((IReusableEditor) editor).setInput(editorDescriptor.getNestedEditorInput(mainEditor.getEditorInput()));
         }
     }
 
     @Override
-    public Object getAdapter(Class adapter)
-    {
+    public Object getAdapter(Class adapter) {
         if (editor != null) {
             if (adapter.isAssignableFrom(editor.getClass())) {
                 return editor;
@@ -195,8 +187,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     }
 
     @Override
-    public IEditorActionBarContributor getContributor(IDatabaseEditorContributorManager manager)
-    {
+    public IEditorActionBarContributor getContributor(IDatabaseEditorContributorManager manager) {
         Class<? extends IEditorActionBarContributor> contributorClass = editorDescriptor.getContributorClass();
         if (contributorClass == null) {
             return null;
@@ -213,36 +204,45 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     }
 
     @Override
-    public void doSave(IProgressMonitor monitor)
-    {
+    public void doSave(IProgressMonitor monitor) {
         if (editor != null) {
             editor.doSave(monitor);
         }
     }
 
     @Override
-    public void doSaveAs()
-    {
+    public void doSaveAs() {
         if (editor != null) {
             editor.doSaveAs();
         }
     }
 
     @Override
-    public boolean isDirty()
-    {
+    public boolean isDirty() {
         return editor != null && editor.isDirty();
     }
 
     @Override
-    public boolean isSaveAsAllowed()
-    {
+    public boolean isSaveAsAllowed() {
         return editor != null && editor.isSaveAsAllowed();
     }
 
     @Override
-    public boolean isSaveOnCloseNeeded()
-    {
+    public boolean isSaveOnCloseNeeded() {
         return editor != null && editor.isSaveOnCloseNeeded();
     }
+
+    private class FolderPageEditorSite extends MultiPageEditorSite implements IFolderEditorSite {
+
+        public FolderPageEditorSite(MultiPageEditorPart multiPageEditor, IEditorPart editor) {
+            super(multiPageEditor, editor);
+        }
+
+        @NotNull
+        @Override
+        public IEditorPart getFolderEditor() {
+            return mainEditor;
+        }
+    }
+
 }

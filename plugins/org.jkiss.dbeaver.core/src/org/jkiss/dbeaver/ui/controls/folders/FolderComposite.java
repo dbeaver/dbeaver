@@ -31,10 +31,7 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -178,6 +175,17 @@ public class FolderComposite extends Composite implements IFolderContainer {
             FolderInfo folder = folders[i];
             Composite folderGroup = UIUtils.createPlaceholder(pane, 2);
             folderGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            folderGroup.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    super.focusGained(e);
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    super.focusLost(e);
+                }
+            });
 
             FolderList nestedFolders = new FolderList(folderGroup);
             GridData gd = new GridData(GridData.FILL_VERTICAL);
