@@ -37,16 +37,19 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.eclipse.ui.texteditor.rulers.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
+import org.jkiss.dbeaver.ext.ISingleControlEditor;
 import org.jkiss.dbeaver.model.impl.resources.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -66,7 +69,7 @@ import java.util.Map;
  * Abstract text editor.
  * Contains some common dbeaver text editor adaptions.
  */
-public abstract class BaseTextEditor extends StatusTextEditor {
+public abstract class BaseTextEditor extends StatusTextEditor implements ISingleControlEditor {
 
     private final static String LINE_NUMBER_RULER = "lineNumberRule";
 
@@ -103,6 +106,12 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     {
         IDocumentProvider provider = getDocumentProvider();
         return provider == null ? null : (Document)provider.getDocument(getEditorInput());
+    }
+
+    @NotNull
+    @Override
+    public Control getEditorControl() {
+        return getTextViewer().getTextWidget();
     }
 
     @Override

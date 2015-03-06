@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.content.parts;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -132,6 +133,7 @@ public class ContentImageEditorPart extends EditorPart implements ContentEditorP
         return null;
     }
 
+    @NotNull
     @Override
     public Control getEditorControl()
     {

@@ -24,19 +24,18 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.ISingleControlEditor;
 
 import javax.activation.MimeType;
 
 /**
  * Database content editor
  */
-public interface ContentEditorPart extends IEditorPart {
+public interface ContentEditorPart extends IEditorPart, ISingleControlEditor {
 
     void initPart(IEditorPart contentEditor, @Nullable MimeType mimeType);
 
     IEditorActionBarContributor getActionBarContributor();
-
-    Control getEditorControl();
 
     String getContentTypeTitle();
 
