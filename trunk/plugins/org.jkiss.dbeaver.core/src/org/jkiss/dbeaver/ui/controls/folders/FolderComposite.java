@@ -65,10 +65,14 @@ public class FolderComposite extends Composite implements IFolderContainer {
         @Nullable
         private IFolder curFolder;
 
-        public FolderPane(Composite parent) {
+        public FolderPane(Composite parent, boolean last) {
             super(parent, SWT.NONE);
 
-            this.setLayoutData(new GridData(GridData.FILL_BOTH));
+            GridData gd = new GridData(SWT.FILL,SWT.FILL,true,true);
+            // Set constant height hint to make all panes the same height
+            gd.heightHint = 100;
+
+            this.setLayoutData(gd);
             GridLayout gl = new GridLayout(2, false);
             gl.marginWidth = 0;
             gl.marginHeight = 0;
@@ -77,14 +81,14 @@ public class FolderComposite extends Composite implements IFolderContainer {
             this.setLayout(gl);
 
             this.folderList = new FolderList(this);
-            GridData gd = new GridData(GridData.FILL_VERTICAL);
+            gd = new GridData(GridData.FILL_VERTICAL);
             gd.verticalSpan = 2;
             this.folderList.setLayoutData(gd);
 
             pane = UIUtils.createPlaceholder(this, 1);
             pane.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            {
+            if (!last) {
                 Sash horizontalLine = new Sash(this, SWT.NONE);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.heightHint = 5;
@@ -181,8 +185,9 @@ public class FolderComposite extends Composite implements IFolderContainer {
             }
         }
 
-        for (List<FolderInfo> group : groups) {
-            FolderPane folderPane = new FolderPane(compositePane);
+        for (int i = 0; i < groups.size(); i++) {
+            List<FolderInfo> group = groups.get(i);
+            FolderPane folderPane = new FolderPane(compositePane, i >= groups.size() - 1);
             folderPane.setFolders(group.toArray(new FolderInfo[group.size()]));
             folderPanes.add(folderPane);
         }
