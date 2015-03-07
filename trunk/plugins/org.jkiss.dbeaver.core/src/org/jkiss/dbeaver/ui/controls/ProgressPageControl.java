@@ -145,9 +145,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (progressPageControl == this.childPageControl) {
             return;
         }
-        if (this.childPageControl != null && progressPageControl != null) {
-            log.warn("Overwrite of child page control '" + this.childPageControl); //$NON-NLS-1$
-        }
+//        if (this.childPageControl != null && progressPageControl != null) {
+//            log.warn("Overwrite of child page control '" + this.childPageControl); //$NON-NLS-1$
+//        }
         this.childPageControl = progressPageControl;
         if (getProgressControl().progressBar == null) {
             hideControls(true);
@@ -479,7 +479,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             if (active) {
                 this.ownerPageControl.setChildControl(this);
             } else {
-                this.ownerPageControl.setChildControl(null);
+                // Do NOT set child to NULL because deactivation usually means just focus lost
+                // and we don't want to deactivate page control on focus loss.
+                //this.ownerPageControl.setChildControl(null);
             }
         }
     }

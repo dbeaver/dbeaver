@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.ui.*;
@@ -98,6 +99,12 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
                 editor.getSite().setSelectionProvider(selectionProvider);
                 selectionProvider.setSelection(selectionProvider.getSelection());
                 itemControl.activate(true);
+
+                // Notify owner MultiPart editor about page change
+                // We need it to update search actions and other contributions provided by node editor
+                if (editor.getSite() instanceof MultiPageEditorSite) {
+                    ((MultiPageEditorSite) editor.getSite()).getMultiPageEditor().setActiveEditor(editor);
+                }
             }
 
             @Override
