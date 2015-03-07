@@ -623,13 +623,17 @@ public class DataSourceDescriptor
                     break;
                 }
             }
+            monitor.beginTask("Connect to " + getName(), tunnelConfiguration != null ? 3 : 2);
+
             if (tunnelConfiguration != null) {
+                monitor.subTask("Initialize tunnel");
                 tunnel = tunnelConfiguration.createHandler(DBWTunnel.class);
                 try {
                     tunnelConnectionInfo = tunnel.initializeTunnel(monitor, tunnelConfiguration, connectionInfo);
                 } catch (Exception e) {
                     throw new DBCException("Can't initialize tunnel", e);
                 }
+                monitor.worked(1);
             }
             if (tunnelConnectionInfo != null) {
                 savedConnectionInfo = connectionInfo;
@@ -637,8 +641,10 @@ public class DataSourceDescriptor
             }
             monitor.subTask("Connect to data source");
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+            monitor.worked(1);
 
             if (initialize) {
+                monitor.subTask("Initialize data source");
                 dataSource.initialize(monitor);
                 // Change connection properties
 
@@ -693,6 +699,7 @@ public class DataSourceDescriptor
                 finally {
                     session.close();
                 }
+                monitor.worked(1);
             }
 
             connectFailed = false;
@@ -720,6 +727,7 @@ public class DataSourceDescriptor
                 throw new DBException("Internal error connecting to " + getName(), e);
             }
         } finally {
+            monitor.done();
             if (savedConnectionInfo != null) {
                 connectionInfo = savedConnectionInfo;
             }

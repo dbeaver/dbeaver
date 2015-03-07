@@ -50,6 +50,7 @@ public abstract class DBXTreeNode
     private final boolean navigable;
     private final boolean inline;
     private final boolean virtual;
+    //private final boolean embeddable;
     private Expression visibleIf;
 
     public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, String visibleIf)
