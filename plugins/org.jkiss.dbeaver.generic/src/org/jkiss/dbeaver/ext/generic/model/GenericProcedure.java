@@ -54,26 +54,21 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     private DBSProcedureType procedureType;
     private List<GenericProcedureParameter> columns;
     private String source;
+    private GenericFunctionResultType functionResultType;
 
     public GenericProcedure(
         GenericStructContainer container,
         String procedureName,
         String specificName,
         String description,
-        DBSProcedureType procedureType)
+        DBSProcedureType procedureType,
+        GenericFunctionResultType functionResultType)
     {
         super(container, true, procedureName, description);
         this.procedureType = procedureType;
+        this.functionResultType = functionResultType;
         this.specificName = specificName;
     }
-
-/*
-    @Property(viewable = true, order = 2)
-    public String getPlainName()
-    {
-        return specificName;
-    }
-*/
 
     @Property(viewable = true, order = 3)
     public GenericCatalog getCatalog()
@@ -100,17 +95,22 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return procedureType;
     }
 
+    @Property(viewable = true, order = 7)
+    public GenericFunctionResultType getFunctionResultType() {
+        return functionResultType;
+    }
+
     @Override
     public Collection<GenericProcedureParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
-            loadColumns(monitor);
+            loadProcedureColumns(monitor);
         }
         return columns;
     }
 
-    private void loadColumns(DBRProgressMonitor monitor) throws DBException
+    private void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException
     {
         Collection<GenericProcedure> procedures = getContainer().getProcedures(monitor, getName());
         if (procedures == null || !procedures.contains(this)) {
@@ -122,15 +122,26 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         final GenericMetaObject pcObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE_COLUMN);
         final JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load procedure columns");
         try {
-            final JDBCResultSet dbResult = session.getMetaData().getProcedureColumns(
-                getCatalog() == null ?
-                    this.getPackage() == null || !this.getPackage().isNameFromCatalog() ?
-                        null :
-                        this.getPackage().getName() :
-                    getCatalog().getName(),
-                getSchema() == null ? null : getSchema().getName(),
-                getName(),
-                getDataSource().getAllObjectsPattern());
+            final JDBCResultSet dbResult;
+            if (functionResultType == null) {
+                dbResult = session.getMetaData().getProcedureColumns(
+                    getCatalog() == null ?
+                        this.getPackage() == null || !this.getPackage().isNameFromCatalog() ?
+                            null :
+                            this.getPackage().getName() :
+                        getCatalog().getName(),
+                    getSchema() == null ? null : getSchema().getName(),
+                    getName(),
+                    getDataSource().getAllObjectsPattern()
+                );
+            } else {
+                dbResult = session.getMetaData().getFunctionColumns(
+                    getCatalog() == null ? null : getCatalog().getName(),
+                    getSchema() == null ? null : getSchema().getName(),
+                    getName(),
+                    getDataSource().getAllObjectsPattern()
+                );
+            }
             try {
                 int previousPosition = -1;
                 while (dbResult.next()) {
@@ -145,15 +156,49 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     //int radix = GenericUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
                     String remarks = GenericUtils.safeGetString(pcObject, dbResult, JDBCConstants.REMARKS);
                     int position = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.ORDINAL_POSITION);
-                    //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
                     DBSProcedureParameterType parameterType;
-                    switch (columnTypeNum) {
-                        case DatabaseMetaData.procedureColumnIn: parameterType = DBSProcedureParameterType.IN; break;
-                        case DatabaseMetaData.procedureColumnInOut: parameterType = DBSProcedureParameterType.INOUT; break;
-                        case DatabaseMetaData.procedureColumnOut: parameterType = DBSProcedureParameterType.OUT; break;
-                        case DatabaseMetaData.procedureColumnReturn: parameterType = DBSProcedureParameterType.RETURN; break;
-                        case DatabaseMetaData.procedureColumnResult: parameterType = DBSProcedureParameterType.RESULTSET; break;
-                        default: parameterType = DBSProcedureParameterType.UNKNOWN; break;
+                    if (functionResultType == null) {
+                        switch (columnTypeNum) {
+                            case DatabaseMetaData.procedureColumnIn:
+                                parameterType = DBSProcedureParameterType.IN;
+                                break;
+                            case DatabaseMetaData.procedureColumnInOut:
+                                parameterType = DBSProcedureParameterType.INOUT;
+                                break;
+                            case DatabaseMetaData.procedureColumnOut:
+                                parameterType = DBSProcedureParameterType.OUT;
+                                break;
+                            case DatabaseMetaData.procedureColumnReturn:
+                                parameterType = DBSProcedureParameterType.RETURN;
+                                break;
+                            case DatabaseMetaData.procedureColumnResult:
+                                parameterType = DBSProcedureParameterType.RESULTSET;
+                                break;
+                            default:
+                                parameterType = DBSProcedureParameterType.UNKNOWN;
+                                break;
+                        }
+                    } else {
+                        switch (columnTypeNum) {
+                            case DatabaseMetaData.functionColumnIn:
+                                parameterType = DBSProcedureParameterType.IN;
+                                break;
+                            case DatabaseMetaData.functionColumnInOut:
+                                parameterType = DBSProcedureParameterType.INOUT;
+                                break;
+                            case DatabaseMetaData.functionColumnOut:
+                                parameterType = DBSProcedureParameterType.OUT;
+                                break;
+                            case DatabaseMetaData.functionReturn:
+                                parameterType = DBSProcedureParameterType.RETURN;
+                                break;
+                            case DatabaseMetaData.functionColumnResult:
+                                parameterType = DBSProcedureParameterType.RESULTSET;
+                                break;
+                            default:
+                                parameterType = DBSProcedureParameterType.UNKNOWN;
+                                break;
+                        }
                     }
                     if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterType.RETURN) {
                         columnName = "RETURN";
@@ -179,7 +224,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                         columnSize,
                         scale, precision, notNull,
                         remarks,
-                            parameterType);
+                        parameterType);
 
                     procedure.addColumn(column);
 
