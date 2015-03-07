@@ -43,6 +43,7 @@ public enum DBIcon
     TREE_TABLE_ALIAS("table_alias", "icons/tree/table_alias.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_TABLE_SORT("table_sort", "icons/tree/table_sort.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_VIEW("view", "icons/tree/view.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TREE_FUNCTION("function", "icons/tree/function.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_PROCEDURE("procedure", "icons/tree/procedure.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_COLUMNS("columns", "icons/tree/columns.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TREE_COLUMN("column", "icons/tree/column.png"), //$NON-NLS-1$ //$NON-NLS-2$

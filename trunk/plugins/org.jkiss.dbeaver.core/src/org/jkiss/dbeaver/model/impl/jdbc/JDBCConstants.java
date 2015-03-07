@@ -44,7 +44,9 @@ public class JDBCConstants
     public static final String PROCEDURE_SCHEM = "PROCEDURE_SCHEM"; //$NON-NLS-1$
     public static final String PROCEDURE_NAME = "PROCEDURE_NAME"; //$NON-NLS-1$
     public static final String PROCEDURE_TYPE = "PROCEDURE_TYPE"; //$NON-NLS-1$
+    public static final String FUNCTION_NAME = "FUNCTION_NAME"; //$NON-NLS-1$
     public static final String SPECIFIC_NAME = "SPECIFIC_NAME"; //$NON-NLS-1$
+    public static final String FUNCTION_TYPE = "FUNCTION_TYPE"; //$NON-NLS-1$
 
     public static final String DATA_TYPE = "DATA_TYPE"; //$NON-NLS-1$
     public static final String LENGTH = "LENGTH"; //$NON-NLS-1$

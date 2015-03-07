@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -44,6 +45,8 @@ import java.util.TreeMap;
  * Generic meta model
  */
 public class GenericMetaModel {
+
+    static final Log log = Log.getLog(GenericMetaModel.class);
 
     private String id;
     private final Map<String, GenericMetaObject> objects = new HashMap<String, GenericMetaObject>();
@@ -88,12 +91,16 @@ public class GenericMetaModel {
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Load procedures");
         try {
+            // Read procedures
             JDBCResultSet dbResult = session.getMetaData().getProcedures(
                 container.getCatalog() == null ? null : container.getCatalog().getName(),
                 container.getSchema() == null ? null : container.getSchema().getName(),
                 dataSource.getAllObjectsPattern());
             try {
                 while (dbResult.next()) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
                     String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
                     String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
@@ -131,7 +138,8 @@ public class GenericMetaModel {
                         procedureName,
                         specificName,
                         remarks,
-                        procedureType);
+                        procedureType,
+                        null);
                     if (procedurePackage != null) {
                         procedurePackage.addProcedure(procedure);
                     } else {
@@ -142,6 +150,48 @@ public class GenericMetaModel {
             finally {
                 dbResult.close();
             }
+
+            try {
+                // Try to read functions (note: this function appeared only in Java 1.6 so it maybe not implemented by many drivers)
+                // Read procedures
+                dbResult = session.getMetaData().getFunctions(
+                    container.getCatalog() == null ? null : container.getCatalog().getName(),
+                    container.getSchema() == null ? null : container.getSchema().getName(),
+                    dataSource.getAllObjectsPattern());
+                try {
+                    while (dbResult.next()) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        String functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.FUNCTION_NAME);
+                        String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
+                        int funcTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.FUNCTION_TYPE);
+                        String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
+                        GenericFunctionResultType functionResultType;
+                        switch (funcTypeNum) {
+                            //case DatabaseMetaData.functionResultUnknown: functionResultType = GenericFunctionResultType.UNKNOWN; break;
+                            case DatabaseMetaData.functionNoTable: functionResultType = GenericFunctionResultType.NO_TABLE; break;
+                            case DatabaseMetaData.functionReturnsTable: functionResultType = GenericFunctionResultType.TABLE; break;
+                            default: functionResultType = GenericFunctionResultType.UNKNOWN; break;
+                        }
+
+                        final GenericProcedure procedure = createProcedureImpl(
+                            container,
+                            functionName,
+                            specificName,
+                            remarks,
+                            DBSProcedureType.FUNCTION,
+                            functionResultType);
+                        container.addProcedure(procedure);
+                    }
+                }
+                finally {
+                    dbResult.close();
+                }
+            } catch (Throwable e) {
+                log.debug("Can't read generic functions", e);
+            }
+
         } catch (SQLException e) {
             throw new DBException(e, session.getDataSource());
         } finally {
@@ -154,14 +204,16 @@ public class GenericMetaModel {
         String procedureName,
         String specificName,
         String remarks,
-        DBSProcedureType procedureType)
+        DBSProcedureType procedureType,
+        GenericFunctionResultType functionResultType)
     {
         return new GenericProcedure(
             container,
             procedureName,
             specificName,
             remarks,
-            procedureType);
+            procedureType,
+            functionResultType);
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
