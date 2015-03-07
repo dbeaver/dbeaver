@@ -19,9 +19,9 @@
 
 package org.jkiss.dbeaver.ext.postgresql;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -37,7 +37,7 @@ public class PostgreUtils {
 
     static final Log log = Log.getLog(PostgreUtils.class);
 
-    public static String getProcedureSource(DBRProgressMonitor monitor, PostgreProcedure procedure)
+    public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure)
         throws DBException
     {
         JDBCSession session = procedure.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load procedure source code");
