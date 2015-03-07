@@ -275,9 +275,21 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
     @Override
     public IFolder getActiveFolder() {
-        // TODO: implement using focus
+        if (folderPanes.length == 1) {
+            return getActiveFolder(folderPanes[0]);
+        }
+        Control focusControl = getDisplay().getFocusControl();
+        for (FolderPane folderPane : folderPanes) {
+            if (UIUtils.isParent(folderPane.editorPane, focusControl)) {
+                return getActiveFolder(folderPane);
+            }
+        }
         return null;
-        //return folderList == null ? null : folderList.getElementAt(folderList.getSelectionIndex()).getInfo().getContents();
+    }
+
+    private IFolder getActiveFolder(FolderPane folderPane) {
+        FolderList folderList = folderPane.folderList;
+        return folderList.getElementAt(folderList.getSelectionIndex()).getInfo().getContents();
     }
 
     @Override
