@@ -55,7 +55,7 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
 
     @Override
     public void setActivePage(IEditorPart activeEditor) {
-        if (curPage != activeEditor) {
+        /*if (curPage != activeEditor) */{
             curPage = activeEditor;
             registerSearchActions(activeEditor);
         }
