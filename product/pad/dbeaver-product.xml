@@ -41,6 +41,24 @@
     <versions>
 
         <version>
+            <number>3.2.0</number>
+            <type>major</type>
+            <date>11.03.2015</date>
+
+            <release-notes>
+                - Data transfer wizard UI improved
+                - Cross-database data transfer fixed + performance significantly improved
+                - Object editor UI changed
+                - Many minor UI improvements and bugfixes
+                - MongoDB extension:
+                    * Support of JavaScript expressions/queries in SQL editor
+                    * Multi-db authentication support
+                    * Create/delete collections/databases
+                    * Server functions (JS) and users view
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.1.5</number>
             <type>hotfix</type>
             <date>24.02.2015</date>
