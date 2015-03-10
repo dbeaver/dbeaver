@@ -50,7 +50,7 @@
                 - Cross-database data transfer fixed + performance significantly improved
                 - Object editor UI changed
                 - Many minor UI improvements and bugfixes
-                - MongoDB extension:
+                - MongoDB extension (EE version):
                     * Support of JavaScript expressions/queries in SQL editor
                     * Multi-db authentication support
                     * Create/delete collections/databases
