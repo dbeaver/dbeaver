@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 
 /**
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
  */
 public interface DBPApplication
 {
+    @NotNull
     DBNModel getNavigatorModel();
 
 

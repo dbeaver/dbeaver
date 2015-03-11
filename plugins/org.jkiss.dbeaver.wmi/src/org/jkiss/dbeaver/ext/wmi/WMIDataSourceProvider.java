@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.wmi;
 
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.wmi.model.WMIDataSource;
 import org.jkiss.dbeaver.model.*;
@@ -34,7 +35,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     private boolean libLoaded = false;
 
     @Override
-    public void init(DBPApplication application)
+    public void init(@NotNull DBPApplication application)
     {
     }
 
@@ -63,8 +64,9 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
                 "/" + connectionInfo.getDatabaseName();
     }
 
+    @NotNull
     @Override
-    public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
+    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container) throws DBException
     {
         if (!libLoaded) {
             DBPDriver driver = container.getDriver();

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -45,7 +46,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
     }
 
     @Override
-    public void init(DBPApplication application) {
+    public void init(@NotNull DBPApplication application) {
 
     }
 

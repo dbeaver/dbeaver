@@ -90,8 +90,9 @@ public class WMIDataSource implements DBPDataSource, SQLDataSource, IAdaptable//
         return new WMISession(monitor, purpose, task, this);
     }
 
+    @NotNull
     @Override
-    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBException
+    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException
     {
         return this;
     }
@@ -103,7 +104,7 @@ public class WMIDataSource implements DBPDataSource, SQLDataSource, IAdaptable//
     }
 
     @Override
-    public void initialize(DBRProgressMonitor monitor) throws DBException
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         final DBPConnectionInfo connectionInfo = container.getActualConnectionInfo();
         try {

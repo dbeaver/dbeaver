@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -54,16 +53,17 @@ public interface DBPDataSource extends DBCExecutionContext
      * Opens new isolated execution context.
      *
      * @param monitor progress monitor
-     * @param purpose
+     * @param purpose context purpose (just a descriptive string)
      * @return execution context
      */
-    DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBException;
+    @NotNull
+    DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException;
 
     /**
      * Reads base metadata from remote database or do any necessarily initialization routines.
      * @throws DBException on any DB error
      * @param monitor progress monitor
      */
-    void initialize(DBRProgressMonitor monitor) throws DBException;
+    void initialize(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }
