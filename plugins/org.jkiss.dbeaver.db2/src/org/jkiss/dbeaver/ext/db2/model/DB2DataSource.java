@@ -152,7 +152,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // -----------------------
 
     @Override
-    public void initialize(DBRProgressMonitor monitor) throws DBException
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.initialize(monitor);
 

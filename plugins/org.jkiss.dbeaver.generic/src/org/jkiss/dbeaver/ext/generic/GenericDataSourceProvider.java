@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.generic;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -116,10 +117,11 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         }
     }
 
+    @NotNull
     @Override
     public DBPDataSource openDataSource(
-        DBRProgressMonitor monitor,
-        DBSDataSourceContainer container)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSDataSourceContainer container)
         throws DBException
     {
         GenericMetaModel metaModel = null;

@@ -133,22 +133,22 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     public boolean isViewable()
     {
-        return propInfo == null || propInfo.viewable() || propInfo.hidden();
+        return propInfo.viewable() || propInfo.hidden();
     }
 
     public boolean isHidden()
     {
-        return propInfo != null && propInfo.hidden();
+        return propInfo.hidden();
     }
 
     public boolean isExpensive()
     {
-        return propInfo != null && propInfo.expensive();
+        return propInfo.expensive();
     }
 
     public boolean supportsPreview()
     {
-        return propInfo != null && propInfo.supportsPreview();
+        return propInfo.supportsPreview();
     }
 
     public IPropertyValueTransformer getValueTransformer()

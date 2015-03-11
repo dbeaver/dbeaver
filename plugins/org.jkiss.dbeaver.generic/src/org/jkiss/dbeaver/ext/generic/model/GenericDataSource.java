@@ -310,7 +310,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public void initialize(DBRProgressMonitor monitor)
+    public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         super.initialize(monitor);

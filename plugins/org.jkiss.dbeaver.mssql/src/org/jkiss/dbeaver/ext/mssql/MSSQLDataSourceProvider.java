@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mssql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -88,9 +89,10 @@ public class MSSQLDataSourceProvider extends JDBCDataSourceProvider implements D
                 "/" + connectionInfo.getDatabaseName();
     }
 
+    @NotNull
     @Override
     public DBPDataSource openDataSource(
-        DBRProgressMonitor monitor, DBSDataSourceContainer container)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container)
         throws DBException
     {
         return new MSSQLDataSource(monitor, container);

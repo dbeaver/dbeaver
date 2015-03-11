@@ -193,8 +193,9 @@ public abstract class JDBCDataSource
         return createConnection(monitor, executionContext, purpose, taskTitle);
     }
 
+    @NotNull
     @Override
-    public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, String purpose) throws DBException
+    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException
     {
         JDBCExecutionContext isolatedContext = new JDBCExecutionContext(this, purpose, true);
         copyContextState(monitor, isolatedContext);
@@ -256,7 +257,7 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public void initialize(DBRProgressMonitor monitor)
+    public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (!isEmbeddedDataSource() && container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {

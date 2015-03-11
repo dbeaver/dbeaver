@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -36,7 +37,7 @@ public interface DBPDataSourceProvider
      * Initializes data source provider
      * @param application application
      */
-    void init(DBPApplication application);
+    void init(@NotNull DBPApplication application);
 
     /**
      * Supported features
@@ -74,9 +75,10 @@ public interface DBPDataSourceProvider
      * @return new data source object
      * @throws DBException on any error
      */
+    @NotNull
     DBPDataSource openDataSource(
-        DBRProgressMonitor monitor,
-        DBSDataSourceContainer container)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSDataSourceContainer container)
         throws DBException;
 
     /**

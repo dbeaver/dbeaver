@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -104,9 +105,10 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return url.toString();
     }
 
+    @NotNull
     @Override
     public DBPDataSource openDataSource(
-        DBRProgressMonitor monitor, DBSDataSourceContainer container)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container)
         throws DBException
     {
         return new MySQLDataSource(monitor, container);

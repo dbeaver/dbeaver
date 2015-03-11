@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.core;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
@@ -341,6 +342,7 @@ public class DBeaverCore implements DBPApplication {
         return localSystem;
     }
 
+    @NotNull
     @Override
     public DBNModel getNavigatorModel()
     {
