@@ -27,7 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 
 /**
- * GridDataProvider
+ * IResultSetController
  */
 public interface IResultSetController {
 

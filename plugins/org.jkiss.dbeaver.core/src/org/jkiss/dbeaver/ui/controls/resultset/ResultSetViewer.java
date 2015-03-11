@@ -65,7 +65,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -1034,18 +1033,19 @@ public class ResultSetViewer extends Viewer
         if (isReadOnly()) {
             return true;
         }
-        if (!model.isColumnReadOnly(column) || (curRow != null && curRow.getState() == RowData.STATE_ADDED)) {
+        if (!model.isColumnReadOnly(column)) {
             return false;
         }
-        return true;
+        boolean newRow = (curRow != null && curRow.getState() == RowData.STATE_ADDED);
+        return !newRow;
     }
 
     ///////////////////////////////////////
     // History
 
-    public StateItem getCurrentState() {
-        return curState;
-    }
+//    public StateItem getCurrentState() {
+//        return curState;
+//    }
 
     private void setNewState(DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter) {
         // Create filter copy to avoid modifications
@@ -2017,13 +2017,15 @@ public class ResultSetViewer extends Viewer
                                 } else {
                                     updateStatusMessage();
                                 }
-                                GridCell newPos;
-                                if (!recordMode) {
-                                    newPos = new GridCell(curAttribute, curRow);
-                                } else {
-                                    newPos = new GridCell(curRow, curAttribute);
+                                if (curAttribute != null && curRow != null) {
+                                    GridCell newPos;
+                                    if (!recordMode) {
+                                        newPos = new GridCell(curAttribute, curRow);
+                                    } else {
+                                        newPos = new GridCell(curRow, curAttribute);
+                                    }
+                                    spreadsheet.setCursor(newPos, false);
                                 }
-                                spreadsheet.setCursor(newPos, false);
                                 previewValue();
                             } else {
                                 curAttribute = null;
@@ -2327,7 +2329,7 @@ public class ResultSetViewer extends Viewer
             lastRowNum = row.getVisualNumber();
         }
         // Move one row down (if we are in grid mode)
-        if (!recordMode && lastRowNum < spreadsheet.getItemCount() - 1) {
+        if (!recordMode && lastRowNum < spreadsheet.getItemCount() - 1 && curAttribute != null) {
             GridCell newPos = new GridCell(curAttribute, model.getRow(lastRowNum - rowsRemoved + 1));
             spreadsheet.setCursor(newPos, false);
         }
@@ -2338,16 +2340,6 @@ public class ResultSetViewer extends Viewer
         }
         updateEditControls();
         fireResultSetChange();
-    }
-
-    @Nullable
-    static Image getTypeImage(DBSTypedObject column)
-    {
-        if (column instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider)column).getObjectImage();
-        } else {
-            return DBIcon.TREE_COLUMN.getImage();
-        }
     }
 
     //////////////////////////////////
@@ -2428,7 +2420,7 @@ public class ResultSetViewer extends Viewer
         DBDAttributeBinding firstColumn = model.getVisibleColumn(0);
         DBDRowIdentifier rowIdentifier = firstColumn.getRowIdentifier();
         if (rowIdentifier != null) {
-            DBVEntityConstraint virtualKey = (DBVEntityConstraint) rowIdentifier.getUniqueKey();;
+            DBVEntityConstraint virtualKey = (DBVEntityConstraint) rowIdentifier.getUniqueKey();
             virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
             rowIdentifier.reloadAttributes(monitor, model.getColumns());
             virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
@@ -2709,7 +2701,7 @@ public class ResultSetViewer extends Viewer
         }
 
         @Override
-        public int getSortOrder(@NotNull Object column)
+        public int getSortOrder(@Nullable Object column)
         {
             if (column instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) column;
@@ -2735,9 +2727,11 @@ public class ResultSetViewer extends Viewer
                     case STRUCT:
                         return ElementState.EXPANDED;
                     case ARRAY:
-                        Object cellValue = model.getCellValue(binding, curRow);
-                        if (cellValue instanceof DBDCollection && ((DBDCollection) cellValue).getItemCount() < 2) {
-                            return ElementState.EXPANDED;
+                        if (curRow != null) {
+                            Object cellValue = model.getCellValue(binding, curRow);
+                            if (cellValue instanceof DBDCollection && ((DBDCollection) cellValue).getItemCount() < 2) {
+                                return ElementState.EXPANDED;
+                            }
                         }
                         return ElementState.COLLAPSED;
                     default:
@@ -2804,7 +2798,7 @@ public class ResultSetViewer extends Viewer
             }
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
-                return getTypeImage(attr.getMetaAttribute());
+                return DBUtils.getTypeImage(attr.getMetaAttribute());
             } else {
                 return null;
             }
@@ -2875,7 +2869,7 @@ public class ResultSetViewer extends Viewer
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding && (!isRecordMode() || !model.isDynamicMetadata())) {
-                return getTypeImage(((DBDAttributeBinding)element).getMetaAttribute());
+                return DBUtils.getTypeImage(((DBDAttributeBinding) element).getMetaAttribute());
             }
             return null;
         }
