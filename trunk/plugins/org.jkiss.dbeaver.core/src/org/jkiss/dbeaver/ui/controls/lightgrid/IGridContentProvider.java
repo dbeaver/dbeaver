@@ -42,7 +42,7 @@ public interface IGridContentProvider extends IContentProvider {
     @Nullable
     Object[] getChildren(Object element);
 
-    int getSortOrder(@NotNull Object element);
+    int getSortOrder(@Nullable Object element);
 
     ElementState getDefaultState(@NotNull Object element);
 

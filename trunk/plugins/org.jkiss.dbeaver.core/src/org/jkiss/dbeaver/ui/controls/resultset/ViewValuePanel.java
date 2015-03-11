@@ -31,6 +31,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -99,7 +100,7 @@ abstract class ViewValuePanel extends Composite {
             cleanupPanel();
 
             // Rest column info
-            columnImageLabel.setImage(ResultSetViewer.getTypeImage(valueController.getValueType()));
+            columnImageLabel.setImage(DBUtils.getTypeImage(valueController.getValueType()));
             columnNameLabel.setText(valueController.getValueName());
             // Create a new one
             try {

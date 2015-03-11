@@ -18,16 +18,18 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -49,7 +51,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * DBUtils
@@ -57,9 +58,6 @@ import java.util.regex.Pattern;
 public final class DBUtils {
 
     static final Log log = Log.getLog(DBUtils.class);
-
-    static final Pattern SELECT_QUERY_PATTERN = Pattern.compile("\\s*SELECT.+");
-    static final Pattern SELECT_INTO_PATTERN = Pattern.compile("\\s*SELECT.+\\s+INTO\\s+");
 
     public static <TYPE extends DBSObject> Comparator<TYPE> nameComparator()
     {
@@ -350,7 +348,8 @@ public final class DBUtils {
         if (theList != null && !theList.isEmpty()) {
             if (theList instanceof List) {
                 List<T> l = (List<T>)theList;
-                for (int i = 0; i < l.size(); i++) {
+                int size = l.size();
+                for (int i = 0; i < size; i++) {
                     if (l.get(i).getName().equalsIgnoreCase(objectName)) {
                         return l.get(i);
                     }
@@ -527,7 +526,7 @@ public final class DBUtils {
             return false;
         }
         Collection<? extends DBSEntityConstraint> constraints = association.getParentObject().getConstraints(monitor);
-        if (!CommonUtils.isEmpty(constraints)) {
+        if (constraints != null) {
             for (DBSEntityConstraint constraint : constraints) {
                 if (constraint.getConstraintType().isUnique() && constraint instanceof DBSEntityReferrer) {
                     List<DBSEntityAttribute> ownAttrs = getEntityAttributes(monitor, referrer);
@@ -1143,6 +1142,19 @@ public final class DBUtils {
     }
 
     @NotNull
+    public static Image getTypeImage(DBSTypedObject column)
+    {
+        Image image = null;
+        if (column instanceof IObjectImageProvider) {
+            image = ((IObjectImageProvider)column).getObjectImage();
+        }
+        if (image == null) {
+            image = DBIcon.TREE_COLUMN.getImage();
+        }
+        return image;
+    }
+
+    @NotNull
     public static DBDBinaryFormatter getBinaryPresentation(@NotNull DBPDataSource dataSource)
     {
         String id = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION);
@@ -1240,4 +1252,5 @@ public final class DBUtils {
         }
         return false;
     }
+
 }
