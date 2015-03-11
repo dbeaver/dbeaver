@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
@@ -114,9 +115,10 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         return url.toString();
     }
 
+    @NotNull
     @Override
     public DBPDataSource openDataSource(
-        DBRProgressMonitor monitor, DBSDataSourceContainer container)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container)
         throws DBException
     {
         return new OracleDataSource(monitor, container);

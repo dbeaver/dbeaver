@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.nosql.cassandra;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.nosql.cassandra.model.CassandraDataSource;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -47,10 +48,11 @@ public class CassandraDataSourceProvider extends JDBCDataSourceProvider {
             "/" + connectionInfo.getDatabaseName();
     }
 
+    @NotNull
     @Override
     public DBPDataSource openDataSource(
-        DBRProgressMonitor monitor,
-        DBSDataSourceContainer container)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSDataSourceContainer container)
         throws DBException
     {
         return new CassandraDataSource(monitor, container);

@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2;
 
 import com.ibm.db2.jcc.DB2BaseDataSource;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -93,8 +94,9 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
         return url.toString();
     }
 
+    @NotNull
     @Override
-    public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
+    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container) throws DBException
     {
         return new DB2DataSource(monitor, container);
     }

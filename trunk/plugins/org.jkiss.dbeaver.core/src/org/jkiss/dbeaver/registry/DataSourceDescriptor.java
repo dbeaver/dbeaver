@@ -1078,7 +1078,7 @@ public class DataSourceDescriptor
     @Property(order = 6)
     public String getPropertyServerName()
     {
-        if (isConnected() && dataSource.getInfo() != null) {
+        if (isConnected()) {
             String serverName = dataSource.getInfo().getDatabaseProductName();
             String serverVersion = dataSource.getInfo().getDatabaseProductVersion();
             if (serverName != null) {
@@ -1092,7 +1092,7 @@ public class DataSourceDescriptor
     @Property(order = 7)
     public String getPropertyDriver()
     {
-        if (isConnected() && dataSource.getInfo() != null) {
+        if (isConnected()) {
             String driverName = dataSource.getInfo().getDriverName();
             String driverVersion = dataSource.getInfo().getDriverVersion();
             if (driverName != null) {
