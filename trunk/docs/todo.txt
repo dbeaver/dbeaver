@@ -1,3 +1,4 @@
+unsigned integers read fix
 IPropertyDescriptor, IPropertySource -> move to DBPPropertyDescriptor (get rid of org.eclipse.ui package dependency)
 Data transfer DB->DB. Set default export mapping initially
 DBCStatement-> executeQuery + executeUpdate
