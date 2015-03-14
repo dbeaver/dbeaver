@@ -17,20 +17,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 
 /**
- * Result set renderer.
- * Visualizes result set viewer/editor.
+ * SpreadsheetPresentation
  */
-public interface IResultSetPresentation {
+public class SpreadsheetPresentation implements IResultSetPresentation {
 
-    void createPresentation(IResultSetController controller, Composite parent);
+    @Override
+    public void createPresentation(IResultSetController controller, Composite parent) {
 
-    Control getControl();
+    }
 
-    void refreshData();
+    @Override
+    public Control getControl() {
+        return null;
+    }
+
+    @Override
+    public void refreshData() {
+
+    }
 }

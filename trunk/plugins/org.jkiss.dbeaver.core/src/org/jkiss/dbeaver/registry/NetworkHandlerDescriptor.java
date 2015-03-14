@@ -38,20 +38,20 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor
     private final String description;
     private DBWHandlerType type;
     private final boolean secured;
-    private final String handlerClassName;
-    private final String uiClassName;
+    private final ObjectType handlerType;
+    private final ObjectType uiConfigType;
 
     public NetworkHandlerDescriptor(
         IConfigurationElement config)
     {
-        super(config.getContributor().getName(), config);
+        super(config);
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.type = DBWHandlerType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase());
         this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SECURED), false);
-        this.handlerClassName = config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS);
-        this.uiClassName = config.getAttribute(RegistryConstants.ATTR_UI_CLASS);
+        this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
+        this.uiConfigType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_UI_CLASS));
     }
 
     public String getId()
@@ -79,34 +79,17 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor
         return secured;
     }
 
-    public <T extends DBWNetworkHandler> T createHandler(Class<T> handlerType)
+    public <T extends DBWNetworkHandler> T createHandler(Class<T> impl)
         throws DBException
     {
-        Class<T> toolClass = getObjectClass(handlerClassName, handlerType);
-        if (toolClass == null) {
-            throw new DBException("Handler class '" + toolClass + "' not found");
-        }
-        try {
-            return toolClass.newInstance();
-        }
-        catch (Throwable ex) {
-            throw new DBException("Can't create network handler '" + handlerClassName + "'", ex);
-        }
+        return handlerType.createInstance(impl);
     }
 
+    @SuppressWarnings("unchecked")
     public IObjectPropertyConfigurator<DBWHandlerConfiguration> createConfigurator()
         throws DBException
     {
-        Class<? extends IObjectPropertyConfigurator> toolClass = getObjectClass(uiClassName, IObjectPropertyConfigurator.class);
-        if (toolClass == null) {
-            throw new DBException("Handler class '" + toolClass + "' not found");
-        }
-        try {
-            return toolClass.newInstance();
-        }
-        catch (Throwable ex) {
-            throw new DBException("Can't create network handler configurator '" + uiClassName + "'", ex);
-        }
+        return uiConfigType.createInstance(IObjectPropertyConfigurator.class);
     }
 
 }

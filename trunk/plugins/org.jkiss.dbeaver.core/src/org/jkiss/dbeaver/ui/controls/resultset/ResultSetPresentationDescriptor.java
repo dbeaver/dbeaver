@@ -17,40 +17,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
- * ToolDescriptor
+ * ResultSetPresentationDescriptor
  */
-public class ToolDescriptor extends AbstractContextDescriptor {
+public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
+
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.resultset.presentation"; //NON-NLS-1 //$NON-NLS-1$
+
     private final String id;
     private final String label;
     private final String description;
-    private final ObjectType toolType;
+    private final ObjectType presentationType;
     private final Image icon;
-    private final boolean singleton;
-    private final ToolGroupDescriptor group;
 
-    public ToolDescriptor(
-        DataSourceProviderDescriptor provider, IConfigurationElement config)
-    {
+    protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);
+
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.toolType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.presentationType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-        this.singleton = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLETON));
-        String groupId = config.getAttribute(RegistryConstants.ATTR_GROUP);
-        this.group = CommonUtils.isEmpty(groupId) ? null : provider.getToolGroup(groupId);
     }
 
     public String getId() {
@@ -69,26 +65,12 @@ public class ToolDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
-    public boolean isSingleton() {
-        return singleton;
+    public boolean supportedBy(DBCResultSet resultSet) {
+        return true;
     }
 
-    public ToolGroupDescriptor getGroup() {
-        return group;
-    }
-
-    @Override
-    protected Object adaptType(DBPObject object) {
-        if (object instanceof DBSObject) {
-            return ((DBSObject) object).getDataSource();
-        }
-        return super.adaptType(object);
-    }
-
-    public IExternalTool createTool()
-        throws DBException
-    {
-        return toolType.createInstance(IExternalTool.class);
+    public IResultSetPresentation createInstance() throws DBException {
+        return presentationType.createInstance(IResultSetPresentation.class);
     }
 
 }
