@@ -30,7 +30,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
     private String id;
     private String targetID;
     private String label;
-    private String viewClassName;
+    private ObjectType viewType;
     private Image icon;
 
     public DataSourceViewDescriptor(DataSourceProviderDescriptor provider, IConfigurationElement config)
@@ -39,7 +39,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.targetID = config.getAttribute(RegistryConstants.ATTR_TARGET_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
-        this.viewClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.viewType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
     }
 
@@ -65,15 +65,11 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
 
     public <T> T createView(Class<T> implementsClass)
     {
-        Class<T> viewClass = getObjectClass(viewClassName, implementsClass);
-        if (viewClass == null) {
-            throw new IllegalStateException("View class '" + viewClassName + "' not found");
-        }
         try {
-            return viewClass.newInstance();
+            return viewType.createInstance(implementsClass);
         }
         catch (Throwable ex) {
-            throw new IllegalStateException("Can't create view '" + viewClassName + "'", ex);
+            throw new IllegalStateException("Can't create view '" + viewType.getImplName() + "'", ex);
         }
     }
 }

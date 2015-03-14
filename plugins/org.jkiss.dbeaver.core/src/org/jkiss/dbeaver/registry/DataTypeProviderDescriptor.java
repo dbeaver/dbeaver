@@ -39,7 +39,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
     private static final String ALL_TYPES_PATTERN = "*";
 
     private String id;
-    private String className;
+    private ObjectType implType;
     private Set<Object> supportedTypes = new HashSet<Object>();
     private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<DataSourceProviderDescriptor>();
 
@@ -50,11 +50,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
-
-        if (className == null) {
-            log.error("Empty class name of data type provider '" + this.id + "'"); //$NON-NLS-1$
-        }
+        this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
 
         IConfigurationElement[] typeElements = config.getChildren(RegistryConstants.TAG_TYPE);
         for (IConfigurationElement typeElement : typeElements) {
@@ -104,17 +100,12 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     public DBDValueHandlerProvider getInstance()
     {
-        if (instance == null && className != null) {
-            Class<?> providerClass = super.getObjectClass(className);
-            if (providerClass == null) {
-                log.error("Could not find data type provider class '" + this.className + "'"); //$NON-NLS-1$
-            } else {
-                try {
-                    this.instance = (DBDValueHandlerProvider) providerClass.newInstance();
-                }
-                catch (Exception e) {
-                    log.error("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
-                }
+        if (instance == null && implType != null) {
+            try {
+                this.instance = implType.createInstance(DBDValueHandlerProvider.class);
+            }
+            catch (Exception e) {
+                log.error("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
             }
         }
         return instance;

@@ -119,9 +119,6 @@ public class ResultSetViewer extends Viewer
     implements IDataSourceProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
     static final Log log = Log.getLog(ResultSetViewer.class);
-    private final IPropertyChangeListener themeChangeListener;
-
-    private ResultSetValueController panelValueController;
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
@@ -163,9 +160,13 @@ public class ResultSetViewer extends Viewer
     private Combo filtersText;
     private Text statusLabel;
 
+    // Presentation
+    private IResultSetPresentation activePresentation;
+
     private final SashForm resultsSash;
     private final Spreadsheet spreadsheet;
     private final ViewValuePanel previewPane;
+    private ResultSetValueController panelValueController;
 
     @NotNull
     private final IResultSetProvider resultSetProvider;
@@ -173,6 +174,7 @@ public class ResultSetViewer extends Viewer
     private final ResultSetDataReceiver dataReceiver;
     @NotNull
     private final IThemeManager themeManager;
+    private final IPropertyChangeListener themeChangeListener;
     private ToolBarManager toolBarManager;
 
     // Current row/col number

@@ -38,7 +38,7 @@ public class ToolGroupDescriptor extends AbstractContextDescriptor {
     public ToolGroupDescriptor(
         DataSourceProviderDescriptor provider, IConfigurationElement config)
     {
-        super(provider.getPluginId(), config);
+        super(config);
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
