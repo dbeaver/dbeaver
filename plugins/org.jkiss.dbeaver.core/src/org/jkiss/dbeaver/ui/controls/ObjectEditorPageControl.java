@@ -24,11 +24,11 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
 
@@ -89,7 +89,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
             return false;
         }
         DBSObject databaseObject = getEditorPart().getEditorInput().getDatabaseObject();
-        return databaseObject != null && DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
+        return databaseObject != null && EntityEditorsRegistry.getInstance().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
     }
 
     private IEditorPart getMainEditorPart()

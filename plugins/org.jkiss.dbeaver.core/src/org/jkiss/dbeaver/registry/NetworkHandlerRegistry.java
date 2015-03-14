@@ -20,15 +20,26 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NetworkHandlerRegistry
 {
+    private static NetworkHandlerRegistry instance = null;
+
+    public synchronized static NetworkHandlerRegistry getInstance()
+    {
+        if (instance == null) {
+            instance = new NetworkHandlerRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
+    }
+
     private final List<NetworkHandlerDescriptor> descriptors = new ArrayList<NetworkHandlerDescriptor>();
 
-    public NetworkHandlerRegistry(IExtensionRegistry registry)
+    private NetworkHandlerRegistry(IExtensionRegistry registry)
     {
         // Load data descriptors from external plugins
         {
@@ -38,11 +49,6 @@ public class NetworkHandlerRegistry
                 descriptors.add(formatterDescriptor);
             }
         }
-    }
-
-    public void dispose()
-    {
-        this.descriptors.clear();
     }
 
     public List<NetworkHandlerDescriptor> getDescriptors()

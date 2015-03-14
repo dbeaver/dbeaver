@@ -19,14 +19,13 @@
  */
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferProcessorDescriptor;
@@ -98,7 +97,7 @@ public class DataTransferSettings {
             }
             // Set default producer
             Class<? extends IDataTransferProducer> producerType = dataPipes.get(0).getProducer().getClass();
-            DataTransferNodeDescriptor producerDesc = DBeaverCore.getInstance().getDataTransferRegistry().getNodeByType(producerType);
+            DataTransferNodeDescriptor producerDesc = DataTransferRegistry.getInstance().getNodeByType(producerType);
             if (producerDesc != null) {
                 selectProducer(producerDesc);
                 consumerOptional = true;
@@ -112,7 +111,7 @@ public class DataTransferSettings {
             }
             // Set default consumer
             Class<? extends IDataTransferConsumer> consumerType = dataPipes.get(0).getConsumer().getClass();
-            DataTransferNodeDescriptor consumerDesc = DBeaverCore.getInstance().getDataTransferRegistry().getNodeByType(consumerType);
+            DataTransferNodeDescriptor consumerDesc = DataTransferRegistry.getInstance().getNodeByType(consumerType);
             if (consumerDesc != null) {
                 selectConsumer(consumerDesc, null);
                 consumerOptional = false;
@@ -125,7 +124,7 @@ public class DataTransferSettings {
 
         Collection<Class<?>> objectTypes = getObjectTypes();
         List<DataTransferNodeDescriptor> nodes = new ArrayList<DataTransferNodeDescriptor>();
-        DataTransferRegistry registry = DBeaverCore.getInstance().getDataTransferRegistry();
+        DataTransferRegistry registry = DataTransferRegistry.getInstance();
         if (ArrayUtils.isEmpty(producers)) {
             nodes.addAll(registry.getAvailableProducers(objectTypes));
         } else {
@@ -331,7 +330,7 @@ public class DataTransferSettings {
         }
         String producerId = dialogSettings.get("producer");
         if (!CommonUtils.isEmpty(producerId)) {
-            DataTransferNodeDescriptor producerNode = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(producerId);
+            DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
             if (producerNode != null) {
                 this.producer = producerNode;
             }
@@ -341,7 +340,7 @@ public class DataTransferSettings {
             DataTransferNodeDescriptor savedConsumer = null;
             String consumerId = dialogSettings.get("consumer");
             if (!CommonUtils.isEmpty(consumerId)) {
-                DataTransferNodeDescriptor consumerNode = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(consumerId);
+                DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
                 if (consumerNode != null) {
                     savedConsumer = consumerNode;
                 }
@@ -370,7 +369,7 @@ public class DataTransferSettings {
                 String processorId = procSection.getName();
                 String nodeId = procSection.get("@node");
                 String propNamesId = procSection.get("@propNames");
-                DataTransferNodeDescriptor node = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(nodeId);
+                DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
                 if (node != null) {
                     Map<Object, Object> props = new HashMap<Object, Object>();
                     DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -46,12 +47,22 @@ public class DataFormatterRegistry
 
     public static final String CONFIG_FILE_NAME = "dataformat-profiles.xml"; //$NON-NLS-1$
 
+    private static DataFormatterRegistry instance = null;
+
+    public synchronized static DataFormatterRegistry getInstance()
+    {
+        if (instance == null) {
+            instance = new DataFormatterRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
+    }
+
     private final List<DataFormatterDescriptor> dataFormatterList = new ArrayList<DataFormatterDescriptor>();
     private final Map<String, DataFormatterDescriptor> dataFormatterMap = new HashMap<String, DataFormatterDescriptor>();
     private DBDDataFormatterProfile globalProfile;
     private List<DBDDataFormatterProfile> customProfiles = null;
 
-    public DataFormatterRegistry(IExtensionRegistry registry)
+    private DataFormatterRegistry(IExtensionRegistry registry)
     {
         // Load data formatters from external plugins
         {

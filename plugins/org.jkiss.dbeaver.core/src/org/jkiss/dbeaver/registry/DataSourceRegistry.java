@@ -721,7 +721,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             } else if (localName.equals(RegistryConstants.TAG_NETWORK_HANDLER)) {
                 if (curDataSource != null) {
                     String handlerId = atts.getValue(RegistryConstants.ATTR_ID);
-                    NetworkHandlerDescriptor handlerDescriptor = DBeaverCore.getInstance().getNetworkHandlerRegistry().getDescriptor(handlerId);
+                    NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
                     if (handlerDescriptor == null) {
                         log.warn("Can't find network handler '" + handlerId + "'");
                         reader.setListener(EMPTY_LISTENER);

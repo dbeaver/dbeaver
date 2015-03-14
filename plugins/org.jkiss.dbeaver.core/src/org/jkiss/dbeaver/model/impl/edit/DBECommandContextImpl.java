@@ -18,14 +18,12 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.*;
@@ -33,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -703,7 +702,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         {
             this.parent = parent;
             this.object = object;
-            this.objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass());
+            this.objectManager = EntityEditorsRegistry.getInstance().getObjectManager(object.getClass());
             if (this.objectManager == null) {
                 throw new IllegalStateException("Can't find object manager for '" + object.getClass().getName() + "'");
             }

@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -96,7 +95,7 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
     @Override
     protected void buttonPressed(int buttonId)
     {
-        DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
+        DataFormatterRegistry registry = DataFormatterRegistry.getInstance();
         if (buttonId == NEW_ID) {
             String profileName = EnterNameDialog.chooseName(getShell(), CoreMessages.dialog_data_format_profiles_dialog_name_chooser_title);
             if (registry.getCustomProfile(profileName) != null) {
@@ -130,7 +129,7 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
     private void loadProfiles()
     {
         profileList.removeAll();
-        List<DBDDataFormatterProfile> profiles = DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfiles();
+        List<DBDDataFormatterProfile> profiles = DataFormatterRegistry.getInstance().getCustomProfiles();
         for (DBDDataFormatterProfile profile : profiles) {
             profileList.add(profile.getProfileName());
         }

@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -32,7 +31,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -88,7 +87,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         handlersFolder = new TabFolder(parent, SWT.TOP);
         handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        NetworkHandlerRegistry registry = DBeaverCore.getInstance().getNetworkHandlerRegistry();
+        NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
         for (NetworkHandlerDescriptor descriptor : registry.getDescriptors()) {
             try {
                 createHandlerTab(handlersFolder, descriptor);
@@ -135,7 +134,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
     public void activatePage() {
         DataSourceDescriptor dataSource = wizard.getPageSettings().getActiveDataSource();
         DriverDescriptor driver = wizard.getSelectedDriver();
-        NetworkHandlerRegistry registry = DBeaverCore.getInstance().getNetworkHandlerRegistry();
+        NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
         TabItem selectItem = null;
         for (NetworkHandlerDescriptor descriptor : registry.getDescriptors()) {
             DBWHandlerConfiguration configuration = dataSource.getConnectionInfo().getHandler(descriptor.getId());

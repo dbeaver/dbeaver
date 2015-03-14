@@ -25,13 +25,13 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -103,7 +103,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                 final DBNContainer container = (DBNContainer) node.getParentNode();
                 DBSObject object = node.getObject();
                 if (object != null) {
-                    DBEObjectRenamer objectRenamer = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectRenamer.class);
+                    DBEObjectRenamer objectRenamer = EntityEditorsRegistry.getInstance().getObjectManager(object.getClass(), DBEObjectRenamer.class);
                     if (objectRenamer != null) {
                         CommandTarget commandTarget = getCommandTarget(
                             workbenchWindow,

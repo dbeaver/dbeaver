@@ -27,7 +27,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.transfer.DataTransferProcessorDescriptor;
@@ -97,7 +96,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                     {
                         if (formatProfilesCombo.getSelectionIndex() > 0) {
                             settings.setFormatterProfile(
-                                DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo)));
+                                DataFormatterRegistry.getInstance().getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo)));
                         } else {
                             settings.setFormatterProfile(null);
                         }
@@ -114,7 +113,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                         //dialog.open();
                         PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
                             getShell(),
-                            DBeaverCore.getInstance().getDataFormatterRegistry(),
+                            DataFormatterRegistry.getInstance(),
                             PrefPageDataFormat.PAGE_ID,
                             null,
                             getSelectedFormatterProfile(),
@@ -178,7 +177,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     private Object getSelectedFormatterProfile()
     {
-        DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
+        DataFormatterRegistry registry = DataFormatterRegistry.getInstance();
         int selectionIndex = formatProfilesCombo.getSelectionIndex();
         if (selectionIndex < 0) {
             return null;
@@ -191,7 +190,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     private void reloadFormatProfiles()
     {
-        DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
+        DataFormatterRegistry registry = DataFormatterRegistry.getInstance();
         formatProfilesCombo.removeAll();
         formatProfilesCombo.add(CoreMessages.data_transfer_wizard_settings_listbox_formatting_item_default);
         for (DBDDataFormatterProfile profile : registry.getCustomProfiles()) {

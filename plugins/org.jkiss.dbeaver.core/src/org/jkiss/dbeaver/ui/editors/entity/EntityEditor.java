@@ -36,7 +36,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
@@ -413,7 +412,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             editorDefaults = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass().getName());
         }
 
-        EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
+        EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
 
         // Add object editor page
@@ -692,7 +691,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private void addContributions(String position)
     {
-        EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
+        EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
         final DBSObject databaseObject = getEditorInput().getDatabaseObject();
         DBPObject object;
         if (databaseObject instanceof DBSDataSourceContainer && databaseObject.getDataSource() != null) {
