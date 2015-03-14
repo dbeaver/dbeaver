@@ -108,9 +108,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
                 }
                 break;
             case java.sql.Types.SMALLINT:
-                value = resultSet.getShort(index);
+                // Read int in case of unsigned shorts
+                value = resultSet.getInt(index);
                 break;
             case java.sql.Types.TINYINT:
+                // Read short in case of unsigned byte
                 value = resultSet.getShort(index);
                 break;
             case java.sql.Types.BIT:
