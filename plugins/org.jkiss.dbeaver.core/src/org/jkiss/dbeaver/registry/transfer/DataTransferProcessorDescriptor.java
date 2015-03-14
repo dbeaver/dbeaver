@@ -39,7 +39,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
 {
     private final DataTransferNodeDescriptor node;
     private final String id;
-    private final ObjectType processorClass;
+    private final ObjectType processorType;
     private final List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
     private final String name;
     private final String description;
@@ -51,7 +51,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
         super(config);
         this.node = node;
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.processorClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.processorType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
@@ -104,9 +104,9 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
 
     public IDataTransferProcessor createProcessor() throws DBException
     {
-        processorClass.checkObjectClass(IDataTransferProcessor.class);
+        processorType.checkObjectClass(IDataTransferProcessor.class);
         try {
-            Class<? extends IDataTransferProcessor> clazz = processorClass.getObjectClass(IDataTransferProcessor.class);
+            Class<? extends IDataTransferProcessor> clazz = processorType.getObjectClass(IDataTransferProcessor.class);
             return clazz.newInstance();
         } catch (Exception e) {
             throw new DBException("Can't instantiate data exporter", e);

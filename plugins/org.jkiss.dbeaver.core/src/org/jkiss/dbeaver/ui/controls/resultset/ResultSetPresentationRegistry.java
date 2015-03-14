@@ -1,0 +1,81 @@
+/*
+ * Copyright (C) 2010-2015 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+package org.jkiss.dbeaver.ui.controls.resultset;
+
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
+import org.jkiss.dbeaver.registry.editor.EntityManagerDescriptor;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * ResultSetPresentationRegistry
+ */
+public class ResultSetPresentationRegistry {
+
+    private static final String TAG_PRESENTATION = "presentation"; //NON-NLS-1
+
+    private static ResultSetPresentationRegistry instance;
+
+    public synchronized static ResultSetPresentationRegistry getInstance() {
+        if (instance == null) {
+            instance = new ResultSetPresentationRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
+    }
+
+    private List<ResultSetPresentationDescriptor> presentations = new ArrayList<ResultSetPresentationDescriptor>();
+
+
+    private ResultSetPresentationRegistry(IExtensionRegistry registry)
+    {
+        // Load datasource providers from external plugins
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EntityEditorDescriptor.EXTENSION_ID);
+        for (IConfigurationElement ext : extElements) {
+            if (TAG_PRESENTATION.equals(ext.getName())) {
+                ResultSetPresentationDescriptor descriptor = new ResultSetPresentationDescriptor(ext);
+                presentations.add(descriptor);
+            }
+        }
+
+    }
+
+    public List<ResultSetPresentationDescriptor> getAvailablePresentations(DBCResultSet resultSet)
+    {
+        List<ResultSetPresentationDescriptor> result = new ArrayList<ResultSetPresentationDescriptor>();
+        for (ResultSetPresentationDescriptor descriptor : presentations) {
+            if (descriptor.supportedBy(resultSet)) {
+                result.add(descriptor);
+            }
+        }
+        return result;
+    }
+
+
+}

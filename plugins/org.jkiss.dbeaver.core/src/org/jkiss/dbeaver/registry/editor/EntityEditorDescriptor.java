@@ -59,9 +59,9 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     }
 
     private String id;
-    private String className;
-    private String contributorClassName;
-    private String inputFactoryClassName;
+    private ObjectType editorType;
+    private ObjectType contributorType;
+    private ObjectType inputFactoryType;
     private boolean main;
     private String name;
     private String description;
@@ -69,18 +69,13 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     private Image icon;
     private Type type;
 
-    //private List<Class<?>> objectClasses;
-    private Class<? extends IEditorPart> editorClass;
-    private Class<? extends IEditorActionBarContributor> contributorClass;
-    private Class<? extends IDatabaseEditorInputFactory> inputFactoryClass;
-
     EntityEditorDescriptor()
     {
-        super(DBeaverConstants.PLUGIN_ID, null);
+        super(null);
         this.id = DEFAULT_OBJECT_EDITOR_ID;
-        this.className = ObjectPropertiesEditor.class.getName();
-        this.contributorClassName = null;
-        this.inputFactoryClassName = ObjectPropertiesEditorInputFactory.class.getName();
+        this.editorType = new ObjectType(ObjectPropertiesEditor.class.getName());
+        this.contributorType = null;
+        this.inputFactoryType = new ObjectType(ObjectPropertiesEditorInputFactory.class.getName());
         this.main = true;
         this.name = CoreMessages.registry_entity_editor_descriptor_name;
         this.description = CoreMessages.registry_entity_editor_descriptor_description;
@@ -91,12 +86,12 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
 
     public EntityEditorDescriptor(IConfigurationElement config)
     {
-        super(config.getContributor().getName(), config);
+        super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
-        this.contributorClassName = config.getAttribute(RegistryConstants.ATTR_CONTRIBUTOR);
-        this.inputFactoryClassName = config.getAttribute(RegistryConstants.ATTR_INPUT_FACTORY);
+        this.editorType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.contributorType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CONTRIBUTOR));
+        this.inputFactoryType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_INPUT_FACTORY));
         this.main = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_MAIN));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -150,53 +145,33 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         return embeddable;
     }
 
-    private Class<? extends IEditorPart> getEditorClass()
-    {
-        if (editorClass == null) {
-            editorClass = getObjectClass(className, IEditorPart.class);
-        }
-        return editorClass;
-    }
-
     public Class<? extends IEditorActionBarContributor> getContributorClass()
     {
-        if (contributorClass == null) {
-            if (contributorClassName == null) {
-                return null;
-            }
-            contributorClass = getObjectClass(contributorClassName, IEditorActionBarContributor.class);
-        }
-        return contributorClass;
+        return contributorType == null || contributorType.getImplName() == null ? null : contributorType.getObjectClass(IEditorActionBarContributor.class);
     }
 
     public IEditorInput getNestedEditorInput(IDatabaseEditorInput mainInput)
     {
-        if (inputFactoryClass == null) {
-            if (inputFactoryClassName == null) {
-                return mainInput;
-            }
-            inputFactoryClass = getObjectClass(inputFactoryClassName, IDatabaseEditorInputFactory.class);
+        if (inputFactoryType == null || inputFactoryType.getImplName() == null) {
+            return mainInput;
         }
         try {
-            if (inputFactoryClass != null) {
-                return inputFactoryClass.newInstance().createNestedEditorInput(mainInput);
+            IDatabaseEditorInputFactory instance = inputFactoryType.createInstance(IDatabaseEditorInputFactory.class);
+            if (instance != null) {
+                return instance.createNestedEditorInput(mainInput);
             }
         } catch (Exception e) {
-            log.error(e);
+            log.error("Error instantiating input factory", e);
         }
         return mainInput;
     }
 
     public IEditorPart createEditor()
     {
-        Class<? extends IEditorPart> clazz = getEditorClass();
-        if (clazz == null) {
-            return null;
-        }
         try {
-            return clazz.newInstance();
+            return editorType.createInstance(IEditorPart.class);
         } catch (Exception ex) {
-            log.error("Error instantiating entity editor '" + className + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
+            log.error("Error instantiating entity editor '" + editorType.getImplName() + "'", ex); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }
