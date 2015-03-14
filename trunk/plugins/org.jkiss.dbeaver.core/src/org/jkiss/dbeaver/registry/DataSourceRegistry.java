@@ -84,12 +84,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 loadDataSources(dsFile, new SimpleStringEncrypter());
             }
         }
-        DBeaverCore.getInstance().getDataSourceProviderRegistry().fireRegistryChange(this, true);
+        DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
     }
 
     public void dispose()
     {
-        DBeaverCore.getInstance().getDataSourceProviderRegistry().fireRegistryChange(this, false);
+        DataSourceProviderRegistry.getInstance().fireRegistryChange(this, false);
         synchronized (dataSourceListeners) {
             if (!this.dataSourceListeners.isEmpty()) {
                 log.warn("Some data source listeners are still registered: " + dataSourceListeners);
@@ -614,7 +614,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     id = name;
                 }
                 String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
-                DataSourceProviderDescriptor provider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(providerId);
+                DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
                 if (provider == null) {
                     log.warn("Can't find datasource provider " + providerId + " for datasource '" + name + "'");
                     curDataSource = null;
@@ -680,7 +680,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curDataSource.getConnectionInfo().setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
                     curDataSource.getConnectionInfo().setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
                     curDataSource.getConnectionInfo().setConnectionType(
-                        DBeaverCore.getInstance().getDataSourceProviderRegistry().getConnectionType(
+                        DataSourceProviderRegistry.getInstance().getConnectionType(
                             CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_TYPE)),
                             DBPConnectionType.DEFAULT_TYPE)
                         );

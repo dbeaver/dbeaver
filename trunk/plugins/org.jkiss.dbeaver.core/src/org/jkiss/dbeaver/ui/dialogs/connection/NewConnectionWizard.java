@@ -109,7 +109,7 @@ public class NewConnectionWizard extends ConnectionWizard
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    List<DataSourceProviderDescriptor> providers = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders();
+                    List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
                     monitor.beginTask(CoreMessages.dialog_new_connection_wizard_monitor_load_data_sources, providers.size());
                     for (DataSourceProviderDescriptor provider : providers) {
                         monitor.subTask(provider.getName());

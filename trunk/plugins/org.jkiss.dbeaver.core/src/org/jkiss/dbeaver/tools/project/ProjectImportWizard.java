@@ -148,7 +148,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                             monitor.worked(1);
                         }
                         // Save drivers
-                        DBeaverCore.getInstance().getDataSourceProviderRegistry().saveDrivers();
+                        DataSourceProviderRegistry.getInstance().saveDrivers();
                         monitor.done();
                     }
                 }
@@ -201,7 +201,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         String driverDefaultPort = driverElement.getAttribute(RegistryConstants.ATTR_PORT);
         String driverDescription = driverElement.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
 
-        DataSourceProviderDescriptor dataSourceProvider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(providerId);
+        DataSourceProviderDescriptor dataSourceProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
         if (dataSourceProvider == null) {
             throw new DBException("Cannot find data source provider '" + providerId + "' for driver '" + driverName + "'");
         }

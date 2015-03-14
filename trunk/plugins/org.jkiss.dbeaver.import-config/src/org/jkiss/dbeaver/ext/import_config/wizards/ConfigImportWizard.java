@@ -67,7 +67,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                 }
             }
             // Flush drivers configuration
-            DBeaverCore.getInstance().getDataSourceProviderRegistry().saveDrivers();
+            DataSourceProviderRegistry.getInstance().saveDrivers();
         } catch (DBException e) {
             UIUtils.showErrorDialog(getShell(), "Import driver", null, e);
             return false;
@@ -97,7 +97,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         if (CommonUtils.isEmpty(sampleURL)) {
             throw new DBException("Cannot create driver '" + driverInfo.getName() + "' - no connection URL pattern specified");
         }
-        final DataSourceProviderRegistry registry = DBeaverCore.getInstance().getDataSourceProviderRegistry();
+        final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
         List<DriverDescriptor> matchedDrivers = new ArrayList<DriverDescriptor>();
         for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
             for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {

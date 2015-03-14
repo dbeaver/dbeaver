@@ -1296,7 +1296,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     log.warn("No id for driver provider");
                     return;
                 }
-                curProvider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(idAttr);
+                curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(idAttr);
                 if (curProvider == null) {
                     log.warn("Datasource provider '" + idAttr + "' not found");
                 }
@@ -1305,7 +1305,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 if (curProvider == null) {
                     String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
                     if (!CommonUtils.isEmpty(providerId)) {
-                        curProvider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(providerId);
+                        curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
                         if (curProvider == null) {
                             log.warn("Datasource provider '" + providerId + "' not found");
                         }

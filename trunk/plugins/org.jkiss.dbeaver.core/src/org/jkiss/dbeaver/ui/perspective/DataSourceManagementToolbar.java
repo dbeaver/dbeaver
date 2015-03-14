@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -170,7 +171,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             pageClosed(activePage);
         }
 
-        DBeaverCore.getInstance().getDataSourceProviderRegistry().removeDataSourceRegistryListener(this);
+        DataSourceProviderRegistry.getInstance().removeDataSourceRegistryListener(this);
         for (DBPDataSourceRegistry registry : handledRegistries) {
             registry.removeDataSourceListener(this);
         }
@@ -717,7 +718,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         // Register as datasource listener in all datasources
         // We need it because at this moment there could be come already loaded registries (on startup)
         final DBeaverCore core = DBeaverCore.getInstance();
-        core.getDataSourceProviderRegistry().addDataSourceRegistryListener(DataSourceManagementToolbar.this);
+        DataSourceProviderRegistry.getInstance().addDataSourceRegistryListener(DataSourceManagementToolbar.this);
         for (IProject project : core.getLiveProjects()) {
             if (project.isOpen()) {
                 DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);

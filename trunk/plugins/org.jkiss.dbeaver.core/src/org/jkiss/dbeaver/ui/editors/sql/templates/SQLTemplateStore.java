@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -23,7 +22,9 @@ import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -80,7 +81,7 @@ public class SQLTemplateStore extends TemplateStore {
             "$nl$/templates/default-templates.properties");
 
         // Read templates for DS providers
-        for (DataSourceProviderDescriptor provider : DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders()) {
+        for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
             readIncludedTemplates(
                 provider.getPluginId(),
                 templates,
