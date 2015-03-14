@@ -67,8 +67,6 @@ public class DBeaverCore implements DBPApplication {
     private IProject tempProject;
     private OSDescriptor localSystem;
 
-    private DataSourceProviderRegistry dataSourceProviderRegistry;
-
     private DBNModel navigatorModel;
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
@@ -166,10 +164,6 @@ public class DBeaverCore implements DBPApplication {
 
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
-        // Init datasource registry
-        this.dataSourceProviderRegistry = new DataSourceProviderRegistry();
-        this.dataSourceProviderRegistry.loadExtensions(extensionRegistry);
-
         this.queryManager = new QMControllerImpl();
         this.qmLogWriter = new QMLogFileWriter();
         this.queryManager.registerMetaListener(qmLogWriter);
@@ -266,10 +260,7 @@ public class DBeaverCore implements DBPApplication {
             this.queryManager.dispose();
             //queryManager = null;
         }
-        if (this.dataSourceProviderRegistry != null) {
-            this.dataSourceProviderRegistry.dispose();
-            this.dataSourceProviderRegistry = null;
-        }
+        DataSourceProviderRegistry.getInstance().dispose();
 
         if (this.editorsAdapter != null) {
             // Unregister properties adapter
@@ -326,11 +317,6 @@ public class DBeaverCore implements DBPApplication {
     public QMController getQueryManager()
     {
         return queryManager;
-    }
-
-    public DataSourceProviderRegistry getDataSourceProviderRegistry()
-    {
-        return this.dataSourceProviderRegistry;
     }
 
     public ProjectRegistry getProjectRegistry()

@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -280,7 +279,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     {
         typeTable.removeAll();
         colorPicker.removeAll();
-        for (DBPConnectionType source : DBeaverCore.getInstance().getDataSourceProviderRegistry().getConnectionTypes()) {
+        for (DBPConnectionType source : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
             addTypeToTable(source, new DBPConnectionType(source));
         }
         typeTable.select(0);
@@ -330,7 +329,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     @Override
     public boolean performOk()
     {
-        DataSourceProviderRegistry registry = DBeaverCore.getInstance().getDataSourceProviderRegistry();
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
         java.util.List<DBPConnectionType> toRemove = new ArrayList<DBPConnectionType>();
         for (DBPConnectionType type : registry.getConnectionTypes()) {
             if (!changedInfo.values().contains(type)) {
