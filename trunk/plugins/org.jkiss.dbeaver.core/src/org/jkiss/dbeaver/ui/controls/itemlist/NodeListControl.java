@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -361,7 +362,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             if (valueObject == null) {
                 return false;
             }
-            DBEObjectEditor objectEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(curClass, DBEObjectEditor.class);
+            DBEObjectEditor objectEditor = EntityEditorsRegistry.getInstance().getObjectManager(curClass, DBEObjectEditor.class);
             return objectEditor != null && editableValue instanceof DBPObject && objectEditor.canEditObject((DBPObject) editableValue);
         }
 

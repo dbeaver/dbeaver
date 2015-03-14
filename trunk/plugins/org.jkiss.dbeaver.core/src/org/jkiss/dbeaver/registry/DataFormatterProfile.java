@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -77,7 +76,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
             }
         }
         properties.clear();
-        for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+        for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
             Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
             Map<Object, Object> formatterProps = new HashMap<Object, Object>();
             for (PropertyDescriptorEx prop : formatter.getProperties()) {
@@ -100,7 +99,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
         store.setValue(PROP_COUNTRY, locale.getCountry());
         store.setValue(PROP_VARIANT, locale.getVariant());
 
-        for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+        for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
             Map<Object, Object> formatterProps = properties.get(formatter.getId());
             for (PropertyDescriptorEx prop : formatter.getProperties()) {
                 Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
@@ -166,7 +165,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
                 return true;
             }
 
-            for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+            for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
                 for (PropertyDescriptorEx prop : formatter.getProperties()) {
                     if (prefStore.isSet(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId())) {
                         return true;
@@ -188,7 +187,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
             store.setToDefault(PROP_COUNTRY);
             store.setToDefault(PROP_VARIANT);
 
-            for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+            for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
                 for (PropertyDescriptorEx prop : formatter.getProperties()) {
                     store.setToDefault(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId());
                 }
@@ -201,7 +200,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
     public DBDDataFormatter createFormatter(String typeId)
         throws IllegalAccessException, InstantiationException, IllegalArgumentException
     {
-        DataFormatterDescriptor descriptor = DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatter(typeId);
+        DataFormatterDescriptor descriptor = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
         if (descriptor == null) {
             throw new IllegalArgumentException("Formatter '" + typeId + "' not found");
         }
@@ -231,7 +230,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
 
     public static void initDefaultPreferences(IPreferenceStore store, Locale locale)
     {
-        for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+        for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
             Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
             Map<Object, Object> formatterProps = new HashMap<Object, Object>();
             for (PropertyDescriptorEx prop : formatter.getProperties()) {

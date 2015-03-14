@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
@@ -28,11 +27,18 @@ import java.util.List;
 
 public class ObjectSearchRegistry
 {
-    static final Log log = Log.getLog(ObjectSearchRegistry.class);
-
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.search"; //$NON-NLS-1$
 
     private static ObjectSearchRegistry instance = null;
+
+    public synchronized static ObjectSearchRegistry getInstance()
+    {
+        if (instance == null) {
+            instance = new ObjectSearchRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
+    }
+
     private final List<ObjectSearchProvider> providers = new ArrayList<ObjectSearchProvider>();
 
     public ObjectSearchRegistry(IExtensionRegistry registry)
@@ -48,14 +54,6 @@ public class ObjectSearchRegistry
     public List<ObjectSearchProvider> getProviders()
     {
         return providers;
-    }
-
-    public synchronized static ObjectSearchRegistry getInstance()
-    {
-        if (instance == null) {
-            instance = new ObjectSearchRegistry(Platform.getExtensionRegistry());
-        }
-        return instance;
     }
 
 }

@@ -28,9 +28,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.transfer.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.registry.transfer.DataTransferRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
@@ -184,7 +184,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         Collection<Class<?>> objectTypes = settings.getObjectTypes();
 
         List<TransferTarget> transferTargets = new ArrayList<TransferTarget>();
-        for (DataTransferNodeDescriptor consumer : DBeaverCore.getInstance().getDataTransferRegistry().getAvailableConsumers(objectTypes)) {
+        for (DataTransferNodeDescriptor consumer : DataTransferRegistry.getInstance().getAvailableConsumers(objectTypes)) {
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objectTypes);
             if (CommonUtils.isEmpty(processors)) {
                 transferTargets.add(new TransferTarget(consumer, null));

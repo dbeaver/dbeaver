@@ -19,21 +19,20 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.impl.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.model.impl.net.GlobalProxySelector;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
-import org.jkiss.dbeaver.registry.*;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.registry.transfer.DataTransferRegistry;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.OSDescriptor;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
@@ -69,10 +68,6 @@ public class DBeaverCore implements DBPApplication {
     private OSDescriptor localSystem;
 
     private DataSourceProviderRegistry dataSourceProviderRegistry;
-    private EntityEditorsRegistry editorsRegistry;
-    private DataTransferRegistry dataTransferRegistry;
-    private DataFormatterRegistry dataFormatterRegistry;
-    private NetworkHandlerRegistry networkHandlerRegistry;
 
     private DBNModel navigatorModel;
     private QMControllerImpl queryManager;
@@ -175,11 +170,6 @@ public class DBeaverCore implements DBPApplication {
         this.dataSourceProviderRegistry = new DataSourceProviderRegistry();
         this.dataSourceProviderRegistry.loadExtensions(extensionRegistry);
 
-        this.editorsRegistry = new EntityEditorsRegistry(extensionRegistry);
-        this.dataTransferRegistry = new DataTransferRegistry(extensionRegistry);
-        this.dataFormatterRegistry = new DataFormatterRegistry(extensionRegistry);
-        this.networkHandlerRegistry = new NetworkHandlerRegistry(extensionRegistry);
-
         this.queryManager = new QMControllerImpl();
         this.qmLogWriter = new QMLogFileWriter();
         this.queryManager.registerMetaListener(qmLogWriter);
@@ -276,22 +266,6 @@ public class DBeaverCore implements DBPApplication {
             this.queryManager.dispose();
             //queryManager = null;
         }
-        if (this.networkHandlerRegistry != null) {
-            this.networkHandlerRegistry.dispose();
-            this.networkHandlerRegistry = null;
-        }
-        if (this.dataTransferRegistry != null) {
-            this.dataTransferRegistry.dispose();
-            this.dataTransferRegistry = null;
-        }
-        if (this.dataFormatterRegistry != null) {
-            this.dataFormatterRegistry.dispose();
-            this.dataFormatterRegistry = null;
-        }
-        if (this.editorsRegistry != null) {
-            this.editorsRegistry.dispose();
-            this.editorsRegistry = null;
-        }
         if (this.dataSourceProviderRegistry != null) {
             this.dataSourceProviderRegistry.dispose();
             this.dataSourceProviderRegistry = null;
@@ -357,26 +331,6 @@ public class DBeaverCore implements DBPApplication {
     public DataSourceProviderRegistry getDataSourceProviderRegistry()
     {
         return this.dataSourceProviderRegistry;
-    }
-
-    public EntityEditorsRegistry getEditorsRegistry()
-    {
-        return editorsRegistry;
-    }
-
-    public DataTransferRegistry getDataTransferRegistry()
-    {
-        return dataTransferRegistry;
-    }
-
-    public DataFormatterRegistry getDataFormatterRegistry()
-    {
-        return dataFormatterRegistry;
-    }
-
-    public NetworkHandlerRegistry getNetworkHandlerRegistry()
-    {
-        return networkHandlerRegistry;
     }
 
     public ProjectRegistry getProjectRegistry()

@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.registry.editor;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.utils.CommonUtils;
@@ -37,6 +38,16 @@ public class EntityEditorsRegistry {
 
     private static final String TAG_EDITOR = "editor"; //NON-NLS-1
     private static final String TAG_MANAGER = "manager"; //NON-NLS-1
+
+    private static EntityEditorsRegistry instance = null;
+
+    public synchronized static EntityEditorsRegistry getInstance()
+    {
+        if (instance == null) {
+            instance = new EntityEditorsRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
+    }
 
     private EntityEditorDescriptor defaultEditor;
     private List<EntityEditorDescriptor> entityEditors = new ArrayList<EntityEditorDescriptor>();
