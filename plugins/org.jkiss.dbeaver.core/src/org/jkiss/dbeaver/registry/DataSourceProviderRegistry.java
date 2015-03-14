@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
@@ -45,13 +46,24 @@ public class DataSourceProviderRegistry
 {
     static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
+    private static DataSourceProviderRegistry instance = null;
+
+    public synchronized static DataSourceProviderRegistry getInstance()
+    {
+        if (instance == null) {
+            instance = new DataSourceProviderRegistry();
+            instance.loadExtensions(Platform.getExtensionRegistry());
+        }
+        return instance;
+    }
+
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<DBPRegistryListener>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<String, DBPConnectionType>();
     private final Map<String, ExternalResourceDescriptor> resourceContributions = new HashMap<String, ExternalResourceDescriptor>();
 
-    public DataSourceProviderRegistry()
+    private DataSourceProviderRegistry()
     {
     }
 
@@ -190,11 +202,6 @@ public class DataSourceProviderRegistry
             }
         }
         return null;
-    }
-
-    public static DataSourceProviderRegistry getDefault()
-    {
-        return DBeaverCore.getInstance().getDataSourceProviderRegistry();
     }
 
     private void loadDrivers(File driversConfig)

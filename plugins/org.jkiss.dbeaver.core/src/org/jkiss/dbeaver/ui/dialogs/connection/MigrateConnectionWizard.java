@@ -33,13 +33,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -193,7 +193,7 @@ public class MigrateConnectionWizard extends Wizard
         public void createControl(Composite parent)
         {
             Composite placeholder = UIUtils.createPlaceholder(parent, 1);
-            driverTreeControl = new DriverTreeControl(placeholder, this, DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders(), true);
+            driverTreeControl = new DriverTreeControl(placeholder, this, DataSourceProviderRegistry.getInstance().getDataSourceProviders(), true);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;
             driverTreeControl.setLayoutData(gd);

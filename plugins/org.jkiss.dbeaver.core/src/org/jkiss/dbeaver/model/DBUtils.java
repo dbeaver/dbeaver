@@ -495,7 +495,7 @@ public final class DBUtils {
     public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
-        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(
+        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getInstance().getDataTypeProvider(
             dataSource, column);
         if (typeProvider != null) {
             typeHandler = typeProvider.getInstance().getHandler(preferences, column);
