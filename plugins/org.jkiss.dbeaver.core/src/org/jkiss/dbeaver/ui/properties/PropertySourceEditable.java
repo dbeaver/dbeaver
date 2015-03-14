@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -31,11 +30,11 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -69,7 +68,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (editableValue == null) {
             return null;
         }
-        return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(
+        return EntityEditorsRegistry.getInstance().getObjectManager(
             editableValue.getClass(),
             managerType);
     }

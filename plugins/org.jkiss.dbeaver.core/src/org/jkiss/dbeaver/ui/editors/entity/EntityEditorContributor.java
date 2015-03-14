@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
@@ -74,7 +75,7 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
             return false;
         }
         DBSObject databaseObject = curEditor.getEditorInput().getDatabaseObject();
-        return databaseObject != null && DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
+        return databaseObject != null && EntityEditorsRegistry.getInstance().getObjectManager(databaseObject.getClass(), DBEObjectManager.class) != null;
     }
 
 

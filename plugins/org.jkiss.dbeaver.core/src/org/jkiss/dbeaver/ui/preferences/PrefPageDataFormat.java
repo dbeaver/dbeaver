@@ -66,11 +66,6 @@ public class PrefPageDataFormat extends TargetPrefPage
     private Combo profilesCombo;
     private PropertySourceCustom propertySource;
 
-    private static DataFormatterRegistry getRegistry()
-    {
-        return DBeaverCore.getInstance().getDataFormatterRegistry();
-    }
-
     public PrefPageDataFormat()
     {
         super();
@@ -184,7 +179,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         if (isDataSourcePreferencePage()) {
             return getDataSourceContainer().getDataFormatterProfile();
         } else {
-            return getRegistry().getGlobalProfile();
+            return DataFormatterRegistry.getInstance().getGlobalProfile();
         }
     }
 
@@ -199,7 +194,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             newProfile = getDefaultProfile();
         } else {
             String newProfileName = profilesCombo.getItem(selectionIndex);
-            newProfile = getRegistry().getCustomProfile(newProfileName);
+            newProfile = DataFormatterRegistry.getInstance().getCustomProfile(newProfileName);
         }
         if (newProfile != formatterProfile) {
             setCurrentProfile(newProfile);
@@ -212,7 +207,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             return;
         }
         formatterProfile = profile;
-        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(getRegistry().getDataFormatters());
+        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(DataFormatterRegistry.getInstance().getDataFormatters());
 
         profileName = formatterProfile.getProfileName();
         profileLocale = formatterProfile.getLocale();
@@ -252,8 +247,8 @@ public class PrefPageDataFormat extends TargetPrefPage
             oldProfile = profilesCombo.getItem(selectionIndex);
         }
         profilesCombo.removeAll();
-        profilesCombo.add("<" + getRegistry().getGlobalProfile().getProfileName() + ">"); //$NON-NLS-1$ //$NON-NLS-2$
-        for (DBDDataFormatterProfile profile : getRegistry().getCustomProfiles()) {
+        profilesCombo.add("<" + DataFormatterRegistry.getInstance().getGlobalProfile().getProfileName() + ">"); //$NON-NLS-1$ //$NON-NLS-2$
+        for (DBDDataFormatterProfile profile : DataFormatterRegistry.getInstance().getCustomProfiles()) {
             profilesCombo.add(profile.getProfileName());
         }
         if (oldProfile != null) {

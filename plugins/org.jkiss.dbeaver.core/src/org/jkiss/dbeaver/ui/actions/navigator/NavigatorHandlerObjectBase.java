@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
@@ -27,9 +26,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -44,9 +43,11 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
@@ -99,7 +100,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
         DBSObject objectToSeek = null;
         if (parentObject instanceof DBSObject) {
-            final DBEStructEditor parentStructEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
+            final DBEStructEditor parentStructEditor = EntityEditorsRegistry.getInstance().getObjectManager(parentObject.getClass(), DBEStructEditor.class);
             if (parentStructEditor != null && RuntimeUtils.isTypeSupported(childType, parentStructEditor.getChildTypes())) {
                 objectToSeek = (DBSObject) parentObject;
             }

@@ -65,7 +65,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 throw new DBException("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
             }
 
-            final EntityEditorsRegistry editorsRegistry = DBeaverCore.getInstance().getEditorsRegistry();
+            final EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
             DBEObjectManager<?> objectManager = editorsRegistry.getObjectManager(childType);
             if (objectManager == null) {
                 throw new DBException("Object manager not found for type '" + childType.getName() + "'");
