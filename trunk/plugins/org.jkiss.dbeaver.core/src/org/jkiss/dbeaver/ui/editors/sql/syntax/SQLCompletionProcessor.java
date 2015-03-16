@@ -141,14 +141,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(wordPart);
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = editor.getSyntaxManager().getDialect().getKeywordType(keyWord);
-                proposals.add(
-                    createCompletionProposal(
-                        keyWord,
-                        keyWord,
-                        keyWord + " (" + keywordType.name() + ")",
-                        null,
-                        false,
-                        null));
+                if (keywordType != null) {
+                    proposals.add(
+                        createCompletionProposal(
+                            keyWord,
+                            keyWord,
+                            keyWord + " (" + keywordType.name() + ")",
+                            null,
+                            false,
+                            null)
+                    );
+                }
             }
         }
 
