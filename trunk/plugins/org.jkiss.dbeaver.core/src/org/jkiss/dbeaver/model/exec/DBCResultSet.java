@@ -33,6 +33,13 @@ public interface DBCResultSet extends DBPObject
 
     DBCStatement getSourceStatement();
 
+    /**
+     * Gets attribute value
+     * @param index    index (zero-based)
+     * @return         value (nullable)
+     * @throws DBCException
+     */
+    @Nullable
     Object getAttributeValue(int index) throws DBCException;
 
     @Nullable
