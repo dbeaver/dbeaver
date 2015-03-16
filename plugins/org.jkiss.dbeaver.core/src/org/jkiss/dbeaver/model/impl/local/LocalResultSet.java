@@ -60,7 +60,7 @@ public class LocalResultSet implements DBCResultSet
     @Override
     public Object getAttributeValue(int index) throws DBCException
     {
-        return rows.get(curPosition)[index - 1];
+        return rows.get(curPosition)[index];
     }
 
     @Nullable

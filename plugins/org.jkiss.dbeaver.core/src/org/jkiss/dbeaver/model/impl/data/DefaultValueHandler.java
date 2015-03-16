@@ -52,7 +52,7 @@ public class DefaultValueHandler extends BaseValueHandler {
         @NotNull DBSTypedObject type,
         int index) throws DBCException
     {
-        return resultSet.getAttributeValue(index + 1);
+        return resultSet.getAttributeValue(index);
     }
 
     @Override
