@@ -300,6 +300,7 @@ public class BasicSQLDialect implements SQLDialect {
         Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
 
         addKeywords(types, DBPKeywordType.TYPE);
+        addKeywords(reservedWords, DBPKeywordType.KEYWORD);
     }
 
 }

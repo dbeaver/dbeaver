@@ -162,6 +162,7 @@ public class ResultSetViewer extends Viewer
 
     // Presentation
     private IResultSetPresentation activePresentation;
+    private List<ResultSetPresentationDescriptor> presentations;
 
     private final SashForm resultsSash;
     private final Spreadsheet spreadsheet;
