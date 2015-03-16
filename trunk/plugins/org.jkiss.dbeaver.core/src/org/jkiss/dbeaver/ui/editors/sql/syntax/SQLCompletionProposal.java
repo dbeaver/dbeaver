@@ -106,6 +106,9 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         char structSeparator = syntaxManager.getStructSeparator();
         int startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
         int endOffset = fullWord.indexOf(structSeparator, curOffset);
+        if (endOffset == startOffset) {
+            startOffset = -1;
+        }
         if (startOffset != -1) {
             startOffset += wordDetector.getStartOffset() + 1;
         } else {
