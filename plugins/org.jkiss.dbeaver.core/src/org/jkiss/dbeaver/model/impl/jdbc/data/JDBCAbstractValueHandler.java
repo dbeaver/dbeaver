@@ -62,7 +62,8 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
     public final void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject columnMetaData,
                                       int index, Object value) throws DBCException {
         try {
-            this.bindParameter((JDBCSession) session, (JDBCPreparedStatement) statement, columnMetaData, index, value);
+            // JDBC uses 1-based indexes
+            this.bindParameter((JDBCSession) session, (JDBCPreparedStatement) statement, columnMetaData, index + 1, value);
         }
         catch (SQLException e) {
             throw new DBCException(CoreMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
@@ -73,6 +74,16 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
     protected abstract Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException, SQLException;
 
+    /**
+     * Binds parameter value
+     * @param session       session
+     * @param statement     statement
+     * @param paramType     parameter type
+     * @param paramIndex    parameter index (1-based)
+     * @param value         parameter value
+     * @throws DBCException
+     * @throws SQLException
+     */
     protected abstract void bindParameter(
         JDBCSession session,
         JDBCPreparedStatement statement,
