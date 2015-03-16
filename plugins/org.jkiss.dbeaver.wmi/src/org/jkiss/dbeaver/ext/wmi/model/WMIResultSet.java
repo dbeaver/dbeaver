@@ -92,10 +92,10 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     public Object getAttributeValue(int index) throws DBCException
     {
         try {
-            if (index > properties.size()) {
+            if (index >= properties.size()) {
                 throw new DBCException("Column index " + index + " out of bounds (" + properties.size() + ")");
             }
-            return row.getValue(properties.get(index - 1).getName());
+            return row.getValue(properties.get(index).getName());
         } catch (WMIException e) {
             throw new DBCException(e, session.getDataSource());
         }

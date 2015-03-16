@@ -131,7 +131,8 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     {
         checkNotEmpty();
         try {
-            return original.getObject(index);
+            // JDBC uses 1-based indexes
+            return original.getObject(index + 1);
         }
         catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());

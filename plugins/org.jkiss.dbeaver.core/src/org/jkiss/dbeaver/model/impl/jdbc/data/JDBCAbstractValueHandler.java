@@ -47,9 +47,10 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
     {
         try {
             if (resultSet instanceof JDBCResultSet) {
+                // JDBC uses 1-based indexes
                 return fetchColumnValue(session, (JDBCResultSet) resultSet, type, index + 1);
             } else {
-                return resultSet.getAttributeValue(index + 1);
+                return resultSet.getAttributeValue(index);
             }
         }
         catch (SQLException e) {
@@ -61,7 +62,7 @@ public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
     public final void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject columnMetaData,
                                       int index, Object value) throws DBCException {
         try {
-            this.bindParameter((JDBCSession) session, (JDBCPreparedStatement) statement, columnMetaData, index + 1, value);
+            this.bindParameter((JDBCSession) session, (JDBCPreparedStatement) statement, columnMetaData, index, value);
         }
         catch (SQLException e) {
             throw new DBCException(CoreMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
