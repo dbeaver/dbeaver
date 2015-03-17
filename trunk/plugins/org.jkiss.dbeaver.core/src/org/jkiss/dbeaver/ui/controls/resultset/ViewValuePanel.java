@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
@@ -85,6 +87,16 @@ abstract class ViewValuePanel extends Composite {
         viewPlaceholder = UIUtils.createPlaceholder(this, 1);
         viewPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         viewPlaceholder.setLayout(new FillLayout());
+
+        addTraverseListener(new TraverseListener() {
+            @Override
+            public void keyTraversed(TraverseEvent e) {
+                if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                    hidePanel();
+                    e.doit = false;
+                }
+            }
+        });
     }
 
     protected abstract void hidePanel();
