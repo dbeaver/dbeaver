@@ -53,9 +53,10 @@ public class SQLSemanticProcessor {
     {
         try {
             Statement statement = CCJSqlParserUtil.parse(query);
-            return statement instanceof Select &&
+            return
+                statement instanceof Select &&
                 ((Select) statement).getSelectBody() instanceof PlainSelect &&
-                ((PlainSelect) ((Select) statement).getSelectBody()).getInto() == null;
+                CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables());
         } catch (Throwable e) {
             //log.debug(e);
             return false;
