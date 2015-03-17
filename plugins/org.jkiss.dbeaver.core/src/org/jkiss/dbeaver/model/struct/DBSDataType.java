@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * DBSDataType
+ * Data type descriptor.
  */
 public interface DBSDataType extends DBSObject, DBSTypedObject
 {

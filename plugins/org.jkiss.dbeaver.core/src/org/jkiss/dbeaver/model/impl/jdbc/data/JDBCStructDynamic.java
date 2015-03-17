@@ -18,22 +18,20 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.impl.struct.AbstractStructDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,11 +46,11 @@ import java.util.Date;
 /**
  * Dynamic struct. Self contained entity.
  */
-public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEntity, DBSDataType {
+public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable {
 
     static final Log log = Log.getLog(JDBCStructDynamic.class);
 
-    public static final int MAX_ITEMS_IN_STRING = 100;
+    //public static final int MAX_ITEMS_IN_STRING = 100;
 
     @NotNull
     private DBPDataSource dataSource;
@@ -64,6 +62,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     private Object[] values;
     @Nullable
     private Object structData;
+    private StructType structType = new StructType();
 
     private JDBCStructDynamic()
     {
@@ -123,100 +122,13 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
         }
     }
 
-    @Nullable
-    public Struct getValue() throws DBCException
-    {
-        return contents;
-    }
-
-    @Override
-    public Object getRawValue() {
-        return contents;
-    }
-
-    @Override
-    public boolean isNull()
-    {
-        return contents == null && structData == null;
-    }
-
-    @Override
-    public void release()
-    {
-        contents = null;
-    }
-
-    @NotNull
-    public String getTypeName()
-    {
-        return "Object";
-    }
-
-    @Override
-    public int getTypeID() {
-        return Types.STRUCT;
-    }
-
-    @Override
-    public DBPDataKind getDataKind() {
-        return DBPDataKind.STRUCT;
-    }
-
-    @Override
-    public int getScale() {
-        return 0;
-    }
-
-    @Override
-    public int getPrecision() {
-        return 0;
-    }
-
-    @Override
-    public long getMaxLength() {
-        return 0;
-    }
-
-    public String getStringRepresentation()
-    {
-        if (structData != null) {
-            return String.valueOf(structData);
-        }
-        return getTypeName();
-    }
-
-    private String makeStructString() throws SQLException
-    {
-        StringBuilder str = new StringBuilder(200);
-        String typeName = getTypeName();
-        str.append(typeName);
-        str.append("(");
-        int i = 0;
-        for (int i1 = 0; i1 < attributes.length; i1++) {
-            DBSEntityAttribute attr = attributes[i1];
-            Object item = values[i];
-            if (i > 0) str.append(",");
-            //str.append(entry.getKey().getName()).append(':');
-            if (DBUtils.isNullValue(item)) {
-                str.append("NULL");
-            } else {
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attr);
-                String strValue = valueHandler.getValueDisplayString(attr, item, DBDDisplayFormat.UI);
-                SQLUtils.appendValue(str, attr, strValue);
-            }
-            i++;
-            if (i >= MAX_ITEMS_IN_STRING) {
-                break;
-            }
-        }
-        str.append(")");
-        return str.toString();
-    }
-
     @Override
     public DBSDataType getDataType()
     {
-        return this;
+        if (structType == null) {
+            structType = new StructType();
+        }
+        return structType;
     }
 
     @NotNull
@@ -241,7 +153,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
     @Override
     public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
     {
-        values[((DBSEntityAttribute)attribute).getOrdinalPosition()] = value;
+        values[attribute.getOrdinalPosition()] = value;
     }
 
     @Override
@@ -254,89 +166,67 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
         return copyStruct;
     }
 
-    @Override
-    public DBSEntityType getEntityType() {
-        return DBSEntityType.TYPE;
+    @Nullable
+    public Struct getValue() throws DBCException
+    {
+        return contents;
     }
 
-    @Nullable
     @Override
-    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) {
-        return Arrays.asList(attributes);
+    public Object getRawValue() {
+        return contents;
     }
 
-    @Nullable
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) {
-        for (int i = 0; i < attributes.length; i++) {
-            DBSEntityAttribute attr = attributes[i];
-            if (attr.getName().equals(attributeName)) {
-                return attr;
-            }
+    public boolean isNull()
+    {
+        return contents == null && structData == null;
+    }
+
+    @Override
+    public void release()
+    {
+        contents = null;
+    }
+
+    public String getStringRepresentation() {
+        if (structData != null) {
+            return String.valueOf(structData);
         }
-        return null;
+        return structType.getTypeName();
     }
 
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
+    private class StructType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {
+        public StructType() {
+            super(dataSource);
+        }
 
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
+        @NotNull
+        @Override
+        public String getTypeName() {
+            return "Object";
+        }
 
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
+        @Override
+        public int getTypeID() {
+            return Types.STRUCT;
+        }
 
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
+        @Override
+        public DBPDataKind getDataKind() {
+            return DBPDataKind.STRUCT;
+        }
 
-    @Nullable
-    @Override
-    public DBSObject getParentObject() {
-        return null;
-    }
+        @Override
+        public DBSEntityType getEntityType() {
+            return DBSEntityType.TYPE;
+        }
 
-    @NotNull
-    @Override
-    public DBPDataSource getDataSource() {
-        return dataSource;
-    }
-
-    @Override
-    public String getName() {
-        return getTypeName();
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return false;
-    }
-
-    @Nullable
-    @Override
-    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
-        return null;
-    }
-
-    @Override
-    public int getMinScale() {
-        return 0;
-    }
-
-    @Override
-    public int getMaxScale() {
-        return 0;
+        @Nullable
+        @Override
+        public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) {
+            return Arrays.asList(attributes);
+        }
     }
 
     private class StructAttribute extends AbstractAttribute implements DBSEntityAttribute {
@@ -417,7 +307,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
         @NotNull
         @Override
         public DBSEntity getParentObject() {
-            return JDBCStructDynamic.this;
+            return structType;
         }
 
         @NotNull
@@ -426,4 +316,35 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable, DBSEnti
             return dataSource;
         }
     }
+
+    /*
+        private String makeStructString() throws SQLException
+        {
+            StringBuilder str = new StringBuilder(200);
+            String typeName = getTypeName();
+            str.append(typeName);
+            str.append("(");
+            int i = 0;
+            for (int i1 = 0; i1 < attributes.length; i1++) {
+                DBSEntityAttribute attr = attributes[i1];
+                Object item = values[i];
+                if (i > 0) str.append(",");
+                //str.append(entry.getKey().getName()).append(':');
+                if (DBUtils.isNullValue(item)) {
+                    str.append("NULL");
+                } else {
+                    DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attr);
+                    String strValue = valueHandler.getValueDisplayString(attr, item, DBDDisplayFormat.UI);
+                    SQLUtils.appendValue(str, attr, strValue);
+                }
+                i++;
+                if (i >= MAX_ITEMS_IN_STRING) {
+                    break;
+                }
+            }
+            str.append(")");
+            return str.toString();
+        }
+    */
+
 }
