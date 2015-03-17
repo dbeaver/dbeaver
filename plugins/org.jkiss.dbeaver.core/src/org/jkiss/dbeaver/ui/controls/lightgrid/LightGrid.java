@@ -2714,10 +2714,8 @@ public abstract class LightGrid extends Canvas {
                 }
                 showItem(row);
                 redraw();
-                return;
-            }
-
-            if (e.button == 1 || e.button == 2 || (e.button == 3 && col != null && !isSelectedCell)) {
+                //return;
+            } else if (e.button == 1 || e.button == 2 || (e.button == 3 && col != null && !isSelectedCell)) {
                 if (col != null) {
                     selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
                     cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);
@@ -2774,10 +2772,10 @@ public abstract class LightGrid extends Canvas {
             focusColumn = column;
         }
 
-        if (selectionEvent != null && col != null && row >= 0) {
+        if (selectionEvent != null && row >= 0) {
             selectionEvent.stateMask = e.stateMask;
             selectionEvent.button = e.button;
-            selectionEvent.data = new GridCell(col.getElement(), rowElements[row]);
+            selectionEvent.data = new GridCell(col == null ? null : col.getElement(), rowElements[row]);
             selectionEvent.x = e.x;
             selectionEvent.y = e.y;
             notifyListeners(SWT.Selection, selectionEvent);
