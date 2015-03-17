@@ -439,16 +439,20 @@ public class ComplexObjectEditor extends TreeViewer {
                 return getChildren(runnable.getResult());
             } else if (parent instanceof FieldInfo) {
                 Object value = ((FieldInfo) parent).value;
-                if (value instanceof DBDComplexValue) {
+                if (isComplexType(value)) {
                     return getChildren(value);
                 }
             } else if (parent instanceof ArrayItem) {
                 Object value = ((ArrayItem) parent).value;
-                if (value instanceof DBDComplexValue) {
+                if (isComplexType(value)) {
                     return getChildren(value);
                 }
             }
             return new Object[0];
+        }
+
+        private boolean isComplexType(Object value) {
+            return value instanceof DBDComplexValue;
         }
 
         @Override

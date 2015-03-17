@@ -287,26 +287,24 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
             if (value instanceof DBDStructure) {
                 DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
-                if (attributes != null) {
-                    for (DBSAttributeBase attr : attributes) {
-                        Pair<DBSAttributeBase, Object[]> attrValue = null;
-                        for (Pair<DBSAttributeBase, Object[]> pair : valueAttributes) {
-                            if (pair.getFirst().getName().equals(attr.getName())) {
-                                attrValue = pair;
-                                break;
-                            }
+                for (DBSAttributeBase attr : attributes) {
+                    Pair<DBSAttributeBase, Object[]> attrValue = null;
+                    for (Pair<DBSAttributeBase, Object[]> pair : valueAttributes) {
+                        if (pair.getFirst().getName().equals(attr.getName())) {
+                            attrValue = pair;
+                            break;
                         }
-                        if (attrValue != null) {
-                            // Update attr value
-                            attrValue.getSecond()[i] = ((DBDStructure) value).getAttributeValue(attr);
-                        } else {
-                            Object[] valueList = new Object[rows.size()];
-                            valueList[i] = ((DBDStructure) value).getAttributeValue(attr);
-                            valueAttributes.add(
-                                new Pair<DBSAttributeBase, Object[]>(
-                                    attr,
-                                    valueList));
-                        }
+                    }
+                    if (attrValue != null) {
+                        // Update attr value
+                        attrValue.getSecond()[i] = ((DBDStructure) value).getAttributeValue(attr);
+                    } else {
+                        Object[] valueList = new Object[rows.size()];
+                        valueList[i] = ((DBDStructure) value).getAttributeValue(attr);
+                        valueAttributes.add(
+                            new Pair<DBSAttributeBase, Object[]>(
+                                attr,
+                                valueList));
                     }
                 }
             }
