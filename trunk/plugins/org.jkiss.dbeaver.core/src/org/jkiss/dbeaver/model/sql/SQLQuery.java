@@ -87,7 +87,7 @@ public class SQLQuery {
                     if (plainSelect.getFromItem() instanceof Table &&
                         CommonUtils.isEmpty(plainSelect.getJoins()) &&
                         CommonUtils.isEmpty(plainSelect.getGroupByColumnReferences()) &&
-                        plainSelect.getInto() == null)
+                        CommonUtils.isEmpty(plainSelect.getIntoTables()))
                     {
                         Table fromItem = (Table) plainSelect.getFromItem();
                         Database database = fromItem.getDatabase();
