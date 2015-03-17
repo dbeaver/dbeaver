@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDReference;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -102,9 +103,9 @@ public class JDBCReference implements DBDReference {
     public String toString()
     {
         try {
-            return "REF on " + value.getBaseTypeName();
+            return value == null ? DBConstants.NULL_VALUE_LABEL : value.getBaseTypeName();
         } catch (SQLException e) {
-            return value == null ? super.toString() : value.toString();
+            return value.toString();
         }
     }
 }
