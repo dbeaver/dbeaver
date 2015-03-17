@@ -2736,7 +2736,7 @@ public class ResultSetViewer extends Viewer
                     case ARRAY:
                         if (curRow != null) {
                             Object cellValue = model.getCellValue(binding, curRow);
-                            if (cellValue instanceof DBDCollection && ((DBDCollection) cellValue).getItemCount() < 2) {
+                            if (cellValue instanceof DBDCollection && ((DBDCollection) cellValue).getItemCount() < 3) {
                                 return ElementState.EXPANDED;
                             }
                         }
@@ -2784,8 +2784,12 @@ public class ResultSetViewer extends Viewer
             }
 
             if (formatString) {
-                if (recordMode && attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection) {
-                    return "[" + ((DBDCollection) value).getItemCount() + "]";
+                if (recordMode) {
+                    if (attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection) {
+                        return "[" + ((DBDCollection) value).getItemCount() + "]";
+                    } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDStructure) {
+                        return "[" + ((DBDStructure) value).getDataType().getName() + "]";
+                    }
                 }
                 return attr.getValueHandler().getValueDisplayString(
                     attr.getAttribute(),
@@ -2875,7 +2879,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public Image getImage(Object element)
         {
-            if (element instanceof DBDAttributeBinding && (!isRecordMode() || !model.isDynamicMetadata())) {
+            if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
                 return DBUtils.getTypeImage(((DBDAttributeBinding) element).getMetaAttribute());
             }
             return null;
