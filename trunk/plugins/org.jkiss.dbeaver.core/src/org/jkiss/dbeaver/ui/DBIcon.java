@@ -217,6 +217,7 @@ public enum DBIcon
     TYPE_REFERENCE("reference", "/icons/sql/types/reference.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TYPE_ROWID("rowid", "/icons/sql/types/rowid.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TYPE_ANY("any", "/icons/sql/types/any.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    TYPE_UUID("uuid", "/icons/sql/types/uuid.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TYPE_UNKNOWN("unknown", "/icons/sql/types/unknown.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     SQL_CONNECT("sql_connect", "/icons/sql/connect.png"), //$NON-NLS-1$ //$NON-NLS-2$

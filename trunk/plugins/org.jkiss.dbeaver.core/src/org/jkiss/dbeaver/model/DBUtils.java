@@ -1110,6 +1110,7 @@ public final class DBUtils {
     @NotNull
     public static DBIcon getDataIcon(@NotNull DBSTypedObject type)
     {
+        String typeName = type.getTypeName();
         switch (type.getDataKind()) {
             case BOOLEAN:
                 return DBIcon.TYPE_BOOLEAN;
@@ -1122,7 +1123,6 @@ public final class DBUtils {
             case BINARY:
                 return DBIcon.TYPE_BINARY;
             case LOB:
-                String typeName = type.getTypeName();
                 if (typeName.contains("XML") || typeName.contains("xml")) {
                     return DBIcon.TYPE_XML;
                 }
@@ -1136,6 +1136,9 @@ public final class DBUtils {
             case ROWID:
                 return DBIcon.TYPE_ROWID;
             case OBJECT:
+                if (typeName.contains("UUID") || typeName.contains("uuid")) {
+                    return DBIcon.TYPE_UUID;
+                }
                 return DBIcon.TYPE_OBJECT;
             case ANY:
                 return DBIcon.TYPE_ANY;
