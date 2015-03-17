@@ -1122,7 +1122,8 @@ public final class DBUtils {
             case BINARY:
                 return DBIcon.TYPE_BINARY;
             case LOB:
-                if (type.getTypeName().toUpperCase().contains("XML")) {
+                String typeName = type.getTypeName();
+                if (typeName.contains("XML") || typeName.contains("xml")) {
                     return DBIcon.TYPE_XML;
                 }
                 return DBIcon.TYPE_LOB;
@@ -1130,6 +1131,8 @@ public final class DBUtils {
                 return DBIcon.TYPE_ARRAY;
             case STRUCT:
                 return DBIcon.TYPE_STRUCT;
+            case REFERENCE:
+                return DBIcon.TYPE_REFERENCE;
             case ROWID:
                 return DBIcon.TYPE_ROWID;
             case OBJECT:

@@ -47,6 +47,12 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
 
     public static final JDBCReferenceValueHandler INSTANCE = new JDBCReferenceValueHandler();
 
+    @Override
+    public int getFeatures()
+    {
+        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_SHOW_ICON;
+    }
+
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
      */
