@@ -695,11 +695,15 @@ public class ResultSetViewer extends Viewer
         Object newRow = cell == null ? null : cell.row;
         if (!recordMode) {
             changed = curRow != newRow || curAttribute != newCol;
-            curRow = (RowData) newRow;
-            curAttribute = (DBDAttributeBinding) newCol;
+            if (newRow instanceof RowData && newCol instanceof DBDAttributeBinding) {
+                curRow = (RowData) newRow;
+                curAttribute = (DBDAttributeBinding) newCol;
+            }
         } else {
             changed = curAttribute != newRow;
-            curAttribute = (DBDAttributeBinding) newRow;
+            if (newRow instanceof DBDAttributeBinding) {
+                curAttribute = (DBDAttributeBinding) newRow;
+            }
         }
         if (curState != null && curRow != null) {
             curState.rowNumber = curRow.getVisualNumber();
