@@ -17,24 +17,35 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.view;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 
 /**
- * Result set renderer.
- * Visualizes result set viewer/editor.
- *
- * May additionally implement ISelectionProvider
+ * Empty presentation.
+ * Used when RSV has no results (initially).
  */
-public interface IResultSetPresentation {
+public class EmptyPresentation implements IResultSetPresentation {
 
-    void createPresentation(IResultSetController controller, Composite parent);
+    private Composite placeholder;
 
-    Control getControl();
+    @Override
+    public void createPresentation(IResultSetController controller, Composite parent) {
+        placeholder = new Composite(parent, SWT.NONE);
+    }
 
-    void refreshData(boolean refreshMetadata);
+    @Override
+    public Control getControl() {
+        return placeholder;
+    }
 
-    // ISelectionProvider
+    @Override
+    public void refreshData(boolean refreshMetadata) {
+
+    }
+
 }
