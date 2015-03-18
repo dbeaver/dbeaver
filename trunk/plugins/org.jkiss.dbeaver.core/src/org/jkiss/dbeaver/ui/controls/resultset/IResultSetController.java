@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
@@ -30,6 +31,9 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
  * IResultSetController
  */
 public interface IResultSetController {
+
+    @NotNull
+    IWorkbenchPartSite getSite();
 
     @NotNull
     ResultSetModel getModel();
@@ -51,4 +55,5 @@ public interface IResultSetController {
 
     @NotNull
     IPreferenceStore getPreferenceStore();
+
 }

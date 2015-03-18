@@ -32,5 +32,5 @@ public interface IResultSetPresentation {
 
     Control getControl();
 
-    void refreshData();
+    void refreshData(boolean refreshMetadata);
 }
