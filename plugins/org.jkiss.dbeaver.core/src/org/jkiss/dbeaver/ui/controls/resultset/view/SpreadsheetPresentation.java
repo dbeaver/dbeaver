@@ -17,30 +17,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.controls.spreadsheet;
+package org.jkiss.dbeaver.ui.controls.resultset.view;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 
 /**
- * SpreadsheetPresentation
+ * Spreadsheet presentation.
+ * Visualizes results as grid.
  */
 public class SpreadsheetPresentation implements IResultSetPresentation {
 
+    private Spreadsheet spreadsheet;
+
     @Override
     public void createPresentation(IResultSetController controller, Composite parent) {
-
+        spreadsheet = new Spreadsheet(parent, SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL, controller.getSite(), controller, null, null);
     }
 
     @Override
     public Control getControl() {
-        return null;
+        return spreadsheet;
     }
 
     @Override
     public void refreshData(boolean refreshMetadata) {
-
+        spreadsheet.refreshData(refreshMetadata);
     }
+
 }

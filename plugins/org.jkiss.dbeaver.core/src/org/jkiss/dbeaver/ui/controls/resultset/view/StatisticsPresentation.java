@@ -17,30 +17,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.controls.spreadsheet;
+package org.jkiss.dbeaver.ui.controls.resultset.view;
 
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 
 /**
- * SpreadsheetPresentation
+ * Execution statistics presentation.
+ * Special internal presentation for execution statistics visualization.
  */
-public class SpreadsheetPresentation implements IResultSetPresentation {
+public class StatisticsPresentation implements IResultSetPresentation {
+
+    private TableViewer tableViewer;
 
     @Override
     public void createPresentation(IResultSetController controller, Composite parent) {
-
+        tableViewer = new TableViewer(parent, SWT.MULTI | SWT.FULL_SELECTION);
     }
 
     @Override
     public Control getControl() {
-        return null;
+        return tableViewer.getControl();
     }
 
     @Override
     public void refreshData(boolean refreshMetadata) {
-
+        tableViewer.refresh();
     }
+
 }

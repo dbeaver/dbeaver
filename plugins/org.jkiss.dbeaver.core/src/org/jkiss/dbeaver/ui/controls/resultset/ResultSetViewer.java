@@ -1769,6 +1769,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @NotNull
+    @Override
     public IWorkbenchPartSite getSite()
     {
         return site;
