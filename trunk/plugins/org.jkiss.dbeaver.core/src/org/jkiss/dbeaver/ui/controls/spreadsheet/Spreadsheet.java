@@ -60,13 +60,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     @NotNull
     private final IWorkbenchPartSite site;
     @NotNull
-    private final IResultSetController spreadsheetController;
+    private final IResultSetController resultSetController;
     @NotNull
     private final IGridContentProvider contentProvider;
     @NotNull
     private final IGridLabelProvider labelProvider;
-
-    private SpreadsheetSelectionProvider selectionProvider;
 
     private Clipboard clipboard;
 
@@ -74,7 +72,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         @NotNull final Composite parent,
         final int style,
         @NotNull final IWorkbenchPartSite site,
-        @NotNull final IResultSetController spreadsheetController,
+        @NotNull final IResultSetController resultSetController,
         @NotNull final IGridContentProvider contentProvider,
         @NotNull final IGridLabelProvider labelProvider)
     {
@@ -87,10 +85,9 @@ public class Spreadsheet extends LightGrid implements Listener {
         this.setLayout(layout);
 
         this.site = site;
-        this.spreadsheetController = spreadsheetController;
+        this.resultSetController = resultSetController;
         this.contentProvider = contentProvider;
         this.labelProvider = labelProvider;
-        this.selectionProvider = new SpreadsheetSelectionProvider(this);
 
         this.clipboard = new Clipboard(getDisplay());
 
@@ -131,7 +128,7 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     public IResultSetController getController()
     {
-        return spreadsheetController;
+        return resultSetController;
     }
 
     public Clipboard getClipboard()
@@ -243,7 +240,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                     (event.keyCode >= 'a' && event.keyCode <= 'z') ||
                     (event.keyCode >= '0' && event.keyCode <= '9'))
                 {
-                    final Control editorControl = spreadsheetController.showCellEditor(true);
+                    final Control editorControl = resultSetController.showCellEditor(true);
                     if (editorControl != null && event.keyCode != SWT.CR) {
                         // Forward the same key event to just created control
                         final Event fwdEvent = new Event();
@@ -263,7 +260,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                     Object col = getFocusColumnElement();
                     Object row = getFocusRowElement();
                     if (col != null && row != null) {
-                        spreadsheetController.resetCellValue(col, row, false);
+                        resultSetController.resetCellValue(col, row, false);
                     }
                 }
                 break;
@@ -278,21 +275,21 @@ public class Spreadsheet extends LightGrid implements Listener {
                         case NONE:
                             return;
                         case EDITOR:
-                            spreadsheetController.showCellEditor(false);
+                            resultSetController.showCellEditor(false);
                             break;
                         case INLINE_EDITOR:
-                            spreadsheetController.showCellEditor(true);
+                            resultSetController.showCellEditor(true);
                             break;
                     }
                 }
                 break;
             case SWT.MouseDown:
                 if (event.button == 2) {
-                    spreadsheetController.showCellEditor(true);
+                    resultSetController.showCellEditor(true);
                 }
                 break;
             case LightGrid.Event_ChangeSort:
-                spreadsheetController.changeSorting(event.data, event.stateMask);
+                resultSetController.changeSorting(event.data, event.stateMask);
                 break;
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
@@ -300,7 +297,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                 getDisplay().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        spreadsheetController.navigateLink((GridCell) event.data, event.stateMask);
+                        resultSetController.navigateLink((GridCell) event.data, event.stateMask);
                     }
                 });
                 break;
@@ -311,13 +308,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     public void refreshData(boolean refreshColumns) {
         cancelInlineEditor();
         super.refreshData(refreshColumns);
-    }
-
-    public void clearGrid()
-    {
-        //spreadsheet.setSelection(new int[0]);
-        cancelInlineEditor();
-        super.removeAll();
     }
 
     private void hookContextMenu()
@@ -332,7 +322,7 @@ public class Spreadsheet extends LightGrid implements Listener {
 
                 // Let controller to provide it's own menu items
                 GridPos focusPos = getFocusPos();
-                spreadsheetController.fillContextMenu(
+                resultSetController.fillContextMenu(
                     focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
                     focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null,
                     manager);
@@ -340,7 +330,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
-        site.registerContextMenu(menuMgr, selectionProvider);
+        site.registerContextMenu(menuMgr, null);
     }
 
     public void cancelInlineEditor()
