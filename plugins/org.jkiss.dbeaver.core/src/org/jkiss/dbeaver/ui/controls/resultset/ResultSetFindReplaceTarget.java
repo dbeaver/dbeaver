@@ -27,6 +27,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
@@ -261,7 +262,8 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public String toString()
     {
-        return "Target: " + resultSet.getDataContainer().getName();
+        DBSDataContainer dataContainer = resultSet.getDataContainer();
+        return "Target: " + (dataContainer == null ? null : dataContainer.getName());
     }
 
 }

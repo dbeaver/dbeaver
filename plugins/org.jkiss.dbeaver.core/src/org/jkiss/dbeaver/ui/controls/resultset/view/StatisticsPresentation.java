@@ -49,4 +49,9 @@ public class StatisticsPresentation implements IResultSetPresentation {
         tableViewer.refresh();
     }
 
+    @Override
+    public void updateValueView() {
+
+    }
+
 }

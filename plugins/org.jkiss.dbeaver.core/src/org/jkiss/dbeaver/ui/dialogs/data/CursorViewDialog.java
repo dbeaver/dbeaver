@@ -126,6 +126,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetProvi
         return resultSetViewer;
     }
 
+    @Nullable
     @Override
     public DBSDataContainer getDataContainer()
     {

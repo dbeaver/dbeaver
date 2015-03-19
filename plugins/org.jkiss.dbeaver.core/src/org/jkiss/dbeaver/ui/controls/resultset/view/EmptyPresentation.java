@@ -48,4 +48,9 @@ public class EmptyPresentation implements IResultSetPresentation {
 
     }
 
+    @Override
+    public void updateValueView() {
+
+    }
+
 }

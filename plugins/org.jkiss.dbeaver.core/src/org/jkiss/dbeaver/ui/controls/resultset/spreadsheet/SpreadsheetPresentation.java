@@ -49,4 +49,9 @@ public class SpreadsheetPresentation implements IResultSetPresentation {
         spreadsheet.refreshData(refreshMetadata);
     }
 
+    @Override
+    public void updateValueView() {
+
+    }
+
 }
