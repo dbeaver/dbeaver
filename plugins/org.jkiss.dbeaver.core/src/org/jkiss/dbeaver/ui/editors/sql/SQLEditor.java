@@ -1190,6 +1190,7 @@ public class SQLEditor extends SQLEditorBase
             return viewer;
         }
 
+        @Nullable
         @Override
         public DBSDataContainer getDataContainer()
         {

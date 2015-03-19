@@ -36,5 +36,7 @@ public interface IResultSetPresentation {
 
     void refreshData(boolean refreshMetadata);
 
+    void updateValueView();
+
     // ISelectionProvider
 }
