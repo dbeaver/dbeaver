@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 /**
  * ThemeConstants
  */
-public class ThemeConstants
+class ThemeConstants
 {
     public static final String RESULTS_PROP_PREFIX = "org.jkiss.dbeaver.sql.resultset.";
 
