@@ -76,7 +76,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
@@ -100,7 +100,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SQLEditor extends SQLEditorBase
     implements IDataSourceContainerProviderEx,
-    DBPEventListener, ISaveablePart2, IResultSetProvider, DBPDataSourceUser, DBPDataSourceHandler
+    DBPEventListener, ISaveablePart2, IResultSetContainer, DBPDataSourceUser, DBPDataSourceHandler
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
@@ -329,10 +329,13 @@ public class SQLEditor extends SQLEditorBase
             @Override
             public void widgetSelected(SelectionEvent e) {
                 Object data = e.item.getData();
-                if (data instanceof QueryResultsProvider) {
-                    QueryResultsProvider resultsProvider = (QueryResultsProvider) data;
+                if (data instanceof QueryResultsContainer) {
+                    QueryResultsContainer resultsProvider = (QueryResultsContainer) data;
                     curQueryProcessor = resultsProvider.queryProcessor;
-                    resultsProvider.getResultSetViewer().getSpreadsheet().setFocus();
+                    ResultSetViewer rsv = resultsProvider.getResultSetViewer();
+                    if (rsv != null) {
+                        rsv.getSpreadsheet().setFocus();
+                    }
                 } else if (data == outputViewer) {
                     ((CTabItem) e.item).setImage(IMG_OUTPUT);
                     outputViewer.resetNewOutput();
@@ -686,8 +689,8 @@ public class SQLEditor extends SQLEditorBase
         // Close all tabs except first one
         for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
             CTabItem item = resultTabs.getItem(i);
-            if (item.getData() instanceof QueryResultsProvider) {
-                QueryResultsProvider resultsProvider = (QueryResultsProvider)item.getData();
+            if (item.getData() instanceof QueryResultsContainer) {
+                QueryResultsContainer resultsProvider = (QueryResultsContainer)item.getData();
                 if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
                     continue;
                 }
@@ -717,13 +720,16 @@ public class SQLEditor extends SQLEditorBase
 
         DBPDataSource dataSource = getDataSource();
         for (QueryProcessor queryProcessor : queryProcessors) {
-            for (QueryResultsProvider resultsProvider : queryProcessor.getResultProviders()) {
-                if (dataSource == null) {
-                    resultsProvider.getResultSetViewer().setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
-                } else {
-                    resultsProvider.getResultSetViewer().setStatus(CoreMessages.editors_sql_staus_connected_to + dataSource.getContainer().getName() + "'"); //$NON-NLS-2$
+            for (QueryResultsContainer resultsProvider : queryProcessor.getResultProviders()) {
+                ResultSetViewer rsv = resultsProvider.getResultSetViewer();
+                if (rsv != null) {
+                    if (dataSource == null) {
+                        rsv.setStatus(CoreMessages.editors_sql_status_not_connected_to_database);
+                    } else {
+                        rsv.setStatus(CoreMessages.editors_sql_staus_connected_to + dataSource.getContainer().getName() + "'"); //$NON-NLS-2$
+                    }
+                    rsv.updateFiltersText();
                 }
-                resultsProvider.getResultSetViewer().updateFiltersText();
             }
         }
         if (planView != null) {
@@ -811,9 +817,10 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public void doSave(IProgressMonitor progressMonitor) {
         for (QueryProcessor queryProcessor : queryProcessors) {
-            for (QueryResultsProvider resultsProvider : queryProcessor.getResultProviders()) {
-                if (resultsProvider.getResultSetViewer().isDirty()) {
-                    resultsProvider.getResultSetViewer().doSave(progressMonitor);
+            for (QueryResultsContainer resultsProvider : queryProcessor.getResultProviders()) {
+                ResultSetViewer rsv = resultsProvider.getResultSetViewer();
+                if (rsv != null && rsv.isDirty()) {
+                    rsv.doSave(progressMonitor);
                 }
             }
         }
@@ -848,9 +855,10 @@ public class SQLEditor extends SQLEditorBase
         }
 
         for (QueryProcessor queryProcessor : queryProcessors) {
-            for (QueryResultsProvider resultsProvider : queryProcessor.getResultProviders()) {
-                if (resultsProvider.getResultSetViewer().isDirty()) {
-                    return resultsProvider.getResultSetViewer().promptToSaveOnClose();
+            for (QueryResultsContainer resultsProvider : queryProcessor.getResultProviders()) {
+                ResultSetViewer rsv = resultsProvider.getResultSetViewer();
+                if (rsv != null && rsv.isDirty()) {
+                    return rsv.promptToSaveOnClose();
                 }
             }
         }
@@ -865,8 +873,8 @@ public class SQLEditor extends SQLEditorBase
             return null;
         }
         CTabItem curTab = resultTabs.getSelection();
-        if (curTab != null && !curTab.isDisposed() && curTab.getData() instanceof QueryResultsProvider) {
-            return ((QueryResultsProvider)curTab.getData()).getResultSetViewer();
+        if (curTab != null && !curTab.isDisposed() && curTab.getData() instanceof QueryResultsContainer) {
+            return ((QueryResultsContainer)curTab.getData()).getResultSetViewer();
         }
 
         return curQueryProcessor == null ? null : curQueryProcessor.getCurrentResults().getResultSetViewer();
@@ -886,8 +894,8 @@ public class SQLEditor extends SQLEditorBase
             return false;
         }
         CTabItem curTab = resultTabs.getSelection();
-        if (curTab != null && curTab.getData() instanceof QueryResultsProvider) {
-            return ((QueryResultsProvider)curTab.getData()).isReadyToRun();
+        if (curTab != null && curTab.getData() instanceof QueryResultsContainer) {
+            return ((QueryResultsContainer)curTab.getData()).isReadyToRun();
         }
 
         return curQueryProcessor != null &&
@@ -941,7 +949,7 @@ public class SQLEditor extends SQLEditorBase
 
         private SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
-        private final List<QueryResultsProvider> resultProviders = new ArrayList<QueryResultsProvider>();
+        private final List<QueryResultsContainer> resultProviders = new ArrayList<QueryResultsContainer>();
         private DBDDataReceiver curDataReceiver = null;
 
         public QueryProcessor() {
@@ -950,19 +958,19 @@ public class SQLEditor extends SQLEditorBase
             createResultsProvider(0);
         }
 
-        private QueryResultsProvider createResultsProvider(int resultSetNumber) {
-            QueryResultsProvider resultsProvider = new QueryResultsProvider(this, resultSetNumber);
+        private QueryResultsContainer createResultsProvider(int resultSetNumber) {
+            QueryResultsContainer resultsProvider = new QueryResultsContainer(this, resultSetNumber);
             resultProviders.add(resultsProvider);
             return resultsProvider;
         }
         @NotNull
-        QueryResultsProvider getFirstResults()
+        QueryResultsContainer getFirstResults()
         {
             return resultProviders.get(0);
         }
         @Nullable
-        QueryResultsProvider getResults(SQLQuery query) {
-            for (QueryResultsProvider provider : resultProviders) {
+        QueryResultsContainer getResults(SQLQuery query) {
+            for (QueryResultsContainer provider : resultProviders) {
                 if (provider.query == query) {
                     return provider;
                 }
@@ -970,18 +978,18 @@ public class SQLEditor extends SQLEditorBase
             return null;
         }
         @NotNull
-        QueryResultsProvider getCurrentResults()
+        QueryResultsContainer getCurrentResults()
         {
             if (!resultTabs.isDisposed()) {
                 CTabItem curTab = resultTabs.getSelection();
-                if (curTab != null && curTab.getData() instanceof QueryResultsProvider) {
-                    return (QueryResultsProvider)curTab.getData();
+                if (curTab != null && curTab.getData() instanceof QueryResultsContainer) {
+                    return (QueryResultsContainer)curTab.getData();
                 }
             }
             return getFirstResults();
         }
 
-        List<QueryResultsProvider> getResultProviders() {
+        List<QueryResultsContainer> getResultProviders() {
             return resultProviders;
         }
 
@@ -1020,7 +1028,7 @@ public class SQLEditor extends SQLEditorBase
             // Prepare execution job
             {
                 showScriptPositionRuler(true);
-                QueryResultsProvider resultsProvider = getFirstResults();
+                QueryResultsContainer resultsContainer = getFirstResults();
 
                 SQLQueryListener listener = new SQLEditorQueryListener(this);
                 final SQLQueryJob job = new SQLQueryJob(
@@ -1038,17 +1046,19 @@ public class SQLEditor extends SQLEditorBase
                         getSite().getWorkbenchWindow(),
                         new DataTransferWizard(
                             new IDataTransferProducer[] {
-                                new DatabaseTransferProducer(resultsProvider, null)},
+                                new DatabaseTransferProducer(resultsContainer, null)},
                             null),
                         new StructuredSelection(this));
                     dialog.open();
                 } else if (isSingleQuery) {
                     closeJob();
                     curJob = job;
-                    ResultSetViewer resultSetViewer = resultsProvider.getResultSetViewer();
-                    resultSetViewer.resetDataFilter(false);
-                    resultSetViewer.resetHistory();
-                    resultSetViewer.refresh();
+                    ResultSetViewer rsv = resultsContainer.getResultSetViewer();
+                    if (rsv != null) {
+                        rsv.resetDataFilter(false);
+                        rsv.resetHistory();
+                        rsv.refresh();
+                    }
                 } else {
                     if (fetchResults) {
                         job.setFetchResultSets(true);
@@ -1059,15 +1069,16 @@ public class SQLEditor extends SQLEditorBase
         }
 
         public boolean isDirty() {
-            for (QueryResultsProvider resultsProvider : resultProviders) {
-                if (resultsProvider.getResultSetViewer().isDirty()) {
+            for (QueryResultsContainer resultsProvider : resultProviders) {
+                ResultSetViewer rsv = resultsProvider.getResultSetViewer();
+                if (rsv != null && rsv.isDirty()) {
                     return true;
                 }
             }
             return false;
         }
 
-        void removeResults(QueryResultsProvider resultsProvider) {
+        void removeResults(QueryResultsContainer resultsProvider) {
             if (resultProviders.size() > 1) {
                 resultProviders.remove(resultsProvider);
             } else {
@@ -1111,7 +1122,7 @@ public class SQLEditor extends SQLEditorBase
                 // Editor seems to be disposed - no data receiver
                 return null;
             }
-            final QueryResultsProvider resultsProvider = resultProviders.get(resultSetNumber);
+            final QueryResultsContainer resultsProvider = resultProviders.get(resultSetNumber);
             // Open new results processor in UI thread
             getSite().getShell().getDisplay().syncExec(new Runnable() {
                 @Override
@@ -1134,12 +1145,13 @@ public class SQLEditor extends SQLEditorBase
                     }
                 }
             });
-            return resultsProvider.getResultSetViewer().getDataReceiver();
+            ResultSetViewer rsv = resultsProvider.getResultSetViewer();
+            return rsv == null ? null : rsv.getDataReceiver();
         }
 
     }
 
-    public class QueryResultsProvider implements DBSDataContainer, IResultSetProvider {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer {
 
         private final QueryProcessor queryProcessor;
         private final CTabItem tabItem;
@@ -1147,7 +1159,7 @@ public class SQLEditor extends SQLEditorBase
         private final int resultSetNumber;
         private SQLQuery query = null;
 
-        private QueryResultsProvider(QueryProcessor queryProcessor, int resultSetNumber)
+        private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber)
         {
             this.queryProcessor = queryProcessor;
             this.resultSetNumber = resultSetNumber;
@@ -1179,11 +1191,12 @@ public class SQLEditor extends SQLEditorBase
             tabItem.addDisposeListener(new DisposeListener() {
                 @Override
                 public void widgetDisposed(DisposeEvent e) {
-                    QueryResultsProvider.this.queryProcessor.removeResults(QueryResultsProvider.this);
+                    QueryResultsContainer.this.queryProcessor.removeResults(QueryResultsContainer.this);
                 }
             });
         }
 
+        @Nullable
         @Override
         public ResultSetViewer getResultSetViewer()
         {
@@ -1373,7 +1386,7 @@ public class SQLEditor extends SQLEditorBase
                 getSelectionProvider().setSelection(originalSelection);
             }
             // Get results window (it is possible that it was closed till that moment
-            QueryResultsProvider results = queryProcessor.getResults(result.getStatement());
+            QueryResultsContainer results = queryProcessor.getResults(result.getStatement());
             if (results != null) {
                 CTabItem tabItem = results.tabItem;
                 if (!tabItem.isDisposed()) {
@@ -1402,10 +1415,12 @@ public class SQLEditor extends SQLEditorBase
                         getSelectionProvider().setSelection(originalSelection);
                     }
                     sashForm.setMaximizedControl(null);
-                    QueryResultsProvider results = queryProcessor.getFirstResults();
+                    QueryResultsContainer results = queryProcessor.getFirstResults();
                     ResultSetViewer viewer = results.getResultSetViewer();
-                    viewer.getModel().setStatistics(statistics);
-                    viewer.updateStatusMessage();
+                    if (viewer != null) {
+                        viewer.getModel().setStatistics(statistics);
+                        viewer.updateStatusMessage();
+                    }
                 }
             });
         }
