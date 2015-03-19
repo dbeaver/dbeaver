@@ -41,14 +41,14 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 
 /**
  * TextViewDialog
  */
-public class CursorViewDialog extends ValueViewDialog implements IResultSetProvider {
+public class CursorViewDialog extends ValueViewDialog implements IResultSetContainer {
 
     private DBDCursor value;
     private ResultSetViewer resultSetViewer;
@@ -76,8 +76,11 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetProvi
                         DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN,
                         ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID) {
                     globalPreferenceStore.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, true);
-                    if (valueController.getValueSite().getPart() instanceof IResultSetProvider) {
-                        ((IResultSetProvider)valueController.getValueSite().getPart()).getResultSetViewer().refresh();
+                    if (valueController.getValueSite().getPart() instanceof IResultSetContainer) {
+                        ResultSetViewer rsv = ((IResultSetContainer) valueController.getValueSite().getPart()).getResultSetViewer();
+                        if (rsv != null) {
+                            rsv.refresh();
+                        }
                     }
                 }
                 dialogGroup.getDisplay().asyncExec(new Runnable()
@@ -120,6 +123,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetProvi
         resultSetViewer.refresh();
     }
 
+    @Nullable
     @Override
     public ResultSetViewer getResultSetViewer()
     {

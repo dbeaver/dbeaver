@@ -34,8 +34,8 @@ public class ResultSetModeToggleModeHandler extends ResultSetCommandHandler impl
     {
         if (element.getServiceLocator() instanceof IWorkbenchPartSite) {
             IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator();
-            if (partSite.getPart() instanceof IResultSetProvider) {
-                ResultSetViewer rsv = ((IResultSetProvider) partSite.getPart()).getResultSetViewer();
+            if (partSite.getPart() instanceof IResultSetContainer) {
+                ResultSetViewer rsv = ((IResultSetContainer) partSite.getPart()).getResultSetViewer();
                 if (rsv != null) {
                     if (!rsv.isRecordMode()) {
                         element.setText("Switch to record mode");
