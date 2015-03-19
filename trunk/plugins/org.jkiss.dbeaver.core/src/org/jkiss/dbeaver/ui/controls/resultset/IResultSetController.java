@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 
 /**
@@ -37,6 +38,9 @@ public interface IResultSetController {
 
     @NotNull
     ResultSetModel getModel();
+
+    @Nullable
+    DBSDataContainer getDataContainer();
 
     boolean hasData();
 

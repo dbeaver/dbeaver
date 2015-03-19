@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -227,7 +228,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     private void makeResultSetContributions(List<IContributionItem> menu, ResultSetSelection rss)
     {
         final ResultSetViewer rsv = rss.getResultSetViewer();
-        DBSEntity entity = rsv.getDataContainer() instanceof DBSEntity ? (DBSEntity) rsv.getDataContainer() : null;
+        DBSDataContainer dataContainer = rsv.getDataContainer();
+        DBSEntity entity = dataContainer instanceof DBSEntity ? (DBSEntity) dataContainer : null;
         if (entity == null) {
             entity = rsv.getModel().getSingleSource();
         }

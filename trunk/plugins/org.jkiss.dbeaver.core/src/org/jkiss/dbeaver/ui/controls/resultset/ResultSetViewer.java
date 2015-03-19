@@ -847,6 +847,7 @@ public class ResultSetViewer extends Viewer
         return spreadsheet;
     }
 
+    @Nullable
     public DBSDataContainer getDataContainer()
     {
         return curState != null ? curState.dataContainer : resultSetProvider.getDataContainer();
@@ -1541,20 +1542,24 @@ public class ResultSetViewer extends Viewer
             });
             manager.add(filtersMenu);
 
-            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
-                @Override
-                public void run()
-                {
-                    ActiveWizardDialog dialog = new ActiveWizardDialog(
-                        site.getWorkbenchWindow(),
-                        new DataTransferWizard(
-                            new IDataTransferProducer[] {
-                                new DatabaseTransferProducer(getDataContainer(), model.getDataFilter())},
-                            null),
-                        getSelection());
-                    dialog.open();
-                }
-            });
+            final DBSDataContainer dataContainer = getDataContainer();
+            if (dataContainer != null) {
+                manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
+                    @Override
+                    public void run() {
+                        ActiveWizardDialog dialog = new ActiveWizardDialog(
+                            site.getWorkbenchWindow(),
+                            new DataTransferWizard(
+                                new IDataTransferProducer[]{
+                                    new DatabaseTransferProducer(dataContainer, model.getDataFilter())},
+                                null
+                            ),
+                            getSelection()
+                        );
+                        dialog.open();
+                    }
+                });
+            }
         }
         manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
     }
@@ -1628,7 +1633,9 @@ public class ResultSetViewer extends Viewer
 
     boolean supportsDataFilter()
     {
-        return (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer != null &&
+            (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
     @Override
@@ -1871,12 +1878,13 @@ public class ResultSetViewer extends Viewer
         // Pump data
         RowData oldRow = curRow;
 
-        if (resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
+        DBSDataContainer dataContainer = getDataContainer();
+        if (resultSetProvider.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
             if (oldRow != null && oldRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            runDataPump(getDataContainer(), null, 0, segmentSize, oldRow == null ? -1 : oldRow.getVisualNumber(), new Runnable() {
+            runDataPump(dataContainer, null, 0, segmentSize, oldRow == null ? -1 : oldRow.getVisualNumber(), new Runnable() {
                 @Override
                 public void run()
                 {
@@ -1889,13 +1897,16 @@ public class ResultSetViewer extends Viewer
     }
 
     public void refreshWithFilter(DBDDataFilter filter) {
-        runDataPump(
-            getDataContainer(),
-            filter,
-            0,
-            getSegmentMaxRows(),
-            -1,
-            null);
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer != null) {
+            runDataPump(
+                dataContainer,
+                filter,
+                0,
+                getSegmentMaxRows(),
+                -1,
+                null);
+        }
     }
 
     private boolean isServerSideFiltering()
@@ -1908,12 +1919,13 @@ public class ResultSetViewer extends Viewer
     private void reorderResultSet(boolean force, @Nullable Runnable onSuccess)
     {
         if (force || isServerSideFiltering() && supportsDataFilter()) {
-            if (resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
+            DBSDataContainer dataContainer = getDataContainer();
+            if (resultSetProvider.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
                 int segmentSize = getSegmentMaxRows();
                 if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                     segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
                 }
-                runDataPump(getDataContainer(), null, 0, segmentSize, -1, onSuccess);
+                runDataPump(dataContainer, null, 0, segmentSize, -1, onSuccess);
             }
             return;
         }
@@ -1938,11 +1950,12 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
-        if (getDataContainer() != null && !model.isUpdateInProgress() && dataPumpJob == null) {
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer != null && !model.isUpdateInProgress() && dataPumpJob == null) {
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
 
-            runDataPump(getDataContainer(), null, model.getRowCount(), getSegmentMaxRows(), -1, null);
+            runDataPump(dataContainer, null, model.getRowCount(), getSegmentMaxRows(), -1, null);
         }
     }
 

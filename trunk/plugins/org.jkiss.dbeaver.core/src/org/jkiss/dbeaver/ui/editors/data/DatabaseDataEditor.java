@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.FindReplaceAction;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -112,6 +113,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         return resultSetView;
     }
 
+    @Nullable
     @Override
     public DBSDataContainer getDataContainer()
     {
