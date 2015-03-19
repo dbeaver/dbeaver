@@ -172,7 +172,7 @@ public class ResultSetViewer extends Viewer
     private ResultSetValueController panelValueController;
 
     @NotNull
-    private final IResultSetProvider resultSetProvider;
+    private final IResultSetContainer resultSetProvider;
     @NotNull
     private final ResultSetDataReceiver dataReceiver;
     @NotNull
@@ -220,7 +220,7 @@ public class ResultSetViewer extends Viewer
     private ToolItem historyBackButton;
     private ToolItem historyForwardButton;
 
-    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetProvider resultSetProvider)
+    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer resultSetProvider)
     {
         super();
 

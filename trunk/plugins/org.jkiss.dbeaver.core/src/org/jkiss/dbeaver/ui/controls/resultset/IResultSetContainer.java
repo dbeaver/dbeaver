@@ -25,8 +25,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 /**
  * Result set provider
  */
-public interface IResultSetProvider {
+public interface IResultSetContainer {
 
+    @Nullable
     ResultSetViewer getResultSetViewer();
 
     @Nullable

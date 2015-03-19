@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
@@ -88,11 +88,11 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
 
                     if (entityEditor instanceof MultiPageEditorPart) {
                         Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
-                        if (selectedPage instanceof IResultSetProvider) {
-                            ResultSetViewer resultSetViewer = ((IResultSetProvider) selectedPage).getResultSetViewer();
-                            if (!resultSetViewer.isRefreshInProgress() && !object.getFilter().equals(resultSetViewer.getModel().getDataFilter())) {
+                        if (selectedPage instanceof IResultSetContainer) {
+                            ResultSetViewer rsv = ((IResultSetContainer) selectedPage).getResultSetViewer();
+                            if (rsv != null && !rsv.isRefreshInProgress() && !object.getFilter().equals(rsv.getModel().getDataFilter())) {
                                 // Set filter directly
-                                resultSetViewer.refreshWithFilter(object.getFilter());
+                                rsv.refreshWithFilter(object.getFilter());
                             }
                         }
                     }
