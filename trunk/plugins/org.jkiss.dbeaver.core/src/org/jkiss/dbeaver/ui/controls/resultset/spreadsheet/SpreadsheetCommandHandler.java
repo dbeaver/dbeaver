@@ -30,7 +30,8 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 
 /**
- * Standard command handler
+ * Spreadsheet command handler.
+ * Active when focus is in spreadsheet control
  */
 public class SpreadsheetCommandHandler extends AbstractHandler {
 
