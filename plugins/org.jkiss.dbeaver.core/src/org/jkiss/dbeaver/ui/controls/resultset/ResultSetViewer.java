@@ -235,6 +235,7 @@ public class ResultSetViewer extends Viewer
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
         createFiltersPanel();
+        this.activePresentation = new SpreadsheetPresentation();
 
         {
             resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
@@ -286,7 +287,6 @@ public class ResultSetViewer extends Viewer
             });
         }
 
-        this.activePresentation = new SpreadsheetPresentation();
         this.activePresentation.createPresentation(this, viewerPanel);
 
         createStatusBar(viewerPanel);
