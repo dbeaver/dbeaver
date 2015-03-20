@@ -104,16 +104,18 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
 
     }
 
+    public void fillContextMenu(@Nullable Object colObject, @Nullable Object rowObject, @NotNull IMenuManager manager) {
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowObject : colObject);
+        final ResultSetRow row = (ResultSetRow)(controller.isRecordMode() ? colObject : rowObject);
+        controller.fillContextMenu(manager, attr, row);
+    }
+
     public Control showCellEditor(boolean inline) {
         return ((ResultSetViewer)controller).showCellEditor(inline);
     }
 
     public void resetCellValue(@NotNull Object col, @NotNull Object row, boolean delete) {
         ((ResultSetViewer)controller).resetCellValue(col, row, delete);
-    }
-
-    public void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager) {
-        ((ResultSetViewer)controller).fillContextMenu(col, row, manager);
     }
 
     public void changeSorting(Object columnElement, int state) {
