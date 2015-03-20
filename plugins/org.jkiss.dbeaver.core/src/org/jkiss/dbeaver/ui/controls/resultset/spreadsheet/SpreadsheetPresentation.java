@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
@@ -35,7 +34,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
  * Spreadsheet presentation.
  * Visualizes results as grid.
  */
-public class SpreadsheetPresentation implements IResultSetPresentation, ISpreadsheetController {
+public class SpreadsheetPresentation implements IResultSetPresentation {
 
     private IResultSetController controller;
     private Spreadsheet spreadsheet;
@@ -63,32 +62,26 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISpreads
 
     }
 
-    @Override
     public Control showCellEditor(boolean inline) {
         return ((ResultSetViewer)controller).showCellEditor(inline);
     }
 
-    @Override
     public void resetCellValue(@NotNull Object col, @NotNull Object row, boolean delete) {
         ((ResultSetViewer)controller).resetCellValue(col, row, delete);
     }
 
-    @Override
     public void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager) {
         ((ResultSetViewer)controller).fillContextMenu(col, row, manager);
     }
 
-    @Override
     public void changeSorting(Object columnElement, int state) {
         ((ResultSetViewer)controller).changeSorting(columnElement, state);
     }
 
-    @Override
     public void navigateLink(@NotNull GridCell cell, int state) {
         ((ResultSetViewer)controller).navigateLink(cell, state);
     }
 
-    @Override
     public IPreferenceStore getPreferenceStore() {
         return controller.getPreferenceStore();
     }
