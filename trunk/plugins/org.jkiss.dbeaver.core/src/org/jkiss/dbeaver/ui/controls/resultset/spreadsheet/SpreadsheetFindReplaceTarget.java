@@ -182,7 +182,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         } else {
             findPattern = Pattern.compile(Pattern.quote(findString), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
         }
-        int minColumnNum = owner.isRecordMode() ? -1 : 0;
+        int minColumnNum = owner.getController().isRecordMode() ? -1 : 0;
         for (GridPos curPosition = new GridPos(startPosition);;) {
             //Object element = contentProvider.getElement(curPosition);
             if (searchForward) {
@@ -213,12 +213,16 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                 }
             }
             String cellText;
-            if (owner.isRecordMode() && curPosition.col == minColumnNum) {
+            if (owner.getController().isRecordMode() && curPosition.col == minColumnNum) {
                 // Header
                 cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRowElement(curPosition.row));
             } else {
                 GridCell cell = spreadsheet.posToCell(curPosition);
-                cellText = spreadsheet.getContentProvider().getCellText(cell.col, cell.row);
+                if (cell != null) {
+                    cellText = spreadsheet.getContentProvider().getCellText(cell.col, cell.row);
+                } else {
+                    continue;
+                }
             }
             Matcher matcher = findPattern.matcher(cellText);
             if (wholeWord ? matcher.matches() : matcher.find()) {
@@ -250,8 +254,9 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
 
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(owner.isRecordMode() ? cell.row : cell.col);
-        final ResultSetRow row = (ResultSetRow)(owner.isRecordMode() ? cell.col : cell.row);
+        boolean recordMode = owner.getController().isRecordMode();
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
+        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
         owner.getController().getModel().updateCellValue(attr, row, newValue);
         owner.getController().updateValueView();
     }
