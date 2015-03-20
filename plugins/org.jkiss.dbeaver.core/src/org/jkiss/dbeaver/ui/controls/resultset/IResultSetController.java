@@ -51,6 +51,8 @@ public interface IResultSetController {
 
     boolean isReadOnly();
 
+    boolean isRecordMode();
+
     @NotNull
     IPreferenceStore getPreferenceStore();
 

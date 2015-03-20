@@ -849,7 +849,7 @@ public class ResultSetViewer extends Viewer
     ////////////////////////////////////////////////////////////
     // Grid/Record mode
 
-
+    @Override
     public boolean isRecordMode() {
         return recordMode;
     }
@@ -881,6 +881,8 @@ public class ResultSetViewer extends Viewer
             oldAttribute = model.getVisibleColumn(0);
         }
         this.recordMode = recordMode;
+        activePresentation.changeMode(recordMode);
+
         this.columnOrder = recordMode ? SWT.DEFAULT : SWT.NONE;
         if (!this.recordMode) {
             this.initResultSet();

@@ -59,4 +59,9 @@ public class EmptyPresentation implements IResultSetPresentation {
 
     }
 
+    @Override
+    public void changeMode(boolean recordMode) {
+
+    }
+
 }
