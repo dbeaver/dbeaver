@@ -60,7 +60,7 @@ public interface IResultSetController {
 
     void rejectChanges();
 
-    void fillContextMenu(@NotNull IMenuManager manager);
+    void fillContextMenu(@NotNull IMenuManager manager, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row);
 
     @Nullable
     ResultSetRow getCurrentRow();
