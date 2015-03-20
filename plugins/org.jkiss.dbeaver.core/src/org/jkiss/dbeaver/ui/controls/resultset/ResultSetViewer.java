@@ -111,6 +111,7 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
  * TODO: PROBLEM. Multiple occurrences of the same struct type in a single table.
