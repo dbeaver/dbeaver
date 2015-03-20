@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -32,7 +33,8 @@ import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 /**
  * ResultSetCommandHandler
  */
-public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
+public class ResultSetCommandHandler extends AbstractHandler {
+
     public static final String CMD_TOGGLE_PREVIEW = "org.jkiss.dbeaver.core.resultset.togglePreview";
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
     public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
