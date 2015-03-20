@@ -17,49 +17,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 
 /**
- * IResultSetController
+ * ISpreadsheetController
  */
-public interface IResultSetController {
-
-    @NotNull
-    IWorkbenchPartSite getSite();
-
-    @NotNull
-    ResultSetModel getModel();
+public interface ISpreadsheetController {
 
     @Nullable
-    DBSDataContainer getDataContainer();
+    Control showCellEditor(boolean inline);
 
-    @NotNull
-    DBDDataReceiver getDataReceiver();
+    void resetCellValue(@NotNull Object col, @NotNull Object row, boolean delete);
 
-    boolean hasData();
+    void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager);
 
-    boolean isReadOnly();
+    void changeSorting(Object columnElement, int state);
+
+    void navigateLink(@NotNull GridCell cell, int state);
 
     @NotNull
     IPreferenceStore getPreferenceStore();
-
-    void applyChanges(@Nullable DBRProgressMonitor monitor);
-
-    void rejectChanges();
-
-    void fillContextMenu(@NotNull IMenuManager manager);
-
-    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull RowData row)
-        throws DBException;
 }

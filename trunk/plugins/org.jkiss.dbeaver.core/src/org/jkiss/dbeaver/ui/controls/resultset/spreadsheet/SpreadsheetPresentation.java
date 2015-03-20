@@ -19,24 +19,33 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
  * Spreadsheet presentation.
  * Visualizes results as grid.
  */
-public class SpreadsheetPresentation implements IResultSetPresentation {
+public class SpreadsheetPresentation implements IResultSetPresentation, ISpreadsheetController {
 
+    private IResultSetController controller;
     private Spreadsheet spreadsheet;
+
+    public SpreadsheetPresentation() {
+    }
 
     @Override
     public void createPresentation(IResultSetController controller, Composite parent) {
-        spreadsheet = new Spreadsheet(parent, SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL, controller.getSite(), controller, null, null);
+        this.controller = controller;
     }
 
     @Override
@@ -54,4 +63,33 @@ public class SpreadsheetPresentation implements IResultSetPresentation {
 
     }
 
+    @Override
+    public Control showCellEditor(boolean inline) {
+        return ((ResultSetViewer)controller).showCellEditor(inline);
+    }
+
+    @Override
+    public void resetCellValue(@NotNull Object col, @NotNull Object row, boolean delete) {
+        ((ResultSetViewer)controller).resetCellValue(col, row, delete);
+    }
+
+    @Override
+    public void fillContextMenu(@Nullable Object col, @Nullable Object row, @NotNull IMenuManager manager) {
+        ((ResultSetViewer)controller).fillContextMenu(col, row, manager);
+    }
+
+    @Override
+    public void changeSorting(Object columnElement, int state) {
+        ((ResultSetViewer)controller).changeSorting(columnElement, state);
+    }
+
+    @Override
+    public void navigateLink(@NotNull GridCell cell, int state) {
+        ((ResultSetViewer)controller).navigateLink(cell, state);
+    }
+
+    @Override
+    public IPreferenceStore getPreferenceStore() {
+        return controller.getPreferenceStore();
+    }
 }
