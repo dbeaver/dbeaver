@@ -1458,7 +1458,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public void fillContextMenu(@NotNull IMenuManager manager) {
         final DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer != null) {
+        if (dataContainer != null && model.hasData()) {
             manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
                 @Override
                 public void run() {
