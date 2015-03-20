@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -51,6 +52,11 @@ public class StatisticsPresentation implements IResultSetPresentation {
 
     @Override
     public void updateValueView() {
+
+    }
+
+    @Override
+    public void fillToolbar(IToolBarManager toolBar) {
 
     }
 

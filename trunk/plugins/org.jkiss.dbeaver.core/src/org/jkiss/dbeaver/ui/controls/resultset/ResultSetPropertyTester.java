@@ -57,7 +57,7 @@ public class ResultSetPropertyTester extends PropertyTester
             DBDAttributeBinding attr = rsv.getFocusAttribute();
             return attr != null && !rsv.isColumnReadOnly(attr);
         } else if (PROP_CAN_MOVE.equals(property)) {
-            RowData currentRow = rsv.getCurrentRow();
+            ResultSetRow currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {
                 return currentRow != null && currentRow.getVisualNumber() > 0;
             } else if ("forward".equals(expectedValue)) {
@@ -80,7 +80,7 @@ public class ResultSetPropertyTester extends PropertyTester
             } else if ("add".equals(expectedValue)) {
                 return rsv.isInsertable();
             } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
-                RowData currentRow = rsv.getCurrentRow();
+                ResultSetRow currentRow = rsv.getCurrentRow();
                 return currentRow != null && rsv.isInsertable();
             } else {
                 return false;

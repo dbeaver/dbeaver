@@ -32,10 +32,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -184,7 +181,7 @@ public class ResultSetViewer extends Viewer
 
     // Current row/col number
     @Nullable
-    private RowData curRow;
+    private ResultSetRow curRow;
     @Nullable
     private DBDAttributeBinding curAttribute;
     // Mode
@@ -207,7 +204,6 @@ public class ResultSetViewer extends Viewer
     private final Font boldFont;
 
     private volatile ResultSetDataPumpJob dataPumpJob;
-    private ResultSetFindReplaceTarget findReplaceTarget;
 
     private final ResultSetModel model = new ResultSetModel();
     private StateItem curState = null;
@@ -247,8 +243,6 @@ public class ResultSetViewer extends Viewer
             resultsSash.setSashWidth(5);
             //resultsSash.setBackground(resultsSash.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
-            this.activePresentation = new SpreadsheetPresentation();
-            this.activePresentation.createPresentation(this, viewerPanel);
             this.spreadsheet = new Spreadsheet(
                 resultsSash,
                 SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
@@ -292,6 +286,9 @@ public class ResultSetViewer extends Viewer
             });
         }
 
+        this.activePresentation = new SpreadsheetPresentation();
+        this.activePresentation.createPresentation(this, viewerPanel);
+
         createStatusBar(viewerPanel);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
@@ -324,23 +321,13 @@ public class ResultSetViewer extends Viewer
 
         spreadsheet.addFocusListener(new FocusListener() {
             @Override
-            public void focusGained(FocusEvent e)
-            {
+            public void focusGained(FocusEvent e) {
                 updateToolbar();
             }
 
             @Override
-            public void focusLost(FocusEvent e)
-            {
+            public void focusLost(FocusEvent e) {
                 updateToolbar();
-            }
-        });
-
-        this.spreadsheet.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                fireSelectionChanged(new SelectionChangedEvent(ResultSetViewer.this, new ResultSetSelectionImpl()));
             }
         });
 
@@ -639,14 +626,6 @@ public class ResultSetViewer extends Viewer
         return dataContainer == null ? null : dataContainer.getDataSource();
     }
 
-    public IFindReplaceTarget getFindReplaceTarget()
-    {
-        if (findReplaceTarget == null) {
-            findReplaceTarget = new ResultSetFindReplaceTarget(this);
-        }
-        return findReplaceTarget;
-    }
-
     @Nullable
     @Override
     public Object getAdapter(Class adapter)
@@ -662,7 +641,7 @@ public class ResultSetViewer extends Viewer
                     if (object instanceof GridCell) {
                         GridCell cell = (GridCell) object;
                         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-                        final RowData row = (RowData)(recordMode ? cell.col : cell.row);
+                        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
                         final ResultSetValueController valueController = new ResultSetValueController(
                             ResultSetViewer.this,
                             attr,
@@ -679,7 +658,13 @@ public class ResultSetViewer extends Viewer
             });
             return page;
         } else if (adapter == IFindReplaceTarget.class) {
-            return getFindReplaceTarget();
+            if (activePresentation instanceof IFindReplaceTarget) {
+                return activePresentation;
+            }
+        }
+        // Try to get it from adapter
+        if (activePresentation instanceof IAdaptable) {
+            return ((IAdaptable) activePresentation).getAdapter(adapter);
         }
         return null;
     }
@@ -705,8 +690,8 @@ public class ResultSetViewer extends Viewer
         Object newRow = cell == null ? null : cell.row;
         if (!recordMode) {
             changed = curRow != newRow || curAttribute != newCol;
-            if (newRow instanceof RowData && newCol instanceof DBDAttributeBinding) {
-                curRow = (RowData) newRow;
+            if (newRow instanceof ResultSetRow && newCol instanceof DBDAttributeBinding) {
+                curRow = (ResultSetRow) newRow;
                 curAttribute = (DBDAttributeBinding) newCol;
             }
         } else {
@@ -721,8 +706,7 @@ public class ResultSetViewer extends Viewer
         if (changed) {
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
-            updateToolbar();
-            previewValue();
+            updateValueView();
         }
     }
 
@@ -882,7 +866,7 @@ public class ResultSetViewer extends Viewer
 
     private void changeMode(boolean recordMode)
     {
-        RowData oldRow = this.curRow;
+        ResultSetRow oldRow = this.curRow;
         DBDAttributeBinding oldAttribute = this.curAttribute;
         int rowCount = model.getRowCount();
         if (rowCount > 0) {
@@ -942,7 +926,7 @@ public class ResultSetViewer extends Viewer
     void previewValue()
     {
         DBDAttributeBinding attr = getFocusAttribute();
-        RowData row = getFocusRow();
+        ResultSetRow row = getFocusRow();
         if (!isPreviewVisible() || attr == null || row == null) {
             return;
         }
@@ -1054,7 +1038,7 @@ public class ResultSetViewer extends Viewer
         if (!model.isColumnReadOnly(column)) {
             return false;
         }
-        boolean newRow = (curRow != null && curRow.getState() == RowData.STATE_ADDED);
+        boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         return !newRow;
     }
 
@@ -1109,7 +1093,7 @@ public class ResultSetViewer extends Viewer
     // Misc
 
     @Nullable
-    public RowData getCurrentRow()
+    public ResultSetRow getCurrentRow()
     {
         return curRow;
     }
@@ -1123,11 +1107,11 @@ public class ResultSetViewer extends Viewer
     }
 
     @Nullable
-    public RowData getFocusRow()
+    public ResultSetRow getFocusRow()
     {
         return recordMode ?
-            (RowData) spreadsheet.getFocusColumnElement() :
-            (RowData) spreadsheet.getFocusRowElement();
+            (ResultSetRow) spreadsheet.getFocusColumnElement() :
+            (ResultSetRow) spreadsheet.getFocusRowElement();
     }
 
     ///////////////////////////////////////
@@ -1349,7 +1333,7 @@ public class ResultSetViewer extends Viewer
     {
         // The control that will be the editor must be a child of the Table
         DBDAttributeBinding attr = getFocusAttribute();
-        RowData row = getFocusRow();
+        ResultSetRow row = getFocusRow();
         if (attr == null || row == null) {
             return null;
         }
@@ -1464,11 +1448,9 @@ public class ResultSetViewer extends Viewer
     public void resetCellValue(@NotNull Object colElement, @NotNull Object rowElement, boolean delete)
     {
         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
-        final RowData row = (RowData)(recordMode ? colElement : rowElement);
+        final ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
         model.resetCellValue(attr, row);
-        spreadsheet.redrawGrid();
-        updateEditControls();
-        previewValue();
+        updateValueView();
     }
 
     @Override
@@ -1497,7 +1479,7 @@ public class ResultSetViewer extends Viewer
     public void fillContextMenu(@Nullable Object colObject, @Nullable Object rowObject, @NotNull IMenuManager manager)
     {
         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowObject : colObject);
-        final RowData row = (RowData)(recordMode ? colObject : rowObject);
+        final ResultSetRow row = (ResultSetRow)(recordMode ? colObject : rowObject);
         // Custom oldValue items
         if (attr != null && row != null) {
             final ResultSetValueController valueController = new ResultSetValueController(
@@ -1704,7 +1686,7 @@ public class ResultSetViewer extends Viewer
 
     public void navigateLink(@NotNull GridCell cell, int state) {
         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-        final RowData row = (RowData)(recordMode ? cell.col : cell.row);
+        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
 
         Object value = model.getCellValue(attr, row);
         if (DBUtils.isNullValue(value)) {
@@ -1731,7 +1713,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull RowData row)
+    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row)
         throws DBException
     {
         DBSEntityAssociation association = null;
@@ -1785,6 +1767,15 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
+    public void updateValueView() {
+        updateEditControls();
+        spreadsheet.redrawGrid();
+        previewValue();
+
+        activePresentation.updateValueView();
+    }
+
+    @Override
     public Control getControl()
     {
         return this.viewerPanel;
@@ -1818,35 +1809,20 @@ public class ResultSetViewer extends Viewer
 
     @Override
     @NotNull
-    public ResultSetSelection getSelection()
+    public IResultSetSelection getSelection()
     {
-        return new ResultSetSelectionImpl();
+        if (activePresentation instanceof ISelectionProvider) {
+            return (IResultSetSelection) ((ISelectionProvider) activePresentation).getSelection();
+        }
+        return null;
     }
 
     @Override
     public void setSelection(ISelection selection, boolean reveal)
     {
-        if (selection instanceof ResultSetSelectionImpl && ((ResultSetSelectionImpl) selection).getResultSetViewer() == this) {
-            // It may occur on simple focus change so we won't do anything
-            return;
+        if (activePresentation instanceof ISelectionProvider) {
+            ((ISelectionProvider) activePresentation).setSelection(selection);
         }
-        spreadsheet.deselectAll();
-        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            List<GridPos> cellSelection = new ArrayList<GridPos>();
-            for (Iterator iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
-                Object cell = iter.next();
-                if (cell instanceof GridPos) {
-                    cellSelection.add((GridPos) cell);
-                } else {
-                    log.warn("Bad selection object: " + cell);
-                }
-            }
-            spreadsheet.selectCells(cellSelection);
-            if (reveal) {
-                spreadsheet.showSelection();
-            }
-        }
-        fireSelectionChanged(new SelectionChangedEvent(this, selection));
     }
 
     @NotNull
@@ -1891,7 +1867,7 @@ public class ResultSetViewer extends Viewer
         showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
 
         // Pump data
-        RowData oldRow = curRow;
+        ResultSetRow oldRow = curRow;
 
         DBSDataContainer dataContainer = getDataContainer();
         if (resultSetProvider.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
@@ -2113,8 +2089,8 @@ public class ResultSetViewer extends Viewer
         }
         try {
             boolean needPK = false;
-            for (RowData row : model.getAllRows()) {
-                if (row.getState() == RowData.STATE_REMOVED || (row.getState() == RowData.STATE_NORMAL && row.isChanged())) {
+            for (ResultSetRow row : model.getAllRows()) {
+                if (row.getState() == ResultSetRow.STATE_REMOVED || (row.getState() == ResultSetRow.STATE_NORMAL && row.isChanged())) {
                     needPK = true;
                     break;
                 }
@@ -2194,7 +2170,7 @@ public class ResultSetViewer extends Viewer
             }
 
             DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
-            RowData row = (RowData) (!recordMode ?  cell.row : cell.col);
+            ResultSetRow row = (ResultSetRow) (!recordMode ?  cell.row : cell.col);
             Object value = model.getCellValue(column, row);
             String cellText = column.getValueHandler().getValueDisplayString(
                 column.getAttribute(),
@@ -2224,7 +2200,7 @@ public class ResultSetViewer extends Viewer
     public void pasteCellValue()
     {
         DBDAttributeBinding attr = getFocusAttribute();
-        RowData row = getFocusRow();
+        ResultSetRow row = getFocusRow();
         if (attr == null || row == null) {
             return;
         }
@@ -2337,12 +2313,12 @@ public class ResultSetViewer extends Viewer
 
     void deleteSelectedRows()
     {
-        Set<RowData> rowsToDelete = new LinkedHashSet<RowData>();
+        Set<ResultSetRow> rowsToDelete = new LinkedHashSet<ResultSetRow>();
         if (recordMode) {
             rowsToDelete.add(curRow);
         } else {
             for (GridCell cell : spreadsheet.getCellSelection()) {
-                rowsToDelete.add((RowData) cell.row);
+                rowsToDelete.add((ResultSetRow) cell.row);
             }
         }
         if (rowsToDelete.isEmpty()) {
@@ -2351,7 +2327,7 @@ public class ResultSetViewer extends Viewer
 
         int rowsRemoved = 0;
         int lastRowNum = -1;
-        for (RowData row : rowsToDelete) {
+        for (ResultSetRow row : rowsToDelete) {
             if (model.deleteRow(row)) {
                 rowsRemoved++;
             }
@@ -2479,13 +2455,13 @@ public class ResultSetViewer extends Viewer
         private final ResultSetViewer viewer;
         private final EditType editType;
         private final Composite inlinePlaceholder;
-        private RowData curRow;
+        private ResultSetRow curRow;
         private final DBDAttributeBinding binding;
 
         ResultSetValueController(
             @NotNull ResultSetViewer viewer,
             @NotNull DBDAttributeBinding binding,
-            @NotNull RowData row,
+            @NotNull ResultSetRow row,
             @NotNull EditType editType,
             @Nullable Composite inlinePlaceholder)
         {
@@ -2496,7 +2472,7 @@ public class ResultSetViewer extends Viewer
             this.inlinePlaceholder = inlinePlaceholder;
         }
 
-        void setCurRow(RowData curRow)
+        void setCurRow(ResultSetRow curRow)
         {
             this.curRow = curRow;
         }
@@ -2558,9 +2534,7 @@ public class ResultSetViewer extends Viewer
                 viewer.site.getShell().getDisplay().syncExec(new Runnable() {
                     @Override
                     public void run() {
-                        viewer.updateEditControls();
-                        viewer.spreadsheet.redrawGrid();
-                        viewer.previewValue();
+                        viewer.updateValueView();
                     }
                 });
             }
@@ -2774,7 +2748,7 @@ public class ResultSetViewer extends Viewer
         public int getCellState(Object colElement, Object rowElement) {
             int state = STATE_NONE;
             DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
-            RowData row = (RowData)(recordMode ? colElement : rowElement);
+            ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
             Object value = model.getCellValue(attr, row);
             if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
                 state |= STATE_LINK;
@@ -2797,7 +2771,7 @@ public class ResultSetViewer extends Viewer
         public Object getCellValue(Object colElement, Object rowElement, boolean formatString)
         {
             DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-            RowData row = (RowData)(colElement instanceof RowData ? colElement : rowElement);
+            ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
             int rowNum = row.getVisualNumber();
             Object value = model.getCellValue(attr, row);
 
@@ -2863,14 +2837,14 @@ public class ResultSetViewer extends Viewer
         @Override
         public Color getCellBackground(Object colElement, Object rowElement)
         {
-            RowData row = (RowData) (!recordMode ?  rowElement : colElement);
+            ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
             boolean odd = row.getVisualNumber() % 2 == 0;
 
-            if (row.getState() == RowData.STATE_ADDED) {
+            if (row.getState() == ResultSetRow.STATE_ADDED) {
                 return backgroundAdded;
             }
-            if (row.getState() == RowData.STATE_REMOVED) {
+            if (row.getState() == ResultSetRow.STATE_REMOVED) {
                 return backgroundDeleted;
             }
             if (row.changes != null && row.changes.containsKey(attribute)) {
@@ -2930,7 +2904,7 @@ public class ResultSetViewer extends Viewer
             }
 
 /*
-            RowData row = (RowData) (!recordMode ?  element : curRow);
+            ResultSetRow row = (ResultSetRow) (!recordMode ?  element : curRow);
             boolean odd = row != null && row.getVisualNumber() % 2 == 0;
             if (!recordMode && odd && showOddRows) {
                 return backgroundOdd;
@@ -2953,7 +2927,7 @@ public class ResultSetViewer extends Viewer
                 }
             } else {
                 if (!recordMode) {
-                    return String.valueOf(((RowData)element).getVisualNumber() + 1);
+                    return String.valueOf(((ResultSetRow)element).getVisualNumber() + 1);
                 } else {
                     return CoreMessages.controls_resultset_viewer_value;
                 }
@@ -3101,7 +3075,7 @@ public class ResultSetViewer extends Viewer
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
                 final DBDAttributeBinding attr = viewer.getFocusAttribute();
-                final RowData row = viewer.getFocusRow();
+                final ResultSetRow row = viewer.getFocusRow();
                 if (attr == null || row == null) {
                     return null;
                 }
@@ -3119,7 +3093,7 @@ public class ResultSetViewer extends Viewer
                 if (useDefault) {
                     return "..";
                 } else {
-                    RowData focusRow = viewer.getFocusRow();
+                    ResultSetRow focusRow = viewer.getFocusRow();
                     if (focusRow == null) {
                         return null;
                     }
@@ -3277,80 +3251,6 @@ public class ResultSetViewer extends Viewer
         public boolean isEnabled()
         {
             return false;
-        }
-    }
-
-    private class ResultSetSelectionImpl implements ResultSetSelection {
-
-        @Nullable
-        @Override
-        public GridPos getFirstElement()
-        {
-            Collection<GridPos> ssSelection = spreadsheet.getSelection();
-            if (ssSelection.isEmpty()) {
-                return null;
-            }
-            return ssSelection.iterator().next();
-        }
-
-        @Override
-        public Iterator iterator()
-        {
-            return spreadsheet.getSelection().iterator();
-        }
-
-        @Override
-        public int size()
-        {
-            return spreadsheet.getSelection().size();
-        }
-
-        @Override
-        public Object[] toArray()
-        {
-            return spreadsheet.getSelection().toArray();
-        }
-
-        @Override
-        public List toList()
-        {
-            return new ArrayList<GridPos>(spreadsheet.getSelection());
-        }
-
-        @Override
-        public boolean isEmpty()
-        {
-            return spreadsheet.getSelection().isEmpty();
-        }
-
-        @Override
-        public ResultSetViewer getResultSetViewer()
-        {
-            return ResultSetViewer.this;
-        }
-
-        @Override
-        public Collection<RowData> getSelectedRows()
-        {
-            if (recordMode) {
-                if (curRow == null) {
-                    return Collections.emptyList();
-                }
-                return Collections.singletonList(curRow);
-            } else {
-                List<RowData> rows = new ArrayList<RowData>();
-                Collection<Integer> rowSelection = spreadsheet.getRowSelection();
-                for (Integer row : rowSelection) {
-                    rows.add(model.getRow(row));
-                }
-                return rows;
-            }
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            return obj instanceof ResultSetSelectionImpl && super.equals(obj);
         }
     }
 

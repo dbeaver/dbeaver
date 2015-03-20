@@ -54,10 +54,10 @@ class ResultSetPersister {
     @NotNull
     private final DBDAttributeBinding[] columns;
 
-    private final List<RowData> deletedRows = new ArrayList<RowData>();
-    private final List<RowData> addedRows = new ArrayList<RowData>();
-    private final List<RowData> changedRows = new ArrayList<RowData>();
-    private final Map<RowData, DBDRowIdentifier> rowIdentifiers = new LinkedHashMap<RowData, DBDRowIdentifier>();
+    private final List<ResultSetRow> deletedRows = new ArrayList<ResultSetRow>();
+    private final List<ResultSetRow> addedRows = new ArrayList<ResultSetRow>();
+    private final List<ResultSetRow> changedRows = new ArrayList<ResultSetRow>();
+    private final Map<ResultSetRow, DBDRowIdentifier> rowIdentifiers = new LinkedHashMap<ResultSetRow, DBDRowIdentifier>();
     private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> updateStatements = new ArrayList<DataStatementInfo>();
@@ -90,24 +90,24 @@ class ResultSetPersister {
         deletedRows.clear();
         addedRows.clear();
         changedRows.clear();
-        for (RowData row : model.getAllRows()) {
+        for (ResultSetRow row : model.getAllRows()) {
             switch (row.getState()) {
-                case RowData.STATE_NORMAL:
+                case ResultSetRow.STATE_NORMAL:
                     if (row.isChanged()) {
                         changedRows.add(row);
                     }
                     break;
-                case RowData.STATE_ADDED:
+                case ResultSetRow.STATE_ADDED:
                     addedRows.add(row);
                     break;
-                case RowData.STATE_REMOVED:
+                case ResultSetRow.STATE_REMOVED:
                     deletedRows.add(row);
                     break;
             }
         }
 
         // Prepare rows
-        for (RowData row : changedRows) {
+        for (ResultSetRow row : changedRows) {
             if (row.changes == null || row.changes.isEmpty()) {
                 continue;
             }
@@ -121,7 +121,7 @@ class ResultSetPersister {
     {
         // Make delete statements
         DBDRowIdentifier rowIdentifier = getDefaultRowIdentifier();
-        for (RowData row : deletedRows) {
+        for (ResultSetRow row : deletedRows) {
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, row, rowIdentifier.getEntity());
             List<DBDAttributeBinding> keyColumns = rowIdentifier.getAttributes();
             for (DBDAttributeBinding binding : keyColumns) {
@@ -139,7 +139,7 @@ class ResultSetPersister {
     {
         // Make insert statements
         DBSEntity table = getDefaultRowIdentifier().getEntity();
-        for (RowData row : addedRows) {
+        for (ResultSetRow row : addedRows) {
             Object[] cellValues = row.values;
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, row, table);
             for (int i = 0; i < columns.length; i++) {
@@ -154,7 +154,7 @@ class ResultSetPersister {
         throws DBException
     {
         // Make statements
-        for (RowData row : this.rowIdentifiers.keySet()) {
+        for (ResultSetRow row : this.rowIdentifiers.keySet()) {
             if (row.changes == null) continue;
 
             DBDRowIdentifier rowIdentifier = this.rowIdentifiers.get(row);
@@ -201,7 +201,7 @@ class ResultSetPersister {
     public void rejectChanges()
     {
         collectChanges();
-        for (RowData row : changedRows) {
+        for (ResultSetRow row : changedRows) {
             if (row.changes != null) {
                 for (Map.Entry<DBDAttributeBinding, Object> changedValue : row.changes.entrySet()) {
                     Object curValue = model.getCellValue(changedValue.getKey(), row);
@@ -214,8 +214,8 @@ class ResultSetPersister {
 
         boolean rowsChanged = model.cleanupRows(addedRows);
         // Remove deleted rows
-        for (RowData row : deletedRows) {
-            row.setState(RowData.STATE_NORMAL);
+        for (ResultSetRow row : deletedRows) {
+            row.setState(ResultSetRow.STATE_NORMAL);
         }
         model.refreshChangeCount();
 
@@ -230,7 +230,7 @@ class ResultSetPersister {
     private boolean reflectChanges()
     {
         boolean rowsChanged = false;
-        for (RowData row : changedRows) {
+        for (ResultSetRow row : changedRows) {
             for (DataStatementInfo stat : updateStatements) {
                 if (stat.executed && stat.row == row) {
                     reflectKeysUpdate(stat);
@@ -239,16 +239,16 @@ class ResultSetPersister {
                 }
             }
         }
-        for (RowData row : addedRows) {
+        for (ResultSetRow row : addedRows) {
             for (DataStatementInfo stat : insertStatements) {
                 if (stat.executed && stat.row == row) {
                     reflectKeysUpdate(stat);
-                    row.setState(RowData.STATE_NORMAL);
+                    row.setState(ResultSetRow.STATE_NORMAL);
                     break;
                 }
             }
         }
-        for (RowData row : deletedRows) {
+        for (ResultSetRow row : deletedRows) {
             for (DataStatementInfo stat : deleteStatements) {
                 if (stat.executed && stat.row == row) {
                     model.cleanupRow(row);
@@ -266,7 +266,7 @@ class ResultSetPersister {
         // Update keys
         if (!stat.updatedCells.isEmpty()) {
             for (Map.Entry<Integer, Object> entry : stat.updatedCells.entrySet()) {
-                RowData row = stat.row;
+                ResultSetRow row = stat.row;
                 DBUtils.releaseValue(row.values[entry.getKey()]);
                 row.values[entry.getKey()] = entry.getValue();
             }
@@ -582,7 +582,7 @@ class ResultSetPersister {
         @NotNull
         final DBSManipulationType type;
         @NotNull
-        final RowData row;
+        final ResultSetRow row;
         @NotNull
         final DBSEntity entity;
         final List<DBDAttributeValue> keyAttributes = new ArrayList<DBDAttributeValue>();
@@ -590,7 +590,7 @@ class ResultSetPersister {
         boolean executed = false;
         final Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
 
-        DataStatementInfo(@NotNull DBSManipulationType type, @NotNull RowData row, @NotNull DBSEntity entity)
+        DataStatementInfo(@NotNull DBSManipulationType type, @NotNull ResultSetRow row, @NotNull DBSEntity entity)
         {
             this.type = type;
             this.row = row;
