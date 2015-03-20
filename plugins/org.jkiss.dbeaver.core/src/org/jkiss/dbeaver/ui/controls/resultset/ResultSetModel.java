@@ -50,7 +50,7 @@ public class ResultSetModel {
 
 
     // Data
-    private List<RowData> curRows = new ArrayList<RowData>();
+    private List<ResultSetRow> curRows = new ArrayList<ResultSetRow>();
     private int changesCount = 0;
     private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
@@ -120,13 +120,13 @@ public class ResultSetModel {
         return null;
     }
 
-    public void resetCellValue(DBDAttributeBinding attr, RowData row)
+    public void resetCellValue(DBDAttributeBinding attr, ResultSetRow row)
     {
         if (row.changes != null && row.changes.containsKey(attr)) {
             DBUtils.resetValue(getCellValue(attr, row));
             updateCellValue(attr, row, row.changes.get(attr), false);
             row.resetChange(attr);
-            if (row.getState() == RowData.STATE_NORMAL) {
+            if (row.getState() == ResultSetRow.STATE_NORMAL) {
                 changesCount--;
             }
         }
@@ -135,8 +135,8 @@ public class ResultSetModel {
     public void refreshChangeCount()
     {
         changesCount = 0;
-        for (RowData row : curRows) {
-            if (row.getState() != RowData.STATE_NORMAL) {
+        for (ResultSetRow row : curRows) {
+            if (row.getState() != ResultSetRow.STATE_NORMAL) {
                 changesCount++;
             } else if (row.changes != null) {
                 changesCount += row.changes.size();
@@ -226,7 +226,7 @@ public class ResultSetModel {
     }
 
     @NotNull
-    public List<RowData> getAllRows() {
+    public List<ResultSetRow> getAllRows() {
         return curRows;
     }
 
@@ -237,13 +237,13 @@ public class ResultSetModel {
     }
 
     @NotNull
-    public RowData getRow(int index)
+    public ResultSetRow getRow(int index)
     {
         return curRows.get(index);
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding column, @NotNull RowData row) {
+    public Object getCellValue(@NotNull DBDAttributeBinding column, @NotNull ResultSetRow row) {
         int depth = column.getLevel();
         if (depth == 0) {
             return row.values[column.getOrdinalPosition()];
@@ -276,12 +276,12 @@ public class ResultSetModel {
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull RowData row, @Nullable Object value)
+    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value)
     {
         return updateCellValue(attr, row, value, true);
     }
 
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull RowData row, @Nullable Object value, boolean updateChanges)
+    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value, boolean updateChanges)
     {
         int depth = attr.getLevel();
         int rootIndex;
@@ -329,7 +329,7 @@ public class ResultSetModel {
                 return false;
             }
             // Do not add edited cell for new/deleted rows
-            if (row.getState() == RowData.STATE_NORMAL) {
+            if (row.getState() == ResultSetRow.STATE_NORMAL) {
 
                 boolean cellWasEdited = row.changes != null && row.changes.containsKey(attr);
                 Object oldOldValue = !cellWasEdited ? null : row.changes.get(attr);
@@ -339,7 +339,7 @@ public class ResultSetModel {
                 } else if (updateChanges) {
                     row.addChange(attr, oldValue);
                 }
-                if (updateChanges && row.getState() == RowData.STATE_NORMAL && !cellWasEdited) {
+                if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL && !cellWasEdited) {
                     changesCount++;
                 }
             }
@@ -472,10 +472,10 @@ public class ResultSetModel {
     public void appendData(@NotNull List<Object[]> rows)
     {
         int rowCount = rows.size();
-        List<RowData> newRows = new ArrayList<RowData>(rowCount);
+        List<ResultSetRow> newRows = new ArrayList<ResultSetRow>(rowCount);
         for (int i = 0; i < rowCount; i++) {
             newRows.add(
-                new RowData(curRows.size() + i, rows.get(i)));
+                new ResultSetRow(curRows.size() + i, rows.get(i)));
         }
         curRows.addAll(newRows);
     }
@@ -484,7 +484,7 @@ public class ResultSetModel {
     {
         // Refresh all rows
         this.releaseAll();
-        this.curRows = new ArrayList<RowData>();
+        this.curRows = new ArrayList<ResultSetRow>();
 
         hasData = false;
     }
@@ -536,9 +536,9 @@ public class ResultSetModel {
 
     void addNewRow(int rowNum, @NotNull Object[] data)
     {
-        RowData newRow = new RowData(curRows.size(), data);
+        ResultSetRow newRow = new ResultSetRow(curRows.size(), data);
         newRow.setVisualNumber(rowNum);
-        newRow.setState(RowData.STATE_ADDED);
+        newRow.setState(ResultSetRow.STATE_ADDED);
         shiftRows(newRow, 1);
         curRows.add(rowNum, newRow);
         changesCount++;
@@ -550,38 +550,38 @@ public class ResultSetModel {
      * @return true if row was physically removed (only in case if this row was previously added)
      * or false if it just marked as deleted
      */
-    boolean deleteRow(@NotNull RowData row)
+    boolean deleteRow(@NotNull ResultSetRow row)
     {
-        if (row.getState() == RowData.STATE_ADDED) {
+        if (row.getState() == ResultSetRow.STATE_ADDED) {
             cleanupRow(row);
             return true;
         } else {
             // Mark row as deleted
-            row.setState(RowData.STATE_REMOVED);
+            row.setState(ResultSetRow.STATE_REMOVED);
             changesCount++;
             return false;
         }
     }
 
-    void cleanupRow(@NotNull RowData row)
+    void cleanupRow(@NotNull ResultSetRow row)
     {
         row.release();
         this.curRows.remove(row.getVisualNumber());
         this.shiftRows(row, -1);
     }
 
-    boolean cleanupRows(Collection<RowData> rows)
+    boolean cleanupRows(Collection<ResultSetRow> rows)
     {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
-            List<RowData> rowsToRemove = new ArrayList<RowData>(rows);
-            Collections.sort(rowsToRemove, new Comparator<RowData>() {
+            List<ResultSetRow> rowsToRemove = new ArrayList<ResultSetRow>(rows);
+            Collections.sort(rowsToRemove, new Comparator<ResultSetRow>() {
                 @Override
-                public int compare(RowData o1, RowData o2) {
+                public int compare(ResultSetRow o1, ResultSetRow o2) {
                     return o1.getVisualNumber() - o2.getVisualNumber();
                 }
             });
-            for (RowData row : rowsToRemove) {
+            for (ResultSetRow row : rowsToRemove) {
                 cleanupRow(row);
             }
             return true;
@@ -590,9 +590,9 @@ public class ResultSetModel {
         }
     }
 
-    private void shiftRows(@NotNull RowData relative, int delta)
+    private void shiftRows(@NotNull ResultSetRow relative, int delta)
     {
-        for (RowData row : curRows) {
+        for (ResultSetRow row : curRows) {
             if (row.getVisualNumber() >= relative.getVisualNumber()) {
                 row.setVisualNumber(row.getVisualNumber() + delta);
             }
@@ -604,7 +604,7 @@ public class ResultSetModel {
 
     private void releaseAll()
     {
-        for (RowData row : curRows) {
+        for (ResultSetRow row : curRows) {
             row.release();
         }
     }
@@ -678,9 +678,9 @@ public class ResultSetModel {
         final boolean hasOrdering = dataFilter.hasOrdering();
         // Sort locally
         final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
-        Collections.sort(curRows, new Comparator<RowData>() {
+        Collections.sort(curRows, new Comparator<ResultSetRow>() {
             @Override
-            public int compare(RowData row1, RowData row2)
+            public int compare(ResultSetRow row1, ResultSetRow row2)
             {
                 if (!hasOrdering) {
                     return row1.getRowNumber() - row2.getRowNumber();

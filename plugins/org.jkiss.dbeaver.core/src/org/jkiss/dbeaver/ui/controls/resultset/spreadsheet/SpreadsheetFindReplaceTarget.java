@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.IFindReplaceTarget;
@@ -30,7 +30,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -41,19 +42,18 @@ import java.util.regex.PatternSyntaxException;
 /**
  * Find/Replace target for result set viewer
  */
-class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
+class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
 
-    static final Log log = Log.getLog(ResultSetFindReplaceTarget.class);
+    static final Log log = Log.getLog(SpreadsheetFindReplaceTarget.class);
 
-    private final ResultSetViewer resultSet;
+    private final SpreadsheetPresentation owner;
     private Pattern searchPattern;
     private Color scopeHighlightColor;
     private boolean replaceAll;
 
-    ResultSetFindReplaceTarget(ResultSetViewer resultSet)
+    SpreadsheetFindReplaceTarget(SpreadsheetPresentation owner)
     {
-
-        this.resultSet = resultSet;
+        this.owner = owner;
     }
 
     @Override
@@ -71,7 +71,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public Point getSelection()
     {
-        Collection<GridPos> selection = resultSet.getSpreadsheet().getSelection();
+        Collection<GridPos> selection = owner.getSpreadsheet().getSelection();
         //GridCell selection = resultSet.getSelection().getFirstElement();
         if (selection.isEmpty()) {
             return new Point(-1, -1);
@@ -84,11 +84,11 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public String getSelectionText()
     {
-        GridPos selection = resultSet.getSelection().getFirstElement();
+        GridPos selection = (GridPos) owner.getSelection().getFirstElement();
         if (selection == null) {
             return "";
         }
-        Spreadsheet spreadsheet = resultSet.getSpreadsheet();
+        Spreadsheet spreadsheet = owner.getSpreadsheet();
         GridCell cell = spreadsheet.posToCell(selection);
         String value = cell == null ? "" : spreadsheet.getContentProvider().getCellText(cell.col, cell.row);
         return CommonUtils.toString(value);
@@ -97,7 +97,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public boolean isEditable()
     {
-        return !resultSet.isReadOnly();
+        return !owner.getController().isReadOnly();
     }
 
     @Override
@@ -136,7 +136,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public void setSelection(int offset, int length)
     {
-        resultSet.setSelection(
+        owner.setSelection(
             new StructuredSelection(
                 new GridPos(offset, length)));
     }
@@ -158,11 +158,11 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     {
         searchPattern = null;
 
-        ResultSetModel model = resultSet.getModel();
+        ResultSetModel model = owner.getController().getModel();
         if (model.isEmpty()) {
             return -1;
         }
-        Spreadsheet spreadsheet = resultSet.getSpreadsheet();
+        Spreadsheet spreadsheet = owner.getSpreadsheet();
         int rowCount = spreadsheet.getItemCount();
         int columnCount = spreadsheet.getColumnsCount();
         Collection<GridPos> selection = spreadsheet.getSelection();
@@ -182,7 +182,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         } else {
             findPattern = Pattern.compile(Pattern.quote(findString), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
         }
-        int minColumnNum = resultSet.isRecordMode() ? -1 : 0;
+        int minColumnNum = owner.isRecordMode() ? -1 : 0;
         for (GridPos curPosition = new GridPos(startPosition);;) {
             //Object element = contentProvider.getElement(curPosition);
             if (searchForward) {
@@ -213,7 +213,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                 }
             }
             String cellText;
-            if (resultSet.isRecordMode() && curPosition.col == minColumnNum) {
+            if (owner.isRecordMode() && curPosition.col == minColumnNum) {
                 // Header
                 cellText = spreadsheet.getLabelProvider().getText(spreadsheet.getRowElement(curPosition.row));
             } else {
@@ -236,33 +236,30 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public void replaceSelection(String text, boolean regExReplace)
     {
-        GridPos selection = resultSet.getSelection().getFirstElement();
+        GridPos selection = (GridPos) owner.getSelection().getFirstElement();
         if (selection == null) {
             return;
         }
-        GridCell cell = resultSet.getSpreadsheet().posToCell(selection);
+        GridCell cell = owner.getSpreadsheet().posToCell(selection);
         if (cell == null) {
             return;
         }
-        String oldValue = resultSet.getSpreadsheet().getContentProvider().getCellText(cell.col, cell.row);
+        String oldValue = owner.getSpreadsheet().getContentProvider().getCellText(cell.col, cell.row);
         String newValue = text;
         if (searchPattern != null) {
             newValue = searchPattern.matcher(oldValue).replaceAll(newValue);
         }
 
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(resultSet.isRecordMode() ? cell.row : cell.col);
-        final RowData row = (RowData)(resultSet.isRecordMode() ? cell.col : cell.row);
-        resultSet.getModel().updateCellValue(attr, row, newValue);
-
-        resultSet.updateEditControls();
-        resultSet.getSpreadsheet().redrawGrid();
-        resultSet.previewValue();
+        final DBDAttributeBinding attr = (DBDAttributeBinding)(owner.isRecordMode() ? cell.row : cell.col);
+        final ResultSetRow row = (ResultSetRow)(owner.isRecordMode() ? cell.col : cell.row);
+        owner.getController().getModel().updateCellValue(attr, row, newValue);
+        owner.getController().updateValueView();
     }
 
     @Override
     public String toString()
     {
-        DBSDataContainer dataContainer = resultSet.getDataContainer();
+        DBSDataContainer dataContainer = owner.getController().getDataContainer();
         return "Target: " + (dataContainer == null ? null : dataContainer.getName());
     }
 

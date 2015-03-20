@@ -39,6 +39,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -53,9 +54,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSelection;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
-import org.jkiss.dbeaver.ui.controls.resultset.RowData;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -80,9 +81,9 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         }
 
         List<IContributionItem> menu = new ArrayList<IContributionItem>();
-        if (structuredSelection instanceof ResultSetSelection) {
+        if (structuredSelection instanceof IResultSetSelection) {
             // Results
-            makeResultSetContributions(menu, (ResultSetSelection) structuredSelection);
+            makeResultSetContributions(menu, (IResultSetSelection) structuredSelection);
 
         } else {
             final DBSTable table =
@@ -225,22 +226,22 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         }));
     }
 
-    private void makeResultSetContributions(List<IContributionItem> menu, ResultSetSelection rss)
+    private void makeResultSetContributions(List<IContributionItem> menu, IResultSetSelection rss)
     {
-        final ResultSetViewer rsv = rss.getResultSetViewer();
+        final IResultSetController rsv = rss.getController();
         DBSDataContainer dataContainer = rsv.getDataContainer();
         DBSEntity entity = dataContainer instanceof DBSEntity ? (DBSEntity) dataContainer : null;
         if (entity == null) {
             entity = rsv.getModel().getSingleSource();
         }
         if (entity != null) {
-            final Collection<RowData> selectedRows = rss.getSelectedRows();
+            final Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
             if (!CommonUtils.isEmpty(selectedRows)) {
                 menu.add(makeAction("SELECT by Unique Key", new TableAnalysisRunner(entity) {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
                     {
-                        for (RowData firstRow : selectedRows) {
+                        for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
                             sql.append("SELECT ");
@@ -272,7 +273,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
                     {
-                        for (RowData firstRow : selectedRows) {
+                        for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> allAttributes = getAllAttributes(monitor);
                             sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(entity));
@@ -304,7 +305,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
                     {
-                        for (RowData firstRow : selectedRows) {
+                        for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
                             sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(entity));
@@ -403,11 +404,12 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             }
         }
 
-        protected void appendAttributeValue(ResultSetViewer rsv, StringBuilder sql, DBDAttributeBinding binding, RowData row)
+        protected void appendAttributeValue(IResultSetController rsv, StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row)
         {
+            DBPDataSource dataSource = rsv.getDataContainer().getDataSource();
             Object value = rsv.getModel().getCellValue(binding, row);
             sql.append(
-                SQLUtils.convertValueToSQL(rsv.getDataSource(), binding.getAttribute(), value));
+                SQLUtils.convertValueToSQL(dataSource, binding.getAttribute(), value));
         }
     }
     

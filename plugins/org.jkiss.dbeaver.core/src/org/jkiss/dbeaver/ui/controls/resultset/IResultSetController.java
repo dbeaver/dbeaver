@@ -60,6 +60,11 @@ public interface IResultSetController {
 
     void fillContextMenu(@NotNull IMenuManager manager);
 
-    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull RowData row)
+    @Nullable
+    ResultSetRow getCurrentRow();
+
+    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row)
         throws DBException;
+
+    void updateValueView();
 }

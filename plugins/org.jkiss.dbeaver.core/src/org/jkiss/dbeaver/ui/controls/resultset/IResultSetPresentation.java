@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
@@ -38,5 +39,6 @@ public interface IResultSetPresentation {
 
     void updateValueView();
 
+    void fillToolbar(IToolBarManager toolBar);
     // ISelectionProvider
 }
