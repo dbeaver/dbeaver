@@ -60,4 +60,9 @@ public class StatisticsPresentation implements IResultSetPresentation {
 
     }
 
+    @Override
+    public void changeMode(boolean recordMode) {
+
+    }
+
 }

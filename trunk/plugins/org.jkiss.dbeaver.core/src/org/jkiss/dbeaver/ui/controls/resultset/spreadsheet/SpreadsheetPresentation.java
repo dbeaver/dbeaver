@@ -99,6 +99,11 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
 
     }
 
+    @Override
+    public void changeMode(boolean recordMode) {
+
+    }
+
     public Control showCellEditor(boolean inline) {
         return ((ResultSetViewer)controller).showCellEditor(inline);
     }
@@ -131,17 +136,13 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         return null;
     }
 
-    public boolean isRecordMode() {
-        return ((ResultSetViewer)controller).isRecordMode();
-    }
-
     ///////////////////////////////////////////////
     // Misc
 
     @Nullable
     public DBDAttributeBinding getFocusAttribute()
     {
-        return isRecordMode() ?
+        return controller.isRecordMode() ?
             (DBDAttributeBinding) spreadsheet.getFocusRowElement() :
             (DBDAttributeBinding) spreadsheet.getFocusColumnElement();
     }
@@ -149,7 +150,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
     @Nullable
     public ResultSetRow getFocusRow()
     {
-        return isRecordMode() ?
+        return controller.isRecordMode() ?
             (ResultSetRow) spreadsheet.getFocusColumnElement() :
             (ResultSetRow) spreadsheet.getFocusRowElement();
     }
@@ -254,7 +255,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         @Override
         public Collection<ResultSetRow> getSelectedRows()
         {
-            if (isRecordMode()) {
+            if (controller.isRecordMode()) {
                 ResultSetRow currentRow = controller.getCurrentRow();
                 if (currentRow == null) {
                     return Collections.emptyList();

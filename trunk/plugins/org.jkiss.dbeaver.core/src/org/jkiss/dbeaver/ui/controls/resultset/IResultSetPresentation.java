@@ -40,5 +40,8 @@ public interface IResultSetPresentation {
     void updateValueView();
 
     void fillToolbar(IToolBarManager toolBar);
+
+    void changeMode(boolean recordMode);
+
     // ISelectionProvider
 }
