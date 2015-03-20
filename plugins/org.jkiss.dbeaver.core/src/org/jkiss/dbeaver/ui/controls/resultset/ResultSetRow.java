@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * Row data
  */
-public class RowData {
+public class ResultSetRow {
 
     static final byte STATE_NORMAL = 1;
     static final byte STATE_ADDED = 2;
@@ -52,7 +52,7 @@ public class RowData {
     @Nullable
     public Map<DBDValue, CollectionElementData> collections;
 
-    RowData(int rowNumber, @NotNull Object[] values) {
+    ResultSetRow(int rowNumber, @NotNull Object[] values) {
         this.rowNumber = rowNumber;
         this.visualNumber = rowNumber;
         this.values = values;

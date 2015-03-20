@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -50,6 +51,11 @@ public class EmptyPresentation implements IResultSetPresentation {
 
     @Override
     public void updateValueView() {
+
+    }
+
+    @Override
+    public void fillToolbar(IToolBarManager toolBar) {
 
     }
 

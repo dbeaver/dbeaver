@@ -1172,7 +1172,10 @@ public class SQLEditor extends SQLEditorBase
                 @Override
                 public void focusGained(FocusEvent e)
                 {
-                    findReplaceTarget.setTarget(viewer.getFindReplaceTarget());
+                    IFindReplaceTarget viewerFRT = (IFindReplaceTarget) viewer.getAdapter(IFindReplaceTarget.class);
+                    if (viewerFRT != null) {
+                        findReplaceTarget.setTarget(viewerFRT);
+                    }
                 }
             });
 

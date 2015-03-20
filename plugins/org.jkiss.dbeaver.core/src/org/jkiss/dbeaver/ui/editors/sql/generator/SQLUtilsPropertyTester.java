@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -30,7 +29,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSelection;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -58,9 +57,9 @@ public class SQLUtilsPropertyTester extends PropertyTester
             return false;
         }
         if (property.equals(PROP_CAN_GENERATE)) {
-            if (structuredSelection instanceof ResultSetSelection) {
+            if (structuredSelection instanceof IResultSetSelection) {
                 // Results
-                return ((ResultSetSelection) structuredSelection).getResultSetViewer().getModel().isSingleSource();
+                return ((IResultSetSelection) structuredSelection).getController().getModel().isSingleSource();
             } else {
                 // Table
                 if (structuredSelection.isEmpty()) {

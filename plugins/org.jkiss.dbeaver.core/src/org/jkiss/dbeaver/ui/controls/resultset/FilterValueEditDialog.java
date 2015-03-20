@@ -41,14 +41,14 @@ class FilterValueEditDialog extends BaseDialog {
 
     private final ResultSetViewer viewer;
     private final DBDAttributeBinding attr;
-    private final RowData row;
+    private final ResultSetRow row;
     private final DBCLogicalOperator operator;
 
     private Object value;
     private DBDValueEditor editor;
     private Text textControl;
 
-    public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, RowData row, DBCLogicalOperator operator) {
+    public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow row, DBCLogicalOperator operator) {
         super(viewer.getControl().getShell(), "Edit value", null);
         this.viewer = viewer;
         this.attr = attr;
