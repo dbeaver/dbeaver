@@ -91,7 +91,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
-import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -254,7 +253,7 @@ public class ResultSetViewer extends Viewer
                 resultsSash,
                 SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
                 site,
-                (ISpreadsheetController) this.activePresentation,
+                (SpreadsheetPresentation) this.activePresentation,
                 new ContentProvider(),
                 new GridLabelProvider());
             this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
