@@ -337,6 +337,13 @@ public class ResultSetViewer extends Viewer
     ////////////////////////////////////////////////////////////
     // Filters
 
+    boolean supportsDataFilter()
+    {
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer != null &&
+            (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
+    }
+
     private void createFiltersPanel()
     {
         filtersPanel = new Composite(viewerPanel, SWT.NONE);
@@ -1455,33 +1462,12 @@ public class ResultSetViewer extends Viewer
         updateValueView();
     }
 
-    @Override
-    public void fillContextMenu(@NotNull IMenuManager manager) {
-        final DBSDataContainer dataContainer = getDataContainer();
-        if (dataContainer != null && model.hasData()) {
-            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
-                @Override
-                public void run() {
-                    ActiveWizardDialog dialog = new ActiveWizardDialog(
-                        site.getWorkbenchWindow(),
-                        new DataTransferWizard(
-                            new IDataTransferProducer[]{
-                                new DatabaseTransferProducer(dataContainer, model.getDataFilter())},
-                            null
-                        ),
-                        getSelection()
-                    );
-                    dialog.open();
-                }
-            });
-        }
-        manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
-    }
+    ///////////////////////////////////////////////////////
+    // Context menu & filters
 
-    public void fillContextMenu(@Nullable Object colObject, @Nullable Object rowObject, @NotNull IMenuManager manager)
+    @Override
+    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row)
     {
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowObject : colObject);
-        final ResultSetRow row = (ResultSetRow)(recordMode ? colObject : rowObject);
         // Custom oldValue items
         if (attr != null && row != null) {
             final ResultSetValueController valueController = new ResultSetValueController(
@@ -1555,7 +1541,25 @@ public class ResultSetViewer extends Viewer
         }
 
         // Fill general menu
-        fillContextMenu(manager);
+        final DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer != null && model.hasData()) {
+            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
+                @Override
+                public void run() {
+                    ActiveWizardDialog dialog = new ActiveWizardDialog(
+                        site.getWorkbenchWindow(),
+                        new DataTransferWizard(
+                            new IDataTransferProducer[]{
+                                new DatabaseTransferProducer(dataContainer, model.getDataFilter())},
+                            null
+                        ),
+                        getSelection()
+                    );
+                    dialog.open();
+                }
+            });
+        }
+        manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
     }
 
     private void fillFiltersMenu(@NotNull DBDAttributeBinding column, @NotNull IMenuManager filtersMenu)
@@ -1623,13 +1627,6 @@ public class ResultSetViewer extends Viewer
         filtersMenu.add(new Separator());
         filtersMenu.add(new ToggleServerSideOrderingAction());
         filtersMenu.add(new ShowFiltersAction());
-    }
-
-    boolean supportsDataFilter()
-    {
-        DBSDataContainer dataContainer = getDataContainer();
-        return dataContainer != null &&
-            (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
     public void changeSorting(Object columnElement, final int state)
