@@ -178,10 +178,10 @@ class ResultSetDataPumpJob extends DataSourceJob {
             return Status.OK_STATUS;
         }
 
-        private void showProgress(final Composite spreadsheet) {
+        private void showProgress(final Composite progressPlaceholder) {
             if (progressOverlay == null) {
                 // Start progress visualization
-                cancelButton = new Button(spreadsheet, SWT.PUSH);
+                cancelButton = new Button(progressPlaceholder, SWT.PUSH);
                 cancelButton.setText("Cancel");
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.verticalIndent = DBIcon.PROGRESS0.getImage().getBounds().height * 2;
@@ -221,18 +221,18 @@ class ResultSetDataPumpJob extends DataSourceJob {
 
                         int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
                         int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
-                        e.gc.setForeground(spreadsheet.getForeground());
-                        e.gc.setBackground(spreadsheet.getBackground());
+                        e.gc.setForeground(progressPlaceholder.getForeground());
+                        e.gc.setBackground(progressPlaceholder.getBackground());
                         e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
                         e.gc.drawText(status, statusX, statusY, true);
                     }
                 };
-                spreadsheet.addPaintListener(painListener);
+                progressPlaceholder.addPaintListener(painListener);
 
-                progressOverlay = new ControlEditor(spreadsheet) {
+                progressOverlay = new ControlEditor(progressPlaceholder) {
                     @Override
                     public void layout() {
-                        spreadsheet.redraw();
+                        progressPlaceholder.redraw();
                         super.layout();
                     }
                 };

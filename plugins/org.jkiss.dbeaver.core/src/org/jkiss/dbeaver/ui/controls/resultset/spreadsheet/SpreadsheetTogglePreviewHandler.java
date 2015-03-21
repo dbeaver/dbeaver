@@ -16,18 +16,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 import java.util.Map;
 
 /**
  * ResultSetModeTogglePreviewHandler
  */
-public class ResultSetModeTogglePreviewHandler extends ResultSetCommandHandler implements IElementUpdater {
+public class SpreadsheetTogglePreviewHandler extends SpreadsheetCommandHandler implements IElementUpdater {
 
     @Override
     public void updateElement(UIElement element, Map parameters)
@@ -37,7 +40,8 @@ public class ResultSetModeTogglePreviewHandler extends ResultSetCommandHandler i
             if (partSite.getPart() instanceof IResultSetContainer) {
                 ResultSetViewer rsv = ((IResultSetContainer) partSite.getPart()).getResultSetViewer();
                 if (rsv != null) {
-                    if (rsv.isPreviewVisible()) {
+                    IResultSetPresentation presentation = rsv.getActivePresentation();
+                    if (presentation instanceof SpreadsheetPresentation && ((SpreadsheetPresentation) presentation).isPreviewVisible()) {
                         element.setText("Hide value view panel");
                         element.setChecked(true);
                     } else {

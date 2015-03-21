@@ -510,7 +510,7 @@ public class ResultSetModel {
         }
     }
 
-    boolean isColumnReadOnly(@NotNull DBDAttributeBinding column)
+    public boolean isColumnReadOnly(@NotNull DBDAttributeBinding column)
     {
         if (column.getMetaAttribute().isReadOnly()) {
             return true;
@@ -673,7 +673,7 @@ public class ResultSetModel {
         this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
     }
 
-    void resetOrdering()
+    public void resetOrdering()
     {
         final boolean hasOrdering = dataFilter.hasOrdering();
         // Sort locally

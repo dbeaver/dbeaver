@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -34,6 +35,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
  * IResultSetController
  */
 public interface IResultSetController {
+
+    public static final String MENU_GROUP_EDIT = "edit";
 
     @NotNull
     IWorkbenchPartSite getSite();
@@ -49,9 +52,13 @@ public interface IResultSetController {
 
     boolean hasData();
 
+    boolean isHasMoreData();
+
     boolean isReadOnly();
 
     boolean isRecordMode();
+
+    boolean isColumnReadOnly(DBDAttributeBinding attr);
 
     @NotNull
     IPreferenceStore getPreferenceStore();
@@ -60,13 +67,43 @@ public interface IResultSetController {
 
     void rejectChanges();
 
+    /**
+     * Refreshes data. Reads data from underlying data container
+     */
+    void refreshData(@Nullable Runnable onSuccess);
+
+    /**
+     * Reads next segment of data
+     */
+    void readNextSegment();
+
+    /**
+     * Redraws results and updates all toolbars/edit controls
+     * @param rowsChanged updates contents
+     */
+    void redrawData(boolean rowsChanged);
+
     void fillContextMenu(@NotNull IMenuManager manager, @Nullable DBDAttributeBinding attr, @Nullable ResultSetRow row);
 
     @Nullable
     ResultSetRow getCurrentRow();
 
+    void setCurrentRow(@Nullable ResultSetRow row);
+
     void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row)
         throws DBException;
 
     void updateValueView();
+
+    void updateEditControls();
+
+    void fireResultSetChange();
+
+    void setStatus(String message, boolean error);
+
+    Color getDefaultBackground();
+
+    Color getDefaultForeground();
+
+    IResultSetPresentation getActivePresentation();
 }

@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
@@ -29,18 +27,15 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.text.IFindReplaceTarget;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -49,12 +44,6 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
-import org.eclipse.ui.progress.UIJob;
-import org.eclipse.ui.themes.ITheme;
-import org.eclipse.ui.themes.IThemeManager;
-import org.eclipse.ui.views.properties.IPropertySheetPage;
-import org.eclipse.ui.views.properties.IPropertySource;
-import org.eclipse.ui.views.properties.IPropertySourceProvider;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -64,7 +53,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -83,12 +71,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
-import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
-import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -96,8 +78,6 @@ import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
-import org.jkiss.dbeaver.ui.properties.PropertyCollector;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -120,16 +100,6 @@ public class ResultSetViewer extends Viewer
     implements IDataSourceProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
     static final Log log = Log.getLog(ResultSetViewer.class);
-
-    private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
-    private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
-
-    public enum RowPosition {
-        FIRST,
-        PREVIOUS,
-        NEXT,
-        LAST
-    }
 
     public static class StateItem {
         DBSDataContainer dataContainer;
@@ -165,43 +135,19 @@ public class ResultSetViewer extends Viewer
     private IResultSetPresentation activePresentation;
     private List<ResultSetPresentationDescriptor> presentations;
 
-    private final SashForm resultsSash;
-    private final Spreadsheet spreadsheet;
-    private final ViewValuePanel previewPane;
-    private ResultSetValueController panelValueController;
-
     @NotNull
     private final IResultSetContainer resultSetProvider;
     @NotNull
     private final ResultSetDataReceiver dataReceiver;
-    @NotNull
-    private final IThemeManager themeManager;
-    private final IPropertyChangeListener themeChangeListener;
     private ToolBarManager toolBarManager;
 
     // Current row/col number
     @Nullable
     private ResultSetRow curRow;
-    @Nullable
-    private DBDAttributeBinding curAttribute;
     // Mode
     private boolean recordMode;
-    private int columnOrder = SWT.NONE;
 
-    private final Map<ResultSetValueController, DBDValueEditorStandalone> openEditors = new HashMap<ResultSetValueController, DBDValueEditorStandalone>();
     private final List<IResultSetListener> listeners = new ArrayList<IResultSetListener>();
-
-    // UI modifiers
-    private final Color colorRed;
-    private Color backgroundAdded;
-    private Color backgroundDeleted;
-    private Color backgroundModified;
-    private Color backgroundNormal;
-    private Color backgroundOdd;
-    private Color backgroundReadOnly;
-    private Color foregroundDefault;
-    private Color foregroundNull;
-    private final Font boldFont;
 
     private volatile ResultSetDataPumpJob dataPumpJob;
 
@@ -210,13 +156,12 @@ public class ResultSetViewer extends Viewer
     private final List<StateItem> stateHistory = new ArrayList<StateItem>();
     private int historyPosition = -1;
 
-    private boolean showOddRows = true;
-    private boolean showCelIcons = true;
-
     private ToolItem filtersApplyButton;
     private ToolItem filtersClearButton;
     private ToolItem historyBackButton;
     private ToolItem historyForwardButton;
+
+    private final Color colorRed;
 
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer resultSetProvider)
     {
@@ -228,106 +173,20 @@ public class ResultSetViewer extends Viewer
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
-        this.foregroundNull = getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
         createFiltersPanel();
         this.activePresentation = new SpreadsheetPresentation();
-
-        {
-            resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
-            resultsSash.setBackgroundMode(SWT.INHERIT_FORCE);
-            resultsSash.setLayoutData(new GridData(GridData.FILL_BOTH));
-            resultsSash.setSashWidth(5);
-            //resultsSash.setBackground(resultsSash.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-
-            this.spreadsheet = new Spreadsheet(
-                resultsSash,
-                SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
-                site,
-                (SpreadsheetPresentation) this.activePresentation,
-                new ContentProvider(),
-                new GridLabelProvider());
-            this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            this.previewPane = new ViewValuePanel(resultsSash) {
-                @Override
-                protected void hidePanel()
-                {
-                    togglePreview();
-                }
-            };
-
-            final IPreferenceStore preferences = getPreferenceStore();
-            int ratio = preferences.getInt(VIEW_PANEL_RATIO);
-            boolean viewPanelVisible = preferences.getBoolean(VIEW_PANEL_VISIBLE);
-            if (ratio <= 0) {
-                ratio = 750;
-            }
-            resultsSash.setWeights(new int[]{ratio, 1000 - ratio});
-            if (!viewPanelVisible) {
-                resultsSash.setMaximizedControl(spreadsheet);
-            }
-            previewPane.addListener(SWT.Resize, new Listener() {
-                @Override
-                public void handleEvent(Event event)
-                {
-                    DBPDataSource dataSource = getDataSource();
-                    if (dataSource != null) {
-                        if (!resultsSash.isDisposed()) {
-                            int[] weights = resultsSash.getWeights();
-                            int ratio = weights[0];
-                            preferences.setValue(VIEW_PANEL_RATIO, ratio);
-                        }
-                    }
-                }
-            });
-        }
-
         this.activePresentation.createPresentation(this, viewerPanel);
 
         createStatusBar(viewerPanel);
 
-        this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
-        this.themeChangeListener = new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event) {
-                if (event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX)) {
-                    applyThemeSettings();
-                }
-            }
-        };
-        this.themeManager.addPropertyChangeListener(themeChangeListener);
         this.viewerPanel.addDisposeListener(new DisposeListener() {
             @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
+            public void widgetDisposed(DisposeEvent e) {
                 dispose();
-            }
-        });
-        this.spreadsheet.addCursorChangeListener(new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                if (event.detail != SWT.DRAG && event.detail != SWT.DROP_DOWN) {
-                    updateGridCursor((GridCell)event.data);
-                }
-            }
-        });
-        applyThemeSettings();
-
-        spreadsheet.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                updateToolbar();
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                updateToolbar();
             }
         });
 
@@ -516,7 +375,7 @@ public class ResultSetViewer extends Viewer
         DBDDataFilter newFilter = model.createDataFilter();
         newFilter.setWhere(condition);
         setDataFilter(newFilter, true);
-        spreadsheet.setFocus();
+        viewerPanel.setFocus();
     }
 
     public void updateFiltersText()
@@ -594,18 +453,10 @@ public class ResultSetViewer extends Viewer
     {
         if (!model.getDataFilter().equalFilters(dataFilter)) {
             if (model.setDataFilter(dataFilter)) {
-                refreshSpreadsheet(true);
+                redrawData(true);
             }
             if (refreshData) {
-                reorderResultSet(true, new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        if (!recordMode) {
-                            spreadsheet.refreshData(false);
-                        }
-                    }
-                });
+                activePresentation.formatData(true);
             } else {
                 updateFiltersText();
             }
@@ -625,6 +476,21 @@ public class ResultSetViewer extends Viewer
         return DBeaverCore.getGlobalPreferenceStore();
     }
 
+    @Override
+    public Color getDefaultBackground() {
+        return filtersText.getBackground();
+    }
+
+    @Override
+    public Color getDefaultForeground() {
+        return filtersText.getForeground();
+    }
+
+    @Override
+    public IResultSetPresentation getActivePresentation() {
+        return activePresentation;
+    }
+
     @Nullable
     @Override
     public DBPDataSource getDataSource()
@@ -637,37 +503,8 @@ public class ResultSetViewer extends Viewer
     @Override
     public Object getAdapter(Class adapter)
     {
-        if (adapter == IPropertySheetPage.class) {
-            // Show cell properties
-            PropertyPageStandard page = new PropertyPageStandard();
-            page.setPropertySourceProvider(new IPropertySourceProvider() {
-                @Nullable
-                @Override
-                public IPropertySource getPropertySource(Object object)
-                {
-                    if (object instanceof GridCell) {
-                        GridCell cell = (GridCell) object;
-                        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-                        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
-                        final ResultSetValueController valueController = new ResultSetValueController(
-                            ResultSetViewer.this,
-                            attr,
-                            row,
-                            DBDValueController.EditType.NONE,
-                            null);
-                        PropertyCollector props = new PropertyCollector(valueController.binding.getAttribute(), false);
-                        props.collectProperties();
-                        valueController.getValueHandler().contributeProperties(props, valueController);
-                        return props;
-                    }
-                    return null;
-                }
-            });
-            return page;
-        } else if (adapter == IFindReplaceTarget.class) {
-            if (activePresentation instanceof IFindReplaceTarget) {
-                return activePresentation;
-            }
+        if (adapter.isAssignableFrom(activePresentation.getClass())) {
+            return activePresentation;
         }
         // Try to get it from adapter
         if (activePresentation instanceof IAdaptable) {
@@ -690,44 +527,16 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void updateGridCursor(GridCell cell)
-    {
-        boolean changed;
-        Object newCol = cell == null ? null : cell.col;
-        Object newRow = cell == null ? null : cell.row;
-        if (!recordMode) {
-            changed = curRow != newRow || curAttribute != newCol;
-            if (newRow instanceof ResultSetRow && newCol instanceof DBDAttributeBinding) {
-                curRow = (ResultSetRow) newRow;
-                curAttribute = (DBDAttributeBinding) newCol;
-            }
-        } else {
-            changed = curAttribute != newRow;
-            if (newRow instanceof DBDAttributeBinding) {
-                curAttribute = (DBDAttributeBinding) newRow;
-            }
-        }
-        if (curState != null && curRow != null) {
-            curState.rowNumber = curRow.getVisualNumber();
-        }
-        if (changed) {
-            ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
-            ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
-            updateValueView();
-        }
-    }
-
     private void updateRecordMode()
     {
-        DBDAttributeBinding oldAttr = this.curAttribute;
-        this.initResultSet();
-        this.curAttribute = oldAttr;
-        if (curRow != null && oldAttr != null) {
-            spreadsheet.setCursor(new GridCell(curRow, oldAttr), false);
-        }
+        //Object state = savePresentationState();
+        //this.redrawData(false);
+        activePresentation.refreshData(true);
+        this.updateStatusMessage();
+        //restorePresentationState(state);
     }
 
-    void updateEditControls()
+    public void updateEditControls()
     {
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
@@ -749,9 +558,9 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void refreshSpreadsheet(boolean rowsChanged)
+    public void redrawData(boolean rowsChanged)
     {
-        if (spreadsheet.isDisposed()) {
+        if (viewerPanel.isDisposed()) {
             return;
         }
         if (rowsChanged) {
@@ -759,20 +568,17 @@ public class ResultSetViewer extends Viewer
             if (curRow == null || curRow.getVisualNumber() >= rowCount) {
                 curRow = rowCount == 0 ? null : model.getRow(rowCount - 1);
             }
-            GridCell curCell = spreadsheet.getCursorCell();
 
             // Set cursor on new row
             if (!recordMode) {
-                this.initResultSet();
-                if (curCell != null) {
-                    spreadsheet.setCursor(curCell, false);
-                }
+                activePresentation.refreshData(false);
+                this.updateFiltersText();
+                this.updateStatusMessage();
             } else {
-                updateRecordMode();
+                this.updateRecordMode();
             }
-
         } else {
-            this.spreadsheet.redrawGrid();
+            activePresentation.refreshData(false);
         }
     }
 
@@ -833,18 +639,12 @@ public class ResultSetViewer extends Viewer
         toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PREVIEW, CommandContributionItem.STYLE_CHECK));
+        activePresentation.fillToolbar(toolBarManager);
         toolBarManager.add(new ConfigAction());
 
         toolBarManager.createControl(statusBar);
 
         //updateEditControls();
-    }
-
-    @NotNull
-    public Spreadsheet getSpreadsheet()
-    {
-        return spreadsheet;
     }
 
     @Nullable
@@ -864,6 +664,7 @@ public class ResultSetViewer extends Viewer
     public void toggleMode()
     {
         changeMode(!recordMode);
+
         // Refresh elements
         ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
         if (commandService != null) {
@@ -873,83 +674,15 @@ public class ResultSetViewer extends Viewer
 
     private void changeMode(boolean recordMode)
     {
-        ResultSetRow oldRow = this.curRow;
-        DBDAttributeBinding oldAttribute = this.curAttribute;
-        int rowCount = model.getRowCount();
-        if (rowCount > 0) {
-            // Fix row number if needed
-            if (oldRow == null) {
-                oldRow = this.curRow = model.getRow(0);
-            } else if (oldRow.getVisualNumber() >= rowCount) {
-                oldRow = this.curRow = model.getRow(rowCount - 1);
-            }
-        }
-        if (oldAttribute == null && model.getVisibleColumnCount() > 0) {
-            oldAttribute = model.getVisibleColumn(0);
-        }
+        //Object state = savePresentationState();
         this.recordMode = recordMode;
+        //redrawData(false);
+        activePresentation.refreshData(true);
         activePresentation.changeMode(recordMode);
-
-        this.columnOrder = recordMode ? SWT.DEFAULT : SWT.NONE;
-        if (!this.recordMode) {
-            this.initResultSet();
-        } else {
-            this.updateRecordMode();
+        if (!recordMode) {
+            updateStatusMessage();
         }
-        if (oldRow != null && oldAttribute != null) {
-            if (!recordMode) {
-                spreadsheet.setCursor(new GridCell(oldAttribute, oldRow), false);
-            } else {
-                spreadsheet.setCursor(new GridCell(oldRow, oldAttribute), false);
-            }
-        }
-        spreadsheet.layout(true, true);
-        previewValue();
-    }
-
-    ////////////////////////////////////////////////////////////
-    // Value preview
-
-    public boolean isPreviewVisible()
-    {
-        return resultsSash.getMaximizedControl() == null;
-    }
-
-    public void togglePreview()
-    {
-        if (resultsSash.getMaximizedControl() == null) {
-            resultsSash.setMaximizedControl(spreadsheet);
-        } else {
-            resultsSash.setMaximizedControl(null);
-            previewValue();
-        }
-        getPreferenceStore().setValue(VIEW_PANEL_VISIBLE, isPreviewVisible());
-
-        // Refresh elements
-        ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
-        if (commandService != null) {
-            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PREVIEW, null);
-        }
-    }
-
-    void previewValue()
-    {
-        DBDAttributeBinding attr = getFocusAttribute();
-        ResultSetRow row = getFocusRow();
-        if (!isPreviewVisible() || attr == null || row == null) {
-            return;
-        }
-        if (panelValueController == null || panelValueController.binding != attr) {
-            panelValueController = new ResultSetValueController(
-                this,
-                attr,
-                row,
-                DBDValueController.EditType.PANEL,
-                previewPane.getViewPlaceholder());
-        } else {
-            panelValueController.setCurRow(row);
-        }
-        previewPane.viewValue(panelValueController);
+        //restorePresentationState(state);
     }
 
     ////////////////////////////////////////////////////////////
@@ -957,12 +690,8 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
-        closeEditors();
         clearData();
 
-        themeManager.removePropertyChangeListener(themeChangeListener);
-
-        UIUtils.dispose(this.boldFont);
         if (toolBarManager != null) {
             try {
                 toolBarManager.dispose();
@@ -973,73 +702,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void applyThemeSettings()
-    {
-        ITheme currentTheme = themeManager.getCurrentTheme();
-        Font rsFont = currentTheme.getFontRegistry().get(ThemeConstants.FONT_SQL_RESULT_SET);
-        if (rsFont != null) {
-            this.spreadsheet.setFont(rsFont);
-        }
-        Color previewBack = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_PREVIEW_BACK);
-        if (previewBack != null) {
-            this.previewPane.getViewPlaceholder().setBackground(previewBack);
-            for (Control control : this.previewPane.getViewPlaceholder().getChildren()) {
-                control.setBackground(previewBack);
-            }
-        }
-        this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
-        this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
-        this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
-        this.backgroundOdd = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
-        this.backgroundReadOnly = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
-
-        this.spreadsheet.recalculateSizes();
-    }
-
-    void scrollToRow(RowPosition position)
-    {
-        switch (position) {
-            case FIRST:
-                if (recordMode) {
-                    if (model.getRowCount() > 0) {
-                        curRow = model.getRow(0);
-                    } else {
-                        curRow = null;
-                    }
-                    updateRecordMode();
-                } else {
-                    spreadsheet.shiftCursor(0, -spreadsheet.getItemCount(), false);
-                }
-                break;
-            case PREVIOUS:
-                if (recordMode && curRow != null && curRow.getVisualNumber() > 0) {
-                    curRow = model.getRow(curRow.getVisualNumber() - 1);
-                    updateRecordMode();
-                } else {
-                    spreadsheet.shiftCursor(0, -1, false);
-                }
-                break;
-            case NEXT:
-                if (recordMode && curRow != null && curRow.getVisualNumber() < model.getRowCount() - 1) {
-                    curRow = model.getRow(curRow.getVisualNumber() + 1);
-                    updateRecordMode();
-                } else {
-                    spreadsheet.shiftCursor(0, 1, false);
-                }
-                break;
-            case LAST:
-                if (recordMode && model.getRowCount() > 0) {
-                    curRow = model.getRow(model.getRowCount() - 1);
-                    updateRecordMode();
-                } else {
-                    spreadsheet.shiftCursor(0, spreadsheet.getItemCount(), false);
-                }
-                break;
-        }
-        updateToolbar();
-    }
-
-    boolean isColumnReadOnly(DBDAttributeBinding column)
+    public boolean isColumnReadOnly(DBDAttributeBinding column)
     {
         if (isReadOnly()) {
             return true;
@@ -1049,6 +712,20 @@ public class ResultSetViewer extends Viewer
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         return !newRow;
+    }
+
+    private Object savePresentationState() {
+        if (activePresentation instanceof IStatefulControl) {
+            return ((IStatefulControl) activePresentation).saveState();
+        } else {
+            return null;
+        }
+    }
+
+    private void restorePresentationState(Object state) {
+        if (activePresentation instanceof IStatefulControl) {
+            ((IStatefulControl) activePresentation).restoreState(state);
+        }
     }
 
     ///////////////////////////////////////
@@ -1107,20 +784,15 @@ public class ResultSetViewer extends Viewer
         return curRow;
     }
 
-    @Nullable
-    public DBDAttributeBinding getFocusAttribute()
-    {
-        return recordMode ?
-            (DBDAttributeBinding) spreadsheet.getFocusRowElement() :
-            (DBDAttributeBinding) spreadsheet.getFocusColumnElement();
-    }
-
-    @Nullable
-    public ResultSetRow getFocusRow()
-    {
-        return recordMode ?
-            (ResultSetRow) spreadsheet.getFocusColumnElement() :
-            (ResultSetRow) spreadsheet.getFocusRowElement();
+    @Override
+    public void setCurrentRow(@Nullable ResultSetRow curRow) {
+        this.curRow = curRow;
+        if (curState != null && curRow != null) {
+            curState.rowNumber = curRow.getVisualNumber();
+        }
+        if (recordMode) {
+            updateRecordMode();
+        }
     }
 
     ///////////////////////////////////////
@@ -1181,20 +853,16 @@ public class ResultSetViewer extends Viewer
     {
         model.setMetaData(columns);
         if (model.isMetadataChanged()) {
-            this.panelValueController = null;
-            this.curAttribute = null;
-            //getSpreadsheet().set
+            activePresentation.clearData();
         }
     }
 
     public void setData(List<Object[]> rows)
     {
-        if (spreadsheet.isDisposed()) {
+        if (viewerPanel.isDisposed()) {
             return;
         }
         boolean metaChanged = model.isMetadataChanged();
-        // Clear previous data
-        this.closeEditors();
 
         this.curRow = null;
         this.model.setData(rows);
@@ -1209,47 +877,20 @@ public class ResultSetViewer extends Viewer
 //                    ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_TOGGLE);
                 }
             }
-
-            this.initResultSet();
-        } else {
-            this.refreshSpreadsheet(true);
         }
-        updateEditControls();
+        this.redrawData(true);
+        this.updateEditControls();
     }
 
     public void appendData(List<Object[]> rows)
     {
         model.appendData(rows);
-        //refreshSpreadsheet(true);
-        spreadsheet.refreshData(false);
+        //redrawData(true);
+        activePresentation.refreshData(false);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
         updateEditControls();
-    }
-
-    private void closeEditors() {
-        List<DBDValueEditorStandalone> editors = new ArrayList<DBDValueEditorStandalone>(openEditors.values());
-        for (DBDValueEditorStandalone editor : editors) {
-            editor.closeValueEditor();
-        }
-        if (!openEditors.isEmpty()) {
-            log.warn("Some value editors are still registered at result set: " + openEditors.size());
-        }
-        openEditors.clear();
-    }
-
-    private void initResultSet()
-    {
-        spreadsheet.setRedraw(false);
-        try {
-            spreadsheet.refreshData(true);
-        } finally {
-            spreadsheet.setRedraw(true);
-        }
-
-        this.updateFiltersText();
-        this.updateStatusMessage();
     }
 
     @Override
@@ -1259,7 +900,7 @@ public class ResultSetViewer extends Viewer
             return ISaveablePart2.YES;
         }
         int result = ConfirmationDialog.showConfirmDialog(
-            spreadsheet.getShell(),
+            viewerPanel.getShell(),
             DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL);
         if (result == IDialogConstants.YES_ID) {
@@ -1308,6 +949,11 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
+    public boolean isHasMoreData() {
+        return dataReceiver.isHasMoreData();
+    }
+
+    @Override
     public boolean isReadOnly()
     {
         if (model.isUpdateInProgress()) {
@@ -1335,131 +981,6 @@ public class ResultSetViewer extends Viewer
 
     public boolean isRefreshInProgress() {
         return dataPumpJob != null;
-    }
-
-    @Nullable
-    public Control showCellEditor(final boolean inline)
-    {
-        // The control that will be the editor must be a child of the Table
-        DBDAttributeBinding attr = getFocusAttribute();
-        ResultSetRow row = getFocusRow();
-        if (attr == null || row == null) {
-            return null;
-        }
-
-        if (!inline) {
-            for (ResultSetValueController valueController : openEditors.keySet()) {
-                if (attr == valueController.binding && row == valueController.curRow) {
-                    openEditors.get(valueController).showValueEditor();
-                    return null;
-                }
-            }
-        }
-        final int handlerFeatures = attr.getValueHandler().getFeatures();
-        if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
-            return null;
-        }
-        if (inline &&
-            (handlerFeatures & DBDValueHandler.FEATURE_INLINE_EDITOR) == 0 &&
-            (handlerFeatures & DBDValueHandler.FEATURE_VIEWER) != 0)
-        {
-            // Inline editor isn't supported but panel viewer is
-            // Enable panel
-            if (!isPreviewVisible()) {
-                togglePreview();
-            }
-            return null;
-        }
-        if (isColumnReadOnly(attr) && inline) {
-            // No inline editors for readonly columns
-            return null;
-        }
-
-        Composite placeholder = null;
-        if (inline) {
-            if (isReadOnly()) {
-                return null;
-            }
-            spreadsheet.cancelInlineEditor();
-
-            placeholder = new Composite(spreadsheet, SWT.NONE);
-            placeholder.setFont(spreadsheet.getFont());
-            placeholder.setLayout(new FillLayout());
-
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalIndent = 0;
-            gd.verticalIndent = 0;
-            gd.grabExcessHorizontalSpace = true;
-            gd.grabExcessVerticalSpace = true;
-            placeholder.setLayoutData(gd);
-        }
-
-        ResultSetValueController valueController = new ResultSetValueController(
-            this,
-            attr,
-            row,
-            inline ? DBDValueController.EditType.INLINE : DBDValueController.EditType.EDITOR,
-            placeholder);
-        final DBDValueEditor editor;
-        try {
-            editor = attr.getValueHandler().createEditor(valueController);
-        }
-        catch (Exception e) {
-            UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
-            return null;
-        }
-        if (editor != null) {
-            editor.createControl();
-        }
-        if (editor instanceof DBDValueEditorStandalone) {
-            valueController.registerEditor((DBDValueEditorStandalone)editor);
-            // show dialog in separate job to avoid block
-            new UIJob("Open separate editor") {
-                @Override
-                public IStatus runInUIThread(IProgressMonitor monitor)
-                {
-                    ((DBDValueEditorStandalone)editor).showValueEditor();
-                    return Status.OK_STATUS;
-                }
-            }.schedule();
-            //((DBDValueEditorStandalone)editor).showValueEditor();
-        } else {
-            // Set editable value
-            if (editor != null) {
-                try {
-                    editor.primeEditorValue(valueController.getValue());
-                } catch (DBException e) {
-                    log.error(e);
-                }
-            }
-        }
-        if (inline) {
-            if (editor != null) {
-                spreadsheet.showCellEditor(placeholder);
-                return editor.getControl();
-            } else {
-                // No editor was created so just drop placeholder
-                placeholder.dispose();
-                // Probably we can just show preview panel
-                if ((handlerFeatures & DBDValueHandler.FEATURE_VIEWER) != 0) {
-                    // Inline editor isn't supported but panel viewer is
-                    // Enable panel
-                    if (!isPreviewVisible()) {
-                        togglePreview();
-                    }
-                    return null;
-                }
-            }
-        }
-        return null;
-    }
-
-    public void resetCellValue(@NotNull Object colElement, @NotNull Object rowElement, boolean delete)
-    {
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
-        final ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
-        model.resetCellValue(attr, row);
-        updateValueView();
     }
 
     ///////////////////////////////////////////////////////
@@ -1499,18 +1020,7 @@ public class ResultSetViewer extends Viewer
                         }
                     });
                 }
-                if (row.isChanged()) {
-                    Action resetValueAction = new Action(CoreMessages.controls_resultset_viewer_action_reset_value)
-                    {
-                        @Override
-                        public void run()
-                        {
-                            resetCellValue(attr, row, false);
-                        }
-                    };
-                    resetValueAction.setAccelerator(SWT.ESC);
-                    manager.add(resetValueAction);
-                }
+                manager.add(new GroupMarker(MENU_GROUP_EDIT));
             }
 
             // Menus from value handler
@@ -1593,122 +1103,9 @@ public class ResultSetViewer extends Viewer
                 filtersMenu.add(new FilterResetColumnAction(column));
             }
         }
-        {
-            final List<Object> selectedColumns = getSpreadsheet().getColumnSelection();
-            if (!recordMode && !selectedColumns.isEmpty()) {
-                String hideTitle;
-                if (selectedColumns.size() == 1) {
-                    DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
-                    hideTitle = "Hide column '" + columnToHide.getName() + "'";
-                } else {
-                    hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
-                }
-                filtersMenu.add(new Action(hideTitle) {
-                    @Override
-                    public void run()
-                    {
-                        if (selectedColumns.size() >= model.getVisibleColumnCount()) {
-                            UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
-                        } else {
-                            int[] columnIndexes = new int[selectedColumns.size()];
-                            for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
-                                columnIndexes[i] = model.getVisibleColumnIndex((DBDAttributeBinding) selectedColumns.get(i));
-                            }
-                            Arrays.sort(columnIndexes);
-                            for (int i = columnIndexes.length; i > 0; i--) {
-                                model.setColumnVisibility(model.getVisibleColumn(columnIndexes[i - 1]), false);
-                            }
-                            refreshSpreadsheet(true);
-                        }
-                    }
-                });
-            }
-        }
         filtersMenu.add(new Separator());
         filtersMenu.add(new ToggleServerSideOrderingAction());
         filtersMenu.add(new ShowFiltersAction());
-    }
-
-    public void changeSorting(Object columnElement, final int state)
-    {
-        if (columnElement == null) {
-            columnOrder = columnOrder == SWT.DEFAULT ? SWT.DOWN : (columnOrder == SWT.DOWN ? SWT.UP : SWT.DEFAULT);
-            spreadsheet.refreshData(false);
-            spreadsheet.redrawGrid();
-            return;
-        }
-        DBDDataFilter dataFilter = model.getDataFilter();
-        boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
-        boolean altPressed = (state & SWT.ALT) == SWT.ALT;
-        if (ctrlPressed) {
-            dataFilter.resetOrderBy();
-        }
-        DBDAttributeBinding metaColumn = (DBDAttributeBinding)columnElement;
-        DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
-        assert constraint != null;
-        //int newSort;
-        if (constraint.getOrderPosition() == 0) {
-            if (isServerSideFiltering() && supportsDataFilter()) {
-                if (!ConfirmationDialog.confirmActionWithParams(
-                    spreadsheet.getShell(),
-                    DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
-                    metaColumn.getName()))
-                {
-                    return;
-                }
-            }
-            constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
-            constraint.setOrderDescending(altPressed);
-        } else if (!constraint.isOrderDescending()) {
-            constraint.setOrderDescending(true);
-        } else {
-            for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
-                if (con2.getOrderPosition() > constraint.getOrderPosition()) {
-                    con2.setOrderPosition(con2.getOrderPosition() - 1);
-                }
-            }
-            constraint.setOrderPosition(0);
-            constraint.setOrderDescending(false);
-        }
-
-        // Reorder
-        reorderResultSet(false, new Runnable() {
-            @Override
-            public void run()
-            {
-                if (!recordMode) {
-                    spreadsheet.refreshData(false);
-                }
-            }
-        });
-    }
-
-    public void navigateLink(@NotNull GridCell cell, int state) {
-        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
-
-        Object value = model.getCellValue(attr, row);
-        if (DBUtils.isNullValue(value)) {
-            log.warn("Can't navigate to NULL value");
-            return;
-        }
-
-        try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        navigateAssociation(monitor, attr, row);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-        } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(site.getShell(), "Cannot navigate to the reference", null, e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
-        }
     }
 
     @Override
@@ -1767,11 +1164,8 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void updateValueView() {
-        updateEditControls();
-        spreadsheet.redrawGrid();
-        previewValue();
-
         activePresentation.updateValueView();
+        updateEditControls();
     }
 
     @Override
@@ -1807,7 +1201,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    @NotNull
+    @Nullable
     public IResultSetSelection getSelection()
     {
         if (activePresentation instanceof ISelectionProvider) {
@@ -1860,11 +1254,6 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        // Cache preferences
-        IPreferenceStore preferenceStore = getPreferenceStore();
-        showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
-        showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
-
         // Pump data
         ResultSetRow oldRow = curRow;
 
@@ -1878,9 +1267,7 @@ public class ResultSetViewer extends Viewer
                 @Override
                 public void run()
                 {
-                    if (!supportsDataFilter() && !model.getDataFilter().hasOrdering()) {
-                        reorderLocally();
-                    }
+                    activePresentation.formatData(true);
                 }
             });
         }
@@ -1899,43 +1286,19 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private boolean isServerSideFiltering()
-    {
-        return
-            getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
-            (dataReceiver.isHasMoreData() || !CommonUtils.isEmpty(model.getDataFilter().getOrder()));
-    }
-
-    private void reorderResultSet(boolean force, @Nullable Runnable onSuccess)
-    {
-        if (force || isServerSideFiltering() && supportsDataFilter()) {
-            DBSDataContainer dataContainer = getDataContainer();
-            if (resultSetProvider.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
-                int segmentSize = getSegmentMaxRows();
-                if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
-                    segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
-                }
-                runDataPump(dataContainer, null, 0, segmentSize, -1, onSuccess);
+    @Override
+    public void refreshData(@Nullable Runnable onSuccess) {
+        DBSDataContainer dataContainer = getDataContainer();
+        if (resultSetProvider.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
+            int segmentSize = getSegmentMaxRows();
+            if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
+                segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            return;
-        }
-
-        try {
-            reorderLocally();
-        } finally {
-            if (onSuccess != null) {
-                onSuccess.run();
-            }
+            runDataPump(dataContainer, null, 0, segmentSize, -1, onSuccess);
         }
     }
 
-    private void reorderLocally()
-    {
-        rejectChanges();
-        model.resetOrdering();
-    }
-
-    synchronized void readNextSegment()
+    public synchronized void readNextSegment()
     {
         if (!dataReceiver.isHasMoreData()) {
             return;
@@ -1969,11 +1332,15 @@ public class ResultSetViewer extends Viewer
             // Read data
             final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
                 (dataContainer == getDataContainer() ? model.getDataFilter() : null);
+            Composite progressControl = viewerPanel;
+            if (activePresentation.getControl() instanceof Composite) {
+                progressControl = (Composite) activePresentation.getControl();
+            }
             dataPumpJob = new ResultSetDataPumpJob(
                 dataContainer,
                 useDataFilter,
                 getDataReceiver(),
-                getSpreadsheet());
+                progressControl);
             dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void aboutToRun(IJobChangeEvent event) {
@@ -2010,6 +1377,7 @@ public class ResultSetViewer extends Viewer
                                     "Query execution failed",
                                     error);
                             } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleColumnCount() > 0) {
+                                Object presentationState = savePresentationState();
                                 // Seems to be refresh
                                 // Restore original position
                                 curRow = model.getRow(focusRow);
@@ -2019,19 +1387,11 @@ public class ResultSetViewer extends Viewer
                                 } else {
                                     updateStatusMessage();
                                 }
-                                if (curAttribute != null && curRow != null) {
-                                    GridCell newPos;
-                                    if (!recordMode) {
-                                        newPos = new GridCell(curAttribute, curRow);
-                                    } else {
-                                        newPos = new GridCell(curRow, curAttribute);
-                                    }
-                                    spreadsheet.setCursor(newPos, false);
-                                }
-                                previewValue();
+                                restorePresentationState(presentationState);
+                                activePresentation.updateValueView();
                             } else {
-                                curAttribute = null;
-                                spreadsheet.redraw();
+                                activePresentation.clearData();
+                                activePresentation.refreshData(true);
                             }
 
                             if (error == null) {
@@ -2063,10 +1423,9 @@ public class ResultSetViewer extends Viewer
 
     private void clearData()
     {
-        model.clearData();
+        this.model.clearData();
         this.curRow = null;
-        this.curAttribute = null;
-        this.columnOrder = SWT.NONE;
+        this.activePresentation.clearData();
     }
 
     @Override
@@ -2113,143 +1472,10 @@ public class ResultSetViewer extends Viewer
         new ResultSetPersister(this).rejectChanges();
     }
 
-    public void copySelectionToClipboard(
-        boolean copyHeader,
-        boolean copyRowNumbers,
-        boolean cut,
-        String delimiter,
-        DBDDisplayFormat format)
-    {
-        if (delimiter == null) {
-            delimiter = "\t";
-        }
-        String lineSeparator = ContentUtils.getDefaultLineSeparator();
-        List<Object> selectedColumns = spreadsheet.getColumnSelection();
-        IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
-        StringBuilder tdt = new StringBuilder();
-        if (copyHeader) {
-            if (copyRowNumbers) {
-                tdt.append("#");
-            }
-            for (Object column : selectedColumns) {
-                if (tdt.length() > 0) {
-                    tdt.append(delimiter);
-                }
-                tdt.append(labelProvider.getText(column));
-            }
-            tdt.append(lineSeparator);
-        }
-
-        List<GridCell> selectedCells = spreadsheet.getCellSelection();
-
-        GridCell prevCell = null;
-        for (GridCell cell : selectedCells) {
-            if (prevCell == null || cell.row != prevCell.row) {
-                // Next row
-                if (prevCell != null && prevCell.col != cell.col) {
-                    // Fill empty row tail
-                    int prevColIndex = selectedColumns.indexOf(prevCell.col);
-                    for (int i = prevColIndex; i < selectedColumns.size() - 1; i++) {
-                        tdt.append(delimiter);
-                    }
-                }
-                if (prevCell != null) {
-                    tdt.append(lineSeparator);
-                }
-                if (copyRowNumbers) {
-                    tdt.append(labelProvider.getText(cell.row)).append(delimiter);
-                }
-            }
-            if (prevCell != null && prevCell.col != cell.col) {
-                int prevColIndex = selectedColumns.indexOf(prevCell.col);
-                int curColIndex = selectedColumns.indexOf(cell.col);
-                for (int i = prevColIndex; i < curColIndex; i++) {
-                    tdt.append(delimiter);
-                }
-            }
-
-            DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  cell.row : cell.col);
-            Object value = model.getCellValue(column, row);
-            String cellText = column.getValueHandler().getValueDisplayString(
-                column.getAttribute(),
-                value,
-                format);
-            tdt.append(cellText);
-
-            if (cut) {
-                DBDValueController valueController = new ResultSetValueController(
-                    this, column, row, DBDValueController.EditType.NONE, null);
-                if (!valueController.isReadOnly()) {
-                    valueController.updateValue(DBUtils.makeNullValue(valueController));
-                }
-            }
-
-            prevCell = cell;
-        }
-
-        if (tdt.length() > 0) {
-            TextTransfer textTransfer = TextTransfer.getInstance();
-            getSpreadsheet().getClipboard().setContents(
-                new Object[]{tdt.toString()},
-                new Transfer[]{textTransfer});
-        }
-    }
-
-    public void pasteCellValue()
-    {
-        DBDAttributeBinding attr = getFocusAttribute();
-        ResultSetRow row = getFocusRow();
-        if (attr == null || row == null) {
-            return;
-        }
-        if (isColumnReadOnly(attr)) {
-            // No inline editors for readonly columns
-            return;
-        }
-        try {
-            Object newValue = getColumnValueFromClipboard(attr);
-            if (newValue == null) {
-                return;
-            }
-            new ResultSetValueController(
-                this,
-                attr,
-                row,
-                DBDValueController.EditType.NONE,
-                null).updateValue(newValue);
-        }
-        catch (Exception e) {
-            UIUtils.showErrorDialog(site.getShell(), "Cannot replace cell value", null, e);
-        }
-    }
-
-    @Nullable
-    private Object getColumnValueFromClipboard(DBDAttributeBinding metaColumn) throws DBCException
-    {
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource == null) {
-            return null;
-        }
-        DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
-        try {
-            String strValue = (String) getSpreadsheet().getClipboard().getContents(TextTransfer.getInstance());
-            return metaColumn.getValueHandler().getValueFromObject(
-                    session, metaColumn.getAttribute(), strValue, true);
-        } finally {
-            session.close();
-        }
-    }
 
     void addNewRow(final boolean copyCurrent)
     {
-        GridPos curPos = spreadsheet.getCursorPosition();
-        int rowNum;
-        if (recordMode) {
-            rowNum = curRow == null ? 0 : curRow.getVisualNumber();
-        } else {
-            rowNum = curPos.row;
-        }
+        int rowNum = curRow == null ? 0 : curRow.getVisualNumber();
         if (rowNum >= model.getRowCount()) {
             rowNum = model.getRowCount() - 1;
         }
@@ -2305,7 +1531,7 @@ public class ResultSetViewer extends Viewer
             session.close();
         }
         model.addNewRow(rowNum, cells);
-        refreshSpreadsheet(true);
+        redrawData(true);
         updateEditControls();
         fireResultSetChange();
     }
@@ -2316,8 +1542,9 @@ public class ResultSetViewer extends Viewer
         if (recordMode) {
             rowsToDelete.add(curRow);
         } else {
-            for (GridCell cell : spreadsheet.getCellSelection()) {
-                rowsToDelete.add((ResultSetRow) cell.row);
+            IResultSetSelection selection = getSelection();
+            if (selection != null && !selection.isEmpty()) {
+                rowsToDelete.addAll(selection.getSelectedRows());
             }
         }
         if (rowsToDelete.isEmpty()) {
@@ -2332,16 +1559,12 @@ public class ResultSetViewer extends Viewer
             }
             lastRowNum = row.getVisualNumber();
         }
+        redrawData(rowsRemoved > 0);
         // Move one row down (if we are in grid mode)
-        if (!recordMode && lastRowNum < spreadsheet.getItemCount() - 1 && curAttribute != null) {
-            GridCell newPos = new GridCell(curAttribute, model.getRow(lastRowNum - rowsRemoved + 1));
-            spreadsheet.setCursor(newPos, false);
+        if (!recordMode && lastRowNum < model.getRowCount() - 1) {
+            activePresentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
         }
-        if (rowsRemoved > 0) {
-            refreshSpreadsheet(true);
-        } else {
-            spreadsheet.redrawGrid();
-        }
+
         updateEditControls();
         fireResultSetChange();
     }
@@ -2436,528 +1659,13 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void fireResultSetChange() {
+    public void fireResultSetChange() {
         synchronized (listeners) {
             if (!listeners.isEmpty()) {
                 for (IResultSetListener listener : listeners) {
                     listener.handleResultSetChange();
                 }
             }
-        }
-    }
-
-    /////////////////////////////
-    // Value controller
-
-    static class ResultSetValueController implements DBDAttributeController, DBDRowController {
-
-        private final ResultSetViewer viewer;
-        private final EditType editType;
-        private final Composite inlinePlaceholder;
-        private ResultSetRow curRow;
-        private final DBDAttributeBinding binding;
-
-        ResultSetValueController(
-            @NotNull ResultSetViewer viewer,
-            @NotNull DBDAttributeBinding binding,
-            @NotNull ResultSetRow row,
-            @NotNull EditType editType,
-            @Nullable Composite inlinePlaceholder)
-        {
-            this.viewer = viewer;
-            this.binding = binding;
-            this.curRow = row;
-            this.editType = editType;
-            this.inlinePlaceholder = inlinePlaceholder;
-        }
-
-        void setCurRow(ResultSetRow curRow)
-        {
-            this.curRow = curRow;
-        }
-
-        @Nullable
-        @Override
-        public DBPDataSource getDataSource()
-        {
-            return viewer.getDataSource();
-        }
-
-        @Override
-        public String getValueName()
-        {
-            return binding.getName();
-        }
-
-        @Override
-        public DBSTypedObject getValueType()
-        {
-            return binding.getMetaAttribute();
-        }
-
-        @NotNull
-        @Override
-        public DBDRowController getRowController() {
-            return this;
-        }
-
-        @NotNull
-        @Override
-        public DBDAttributeBinding getBinding()
-        {
-            return binding;
-        }
-
-        @NotNull
-        @Override
-        public String getColumnId() {
-            DBPDataSource dataSource = getDataSource();
-            DBCAttributeMetaData metaAttribute = binding.getMetaAttribute();
-            return DBUtils.getSimpleQualifiedName(
-                dataSource == null ? null : dataSource.getContainer().getName(),
-                metaAttribute.getEntityName(),
-                metaAttribute.getName());
-        }
-
-        @Override
-        public Object getValue()
-        {
-            return viewer.spreadsheet.getContentProvider().getCellValue(curRow, binding, false);
-        }
-
-        @Override
-        public void updateValue(@Nullable Object value)
-        {
-            if (viewer.model.updateCellValue(binding, curRow, value)) {
-                // Update controls
-                viewer.site.getShell().getDisplay().syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        viewer.updateValueView();
-                    }
-                });
-            }
-            viewer.fireResultSetChange();
-        }
-
-        @Nullable
-        @Override
-        public DBDRowIdentifier getRowIdentifier()
-        {
-            return binding.getRowIdentifier();
-        }
-
-        @Override
-        public DBDValueHandler getValueHandler()
-        {
-            return binding.getValueHandler();
-        }
-
-        @Override
-        public EditType getEditType()
-        {
-            return editType;
-        }
-
-        @Override
-        public boolean isReadOnly()
-        {
-            return viewer.isColumnReadOnly(binding);
-        }
-
-        @Override
-        public IWorkbenchPartSite getValueSite()
-        {
-            return viewer.site;
-        }
-
-        @Nullable
-        @Override
-        public Composite getEditPlaceholder()
-        {
-            return inlinePlaceholder;
-        }
-
-        @Nullable
-        @Override
-        public ToolBar getEditToolBar()
-        {
-            return viewer.isPreviewVisible() ? viewer.previewPane.getToolBar() : null;
-        }
-
-        @Override
-        public void closeInlineEditor()
-        {
-            viewer.spreadsheet.cancelInlineEditor();
-        }
-
-        @Override
-        public void nextInlineEditor(boolean next) {
-            viewer.spreadsheet.cancelInlineEditor();
-            int colOffset = next ? 1 : -1;
-            int rowOffset = 0;
-            //final int rowCount = spreadsheet.getItemCount();
-            final int colCount = viewer.spreadsheet.getColumnCount();
-            final GridPos curPosition = viewer.spreadsheet.getCursorPosition();
-            if (colOffset > 0 && curPosition.col + colOffset >= colCount) {
-                colOffset = -colCount;
-                rowOffset = 1;
-            } else if (colOffset < 0 && curPosition.col + colOffset < 0) {
-                colOffset = colCount;
-                rowOffset = -1;
-            }
-            viewer.spreadsheet.shiftCursor(colOffset, rowOffset, false);
-            viewer.showCellEditor(true);
-        }
-
-        public void registerEditor(DBDValueEditorStandalone editor) {
-            viewer.openEditors.put(this, editor);
-        }
-
-        @Override
-        public void unregisterEditor(DBDValueEditorStandalone editor) {
-            viewer.openEditors.remove(this);
-        }
-
-        @Override
-        public void showMessage(String message, boolean error)
-        {
-            viewer.setStatus(message, error);
-        }
-
-        @NotNull
-        @Override
-        public List<DBDAttributeBinding> getRowAttributes()
-        {
-            return Arrays.asList(viewer.model.getColumns());
-        }
-
-        @Nullable
-        @Override
-        public Object getAttributeValue(DBDAttributeBinding attribute)
-        {
-            return viewer.model.getCellValue(attribute, curRow);
-        }
-
-    }
-
-    private class ContentProvider implements IGridContentProvider {
-
-        @NotNull
-        @Override
-        public Object[] getElements(boolean horizontal) {
-            if (horizontal) {
-                // columns
-                if (!recordMode) {
-                    return model.getVisibleColumns().toArray();
-                } else {
-                    return curRow == null ? new Object[0] : new Object[] {curRow};
-                }
-            } else {
-                // rows
-                if (!recordMode) {
-                    return model.getAllRows().toArray();
-                } else {
-                    DBDAttributeBinding[] columns = model.getVisibleColumns().toArray(new DBDAttributeBinding[model.getVisibleColumnCount()]);
-                    if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
-                        Arrays.sort(columns, new Comparator<DBDAttributeBinding>() {
-                            @Override
-                            public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
-                                return o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.DOWN ? 1 : -1);
-                            }
-                        });
-                    }
-                    return columns;
-                }
-            }
-        }
-
-        @Nullable
-        @Override
-        public Object[] getChildren(Object element) {
-            if (element instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) element;
-                switch (binding.getDataKind()) {
-                    case ARRAY:
-                        if (recordMode) {
-                            if (curRow != null) {
-                                Object value = model.getCellValue(binding, curRow);
-                                if (value instanceof DBDCollection) {
-                                    return curRow.getCollectionData(
-                                        binding,
-                                        ((DBDCollection)value)).elements;
-                                }
-                            }
-                            return null;
-                        }
-                    case STRUCT:
-                    case ANY:
-                        if (binding.getNestedBindings() != null) {
-                            return binding.getNestedBindings().toArray();
-                        }
-                        break;
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        public int getSortOrder(@Nullable Object column)
-        {
-            if (column instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) column;
-                if (!binding.hasNestedBindings()) {
-                    DBDAttributeConstraint co = model.getDataFilter().getConstraint(binding);
-                    if (co != null && co.getOrderPosition() > 0) {
-                        return co.isOrderDescending() ? SWT.UP : SWT.DOWN;
-                    }
-                    return SWT.DEFAULT;
-                }
-            } else if (column == null && recordMode) {
-                // Columns order in record mode
-                return columnOrder;
-            }
-            return SWT.NONE;
-        }
-
-        @Override
-        public ElementState getDefaultState(@NotNull Object element) {
-            if (element instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) element;
-                switch (binding.getAttribute().getDataKind()) {
-                    case STRUCT:
-                        return ElementState.EXPANDED;
-                    case ARRAY:
-                        if (curRow != null) {
-                            Object cellValue = model.getCellValue(binding, curRow);
-                            if (cellValue instanceof DBDCollection && ((DBDCollection) cellValue).getItemCount() < 3) {
-                                return ElementState.EXPANDED;
-                            }
-                        }
-                        return ElementState.COLLAPSED;
-                    default:
-                        break;
-                }
-            }
-            return ElementState.NONE;
-        }
-
-        @Override
-        public int getCellState(Object colElement, Object rowElement) {
-            int state = STATE_NONE;
-            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
-            ResultSetRow row = (ResultSetRow)(recordMode ? colElement : rowElement);
-            Object value = model.getCellValue(attr, row);
-            if (!CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value)) {
-                state |= STATE_LINK;
-            }
-            return state;
-        }
-
-        @Override
-        public void dispose()
-        {
-        }
-
-        @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-        {
-        }
-
-        @Nullable
-        @Override
-        public Object getCellValue(Object colElement, Object rowElement, boolean formatString)
-        {
-            DBDAttributeBinding attr = (DBDAttributeBinding)(rowElement instanceof DBDAttributeBinding ? rowElement : colElement);
-            ResultSetRow row = (ResultSetRow)(colElement instanceof ResultSetRow ? colElement : rowElement);
-            int rowNum = row.getVisualNumber();
-            Object value = model.getCellValue(attr, row);
-
-            if (rowNum > 0 && rowNum == model.getRowCount() - 1 && (recordMode || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
-                readNextSegment();
-            }
-
-            if (formatString) {
-                if (recordMode) {
-                    if (attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection) {
-                        return "[" + ((DBDCollection) value).getItemCount() + "]";
-                    } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDStructure) {
-                        return "[" + ((DBDStructure) value).getDataType().getName() + "]";
-                    }
-                }
-                return attr.getValueHandler().getValueDisplayString(
-                    attr.getAttribute(),
-                    value,
-                    DBDDisplayFormat.UI);
-            } else {
-                return value;
-            }
-        }
-
-        @Nullable
-        @Override
-        public Image getCellImage(Object colElement, Object rowElement)
-        {
-            if (!showCelIcons) {
-                return null;
-            }
-            DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? rowElement : colElement);
-            if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
-                return DBUtils.getTypeImage(attr.getMetaAttribute());
-            } else {
-                return null;
-            }
-        }
-
-        @NotNull
-        @Override
-        public String getCellText(Object colElement, Object rowElement)
-        {
-            return String.valueOf(getCellValue(colElement, rowElement, true));
-        }
-
-        @Nullable
-        @Override
-        public Color getCellForeground(Object colElement, Object rowElement)
-        {
-            Object value = getCellValue(colElement, rowElement, false);
-            if (DBUtils.isNullValue(value)) {
-                return foregroundNull;
-            } else {
-                if (foregroundDefault == null) {
-                    foregroundDefault = filtersText.getForeground();
-                }
-                return foregroundDefault;
-            }
-        }
-
-        @Nullable
-        @Override
-        public Color getCellBackground(Object colElement, Object rowElement)
-        {
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
-            DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
-            boolean odd = row.getVisualNumber() % 2 == 0;
-
-            if (row.getState() == ResultSetRow.STATE_ADDED) {
-                return backgroundAdded;
-            }
-            if (row.getState() == ResultSetRow.STATE_REMOVED) {
-                return backgroundDeleted;
-            }
-            if (row.changes != null && row.changes.containsKey(attribute)) {
-                return backgroundModified;
-            }
-            if ((attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
-                return backgroundReadOnly;
-            }
-            if (!recordMode && odd && showOddRows) {
-                return backgroundOdd;
-            }
-
-            if (backgroundNormal == null) {
-                backgroundNormal = filtersText.getBackground();
-            }
-            return backgroundNormal;
-        }
-
-        @Override
-        public void resetColors() {
-            backgroundNormal = null;
-            foregroundDefault = null;
-        }
-    }
-
-    private class GridLabelProvider implements IGridLabelProvider {
-        @Nullable
-        @Override
-        public Image getImage(Object element)
-        {
-            if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                return DBUtils.getTypeImage(((DBDAttributeBinding) element).getMetaAttribute());
-            }
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public Color getForeground(Object element) {
-            if (element == null) {
-                if (foregroundDefault == null) {
-                    foregroundDefault = filtersText.getForeground();
-                }
-                return foregroundDefault;
-            }
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public Color getBackground(Object element) {
-            if (backgroundNormal == null) {
-                backgroundNormal = filtersText.getBackground();
-            }
-            if (element == null) {
-                return backgroundNormal;
-            }
-
-/*
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  element : curRow);
-            boolean odd = row != null && row.getVisualNumber() % 2 == 0;
-            if (!recordMode && odd && showOddRows) {
-                return backgroundOdd;
-            }
-            return backgroundNormal;
-*/
-            return null;
-        }
-
-        @NotNull
-        @Override
-        public String getText(Object element)
-        {
-            if (element instanceof DBDAttributeBinding) {
-                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
-                if (CommonUtils.isEmpty(attributeBinding.getLabel())) {
-                    return attributeBinding.getName();
-                } else {
-                    return attributeBinding.getLabel();
-                }
-            } else {
-                if (!recordMode) {
-                    return String.valueOf(((ResultSetRow)element).getVisualNumber() + 1);
-                } else {
-                    return CoreMessages.controls_resultset_viewer_value;
-                }
-            }
-        }
-
-        @Nullable
-        @Override
-        public Font getFont(Object element)
-        {
-            if (element instanceof DBDAttributeBinding) {
-                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
-                DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(attributeBinding);
-                if (constraint != null && constraint.hasFilter()) {
-                    return boldFont;
-                }
-            }
-            return null;
-        }
-
-        @Nullable
-        @Override
-        public String getTooltip(Object element)
-        {
-            if (element instanceof DBDAttributeBinding) {
-                DBDAttributeBinding attributeBinding = (DBDAttributeBinding) element;
-                String name = attributeBinding.getName();
-                String typeName = DBUtils.getFullTypeName(attributeBinding.getAttribute());
-                return name + ": " + typeName;
-            }
-            return null;
         }
     }
 
@@ -2977,7 +1685,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public void runWithEvent(Event event)
         {
-            Menu menu = getMenu(getSpreadsheet());
+            Menu menu = getMenu(activePresentation.getControl());
             if (menu != null && event.widget instanceof ToolItem) {
                 Rectangle bounds = ((ToolItem) event.widget).getBounds();
                 Point point = ((ToolItem) event.widget).getParent().toDisplay(bounds.x, bounds.y + bounds.height);
@@ -3003,7 +1711,7 @@ public class ResultSetViewer extends Viewer
             menuManager.add(new DictionaryEditAction());
             menuManager.add(new Separator());
             menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
-            menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PREVIEW, CommandContributionItem.STYLE_CHECK));
+            activePresentation.fillMenu(menuManager);
             menuManager.add(new Separator());
             menuManager.add(new Action("Preferences") {
                 @Override
@@ -3073,8 +1781,8 @@ public class ResultSetViewer extends Viewer
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
-                final DBDAttributeBinding attr = viewer.getFocusAttribute();
-                final ResultSetRow row = viewer.getFocusRow();
+                final DBDAttributeBinding attr = column;
+                final ResultSetRow row = viewer.getCurrentRow();
                 if (attr == null || row == null) {
                     return null;
                 }
@@ -3092,7 +1800,7 @@ public class ResultSetViewer extends Viewer
                 if (useDefault) {
                     return "..";
                 } else {
-                    ResultSetRow focusRow = viewer.getFocusRow();
+                    ResultSetRow focusRow = viewer.getCurrentRow();
                     if (focusRow == null) {
                         return null;
                     }
@@ -3110,7 +1818,7 @@ public class ResultSetViewer extends Viewer
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
             {
                 try {
-                    return viewer.getColumnValueFromClipboard(column);
+                    return ResultSetUtils.getColumnValueFromClipboard(column);
                 } catch (DBCException e) {
                     log.debug("Error copying from clipboard", e);
                     return null;
@@ -3319,4 +2027,5 @@ public class ResultSetViewer extends Viewer
             return combo;
         }
     }
+
 }

@@ -27,7 +27,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetCommandHandler;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
 /**
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
  */
 public class ResultSetCommandHandler extends AbstractHandler {
 
-    public static final String CMD_TOGGLE_PREVIEW = "org.jkiss.dbeaver.core.resultset.togglePreview";
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
     public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
     public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
@@ -62,20 +60,18 @@ public class ResultSetCommandHandler extends AbstractHandler {
             resultSet.refresh();
         } else if (actionId.equals(CMD_TOGGLE_MODE)) {
             resultSet.toggleMode();
-        } else if (actionId.equals(CMD_TOGGLE_PREVIEW)) {
-            resultSet.togglePreview();
         } else if (actionId.equals(CMD_ROW_PREVIOUS) || actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
-            resultSet.scrollToRow(ResultSetViewer.RowPosition.PREVIOUS);
+            resultSet.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.PREVIOUS);
         } else if (actionId.equals(CMD_ROW_NEXT) || actionId.equals(ITextEditorActionDefinitionIds.WORD_NEXT)) {
-            resultSet.scrollToRow(ResultSetViewer.RowPosition.NEXT);
+            resultSet.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.NEXT);
         } else if (actionId.equals(CMD_ROW_FIRST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS)) {
-            resultSet.scrollToRow(ResultSetViewer.RowPosition.FIRST);
+            resultSet.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.FIRST);
         } else if (actionId.equals(CMD_ROW_LAST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT)) {
-            resultSet.scrollToRow(ResultSetViewer.RowPosition.LAST);
+            resultSet.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.LAST);
         } else if (actionId.equals(CMD_ROW_EDIT)) {
-            resultSet.showCellEditor(false);
+            resultSet.getActivePresentation().openValueEditor(false);
         } else if (actionId.equals(CMD_ROW_EDIT_INLINE)) {
-            resultSet.showCellEditor(true);
+            resultSet.getActivePresentation().openValueEditor(true);
         } else if (actionId.equals(CMD_ROW_ADD)) {
             resultSet.addNewRow(false);
         } else if (actionId.equals(CMD_ROW_COPY)) {
@@ -87,13 +83,18 @@ public class ResultSetCommandHandler extends AbstractHandler {
         } else if (actionId.equals(CMD_REJECT_CHANGES)) {
             resultSet.rejectChanges();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
-            resultSet.copySelectionToClipboard(false, false, false, null, DBDDisplayFormat.EDIT);
+            ResultSetUtils.copyToClipboard(
+                resultSet.getActivePresentation().copySelectionToString(
+                    false, false, false, null, DBDDisplayFormat.EDIT));
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE)) {
-            resultSet.pasteCellValue();
+            resultSet.getActivePresentation().pasteFromClipboard();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT)) {
-            resultSet.copySelectionToClipboard(false, false, true, null, DBDDisplayFormat.EDIT);
+            ResultSetUtils.copyToClipboard(
+                resultSet.getActivePresentation().copySelectionToString(
+                    false, false, true, null, DBDDisplayFormat.EDIT)
+            );
         } else if (actionId.equals(ITextEditorActionDefinitionIds.SMART_ENTER)) {
-            resultSet.showCellEditor(false);
+            resultSet.getActivePresentation().openValueEditor(false);
         }
 
 

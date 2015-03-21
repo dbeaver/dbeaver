@@ -19,14 +19,18 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.*;
@@ -35,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -42,7 +47,7 @@ import java.util.*;
 /**
  * Utils
  */
-class ResultSetUtils
+public class ResultSetUtils
 {
     static final Log log = Log.getLog(ResultSetUtils.class);
 
@@ -248,4 +253,35 @@ class ResultSetUtils
             attr1.getTypeID() == attr2.getTypeID() &&
             CommonUtils.equalObjects(attr1.getTypeName(), attr2.getTypeName());
     }
+
+    @Nullable
+    public static Object getColumnValueFromClipboard(DBDAttributeBinding metaColumn) throws DBCException
+    {
+        DBPDataSource dataSource = metaColumn.getDataSource();
+        DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
+        Clipboard clipboard = new Clipboard(Display.getCurrent());
+        try {
+            String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
+            return metaColumn.getValueHandler().getValueFromObject(
+                session, metaColumn.getAttribute(), strValue, true);
+        } finally {
+            session.close();
+            clipboard.dispose();
+        }
+    }
+
+    public static void copyToClipboard(String string) {
+        if (string.length() > 0) {
+            Clipboard clipboard = new Clipboard(Display.getCurrent());
+            try {
+                TextTransfer textTransfer = TextTransfer.getInstance();
+                clipboard.setContents(
+                    new Object[]{string},
+                    new Transfer[]{textTransfer});
+            } finally {
+                clipboard.dispose();
+            }
+        }
+    }
+
 }

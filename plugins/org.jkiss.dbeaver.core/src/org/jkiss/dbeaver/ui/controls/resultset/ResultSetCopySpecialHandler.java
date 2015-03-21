@@ -52,12 +52,12 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         if (event.getCommand().getId().equals(ICommandIds.CMD_COPY_SPECIAL)) {
             ConfigDialog configDialog = new ConfigDialog(HandlerUtil.getActiveShell(event));
             if (configDialog.open() == IDialogConstants.OK_ID) {
-                resultSet.copySelectionToClipboard(
+                ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelectionToString(
                     configDialog.copyHeader,
                     configDialog.copyRows,
                     false,
                     configDialog.delimiter,
-                    configDialog.format);
+                    configDialog.format));
             }
         }
         return null;
