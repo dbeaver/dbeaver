@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -27,13 +26,14 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -394,7 +394,7 @@ public class SQLQueryJob extends DataSourceJob
     private void showExecutionResult(DBCSession session) throws DBCException {
         if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
             SQLQuery query = new SQLQuery(this, "", -1, -1);
-            if (queries != null && queries.size() == 1) {
+            if (queries.size() == 1) {
                 query.setQuery(queries.get(0).getQuery());
             }
             query.setData(STATS_RESULTS); // It will set tab name to "Stats"
@@ -408,7 +408,8 @@ public class SQLQueryJob extends DataSourceJob
     private void fetchExecutionResult(DBCSession session, DBDDataReceiver dataReceiver, SQLQuery query) throws DBCException
     {
         // Fetch fake result set
-        LocalResultSet fakeResultSet = new LocalResultSet(session, curStatement);
+        //DBCStatement statsStatement;
+        StatResultSet fakeResultSet = new StatResultSet(session, curStatement);
         SQLQueryResult resultInfo = new SQLQueryResult(query);
         if (statistics.getStatementsCount() > 1) {
             // Multiple statements - show script statistics
