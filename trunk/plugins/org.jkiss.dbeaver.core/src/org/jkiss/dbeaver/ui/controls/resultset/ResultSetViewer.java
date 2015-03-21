@@ -878,6 +878,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
+        this.activePresentation.refreshData(metaChanged);
         this.redrawData(true);
         this.updateEditControls();
     }
@@ -1308,7 +1309,13 @@ public class ResultSetViewer extends Viewer
             dataReceiver.setHasMoreData(false);
             dataReceiver.setNextSegmentRead(true);
 
-            runDataPump(dataContainer, null, model.getRowCount(), getSegmentMaxRows(), -1, null);
+            runDataPump(
+                dataContainer,
+                null,
+                model.getRowCount(),
+                getSegmentMaxRows(),
+                curRow == null ? -1 : curRow.getRowNumber(),
+                null);
         }
     }
 
@@ -1328,97 +1335,97 @@ public class ResultSetViewer extends Viewer
         final int focusRow,
         @Nullable final Runnable finalizer)
     {
-        if (dataPumpJob == null) {
-            // Read data
-            final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
-                (dataContainer == getDataContainer() ? model.getDataFilter() : null);
-            Composite progressControl = viewerPanel;
-            if (activePresentation.getControl() instanceof Composite) {
-                progressControl = (Composite) activePresentation.getControl();
-            }
-            dataPumpJob = new ResultSetDataPumpJob(
-                dataContainer,
-                useDataFilter,
-                getDataReceiver(),
-                progressControl);
-            dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
-                @Override
-                public void aboutToRun(IJobChangeEvent event) {
-                    model.setUpdateInProgress(true);
-                    getControl().getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            enableFilters(false);
-                        }
-                    });
-                }
-
-                @Override
-                public void done(IJobChangeEvent event) {
-                    ResultSetDataPumpJob job = (ResultSetDataPumpJob)event.getJob();
-                    final Throwable error = job.getError();
-                    if (job.getStatistics() != null) {
-                        model.setStatistics(job.getStatistics());
-                    }
-                    getControl().getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            Control control = getControl();
-                            if (control == null || control.isDisposed()) {
-                                return;
-                            }
-                            final Shell shell = control.getShell();
-                            if (error != null) {
-                                setStatus(error.getMessage(), true);
-                                UIUtils.showErrorDialog(
-                                    shell,
-                                    "Error executing query",
-                                    "Query execution failed",
-                                    error);
-                            } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleColumnCount() > 0) {
-                                Object presentationState = savePresentationState();
-                                // Seems to be refresh
-                                // Restore original position
-                                curRow = model.getRow(focusRow);
-                                //curAttribute = model.getVisibleColumn(0);
-                                if (recordMode) {
-                                    updateRecordMode();
-                                } else {
-                                    updateStatusMessage();
-                                }
-                                restorePresentationState(presentationState);
-                                activePresentation.updateValueView();
-                            } else {
-                                activePresentation.clearData();
-                                activePresentation.refreshData(true);
-                            }
-
-                            if (error == null) {
-                                setNewState(dataContainer, dataFilter != null ? dataFilter :
-                                    (dataContainer == getDataContainer() ? model.getDataFilter() : null));
-                            }
-
-                            model.setUpdateInProgress(false);
-                            if (dataFilter != null) {
-                                model.updateDataFilter(dataFilter);
-                            }
-                            updateFiltersText();
-
-                            if (finalizer != null) {
-                                finalizer.run();
-                            }
-                            dataPumpJob = null;
-                        }
-                    });
-                }
-            });
-            dataPumpJob.setOffset(offset);
-            dataPumpJob.setMaxRows(maxRows);
-            dataPumpJob.schedule();
-        } else {
+        if (dataPumpJob != null) {
             log.warn("Data read is in progress - can't run another");
+            return;
         }
+        // Read data
+        final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
+            (dataContainer == getDataContainer() ? model.getDataFilter() : null);
+        Composite progressControl = viewerPanel;
+        if (activePresentation.getControl() instanceof Composite) {
+            progressControl = (Composite) activePresentation.getControl();
+        }
+        final Object presentationState = savePresentationState();
+        dataPumpJob = new ResultSetDataPumpJob(
+            dataContainer,
+            useDataFilter,
+            getDataReceiver(),
+            progressControl);
+        dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void aboutToRun(IJobChangeEvent event) {
+                model.setUpdateInProgress(true);
+                getControl().getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        enableFilters(false);
+                    }
+                });
+            }
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                ResultSetDataPumpJob job = (ResultSetDataPumpJob)event.getJob();
+                final Throwable error = job.getError();
+                if (job.getStatistics() != null) {
+                    model.setStatistics(job.getStatistics());
+                }
+                getControl().getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        Control control = getControl();
+                        if (control == null || control.isDisposed()) {
+                            return;
+                        }
+                        final Shell shell = control.getShell();
+                        if (error != null) {
+                            setStatus(error.getMessage(), true);
+                            UIUtils.showErrorDialog(
+                                shell,
+                                "Error executing query",
+                                "Query execution failed",
+                                error);
+                        } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleColumnCount() > 0) {
+                            // Seems to be refresh
+                            // Restore original position
+                            curRow = model.getRow(focusRow);
+                            //curAttribute = model.getVisibleColumn(0);
+                            if (recordMode) {
+                                updateRecordMode();
+                            } else {
+                                updateStatusMessage();
+                            }
+                            restorePresentationState(presentationState);
+                            activePresentation.updateValueView();
+                        } else {
+                            activePresentation.clearData();
+                            activePresentation.refreshData(true);
+                        }
+
+                        if (error == null) {
+                            setNewState(dataContainer, dataFilter != null ? dataFilter :
+                                (dataContainer == getDataContainer() ? model.getDataFilter() : null));
+                        }
+
+                        model.setUpdateInProgress(false);
+                        if (dataFilter != null) {
+                            model.updateDataFilter(dataFilter);
+                        }
+                        updateFiltersText();
+
+                        if (finalizer != null) {
+                            finalizer.run();
+                        }
+                        dataPumpJob = null;
+                    }
+                });
+            }
+        });
+        dataPumpJob.setOffset(offset);
+        dataPumpJob.setMaxRows(maxRows);
+        dataPumpJob.schedule();
     }
 
     private void clearData()
