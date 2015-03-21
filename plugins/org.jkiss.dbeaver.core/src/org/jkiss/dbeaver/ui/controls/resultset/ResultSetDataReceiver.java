@@ -74,6 +74,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         this.maxRows = maxRows;
 
         if (!nextSegmentRead) {
+            resultSetViewer.updatePresentation(resultSet);
             // Get columns metadata
             DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
