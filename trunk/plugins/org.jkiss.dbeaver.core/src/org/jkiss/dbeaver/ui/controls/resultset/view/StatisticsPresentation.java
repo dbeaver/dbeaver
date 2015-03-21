@@ -19,11 +19,16 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 
@@ -36,7 +41,7 @@ public class StatisticsPresentation implements IResultSetPresentation {
     private TableViewer tableViewer;
 
     @Override
-    public void createPresentation(IResultSetController controller, Composite parent) {
+    public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         tableViewer = new TableViewer(parent, SWT.MULTI | SWT.FULL_SELECTION);
     }
 
@@ -51,17 +56,60 @@ public class StatisticsPresentation implements IResultSetPresentation {
     }
 
     @Override
+    public void formatData(boolean refreshData) {
+
+    }
+
+    @Override
+    public void clearData() {
+
+    }
+
+    @Override
     public void updateValueView() {
 
     }
 
     @Override
-    public void fillToolbar(IToolBarManager toolBar) {
+    public void fillToolbar(@NotNull IToolBarManager toolBar) {
+
+    }
+
+    @Override
+    public void fillMenu(@NotNull IMenuManager menu) {
 
     }
 
     @Override
     public void changeMode(boolean recordMode) {
+
+    }
+
+    @Override
+    public void scrollToRow(@NotNull RowPosition position) {
+
+    }
+
+    @Nullable
+    @Override
+    public DBDAttributeBinding getCurrentAttribute() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Control openValueEditor(boolean inline) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String copySelectionToString(boolean copyHeader, boolean copyRowNumbers, boolean cut, String delimiter, DBDDisplayFormat format) {
+        return null;
+    }
+
+    @Override
+    public void pasteFromClipboard() {
 
     }
 

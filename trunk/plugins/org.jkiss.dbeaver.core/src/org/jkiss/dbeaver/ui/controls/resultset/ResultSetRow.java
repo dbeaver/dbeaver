@@ -34,9 +34,9 @@ import java.util.Map;
  */
 public class ResultSetRow {
 
-    static final byte STATE_NORMAL = 1;
-    static final byte STATE_ADDED = 2;
-    static final byte STATE_REMOVED = 3;
+    public static final byte STATE_NORMAL = 1;
+    public static final byte STATE_ADDED = 2;
+    public static final byte STATE_REMOVED = 3;
 
     // Physical row number
     private int rowNumber;
@@ -118,7 +118,7 @@ public class ResultSetRow {
     }
 
     @NotNull
-    CollectionElementData getCollectionData(DBDAttributeBinding binding, DBDCollection collection) {
+    public CollectionElementData getCollectionData(DBDAttributeBinding binding, DBDCollection collection) {
         if (collections == null) {
             collections = new HashMap<DBDValue, CollectionElementData>();
         }

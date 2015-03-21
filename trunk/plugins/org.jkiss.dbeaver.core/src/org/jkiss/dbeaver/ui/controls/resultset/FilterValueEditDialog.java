@@ -68,7 +68,7 @@ class FilterValueEditDialog extends BaseDialog {
         editorPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         editorPlaceholder.setLayout(new FillLayout());
 
-        final ResultSetViewer.ResultSetValueController valueController = new ResultSetViewer.ResultSetValueController(
+        final ResultSetValueController valueController = new ResultSetValueController(
             viewer,
             attr,
             row,

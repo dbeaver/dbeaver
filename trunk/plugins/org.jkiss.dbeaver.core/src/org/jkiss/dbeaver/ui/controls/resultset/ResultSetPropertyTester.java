@@ -52,9 +52,9 @@ public class ResultSetPropertyTester extends PropertyTester
         } else if (PROP_HAS_DATA.equals(property)) {
             return rsv.getModel().getRowCount() > 0;
         } else if (PROP_CAN_COPY.equals(property)) {
-            return rsv.getFocusAttribute() != null && rsv.getFocusRow() != null;
+            return rsv.getActivePresentation().getCurrentAttribute() != null && rsv.getCurrentRow() != null;
         } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
-            DBDAttributeBinding attr = rsv.getFocusAttribute();
+            DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
             return attr != null && !rsv.isColumnReadOnly(attr);
         } else if (PROP_CAN_MOVE.equals(property)) {
             ResultSetRow currentRow = rsv.getCurrentRow();
@@ -68,7 +68,7 @@ public class ResultSetPropertyTester extends PropertyTester
                 return false;
             }
             if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
-                DBDAttributeBinding attr = rsv.getFocusAttribute();
+                DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
                 if (attr == null) {
                     return false;
                 }
