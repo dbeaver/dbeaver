@@ -318,7 +318,11 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         this.curAttribute = (DBDAttributeBinding) state;
         ResultSetRow curRow = controller.getCurrentRow();
         if (curRow != null && this.curAttribute != null) {
-            spreadsheet.setCursor(new GridCell(curRow, this.curAttribute), false);
+            GridCell cell = controller.isRecordMode() ?
+                new GridCell(curRow, this.curAttribute) :
+                new GridCell(this.curAttribute, curRow);
+            //spreadsheet.selectCell(cell);
+            spreadsheet.setCursor(cell, false);
         }
     }
 
