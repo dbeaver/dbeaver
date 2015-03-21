@@ -229,7 +229,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
         if (rowCount == null) {
             // Query row count
-            DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read row count");
+            DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, "Read row count");
             try {
                 rowCount = countData(session, null);
             }
