@@ -93,7 +93,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 10 * 1000);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, 10000);
-      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, false);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.META_SEPARATE_CONNECTION, true);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.META_CASE_SENSITIVE, false);
 
