@@ -299,6 +299,11 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
                 }
                 break;
         }
+        if (controller.isRecordMode()) {
+            // Update focus cell
+            restoreState(curAttribute);
+        }
+        // Update controls
         controller.updateEditControls();
     }
 

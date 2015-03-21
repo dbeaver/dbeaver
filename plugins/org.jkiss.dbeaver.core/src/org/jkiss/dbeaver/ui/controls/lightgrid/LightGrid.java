@@ -1262,6 +1262,7 @@ public abstract class LightGrid extends Canvas {
         focusColumn = null;
         topIndex = -1;
         bottomIndex = -1;
+        shiftSelectionAnchorColumn = null;
 
         topColumns.clear();
         columns.clear();
@@ -3173,7 +3174,7 @@ public abstract class LightGrid extends Canvas {
         switch (e.keyCode) {
             case SWT.ARROW_RIGHT:
                 {
-                    if (impliedFocusItem >= 0 && impliedFocusColumn != null) {
+                    if (impliedFocusItem >= 0) {
                         newSelection = impliedFocusItem;
 
                         int index = indexOf(impliedFocusColumn) + 1;
@@ -3188,7 +3189,7 @@ public abstract class LightGrid extends Canvas {
                 break;
             case SWT.ARROW_LEFT:
                 {
-                    if (impliedFocusItem >= 0 && impliedFocusColumn != null) {
+                    if (impliedFocusItem >= 0) {
                         newSelection = impliedFocusItem;
 
                         int index = indexOf(impliedFocusColumn);
@@ -3206,9 +3207,7 @@ public abstract class LightGrid extends Canvas {
                     newSelection = getPreviousVisibleItem(impliedFocusItem);
                 }
 
-                if (impliedFocusColumn != null) {
-                    newColumnFocus = impliedFocusColumn;
-                }
+                newColumnFocus = impliedFocusColumn;
 
                 break;
             case SWT.ARROW_DOWN:
@@ -3220,9 +3219,7 @@ public abstract class LightGrid extends Canvas {
                     }
                 }
 
-                if (impliedFocusColumn != null) {
-                    newColumnFocus = impliedFocusColumn;
-                }
+                newColumnFocus = impliedFocusColumn;
                 break;
             case SWT.HOME:
                 if (ctrlPressed || columns.size() == 1) {
@@ -3254,9 +3251,7 @@ public abstract class LightGrid extends Canvas {
                     newSelection = range.startIndex;
                 }
 
-                if (impliedFocusColumn != null) {
-                    newColumnFocus = impliedFocusColumn;
-                }
+                newColumnFocus = impliedFocusColumn;
                 //newColumnFocus = focusColumn;
                 break;
             case SWT.PAGE_DOWN:
@@ -3276,9 +3271,7 @@ public abstract class LightGrid extends Canvas {
                     newSelection = range.endIndex;
                 }
 
-                if (impliedFocusColumn != null) {
-                    newColumnFocus = impliedFocusColumn;
-                }
+                newColumnFocus = impliedFocusColumn;
                 //newColumnFocus = focusColumn;
                 break;
             case '+':
@@ -3306,7 +3299,7 @@ public abstract class LightGrid extends Canvas {
             return;
         }
 
-        {
+        if (newColumnFocus != null) {
             //if (e.stateMask != SWT.MOD1) {
             Event selEvent = updateCellSelection(
                 new GridPos(newColumnFocus.getIndex(), newSelection),
@@ -3330,7 +3323,7 @@ public abstract class LightGrid extends Canvas {
             showItem(newSelection);
 
             GridCell newPos;
-            if (newColumnFocus != null && newSelection >= 0) {
+            if (newSelection >= 0) {
                 newPos = new GridCell(newColumnFocus.getElement(), rowElements[newSelection]);
             } else {
                 newPos = null;
