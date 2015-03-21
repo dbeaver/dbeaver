@@ -679,9 +679,7 @@ public class ResultSetViewer extends Viewer
         //redrawData(false);
         activePresentation.refreshData(true);
         activePresentation.changeMode(recordMode);
-        if (!recordMode) {
-            updateStatusMessage();
-        }
+        updateStatusMessage();
         //restorePresentationState(state);
     }
 
@@ -1336,7 +1334,7 @@ public class ResultSetViewer extends Viewer
         @Nullable final Runnable finalizer)
     {
         if (dataPumpJob != null) {
-            log.warn("Data read is in progress - can't run another");
+            UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Data read is in progress - can't run another", SWT.ICON_WARNING);
             return;
         }
         // Read data

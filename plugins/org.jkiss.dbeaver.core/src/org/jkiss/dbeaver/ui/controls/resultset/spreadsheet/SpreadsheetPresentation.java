@@ -545,7 +545,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         }
         spreadsheet.layout(true, true);
         previewValue();
-        controller.setCurrentRow(oldRow);
+        //controller.setCurrentRow(oldRow);
     }
 
     public void fillContextMenu(@Nullable Object colObject, @Nullable Object rowObject, @NotNull IMenuManager manager) {
