@@ -103,7 +103,7 @@ public class ResultSetViewer extends Viewer
 {
     static final Log log = Log.getLog(ResultSetViewer.class);
 
-    public static class StateItem {
+    private static class StateItem {
         DBSDataContainer dataContainer;
         DBDDataFilter filter;
         int rowNumber;
@@ -125,6 +125,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private static class PresentationInfo {
+        ResultSetPresentationDescriptor descriptor;
+        Composite placeholder;
+        IResultSetPresentation presentation;
+    }
+
     @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
@@ -135,6 +141,7 @@ public class ResultSetViewer extends Viewer
 
     // Presentation
     private IResultSetPresentation activePresentation;
+    private ResultSetPresentationDescriptor activePresentationDescriptor;
     private List<ResultSetPresentationDescriptor> presentations;
 
     @NotNull
@@ -504,10 +511,8 @@ public class ResultSetViewer extends Viewer
     }
 
     private void setActivePresentation(StatisticsPresentation presentation) {
-        if (activePresentation != null) {
-            //activePresentation.ge
-        }
         activePresentation = presentation;
+        activePresentation.createPresentation(this, viewerPanel);
     }
 
     @Nullable

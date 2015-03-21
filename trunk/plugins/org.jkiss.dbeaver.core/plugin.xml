@@ -749,7 +749,7 @@
         </handler>
 
         <!-- SQL editor handlers -->
-        
+
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementHandler">
             <enabledWhen>
                 <with variable="activePart">
@@ -1091,7 +1091,7 @@
             </enabledWhen>
         </handler>
 
- <!-- Override text commands in RS viewer -->
+    <!-- Override text commands in RS viewer -->
         <handler commandId="org.eclipse.ui.edit.text.goto.wordPrevious" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>
@@ -2359,6 +2359,29 @@
                 icon="icons/sql/sql_text.png"
                 pageClass="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
                 resultsClass="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resultset.presentation">
+        <presentation
+                id="empty"
+                label="Empty"
+                description="Empty presentation"
+                class="org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation">
+        </presentation>
+        <presentation
+                id="stats"
+                label="Statistics"
+                description="Statistics presentation"
+                class="org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation">
+        </presentation>
+        <presentation
+                id="grid"
+                label="Grid"
+                description="Result set grid/spreadsheet"
+                icon="icons/sql/grid.png"
+                class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation">
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet"/>
+        </presentation>
     </extension>
 
     <extension point="org.eclipse.e4.ui.css.swt.theme">

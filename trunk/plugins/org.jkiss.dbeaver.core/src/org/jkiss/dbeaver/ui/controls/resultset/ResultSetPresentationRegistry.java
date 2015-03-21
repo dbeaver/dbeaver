@@ -66,6 +66,16 @@ public class ResultSetPresentationRegistry {
 
     }
 
+    public ResultSetPresentationDescriptor getDescriptor(Class<? extends IResultSetPresentation> implType)
+    {
+        for (ResultSetPresentationDescriptor descriptor : presentations) {
+            if (descriptor.matches(implType)) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
+
     public List<ResultSetPresentationDescriptor> getAvailablePresentations(DBCResultSet resultSet)
     {
         List<ResultSetPresentationDescriptor> result = new ArrayList<ResultSetPresentationDescriptor>();
