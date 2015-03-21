@@ -132,7 +132,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     {
         createResultSetView();
         if (resultSetView != null) {
-            resultSetView.getSpreadsheet().setFocus();
+            resultSetView.getActivePresentation().getControl().setFocus();
         }
 
         // Register find/replace action

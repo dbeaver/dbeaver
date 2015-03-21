@@ -35,6 +35,8 @@ import org.jkiss.code.Nullable;
  */
 public class SpreadsheetCommandHandler extends AbstractHandler {
 
+    public static final String CMD_TOGGLE_PREVIEW = "org.jkiss.dbeaver.core.resultset.grid.togglePreview";
+
     public static Spreadsheet getActiveSpreadsheet(ExecutionEvent event)
     {
         Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
@@ -57,7 +59,11 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
         if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL)) {
             spreadsheet.selectAll();
             return null;
+        } else if (actionId.equals(CMD_TOGGLE_PREVIEW)) {
+            spreadsheet.getPresentation().togglePreview();
+            return null;
         }
+
         Event keyEvent = new Event();
         keyEvent.doit = true;
         if (actionId.equals(ITextEditorActionDefinitionIds.LINE_START)) {

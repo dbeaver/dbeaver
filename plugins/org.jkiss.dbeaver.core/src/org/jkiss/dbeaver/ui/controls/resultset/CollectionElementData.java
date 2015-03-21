@@ -35,7 +35,7 @@ import java.util.List;
  * Complex value element.
  * Map pair or array item
  */
-class CollectionElementData {
+public class CollectionElementData {
 
     static final Log log = Log.getLog(CollectionElementData.class);
 
@@ -67,4 +67,11 @@ class CollectionElementData {
         }
     }
 
+    public DBDAttributeBinding getCollectionBinding() {
+        return collectionBinding;
+    }
+
+    public DBDAttributeBindingElement[] getElements() {
+        return elements;
+    }
 }

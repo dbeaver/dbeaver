@@ -219,10 +219,10 @@ class ResultSetPersister {
         }
         model.refreshChangeCount();
 
-        viewer.refreshSpreadsheet(rowsChanged);
+        viewer.redrawData(rowsChanged);
         viewer.fireResultSetChange();
         viewer.updateEditControls();
-        viewer.previewValue();
+        viewer.getActivePresentation().updateValueView();
     }
 
     // Reflect data changes in viewer
@@ -330,7 +330,7 @@ class ResultSetPersister {
                     }
                     if (!viewer.getControl().isDisposed()) {
                         //releaseStatements();
-                        viewer.refreshSpreadsheet(rowsChanged);
+                        viewer.redrawData(rowsChanged);
                         viewer.updateEditControls();
                         if (error == null) {
                             viewer.setStatus(

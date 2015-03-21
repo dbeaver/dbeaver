@@ -19,29 +19,69 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 
 /**
  * Result set renderer.
  * Visualizes result set viewer/editor.
  *
- * May additionally implement ISelectionProvider
+ * May additionally implement ISelectionProvider, IStatefulControl
  */
 public interface IResultSetPresentation {
 
-    void createPresentation(IResultSetController controller, Composite parent);
+    public enum RowPosition {
+        FIRST,
+        PREVIOUS,
+        NEXT,
+        LAST
+    }
+
+
+    void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent);
 
     Control getControl();
 
     void refreshData(boolean refreshMetadata);
 
+    /**
+     * Called after results refresh
+     * @param refreshData data was refreshed
+     */
+    void formatData(boolean refreshData);
+
+    void clearData();
+
     void updateValueView();
 
-    void fillToolbar(IToolBarManager toolBar);
+    void fillToolbar(@NotNull IToolBarManager toolBar);
+
+    void fillMenu(@NotNull IMenuManager menu);
 
     void changeMode(boolean recordMode);
 
-    // ISelectionProvider
+    void scrollToRow(@NotNull RowPosition position);
+
+    @Nullable
+    DBDAttributeBinding getCurrentAttribute();
+
+    @Nullable
+    Control openValueEditor(final boolean inline);
+
+    @Nullable
+    String copySelectionToString(
+        boolean copyHeader,
+        boolean copyRowNumbers,
+        boolean cut,
+        String delimiter,
+        DBDDisplayFormat format);
+
+    void pasteFromClipboard();
+
 }

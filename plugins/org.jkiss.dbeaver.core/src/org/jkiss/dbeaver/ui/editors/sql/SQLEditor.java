@@ -334,7 +334,7 @@ public class SQLEditor extends SQLEditorBase
                     curQueryProcessor = resultsProvider.queryProcessor;
                     ResultSetViewer rsv = resultsProvider.getResultSetViewer();
                     if (rsv != null) {
-                        rsv.getSpreadsheet().setFocus();
+                        rsv.getActivePresentation().getControl().setFocus();
                     }
                 } else if (data == outputViewer) {
                     ((CTabItem) e.item).setImage(IMG_OUTPUT);
@@ -347,8 +347,8 @@ public class SQLEditor extends SQLEditorBase
             public void keyTraversed(TraverseEvent e) {
                 if (e.detail == SWT.TRAVERSE_PAGE_NEXT) {
                     ResultSetViewer viewer = getResultSetViewer();
-                    if (viewer != null && viewer.getSpreadsheet().isVisible()) {
-                        viewer.getSpreadsheet().setFocus();
+                    if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
+                        viewer.getActivePresentation().getControl().setFocus();
                         e.doit = false;
                         e.detail = SWT.TRAVERSE_NONE;
                     }
@@ -1165,10 +1165,10 @@ public class SQLEditor extends SQLEditorBase
             this.resultSetNumber = resultSetNumber;
             viewer = new ResultSetViewer(resultTabs, getSite(), this);
 
-            selectionProvider.trackProvider(viewer.getSpreadsheet(), viewer);
+            selectionProvider.trackProvider(viewer.getActivePresentation().getControl(), viewer);
 
             // Find/replace target activation
-            viewer.getSpreadsheet().addFocusListener(new FocusAdapter() {
+            viewer.getActivePresentation().getControl().addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e)
                 {
