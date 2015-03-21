@@ -57,6 +57,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -72,6 +73,7 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
@@ -491,6 +493,23 @@ public class ResultSetViewer extends Viewer
         return activePresentation;
     }
 
+    void updatePresentation(DBCResultSet resultSet) {
+        //if (resultSet.getSourceStatement().g)
+        if (resultSet instanceof StatResultSet) {
+            //setActivePresentation(new StatisticsPresentation());
+            presentations = Collections.emptyList();
+        } else {
+            presentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet);
+        }
+    }
+
+    private void setActivePresentation(StatisticsPresentation presentation) {
+        if (activePresentation != null) {
+            //activePresentation.ge
+        }
+        activePresentation = presentation;
+    }
+
     @Nullable
     @Override
     public DBPDataSource getDataSource()
@@ -847,7 +866,7 @@ public class ResultSetViewer extends Viewer
      * Sets new metadata of result set
      * @param columns columns metadata
      */
-    public void setMetaData(DBDAttributeBinding[] columns)
+    void setMetaData(DBDAttributeBinding[] columns)
     {
         model.setMetaData(columns);
         if (model.isMetadataChanged()) {
@@ -855,7 +874,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    public void setData(List<Object[]> rows)
+    void setData(List<Object[]> rows)
     {
         if (viewerPanel.isDisposed()) {
             return;
@@ -881,7 +900,7 @@ public class ResultSetViewer extends Viewer
         this.updateEditControls();
     }
 
-    public void appendData(List<Object[]> rows)
+    void appendData(List<Object[]> rows)
     {
         model.appendData(rows);
         //redrawData(true);
