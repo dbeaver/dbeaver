@@ -29,12 +29,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 
 /**
  * Empty presentation.
@@ -44,13 +46,15 @@ public class PlainTextPresentation implements IResultSetPresentation {
 
     private IResultSetController controller;
     private StyledText text;
+    private int[] colWidths;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         this.controller = controller;
 
         UIUtils.createHorizontalLine(parent);
-        text = new StyledText(parent, SWT.READ_ONLY | SWT.MULTI);
+        text = new StyledText(parent, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
+        text.setBlockSelection(true);
         text.setMargins(4, 4, 4, 4);
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -66,7 +70,57 @@ public class PlainTextPresentation implements IResultSetPresentation {
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
         DBDAttributeBinding[] attrs = model.getAttributes();
-        text.setText("Plain Text Presentation\nPlay with it");
+        colWidths = new int[attrs.length];
+
+        for (int i = 0; i < attrs.length; i++) {
+            DBDAttributeBinding attr = attrs[i];
+            colWidths[i] = attr.getName().length();
+            for (ResultSetRow row : model.getAllRows()) {
+                String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
+                colWidths[i] = Math.max(colWidths[i], displayString.length());
+            }
+        }
+        for (int i = 0; i < colWidths.length; i++) {
+            colWidths[i]++;
+        }
+
+        // Print header
+        for (int i = 0; i < attrs.length; i++) {
+            DBDAttributeBinding attr = attrs[i];
+            String attrName = attr.getName();
+            grid.append(attrName);
+            for (int k = colWidths[i] - attrName.length(); k >0 ; k--) {
+                grid.append(" ");
+            }
+            grid.append("|");
+        }
+        grid.append("\n");
+
+        // Print divider
+        // Print header
+        for (int i = 0; i < attrs.length; i++) {
+            for (int k = colWidths[i]; k >0 ; k--) {
+                grid.append("-");
+            }
+            grid.append("|");
+        }
+        grid.append("\n");
+
+        // Print rows
+        for (ResultSetRow row : model.getAllRows()) {
+            for (int i = 0; i < attrs.length; i++) {
+                DBDAttributeBinding attr = attrs[i];
+                String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
+                grid.append(displayString);
+                for (int k = colWidths[i] - displayString.length(); k >0 ; k--) {
+                    grid.append(" ");
+                }
+                grid.append("|");
+            }
+            grid.append("\n");
+        }
+
+        text.setText(grid.toString());
     }
 
     @Override
