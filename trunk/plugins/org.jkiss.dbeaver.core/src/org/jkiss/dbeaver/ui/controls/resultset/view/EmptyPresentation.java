@@ -22,6 +22,14 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
@@ -30,6 +38,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 
@@ -42,10 +53,41 @@ public class EmptyPresentation implements IResultSetPresentation {
     private Composite placeholder;
 
     @Override
-    public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
+    public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
+        UIUtils.createHorizontalLine(parent);
         placeholder = new Canvas(parent, SWT.NONE);
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         placeholder.setBackground(controller.getDefaultBackground());
+
+        final Font normalFont = parent.getFont();
+        FontData[] fontData = normalFont.getFontData();
+        fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
+        fontData[0].setHeight(18);
+        final Font largeFont = new Font(normalFont.getDevice(), fontData[0]);
+        placeholder.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                UIUtils.dispose(largeFont);
+            }
+        });
+
+        placeholder.addPaintListener(new PaintListener() {
+            @Override
+            public void paintControl(PaintEvent e) {
+                e.gc.setFont(largeFont);
+                drawMessage(e, "No Data", 20);
+                e.gc.setFont(normalFont);
+                String execQuery = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
+                String execScript = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
+                drawMessage(e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", 50);
+            }
+
+            private void drawMessage(PaintEvent e, String message, int offset) {
+                Rectangle bounds = placeholder.getBounds();
+                Point ext = e.gc.textExtent(message);
+                e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + offset);
+            }
+        });
     }
 
     @Override

@@ -128,7 +128,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
 
                     message = "Select a query and run " + ActionUtils.findCommandDescription(
                         ICommandIds.CMD_EXPLAIN_PLAN,
-                        workbenchPart.getSite());
+                        workbenchPart.getSite(), false);
                 }
                 if (message != null) {
                     Rectangle bounds = planTree.getBounds();
