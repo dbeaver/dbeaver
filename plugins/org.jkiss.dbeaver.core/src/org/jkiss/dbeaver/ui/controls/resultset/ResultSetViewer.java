@@ -391,19 +391,22 @@ public class ResultSetViewer extends Viewer
         boolean enableFilters = false;
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
-            StringBuilder where = new StringBuilder();
-            SQLUtils.appendConditionString(model.getDataFilter(), dataSource, null, where, true);
-            String whereCondition = where.toString().trim();
-            filtersText.setText(whereCondition);
-            if (!whereCondition.isEmpty()) {
-                addFiltersHistory(whereCondition);
-            }
+            if (activePresentation instanceof StatisticsPresentation) {
+                enableFilters = false;
+            } else {
+                StringBuilder where = new StringBuilder();
+                SQLUtils.appendConditionString(model.getDataFilter(), dataSource, null, where, true);
+                String whereCondition = where.toString().trim();
+                filtersText.setText(whereCondition);
+                if (!whereCondition.isEmpty()) {
+                    addFiltersHistory(whereCondition);
+                }
 
-            if (container.isReadyToRun() &&
-                !model.isUpdateInProgress() &&
-                (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleColumnCount() > 0 && supportsDataFilter())))
-            {
-                enableFilters = true;
+                if (container.isReadyToRun() &&
+                    !model.isUpdateInProgress() &&
+                    (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleColumnCount() > 0 && supportsDataFilter()))) {
+                    enableFilters = true;
+                }
             }
         }
         enableFilters(enableFilters);
@@ -503,10 +506,12 @@ public class ResultSetViewer extends Viewer
         viewerPanel.setRedraw(false);
         try {
             if (resultSet instanceof StatResultSet) {
+                // Statistics - let's use special presentation for it
                 presentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
                 activePresentationDescriptor = null;
             } else {
+                // Regular results
                 presentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet);
                 if (!presentations.isEmpty()) {
                     for (ResultSetPresentationDescriptor pd : presentations) {
