@@ -69,7 +69,7 @@ public class MSSQLConstraintManager extends SQLConstraintManager<MSSQLTableConst
             false);
         constraint.setName(DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
         int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
             constraint.addColumn(
                 new MSSQLTableConstraintColumn(
                     constraint,

@@ -41,9 +41,9 @@ public class ResultSetModel {
 
     static final Log log = Log.getLog(ResultSetModel.class);
 
-    // Columns
-    private DBDAttributeBinding[] columns = new DBDAttributeBinding[0];
-    private List<DBDAttributeBinding> visibleColumns = new ArrayList<DBDAttributeBinding>();
+    // Attributes
+    private DBDAttributeBinding[] attributes = new DBDAttributeBinding[0];
+    private List<DBDAttributeBinding> visibleAttributes = new ArrayList<DBDAttributeBinding>();
     private DBDDataFilter dataFilter;
     private boolean singleSourceCells;
     //private boolean refreshDynamicMeta;
@@ -70,8 +70,8 @@ public class ResultSetModel {
     @NotNull
     public DBDDataFilter createDataFilter()
     {
-        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>(columns.length);
-        for (DBDAttributeBinding binding : columns) {
+        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>(attributes.length);
+        for (DBDAttributeBinding binding : attributes) {
             addConstraints(constraints, binding);
         }
         return new DBDDataFilter(constraints);
@@ -79,7 +79,7 @@ public class ResultSetModel {
 
     private void addConstraints(List<DBDAttributeConstraint> constraints, DBDAttributeBinding binding) {
         DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding);
-        constraint.setVisible(visibleColumns.contains(binding));
+        constraint.setVisible(visibleAttributes.contains(binding));
         constraints.add(constraint);
         List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
         if (nestedBindings != null) {
@@ -100,7 +100,7 @@ public class ResultSetModel {
 
     /**
      * Returns single source of this result set. Usually it is a table.
-     * If result set is a result of joins or contains synthetic columns then
+     * If result set is a result of joins or contains synthetic attributes then
      * single source is null. If driver doesn't support meta information
      * for queries then is will null.
      * @return single source entity
@@ -111,7 +111,7 @@ public class ResultSetModel {
         if (!singleSourceCells) {
             return null;
         }
-        for (DBDAttributeBinding attr : columns) {
+        for (DBDAttributeBinding attr : attributes) {
             DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
             if (rowIdentifier != null) {
                 return rowIdentifier.getEntity();
@@ -145,53 +145,53 @@ public class ResultSetModel {
     }
 
     @NotNull
-    public DBDAttributeBinding[] getColumns()
+    public DBDAttributeBinding[] getAttributes()
     {
-        return columns;
+        return attributes;
     }
 
-    public int getColumnCount()
+    public int getAttributeCount()
     {
-        return columns.length;
-    }
-
-    @NotNull
-    public DBDAttributeBinding getColumn(int index)
-    {
-        return columns[index];
-    }
-
-    public int getVisibleColumnIndex(@NotNull DBDAttributeBinding column)
-    {
-        return visibleColumns.indexOf(column);
+        return attributes.length;
     }
 
     @NotNull
-    public List<DBDAttributeBinding> getVisibleColumns()
+    public DBDAttributeBinding getAttribute(int index)
     {
-        return visibleColumns;
+        return attributes[index];
     }
 
-    public int getVisibleColumnCount()
+    public int getVisibleAttributeIndex(@NotNull DBDAttributeBinding attribute)
     {
-        return visibleColumns.size();
+        return visibleAttributes.indexOf(attribute);
     }
 
     @NotNull
-    public DBDAttributeBinding getVisibleColumn(int index)
+    public List<DBDAttributeBinding> getVisibleAttributes()
     {
-        return visibleColumns.get(index);
+        return visibleAttributes;
     }
 
-    public void setColumnVisibility(@NotNull DBDAttributeBinding attribute, boolean visible)
+    public int getVisibleAttributeCount()
+    {
+        return visibleAttributes.size();
+    }
+
+    @NotNull
+    public DBDAttributeBinding getVisibleAttribute(int index)
+    {
+        return visibleAttributes.get(index);
+    }
+
+    public void setAttributeVisibility(@NotNull DBDAttributeBinding attribute, boolean visible)
     {
         DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
         if (constraint != null && constraint.isVisible() != visible) {
             constraint.setVisible(visible);
             if (visible) {
-                visibleColumns.add(attribute);
+                visibleAttributes.add(attribute);
             } else {
-                visibleColumns.remove(attribute);
+                visibleAttributes.remove(attribute);
             }
         }
     }
@@ -199,17 +199,17 @@ public class ResultSetModel {
     @Nullable
     public DBDAttributeBinding getAttributeBinding(@NotNull DBSAttributeBase attribute)
     {
-        return DBUtils.findBinding(columns, attribute);
+        return DBUtils.findBinding(attributes, attribute);
     }
 
     @Nullable
-    DBDAttributeBinding getAttributeBinding(@Nullable DBSEntity entity, @NotNull String columnName)
+    DBDAttributeBinding getAttributeBinding(@Nullable DBSEntity entity, @NotNull String attrName)
     {
-        for (DBDAttributeBinding column : visibleColumns) {
-            DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
+        for (DBDAttributeBinding attribute : visibleAttributes) {
+            DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
             if ((entity == null || (rowIdentifier != null && rowIdentifier.getEntity() == entity)) &&
-                column.getName().equals(columnName)) {
-                return column;
+                attribute.getName().equals(attrName)) {
+                return attribute;
             }
         }
         return null;
@@ -217,7 +217,7 @@ public class ResultSetModel {
 
     public boolean isEmpty()
     {
-        return getRowCount() <= 0 || visibleColumns.size() <= 0;
+        return getRowCount() <= 0 || visibleAttributes.size() <= 0;
     }
 
     public int getRowCount()
@@ -243,18 +243,18 @@ public class ResultSetModel {
     }
 
     @Nullable
-    public Object getCellValue(@NotNull DBDAttributeBinding column, @NotNull ResultSetRow row) {
-        int depth = column.getLevel();
+    public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
+        int depth = attribute.getLevel();
         if (depth == 0) {
-            return row.values[column.getOrdinalPosition()];
+            return row.values[attribute.getOrdinalPosition()];
         }
-        Object curValue = row.values[column.getTopParent().getOrdinalPosition()];
+        Object curValue = row.values[attribute.getTopParent().getOrdinalPosition()];
 
         for (int i = 0; i < depth; i++) {
             if (curValue == null) {
                 break;
             }
-            DBDAttributeBinding attr = column.getParent(depth - i - 1);
+            DBDAttributeBinding attr = attribute.getParent(depth - i - 1);
             assert attr != null;
             try {
                 curValue = attr.extractNestedValue(curValue);
@@ -367,13 +367,13 @@ public class ResultSetModel {
 
     /**
      * Sets new metadata of result set
-     * @param newColumns columns metadata
+     * @param newAttributes attributes metadata
      * @return true if new metadata differs from old one, false otherwise
      */
-    public void setMetaData(@NotNull DBDAttributeBinding[] newColumns)
+    public void setMetaData(@NotNull DBDAttributeBinding[] newAttributes)
     {
         boolean update = false;
-        if (this.columns == null || this.columns.length == 0 || this.columns.length != newColumns.length || isDynamicMetadata()) {
+        if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
             update = true;
         } else {
 /*
@@ -381,14 +381,14 @@ public class ResultSetModel {
                 // This is a filtered result set so keep old metadata.
                 // Filtering modifies original query (adds sub-query)
                 // and it may change metadata (depends on driver)
-                // but actually it doesn't change any column or table names/types
+                // but actually it doesn't change any attribute or table names/types
                 // so let's keep old info
                 return false;
             }
 */
 
-            for (int i = 0; i < this.columns.length; i++) {
-                if (!ResultSetUtils.equalAttributes(this.columns[i].getMetaAttribute(), newColumns[i].getMetaAttribute())) {
+            for (int i = 0; i < this.attributes.length; i++) {
+                if (!ResultSetUtils.equalAttributes(this.attributes[i].getMetaAttribute(), newAttributes[i].getMetaAttribute())) {
                     update = true;
                     break;
                 }
@@ -396,8 +396,8 @@ public class ResultSetModel {
         }
 
         if (update) {
-            if (!ArrayUtils.isEmpty(this.columns) && !ArrayUtils.isEmpty(newColumns) && isDynamicMetadata() &&
-                this.columns[0].getTopParent().getMetaAttribute().getSource() == newColumns[0].getTopParent().getMetaAttribute().getSource())
+            if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
+                this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource())
             {
                 // the same source
                 sourceChanged = false;
@@ -405,13 +405,13 @@ public class ResultSetModel {
                 sourceChanged = true;
             }
             this.clearData();
-            this.columns = newColumns;
-            fillVisibleColumns();
+            this.attributes = newAttributes;
+            fillVisibleAttributes();
         }
         metadataChanged = update;
-        metadataDynamic = this.columns != null &&
-            this.columns.length > 0 &&
-            this.columns[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
+        metadataDynamic = this.attributes != null &&
+            this.attributes.length > 0 &&
+            this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
     }
 
     public void setData(@NotNull List<Object[]> rows)
@@ -420,11 +420,11 @@ public class ResultSetModel {
         this.clearData();
 
         if (metadataChanged) {
-            if (columns.length == 1 && columns[0].getDataKind() == DBPDataKind.STRUCT) {
-                List<DBDAttributeBinding> nested = columns[0].getNestedBindings();
+            if (attributes.length == 1 && attributes[0].getDataKind() == DBPDataKind.STRUCT) {
+                List<DBDAttributeBinding> nested = attributes[0].getNestedBindings();
                 if (!CommonUtils.isEmpty(nested)) {
-                    columns = nested.toArray(new DBDAttributeBinding[nested.size()]);
-                    fillVisibleColumns();
+                    attributes = nested.toArray(new DBDAttributeBinding[nested.size()]);
+                    fillVisibleAttributes();
                 }
             }
         }
@@ -444,12 +444,8 @@ public class ResultSetModel {
             // Check single source flag
             this.singleSourceCells = true;
             DBSEntity sourceTable = null;
-            for (DBDAttributeBinding column : visibleColumns) {
-//                if (isColumnReadOnly(column)) {
-//                    singleSourceCells = false;
-//                    break;
-//                }
-                DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
+            for (DBDAttributeBinding attribute : visibleAttributes) {
+                DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
                 if (rowIdentifier != null) {
                     if (sourceTable == null) {
                         sourceTable = rowIdentifier.getEntity();
@@ -499,25 +495,25 @@ public class ResultSetModel {
         return changesCount != 0;
     }
 
-    private void fillVisibleColumns() {
-        this.visibleColumns.clear();
-        for (DBDAttributeBinding binding : this.columns) {
+    private void fillVisibleAttributes() {
+        this.visibleAttributes.clear();
+        for (DBDAttributeBinding binding : this.attributes) {
             DBDPseudoAttribute pseudoAttribute = binding.getMetaAttribute().getPseudoAttribute();
             if (pseudoAttribute == null) {
                 // Make visible "real" attributes
-                this.visibleColumns.add(binding);
+                this.visibleAttributes.add(binding);
             }
         }
     }
 
-    public boolean isColumnReadOnly(@NotNull DBDAttributeBinding column)
+    public boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute)
     {
-        if (column.getMetaAttribute().isReadOnly()) {
+        if (attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }
-        DBDRowIdentifier rowIdentifier = column.getRowIdentifier();
+        DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
         if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator) ||
-            (column.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
+            (attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
             return true;
         }
         DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
@@ -617,14 +613,14 @@ public class ResultSetModel {
     /**
      * Sets new data filter
      * @param dataFilter data filter
-     * @return true if visible columns were changed. Spreadsheet has to be refreshed
+     * @return true if visible attributes were changed. Spreadsheet has to be refreshed
      */
     boolean setDataFilter(DBDDataFilter dataFilter)
     {
         this.dataFilter = dataFilter;
-        // Check if filter misses some columns
+        // Check if filter misses some attributes
         List<DBDAttributeConstraint> newConstraints = new ArrayList<DBDAttributeConstraint>();
-        for (DBDAttributeBinding binding : columns) {
+        for (DBDAttributeBinding binding : attributes) {
             if (dataFilter.getConstraint(binding) == null) {
                 addConstraints(newConstraints, binding);
             }
@@ -641,8 +637,8 @@ public class ResultSetModel {
                 newBindings.add(binding);
             }
         }
-        if (!newBindings.equals(visibleColumns)) {
-            visibleColumns = newBindings;
+        if (!newBindings.equals(visibleAttributes)) {
+            visibleAttributes = newBindings;
             return true;
         }
         return false;

@@ -58,7 +58,7 @@ public interface IResultSetController {
 
     boolean isRecordMode();
 
-    boolean isColumnReadOnly(DBDAttributeBinding attr);
+    boolean isAttributeReadOnly(DBDAttributeBinding attr);
 
     @NotNull
     IPreferenceStore getPreferenceStore();

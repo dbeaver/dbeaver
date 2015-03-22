@@ -255,15 +255,15 @@ public class ResultSetUtils
     }
 
     @Nullable
-    public static Object getColumnValueFromClipboard(DBDAttributeBinding metaColumn) throws DBCException
+    public static Object getAttributeValueFromClipboard(DBDAttributeBinding attribute) throws DBCException
     {
-        DBPDataSource dataSource = metaColumn.getDataSource();
+        DBPDataSource dataSource = attribute.getDataSource();
         DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
         Clipboard clipboard = new Clipboard(Display.getCurrent());
         try {
             String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
-            return metaColumn.getValueHandler().getValueFromObject(
-                session, metaColumn.getAttribute(), strValue, true);
+            return attribute.getValueHandler().getValueFromObject(
+                session, attribute.getAttribute(), strValue, true);
         } finally {
             session.close();
             clipboard.dispose();

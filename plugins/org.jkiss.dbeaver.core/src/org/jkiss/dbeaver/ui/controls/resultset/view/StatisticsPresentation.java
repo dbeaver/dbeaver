@@ -62,7 +62,7 @@ public class StatisticsPresentation implements IResultSetPresentation {
             .setLabelProvider(new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell) {
-                    cell.setText(StatisticsPresentation.this.controller.getModel().getColumn(0).getName());
+                    cell.setText(StatisticsPresentation.this.controller.getModel().getAttribute(0).getName());
                 }
             });
         new TableViewerColumn(tableViewer, UIUtils.createTableColumn(table, SWT.LEFT, "Value"))

@@ -104,7 +104,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
         final DBDRowIdentifier identifier = viewer.getVirtualEntityIdentifier();
         DBVEntityConstraint constraint = (DBVEntityConstraint) identifier.getUniqueKey();
         List<DBSEntityAttribute> uniqueColumns = new ArrayList<DBSEntityAttribute>();
-        for (DBDAttributeBinding binding : viewer.getModel().getColumns()) {
+        for (DBDAttributeBinding binding : viewer.getModel().getAttributes()) {
             if (binding.getEntityAttribute() != null) {
                 uniqueColumns.add(binding.getEntityAttribute());
             }
@@ -118,7 +118,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
         try {
             identifier.reloadAttributes(
                 VoidProgressMonitor.INSTANCE,
-                viewer.getModel().getColumns());
+                viewer.getModel().getAttributes());
         } catch (DBException e) {
             UIUtils.showErrorDialog(shell, "Use All Columns", "Can't reload unique columns", e);
             return false;

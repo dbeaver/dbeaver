@@ -68,7 +68,7 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
 
         StringBuilder idxName = new StringBuilder(64);
         idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
-            .append(CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName()))
+            .append(CommonUtils.escapeIdentifier(editDialog.getSelectedAttributes().iterator().next().getName()))
             .append("_IDX"); //$NON-NLS-1$
         final OracleTableIndex index = new OracleTableIndex(
             parent.getSchema(),
@@ -77,7 +77,7 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
             false,
             editDialog.getIndexType());
         int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
             index.addColumn(
                 new OracleTableIndexColumn(
                     index,

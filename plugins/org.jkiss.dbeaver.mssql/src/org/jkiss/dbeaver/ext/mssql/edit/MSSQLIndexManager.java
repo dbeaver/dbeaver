@@ -70,7 +70,7 @@ public class MSSQLIndexManager extends SQLIndexManager<MSSQLTableIndex, MSSQLTab
         StringBuilder idxName = new StringBuilder(64);
         idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
         int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
             if (colIndex == 1) {
                 idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName())); //$NON-NLS-1$
             }

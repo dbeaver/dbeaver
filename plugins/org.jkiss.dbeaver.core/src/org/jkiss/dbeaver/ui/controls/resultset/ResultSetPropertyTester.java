@@ -55,7 +55,7 @@ public class ResultSetPropertyTester extends PropertyTester
             return rsv.getActivePresentation().getCurrentAttribute() != null && rsv.getCurrentRow() != null;
         } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
             DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-            return attr != null && !rsv.isColumnReadOnly(attr);
+            return attr != null && !rsv.isAttributeReadOnly(attr);
         } else if (PROP_CAN_MOVE.equals(property)) {
             ResultSetRow currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {
@@ -73,7 +73,7 @@ public class ResultSetPropertyTester extends PropertyTester
                     return false;
                 }
                 if ("inline".equals(expectedValue)) {
-                    return !rsv.isColumnReadOnly(attr);
+                    return !rsv.isAttributeReadOnly(attr);
                 } else {
                     return true;
                 }

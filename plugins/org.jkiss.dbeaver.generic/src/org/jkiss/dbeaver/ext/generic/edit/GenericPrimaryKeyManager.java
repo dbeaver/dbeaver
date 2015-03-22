@@ -70,7 +70,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
             false);
         primaryKey.setName(DBObjectNameCaseTransformer.transformName(primaryKey, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
         int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
             primaryKey.addColumn(
                 new GenericTableConstraintColumn(
                     primaryKey,

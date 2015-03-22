@@ -113,7 +113,7 @@ public class EditDictionaryDialog extends AttributesSelectorDialog {
 
     @Override
     protected void handleColumnsChange() {
-        descColumns = getSelectedColumns();
+        descColumns = getSelectedAttributes();
         StringBuilder custom = new StringBuilder();
         for (DBSEntityAttribute column : descColumns) {
             if (custom.length() > 0) {

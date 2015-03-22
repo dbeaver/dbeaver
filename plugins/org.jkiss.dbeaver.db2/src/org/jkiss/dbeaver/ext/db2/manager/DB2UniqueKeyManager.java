@@ -100,10 +100,10 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
             CommonUtils.escapeIdentifier(db2Table.getName()) + suffix);
         constraint.setName(constraintName);
 
-        List<DB2TableKeyColumn> columns = new ArrayList<DB2TableKeyColumn>(editDialog.getSelectedColumns().size());
+        List<DB2TableKeyColumn> columns = new ArrayList<DB2TableKeyColumn>(editDialog.getSelectedAttributes().size());
         DB2TableKeyColumn column;
         int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
             column = new DB2TableKeyColumn(constraint, (DB2TableColumn) tableColumn, colIndex++);
             columns.add(column);
         }
