@@ -2363,24 +2363,20 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resultset.presentation">
-<!--        <presentation
-                id="empty"
-                label="Empty"
-                description="Empty presentation"
-                class="org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation">
-        </presentation>
         <presentation
-                id="stats"
-                label="Statistics"
-                description="Statistics presentation"
-                class="org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation">
-        </presentation>-->
-        <presentation
-                id="grid"
+                id="spreadsheet"
                 label="Grid"
                 description="Result set grid/spreadsheet"
                 icon="icons/sql/grid.png"
                 class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation">
+            <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet"/>
+        </presentation>
+        <presentation
+                id="plaintext"
+                label="Text"
+                description="Plain text presentation"
+                icon="icons/sql/sql_text.png"
+                class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation">
             <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet"/>
         </presentation>
     </extension>
