@@ -66,7 +66,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows)
+    public void fetchStart(DBCSession session, final DBCResultSet resultSet, long offset, long maxRows)
         throws DBCException
     {
         this.rows.clear();
@@ -74,7 +74,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         this.maxRows = maxRows;
 
         if (!nextSegmentRead) {
-            resultSetViewer.updatePresentation(resultSet);
+            runInUI(new Runnable() {
+                @Override
+                public void run() {
+                    resultSetViewer.updatePresentation(resultSet);
+                }
+            });
             // Get columns metadata
             DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
@@ -132,23 +137,20 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         final List<Object[]> tmpRows = rows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
-        Control control = resultSetViewer.getControl();
-        if (!control.isDisposed()) {
-            control.getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run()
-                {
-                    // Push data into viewer
-                    if (!nextSegmentRead) {
-                        resultSetViewer.setData(tmpRows);
-                    } else {
-                        resultSetViewer.appendData(tmpRows);
-                    }
-                    // Check for more data
-                    hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
+        runInUI(new Runnable() {
+            @Override
+            public void run()
+            {
+                // Push data into viewer
+                if (!nextSegmentRead) {
+                    resultSetViewer.setData(tmpRows);
+                } else {
+                    resultSetViewer.appendData(tmpRows);
                 }
-            });
-        }
+                // Check for more data
+                hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
+            }
+        });
     }
 
     @Override
@@ -158,6 +160,13 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
         errors.clear();
         rows = new ArrayList<Object[]>();
+    }
+
+    private void runInUI(Runnable runnable) {
+        Control control = resultSetViewer.getControl();
+        if (!control.isDisposed()) {
+            control.getDisplay().asyncExec(runnable);
+        }
     }
 
 }

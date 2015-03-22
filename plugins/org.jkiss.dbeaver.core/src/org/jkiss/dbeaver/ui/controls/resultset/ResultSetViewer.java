@@ -72,7 +72,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
-import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -125,16 +125,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private static class PresentationInfo {
-        ResultSetPresentationDescriptor descriptor;
-        Composite placeholder;
-        IResultSetPresentation presentation;
-    }
-
     @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
     private Composite filtersPanel;
+    private final Composite presentationPanel;
     private ControlEnableState filtersEnableState;
     private Combo filtersText;
     private Text statusLabel;
@@ -187,10 +182,13 @@ public class ResultSetViewer extends Viewer
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
         createFiltersPanel();
-        this.activePresentation = new SpreadsheetPresentation();
-        this.activePresentation.createPresentation(this, viewerPanel);
 
-        createStatusBar(viewerPanel);
+        this.presentationPanel = UIUtils.createPlaceholder(viewerPanel, 1);
+        this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        setActivePresentation(new EmptyPresentation());
+
+        createStatusBar();
 
         this.viewerPanel.addDisposeListener(new DisposeListener() {
             @Override
@@ -503,16 +501,39 @@ public class ResultSetViewer extends Viewer
     void updatePresentation(DBCResultSet resultSet) {
         //if (resultSet.getSourceStatement().g)
         if (resultSet instanceof StatResultSet) {
-            //setActivePresentation(new StatisticsPresentation());
             presentations = Collections.emptyList();
+            setActivePresentation(new StatisticsPresentation());
+            activePresentationDescriptor = null;
         } else {
             presentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet);
+            if (!presentations.isEmpty()) {
+                for (ResultSetPresentationDescriptor pd : presentations) {
+                    if (pd == activePresentationDescriptor) {
+                        // Keep the same presentation
+                        return;
+                    }
+                }
+                ResultSetPresentationDescriptor pd = presentations.get(0);
+                try {
+                    IResultSetPresentation instance = pd.createInstance();
+                    activePresentationDescriptor = pd;
+                    setActivePresentation(instance);
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
         }
     }
 
-    private void setActivePresentation(StatisticsPresentation presentation) {
+    private void setActivePresentation(IResultSetPresentation presentation) {
+        // Dispose previous presentation
+        for (Control child : presentationPanel.getChildren()) {
+            child.dispose();
+        }
+        // Set new one
         activePresentation = presentation;
-        activePresentation.createPresentation(this, viewerPanel);
+        activePresentation.createPresentation(this, presentationPanel);
+        presentationPanel.layout();
     }
 
     @Nullable
@@ -606,11 +627,11 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void createStatusBar(Composite parent)
+    private void createStatusBar()
     {
-        UIUtils.createHorizontalLine(parent);
+        UIUtils.createHorizontalLine(viewerPanel);
 
-        Composite statusBar = new Composite(parent, SWT.NONE);
+        Composite statusBar = new Composite(viewerPanel, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         statusBar.setLayoutData(gd);
         GridLayout gl = new GridLayout(4, false);
@@ -1230,7 +1251,7 @@ public class ResultSetViewer extends Viewer
         if (activePresentation instanceof ISelectionProvider) {
             return (IResultSetSelection) ((ISelectionProvider) activePresentation).getSelection();
         }
-        return null;
+        return new EmptySelection();
     }
 
     @Override
@@ -1695,6 +1716,48 @@ public class ResultSetViewer extends Viewer
                     listener.handleResultSetChange();
                 }
             }
+        }
+    }
+
+    private class EmptySelection implements IResultSetSelection {
+        @Override
+        public IResultSetController getController() {
+            return ResultSetViewer.this;
+        }
+
+        @Override
+        public Collection<ResultSetRow> getSelectedRows() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Object getFirstElement() {
+            return null;
+        }
+
+        @Override
+        public Iterator iterator() {
+            return Collections.emptyList().iterator();
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return new Object[0];
+        }
+
+        @Override
+        public List toList() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
         }
     }
 
