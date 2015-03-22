@@ -138,6 +138,7 @@ public class ResultSetViewer extends Viewer
     private IResultSetPresentation activePresentation;
     private ResultSetPresentationDescriptor activePresentationDescriptor;
     private List<ResultSetPresentationDescriptor> presentations;
+    private PresentationSwitchCombo presentationSwitchCombo;
 
     @NotNull
     private final IResultSetContainer container;
@@ -499,30 +500,52 @@ public class ResultSetViewer extends Viewer
     }
 
     void updatePresentation(DBCResultSet resultSet) {
-        //if (resultSet.getSourceStatement().g)
-        if (resultSet instanceof StatResultSet) {
-            presentations = Collections.emptyList();
-            setActivePresentation(new StatisticsPresentation());
-            activePresentationDescriptor = null;
-        } else {
-            presentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet);
-            if (!presentations.isEmpty()) {
-                for (ResultSetPresentationDescriptor pd : presentations) {
-                    if (pd == activePresentationDescriptor) {
-                        // Keep the same presentation
-                        return;
+        viewerPanel.setRedraw(false);
+        try {
+            if (resultSet instanceof StatResultSet) {
+                presentations = Collections.emptyList();
+                setActivePresentation(new StatisticsPresentation());
+                activePresentationDescriptor = null;
+            } else {
+                presentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet);
+                if (!presentations.isEmpty()) {
+                    for (ResultSetPresentationDescriptor pd : presentations) {
+                        if (pd == activePresentationDescriptor) {
+                            // Keep the same presentation
+                            return;
+                        }
+                    }
+                    ResultSetPresentationDescriptor pd = presentations.get(0);
+                    try {
+                        IResultSetPresentation instance = pd.createInstance();
+                        activePresentationDescriptor = pd;
+                        setActivePresentation(instance);
+                    } catch (DBException e) {
+                        log.error(e);
                     }
                 }
-                ResultSetPresentationDescriptor pd = presentations.get(0);
-                try {
-                    IResultSetPresentation instance = pd.createInstance();
-                    activePresentationDescriptor = pd;
-                    setActivePresentation(instance);
-                } catch (DBException e) {
-                    log.error(e);
+            }
+        } finally {
+            // Update combo
+            CImageCombo combo = presentationSwitchCombo.combo;
+            if (activePresentationDescriptor == null) {
+                combo.setEnabled(false);
+            } else {
+                combo.setEnabled(true);
+                combo.removeAll();
+                for (int i = 0; i < presentations.size(); i++) {
+                    ResultSetPresentationDescriptor pd = presentations.get(i);
+                    combo.add(pd.getIcon(), pd.getLabel(), null, pd);
+                    if (pd == activePresentationDescriptor) {
+                        combo.select(i);
+                    }
                 }
             }
+
+            // Enable redraw
+            viewerPanel.setRedraw(true);
         }
+
     }
 
     private void setActivePresentation(IResultSetPresentation presentation) {
@@ -654,7 +677,9 @@ public class ResultSetViewer extends Viewer
         toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
 
         // Add presentation switcher
-        //toolBarManager.add(new PresentationSwitchCombo());
+        presentationSwitchCombo = new PresentationSwitchCombo();
+        toolBarManager.add(presentationSwitchCombo);
+        toolBarManager.add(new Separator());
 
         // handle own commands
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
@@ -2094,7 +2119,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class PresentationSwitchCombo extends ContributionItem {
+    private class PresentationSwitchCombo extends ContributionItem implements SelectionListener {
         private ToolItem toolitem;
         private CImageCombo combo;
 
@@ -2112,11 +2137,34 @@ public class ResultSetViewer extends Viewer
 
         protected Control  createControl(Composite parent) {
             combo = new CImageCombo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            combo.add(DBIcon.RS_GRID.getImage(), "GRID", null, null);
-            combo.add(DBIcon.TYPE_TEXT.getImage(), "TEXT", null, null);
-            combo.select(0);
-            toolitem.setWidth(combo.computeSize(SWT.DEFAULT, SWT.DEFAULT, true).x);
+            toolitem.setWidth(100);
+            combo.addSelectionListener(this);
             return combo;
+        }
+
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            ResultSetPresentationDescriptor selectedPresentation = (ResultSetPresentationDescriptor) combo.getData(combo.getSelectionIndex());
+            if (activePresentationDescriptor == selectedPresentation) {
+                return;
+            }
+            try {
+                IResultSetPresentation instance = selectedPresentation.createInstance();
+                activePresentationDescriptor = selectedPresentation;
+                setActivePresentation(instance);
+                instance.refreshData(true);
+            } catch (DBException e1) {
+                UIUtils.showErrorDialog(
+                    viewerPanel.getShell(),
+                    "Presentation switch",
+                    "Can't switch presentation",
+                    e1);
+            }
+        }
+
+        @Override
+        public void widgetDefaultSelected(SelectionEvent e) {
+
         }
     }
 
