@@ -21,17 +21,22 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Table;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Execution statistics presentation.
@@ -39,13 +44,35 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
  */
 public class StatisticsPresentation implements IResultSetPresentation {
 
+    private IResultSetController controller;
     private TableViewer tableViewer;
 
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
+        this.controller = controller;
+
         tableViewer = new TableViewer(parent, SWT.MULTI | SWT.FULL_SELECTION);
-        tableViewer.getTable().setLinesVisible(true);
-        tableViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+        Table table = tableViewer.getTable();
+        table.setLinesVisible(true);
+        table.setHeaderVisible(true);
+        table.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        tableViewer.setContentProvider(new ListContentProvider());
+        new TableViewerColumn(tableViewer, UIUtils.createTableColumn(table, SWT.LEFT, "Name"))
+            .setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell) {
+                    cell.setText(StatisticsPresentation.this.controller.getModel().getColumn(0).getName());
+                }
+            });
+        new TableViewerColumn(tableViewer, UIUtils.createTableColumn(table, SWT.LEFT, "Value"))
+            .setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell) {
+                    String name = CommonUtils.toString(((ResultSetRow) cell.getElement()).values[0]);
+                    cell.setText(name);
+                }
+            });
     }
 
     @Override
@@ -55,7 +82,8 @@ public class StatisticsPresentation implements IResultSetPresentation {
 
     @Override
     public void refreshData(boolean refreshMetadata) {
-        tableViewer.refresh();
+        tableViewer.setInput(controller.getModel().getAllRows());
+        UIUtils.packColumns(tableViewer.getTable());
     }
 
     @Override
