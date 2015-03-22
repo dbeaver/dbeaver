@@ -404,7 +404,7 @@ public class ResultSetViewer extends Viewer
 
                 if (container.isReadyToRun() &&
                     !model.isUpdateInProgress() &&
-                    (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleColumnCount() > 0 && supportsDataFilter()))) {
+                    (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleAttributeCount() > 0 && supportsDataFilter()))) {
                     enableFilters = true;
                 }
             }
@@ -775,12 +775,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    public boolean isColumnReadOnly(DBDAttributeBinding column)
+    public boolean isAttributeReadOnly(DBDAttributeBinding attribute)
     {
         if (isReadOnly()) {
             return true;
         }
-        if (!model.isColumnReadOnly(column)) {
+        if (!model.isAttributeReadOnly(attribute)) {
             return false;
         }
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
@@ -895,7 +895,7 @@ public class ResultSetViewer extends Viewer
     public void updateStatusMessage()
     {
         if (model.getRowCount() == 0) {
-            if (model.getVisibleColumnCount() == 0) {
+            if (model.getVisibleAttributeCount() == 0) {
                 setStatus(CoreMessages.controls_resultset_viewer_status_empty + getExecutionTimeMessage());
             } else {
                 setStatus(CoreMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage());
@@ -920,11 +920,11 @@ public class ResultSetViewer extends Viewer
 
     /**
      * Sets new metadata of result set
-     * @param columns columns metadata
+     * @param attributes attributes metadata
      */
-    void setMetaData(DBDAttributeBinding[] columns)
+    void setMetaData(DBDAttributeBinding[] attributes)
     {
-        model.setMetaData(columns);
+        model.setMetaData(attributes);
         if (model.isMetadataChanged()) {
             activePresentation.clearData();
         }
@@ -1050,7 +1050,7 @@ public class ResultSetViewer extends Viewer
         return
             !isReadOnly() &&
             model.isSingleSource() &&
-            model.getVisibleColumnCount() > 0;
+            model.getVisibleAttributeCount() > 0;
     }
 
     public boolean isRefreshInProgress() {
@@ -1107,7 +1107,7 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        if (attr != null && model.getVisibleColumnCount() > 0 && !model.isUpdateInProgress()) {
+        if (attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             // Export and other utility methods
             manager.add(new Separator());
             MenuManager filtersMenu = new MenuManager(
@@ -1146,35 +1146,35 @@ public class ResultSetViewer extends Viewer
         manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
     }
 
-    private void fillFiltersMenu(@NotNull DBDAttributeBinding column, @NotNull IMenuManager filtersMenu)
+    private void fillFiltersMenu(@NotNull DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
     {
         if (supportsDataFilter()) {
-            DBCLogicalOperator[] operators = column.getValueHandler().getSupportedOperators(column);
+            DBCLogicalOperator[] operators = attribute.getValueHandler().getSupportedOperators(attribute);
             for (DBCLogicalOperator operator : operators) {
                 if (operator.getArgumentCount() == 0) {
-                    filtersMenu.add(new FilterByColumnAction(operator, FilterByColumnType.NONE, column));
+                    filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
                 }
             }
-            for (FilterByColumnType type : FilterByColumnType.values()) {
-                if (type == FilterByColumnType.NONE) {
+            for (FilterByAttributeType type : FilterByAttributeType.values()) {
+                if (type == FilterByAttributeType.NONE) {
                     // Value filters are available only if certain cell is selected
                     continue;
                 }
                 filtersMenu.add(new Separator());
-                if (type.getValue(this, column, DBCLogicalOperator.EQUALS, true) == null) {
+                if (type.getValue(this, attribute, DBCLogicalOperator.EQUALS, true) == null) {
                     // Null cell value - no operators can be applied
                     continue;
                 }
                 for (DBCLogicalOperator operator : operators) {
                     if (operator.getArgumentCount() > 0) {
-                        filtersMenu.add(new FilterByColumnAction(operator, type, column));
+                        filtersMenu.add(new FilterByAttributeAction(operator, type, attribute));
                     }
                 }
             }
             filtersMenu.add(new Separator());
-            DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
+            DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(attribute);
             if (constraint != null && constraint.hasCondition()) {
-                filtersMenu.add(new FilterResetColumnAction(column));
+                filtersMenu.add(new FilterResetAttributeAction(attribute));
             }
         }
         filtersMenu.add(new Separator());
@@ -1460,11 +1460,11 @@ public class ResultSetViewer extends Viewer
                                 "Error executing query",
                                 "Query execution failed",
                                 error);
-                        } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleColumnCount() > 0) {
+                        } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
                             // Seems to be refresh
                             // Restore original position
                             curRow = model.getRow(focusRow);
-                            //curAttribute = model.getVisibleColumn(0);
+                            //curAttribute = model.getVisibleAttribute(0);
                             if (recordMode) {
                                 updateRecordMode();
                             } else {
@@ -1569,27 +1569,27 @@ public class ResultSetViewer extends Viewer
         }
 
         // Add new row
-        final DBDAttributeBinding[] columns = model.getColumns();
-        final Object[] cells = new Object[columns.length];
+        final DBDAttributeBinding[] attributes = model.getAttributes();
+        final Object[] cells = new Object[attributes.length];
         final int currentRowNumber = rowNum;
         // Copy cell values in new context
         DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
         try {
             if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < model.getRowCount()) {
                 Object[] origRow = model.getRowData(currentRowNumber);
-                for (int i = 0; i < columns.length; i++) {
-                    DBDAttributeBinding metaColumn = columns[i];
-                    DBSAttributeBase attribute = metaColumn.getAttribute();
+                for (int i = 0; i < attributes.length; i++) {
+                    DBDAttributeBinding metaAttr = attributes[i];
+                    DBSAttributeBase attribute = metaAttr.getAttribute();
                     if (attribute.isAutoGenerated() || attribute.isPseudoAttribute()) {
-                        // set pseudo and autoincrement columns to null
+                        // set pseudo and autoincrement attributes to null
                         cells[i] = null;
                     } else {
                         try {
-                            cells[i] = metaColumn.getValueHandler().getValueFromObject(session, attribute, origRow[i], true);
+                            cells[i] = metaAttr.getValueHandler().getValueFromObject(session, attribute, origRow[i], true);
                         } catch (DBCException e) {
                             log.warn(e);
                             try {
-                                cells[i] = DBUtils.makeNullValue(session, metaColumn.getValueHandler(), attribute);
+                                cells[i] = DBUtils.makeNullValue(session, metaAttr.getValueHandler(), attribute);
                             } catch (DBCException e1) {
                                 log.warn(e1);
                             }
@@ -1598,10 +1598,10 @@ public class ResultSetViewer extends Viewer
                 }
             } else {
                 // Initialize new values
-                for (int i = 0; i < columns.length; i++) {
-                    DBDAttributeBinding metaColumn = columns[i];
+                for (int i = 0; i < attributes.length; i++) {
+                    DBDAttributeBinding metaAttr = attributes[i];
                     try {
-                        cells[i] = DBUtils.makeNullValue(session, metaColumn.getValueHandler(), metaColumn.getAttribute());
+                        cells[i] = DBUtils.makeNullValue(session, metaAttr.getValueHandler(), metaAttr.getAttribute());
                     } catch (DBCException e) {
                         log.warn(e);
                     }
@@ -1655,10 +1655,10 @@ public class ResultSetViewer extends Viewer
     @Nullable
     DBDRowIdentifier getVirtualEntityIdentifier()
     {
-        if (!model.isSingleSource() || model.getVisibleColumnCount() == 0) {
+        if (!model.isSingleSource() || model.getVisibleAttributeCount() == 0) {
             return null;
         }
-        DBDRowIdentifier rowIdentifier = model.getVisibleColumn(0).getRowIdentifier();
+        DBDRowIdentifier rowIdentifier = model.getVisibleAttribute(0).getRowIdentifier();
         DBSEntityReferrer identifier = rowIdentifier == null ? null : rowIdentifier.getUniqueKey();
         if (identifier != null && identifier instanceof DBVEntityConstraint) {
             return rowIdentifier;
@@ -1670,7 +1670,7 @@ public class ResultSetViewer extends Viewer
     boolean checkVirtualEntityIdentifier() throws DBException
     {
         // Check for value locators
-        // Probably we have only virtual one with empty column set
+        // Probably we have only virtual one with empty attribute set
         final DBDRowIdentifier identifier = getVirtualEntityIdentifier();
         if (identifier != null) {
             if (CommonUtils.isEmpty(identifier.getAttributes())) {
@@ -1706,14 +1706,14 @@ public class ResultSetViewer extends Viewer
             return false;
         }
 
-        Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
-        constraint.setAttributes(uniqueColumns);
+        Collection<DBSEntityAttribute> uniqueAttrs = dialog.getSelectedAttributes();
+        constraint.setAttributes(uniqueAttrs);
         virtualEntityIdentifier = getVirtualEntityIdentifier();
         if (virtualEntityIdentifier == null) {
             log.warn("No virtual identifier defined");
             return false;
         }
-        virtualEntityIdentifier.reloadAttributes(monitor, model.getColumns());
+        virtualEntityIdentifier.reloadAttributes(monitor, model.getAttributes());
         DBPDataSource dataSource = getDataSource();
         if (dataSource != null) {
             dataSource.getContainer().persistConfiguration();
@@ -1724,12 +1724,12 @@ public class ResultSetViewer extends Viewer
 
     void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
-        DBDAttributeBinding firstColumn = model.getVisibleColumn(0);
-        DBDRowIdentifier rowIdentifier = firstColumn.getRowIdentifier();
+        DBDAttributeBinding firstAttribute = model.getVisibleAttribute(0);
+        DBDRowIdentifier rowIdentifier = firstAttribute.getRowIdentifier();
         if (rowIdentifier != null) {
             DBVEntityConstraint virtualKey = (DBVEntityConstraint) rowIdentifier.getUniqueKey();
             virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
-            rowIdentifier.reloadAttributes(monitor, model.getColumns());
+            rowIdentifier.reloadAttributes(monitor, model.getAttributes());
             virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
         }
 
@@ -1898,12 +1898,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private enum FilterByColumnType {
+    private enum FilterByAttributeType {
         VALUE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
             {
-                final DBDAttributeBinding attr = column;
+                final DBDAttributeBinding attr = attribute;
                 final ResultSetRow row = viewer.getCurrentRow();
                 if (attr == null || row == null) {
                     return null;
@@ -1917,7 +1917,7 @@ public class ResultSetViewer extends Viewer
         },
         INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
             {
                 if (useDefault) {
                     return "..";
@@ -1926,7 +1926,7 @@ public class ResultSetViewer extends Viewer
                     if (focusRow == null) {
                         return null;
                     }
-                    FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, column, focusRow, operator);
+                    FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, attribute, focusRow, operator);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         return dialog.getValue();
                     } else {
@@ -1937,10 +1937,10 @@ public class ResultSetViewer extends Viewer
         },
         CLIPBOARD(DBIcon.FILTER_CLIPBOARD.getImageDescriptor()) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
             {
                 try {
-                    return ResultSetUtils.getColumnValueFromClipboard(column);
+                    return ResultSetUtils.getAttributeValueFromClipboard(attribute);
                 } catch (DBCException e) {
                     log.debug("Error copying from clipboard", e);
                     return null;
@@ -1949,7 +1949,7 @@ public class ResultSetViewer extends Viewer
         },
         NONE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
             {
                 return null;
             }
@@ -1957,19 +1957,19 @@ public class ResultSetViewer extends Viewer
 
         final ImageDescriptor icon;
 
-        private FilterByColumnType(ImageDescriptor icon)
+        private FilterByAttributeType(ImageDescriptor icon)
         {
             this.icon = icon;
         }
         @Nullable
-        abstract Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, DBCLogicalOperator operator, boolean useDefault);
+        abstract Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault);
     }
 
-    private String translateFilterPattern(DBCLogicalOperator operator, FilterByColumnType type, DBDAttributeBinding column)
+    private String translateFilterPattern(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
     {
-        Object value = type.getValue(this, column, operator, true);
+        Object value = type.getValue(this, attribute, operator, true);
         DBPDataSource dataSource = getDataSource();
-        String strValue = dataSource == null ? String.valueOf(value) : SQLUtils.convertValueToSQL(dataSource, column, value);
+        String strValue = dataSource == null ? String.valueOf(value) : SQLUtils.convertValueToSQL(dataSource, attribute, value);
         if (operator.getArgumentCount() == 0) {
             return operator.getStringValue();
         } else {
@@ -1977,27 +1977,27 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class FilterByColumnAction extends Action {
+    private class FilterByAttributeAction extends Action {
         private final DBCLogicalOperator operator;
-        private final FilterByColumnType type;
-        private final DBDAttributeBinding column;
-        public FilterByColumnAction(DBCLogicalOperator operator, FilterByColumnType type, DBDAttributeBinding column)
+        private final FilterByAttributeType type;
+        private final DBDAttributeBinding attribute;
+        public FilterByAttributeAction(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
         {
-            super(column.getName() + " " + translateFilterPattern(operator, type, column), type.icon);
+            super(attribute.getName() + " " + translateFilterPattern(operator, type, attribute), type.icon);
             this.operator = operator;
             this.type = type;
-            this.column = column;
+            this.attribute = attribute;
         }
 
         @Override
         public void run()
         {
-            Object value = type.getValue(ResultSetViewer.this, column, operator, false);
+            Object value = type.getValue(ResultSetViewer.this, attribute, operator, false);
             if (operator.getArgumentCount() > 0 && value == null) {
                 return;
             }
             DBDDataFilter filter = model.getDataFilter();
-            DBDAttributeConstraint constraint = filter.getConstraint(column);
+            DBDAttributeConstraint constraint = filter.getConstraint(attribute);
             if (constraint != null) {
                 constraint.setOperator(operator);
                 constraint.setValue(value);
@@ -2007,18 +2007,18 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class FilterResetColumnAction extends Action {
-        private final DBDAttributeBinding column;
-        public FilterResetColumnAction(DBDAttributeBinding column)
+    private class FilterResetAttributeAction extends Action {
+        private final DBDAttributeBinding attribute;
+        public FilterResetAttributeAction(DBDAttributeBinding attribute)
         {
-            super("Remove filter for '" + column.getName() + "'", DBIcon.REVERT.getImageDescriptor());
-            this.column = column;
+            super("Remove filter for '" + attribute.getName() + "'", DBIcon.REVERT.getImageDescriptor());
+            this.attribute = attribute;
         }
 
         @Override
         public void run()
         {
-            DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
+            DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(attribute);
             if (constraint != null) {
                 constraint.setCriteria(null);
                 updateFiltersText();
