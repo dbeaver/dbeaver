@@ -134,7 +134,7 @@ public class ActionUtils
     }
 
     @Nullable
-    public static String findCommandDescription(String commandId, IServiceLocator serviceLocator)
+    public static String findCommandDescription(String commandId, IServiceLocator serviceLocator, boolean shortcutOnly)
     {
         String commandName = null;
         String shortcut = null;
@@ -156,7 +156,9 @@ public class ActionUtils
                 shortcut = sequence.format();
             }
         }
-
+        if (shortcutOnly) {
+            return shortcut == null ? "?" : shortcut;
+        }
         if (shortcut == null) {
             return commandName;
         }

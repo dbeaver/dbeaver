@@ -140,7 +140,7 @@ public class ResultSetViewer extends Viewer
     private List<ResultSetPresentationDescriptor> presentations;
 
     @NotNull
-    private final IResultSetContainer resultSetProvider;
+    private final IResultSetContainer container;
     @NotNull
     private final ResultSetDataReceiver dataReceiver;
     private ToolBarManager toolBarManager;
@@ -167,13 +167,13 @@ public class ResultSetViewer extends Viewer
 
     private final Color colorRed;
 
-    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer resultSetProvider)
+    public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
         super();
 
         this.site = site;
         this.recordMode = false;
-        this.resultSetProvider = resultSetProvider;
+        this.container = container;
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
@@ -398,7 +398,7 @@ public class ResultSetViewer extends Viewer
                 addFiltersHistory(whereCondition);
             }
 
-            if (resultSetProvider.isReadyToRun() &&
+            if (container.isReadyToRun() &&
                 !model.isUpdateInProgress() &&
                 (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleColumnCount() > 0 && supportsDataFilter())))
             {
@@ -695,7 +695,7 @@ public class ResultSetViewer extends Viewer
     @Nullable
     public DBSDataContainer getDataContainer()
     {
-        return curState != null ? curState.dataContainer : resultSetProvider.getDataContainer();
+        return curState != null ? curState.dataContainer : container.getDataContainer();
     }
 
     ////////////////////////////////////////////////////////////
@@ -1302,7 +1302,7 @@ public class ResultSetViewer extends Viewer
         ResultSetRow oldRow = curRow;
 
         DBSDataContainer dataContainer = getDataContainer();
-        if (resultSetProvider.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
+        if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
             if (oldRow != null && oldRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRow.getVisualNumber() / segmentSize + 1) * segmentSize;
@@ -1333,7 +1333,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public void refreshData(@Nullable Runnable onSuccess) {
         DBSDataContainer dataContainer = getDataContainer();
-        if (resultSetProvider.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
+        if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
             if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
