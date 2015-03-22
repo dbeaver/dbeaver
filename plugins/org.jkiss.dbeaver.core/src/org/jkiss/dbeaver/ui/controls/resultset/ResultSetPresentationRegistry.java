@@ -22,17 +22,10 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
-import org.jkiss.dbeaver.registry.editor.EntityManagerDescriptor;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * ResultSetPresentationRegistry
@@ -56,7 +49,7 @@ public class ResultSetPresentationRegistry {
     private ResultSetPresentationRegistry(IExtensionRegistry registry)
     {
         // Load datasource providers from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EntityEditorDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ResultSetPresentationDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if (TAG_PRESENTATION.equals(ext.getName())) {
                 ResultSetPresentationDescriptor descriptor = new ResultSetPresentationDescriptor(ext);

@@ -23,6 +23,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
@@ -43,6 +44,8 @@ public class StatisticsPresentation implements IResultSetPresentation {
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         tableViewer = new TableViewer(parent, SWT.MULTI | SWT.FULL_SELECTION);
+        tableViewer.getTable().setLinesVisible(true);
+        tableViewer.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
     @Override

@@ -31,6 +31,7 @@
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="Network Handlers" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="Resources" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
     <extension-point id="org.jkiss.dbeaver.search" name="Search providers" schema="schema/org.jkiss.dbeaver.search.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="Result set presentations" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -2362,7 +2363,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resultset.presentation">
-        <presentation
+<!--        <presentation
                 id="empty"
                 label="Empty"
                 description="Empty presentation"
@@ -2373,7 +2374,7 @@
                 label="Statistics"
                 description="Statistics presentation"
                 class="org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation">
-        </presentation>
+        </presentation>-->
         <presentation
                 id="grid"
                 label="Grid"

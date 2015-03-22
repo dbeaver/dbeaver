@@ -22,6 +22,8 @@ package org.jkiss.dbeaver.ui.controls.resultset.view;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
@@ -41,7 +43,9 @@ public class EmptyPresentation implements IResultSetPresentation {
 
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
-        placeholder = new Composite(parent, SWT.NONE);
+        placeholder = new Canvas(parent, SWT.NONE);
+        placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        placeholder.setBackground(controller.getDefaultBackground());
     }
 
     @Override
