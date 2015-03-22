@@ -154,7 +154,7 @@ public class ResultSetValueController implements DBDAttributeController, DBDRowC
     @Override
     public boolean isReadOnly()
     {
-        return controller.isColumnReadOnly(binding);
+        return controller.isAttributeReadOnly(binding);
     }
 
     @Override
@@ -200,7 +200,7 @@ public class ResultSetValueController implements DBDAttributeController, DBDRowC
     @Override
     public List<DBDAttributeBinding> getRowAttributes()
     {
-        return Arrays.asList(controller.getModel().getColumns());
+        return Arrays.asList(controller.getModel().getAttributes());
     }
 
     @Nullable

@@ -298,7 +298,7 @@ public abstract class AttributesSelectorDialog extends Dialog {
         shell.setText(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, entity.getName()));
     }
 
-    public Collection<DBSEntityAttribute> getSelectedColumns()
+    public Collection<DBSEntityAttribute> getSelectedAttributes()
     {
         List<DBSEntityAttribute> tableColumns = new ArrayList<DBSEntityAttribute>();
         Set<AttributeInfo> orderedAttributes = new TreeSet<AttributeInfo>(new Comparator<AttributeInfo>() {

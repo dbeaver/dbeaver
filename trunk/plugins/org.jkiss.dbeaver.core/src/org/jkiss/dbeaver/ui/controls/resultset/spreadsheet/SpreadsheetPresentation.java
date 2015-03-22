@@ -444,12 +444,12 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         if (attr == null || row == null) {
             return;
         }
-        if (controller.isColumnReadOnly(attr)) {
+        if (controller.isAttributeReadOnly(attr)) {
             // No inline editors for readonly columns
             return;
         }
         try {
-            Object newValue = ResultSetUtils.getColumnValueFromClipboard(attr);
+            Object newValue = ResultSetUtils.getAttributeValueFromClipboard(attr);
             if (newValue == null) {
                 return;
             }
@@ -536,8 +536,8 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
                 oldRow = controller.getModel().getRow(rowCount - 1);
             }
         }
-        if (oldAttribute == null && controller.getModel().getVisibleColumnCount() > 0) {
-            oldAttribute = controller.getModel().getVisibleColumn(0);
+        if (oldAttribute == null && controller.getModel().getVisibleAttributeCount() > 0) {
+            oldAttribute = controller.getModel().getVisibleAttribute(0);
         }
 
         this.columnOrder = recordMode ? SWT.DEFAULT : SWT.NONE;
@@ -587,16 +587,16 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
                             public void run()
                             {
                                 ResultSetModel model = controller.getModel();
-                                if (selectedColumns.size() >= model.getVisibleColumnCount()) {
+                                if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
                                     UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
                                 } else {
                                     int[] columnIndexes = new int[selectedColumns.size()];
                                     for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
-                                        columnIndexes[i] = model.getVisibleColumnIndex((DBDAttributeBinding) selectedColumns.get(i));
+                                        columnIndexes[i] = model.getVisibleAttributeIndex((DBDAttributeBinding) selectedColumns.get(i));
                                     }
                                     Arrays.sort(columnIndexes);
                                     for (int i = columnIndexes.length; i > 0; i--) {
-                                        model.setColumnVisibility(model.getVisibleColumn(columnIndexes[i - 1]), false);
+                                        model.setAttributeVisibility(model.getVisibleAttribute(columnIndexes[i - 1]), false);
                                     }
                                     controller.redrawData(true);
                                 }
@@ -700,7 +700,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
             }
             return null;
         }
-        if (controller.isColumnReadOnly(attr) && inline) {
+        if (controller.isAttributeReadOnly(attr) && inline) {
             // No inline editors for readonly columns
             return null;
         }
@@ -1131,7 +1131,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
             if (horizontal) {
                 // columns
                 if (!recordMode) {
-                    return model.getVisibleColumns().toArray();
+                    return model.getVisibleAttributes().toArray();
                 } else {
                     Object curRow = controller.getCurrentRow();
                     return curRow == null ? new Object[0] : new Object[] {curRow};
@@ -1141,7 +1141,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
                 if (!recordMode) {
                     return model.getAllRows().toArray();
                 } else {
-                    DBDAttributeBinding[] columns = model.getVisibleColumns().toArray(new DBDAttributeBinding[model.getVisibleColumnCount()]);
+                    DBDAttributeBinding[] columns = model.getVisibleAttributes().toArray(new DBDAttributeBinding[model.getVisibleAttributeCount()]);
                     if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
                         Arrays.sort(columns, new Comparator<DBDAttributeBinding>() {
                             @Override

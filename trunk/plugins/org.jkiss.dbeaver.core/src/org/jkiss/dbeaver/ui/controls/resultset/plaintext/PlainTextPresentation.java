@@ -24,27 +24,17 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 
 /**
  * Empty presentation.
@@ -52,10 +42,13 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
  */
 public class PlainTextPresentation implements IResultSetPresentation {
 
+    private IResultSetController controller;
     private StyledText text;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
+        this.controller = controller;
+
         UIUtils.createHorizontalLine(parent);
         text = new StyledText(parent, SWT.READ_ONLY | SWT.MULTI);
         text.setMargins(4, 4, 4, 4);
@@ -70,6 +63,9 @@ public class PlainTextPresentation implements IResultSetPresentation {
 
     @Override
     public void refreshData(boolean refreshMetadata) {
+        StringBuilder grid = new StringBuilder(512);
+        ResultSetModel model = controller.getModel();
+        DBDAttributeBinding[] attrs = model.getAttributes();
         text.setText("Plain Text Presentation\nPlay with it");
     }
 

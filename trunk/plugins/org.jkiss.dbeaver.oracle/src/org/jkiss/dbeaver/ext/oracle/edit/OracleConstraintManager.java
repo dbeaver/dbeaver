@@ -70,7 +70,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
             OracleObjectStatus.ENABLED);
         constraint.setName(DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
         int colIndex = 1;
-        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
             constraint.addColumn(
                 new OracleTableConstraintColumn(
                     constraint,

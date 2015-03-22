@@ -66,7 +66,7 @@ class ResultSetPersister {
     {
         this.viewer = viewer;
         this.model = viewer.getModel();
-        this.columns = model.getColumns();
+        this.columns = model.getAttributes();
     }
 
     /**
