@@ -29,15 +29,14 @@ import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -48,6 +47,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 
 import java.util.List;
 
@@ -64,6 +64,8 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
     private DBDAttributeBinding curAttribute;
     private StyledTextFindReplaceTarget findReplaceTarget;
     public boolean activated;
+    private StyleRange curLineRange;
+    private Color curLineColor;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -84,6 +86,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
         });
         findReplaceTarget = new StyledTextFindReplaceTarget(text);
         UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), text);
+        applyThemeSettings();
 
         // Register context menu
         MenuManager menuMgr = new MenuManager();
@@ -103,18 +106,27 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
         controller.getSite().registerContextMenu(menuMgr, null);
     }
 
+    private void applyThemeSettings() {
+        IThemeManager themeManager = controller.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
+        curLineColor =  themeManager.getCurrentTheme().getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+    }
+
     private void onCursorChange(int offset) {
         ResultSetModel model = controller.getModel();
 
         int lineNum = text.getLineAtOffset(offset);
-        int lineOffset = offset - text.getOffsetAtLine(lineNum);
+        int lineOffset = text.getOffsetAtLine(lineNum);
+        int horizontalOffset = offset - lineOffset;
+
+        int lineCount = text.getLineCount();
 
         int rowNum = lineNum - FIRST_ROW_LINE; //First 2 lines is header
         int colNum = 0;
-        int tmpWidth = 0;
+        int horOffsetBegin = 0, horOffsetEnd = 0;
         for (int i = 0; i < colWidths.length; i++) {
-            tmpWidth += colWidths[i];
-            if (lineOffset < tmpWidth) {
+            horOffsetBegin = horOffsetEnd;
+            horOffsetEnd += colWidths[i] + 1;
+            if (horizontalOffset < horOffsetEnd) {
                 colNum = i;
                 break;
             }
@@ -127,6 +139,18 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             curAttribute = model.getVisibleAttribute(colNum);
         }
         controller.updateEditControls();
+
+        {
+            // Highlight row
+            if (curLineRange == null || curLineRange.start != lineOffset + horOffsetBegin) {
+                curLineRange = new StyleRange(
+                    lineOffset + horOffsetBegin,
+                    horOffsetEnd - horOffsetBegin - 1,
+                    null,
+                    curLineColor);
+                text.setStyleRanges(new StyleRange[]{curLineRange});
+            }
+        }
     }
 
     @Override
