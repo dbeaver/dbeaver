@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -48,19 +46,7 @@ public class SQLEditorOutputViewer extends Composite {
         setLayout(new FillLayout());
 
         text = new StyledText(this, SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-
-        text.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e)
-            {
-                UIUtils.enableHostEditorKeyBindings(site, false);
-            }
-            @Override
-            public void focusLost(FocusEvent e)
-            {
-                UIUtils.enableHostEditorKeyBindings(site, true);
-            }
-        });
+        UIUtils.enableHostEditorKeyBindingsSupport(site, text);
         Writer out = new Writer() {
             @Override
             public void write(char[] cbuf, int off, int len) throws IOException {
