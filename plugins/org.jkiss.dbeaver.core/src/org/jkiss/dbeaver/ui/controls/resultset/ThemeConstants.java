@@ -17,12 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
+package org.jkiss.dbeaver.ui.controls.resultset;
 
 /**
  * ThemeConstants
  */
-class ThemeConstants
+public class ThemeConstants
 {
     public static final String RESULTS_PROP_PREFIX = "org.jkiss.dbeaver.sql.resultset.";
 
