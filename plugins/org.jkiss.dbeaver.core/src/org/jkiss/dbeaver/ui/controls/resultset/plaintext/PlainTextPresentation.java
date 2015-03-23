@@ -53,6 +53,7 @@ import java.util.List;
  */
 public class PlainTextPresentation implements IResultSetPresentation, IAdaptable {
 
+    public static final int FIRST_ROW_LINE = 2;
     private IResultSetController controller;
     private StyledText text;
     private int[] colWidths;
@@ -102,7 +103,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
         int lineNum = text.getLineAtOffset(offset);
         int lineOffset = offset - text.getOffsetAtLine(lineNum);
 
-        int rowNum = lineNum - 2; //First 2 lines is header
+        int rowNum = lineNum - FIRST_ROW_LINE; //First 2 lines is header
         int colNum = 0;
         int tmpWidth = 0;
         for (int i = 0; i < colWidths.length; i++) {
@@ -181,7 +182,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             }
             grid.append("\n");
         }
-
+        grid.setLength(grid.length() - 1); // cut last line fe
         text.setText(grid.toString());
     }
 
@@ -217,7 +218,26 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
 
     @Override
     public void scrollToRow(@NotNull RowPosition position) {
-
+        int caretOffset = text.getCaretOffset();
+        if (caretOffset < 0) caretOffset = 0;
+        int lineNum = text.getLineAtOffset(caretOffset);
+        if (lineNum < FIRST_ROW_LINE) {
+            lineNum = FIRST_ROW_LINE;
+        }
+        int totalLines = text.getLineCount();
+        switch (position) {
+            case FIRST:     lineNum = FIRST_ROW_LINE; break;
+            case PREVIOUS:  lineNum--; break;
+            case NEXT:      lineNum++; break;
+            case LAST:      lineNum = totalLines - 1; break;
+        }
+        if (lineNum < FIRST_ROW_LINE || lineNum >= totalLines) {
+            return;
+        }
+        int newOffset = text.getOffsetAtLine(lineNum);
+        text.setCaretOffset(newOffset);
+        //text.setSelection(newOffset, 0);
+        text.showSelection();
     }
 
     @Nullable
