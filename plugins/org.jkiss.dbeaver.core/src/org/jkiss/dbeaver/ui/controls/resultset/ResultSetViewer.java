@@ -92,6 +92,7 @@ import java.util.List;
  * ResultSetViewer
  *
  * TODO: fix presentation contributions to toolbar
+ * TODO: save current presentation i nregistry
  *
  * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
@@ -602,7 +603,7 @@ public class ResultSetViewer extends Viewer
     {
         //Object state = savePresentationState();
         //this.redrawData(false);
-        activePresentation.refreshData(true);
+        activePresentation.refreshData(true, false);
         this.updateStatusMessage();
         //restorePresentationState(state);
     }
@@ -642,14 +643,14 @@ public class ResultSetViewer extends Viewer
 
             // Set cursor on new row
             if (!recordMode) {
-                activePresentation.refreshData(false);
+                activePresentation.refreshData(false, false);
                 this.updateFiltersText();
                 this.updateStatusMessage();
             } else {
                 this.updateRecordMode();
             }
         } else {
-            activePresentation.refreshData(false);
+            activePresentation.refreshData(false, false);
         }
     }
 
@@ -750,7 +751,7 @@ public class ResultSetViewer extends Viewer
         //Object state = savePresentationState();
         this.recordMode = recordMode;
         //redrawData(false);
-        activePresentation.refreshData(true);
+        activePresentation.refreshData(true, false);
         activePresentation.changeMode(recordMode);
         updateStatusMessage();
         //restorePresentationState(state);
@@ -882,7 +883,7 @@ public class ResultSetViewer extends Viewer
         if (error) {
             statusLabel.setForeground(colorRed);
         } else if (colorRed.equals(statusLabel.getForeground())) {
-            statusLabel.setForeground(filtersText.getForeground());
+            statusLabel.setForeground(getDefaultForeground());
         }
         if (status == null) {
             status = "???"; //$NON-NLS-1$
@@ -924,7 +925,7 @@ public class ResultSetViewer extends Viewer
     {
         model.setMetaData(attributes);
         if (model.isMetadataChanged()) {
-            activePresentation.clearData();
+            activePresentation.clearMetaData();
         }
     }
 
@@ -949,8 +950,12 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
-        this.activePresentation.refreshData(metaChanged);
-        this.redrawData(true);
+        this.activePresentation.refreshData(metaChanged, false);
+        if (recordMode) {
+            this.updateRecordMode();
+        }
+        this.updateFiltersText();
+        this.updateStatusMessage();
         this.updateEditControls();
     }
 
@@ -958,7 +963,7 @@ public class ResultSetViewer extends Viewer
     {
         model.appendData(rows);
         //redrawData(true);
-        activePresentation.refreshData(false);
+        activePresentation.refreshData(false, true);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
 
@@ -1486,9 +1491,6 @@ public class ResultSetViewer extends Viewer
                             }
                             restorePresentationState(presentationState);
                             activePresentation.updateValueView();
-                        } else {
-                            activePresentation.clearData();
-                            activePresentation.refreshData(true);
                         }
 
                         if (error == null) {
@@ -1520,7 +1522,7 @@ public class ResultSetViewer extends Viewer
     {
         this.model.clearData();
         this.curRow = null;
-        this.activePresentation.clearData();
+        this.activePresentation.clearMetaData();
     }
 
     @Override
@@ -2183,7 +2185,7 @@ public class ResultSetViewer extends Viewer
                 IResultSetPresentation instance = selectedPresentation.createInstance();
                 activePresentationDescriptor = selectedPresentation;
                 setActivePresentation(instance);
-                instance.refreshData(true);
+                instance.refreshData(true, false);
             } catch (DBException e1) {
                 UIUtils.showErrorDialog(
                     viewerPanel.getShell(),

@@ -31,11 +31,14 @@ import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -60,12 +63,14 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
     public static final int FIRST_ROW_LINE = 2;
     private IResultSetController controller;
     private StyledText text;
-    private int[] colWidths;
     private DBDAttributeBinding curAttribute;
     private StyledTextFindReplaceTarget findReplaceTarget;
     public boolean activated;
-    private StyleRange curLineRange;
     private Color curLineColor;
+
+    private int[] colWidths;
+    private StyleRange curLineRange;
+    private int totalRows = 0;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -82,6 +87,18 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             @Override
             public void caretMoved(CaretEvent event) {
                 onCursorChange(event.caretOffset);
+            }
+        });
+
+        final ScrollBar verticalBar = text.getVerticalBar();
+        verticalBar.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (verticalBar.getSelection() + verticalBar.getPageIncrement() >= verticalBar.getMaximum()) {
+                    if (controller.isHasMoreData()) {
+                        controller.readNextSegment();
+                    }
+                }
             }
         });
         findReplaceTarget = new StyledTextFindReplaceTarget(text);
@@ -148,8 +165,17 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
                     horOffsetEnd - horOffsetBegin - 1,
                     null,
                     curLineColor);
-                text.setStyleRanges(new StyleRange[]{curLineRange});
+                text.getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        text.setStyleRanges(new StyleRange[]{curLineRange});
+                    }
+                });
             }
+        }
+
+        if (lineNum == lineCount - 1 && controller.isHasMoreData()) {
+            controller.readNextSegment();
         }
     }
 
@@ -159,53 +185,65 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
     }
 
     @Override
-    public void refreshData(boolean refreshMetadata) {
+    public void refreshData(boolean refreshMetadata, boolean append) {
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
         List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
-        colWidths = new int[attrs.size()];
 
-        for (int i = 0; i < attrs.size(); i++) {
-            DBDAttributeBinding attr = attrs.get(i);
-            colWidths[i] = attr.getName().length();
-            for (ResultSetRow row : model.getAllRows()) {
-                String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
-                colWidths[i] = Math.max(colWidths[i], displayString.length());
-            }
-        }
-        for (int i = 0; i < colWidths.length; i++) {
-            colWidths[i]++;
-        }
+        List<ResultSetRow> allRows = model.getAllRows();
+        if (colWidths == null) {
+            // Calculate column widths
+            colWidths = new int[attrs.size()];
 
-        // Print header
-        for (int i = 0; i < attrs.size(); i++) {
-            DBDAttributeBinding attr = attrs.get(i);
-            String attrName = attr.getName();
-            grid.append(attrName);
-            for (int k = colWidths[i] - attrName.length(); k >0 ; k--) {
-                grid.append(" ");
-            }
-            grid.append("|");
-        }
-        grid.append("\n");
-
-        // Print divider
-        // Print header
-        for (int i = 0; i < attrs.size(); i++) {
-            for (int k = colWidths[i]; k >0 ; k--) {
-                grid.append("-");
-            }
-            grid.append("|");
-        }
-        grid.append("\n");
-
-        // Print rows
-        for (ResultSetRow row : model.getAllRows()) {
             for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
+                colWidths[i] = attr.getName().length();
+                for (ResultSetRow row : allRows) {
+                    String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
+                    colWidths[i] = Math.max(colWidths[i], displayString.length());
+                }
+            }
+            for (int i = 0; i < colWidths.length; i++) {
+                colWidths[i]++;
+            }
+        }
+
+        if (!append) {
+            // Print header
+            for (int i = 0; i < attrs.size(); i++) {
+                DBDAttributeBinding attr = attrs.get(i);
+                String attrName = attr.getName();
+                grid.append(attrName);
+                for (int k = colWidths[i] - attrName.length(); k > 0; k--) {
+                    grid.append(" ");
+                }
+                grid.append("|");
+            }
+            grid.append("\n");
+
+            // Print divider
+            // Print header
+            for (int i = 0; i < attrs.size(); i++) {
+                for (int k = colWidths[i]; k > 0; k--) {
+                    grid.append("-");
+                }
+                grid.append("|");
+            }
+            grid.append("\n");
+        }
+
+        // Print rows
+        int firstRow = append ? totalRows : 0;
+        if (append) {
+            grid.append("\n");
+        }
+        for (int i = firstRow; i < allRows.size(); i++) {
+            ResultSetRow row = allRows.get(i);
+            for (int k = 0; k < attrs.size(); k++) {
+                DBDAttributeBinding attr = attrs.get(k);
                 String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
                 grid.append(displayString);
-                for (int k = colWidths[i] - displayString.length(); k >0 ; k--) {
+                for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
                     grid.append(" ");
                 }
                 grid.append("|");
@@ -213,7 +251,14 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             grid.append("\n");
         }
         grid.setLength(grid.length() - 1); // cut last line fe
-        text.setText(grid.toString());
+
+        if (append) {
+            text.append(grid.toString());
+        } else {
+            text.setText(grid.toString());
+        }
+
+        totalRows = allRows.size();
     }
 
     @Override
@@ -222,8 +267,10 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
     }
 
     @Override
-    public void clearData() {
-        colWidths = new int[0];
+    public void clearMetaData() {
+        colWidths = null;
+        curLineRange = null;
+        totalRows = 0;
     }
 
     @Override

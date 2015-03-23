@@ -99,7 +99,7 @@ public class EmptyPresentation implements IResultSetPresentation {
     }
 
     @Override
-    public void refreshData(boolean refreshMetadata) {
+    public void refreshData(boolean refreshMetadata, boolean append) {
 
     }
 
@@ -109,7 +109,7 @@ public class EmptyPresentation implements IResultSetPresentation {
     }
 
     @Override
-    public void clearData() {
+    public void clearMetaData() {
 
     }
 

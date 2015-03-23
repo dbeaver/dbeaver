@@ -270,7 +270,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
     private void dispose()
     {
         closeEditors();
-        clearData();
+        clearMetaData();
 
         themeManager.removePropertyChangeListener(themeChangeListener);
 
@@ -490,7 +490,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
     }
 
     @Override
-    public void refreshData(boolean refreshMetadata) {
+    public void refreshData(boolean refreshMetadata, boolean append) {
         // Cache preferences
         IPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
@@ -515,7 +515,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
     }
 
     @Override
-    public void clearData() {
+    public void clearMetaData() {
         this.curAttribute = null;
         this.columnOrder = SWT.NONE;
     }
@@ -603,7 +603,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
                             for (int i = columnIndexes.length; i > 0; i--) {
                                 model.setAttributeVisibility(model.getVisibleAttribute(columnIndexes[i - 1]), false);
                             }
-                            refreshData(true);
+                            refreshData(true, false);
                         }
                     }
                 });
