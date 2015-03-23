@@ -49,60 +49,71 @@ public class DynamicFindReplaceTarget implements IFindReplaceTarget, IFindReplac
     @Override
     public boolean canPerformFind()
     {
-        return this.target != null && this.target.canPerformFind();
+        IFindReplaceTarget t = getTarget();
+        return t != null && t.canPerformFind();
     }
 
     @Override
     public int findAndSelect(int widgetOffset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord)
     {
-        return this.target.findAndSelect(widgetOffset, findString, searchForward, caseSensitive, wholeWord);
+        IFindReplaceTarget t = getTarget();
+        return t == null ? -1 : t.findAndSelect(widgetOffset, findString, searchForward, caseSensitive, wholeWord);
     }
 
     @Override
     public Point getSelection()
     {
-        return this.target.getSelection();
+        IFindReplaceTarget t = getTarget();
+        return t == null ? new Point(0, 0) : t.getSelection();
     }
 
     @Override
     public String getSelectionText()
     {
-        return this.target.getSelectionText();
+        IFindReplaceTarget t = getTarget();
+        return t == null ? "" : t.getSelectionText();
     }
 
     @Override
     public boolean isEditable()
     {
-        return this.target.isEditable();
+        IFindReplaceTarget t = getTarget();
+        return t != null && t.isEditable();
     }
 
     @Override
     public void replaceSelection(String text)
     {
-        this.target.replaceSelection(text);
+        IFindReplaceTarget t = getTarget();
+        if (t != null) {
+            t.replaceSelection(text);
+        }
     }
 
     @Override
     public void beginSession()
     {
-        if (target instanceof IFindReplaceTargetExtension) {
-            ((IFindReplaceTargetExtension) target).beginSession();
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension) {
+            ((IFindReplaceTargetExtension) t).beginSession();
         }
     }
 
     @Override
     public void endSession()
     {
-        if (target instanceof IFindReplaceTargetExtension) {
-            ((IFindReplaceTargetExtension) target).endSession();
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension) {
+            ((IFindReplaceTargetExtension) t).endSession();
         }
     }
 
     @Override
     public IRegion getScope()
     {
-        if (target instanceof IFindReplaceTargetExtension) {
-            return ((IFindReplaceTargetExtension) target).getScope();
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension) {
+            return ((IFindReplaceTargetExtension) t).getScope();
         }
         return null;
     }
@@ -110,16 +121,18 @@ public class DynamicFindReplaceTarget implements IFindReplaceTarget, IFindReplac
     @Override
     public void setScope(IRegion scope)
     {
-        if (target instanceof IFindReplaceTargetExtension) {
-            ((IFindReplaceTargetExtension) target).setScope(scope);
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension) {
+            ((IFindReplaceTargetExtension) t).setScope(scope);
         }
     }
 
     @Override
     public Point getLineSelection()
     {
-        if (target instanceof IFindReplaceTargetExtension) {
-            return ((IFindReplaceTargetExtension) target).getLineSelection();
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension) {
+            return ((IFindReplaceTargetExtension) t).getLineSelection();
         }
         return getSelection();
     }
@@ -127,32 +140,36 @@ public class DynamicFindReplaceTarget implements IFindReplaceTarget, IFindReplac
     @Override
     public void setSelection(int offset, int length)
     {
-        if (target instanceof IFindReplaceTargetExtension) {
-            ((IFindReplaceTargetExtension) target).setSelection(offset, length);
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension) {
+            ((IFindReplaceTargetExtension) t).setSelection(offset, length);
         }
     }
 
     @Override
     public void setScopeHighlightColor(Color color)
     {
-        if (target instanceof IFindReplaceTargetExtension) {
-            ((IFindReplaceTargetExtension) target).setScopeHighlightColor(color);
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension) {
+            ((IFindReplaceTargetExtension) t).setScopeHighlightColor(color);
         }
     }
 
     @Override
     public void setReplaceAllMode(boolean replaceAll)
     {
-        if (target instanceof IFindReplaceTargetExtension) {
-            ((IFindReplaceTargetExtension) target).setReplaceAllMode(replaceAll);
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension) {
+            ((IFindReplaceTargetExtension) t).setReplaceAllMode(replaceAll);
         }
     }
 
     @Override
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
-        if (target instanceof IFindReplaceTargetExtension3) {
-            return ((IFindReplaceTargetExtension3) target).findAndSelect(offset, findString, searchForward, caseSensitive, wholeWord, regExSearch);
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension3) {
+            return ((IFindReplaceTargetExtension3) t).findAndSelect(offset, findString, searchForward, caseSensitive, wholeWord, regExSearch);
         }
         return findAndSelect(offset, findString, searchForward, caseSensitive, wholeWord);
     }
@@ -160,8 +177,9 @@ public class DynamicFindReplaceTarget implements IFindReplaceTarget, IFindReplac
     @Override
     public void replaceSelection(String text, boolean regExReplace)
     {
-        if (target instanceof IFindReplaceTargetExtension3) {
-            ((IFindReplaceTargetExtension3) target).replaceSelection(text, regExReplace);
+        IFindReplaceTarget t = getTarget();
+        if (t instanceof IFindReplaceTargetExtension3) {
+            ((IFindReplaceTargetExtension3) t).replaceSelection(text, regExReplace);
         }
     }
 
