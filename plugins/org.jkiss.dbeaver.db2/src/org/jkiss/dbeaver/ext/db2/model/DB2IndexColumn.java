@@ -178,10 +178,10 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     @Override
     public String getDescription()
     {
-        if ((virtualCol != null) && (virtualCol.isVirtual())) {
-            return virtualCol.getName();
-        } else {
+        if ((virtualCol == null) || (virtualCol.isNotVirtual())) {
             return tableColumn.getDescription();
+        } else {
+            return virtualCol.getName();
         }
     }
 
