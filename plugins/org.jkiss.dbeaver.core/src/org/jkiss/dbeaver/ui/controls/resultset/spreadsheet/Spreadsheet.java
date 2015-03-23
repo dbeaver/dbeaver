@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -30,7 +29,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -318,14 +316,12 @@ public class Spreadsheet extends LightGrid implements Listener {
             @Override
             public void menuAboutToShow(IMenuManager manager)
             {
-                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-
                 // Let controller to provide it's own menu items
                 GridPos focusPos = getFocusPos();
                 presentation.fillContextMenu(
-                    focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
-                    focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null,
-                    manager);
+                    manager, focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
+                    focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null
+                );
             }
         });
         menuMgr.setRemoveAllWhenShown(true);

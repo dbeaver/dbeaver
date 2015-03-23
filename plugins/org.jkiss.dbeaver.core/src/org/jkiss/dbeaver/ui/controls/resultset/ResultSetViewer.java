@@ -40,6 +40,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISaveablePart2;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.ICommandService;
@@ -1066,6 +1067,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row)
     {
+        manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         // Custom oldValue items
         if (attr != null && row != null) {
             final ResultSetValueController valueController = new ResultSetValueController(

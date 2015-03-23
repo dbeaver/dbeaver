@@ -571,7 +571,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         //controller.setCurrentRow(oldRow);
     }
 
-    public void fillContextMenu(@Nullable Object colObject, @Nullable Object rowObject, @NotNull IMenuManager manager) {
+    public void fillContextMenu(@NotNull IMenuManager manager, @Nullable Object colObject, @Nullable Object rowObject) {
         final DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowObject : colObject);
         final ResultSetRow row = (ResultSetRow)(controller.isRecordMode() ? colObject : rowObject);
         controller.fillContextMenu(manager, attr, row);
