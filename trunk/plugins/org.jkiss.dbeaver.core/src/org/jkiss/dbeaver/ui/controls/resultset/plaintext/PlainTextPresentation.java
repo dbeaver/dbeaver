@@ -19,11 +19,13 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.plaintext;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
@@ -36,6 +38,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.ui.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
@@ -48,12 +51,13 @@ import java.util.List;
  * Empty presentation.
  * Used when RSV has no results (initially).
  */
-public class PlainTextPresentation implements IResultSetPresentation {
+public class PlainTextPresentation implements IResultSetPresentation, IAdaptable {
 
     private IResultSetController controller;
     private StyledText text;
     private int[] colWidths;
     private DBDAttributeBinding curAttribute;
+    private StyledTextFindReplaceTarget findReplaceTarget;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -72,6 +76,7 @@ public class PlainTextPresentation implements IResultSetPresentation {
                 onCursorChange(event.caretOffset);
             }
         });
+        findReplaceTarget = new StyledTextFindReplaceTarget(text);
 
         // Register context menu
         MenuManager menuMgr = new MenuManager();
@@ -224,7 +229,14 @@ public class PlainTextPresentation implements IResultSetPresentation {
     @Nullable
     @Override
     public String copySelectionToString(boolean copyHeader, boolean copyRowNumbers, boolean cut, String delimiter, DBDDisplayFormat format) {
-        return null;
+        return text.getSelectionText();
     }
 
+    @Override
+    public Object getAdapter(Class adapter) {
+        if (adapter == IFindReplaceTarget.class) {
+            return findReplaceTarget;
+        }
+        return null;
+    }
 }

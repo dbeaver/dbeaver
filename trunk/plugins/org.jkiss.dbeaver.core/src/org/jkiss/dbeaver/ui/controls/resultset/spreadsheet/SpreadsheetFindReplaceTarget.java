@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.IFindReplaceTargetExtension;
 import org.eclipse.jface.text.IFindReplaceTargetExtension3;
@@ -26,6 +25,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
@@ -59,7 +59,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     @Override
     public boolean canPerformFind()
     {
-        return true;//resultSet.getModel().isEmpty();
+        return true;
     }
 
     @Override
@@ -72,7 +72,6 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     public Point getSelection()
     {
         Collection<GridPos> selection = owner.getSpreadsheet().getSelection();
-        //GridCell selection = resultSet.getSelection().getFirstElement();
         if (selection.isEmpty()) {
             return new Point(-1, -1);
         } else {
