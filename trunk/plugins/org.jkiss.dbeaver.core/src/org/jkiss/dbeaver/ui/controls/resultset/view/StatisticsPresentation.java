@@ -50,7 +50,7 @@ public class StatisticsPresentation implements IResultSetPresentation {
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         this.controller = controller;
-
+        UIUtils.createHorizontalLine(parent);
         tableViewer = new TableViewer(parent, SWT.MULTI | SWT.FULL_SELECTION);
         Table table = tableViewer.getTable();
         table.setLinesVisible(true);
