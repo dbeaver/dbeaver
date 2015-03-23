@@ -820,7 +820,7 @@ public class UIUtils {
 
     public static void runInUI(@Nullable Shell shell, @NotNull Runnable runnable)
     {
-        final Display display = shell == null ? Display.getDefault() : shell.getDisplay();
+        final Display display = shell == null || shell.isDisposed() ? Display.getDefault() : shell.getDisplay();
         if (display.getThread() != Thread.currentThread()) {
             display.syncExec(runnable);
         } else {

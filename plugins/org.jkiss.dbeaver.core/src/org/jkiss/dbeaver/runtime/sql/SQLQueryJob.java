@@ -575,7 +575,7 @@ public class SQLQueryJob extends DataSourceJob
         }
         finally {
             try {
-                dataReceiver.fetchEnd(session);
+                dataReceiver.fetchEnd(session, resultSet);
             } catch (DBCException e) {
                 log.error("Error while handling end of result set fetch", e);
             }

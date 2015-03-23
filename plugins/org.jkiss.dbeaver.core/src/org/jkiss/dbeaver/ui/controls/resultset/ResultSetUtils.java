@@ -56,9 +56,13 @@ public class ResultSetUtils
         DBDAttributeBindingMeta[] bindings,
         List<Object[]> rows)
     {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        monitor.beginTask("Discover resultset metadata", 3);
         Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<DBSEntity, DBDRowIdentifier>();
         try {
+            monitor.subTask("Discover attributes");
             for (DBDAttributeBindingMeta binding : bindings) {
+                monitor.subTask("Discover attribute '" + binding.getName() + "'");
                 DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
                 DBCEntityMetaData entityMeta = attrMeta.getEntityMetaData();
                 Object metaSource = attrMeta.getSource();
@@ -75,14 +79,14 @@ public class ResultSetUtils
                         String catalogName = entityMeta.getCatalogName();
                         String schemaName = entityMeta.getSchemaName();
                         String entityName = entityMeta.getEntityName();
-                        Class<? extends DBSObject> scChildType = objectContainer.getChildType(session.getProgressMonitor());
+                        Class<? extends DBSObject> scChildType = objectContainer.getChildType(monitor);
                         DBSObject entityObject;
                         if (!CommonUtils.isEmpty(catalogName) && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {
                             // Do not use catalog name
                             // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2)
-                            entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+                            entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
                         } else {
-                            entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
+                            entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
                         }
                         if (entityObject == null) {
                             log.debug("Table '" + DBUtils.getSimpleQualifiedName(catalogName, schemaName, entityName) + "' not found in metadata catalog");
@@ -101,15 +105,18 @@ public class ResultSetUtils
                     if (attrMeta.getPseudoAttribute() != null) {
                         tableColumn = attrMeta.getPseudoAttribute().createFakeAttribute(entity, attrMeta);
                     } else {
-                        tableColumn = entity.getAttribute(session.getProgressMonitor(), attrMeta.getName());
+                        tableColumn = entity.getAttribute(monitor, attrMeta.getName());
                     }
 
                     binding.setEntityAttribute(tableColumn);
                 }
             }
+            monitor.worked(1);
 
             // Init row identifiers
+            monitor.subTask("Early bindings");
             for (DBDAttributeBindingMeta binding : bindings) {
+                monitor.subTask("Bind attribute '" + binding.getName() + "'");
                 DBSEntityAttribute attr = binding.getEntityAttribute();
                 if (attr == null) {
                     continue;
@@ -117,7 +124,7 @@ public class ResultSetUtils
                 DBSEntity entity = attr.getParentObject();
                 DBDRowIdentifier rowIdentifier = locatorMap.get(entity);
                 if (rowIdentifier == null) {
-                    DBSEntityReferrer entityIdentifier = getBestIdentifier(session.getProgressMonitor(), entity, bindings);
+                    DBSEntityReferrer entityIdentifier = getBestIdentifier(monitor, entity, bindings);
                     if (entityIdentifier != null) {
                         rowIdentifier = new DBDRowIdentifier(
                             entity,
@@ -127,18 +134,24 @@ public class ResultSetUtils
                 }
                 binding.setRowIdentifier(rowIdentifier);
             }
+            monitor.worked(1);
 
+            monitor.subTask("Late bindings");
             // Read nested bindings
             for (DBDAttributeBinding binding : bindings) {
+                monitor.subTask("Late bind attribute '" + binding.getName() + "'");
                 binding.lateBinding(session, rows);
             }
             // Reload attributes in row identifiers
             for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
-                rowIdentifier.reloadAttributes(session.getProgressMonitor(), bindings);
+                rowIdentifier.reloadAttributes(monitor, bindings);
             }
         }
         catch (DBException e) {
             log.error("Can't extract column identifier info", e);
+        }
+        finally {
+            monitor.done();
         }
     }
 

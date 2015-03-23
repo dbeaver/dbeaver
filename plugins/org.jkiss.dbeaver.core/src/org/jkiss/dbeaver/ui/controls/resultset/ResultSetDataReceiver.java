@@ -18,8 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -74,12 +74,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         this.maxRows = maxRows;
 
         if (!nextSegmentRead) {
-            runInUI(new Runnable() {
-                @Override
-                public void run() {
-                    resultSetViewer.updatePresentation(resultSet);
-                }
-            });
             // Get columns metadata
             DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
@@ -128,19 +122,27 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     }
 
     @Override
-    public void fetchEnd(DBCSession session)
+    public void fetchEnd(DBCSession session, final DBCResultSet resultSet)
         throws DBCException
     {
-        // Read locators' metadata
-        ResultSetUtils.findValueLocators(session, metaColumns, rows);
+        if (!nextSegmentRead) {
+            // Read locators' metadata
+            ResultSetUtils.findValueLocators(session, metaColumns, rows);
+
+            runInUI(new Runnable() {
+                @Override
+                public void run() {
+                    resultSetViewer.updatePresentation(resultSet);
+                }
+            });
+        }
 
         final List<Object[]> tmpRows = rows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
         runInUI(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 // Push data into viewer
                 if (!nextSegmentRead) {
                     resultSetViewer.setData(tmpRows);

@@ -455,7 +455,7 @@ public class WMIClass extends WMIContainer
                 }
             } finally {
                 try {
-                    dataReceiver.fetchEnd(session);
+                    dataReceiver.fetchEnd(session, resultSet);
                 } catch (DBCException e) {
                     log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                 }

@@ -177,7 +177,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void fetchEnd(DBCSession session) throws DBCException
+    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException
     {
         if (rowsExported > 0) {
             insertBatch(true);

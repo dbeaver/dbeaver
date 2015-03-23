@@ -183,7 +183,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
                     }
                 } finally {
                     try {
-                        dataReceiver.fetchEnd(session);
+                        dataReceiver.fetchEnd(session, dbResult);
                     } catch (DBCException e) {
                         log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                     }
