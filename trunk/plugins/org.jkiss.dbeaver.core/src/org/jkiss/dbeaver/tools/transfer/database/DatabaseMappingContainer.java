@@ -225,7 +225,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         }
 
         @Override
-        public void fetchEnd(DBCSession session) throws DBCException
+        public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException
         {
         }
 

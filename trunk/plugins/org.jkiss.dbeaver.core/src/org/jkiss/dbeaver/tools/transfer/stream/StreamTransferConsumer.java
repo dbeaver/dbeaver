@@ -150,7 +150,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchEnd(DBCSession session) throws DBCException
+    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException
     {
     }
 

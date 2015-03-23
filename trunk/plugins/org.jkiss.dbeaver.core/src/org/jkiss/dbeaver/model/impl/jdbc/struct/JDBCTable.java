@@ -208,13 +208,20 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                                     monitor.subTask(rowCount + CoreMessages.model_jdbc__rows_fetched);
                                     monitor.worked(100);
                                 }
+/*
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+*/
 
                             }
                             statistics.setFetchTime(System.currentTimeMillis() - startTime);
                             statistics.setRowsFetched(rowCount);
                         } finally {
                             try {
-                                dataReceiver.fetchEnd(session);
+                                dataReceiver.fetchEnd(session, dbResult);
                             } catch (DBCException e) {
                                 log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                             }
