@@ -101,7 +101,7 @@ import java.util.List;
  * Spreadsheet presentation.
  * Visualizes results as grid.
  */
-public class SpreadsheetPresentation implements IResultSetPresentation, ISelectionProvider, IStatefulControl, IAdaptable  {
+public class SpreadsheetPresentation implements IResultSetPresentation, IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable  {
 
     static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
@@ -455,6 +455,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         return tdt.toString();
     }
 
+    @Override
     public void pasteFromClipboard()
     {
         DBDAttributeBinding attr = getFocusAttribute();
@@ -669,6 +670,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         openEditors.clear();
     }
 
+    @Override
     @Nullable
     public Control openValueEditor(final boolean inline)
     {
