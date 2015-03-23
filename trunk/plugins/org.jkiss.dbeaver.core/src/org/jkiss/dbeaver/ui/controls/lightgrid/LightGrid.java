@@ -1268,7 +1268,6 @@ public abstract class LightGrid extends Canvas {
         columns.clear();
         columnElements = new Object[0];
         rowElements = new Object[0];
-        redraw();
     }
 
     /**
