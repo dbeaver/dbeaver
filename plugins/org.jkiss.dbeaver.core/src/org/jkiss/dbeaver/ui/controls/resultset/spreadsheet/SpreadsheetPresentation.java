@@ -16,6 +16,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+/*
+ * Copyright (C) 2010-2015 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
@@ -558,52 +576,36 @@ public class SpreadsheetPresentation implements IResultSetPresentation, ISelecti
         final ResultSetRow row = (ResultSetRow)(controller.isRecordMode() ? colObject : rowObject);
         controller.fillContextMenu(manager, attr, row);
 
-        if (attr != null && row != null && row.isChanged()) {
-            IMenuManager editMenu = manager.findMenuUsingPath(IResultSetController.MENU_GROUP_EDIT);
-            if (editMenu != null) {
-                {
-                    Action resetValueAction = new Action(CoreMessages.controls_resultset_viewer_action_reset_value) {
-                        @Override
-                        public void run() {
-                            resetCellValue(attr, row, false);
-                        }
-                    };
-                    resetValueAction.setAccelerator(SWT.ESC);
-                    editMenu.add(resetValueAction);
+        if (attr != null && row != null) {
+            final List<Object> selectedColumns = spreadsheet.getColumnSelection();
+            if (!controller.isRecordMode() && !selectedColumns.isEmpty()) {
+                String hideTitle;
+                if (selectedColumns.size() == 1) {
+                    DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
+                    hideTitle = "Hide column '" + columnToHide.getName() + "'";
+                } else {
+                    hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
                 }
-
-                {
-                    final List<Object> selectedColumns = spreadsheet.getColumnSelection();
-                    if (!controller.isRecordMode() && !selectedColumns.isEmpty()) {
-                        String hideTitle;
-                        if (selectedColumns.size() == 1) {
-                            DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
-                            hideTitle = "Hide column '" + columnToHide.getName() + "'";
+                manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, new Action(hideTitle) {
+                    @Override
+                    public void run()
+                    {
+                        ResultSetModel model = controller.getModel();
+                        if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
+                            UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
                         } else {
-                            hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
-                        }
-                        editMenu.add(new Action(hideTitle) {
-                            @Override
-                            public void run()
-                            {
-                                ResultSetModel model = controller.getModel();
-                                if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
-                                    UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
-                                } else {
-                                    int[] columnIndexes = new int[selectedColumns.size()];
-                                    for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
-                                        columnIndexes[i] = model.getVisibleAttributeIndex((DBDAttributeBinding) selectedColumns.get(i));
-                                    }
-                                    Arrays.sort(columnIndexes);
-                                    for (int i = columnIndexes.length; i > 0; i--) {
-                                        model.setAttributeVisibility(model.getVisibleAttribute(columnIndexes[i - 1]), false);
-                                    }
-                                    controller.redrawData(true);
-                                }
+                            int[] columnIndexes = new int[selectedColumns.size()];
+                            for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
+                                columnIndexes[i] = model.getVisibleAttributeIndex((DBDAttributeBinding) selectedColumns.get(i));
                             }
-                        });
+                            Arrays.sort(columnIndexes);
+                            for (int i = columnIndexes.length; i > 0; i--) {
+                                model.setAttributeVisibility(model.getVisibleAttribute(columnIndexes[i - 1]), false);
+                            }
+                            refreshData(true);
+                        }
                     }
-                }
+                });
             }
         }
     }
