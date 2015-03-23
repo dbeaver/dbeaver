@@ -55,7 +55,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 {
     static final Log log = Log.getLog(JDBCTable.class);
     public static final String DEFAULT_TABLE_ALIAS = "x";
-    public static final int DEFAULT_READ_FETCH_SIZE = 10000;
+    //public static final int DEFAULT_READ_FETCH_SIZE = 10000;
 
     private boolean persisted;
 

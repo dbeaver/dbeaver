@@ -73,7 +73,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private String progressMessage;
 
     protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, DBDDataReceiver dataReceiver, Composite progressControl) {
-        super(CoreMessages.controls_rs_pump_job_name, DBIcon.SQL_EXECUTE.getImageDescriptor(), dataContainer.getDataSource());
+        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataContainer.getDataSource());
         progressMessage = CoreMessages.controls_rs_pump_job_name;
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;
