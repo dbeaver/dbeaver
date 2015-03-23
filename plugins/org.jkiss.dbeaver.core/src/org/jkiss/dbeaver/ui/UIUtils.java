@@ -1141,6 +1141,36 @@ public class UIUtils {
         }
     }
 
+    public static void enableHostEditorKeyBindingsSupport(final IWorkbenchPartSite partSite, Control control)
+    {
+        final boolean[] activated = new boolean[] {false};
+        control.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (!activated[0]) {
+                    UIUtils.enableHostEditorKeyBindings(partSite, false);
+                    activated[0] = true;
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (activated[0]) {
+                    UIUtils.enableHostEditorKeyBindings(partSite, true);
+                    activated[0] = false;
+                }
+            }
+        });
+        control.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                if (activated[0]) {
+                    UIUtils.enableHostEditorKeyBindings(partSite, true);
+                    activated[0] = false;
+                }
+            }
+        });
+    }
+
     public static CTabItem getTabItem(CTabFolder tabFolder, Object data)
     {
         for (CTabItem item : tabFolder.getItems()) {
