@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2013-2015 Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2015 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -18,10 +18,10 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexPageSplit;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;

@@ -21,29 +21,36 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Index Column Order
+ * DB2 Index Virtual status
  * 
  * @author Denis Forveille
  */
-public enum DB2IndexColOrder implements DBPNamedObject {
-    A("Ascending", true),
+public enum DB2IndexColVirtual implements DBPNamedObject {
+    N("", false),
 
-    D("Descending", false),
+    S("Virtual Index Column", true),
 
-    I("Include", true),
-
-    R("Random", true);
+    Y("Virtual Index Column not in this Table", true);
 
     private String name;
-    private Boolean ascending;
+    private Boolean virtual;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2IndexColOrder(String name, Boolean ascending)
+    private DB2IndexColVirtual(String name, Boolean virtual)
     {
         this.name = name;
-        this.ascending = ascending;
+        this.virtual = virtual;
+    }
+
+    // -----------------------
+    // Helpers
+    // -----------------------
+
+    public Boolean isNotVirtual()
+    {
+        return !virtual;
     }
 
     // -----------------------
@@ -64,8 +71,9 @@ public enum DB2IndexColOrder implements DBPNamedObject {
         return name;
     }
 
-    public Boolean isAscending()
+    public Boolean isVirtual()
     {
-        return ascending;
+        return virtual;
     }
+
 }
