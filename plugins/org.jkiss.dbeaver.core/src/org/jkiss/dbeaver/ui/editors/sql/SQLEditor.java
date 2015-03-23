@@ -121,7 +121,7 @@ public class SQLEditor extends SQLEditorBase
     private final List<QueryProcessor> queryProcessors = new ArrayList<QueryProcessor>();
 
     private DBSDataSourceContainer dataSourceContainer;
-    private final DynamicFindReplaceTarget findReplaceTarget = new DynamicFindReplaceTarget();
+    private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<SQLQuery>();
     private CompositeSelectionProvider selectionProvider;
 
@@ -303,16 +303,6 @@ public class SQLEditor extends SQLEditorBase
         });
 
         createResultTabs();
-
-        // Find/replace target activation
-        textWidget.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                findReplaceTarget.setTarget(getViewer().getFindReplaceTarget());
-            }
-        });
-        // By default use editor's target
-        findReplaceTarget.setTarget(getViewer().getFindReplaceTarget());
 
         // Check connection
         checkConnected();
@@ -1167,18 +1157,6 @@ public class SQLEditor extends SQLEditorBase
 
             selectionProvider.trackProvider(viewer.getActivePresentation().getControl(), viewer);
 
-            // Find/replace target activation
-            viewer.getActivePresentation().getControl().addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusGained(FocusEvent e)
-                {
-                    IFindReplaceTarget viewerFRT = (IFindReplaceTarget) viewer.getAdapter(IFindReplaceTarget.class);
-                    if (viewerFRT != null) {
-                        findReplaceTarget.setTarget(viewerFRT);
-                    }
-                }
-            });
-
             //boolean firstResultSet = queryProcessors.isEmpty();
             int tabIndex = Math.max(resultTabs.getItemCount() - 3, 0);
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
@@ -1429,8 +1407,32 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
+    private class FindReplaceTarget extends DynamicFindReplaceTarget {
+        private boolean lastFocusInEditor = true;
+        @Override
+        public IFindReplaceTarget getTarget() {
+            ResultSetViewer rsv = getResultSetViewer();
+            boolean focusInEditor = getTextViewer().getTextWidget().isFocusControl();
+            if (!focusInEditor) {
+                if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
+                    focusInEditor = false;
+                } else {
+                    focusInEditor = lastFocusInEditor;
+                }
+            }
+            lastFocusInEditor = focusInEditor;
+            if (!focusInEditor && rsv != null) {
+                IFindReplaceTarget nested = (IFindReplaceTarget) rsv.getAdapter(IFindReplaceTarget.class);
+                if (nested != null) {
+                    return nested;
+                }
+            }
+            return getTextViewer().getFindReplaceTarget();
+        }
+    }
+
     private void dumpServerOutput(final DBPDataSource dataSource, final DBCServerOutputReader outputReader) {
-        DBeaverUI.runUIJob("Dump server ouput", new DBRRunnableWithProgress() {
+        DBeaverUI.runUIJob("Dump server output", new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 if (outputViewer.isDisposed()) {
