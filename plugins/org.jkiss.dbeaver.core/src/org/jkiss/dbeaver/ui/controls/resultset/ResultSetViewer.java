@@ -92,7 +92,7 @@ import java.util.List;
  * ResultSetViewer
  *
  * TODO: fix presentation contributions to toolbar
- * TODO: save current presentation i nregistry
+ * TODO: save current presentation in registry
  *
  * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
@@ -528,10 +528,8 @@ public class ResultSetViewer extends Viewer
                 for (int i = 0; i < presentations.size(); i++) {
                     ResultSetPresentationDescriptor pd = presentations.get(i);
                     combo.add(pd.getIcon(), pd.getLabel(), null, pd);
-                    if (pd == activePresentationDescriptor) {
-                        combo.select(i);
-                    }
                 }
+                combo.select(activePresentationDescriptor);
             }
 
             // Enable redraw
@@ -557,6 +555,23 @@ public class ResultSetViewer extends Viewer
                 nested = (IFindReplaceTarget) ((IAdaptable) presentation).getAdapter(IFindReplaceTarget.class);
             }
             findReplaceTarget.setTarget(nested);
+        }
+    }
+
+    private void switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
+        try {
+            IResultSetPresentation instance = selectedPresentation.createInstance();
+            activePresentationDescriptor = selectedPresentation;
+            setActivePresentation(instance);
+            instance.refreshData(true, false);
+
+            presentationSwitchCombo.combo.select(activePresentationDescriptor);
+        } catch (DBException e1) {
+            UIUtils.showErrorDialog(
+                viewerPanel.getShell(),
+                "Presentation switch",
+                "Can't switch presentation",
+                e1);
         }
     }
 
@@ -1861,6 +1876,26 @@ public class ResultSetViewer extends Viewer
             menuManager.add(new Separator());
             menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
             activePresentation.fillMenu(menuManager);
+            if (!CommonUtils.isEmpty(presentations) && presentations.size() > 1) {
+                menuManager.add(new Separator());
+                for (final ResultSetPresentationDescriptor pd : presentations) {
+                    Action action = new Action(pd.getLabel(), IAction.AS_RADIO_BUTTON) {
+                        @Override
+                        public boolean isChecked() {
+                            return pd == activePresentationDescriptor;
+                        }
+
+                        @Override
+                        public void run() {
+                            switchPresentation(pd);
+                        }
+                    };
+                    if (pd.getIcon() != null) {
+                        //action.setImageDescriptor(ImageDescriptor.createFromImage(pd.getIcon()));
+                    }
+                    menuManager.add(action);
+                }
+            }
             menuManager.add(new Separator());
             menuManager.add(new Action("Preferences") {
                 @Override
@@ -2181,18 +2216,7 @@ public class ResultSetViewer extends Viewer
             if (activePresentationDescriptor == selectedPresentation) {
                 return;
             }
-            try {
-                IResultSetPresentation instance = selectedPresentation.createInstance();
-                activePresentationDescriptor = selectedPresentation;
-                setActivePresentation(instance);
-                instance.refreshData(true, false);
-            } catch (DBException e1) {
-                UIUtils.showErrorDialog(
-                    viewerPanel.getShell(),
-                    "Presentation switch",
-                    "Can't switch presentation",
-                    e1);
-            }
+            switchPresentation(selectedPresentation);
         }
 
         @Override
