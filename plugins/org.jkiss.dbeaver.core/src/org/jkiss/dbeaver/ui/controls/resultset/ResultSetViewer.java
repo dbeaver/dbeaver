@@ -1034,7 +1034,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean isReadOnly()
     {
-        if (model.isUpdateInProgress()) {
+        if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor)) {
             return true;
         }
         DBPDataSource dataSource = getDataSource();

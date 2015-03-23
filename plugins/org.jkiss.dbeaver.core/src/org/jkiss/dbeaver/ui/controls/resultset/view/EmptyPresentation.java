@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
  * Empty presentation.
@@ -75,11 +76,13 @@ public class EmptyPresentation implements IResultSetPresentation {
             @Override
             public void paintControl(PaintEvent e) {
                 e.gc.setFont(largeFont);
-                drawMessage(e, "No Data", 20);
+                drawMessage(e, "No Data", -10);
                 e.gc.setFont(normalFont);
-                String execQuery = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
-                String execScript = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
-                drawMessage(e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", 50);
+                if (controller.getDataContainer() instanceof SQLEditor.QueryResultsContainer) {
+                    String execQuery = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
+                    String execScript = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
+                    drawMessage(e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", 20);
+                }
             }
 
             private void drawMessage(PaintEvent e, String message, int offset) {
@@ -143,19 +146,9 @@ public class EmptyPresentation implements IResultSetPresentation {
 
     @Nullable
     @Override
-    public Control openValueEditor(boolean inline) {
-        return null;
-    }
-
-    @Nullable
-    @Override
     public String copySelectionToString(boolean copyHeader, boolean copyRowNumbers, boolean cut, String delimiter, DBDDisplayFormat format) {
         return null;
     }
 
-    @Override
-    public void pasteFromClipboard() {
-
-    }
 
 }

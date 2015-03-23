@@ -56,22 +56,27 @@ public class ResultSetCommandHandler extends AbstractHandler {
             return null;
         }
         String actionId = event.getCommand().getId();
+        IResultSetPresentation presentation = resultSet.getActivePresentation();
         if (actionId.equals(IWorkbenchCommandConstants.FILE_REFRESH)) {
             resultSet.refresh();
         } else if (actionId.equals(CMD_TOGGLE_MODE)) {
             resultSet.toggleMode();
         } else if (actionId.equals(CMD_ROW_PREVIOUS) || actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
-            resultSet.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.PREVIOUS);
+            presentation.scrollToRow(IResultSetPresentation.RowPosition.PREVIOUS);
         } else if (actionId.equals(CMD_ROW_NEXT) || actionId.equals(ITextEditorActionDefinitionIds.WORD_NEXT)) {
-            resultSet.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.NEXT);
+            presentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
         } else if (actionId.equals(CMD_ROW_FIRST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS)) {
-            resultSet.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.FIRST);
+            presentation.scrollToRow(IResultSetPresentation.RowPosition.FIRST);
         } else if (actionId.equals(CMD_ROW_LAST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT)) {
-            resultSet.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.LAST);
+            presentation.scrollToRow(IResultSetPresentation.RowPosition.LAST);
         } else if (actionId.equals(CMD_ROW_EDIT)) {
-            resultSet.getActivePresentation().openValueEditor(false);
+            if (presentation instanceof IResultSetEditor) {
+                ((IResultSetEditor) presentation).openValueEditor(false);
+            }
         } else if (actionId.equals(CMD_ROW_EDIT_INLINE)) {
-            resultSet.getActivePresentation().openValueEditor(true);
+            if (presentation instanceof IResultSetEditor) {
+                ((IResultSetEditor) presentation).openValueEditor(true);
+            }
         } else if (actionId.equals(CMD_ROW_ADD)) {
             resultSet.addNewRow(false);
         } else if (actionId.equals(CMD_ROW_COPY)) {
@@ -84,17 +89,21 @@ public class ResultSetCommandHandler extends AbstractHandler {
             resultSet.rejectChanges();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
             ResultSetUtils.copyToClipboard(
-                resultSet.getActivePresentation().copySelectionToString(
+                presentation.copySelectionToString(
                     false, false, false, null, DBDDisplayFormat.EDIT));
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE)) {
-            resultSet.getActivePresentation().pasteFromClipboard();
+            if (presentation instanceof IResultSetEditor) {
+                ((IResultSetEditor) presentation).pasteFromClipboard();
+            }
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT)) {
             ResultSetUtils.copyToClipboard(
-                resultSet.getActivePresentation().copySelectionToString(
+                presentation.copySelectionToString(
                     false, false, true, null, DBDDisplayFormat.EDIT)
             );
         } else if (actionId.equals(ITextEditorActionDefinitionIds.SMART_ENTER)) {
-            resultSet.getActivePresentation().openValueEditor(false);
+            if (presentation instanceof IResultSetEditor) {
+                ((IResultSetEditor) presentation).openValueEditor(false);
+            }
         }
 
 
