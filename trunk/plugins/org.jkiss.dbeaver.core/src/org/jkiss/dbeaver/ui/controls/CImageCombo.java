@@ -280,7 +280,9 @@ public class CImageCombo extends Composite {
         newItem.setData(data);
         if (image != null) {
             newItem.setImage(image);
-            //this.imageLabel.setImage(image);
+            if (imageLabel.getImage() == null) {
+                imageLabel.setImage(image);
+            }
         }
         if (background != null) {
             newItem.setBackground(background);

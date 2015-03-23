@@ -2159,6 +2159,7 @@ public class ResultSetViewer extends Viewer
 
         protected Control  createControl(Composite parent) {
             combo = new CImageCombo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            combo.add(DBIcon.TYPE_UNKNOWN.getImage(), "", null, null);
             toolitem.setWidth(100);
             combo.addSelectionListener(this);
             return combo;
