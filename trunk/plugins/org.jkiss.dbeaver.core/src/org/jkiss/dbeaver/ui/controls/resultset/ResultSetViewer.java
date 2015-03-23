@@ -27,6 +27,7 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.Viewer;
@@ -138,6 +139,8 @@ public class ResultSetViewer extends Viewer
     private Combo filtersText;
     private Text statusLabel;
 
+    private final DynamicFindReplaceTarget findReplaceTarget;
+
     // Presentation
     private IResultSetPresentation activePresentation;
     private ResultSetPresentationDescriptor activePresentationDescriptor;
@@ -187,7 +190,7 @@ public class ResultSetViewer extends Viewer
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
         createFiltersPanel();
-
+        this.findReplaceTarget = new DynamicFindReplaceTarget();
         this.presentationPanel = UIUtils.createPlaceholder(viewerPanel, 1);
         this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -566,6 +569,15 @@ public class ResultSetViewer extends Viewer
         activePresentation = presentation;
         activePresentation.createPresentation(this, presentationPanel);
         presentationPanel.layout();
+
+        // Update dynamic find/replace target
+        {
+            IFindReplaceTarget nested = null;
+            if (presentation instanceof IAdaptable) {
+                nested = (IFindReplaceTarget) ((IAdaptable) presentation).getAdapter(IFindReplaceTarget.class);
+            }
+            findReplaceTarget.setTarget(nested);
+        }
     }
 
     @Nullable
@@ -580,6 +592,9 @@ public class ResultSetViewer extends Viewer
     @Override
     public Object getAdapter(Class adapter)
     {
+        if (adapter == IFindReplaceTarget.class) {
+            return findReplaceTarget;
+        }
         if (adapter.isAssignableFrom(activePresentation.getClass())) {
             return activePresentation;
         }
