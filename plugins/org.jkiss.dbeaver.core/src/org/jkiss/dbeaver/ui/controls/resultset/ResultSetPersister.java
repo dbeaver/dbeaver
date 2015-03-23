@@ -563,7 +563,7 @@ class ResultSetPersister {
         }
 
         @Override
-        public void fetchEnd(DBCSession session)
+        public void fetchEnd(DBCSession session, DBCResultSet resultSet)
             throws DBCException
         {
 

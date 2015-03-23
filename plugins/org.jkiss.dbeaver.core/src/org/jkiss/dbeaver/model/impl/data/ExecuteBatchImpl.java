@@ -200,7 +200,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 }
             }
             finally {
-                keysReceiver.fetchEnd(session);
+                keysReceiver.fetchEnd(session, dbResult);
             }
         }
         finally {

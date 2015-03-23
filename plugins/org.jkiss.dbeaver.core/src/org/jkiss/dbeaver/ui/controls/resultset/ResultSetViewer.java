@@ -1456,12 +1456,15 @@ public class ResultSetViewer extends Viewer
                 if (job.getStatistics() != null) {
                     model.setStatistics(job.getStatistics());
                 }
-                getControl().getDisplay().asyncExec(new Runnable() {
+                final Control control = getControl();
+                if (control.isDisposed()) {
+                    return;
+                }
+                control.getDisplay().asyncExec(new Runnable() {
                     @Override
                     public void run()
                     {
-                        Control control = getControl();
-                        if (control == null || control.isDisposed()) {
+                        if (control.isDisposed()) {
                             return;
                         }
                         final Shell shell = control.getShell();
