@@ -47,11 +47,18 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     private boolean loaded = false;
     //private boolean running = false;
     private Composite parent;
+    private FindReplaceAction findReplaceAction;
 
     @Override
     public void createPartControl(Composite parent)
     {
         this.parent = parent;
+
+        // Register find/replace action
+        // We do it in setFocus because each entity editor registers it's own action - and they
+        // share a single action bars instance. To avoid mess just update handler every time editor activated
+        findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", this);
+        findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
     }
 
     @Override
@@ -135,12 +142,11 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
             resultSetView.getActivePresentation().getControl().setFocus();
         }
 
-        // Register find/replace action
-        // We do it in setFocus because each entity editor registers it's own action - and they
-        // share a single action bars instance. To avoid mess just update handler every time editor activated
-        FindReplaceAction findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", this); //$NON-NLS-1$
-        findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
+        refreshActions();
+    }
 
+    private void refreshActions() {
+        findReplaceAction.update();
         IActionBars actionBars = getEditorSite().getActionBars();
         actionBars.setGlobalActionHandler("dde_findReplace", findReplaceAction);
         actionBars.updateActionBars();
@@ -166,6 +172,11 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         if (resultSetView != null && resultSetView.isDirty()) {
             resultSetView.applyChanges(RuntimeUtils.makeMonitor(monitor));
         }
+    }
+
+    @Override
+    public void handleResultSetLoad() {
+        refreshActions();
     }
 
     @Override
