@@ -22,8 +22,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexColOrder;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexColVirtual;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -31,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * DB2 Index Column
@@ -38,6 +44,9 @@ import java.sql.ResultSet;
  * @author Denis Forveille
  */
 public class DB2IndexColumn extends AbstractTableIndexColumn {
+
+    private static final String I_DEP = "SELECT BSCHEMA,BNAME FROM SYSCAT.INDEXDEP WHERE INDSCHEMA = ? AND INDNAME = ? AND BTYPE = 'V' WITH UR";
+
     private DB2Index db2Index;
     private DB2TableColumn tableColumn;
 
@@ -75,6 +84,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         // Look for Table Column if column is not virtual...
         DB2Table db2Table = db2Index.getTable();
         String columnName = JDBCUtils.safeGetString(dbResult, "COLNAME");
+
         if ((virtualCol != null) && (virtualCol.isNotVirtual())) {
             this.tableColumn = db2Table.getAttribute(monitor, columnName);
             if (tableColumn == null) {
@@ -89,8 +99,15 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
                 throw new DBException(sb.toString());
             }
         } else {
+            // Virtual Column
             // Store Virtual col name instead of real table column name
             this.virtualColName = columnName;
+
+            // Look for the associated View and get the associtaed column
+            DB2View viewDep = getDependentView(monitor, db2DataSource, db2Index.getIndSchema().getName(), db2Index.getName());
+            if (viewDep != null) {
+                this.tableColumn = viewDep.getAttribute(monitor, columnName);
+            }
         }
 
     }
@@ -102,6 +119,37 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         this.colSeq = ordinalPosition;
         this.colOrder = DB2IndexColOrder.A; // Force Ascending ..
         this.virtualCol = DB2IndexColVirtual.N; // Force real column...
+    }
+
+    // -----------------
+    // Helpers
+    // -----------------
+    private DB2View getDependentView(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String indexSchema, String indexName)
+        throws DBException
+    {
+        JDBCSession session = db2DataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Read Index view dependency");
+        try {
+            JDBCPreparedStatement stmtSel = session.prepareStatement(I_DEP);
+            try {
+                stmtSel.setString(1, indexSchema);
+                stmtSel.setString(2, indexName);
+                JDBCResultSet dbResult = stmtSel.executeQuery();
+                if (dbResult.next()) {
+                    String viewSchema = dbResult.getString("BSCHEMA").trim();
+                    String viewName = dbResult.getString("BNAME");
+                    return DB2Utils.findViewBySchemaNameAndName(monitor, db2DataSource, viewSchema, viewName);
+                } else {
+                    return null;
+                }
+            } finally {
+                stmtSel.close();
+            }
+
+        } catch (SQLException e) {
+            throw new DBException(e, db2DataSource);
+        } finally {
+            session.close();
+        }
     }
 
     // -----------------
