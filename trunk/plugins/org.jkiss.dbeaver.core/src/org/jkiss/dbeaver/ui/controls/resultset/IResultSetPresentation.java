@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
  * Result set renderer.
  * Visualizes result set viewer/editor.
  *
- * May additionally implement ISelectionProvider, IStatefulControl
+ * May additionally implement IResultSetEditor, ISelectionProvider, IStatefulControl
  */
 public interface IResultSetPresentation {
 
@@ -42,7 +42,6 @@ public interface IResultSetPresentation {
         NEXT,
         LAST
     }
-
 
     void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent);
 
@@ -84,16 +83,11 @@ public interface IResultSetPresentation {
     DBDAttributeBinding getCurrentAttribute();
 
     @Nullable
-    Control openValueEditor(final boolean inline);
-
-    @Nullable
     String copySelectionToString(
         boolean copyHeader,
         boolean copyRowNumbers,
         boolean cut,
         String delimiter,
         DBDDisplayFormat format);
-
-    void pasteFromClipboard();
 
 }

@@ -129,19 +129,8 @@ public class StatisticsPresentation implements IResultSetPresentation {
 
     @Nullable
     @Override
-    public Control openValueEditor(boolean inline) {
-        return null;
-    }
-
-    @Nullable
-    @Override
     public String copySelectionToString(boolean copyHeader, boolean copyRowNumbers, boolean cut, String delimiter, DBDDisplayFormat format) {
         return null;
-    }
-
-    @Override
-    public void pasteFromClipboard() {
-
     }
 
 }

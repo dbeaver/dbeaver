@@ -19,26 +19,30 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.plaintext;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CaretEvent;
+import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
+
+import java.util.List;
 
 /**
  * Empty presentation.
@@ -49,6 +53,7 @@ public class PlainTextPresentation implements IResultSetPresentation {
     private IResultSetController controller;
     private StyledText text;
     private int[] colWidths;
+    private DBDAttributeBinding curAttribute;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -61,6 +66,12 @@ public class PlainTextPresentation implements IResultSetPresentation {
         text.setMargins(4, 4, 4, 4);
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
+        text.addCaretListener(new CaretListener() {
+            @Override
+            public void caretMoved(CaretEvent event) {
+                onCursorChange(event.caretOffset);
+            }
+        });
 
         // Register context menu
         MenuManager menuMgr = new MenuManager();
@@ -71,13 +82,39 @@ public class PlainTextPresentation implements IResultSetPresentation {
             {
                 controller.fillContextMenu(
                     manager,
-                    null,
-                    null);
+                    curAttribute,
+                    controller.getCurrentRow());
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
         text.setMenu(menu);
         controller.getSite().registerContextMenu(menuMgr, null);
+    }
+
+    private void onCursorChange(int offset) {
+        ResultSetModel model = controller.getModel();
+
+        int lineNum = text.getLineAtOffset(offset);
+        int lineOffset = offset - text.getOffsetAtLine(lineNum);
+
+        int rowNum = lineNum - 2; //First 2 lines is header
+        int colNum = 0;
+        int tmpWidth = 0;
+        for (int i = 0; i < colWidths.length; i++) {
+            tmpWidth += colWidths[i];
+            if (lineOffset < tmpWidth) {
+                colNum = i;
+                break;
+            }
+        }
+        if (rowNum < 0 && model.getRowCount() > 0) {
+            rowNum = 0;
+        }
+        if (rowNum >= 0 && rowNum < model.getRowCount() && colNum >= 0 && colNum < model.getVisibleAttributeCount()) {
+            controller.setCurrentRow(model.getRow(rowNum));
+            curAttribute = model.getVisibleAttribute(colNum);
+        }
+        controller.updateEditControls();
     }
 
     @Override
@@ -89,11 +126,11 @@ public class PlainTextPresentation implements IResultSetPresentation {
     public void refreshData(boolean refreshMetadata) {
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
-        DBDAttributeBinding[] attrs = model.getAttributes();
-        colWidths = new int[attrs.length];
+        List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
+        colWidths = new int[attrs.size()];
 
-        for (int i = 0; i < attrs.length; i++) {
-            DBDAttributeBinding attr = attrs[i];
+        for (int i = 0; i < attrs.size(); i++) {
+            DBDAttributeBinding attr = attrs.get(i);
             colWidths[i] = attr.getName().length();
             for (ResultSetRow row : model.getAllRows()) {
                 String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
@@ -105,8 +142,8 @@ public class PlainTextPresentation implements IResultSetPresentation {
         }
 
         // Print header
-        for (int i = 0; i < attrs.length; i++) {
-            DBDAttributeBinding attr = attrs[i];
+        for (int i = 0; i < attrs.size(); i++) {
+            DBDAttributeBinding attr = attrs.get(i);
             String attrName = attr.getName();
             grid.append(attrName);
             for (int k = colWidths[i] - attrName.length(); k >0 ; k--) {
@@ -118,7 +155,7 @@ public class PlainTextPresentation implements IResultSetPresentation {
 
         // Print divider
         // Print header
-        for (int i = 0; i < attrs.length; i++) {
+        for (int i = 0; i < attrs.size(); i++) {
             for (int k = colWidths[i]; k >0 ; k--) {
                 grid.append("-");
             }
@@ -128,8 +165,8 @@ public class PlainTextPresentation implements IResultSetPresentation {
 
         // Print rows
         for (ResultSetRow row : model.getAllRows()) {
-            for (int i = 0; i < attrs.length; i++) {
-                DBDAttributeBinding attr = attrs[i];
+            for (int i = 0; i < attrs.size(); i++) {
+                DBDAttributeBinding attr = attrs.get(i);
                 String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
                 grid.append(displayString);
                 for (int k = colWidths[i] - displayString.length(); k >0 ; k--) {
@@ -150,7 +187,7 @@ public class PlainTextPresentation implements IResultSetPresentation {
 
     @Override
     public void clearData() {
-
+        colWidths = new int[0];
     }
 
     @Override
@@ -181,24 +218,13 @@ public class PlainTextPresentation implements IResultSetPresentation {
     @Nullable
     @Override
     public DBDAttributeBinding getCurrentAttribute() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Control openValueEditor(boolean inline) {
-        return null;
+        return curAttribute;
     }
 
     @Nullable
     @Override
     public String copySelectionToString(boolean copyHeader, boolean copyRowNumbers, boolean cut, String delimiter, DBDDisplayFormat format) {
         return null;
-    }
-
-    @Override
-    public void pasteFromClipboard() {
-
     }
 
 }
