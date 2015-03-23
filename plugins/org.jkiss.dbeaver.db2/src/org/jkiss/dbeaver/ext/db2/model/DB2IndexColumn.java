@@ -85,7 +85,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         DB2Table db2Table = db2Index.getTable();
         String columnName = JDBCUtils.safeGetString(dbResult, "COLNAME");
 
-        if ((virtualCol != null) && (virtualCol.isNotVirtual())) {
+        if ((virtualCol == null) || (virtualCol.isNotVirtual())) {
             this.tableColumn = db2Table.getAttribute(monitor, columnName);
             if (tableColumn == null) {
                 StringBuilder sb = new StringBuilder(64);
@@ -104,7 +104,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
             this.virtualColName = columnName;
 
             // Look for the associated View and get the associtaed column
-            DB2View viewDep = getDependentView(monitor, db2DataSource, db2Index.getIndSchema().getName(), db2Index.getName());
+            DB2View viewDep = getDependentView(monitor, db2DataSource, db2Index.getIndSchema().getName().trim(), db2Index.getName());
             if (viewDep != null) {
                 this.tableColumn = viewDep.getAttribute(monitor, columnName);
             }
