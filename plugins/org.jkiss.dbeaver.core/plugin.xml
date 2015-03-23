@@ -328,6 +328,16 @@
                 <equals value="org.jkiss.dbeaver.ui.InlineWidgetEditor"/>
             </with>
         </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText">
+            <and>
+                <with variable="activeFocusControlId">
+                    <equals value="org.jkiss.dbeaver.ui.InlineWidgetEditor"/>
+                </with>
+                <with variable="activeFocusControl">
+                    <instanceof value="org.eclipse.swt.custom.StyledText"/>
+                </with>
+            </and>
+        </definition>
 
         <definition id="org.jkiss.dbeaver.core.ui.querylog.view">
             <with variable="activePart">
@@ -1149,30 +1159,31 @@
                 </handler>
 
                 <handler commandId="org.eclipse.ui.edit.text.goto.lineStart" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:lineStart">
-                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
                 </handler>
                 <handler commandId="org.eclipse.ui.edit.text.goto.lineEnd" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:lineEnd">
-                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
                 </handler>
                 <handler commandId="org.eclipse.ui.edit.text.goto.textStart" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:textStart">
-                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
                 </handler>
                 <handler commandId="org.eclipse.ui.edit.text.goto.textEnd" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:textEnd">
-                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
                 </handler>
                 <handler commandId="org.eclipse.ui.edit.text.goto.pageUp" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:pageUp">
-                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
                 </handler>
                 <handler commandId="org.eclipse.ui.edit.text.goto.pageDown" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:pageDown">
-                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
                 </handler>
                 <handler commandId="org.eclipse.ui.edit.text.goto.wordPrevious" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:wordPrevious">
-                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
                 </handler>
                 <handler commandId="org.eclipse.ui.edit.text.goto.wordNext" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:wordNext">
-                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
+                    <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetStyledText"/></activeWhen>
                 </handler>
 
+<!--
                 <handler commandId="org.eclipse.ui.edit.text.select.lineStart" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:lineStart">
                     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
                 </handler>
@@ -1197,6 +1208,7 @@
                 <handler commandId="org.eclipse.ui.edit.text.select.wordNext" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:wordNext">
                     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineWidgetEditor"/></activeWhen>
                 </handler>
+-->
 
         <!--handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
