@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.model.impl.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
@@ -71,37 +74,7 @@ public abstract class BaseValueEditor<T extends Control> implements DBDValueEdit
     protected void initInlineControl(final Control inlineControl)
     {
         boolean isInline = (valueController.getEditType() == DBDValueController.EditType.INLINE);
-
-        // Panel controls
-        inlineControl.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e)
-            {
-                if (!activated) {
-                    UIUtils.enableHostEditorKeyBindings(valueController.getValueSite(), false);
-                    activated = true;
-                }
-            }
-            @Override
-            public void focusLost(FocusEvent e)
-            {
-                if (activated) {
-                    UIUtils.enableHostEditorKeyBindings(valueController.getValueSite(), true);
-                    activated = false;
-                }
-            }
-        });
-        inlineControl.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                if (activated) {
-                    UIUtils.enableHostEditorKeyBindings(valueController.getValueSite(), true);
-                    activated = false;
-                }
-            }
-        });
-
+        UIUtils.enableHostEditorKeyBindingsSupport(valueController.getValueSite(), inlineControl);
 
 //            if (!isInline) {
 //                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());

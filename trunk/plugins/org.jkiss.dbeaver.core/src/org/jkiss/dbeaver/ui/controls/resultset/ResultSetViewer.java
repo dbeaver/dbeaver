@@ -285,27 +285,7 @@ public class ResultSetViewer extends Viewer
         }
 
         // Handle all shortcuts by filters editor, not by host editor
-        this.filtersText.addFocusListener(new FocusListener() {
-            private boolean activated = false;
-            @SuppressWarnings("deprecation")
-            @Override
-            public void focusGained(FocusEvent e)
-            {
-                if (!activated) {
-                    UIUtils.enableHostEditorKeyBindings(site, false);
-                    activated = true;
-                }
-            }
-            @SuppressWarnings("deprecation")
-            @Override
-            public void focusLost(FocusEvent e)
-            {
-                if (activated) {
-                    UIUtils.enableHostEditorKeyBindings(site, true);
-                    activated = false;
-                }
-            }
-        });
+        UIUtils.enableHostEditorKeyBindingsSupport(getSite(), this.filtersText);
 
         ToolBar filterToolbar = new ToolBar(filtersPanel, SWT.HORIZONTAL | SWT.RIGHT);
 

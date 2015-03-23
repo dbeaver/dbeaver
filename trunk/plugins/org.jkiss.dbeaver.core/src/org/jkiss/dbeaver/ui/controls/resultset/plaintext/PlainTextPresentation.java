@@ -30,6 +30,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CaretEvent;
 import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -59,6 +63,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
     private int[] colWidths;
     private DBDAttributeBinding curAttribute;
     private StyledTextFindReplaceTarget findReplaceTarget;
+    public boolean activated;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
@@ -78,7 +83,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             }
         });
         findReplaceTarget = new StyledTextFindReplaceTarget(text);
-        UIUtils.addFocusTracker(controller.getSite(), UIUtils.INLINE_WIDGET_EDITOR_ID, text);
+        UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), text);
 
         // Register context menu
         MenuManager menuMgr = new MenuManager();
