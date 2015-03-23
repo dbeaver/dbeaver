@@ -78,6 +78,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             }
         });
         findReplaceTarget = new StyledTextFindReplaceTarget(text);
+        UIUtils.addFocusTracker(controller.getSite(), UIUtils.INLINE_WIDGET_EDITOR_ID, text);
 
         // Register context menu
         MenuManager menuMgr = new MenuManager();
