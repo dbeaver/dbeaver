@@ -92,7 +92,7 @@ import java.util.List;
  * ResultSetViewer
  *
  * TODO: fix presentation contributions to toolbar
- * TODO: fix search in all presentations (I
+ * TODO: fix plaint text shortcuts. Use special focus control handler
  *
  * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
