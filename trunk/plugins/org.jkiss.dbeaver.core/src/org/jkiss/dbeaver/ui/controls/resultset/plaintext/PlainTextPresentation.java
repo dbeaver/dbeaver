@@ -55,6 +55,7 @@ public class PlainTextPresentation implements IResultSetPresentation {
         UIUtils.createHorizontalLine(parent);
         text = new StyledText(parent, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
         text.setBlockSelection(true);
+        text.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_IBEAM));
         text.setMargins(4, 4, 4, 4);
         text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         text.setLayoutData(new GridData(GridData.FILL_BOTH));

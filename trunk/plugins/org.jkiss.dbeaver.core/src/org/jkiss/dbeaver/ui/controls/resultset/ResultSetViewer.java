@@ -89,6 +89,9 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
+ * TODO: fix presentation contributions to toolbar
+ * TODO: fix search in all presentations (I
+ *
  * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
@@ -1104,6 +1107,18 @@ public class ResultSetViewer extends Viewer
             }
             catch (Exception e) {
                 log.error(e);
+            }
+
+            if (row.isChanged()) {
+                Action resetValueAction = new Action(CoreMessages.controls_resultset_viewer_action_reset_value) {
+                    @Override
+                    public void run() {
+                        model.resetCellValue(attr, row);
+                        updateValueView();
+                    }
+                };
+                resetValueAction.setAccelerator(SWT.ESC);
+                manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, resetValueAction);
             }
         }
 
