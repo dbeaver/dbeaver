@@ -47,7 +47,7 @@ public interface IResultSetPresentation {
 
     Control getControl();
 
-    void refreshData(boolean refreshMetadata);
+    void refreshData(boolean refreshMetadata, boolean append);
 
     /**
      * Called after results refresh
@@ -55,7 +55,7 @@ public interface IResultSetPresentation {
      */
     void formatData(boolean refreshData);
 
-    void clearData();
+    void clearMetaData();
 
     void updateValueView();
 

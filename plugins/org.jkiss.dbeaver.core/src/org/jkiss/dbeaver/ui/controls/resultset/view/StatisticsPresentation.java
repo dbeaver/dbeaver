@@ -81,7 +81,7 @@ public class StatisticsPresentation implements IResultSetPresentation {
     }
 
     @Override
-    public void refreshData(boolean refreshMetadata) {
+    public void refreshData(boolean refreshMetadata, boolean append) {
         tableViewer.setInput(controller.getModel().getAllRows());
         UIUtils.packColumns(tableViewer.getTable());
     }
@@ -92,7 +92,7 @@ public class StatisticsPresentation implements IResultSetPresentation {
     }
 
     @Override
-    public void clearData() {
+    public void clearMetaData() {
 
     }
 
