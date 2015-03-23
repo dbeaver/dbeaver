@@ -76,7 +76,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
     private LineNumberColumn fLineColumn;
     private ScriptPositionColumn fScriptColumn;
 
-    private static Map<String, Integer> ACTION_TRANSLATE_MAP = new HashMap<String, Integer>();
+    private static Map<String, Integer> ACTION_TRANSLATE_MAP;
 
     public static Map<String, Integer> getActionMap()
     {
