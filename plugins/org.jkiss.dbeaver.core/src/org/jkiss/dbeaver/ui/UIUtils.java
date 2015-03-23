@@ -1135,7 +1135,7 @@ public class UIUtils {
                 activatorMethod.setAccessible(true);
                 activatorMethod.invoke(hostEditor, enable);
             } catch (Exception e) {
-                log.debug(e);
+                log.warn("Can't disable text editor action activations", e);
             }
 
         }
