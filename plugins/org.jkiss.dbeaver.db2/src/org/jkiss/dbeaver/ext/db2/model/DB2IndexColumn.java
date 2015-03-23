@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2013-2015 Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2015 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexColOrder;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexColVirtual;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -45,6 +46,10 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     private String collationSchema;
     private String collationNane;
 
+    private DB2IndexColVirtual virtualCol;
+    private String virtualColName;
+    private String virtualColText;
+
     // -----------------
     // Constructors
     // -----------------
@@ -62,22 +67,32 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
             this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
             this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
         }
+        if (db2DataSource.isAtLeastV10_1()) {
+            this.virtualCol = CommonUtils.valueOf(DB2IndexColVirtual.class, JDBCUtils.safeGetString(dbResult, "VIRTUAL"));
+            this.virtualColText = JDBCUtils.safeGetStringTrimmed(dbResult, "TEXT");
+        }
 
-        // Look for Table Column
+        // Look for Table Column if column is not virtual...
         DB2Table db2Table = db2Index.getTable();
         String columnName = JDBCUtils.safeGetString(dbResult, "COLNAME");
-        this.tableColumn = db2Table.getAttribute(monitor, columnName);
-        if (tableColumn == null) {
-            StringBuilder sb = new StringBuilder(64);
-            sb.append("Column '");
-            sb.append(columnName);
-            sb.append("' not found in table '");
-            sb.append(db2Table.getName());
-            sb.append("' for index '");
-            sb.append(db2Index.getName());
-            sb.append("'");
-            throw new DBException(sb.toString());
+        if ((virtualCol != null) && (virtualCol.isNotVirtual())) {
+            this.tableColumn = db2Table.getAttribute(monitor, columnName);
+            if (tableColumn == null) {
+                StringBuilder sb = new StringBuilder(64);
+                sb.append("Column '");
+                sb.append(columnName);
+                sb.append("' not found in table '");
+                sb.append(db2Table.getName());
+                sb.append("' for index '");
+                sb.append(db2Index.getName());
+                sb.append("'");
+                throw new DBException(sb.toString());
+            }
+        } else {
+            // Store Virtual col name instead of real table column name
+            this.virtualColName = columnName;
         }
+
     }
 
     public DB2IndexColumn(DB2Index db2Index, DB2TableColumn tableColumn, int ordinalPosition)
@@ -86,6 +101,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         this.tableColumn = tableColumn;
         this.colSeq = ordinalPosition;
         this.colOrder = DB2IndexColOrder.A; // Force Ascending ..
+        this.virtualCol = DB2IndexColVirtual.N; // Force real column...
     }
 
     // -----------------
@@ -114,7 +130,11 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     @Override
     public String getDescription()
     {
-        return tableColumn.getDescription();
+        if ((virtualCol != null) && (virtualCol.isVirtual())) {
+            return virtualCol.getName();
+        } else {
+            return tableColumn.getDescription();
+        }
     }
 
     @Override
@@ -132,7 +152,11 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     @Override
     public String getName()
     {
-        return tableColumn.getName();
+        if ((virtualCol != null) & (virtualCol.isVirtual())) {
+            return virtualColName;
+        } else {
+            return tableColumn.getName();
+        }
     }
 
     // -----------------
@@ -158,6 +182,18 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     public DB2IndexColOrder getColOrder()
     {
         return colOrder;
+    }
+
+    @Property(viewable = true, editable = false, order = 4, id = "indexType")
+    public DB2IndexColVirtual getVirtualCol()
+    {
+        return virtualCol;
+    }
+
+    @Property(viewable = true, editable = false, order = 5)
+    public String getVirtualColText()
+    {
+        return virtualColText;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_COLLATION)
