@@ -1519,6 +1519,7 @@ public class ResultSetViewer extends Viewer
                             model.updateDataFilter(dataFilter);
                         }
                         updateFiltersText();
+                        fireResultSetLoad();
 
                         if (finalizer != null) {
                             finalizer.run();
@@ -1776,6 +1777,16 @@ public class ResultSetViewer extends Viewer
             if (!listeners.isEmpty()) {
                 for (IResultSetListener listener : listeners) {
                     listener.handleResultSetChange();
+                }
+            }
+        }
+    }
+
+    public void fireResultSetLoad() {
+        synchronized (listeners) {
+            if (!listeners.isEmpty()) {
+                for (IResultSetListener listener : listeners) {
+                    listener.handleResultSetLoad();
                 }
             }
         }
