@@ -101,6 +101,8 @@ public interface IResultSetController {
 
     void setStatus(String message, boolean error);
 
+    void updateStatusMessage();
+
     Color getDefaultBackground();
 
     Color getDefaultForeground();
