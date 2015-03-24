@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.core.commands.ParameterizedCommand;
+import org.eclipse.jface.bindings.Binding;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.common.NotDefinedException;
@@ -151,7 +153,16 @@ public class ActionUtils
         }
         IBindingService bindingService = (IBindingService)serviceLocator.getService(IBindingService.class);
         if (bindingService != null) {
-            TriggerSequence sequence = bindingService.getBestActiveBindingFor(commandId);
+            TriggerSequence sequence = null;
+            for (Binding b : bindingService.getBindings()) {
+                ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
+                if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
+                    sequence = b.getTriggerSequence();
+                }
+            }
+            if (sequence == null) {
+                sequence = bindingService.getBestActiveBindingFor(commandId);
+            }
             if (sequence != null) {
                 shortcut = sequence.format();
             }
