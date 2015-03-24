@@ -20,11 +20,14 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,37 +39,60 @@ import java.sql.SQLException;
  */
 public class SQLServerMetaModel extends GenericMetaModel
 {
+    static final Log log = Log.getLog(SQLServerMetaModel.class);
 
     public SQLServerMetaModel(IConfigurationElement cfg) {
         super(cfg);
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        JDBCSession session = sourceObject.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
-        try {
-            return JDBCUtils.queryString(session,
-                "SELECT VIEW_DEFINITION FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) +
-                    ".INFORMATION_SCHEMA.VIEWS v WHERE v.TABLE_SCHEMA=? AND v.TABLE_NAME=?",
-                sourceObject.getSchema().getName(),
-                sourceObject.getName());
-        } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
-        } finally {
-            session.close();
-        }
+        return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog().getName(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        JDBCSession session = sourceObject.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
+        return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog().getName(), sourceObject.getSchema().getName(), sourceObject.getName());
+    }
+
+    private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
+        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
         try {
-            return JDBCUtils.queryString(session,
-                "SELECT ROUTINE_DEFINITION FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) +
-                    ".INFORMATION_SCHEMA.ROUTINES r WHERE r.SPECIFIC_SCHEMA=? AND v.SPECIFIC_NAME=?",
-                sourceObject.getSchema().getName(),
-                sourceObject.getUniqueName());
+            String activeCatalog = dataSource.getSelectedEntityName();
+            boolean switchDatabase = !catalog.equals(activeCatalog);
+            if (switchDatabase) {
+                try {
+                    JDBCUtils.executeSQL(session, "USE " + catalog);
+                } catch (SQLException e) {
+                    log.warn("Can't switch to object catalog '" + catalog + "'");
+                }
+            }
+            try {
+                JDBCPreparedStatement dbStat = session.prepareStatement("sp_helptext '" + schema + "." + name + "'");
+                try {
+                    JDBCResultSet dbResult = dbStat.executeQuery();
+                    try {
+                        StringBuilder sql = new StringBuilder();
+                        while (dbResult.nextRow()) {
+                            sql.append(dbResult.getString(1));
+                        }
+                        return sql.toString();
+                    } finally {
+                        dbResult.close();
+                    }
+                } finally {
+                    dbStat.close();
+                }
+            } finally {
+                if (switchDatabase) {
+                    try {
+                        JDBCUtils.executeSQL(session, "USE " + activeCatalog);
+                    } catch (SQLException e) {
+                        log.warn("Can't switch back to active catalog '" + activeCatalog + "'");
+                    }
+                }
+            }
         } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
+            throw new DBException(e, dataSource);
         } finally {
             session.close();
         }
