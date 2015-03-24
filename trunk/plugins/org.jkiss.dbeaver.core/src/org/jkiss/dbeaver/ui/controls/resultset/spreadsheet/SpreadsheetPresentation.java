@@ -71,6 +71,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -211,7 +212,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
                         if (!resultsSash.isDisposed()) {
                             int[] weights = resultsSash.getWeights();
                             int ratio = weights[0];
-                            preferences.setValue(VIEW_PANEL_RATIO, ratio);
+                            DBeaverCore.getGlobalPreferenceStore().setValue(VIEW_PANEL_RATIO, ratio);
                         }
                     }
                 }
@@ -621,7 +622,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
             resultsSash.setMaximizedControl(null);
             previewValue();
         }
-        getPreferenceStore().setValue(VIEW_PANEL_VISIBLE, isPreviewVisible());
+        DBeaverCore.getGlobalPreferenceStore().setValue(VIEW_PANEL_VISIBLE, isPreviewVisible());
 
         // Refresh elements
         ICommandService commandService = (ICommandService) controller.getSite().getService(ICommandService.class);
