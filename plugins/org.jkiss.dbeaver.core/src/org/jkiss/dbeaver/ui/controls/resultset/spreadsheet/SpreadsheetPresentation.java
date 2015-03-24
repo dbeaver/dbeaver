@@ -504,17 +504,8 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
 
     @Override
     public void formatData(boolean refreshData) {
-        if (refreshData) {
-            reorderResultSet(true, new Runnable() {
-                @Override
-                public void run()
-                {
-                    spreadsheet.refreshData(false);
-                }
-            });
-        } else if (!supportsDataFilter() && !controller.getModel().getDataFilter().hasOrdering()) {
-            reorderLocally();
-        }
+        reorderLocally();
+        spreadsheet.refreshData(false);
     }
 
     @Override
@@ -868,33 +859,11 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
             (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
-    private boolean isServerSideFiltering()
-    {
-        return
-            getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
-                (controller.isHasMoreData() || !CommonUtils.isEmpty(controller.getModel().getDataFilter().getOrder()));
-    }
-
-    private void reorderResultSet(boolean force, @Nullable Runnable onSuccess)
-    {
-        if (force || isServerSideFiltering() && supportsDataFilter()) {
-            controller.refreshData(onSuccess);
-            return;
-        }
-
-        try {
-            reorderLocally();
-        } finally {
-            if (onSuccess != null) {
-                onSuccess.run();
-            }
-        }
-    }
-
     private void reorderLocally()
     {
         controller.rejectChanges();
         controller.getModel().resetOrdering();
+        refreshData(false, false);
     }
 
     public void changeSorting(Object columnElement, final int state)
@@ -916,7 +885,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
         assert constraint != null;
         //int newSort;
         if (constraint.getOrderPosition() == 0) {
-            if (isServerSideFiltering() && supportsDataFilter()) {
+            if (ResultSetUtils.isServerSideFiltering(controller) && supportsDataFilter()) {
                 if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
                     DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
@@ -939,16 +908,11 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
             constraint.setOrderDescending(false);
         }
 
-        // Reorder
-        reorderResultSet(false, new Runnable() {
-            @Override
-            public void run()
-            {
-                if (!controller.isRecordMode()) {
-                    spreadsheet.refreshData(false);
-                }
-            }
-        });
+        if (!ResultSetUtils.isServerSideFiltering(controller) && !controller.isHasMoreData()) {
+            reorderLocally();
+        } else {
+            controller.refreshData(null);
+        }
     }
 
 

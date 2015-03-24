@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -297,4 +298,10 @@ public class ResultSetUtils
         }
     }
 
+    public static boolean isServerSideFiltering(IResultSetController controller)
+    {
+        return
+            controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) &&
+                (controller.isHasMoreData() || !CommonUtils.isEmpty(controller.getModel().getDataFilter().getOrder()));
+    }
 }
