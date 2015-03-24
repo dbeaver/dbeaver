@@ -45,12 +45,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.StyledTextFindReplaceTarget;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -60,6 +62,7 @@ import java.util.List;
  */
 public class PlainTextPresentation implements IResultSetPresentation, IAdaptable {
 
+    public static final int MAX_COLUMN_WIDTH = 255;
     public static final int FIRST_ROW_LINE = 2;
     private IResultSetController controller;
     private StyledText text;
@@ -205,6 +208,9 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             }
             for (int i = 0; i < colWidths.length; i++) {
                 colWidths[i]++;
+                if (colWidths[i] > MAX_COLUMN_WIDTH) {
+                    colWidths[i] = MAX_COLUMN_WIDTH;
+                }
             }
         }
 
@@ -242,6 +248,9 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             for (int k = 0; k < attrs.size(); k++) {
                 DBDAttributeBinding attr = attrs.get(k);
                 String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
+                if (displayString.length() >= colWidths[k] - 1) {
+                    displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
+                }
                 grid.append(displayString);
                 for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
                     grid.append(" ");
