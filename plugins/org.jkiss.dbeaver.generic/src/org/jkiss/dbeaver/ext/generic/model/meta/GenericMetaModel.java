@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.generic.model.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -50,7 +51,7 @@ public class GenericMetaModel {
 
     private String id;
     private final Map<String, GenericMetaObject> objects = new HashMap<String, GenericMetaObject>();
-    private String driverClass;
+    private String[] driverClass;
 
     public GenericMetaModel(IConfigurationElement cfg)
     {
@@ -62,7 +63,12 @@ public class GenericMetaModel {
                 objects.put(metaObject.getType(), metaObject);
             }
         }
-        this.driverClass = cfg.getAttribute("driverClass");
+        String driverClassList = cfg.getAttribute("driverClass");
+        if (CommonUtils.isEmpty(driverClassList)) {
+            this.driverClass = new String[0];
+        } else {
+            this.driverClass = driverClassList.split(",");
+        }
     }
 
     public GenericMetaModel(String id) {
@@ -74,7 +80,8 @@ public class GenericMetaModel {
         return id;
     }
 
-    public String getDriverClass() {
+    @NotNull
+    public String[] getDriverClass() {
         return driverClass;
     }
 
