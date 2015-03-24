@@ -16,45 +16,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+package org.jkiss.dbeaver.ext.mssql;
+
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPClientHome;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
- * MSSQL informational object
+ * SQLServerUtils
  */
-public abstract class MSSQLInformation implements DBSObject {
+public class SQLServerUtils {
 
-    private MSSQLDataSource dataSource;
+    static final Log log = Log.getLog(SQLServerUtils.class);
 
-    protected MSSQLInformation(MSSQLDataSource dataSource)
-    {
-        this.dataSource = dataSource;
-    }
 
-    @Override
-    public DBSObject getParentObject()
-    {
-        return getDataSource().getContainer();
-    }
-
-    @NotNull
-    @Override
-    public MSSQLDataSource getDataSource()
-    {
-        return dataSource;
-    }
-
-    @Override
-    public boolean isPersisted()
-    {
-        return true;
-    }
-
-    @Override
-    public String toString()
-    {
-        return getName();
-    }
 }
