@@ -126,6 +126,7 @@
                 <driver
                     id="postgresql"
                     label="PostgreSQL"
+                    icon="icons/postgresql_icon.png"
                     class="org.postgresql.Driver"
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
@@ -234,6 +235,7 @@
                 <driver
                     id="mssql"
                     label="jTDS driver"
+                    icon="icons/sqlserver_icon.png"
                     category="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
@@ -255,6 +257,7 @@
                 <driver
                     id="mssql_ms"
                     label="Microsoft Driver"
+                    icon="icons/sqlserver_icon.png"
                     category="MS SQL Server"
                     class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                     sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
@@ -277,6 +280,7 @@
                 <driver
                     id="sybase"
                     label="Sybase"
+                    icon="icons/sybase_icon.png"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
                     defaultPort="5000"
@@ -460,6 +464,7 @@
                 <driver
                     id="firebird_jaybird"
                     label="Firebird"
+                    icon="icons/firebird_icon.png"
                     class="org.firebirdsql.jdbc.FBDriver"
                     sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                     defaultPort="3050"
@@ -523,6 +528,7 @@
                 <driver
                     id="sqlite_jdbc"
                     label="SQLite"
+                    icon="icons/sqlite_icon.png"
                     class="org.sqlite.JDBC"
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
