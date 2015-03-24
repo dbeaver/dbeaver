@@ -689,7 +689,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
             return null;
         }
         if (inline &&
-            (handlerFeatures & DBDValueHandler.FEATURE_INLINE_EDITOR) == 0 &&
+            ((handlerFeatures & DBDValueHandler.FEATURE_INLINE_EDITOR) == 0 || controller.isAttributeReadOnly(attr)) &&
             (handlerFeatures & DBDValueHandler.FEATURE_VIEWER) != 0)
         {
             // Inline editor isn't supported but panel viewer is
