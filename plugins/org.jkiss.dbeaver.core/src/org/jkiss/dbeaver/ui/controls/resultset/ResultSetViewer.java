@@ -92,7 +92,6 @@ import java.util.List;
  * ResultSetViewer
  *
  * TODO: fix presentation contributions to toolbar
- * TODO: save current presentation in registry
  *
  * TODO: fix copy multiple cells - tabulation broken
  * TODO: links in both directions, multiple links support (context menu)
@@ -512,10 +511,22 @@ public class ResultSetViewer extends Viewer
                             return;
                         }
                     }
-                    ResultSetPresentationDescriptor pd = availablePresentations.get(0);
+                    String defaultPresentationId = getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_PRESENTATION);
+                    ResultSetPresentationDescriptor newPresentation = null;
+                    if (!CommonUtils.isEmpty(defaultPresentationId)) {
+                        for (ResultSetPresentationDescriptor pd : availablePresentations) {
+                            if (pd.getId().equals(defaultPresentationId)) {
+                                newPresentation = pd;
+                                break;
+                            }
+                        }
+                    }
+                    if (newPresentation == null) {
+                        newPresentation = availablePresentations.get(0);
+                    }
                     try {
-                        IResultSetPresentation instance = pd.createInstance();
-                        activePresentationDescriptor = pd;
+                        IResultSetPresentation instance = newPresentation.createInstance();
+                        activePresentationDescriptor = newPresentation;
                         setActivePresentation(instance);
                     } catch (DBException e) {
                         log.error(e);
@@ -530,8 +541,7 @@ public class ResultSetViewer extends Viewer
             } else {
                 combo.setEnabled(true);
                 combo.removeAll();
-                for (int i = 0; i < availablePresentations.size(); i++) {
-                    ResultSetPresentationDescriptor pd = availablePresentations.get(i);
+                for (ResultSetPresentationDescriptor pd : availablePresentations) {
                     combo.add(pd.getIcon(), pd.getLabel(), null, pd);
                 }
                 combo.select(activePresentationDescriptor);
@@ -587,6 +597,8 @@ public class ResultSetViewer extends Viewer
             instance.refreshData(true, false);
 
             presentationSwitchCombo.combo.select(activePresentationDescriptor);
+            // Sa\ve in global preferences
+            DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
         } catch (DBException e1) {
             UIUtils.showErrorDialog(
                 viewerPanel.getShell(),
