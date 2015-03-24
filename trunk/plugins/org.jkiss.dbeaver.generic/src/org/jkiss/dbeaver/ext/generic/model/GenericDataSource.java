@@ -684,7 +684,7 @@ public class GenericDataSource extends JDBCDataSource
         return selectedEntityType;
     }
 
-    String getSelectedEntityName()
+    public String getSelectedEntityName()
     {
         return selectedEntityName;
     }
