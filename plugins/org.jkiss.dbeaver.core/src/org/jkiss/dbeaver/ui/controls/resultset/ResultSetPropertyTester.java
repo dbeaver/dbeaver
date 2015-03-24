@@ -88,7 +88,8 @@ public class ResultSetPropertyTester extends PropertyTester
         } else if (PROP_CHANGED.equals(property)) {
             return rsv.isDirty();
         } else if (PROP_CAN_TOGGLE.equals(property)) {
-            return true;
+            return rsv.getActivePresentation().getControl().isFocusControl();
+            //return true;
         }
         return false;
     }
