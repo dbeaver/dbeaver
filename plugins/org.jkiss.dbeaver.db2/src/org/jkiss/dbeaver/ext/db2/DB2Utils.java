@@ -73,7 +73,7 @@ public class DB2Utils {
     private static final String CALL_DB2LK_GEN = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
     private static final String CALL_DB2LK_CLEAN = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
     private static final String SEL_DB2LK = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
-    private static final String DB2LK_COMMAND = "-e -x -td %s -t %s";
+    private static final String DB2LK_COMMAND = "-e -x -xd -td %s -t %s";
 
     // EXPLAIN
     private static final String CALL_INST_OBJ = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
