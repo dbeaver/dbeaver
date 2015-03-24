@@ -36,6 +36,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_CUT = "canCut";
     public static final String PROP_CAN_MOVE = "canMove";
     public static final String PROP_CAN_TOGGLE = "canToggle";
+    public static final String PROP_CAN_SWITCH_PRESENTATION = "canSwitchPresentation";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
 
@@ -89,7 +90,8 @@ public class ResultSetPropertyTester extends PropertyTester
             return rsv.isDirty();
         } else if (PROP_CAN_TOGGLE.equals(property)) {
             return rsv.getActivePresentation().getControl().isFocusControl();
-            //return true;
+        } else if (PROP_CAN_SWITCH_PRESENTATION.equals(property)) {
+            return rsv.getAvailablePresentations() != null && rsv.getAvailablePresentations().size() > 1;
         }
         return false;
     }
