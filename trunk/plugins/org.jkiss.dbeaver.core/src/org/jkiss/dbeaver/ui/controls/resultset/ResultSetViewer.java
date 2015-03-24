@@ -1407,6 +1407,11 @@ public class ResultSetViewer extends Viewer
                     activePresentation.formatData(true);
                 }
             });
+        } else {
+            UIUtils.showErrorDialog(
+                viewerPanel.getShell(),
+                "Error executing query",
+                "Other query execution is in progress");
         }
     }
 
@@ -1502,6 +1507,8 @@ public class ResultSetViewer extends Viewer
 
             @Override
             public void done(IJobChangeEvent event) {
+                dataPumpJob = null;
+
                 ResultSetDataPumpJob job = (ResultSetDataPumpJob)event.getJob();
                 final Throwable error = job.getError();
                 if (job.getStatistics() != null) {
@@ -1555,7 +1562,6 @@ public class ResultSetViewer extends Viewer
                         if (finalizer != null) {
                             finalizer.run();
                         }
-                        dataPumpJob = null;
                     }
                 });
             }

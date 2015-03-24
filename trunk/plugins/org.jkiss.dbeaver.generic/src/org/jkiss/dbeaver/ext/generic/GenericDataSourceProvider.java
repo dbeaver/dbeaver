@@ -68,8 +68,8 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
                 metaModel = new GenericMetaModel(ext);
             }
             metaModels.put(metaModel.getId(), metaModel);
-            if (metaModel.getDriverClass() != null) {
-                metaModels.put(metaModel.getDriverClass(), metaModel);
+            for (String driverClass : metaModel.getDriverClass()) {
+                metaModels.put(driverClass, metaModel);
             }
         }
     }
