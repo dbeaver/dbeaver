@@ -454,12 +454,9 @@ public class ResultSetViewer extends Viewer
                 redrawData(true);
             }
             if (refreshData) {
-                if (ResultSetUtils.isServerSideFiltering(this) && supportsDataFilter()) {
-                    refreshData(null);
-                } else {
-                    activePresentation.formatData(true);
-                }
+                refreshData(null);
             } else {
+                activePresentation.formatData(true);
                 updateFiltersText();
             }
         }
