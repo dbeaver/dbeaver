@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -141,44 +142,53 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
         int lineCount = text.getLineCount();
 
         int rowNum = lineNum - FIRST_ROW_LINE; //First 2 lines is header
-        int colNum = 0;
-        int horOffsetBegin = 0, horOffsetEnd = 0;
-        for (int i = 0; i < colWidths.length; i++) {
-            horOffsetBegin = horOffsetEnd;
-            horOffsetEnd += colWidths[i] + 1;
-            if (horizontalOffset < horOffsetEnd) {
-                colNum = i;
-                break;
+        if (controller.isRecordMode()) {
+            if (rowNum < 0) {
+                rowNum = 0;
             }
-        }
-        if (rowNum < 0 && model.getRowCount() > 0) {
-            rowNum = 0;
-        }
-        if (rowNum >= 0 && rowNum < model.getRowCount() && colNum >= 0 && colNum < model.getVisibleAttributeCount()) {
-            controller.setCurrentRow(model.getRow(rowNum));
-            curAttribute = model.getVisibleAttribute(colNum);
-        }
-        controller.updateEditControls();
-
-        {
-            // Highlight row
-            if (curLineRange == null || curLineRange.start != lineOffset + horOffsetBegin) {
-                curLineRange = new StyleRange(
-                    lineOffset + horOffsetBegin,
-                    horOffsetEnd - horOffsetBegin - 1,
-                    null,
-                    curLineColor);
-                text.getDisplay().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        text.setStyleRanges(new StyleRange[]{curLineRange});
-                    }
-                });
+            if (rowNum >= 0 && rowNum < model.getVisibleAttributeCount()) {
+                curAttribute = model.getVisibleAttribute(rowNum);
             }
-        }
+        } else {
+            int colNum = 0;
+            int horOffsetBegin = 0, horOffsetEnd = 0;
+            for (int i = 0; i < colWidths.length; i++) {
+                horOffsetBegin = horOffsetEnd;
+                horOffsetEnd += colWidths[i] + 1;
+                if (horizontalOffset < horOffsetEnd) {
+                    colNum = i;
+                    break;
+                }
+            }
+            if (rowNum < 0 && model.getRowCount() > 0) {
+                rowNum = 0;
+            }
+            if (rowNum >= 0 && rowNum < model.getRowCount() && colNum >= 0 && colNum < model.getVisibleAttributeCount()) {
+                controller.setCurrentRow(model.getRow(rowNum));
+                curAttribute = model.getVisibleAttribute(colNum);
+            }
+            controller.updateEditControls();
 
-        if (lineNum == lineCount - 1 && controller.isHasMoreData()) {
-            controller.readNextSegment();
+            {
+                // Highlight row
+                if (curLineRange == null || curLineRange.start != lineOffset + horOffsetBegin) {
+                    curLineRange = new StyleRange(
+                        lineOffset + horOffsetBegin,
+                        horOffsetEnd - horOffsetBegin - 1,
+                        null,
+                        curLineColor);
+                    text.getDisplay().asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            text.setStyleRanges(new StyleRange[]{curLineRange});
+                        }
+                    });
+                }
+            }
+
+            if (lineNum == lineCount - 1 && controller.isHasMoreData()) {
+                controller.readNextSegment();
+            }
         }
     }
 
@@ -189,6 +199,14 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
 
     @Override
     public void refreshData(boolean refreshMetadata, boolean append) {
+        if (controller.isRecordMode()) {
+            printRecord();
+        } else {
+            printGrid(append);
+        }
+    }
+
+    private void printGrid(boolean append) {
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
         List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
@@ -259,7 +277,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             }
             grid.append("\n");
         }
-        grid.setLength(grid.length() - 1); // cut last line fe
+        grid.setLength(grid.length() - 1); // cut last line feed
 
         if (append) {
             text.append(grid.toString());
@@ -270,9 +288,52 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
         totalRows = allRows.size();
     }
 
+    private void printRecord() {
+        StringBuilder grid = new StringBuilder(512);
+        ResultSetModel model = controller.getModel();
+        List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
+        String[] values = new String[attrs.size()];
+        ResultSetRow currentRow = controller.getCurrentRow();
+
+            // Calculate column widths
+        int nameWidth = 4, valueWidth = 5;
+        for (int i = 0; i < attrs.size(); i++) {
+            DBDAttributeBinding attr = attrs.get(i);
+            nameWidth = Math.max(nameWidth, attr.getName().length());
+            values[i] = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, currentRow), DBDDisplayFormat.EDIT);
+            valueWidth = Math.max(valueWidth, values[i].length());
+        }
+
+        // Header
+        grid.append("Name");
+        for (int j = nameWidth - 4; j > 0; j--) {
+            grid.append(" ");
+        }
+        grid.append("|Value\n");
+        for (int j = 0; j < nameWidth; j++) grid.append("-");
+        grid.append("|");
+        for (int j = 0; j < valueWidth; j++) grid.append("-");
+        grid.append("\n");
+
+        // Values
+        for (int i = 0; i < attrs.size(); i++) {
+            DBDAttributeBinding attr = attrs.get(i);
+            String name = attr.getName();
+            grid.append(name);
+            for (int j = nameWidth - name.length(); j > 0; j--) {
+                grid.append(" ");
+            }
+            grid.append("|");
+            grid.append(values[i]);
+            grid.append("\n");
+        }
+        grid.setLength(grid.length() - 1); // cut last line feed
+        text.setText(grid.toString());
+    }
+
     @Override
     public void formatData(boolean refreshData) {
-
+        //controller.refreshData(null);
     }
 
     @Override
@@ -304,26 +365,61 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
 
     @Override
     public void scrollToRow(@NotNull RowPosition position) {
-        int caretOffset = text.getCaretOffset();
-        if (caretOffset < 0) caretOffset = 0;
-        int lineNum = text.getLineAtOffset(caretOffset);
-        if (lineNum < FIRST_ROW_LINE) {
-            lineNum = FIRST_ROW_LINE;
+        if (controller.isRecordMode()) {
+            ResultSetRow currentRow = controller.getCurrentRow();
+            switch (position) {
+                case FIRST:
+                    controller.setCurrentRow(controller.getModel().getRow(0));
+                    break;
+                case PREVIOUS:
+                    if (currentRow != null) {
+                        controller.setCurrentRow(controller.getModel().getRow(currentRow.getVisualNumber() - 1));
+                    }
+                    break;
+                case NEXT:
+                    if (currentRow != null) {
+                        controller.setCurrentRow(controller.getModel().getRow(currentRow.getVisualNumber() + 1));
+                    }
+                    break;
+                case LAST:
+                    if (currentRow != null) {
+                        controller.setCurrentRow(controller.getModel().getRow(controller.getModel().getRowCount() - 1));
+                    }
+                    break;
+            }
+            refreshData(true, false);
+            controller.updateStatusMessage();
+            controller.updateEditControls();
+        } else {
+            int caretOffset = text.getCaretOffset();
+            if (caretOffset < 0) caretOffset = 0;
+            int lineNum = text.getLineAtOffset(caretOffset);
+            if (lineNum < FIRST_ROW_LINE) {
+                lineNum = FIRST_ROW_LINE;
+            }
+            int totalLines = text.getLineCount();
+            switch (position) {
+                case FIRST:
+                    lineNum = FIRST_ROW_LINE;
+                    break;
+                case PREVIOUS:
+                    lineNum--;
+                    break;
+                case NEXT:
+                    lineNum++;
+                    break;
+                case LAST:
+                    lineNum = totalLines - 1;
+                    break;
+            }
+            if (lineNum < FIRST_ROW_LINE || lineNum >= totalLines) {
+                return;
+            }
+            int newOffset = text.getOffsetAtLine(lineNum);
+            text.setCaretOffset(newOffset);
+            //text.setSelection(newOffset, 0);
+            text.showSelection();
         }
-        int totalLines = text.getLineCount();
-        switch (position) {
-            case FIRST:     lineNum = FIRST_ROW_LINE; break;
-            case PREVIOUS:  lineNum--; break;
-            case NEXT:      lineNum++; break;
-            case LAST:      lineNum = totalLines - 1; break;
-        }
-        if (lineNum < FIRST_ROW_LINE || lineNum >= totalLines) {
-            return;
-        }
-        int newOffset = text.getOffsetAtLine(lineNum);
-        text.setCaretOffset(newOffset);
-        //text.setSelection(newOffset, 0);
-        text.showSelection();
     }
 
     @Nullable
