@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 public class ResultSetCommandHandler extends AbstractHandler {
 
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
+    public static final String CMD_SWITCH_PRESENTATION = "org.jkiss.dbeaver.core.resultset.switchPresentation";
     public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
     public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
     public static final String CMD_ROW_NEXT = "org.jkiss.dbeaver.core.resultset.row.next";
@@ -61,6 +62,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
             resultSet.refresh();
         } else if (actionId.equals(CMD_TOGGLE_MODE)) {
             resultSet.toggleMode();
+        } else if (actionId.equals(CMD_SWITCH_PRESENTATION)) {
+            resultSet.switchPresentation();
         } else if (actionId.equals(CMD_ROW_PREVIOUS) || actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
             presentation.scrollToRow(IResultSetPresentation.RowPosition.PREVIOUS);
         } else if (actionId.equals(CMD_ROW_NEXT) || actionId.equals(ITextEditorActionDefinitionIds.WORD_NEXT)) {

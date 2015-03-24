@@ -144,7 +144,7 @@ public class ResultSetViewer extends Viewer
     // Presentation
     private IResultSetPresentation activePresentation;
     private ResultSetPresentationDescriptor activePresentationDescriptor;
-    private List<ResultSetPresentationDescriptor> presentations;
+    private List<ResultSetPresentationDescriptor> availablePresentations;
     private PresentationSwitchCombo presentationSwitchCombo;
 
     @NotNull
@@ -485,6 +485,10 @@ public class ResultSetViewer extends Viewer
         return filtersText.getForeground();
     }
 
+    public List<ResultSetPresentationDescriptor> getAvailablePresentations() {
+        return availablePresentations;
+    }
+
     @Override
     public IResultSetPresentation getActivePresentation() {
         return activePresentation;
@@ -495,20 +499,20 @@ public class ResultSetViewer extends Viewer
         try {
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
-                presentations = Collections.emptyList();
+                availablePresentations = Collections.emptyList();
                 setActivePresentation(new StatisticsPresentation());
                 activePresentationDescriptor = null;
             } else {
                 // Regular results
-                presentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet);
-                if (!presentations.isEmpty()) {
-                    for (ResultSetPresentationDescriptor pd : presentations) {
+                availablePresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet);
+                if (!availablePresentations.isEmpty()) {
+                    for (ResultSetPresentationDescriptor pd : availablePresentations) {
                         if (pd == activePresentationDescriptor) {
                             // Keep the same presentation
                             return;
                         }
                     }
-                    ResultSetPresentationDescriptor pd = presentations.get(0);
+                    ResultSetPresentationDescriptor pd = availablePresentations.get(0);
                     try {
                         IResultSetPresentation instance = pd.createInstance();
                         activePresentationDescriptor = pd;
@@ -526,8 +530,8 @@ public class ResultSetViewer extends Viewer
             } else {
                 combo.setEnabled(true);
                 combo.removeAll();
-                for (int i = 0; i < presentations.size(); i++) {
-                    ResultSetPresentationDescriptor pd = presentations.get(i);
+                for (int i = 0; i < availablePresentations.size(); i++) {
+                    ResultSetPresentationDescriptor pd = availablePresentations.get(i);
                     combo.add(pd.getIcon(), pd.getLabel(), null, pd);
                 }
                 combo.select(activePresentationDescriptor);
@@ -557,6 +561,22 @@ public class ResultSetViewer extends Viewer
             }
             findReplaceTarget.setTarget(nested);
         }
+    }
+
+    /**
+     * Switch to the next presentation
+     */
+    void switchPresentation() {
+        if (availablePresentations.size() < 2) {
+            return;
+        }
+        int index = availablePresentations.indexOf(activePresentationDescriptor);
+        if (index < availablePresentations.size() - 1) {
+            index++;
+        } else {
+            index = 0;
+        }
+        switchPresentation(availablePresentations.get(index));
     }
 
     private void switchPresentation(ResultSetPresentationDescriptor selectedPresentation) {
@@ -1877,9 +1897,9 @@ public class ResultSetViewer extends Viewer
             menuManager.add(new Separator());
             menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
             activePresentation.fillMenu(menuManager);
-            if (!CommonUtils.isEmpty(presentations) && presentations.size() > 1) {
+            if (!CommonUtils.isEmpty(availablePresentations) && availablePresentations.size() > 1) {
                 menuManager.add(new Separator());
-                for (final ResultSetPresentationDescriptor pd : presentations) {
+                for (final ResultSetPresentationDescriptor pd : availablePresentations) {
                     Action action = new Action(pd.getLabel(), IAction.AS_RADIO_BUTTON) {
                         @Override
                         public boolean isChecked() {
@@ -2208,6 +2228,7 @@ public class ResultSetViewer extends Viewer
             combo.add(DBIcon.TYPE_UNKNOWN.getImage(), "", null, null);
             toolitem.setWidth(100);
             combo.addSelectionListener(this);
+            combo.setToolTipText(ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_SWITCH_PRESENTATION, getSite(), false));
             return combo;
         }
 
