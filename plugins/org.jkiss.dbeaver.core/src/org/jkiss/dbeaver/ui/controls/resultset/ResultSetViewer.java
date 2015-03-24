@@ -877,9 +877,9 @@ public class ResultSetViewer extends Viewer
         if (curState != null && curRow != null) {
             curState.rowNumber = curRow.getVisualNumber();
         }
-        if (recordMode) {
-            updateRecordMode();
-        }
+//        if (recordMode) {
+//            updateRecordMode();
+//        }
     }
 
     ///////////////////////////////////////

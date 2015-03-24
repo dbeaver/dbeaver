@@ -323,6 +323,9 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
         }
         // Update controls
         controller.updateEditControls();
+        controller.updateStatusMessage();
+        // Refresh meta if we are in record mode
+        refreshData(recordMode, false);
     }
 
     @Nullable
