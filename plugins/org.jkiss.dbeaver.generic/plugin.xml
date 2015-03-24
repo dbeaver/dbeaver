@@ -654,7 +654,19 @@
                 position="additions_end"
                 icon="#sql_text"
                 type="folder">
-            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
+            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable" if="!object.view"/>
+        </editor>
+        <editor
+                id="org.jkiss.dbeaver.ext.generic.edit.GenericDDLEditor"
+                class="org.jkiss.dbeaver.ext.generic.edit.GenericDDLEditor"
+                main="false"
+                label="Definition"
+                description="Table DDL"
+                position="additions_end"
+                icon="#sql_text"
+                type="folder"
+                embeddable="true">
+            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable" if="object.view"/>
         </editor>
         <editor id="source.view" class="org.jkiss.dbeaver.ext.generic.edit.GenericSourceViewEditor"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
