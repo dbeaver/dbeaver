@@ -666,7 +666,6 @@ public class ResultSetViewer extends Viewer
     /**
      * It is a hack function. Generally all command associated widgets should be updated automatically by framework.
      * Freaking E4 do not do it. I've spent a couple of days fighting it. Guys, you owe me.
-     * TODO: just remove in future. In fact everything must work without it
      */
     private void updateToolbar()
     {
