@@ -539,9 +539,9 @@
                     <replace provider="generic" driver="sqlite_ch_werner"/>
 
                     <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.8.7.jar" url="*"/>
-                    <file type="executable" path="drivers/sqlite/shell/linux/sqlite" os="linux" url="*"/>
-                    <file type="executable" path="drivers/sqlite/shell/macos/sqlite" os="macos" url="*"/>
-                    <file type="executable" path="drivers/sqlite/shell/win32/sqlite.exe" os="win32" url="*"/>
+                    <file type="executable" path="drivers/sqlite/shell/linux/sqlite3" os="linux" url="*"/>
+                    <file type="executable" path="drivers/sqlite/shell/macos/sqlite3" os="macos" url="*"/>
+                    <file type="executable" path="drivers/sqlite/shell/win32/sqlite3.exe" os="win32" url="*"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
 
                     <parameter name="embedded" value="true"/>
