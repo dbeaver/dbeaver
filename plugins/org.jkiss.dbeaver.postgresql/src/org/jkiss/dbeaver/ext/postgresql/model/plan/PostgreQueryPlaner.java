@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.postgresql.model;
+package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -43,6 +43,8 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
 
     @Override
     public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException {
-        return null;
+        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(dataSource, query);
+        plan.explain(session);
+        return plan;
     }
 }
