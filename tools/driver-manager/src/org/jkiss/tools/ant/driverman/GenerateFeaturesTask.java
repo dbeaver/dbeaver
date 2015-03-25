@@ -53,7 +53,9 @@ public class GenerateFeaturesTask extends Task
         "org.jkiss.dbeaver.ext.mysql",
         "org.jkiss.dbeaver.ext.oracle",
         "org.jkiss.dbeaver.ext.db2",
-        "org.jkiss.dbeaver.ext.cassandra",
+		"org.jkiss.dbeaver.ext.firebird",
+        "org.jkiss.dbeaver.ext.postgresql",
+		"org.jkiss.dbeaver.ext.mssql",
 //        "org.jkiss.dbeaver.ext.wmi",
     };
 
@@ -454,11 +456,11 @@ public class GenerateFeaturesTask extends Task
     public static void main(String[] args)
     {
         GenerateFeaturesTask task = new GenerateFeaturesTask();
-        task.setBuildDirectory("D:\\temp\\build");
-        task.setTargetDirectory("D:\\temp\\target");
-        task.setUpdateSiteDirectory("D:\\temp\\update-site");
-        task.setDriversDirectory("D:\\Devel\\My\\dbeaver\\contrib\\drivers");
-        task.setFeaturesDirectory("D:\\Devel\\My\\dbeaver\\features");
+        task.setBuildDirectory("c:\\temp\\build");
+        task.setTargetDirectory("c:\\temp\\target");
+        task.setUpdateSiteDirectory("c:\\temp\\update-site");
+        task.setDriversDirectory("c:\\Devel\\My\\dbeaver\\contrib\\drivers");
+        task.setFeaturesDirectory("c:\\Devel\\My\\dbeaver\\features");
         task.execute();
     }
 

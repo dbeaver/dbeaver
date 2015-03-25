@@ -126,4 +126,9 @@ class DriverInfo {
     {
         return description;
     }
+
+    @Override
+    public String toString() {
+        return pluginId;
+    }
 }

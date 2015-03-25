@@ -3,8 +3,8 @@
 	<extension point="org.jkiss.dbeaver.resources">
 		<resource name="drivers/sqlite/xerial/LICENSE.txt"/>
 		<resource name="drivers/sqlite/xerial/sqlite-jdbc-3.8.7.jar"/>
-		<resource name="drivers/sqlite/shell/linux/sqlite"/>
-		<resource name="drivers/sqlite/shell/macos/sqlite"/>
-		<resource name="drivers/sqlite/shell/macos/sqlite.exe"/>
+		<resource name="drivers/sqlite/shell/linux/sqlite3"/>
+		<resource name="drivers/sqlite/shell/macos/sqlite3"/>
+		<resource name="drivers/sqlite/shell/win32/sqlite3.exe"/>
 	</extension>
 </plugin>
