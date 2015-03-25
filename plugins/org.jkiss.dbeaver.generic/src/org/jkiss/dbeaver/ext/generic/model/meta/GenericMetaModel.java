@@ -23,7 +23,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -230,6 +233,12 @@ public class GenericMetaModel {
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
         return "-- View definition not available";
+    }
+
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+        GenericTableManager tableManager = new GenericTableManager();
+        DBEPersistAction[] ddlActions = tableManager.getTableDDL(monitor, sourceObject);
+        return DBUtils.generateScript(ddlActions);
     }
 
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
