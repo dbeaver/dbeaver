@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -75,6 +76,7 @@ public class GenericDataSource extends JDBCDataSource
     private String allObjectsPattern;
     private boolean supportsStructCache;
     private boolean isEmbedded;
+    private DBCQueryPlanner queryPlanner;
 
     public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -798,6 +800,11 @@ public class GenericDataSource extends JDBCDataSource
     {
         if (adapter == DBSStructureAssistant.class) {
             return new GenericStructureAssistant(this);
+        } else if (adapter == DBCQueryPlanner.class) {
+            if (queryPlanner == null) {
+                queryPlanner = metaModel.getQueryPlanner(this);
+            }
+            return queryPlanner;
         } else {
             return null;
         }
