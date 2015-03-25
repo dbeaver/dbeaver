@@ -1582,20 +1582,6 @@
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate">
-                    <visibleWhen>
-                        <with variable="activeEditor">
-                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
-                        </with>
-                    </visibleWhen>
-                </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse">
-                    <visibleWhen>
-                        <with variable="activeEditor">
-                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
-                        </with>
-                    </visibleWhen>
-                </command>
                 <separator name="files" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file">
                     <visibleWhen>
