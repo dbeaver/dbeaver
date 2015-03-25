@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -62,5 +64,10 @@ public class PostgreMetaModel extends GenericMetaModel
         } finally {
             session.close();
         }
+    }
+
+    @Override
+    public DBCQueryPlanner getQueryPlanner(GenericDataSource dataSource) {
+        return new PostgreQueryPlaner(dataSource);
     }
 }

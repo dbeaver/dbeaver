@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -248,4 +249,9 @@ public class GenericMetaModel {
     public JDBCBasicDataTypeCache createDataTypeCache(DBSDataSourceContainer container) {
         return new JDBCBasicDataTypeCache(container);
     }
+
+    public DBCQueryPlanner getQueryPlanner(GenericDataSource dataSource) {
+        return null;
+    }
+
 }
