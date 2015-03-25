@@ -534,7 +534,7 @@
                     defaultPort=""
                     webURL="https://bitbucket.org/xerial/sqlite-jdbc"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="*"/>
+                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.8.7.jar" url="*"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
                     <parameter name="embedded" value="true"/>
                     <parameter name="supports-references" value="true"/>

@@ -1411,7 +1411,7 @@ public class ResultSetViewer extends Viewer
             UIUtils.showErrorDialog(
                 viewerPanel.getShell(),
                 "Error executing query",
-                "Other query execution is in progress");
+                "Viewer detached rom data source or other query execution is in progress");
         }
     }
 

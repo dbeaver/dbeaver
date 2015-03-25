@@ -72,6 +72,8 @@ public interface IResultSetController {
      */
     void refreshData(@Nullable Runnable onSuccess);
 
+    boolean isRefreshInProgress();
+
     /**
      * Reads next segment of data
      */
