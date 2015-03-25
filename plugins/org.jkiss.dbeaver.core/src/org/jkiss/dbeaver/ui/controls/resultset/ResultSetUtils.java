@@ -82,9 +82,11 @@ public class ResultSetUtils
                         String entityName = entityMeta.getEntityName();
                         Class<? extends DBSObject> scChildType = objectContainer.getChildType(monitor);
                         DBSObject entityObject;
-                        if (!CommonUtils.isEmpty(catalogName) && scChildType != null && DBSSchema.class.isAssignableFrom(scChildType)) {
+                        if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
+                            (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType)))
+                        {
                             // Do not use catalog name
-                            // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2)
+                            // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
                             entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
                         } else {
                             entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
