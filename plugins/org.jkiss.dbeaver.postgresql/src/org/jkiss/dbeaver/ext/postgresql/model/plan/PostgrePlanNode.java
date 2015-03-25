@@ -111,7 +111,7 @@ public class PostgrePlanNode implements DBCPlanNode, IPropertySource {
         IPropertyDescriptor[] props = new IPropertyDescriptor[attributes.size()];
         int index = 0;
         for (Map.Entry<String, String> attr : attributes.entrySet()) {
-            props[index++] = new PropertyDescriptorEx(null, attr.getKey(), attr.getKey(), null, String.class, false, null, null, false);
+            props[index++] = new PropertyDescriptorEx("Source", attr.getKey(), attr.getKey(), null, String.class, false, null, null, false);
         }
         return props;
     }
@@ -134,5 +134,10 @@ public class PostgrePlanNode implements DBCPlanNode, IPropertySource {
     @Override
     public void setPropertyValue(Object id, Object value) {
 
+    }
+
+    @Override
+    public String toString() {
+        return getNodeType() + " " + getStartupCost();
     }
 }
