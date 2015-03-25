@@ -29,9 +29,7 @@ public class GenericDDLEditor extends SQLEditorNested<GenericTable> {
         if (!sourceObject.isPersisted()) {
             return "";
         }
-        GenericTableManager tableManager = new GenericTableManager();
-        DBEPersistAction[] ddlActions = tableManager.getTableDDL(monitor, sourceObject);
-        return DBUtils.generateScript(ddlActions);
+        return sourceObject.getDataSource().getMetaModel().getTableDDL(monitor, sourceObject);
     }
 
     @Override
