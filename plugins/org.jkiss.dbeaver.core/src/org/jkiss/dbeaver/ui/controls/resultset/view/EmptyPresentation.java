@@ -75,6 +75,9 @@ public class EmptyPresentation implements IResultSetPresentation {
         placeholder.addPaintListener(new PaintListener() {
             @Override
             public void paintControl(PaintEvent e) {
+                if (controller.isRefreshInProgress()) {
+                    return;
+                }
                 e.gc.setFont(largeFont);
                 drawMessage(e, "No Data", -10);
                 e.gc.setFont(normalFont);
