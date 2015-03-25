@@ -25,5 +25,6 @@ public enum DBPDriverFileType
 {
     jar,
     lib,
+    executable,
     license
 }
