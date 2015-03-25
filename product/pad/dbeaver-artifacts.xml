@@ -28,7 +28,6 @@
 
     <features>
         <feature id="features/org.jkiss.dbeaver.core" type="primary"/>
-        <feature id="features/org.jkiss.dbeaver.ext.cassandra" type="general"/>
         <feature id="features/org.jkiss.dbeaver.ext.generic" type="general"/>
         <feature id="features/org.jkiss.dbeaver.ext.mysql" type="general"/>
         <feature id="features/org.jkiss.dbeaver.ext.db2" type="general"/>

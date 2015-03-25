@@ -21,7 +21,6 @@
       <feature id="org.jkiss.dbeaver.ext.mysql"/>
       <feature id="org.jkiss.dbeaver.ext.oracle"/>
       <feature id="org.jkiss.dbeaver.ext.db2"/>
-      <feature id="org.jkiss.dbeaver.ext.cassandra"/>
       <!--feature id="org.jkiss.dbeaver.ext.wmi"/-->
    </features>
 
