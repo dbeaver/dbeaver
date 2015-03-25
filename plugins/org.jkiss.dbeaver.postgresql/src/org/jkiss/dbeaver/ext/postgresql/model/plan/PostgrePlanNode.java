@@ -42,17 +42,6 @@ public class PostgrePlanNode implements DBCPlanNode, IPropertySource {
     private PostgrePlanNode parent;
     private List<PostgrePlanNode> nested;
 
-/*
-    private String nodeType;
-    private String startupCost;
-    private String totalCost;
-    private String actualStartupTime;
-    private String actualTotalTime;
-    private String actualRows;
-    private String actualLoops;
-    private String alias;
-    private String relationName;
-*/
     private Map<String, String> attributes = new LinkedHashMap<String, String>();
 
     public PostgrePlanNode(PostgrePlanNode parent, Element element) {
@@ -63,17 +52,6 @@ public class PostgrePlanNode implements DBCPlanNode, IPropertySource {
                 attributes.put(child.getNodeName(), child.getTextContent());
             }
         }
-/*
-        nodeType = element.getAttribute("Node-Type");
-        startupCost = element.getAttribute("Startup-Cost");
-        totalCost element.getAttribute("Total-Cost");
-        element.getAttribute("Actual-Startup-Time");
-        element.getAttribute("Actual-Total-Time");
-        element.getAttribute("Actual-Rows");
-        element.getAttribute("Actual-Loops");
-        element.getAttribute("Alias");
-        element.getAttribute("Relation-Name");
-*/
 
         Element nestedPlansElement = XMLUtils.getChildElement(element, "Plans");
         if (nestedPlansElement != null) {
@@ -84,6 +62,31 @@ public class PostgrePlanNode implements DBCPlanNode, IPropertySource {
                 nested.add(new PostgrePlanNode(null, planElement));
             }
         }
+    }
+
+    @Property(order = 0, viewable = true)
+    public String getNodeType() {
+        return attributes.get("Node-Type");
+    }
+
+    @Property(order = 1, viewable = true)
+    public String getStartupCost() {
+        return attributes.get("Startup-Cost");
+    }
+
+    @Property(order = 2, viewable = true)
+    public String getTotalCost() {
+        return attributes.get("Total-Cost");
+    }
+
+    @Property(order = 3, viewable = true)
+    public String getAlias() {
+        return attributes.get("Alias");
+    }
+
+    @Property(order = 4, viewable = true)
+    public String getRelationName() {
+        return attributes.get("Relation-Name");
     }
 
     @Override
