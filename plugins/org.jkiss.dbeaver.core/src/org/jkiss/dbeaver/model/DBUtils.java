@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -1257,6 +1258,24 @@ public final class DBUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Puts list of linked SQL exceptions into a list.
+     * This function exists to avoid infinite cycles in SQLException linking.
+     */
+    public static List<SQLException> getExceptionsChain(SQLException ex) {
+        if (ex.getNextException() == null) {
+            return Collections.singletonList(ex);
+        }
+        List<SQLException> chain = new ArrayList<SQLException>();
+        for (SQLException e = ex; e != null; e = e.getNextException()) {
+            if (chain.contains(e)) {
+                break;
+            }
+            chain.add(e);
+        }
+        return chain;
     }
 
 }
