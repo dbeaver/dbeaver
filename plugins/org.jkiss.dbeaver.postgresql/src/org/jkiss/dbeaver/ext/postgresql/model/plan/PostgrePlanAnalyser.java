@@ -96,11 +96,11 @@ public class PostgrePlanAnalyser implements DBCPlan {
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         } finally {
+            // Rollback changes because EXPLAIN actually executes query and it could be INSERT/UPDATE
             try {
+                connection.rollback();
                 if (oldAutoCommit) {
                     connection.setAutoCommit(true);
-                } else {
-                    connection.rollback();
                 }
             } catch (SQLException e) {
                 log.error("Error closing plan analyser", e);
