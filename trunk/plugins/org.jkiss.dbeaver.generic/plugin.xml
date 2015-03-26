@@ -601,7 +601,7 @@
                     <property name="suppressHeaders" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <file type="license" path="drivers/csvjdbc/LICENSE.txt" url="*"/>
-                    <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0.12.jar" url="*"/>
+                    <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0-23.jar" url="*"/>
                     <parameter name="embedded" value="true"/>
                 </driver>
                 <driver
