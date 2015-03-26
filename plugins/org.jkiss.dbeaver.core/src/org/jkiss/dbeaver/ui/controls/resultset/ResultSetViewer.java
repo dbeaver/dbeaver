@@ -449,11 +449,9 @@ public class ResultSetViewer extends Viewer
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
         if (!model.getDataFilter().equalFilters(dataFilter)) {
-            if (model.setDataFilter(dataFilter)) {
-                redrawData(true);
-            }
+            //model.setDataFilter(dataFilter);
             if (refreshData) {
-                refreshData(null);
+                refreshWithFilter(dataFilter);
             } else {
                 activePresentation.formatData(true);
                 updateFiltersText();
@@ -2096,13 +2094,12 @@ public class ResultSetViewer extends Viewer
             if (operator.getArgumentCount() > 0 && value == null) {
                 return;
             }
-            DBDDataFilter filter = model.getDataFilter();
+            DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
             DBDAttributeConstraint constraint = filter.getConstraint(attribute);
             if (constraint != null) {
                 constraint.setOperator(operator);
                 constraint.setValue(value);
-                updateFiltersText();
-                refresh();
+                setDataFilter(filter, true);
             }
         }
     }
@@ -2118,11 +2115,11 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(attribute);
+            DBDDataFilter dataFilter = new DBDDataFilter(model.getDataFilter());
+            DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
             if (constraint != null) {
                 constraint.setCriteria(null);
-                updateFiltersText();
-                refresh();
+                setDataFilter(dataFilter, true);
             }
         }
     }
