@@ -62,7 +62,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private static class ColumnMapping {
         DBCAttributeMetaData sourceAttr;
         DatabaseMappingAttribute targetAttr;
-        DBDValueHandler valueHandler;
+        DBDValueHandler sourceValueHandler;
+        DBDValueHandler targetValueHandler;
         int targetIndex = -1;
 
         private ColumnMapping(DBCAttributeMetaData sourceAttr)
@@ -94,7 +95,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (columnMapping.targetAttr == null) {
                 throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
             }
-            columnMapping.valueHandler = DBUtils.findValueHandler(session, columnMapping.sourceAttr);
+            columnMapping.sourceValueHandler = DBUtils.findValueHandler(session, columnMapping.sourceAttr);
+            columnMapping.targetValueHandler = DBUtils.findValueHandler(session, columnMapping.targetAttr.getTarget());
             columnMappings[i] = columnMapping;
             if (columnMapping.targetAttr.getMappingType() == DatabaseMappingType.skip) {
                 continue;
@@ -117,7 +119,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (column.targetIndex < 0) {
                 continue;
             }
-            rowValues[column.targetIndex] = column.valueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
+            rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
+                session,
+                column.targetAttr.getTarget(),
+                column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i),
+                false);
         }
         executeBatch.add(rowValues);
 
