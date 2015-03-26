@@ -21,6 +21,7 @@ package org.jkiss.dbeaver;
 
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -124,20 +125,22 @@ public class DBException extends Exception
         }
     }
 
-    private static String makeMessage(SQLException ex)
+    private static String makeMessage(SQLException exception)
     {
         StringBuilder msg = new StringBuilder(CoreMessages.common_error_sql);
-        if (ex.getErrorCode() > 0) {
-            msg.append(" [").append(ex.getErrorCode()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        if (!CommonUtils.isEmpty(ex.getSQLState())) {
-            msg.append(" [").append(ex.getSQLState()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        if (!CommonUtils.isEmpty(ex.getMessage())) {
-            msg.append(": ").append(SQLUtils.stripTransformations(ex.getMessage())); //$NON-NLS-1$
-        }
-        if (ex.getNextException() != null) {
-            msg.append(ContentUtils.getDefaultLineSeparator()).append(makeMessage(ex.getNextException()));
+        for (SQLException ex : DBUtils.getExceptionsChain(exception)) {
+            if (msg.length() > 0) {
+                msg.append(ContentUtils.getDefaultLineSeparator());
+            }
+            if (ex.getErrorCode() > 0) {
+                msg.append(" [").append(ex.getErrorCode()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+            if (!CommonUtils.isEmpty(ex.getSQLState())) {
+                msg.append(" [").append(ex.getSQLState()).append("]"); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+            if (!CommonUtils.isEmpty(ex.getMessage())) {
+                msg.append(": ").append(SQLUtils.stripTransformations(ex.getMessage())); //$NON-NLS-1$
+            }
         }
         return msg.toString();
     }
