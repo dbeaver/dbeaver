@@ -18,9 +18,9 @@
     </Company_Info>
     <Program_Info>
         <Program_Name>DBeaver</Program_Name>
-        <Program_Version>3.2.0</Program_Version>
+        <Program_Version>3.3.0</Program_Version>
         <Program_Release_Month>03</Program_Release_Month>
-        <Program_Release_Day>11</Program_Release_Day>
+        <Program_Release_Day>30</Program_Release_Day>
         <Program_Release_Year>2015</Program_Release_Year>
         <Program_Cost_Dollars>0</Program_Cost_Dollars>
         <Program_Type>Freeware</Program_Type>
@@ -31,15 +31,7 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            - Data transfer wizard UI improved
-            - Cross-database data transfer fixed + performance significantly improved
-            - Object editor UI changed
-            - Many minor UI improvements and bugfixes
-            - MongoDB extension:
-            * Support of JavaScript expressions/queries in SQL editor
-            * Multi-db authentication support
-            * Create/delete collections/databases
-            * Server functions (JS) and users view
+            -
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -62,8 +54,8 @@
             <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
         </Application_URLs>
         <Download_URLs>
-            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.2.0-x86-setup.exe</Primary_Download_URL>
-            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.2.0-x86_64-setup.exe
+            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.3.0-x86-setup.exe</Primary_Download_URL>
+            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.3.0-x86_64-setup.exe
             </Secondary_Download_URL>
             <Additional_Download_URL_1></Additional_Download_URL_1>
             <Additional_Download_URL_2></Additional_Download_URL_2>
