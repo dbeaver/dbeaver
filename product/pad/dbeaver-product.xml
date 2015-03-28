@@ -41,6 +41,16 @@
     <versions>
 
         <version>
+            <number>3.3.0</number>
+            <type>major</type>
+            <date>30.03.2015</date>
+
+            <release-notes>
+                -
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.2.0</number>
             <type>major</type>
             <date>11.03.2015</date>
