@@ -127,7 +127,7 @@ public abstract class JDBCDataSource
         // Obtain connection
         try {
             if (driverInstance != null && !driverInstance.acceptsURL(connectionInfo.getUrl())) {
-                throw new DBException("Bad URL: " + connectionInfo.getUrl());
+                throw new DBCException("Bad URL: " + connectionInfo.getUrl());
             }
             Connection connection;
             if (driverInstance == null) {
@@ -136,7 +136,7 @@ public abstract class JDBCDataSource
                 connection = driverInstance.connect(connectionInfo.getUrl(), connectProps);
             }
             if (connection == null) {
-                throw new DBException("Null connection returned");
+                throw new DBCException("Null connection returned");
             }
 
             // Set read-only flag
@@ -148,6 +148,9 @@ public abstract class JDBCDataSource
         }
         catch (SQLException ex) {
             throw new DBCException(ex, this);
+        }
+        catch (DBCException ex) {
+            throw ex;
         }
         catch (Throwable e) {
             throw new DBCException("Unexpected driver error occurred while connecting to database", e);
