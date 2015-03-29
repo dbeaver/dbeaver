@@ -31,7 +31,26 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            -
+            - Plain text results presentation added
+            - Results viewer redesigned
+            - DB2: metadata fixes (indexes, functions, table DDL, keywords)
+            - SQL Server: extension added (views definition and procedures source code now available)
+            - PostgreSQL: explain plan support added
+            - SQLite: driver version update
+            - CSV-JDBC: driver version update
+            - SQL autocomplete fixed
+            - SQL parser improved
+            - Data transfer fixed (column types auto-cast added)
+            - Results navigation fixed (keep filter values after navigation)
+            - Mongo DB:
+            * Connection invalidate
+            * Data type management improved
+            - Cassandra:
+            * Cassandra Thrift is now obsolete. Legacy (0.x-1.x) Cassandra extension removed from DBeaver
+            * Map, set and list types support added
+            * Data type management improved
+            * Tables autocomplete added
+            * UUID type handler fixed
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
