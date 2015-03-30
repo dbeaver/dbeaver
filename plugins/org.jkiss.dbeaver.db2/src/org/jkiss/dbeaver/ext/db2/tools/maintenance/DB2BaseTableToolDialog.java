@@ -87,7 +87,7 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
             public void processObjectResults(DB2Table db2Table, DBCResultSet resultSet) throws DBCException
             {
                 // Retrive column names
-                JDBCResultSetMetaData rsMetaData = (JDBCResultSetMetaData) resultSet.getResultSetMetaData();
+                JDBCResultSetMetaData rsMetaData = (JDBCResultSetMetaData) resultSet.getMeta();
 
                 try {
 

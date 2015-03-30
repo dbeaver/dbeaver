@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -166,6 +167,12 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         return null;
     }
 
+    @Nullable
+    @Override
+    public DBDDocument getRowDocument() throws DBCException {
+        return null;
+    }
+
     private void checkNotEmpty()
     {
         if (original == null) {
@@ -204,7 +211,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     @NotNull
     @Override
-    public JDBCResultSetMetaData getResultSetMetaData()
+    public JDBCResultSetMetaData getMeta()
         throws DBCException
     {
         if (metaData == null) {
@@ -232,7 +239,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         throws SQLException
     {
         try {
-            return getResultSetMetaData();
+            return getMeta();
         } catch (DBCException e) {
             if (e.getCause() instanceof SQLException) {
                 throw (SQLException)e.getCause();

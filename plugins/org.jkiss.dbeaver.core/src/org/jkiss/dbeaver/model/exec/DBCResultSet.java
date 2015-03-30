@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.model.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 
 /**
@@ -51,12 +52,22 @@ public interface DBCResultSet extends DBPObject
     @Nullable
     DBDValueMeta getRowMeta() throws DBCException;
 
+    /**
+     * Row document.
+     * In object oriented databases returns document associated with current row.
+     * In relational and non-document oriented databases returns null.
+     * @return document or null
+     * @throws DBCException
+     */
+    @Nullable
+    DBDDocument getRowDocument() throws DBCException;
+
     boolean nextRow() throws DBCException;
 
     boolean moveTo(int position) throws DBCException;
 
     @NotNull
-    DBCResultSetMetaData getResultSetMetaData() throws DBCException;
+    DBCResultSetMetaData getMeta() throws DBCException;
 
     @Nullable
     String getResultSetName() throws DBCException;

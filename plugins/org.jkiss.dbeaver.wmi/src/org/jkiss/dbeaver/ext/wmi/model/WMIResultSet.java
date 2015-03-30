@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
@@ -131,6 +132,14 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         }
     }
 
+    @Nullable
+    @Override
+    public DBDDocument getRowDocument() throws DBCException {
+        // No document. We could wrap WMIObject with some document abstraction
+        // but as all objects have the same structure - it doesn't make sense
+        return null;
+    }
+
     @Override
     public boolean nextRow() throws DBCException
     {
@@ -149,7 +158,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
     @NotNull
     @Override
-    public DBCResultSetMetaData getResultSetMetaData() throws DBCException
+    public DBCResultSetMetaData getMeta() throws DBCException
     {
         return this;
     }
