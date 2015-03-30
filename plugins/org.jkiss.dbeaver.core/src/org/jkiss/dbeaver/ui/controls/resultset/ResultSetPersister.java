@@ -517,7 +517,7 @@ class ResultSetPersister {
         public void fetchRow(DBCSession session, DBCResultSet resultSet)
             throws DBCException
         {
-            DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
+            DBCResultSetMetaData rsMeta = resultSet.getMeta();
             List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
             for (int i = 0; i < keyAttributes.size(); i++) {
                 DBCAttributeMetaData keyAttribute = keyAttributes.get(i);

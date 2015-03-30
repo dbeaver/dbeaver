@@ -183,7 +183,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                                 attrId = rowIdAttribute.getName();
                             }
                             // Annotate last attribute with row id
-                            List<DBCAttributeMetaData> metaAttributes = dbResult.getResultSetMetaData().getAttributes();
+                            List<DBCAttributeMetaData> metaAttributes = dbResult.getMeta().getAttributes();
                             for (int i = metaAttributes.size(); i > 0; i--) {
                                 DBCAttributeMetaData attr = metaAttributes.get(i - 1);
                                 if (attrId.equalsIgnoreCase(attr.getName()) && attr instanceof JDBCColumnMetaData) {

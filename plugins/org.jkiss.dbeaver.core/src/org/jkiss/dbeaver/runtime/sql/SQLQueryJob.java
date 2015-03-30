@@ -525,7 +525,7 @@ public class SQLQueryJob extends DataSourceJob
         try {
             // Retrieve source entity
             if (result != null) {
-                DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
+                DBCResultSetMetaData rsMeta = resultSet.getMeta();
                 String sourceName = null;
                 for (DBCAttributeMetaData attr : rsMeta.getAttributes()) {
                     String entityName = attr.getEntityName();
