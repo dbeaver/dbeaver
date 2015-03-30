@@ -85,7 +85,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
     {
         initExporter(session.getProgressMonitor());
-        DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
+        DBCResultSetMetaData metaData = resultSet.getMeta();
         List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
         columnMappings = new ColumnMapping[rsAttributes.size()];
         targetAttributes = new ArrayList<DBSEntityAttribute>(columnMappings.length);

@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.model.impl.local;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 
@@ -86,6 +87,12 @@ public class LocalResultSet implements DBCResultSet
         return null;
     }
 
+    @Nullable
+    @Override
+    public DBDDocument getRowDocument() throws DBCException {
+        return null;
+    }
+
     @Override
     public boolean nextRow() throws DBCException
     {
@@ -108,7 +115,7 @@ public class LocalResultSet implements DBCResultSet
 
     @NotNull
     @Override
-    public DBCResultSetMetaData getResultSetMetaData() throws DBCException
+    public DBCResultSetMetaData getMeta() throws DBCException
     {
         return new DBCResultSetMetaData() {
             @Override

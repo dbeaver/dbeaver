@@ -199,7 +199,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                 DBCResultSet dbResult = dbStat.openResultSet();
                 try {
                     List<DBDLabelValuePair> values = new ArrayList<DBDLabelValuePair>();
-                    List<DBCAttributeMetaData> metaColumns = dbResult.getResultSetMetaData().getAttributes();
+                    List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
                     List<DBDValueHandler> colHandlers = new ArrayList<DBDValueHandler>(metaColumns.size());
                     for (DBCAttributeMetaData col : metaColumns) {
                         colHandlers.add(DBUtils.findValueHandler(session, col));

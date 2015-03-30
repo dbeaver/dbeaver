@@ -216,7 +216,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         @Override
         public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
         {
-            attributes = resultSet.getResultSetMetaData().getAttributes();
+            attributes = resultSet.getMeta().getAttributes();
         }
 
         @Override
