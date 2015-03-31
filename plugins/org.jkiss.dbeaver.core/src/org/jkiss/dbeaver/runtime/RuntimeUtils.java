@@ -136,6 +136,20 @@ public class RuntimeUtils {
         return text;
     }
 
+    /**
+     * Returns first non-null and non-empty message from this exception or it's cause
+     */
+    public static String getFirstMessage(Throwable ex)
+    {
+        for (Throwable e = ex; e != null; e = e.getCause()) {
+            String message = e.getMessage();
+            if (!CommonUtils.isEmpty(message)) {
+                return message;
+            }
+        }
+        return null;
+    }
+
     public static String getExceptionMessage(Throwable ex)
     {
         StringBuilder msg = new StringBuilder(/*CommonUtils.getShortClassName(ex.getClass())*/);
