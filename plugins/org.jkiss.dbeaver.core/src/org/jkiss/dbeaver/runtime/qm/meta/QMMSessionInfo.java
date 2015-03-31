@@ -156,9 +156,6 @@ public class QMMSessionInfo extends QMMObject {
         QMMStatementInfo stat = getStatement(statement);
         if (stat != null) {
             String queryString = statement.getQueryString();
-            if (queryString == null) {
-                queryString = statement.getDescription();
-            }
             final QMMTransactionSavepointInfo savepoint =
                 isTransactional() && getTransaction() != null ?
                     getTransaction().getCurrentSavepoint() : null;

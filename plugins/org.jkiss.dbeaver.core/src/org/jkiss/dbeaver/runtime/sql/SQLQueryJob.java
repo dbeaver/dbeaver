@@ -570,7 +570,7 @@ public class SQLQueryJob extends DataSourceJob
                 dataReceiver.fetchRow(session, resultSet);
             }
             if (updateStatistics) {
-                statistics.setFetchTime(System.currentTimeMillis() - fetchStartTime);
+                statistics.addFetchTime(System.currentTimeMillis() - fetchStartTime);
             }
         }
         finally {

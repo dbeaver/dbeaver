@@ -1230,7 +1230,6 @@ public class SQLEditor extends SQLEditorBase
                 job.extractData(session);
                 return job.getStatistics();
             } else {
-                log.warn("No active query - can't read data");
                 DBCStatistics statistics = new DBCStatistics();
                 statistics.addMessage("No active query - can't read data");
                 return statistics;
