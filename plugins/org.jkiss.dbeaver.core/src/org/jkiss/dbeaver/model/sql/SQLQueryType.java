@@ -23,7 +23,7 @@ package org.jkiss.dbeaver.model.sql;
  * Statement type
  */
 public enum SQLQueryType {
-    UNLKNOWN,
+    UNKNOWN,
     SELECT,
     INSERT,
     DELETE,
