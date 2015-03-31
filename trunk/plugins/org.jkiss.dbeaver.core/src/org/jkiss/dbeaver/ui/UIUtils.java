@@ -1143,6 +1143,10 @@ public class UIUtils {
 
     public static void enableHostEditorKeyBindingsSupport(final IWorkbenchPartSite partSite, Control control)
     {
+        if (!(partSite.getPart() instanceof AbstractTextEditor)) {
+            return;
+        }
+
         final boolean[] activated = new boolean[] {false};
         control.addFocusListener(new FocusListener() {
             @Override
@@ -1212,4 +1216,9 @@ public class UIUtils {
         }
         return false;
     }
+
+    public static boolean isInDialog(Control control) {
+        return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
+    }
+
 }

@@ -72,7 +72,7 @@ class FilterValueEditDialog extends BaseDialog {
             viewer,
             attr,
             row,
-            DBDValueController.EditType.PANEL,
+            DBDValueController.EditType.INLINE,
             editorPlaceholder);
 
         label.setText(valueController.getBinding().getName() + " " + operator.getStringValue() + " :");
