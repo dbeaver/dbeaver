@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -342,7 +343,7 @@ class ResultSetPersister {
                                         DataUpdaterJob.this.updateStats.getRowsUpdated()}));
                         } else {
                             UIUtils.showErrorDialog(viewer.getSite().getShell(), "Data error", "Error synchronizing data with database", error);
-                            viewer.setStatus(error.getMessage(), true);
+                            viewer.setStatus(RuntimeUtils.getFirstMessage(error), true);
                         }
                     }
                     viewer.fireResultSetChange();
