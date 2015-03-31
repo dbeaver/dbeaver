@@ -109,7 +109,7 @@ public class SQLQuery {
                 type = SQLQueryType.DDL;
             }
         } catch (Throwable e) {
-            this.type = SQLQueryType.UNLKNOWN;
+            this.type = SQLQueryType.UNKNOWN;
             log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
     }
