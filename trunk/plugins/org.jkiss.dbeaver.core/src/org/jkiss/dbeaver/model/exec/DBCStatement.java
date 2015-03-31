@@ -45,13 +45,6 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
     String getQueryString();
 
     /**
-     * Statement's description
-     * @return description string or null
-     */
-    @Nullable
-    String getDescription();
-
-    /**
      * Statement source.
      * In most cases it is some DBSDataContainer (e.g. table). Also it could be SQL editor.
      * @return data container or null
