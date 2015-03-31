@@ -40,7 +40,7 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
     {
         super(connection, JDBCVoidStatementImpl.INSTANCE, description, disableLogging);
         this.resultSet = resultSet;
-        setDescription(description);
+        setQueryString(description);
     }
 
     @Override

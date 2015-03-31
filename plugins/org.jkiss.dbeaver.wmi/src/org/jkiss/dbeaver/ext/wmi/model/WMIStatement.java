@@ -66,13 +66,6 @@ public class WMIStatement implements DBCStatement {
         return query;
     }
 
-    @Nullable
-    @Override
-    public String getDescription()
-    {
-        return null;
-    }
-
     @Override
     public boolean executeStatement() throws DBCException
     {

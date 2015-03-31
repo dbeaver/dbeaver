@@ -46,7 +46,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     protected final STATEMENT original;
 
     private String query;
-    private String description;
 
     private long rsOffset = -1;
     private long rsMaxRows = -1;
@@ -82,9 +81,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         this.connection.getProgressMonitor().startBlock(
             this,
             SQLUtils.stripTransformations(
-                this.description == null ?
-                    (query == null ? "?" : JDBCUtils.limitQueryLength(query, 200)) : //$NON-NLS-1$
-                    this.description));
+                this.query == null ?
+                    "?" : JDBCUtils.limitQueryLength(query, 200) //$NON-NLS-1$
+                    ));
     }
 
     protected void endBlock()
@@ -134,13 +133,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         this.query = query;
     }
 
-    @Nullable
-    @Override
-    public String getDescription()
-    {
-        return description;
-    }
-
     @Override
     public boolean executeStatement()
         throws DBCException
@@ -173,11 +165,6 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         catch (SQLException e) {
             throw new DBCException(e, connection.getDataSource());
         }
-    }
-
-    protected void setDescription(String description)
-    {
-        this.description = description;
     }
 
     @Nullable

@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Execution statistics
@@ -34,6 +33,7 @@ public class DBCStatistics {
     private long fetchTime;
     private int statementsCount;
     private String queryText;
+    private Map<String, Object> infoMap;
     private List<String> messages;
 
     public DBCStatistics()
@@ -85,9 +85,12 @@ public class DBCStatistics {
         return fetchTime;
     }
 
-    public void setFetchTime(long fetchTime)
-    {
+    public void setFetchTime(long fetchTime) {
         this.fetchTime = fetchTime;
+    }
+
+    public void addFetchTime(long fetchTime) {
+        this.fetchTime += fetchTime;
     }
 
     public long getTotalTime()
@@ -131,6 +134,20 @@ public class DBCStatistics {
         messages.add(message);
     }
 
+    public Map<String, Object> getInfo() {
+        if (infoMap == null) {
+            return Collections.emptyMap();
+        }
+        return infoMap;
+    }
+
+    public void addInfo(String name, Object value) {
+        if (infoMap == null) {
+            infoMap = new LinkedHashMap<String, Object>();
+        }
+        infoMap.put(name, value);
+    }
+
     public boolean isEmpty()
     {
         return executeTime <= 0 && fetchTime <= 0;
@@ -148,6 +165,11 @@ public class DBCStatistics {
                 addMessage(message);
             }
         }
+        if (!CommonUtils.isEmpty(stat.infoMap)) {
+            for (Map.Entry<String,Object> info : stat.infoMap.entrySet()) {
+                addInfo(info.getKey(), info.getValue());
+            }
+        }
     }
 
     public void reset()
@@ -158,6 +180,7 @@ public class DBCStatistics {
         fetchTime = 0;
         statementsCount = 0;
         messages = null;
+        infoMap = null;
     }
 
 }

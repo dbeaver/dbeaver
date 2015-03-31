@@ -54,7 +54,7 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
     @Override
     public String toString()
     {
-        return getStatement().getDescription();
+        return getStatement().getQueryString();
     }
 
 }
