@@ -564,7 +564,7 @@ public final class DBUtils {
     public static DBDAttributeBinding findBinding(@NotNull Collection<DBDAttributeBinding> bindings, @NotNull DBSAttributeBase attribute)
     {
         for (DBDAttributeBinding binding : bindings) {
-            if (binding.matches(attribute, false)) {
+            if (binding.matches(attribute, true)) {
                 return binding;
             }
             List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();
@@ -582,7 +582,7 @@ public final class DBUtils {
     public static DBDAttributeBinding findBinding(@NotNull DBDAttributeBinding[] bindings, @NotNull DBSAttributeBase attribute)
     {
         for (DBDAttributeBinding binding : bindings) {
-            if (binding.matches(attribute, false)) {
+            if (binding.matches(attribute, true)) {
                 return binding;
             }
             List<DBDAttributeBinding> nestedBindings = binding.getNestedBindings();

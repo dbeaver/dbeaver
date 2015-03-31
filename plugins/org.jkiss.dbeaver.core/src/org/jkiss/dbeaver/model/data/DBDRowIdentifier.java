@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -77,12 +78,17 @@ public class DBDRowIdentifier implements DBPObject {
         this.attributes.clear();
         Collection<? extends DBSEntityAttributeRef> refs = CommonUtils.safeCollection(entityIdentifier.getAttributeReferences(monitor));
         for (DBSEntityAttributeRef cColumn : refs) {
-            for (DBDAttributeBinding binding : bindings) {
-                if (binding.matches(cColumn.getAttribute(), false)) {
-                    this.attributes.add(binding);
-                    break;
-                }
+            DBDAttributeBinding binding = DBUtils.findBinding(bindings, cColumn.getAttribute());
+            if (binding != null) {
+                this.attributes.add(binding);
             }
+//            for (DBDAttributeBinding binding : bindings) {
+//
+//                if (binding.matches(cColumn.getAttribute(), false)) {
+//                    this.attributes.add(binding);
+//                    break;
+//                }
+//            }
         }
     }
 /*

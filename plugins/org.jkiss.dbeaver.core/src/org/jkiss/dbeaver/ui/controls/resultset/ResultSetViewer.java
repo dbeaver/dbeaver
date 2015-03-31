@@ -1603,7 +1603,7 @@ public class ResultSetViewer extends Viewer
             }
             if (needPK) {
                 // If we have deleted or updated rows then check for unique identifier
-                if (!checkVirtualEntityIdentifier()) {
+                if (!checkEntityIdentifier()) {
                     //UIUtils.showErrorDialog(getControl().getShell(), "Can't apply changes", "Can't apply data changes - not unique identifier defined");
                     return;
                 }
@@ -1735,8 +1735,16 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    boolean checkVirtualEntityIdentifier() throws DBException
+    boolean checkEntityIdentifier() throws DBException
     {
+        DBSEntity entity = model.getSingleSource();
+        if (entity == null) {
+            UIUtils.showErrorDialog(
+                viewerPanel.getShell(),
+                "Unrecognized entity",
+                "Can't detect source entity");
+            return false;
+        }
         // Check for value locators
         // Probably we have only virtual one with empty attribute set
         final DBDRowIdentifier identifier = getVirtualEntityIdentifier();
@@ -1752,6 +1760,23 @@ public class ResultSetViewer extends Viewer
                 };
                 UIUtils.runInUI(getControl().getShell(), confirmer);
                 return confirmer.getResult();
+            }
+        }
+        {
+            // Check attributes of non-virtual identifier
+            DBDRowIdentifier rowIdentifier = model.getVisibleAttribute(0).getRowIdentifier();
+            if (rowIdentifier == null) {
+                UIUtils.showErrorDialog(
+                    viewerPanel.getShell(),
+                    "No entity identifier",
+                    "Entity " + entity.getName() + " has no identifier");
+                return false;
+            } else if (CommonUtils.isEmpty(rowIdentifier.getAttributes())) {
+                UIUtils.showErrorDialog(
+                    viewerPanel.getShell(),
+                    "No entity identifier",
+                    "Entity " + entity.getName() + " has empty identifier");
+                return false;
             }
         }
         return true;
