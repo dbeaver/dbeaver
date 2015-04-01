@@ -31,6 +31,7 @@ public enum DBPDataKind
     BINARY(false),
     LOB(false),
     STRUCT(true),
+    DOCUMENT(true),
     ARRAY(true),
     OBJECT(true),
     REFERENCE(true),

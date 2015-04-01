@@ -420,9 +420,9 @@ public class ResultSetModel {
         this.clearData();
 
         if (metadataChanged) {
-            if (attributes.length == 1 && attributes[0].getDataKind() == DBPDataKind.STRUCT) {
+            if (attributes.length == 1 && attributes[0].getDataKind() == DBPDataKind.DOCUMENT) {
                 List<DBDAttributeBinding> nested = attributes[0].getNestedBindings();
-                if (!CommonUtils.isEmpty(nested)) {
+                if (nested != null && !nested.isEmpty()) {
                     attributes = nested.toArray(new DBDAttributeBinding[nested.size()]);
                     fillVisibleAttributes();
                 }
@@ -468,10 +468,11 @@ public class ResultSetModel {
     public void appendData(@NotNull List<Object[]> rows)
     {
         int rowCount = rows.size();
+        int firstRowNum = curRows.size();
         List<ResultSetRow> newRows = new ArrayList<ResultSetRow>(rowCount);
         for (int i = 0; i < rowCount; i++) {
             newRows.add(
-                new ResultSetRow(curRows.size() + i, rows.get(i)));
+                new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
         curRows.addAll(newRows);
     }
