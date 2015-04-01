@@ -1132,6 +1132,8 @@ public final class DBUtils {
                 return DBIcon.TYPE_ARRAY;
             case STRUCT:
                 return DBIcon.TYPE_STRUCT;
+            case DOCUMENT:
+                return DBIcon.TYPE_DOCUMENT;
             case REFERENCE:
                 return DBIcon.TYPE_REFERENCE;
             case ROWID:

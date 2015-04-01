@@ -242,6 +242,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         DBSAttributeBase attribute = getAttribute();
         switch (attribute.getDataKind()) {
             case STRUCT:
+            case DOCUMENT:
             case OBJECT:
                 DBSDataType dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
                 if (dataType instanceof DBSEntity) {
