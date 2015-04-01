@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
@@ -42,8 +44,12 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
         return transformName(object.getDataSource(), value);
     }
 
-    public static String transformName(DBPDataSource dataSource, String value)
+    @Nullable
+    public static String transformName(@NotNull DBPDataSource dataSource, @Nullable String value)
     {
+        if (value == null) {
+            return null;
+        }
         final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.META_CASE_SENSITIVE);
         if (isNameCaseSensitive || !(dataSource instanceof SQLDataSource)) {
             return value;
