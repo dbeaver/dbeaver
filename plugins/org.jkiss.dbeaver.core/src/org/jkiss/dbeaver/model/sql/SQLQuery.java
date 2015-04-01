@@ -237,27 +237,31 @@ public class SQLQuery {
         private final String schemaName;
         private final String tableName;
 
-        private SingleTableMeta(String catalogName, String schemaName, String tableName) {
+        private SingleTableMeta(String catalogName, String schemaName, @NotNull String tableName) {
             this.catalogName = catalogName;
             this.schemaName = schemaName;
             this.tableName = tableName;
         }
 
+        @Nullable
         @Override
         public String getCatalogName() {
             return catalogName;
         }
 
+        @Nullable
         @Override
         public String getSchemaName() {
             return schemaName;
         }
 
+        @NotNull
         @Override
         public String getEntityName() {
             return tableName;
         }
 
+        @NotNull
         @Override
         public List<? extends DBCAttributeMetaData> getAttributes() {
             return Collections.emptyList();

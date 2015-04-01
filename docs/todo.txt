@@ -1,4 +1,8 @@
-unsigned integers read fix
+Fix product title (now Enterprise)
+Fix SQL composite sel provider
+Fix UI freeze in Mongo connection page
+PostgreSQL source code (add CREATE/params)
+
 IPropertyDescriptor, IPropertySource -> move to DBPPropertyDescriptor (get rid of org.eclipse.ui package dependency)
 Data transfer DB->DB. Set default export mapping initially
 DBCStatement-> executeQuery + executeUpdate
@@ -12,7 +16,6 @@ BUG: insert explicit values for auto-increment columns in data transfer (configu
 SQL folding
 MySQL and Cassandra + SSL.
 
-Plain-text results representation
 Save As+rename. Use external files in workspace
 Paste into multiple cells
 Transaction state in status bar
@@ -25,7 +28,6 @@ Secure-storage for passwords
 NOSQL:
 Expand/collapse All in Grid
 Edit collections
-Edit Mongo data
 In record mode show only existing attrs for dynamic metadata
 Hide dynamic columns which presents in less than 50% of records. Show them as arrays??
 
@@ -43,4 +45,3 @@ Columns ordering/search (record mode)
 DB toolbar visibility config in Eclipse mode
 
 Rename mysql (generic?) table,column
-

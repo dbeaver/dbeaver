@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.*;
@@ -75,11 +76,12 @@ public class ResultSetUtils
                     entity = (DBSEntity)metaSource;
                 } else if (entityMeta != null) {
 
-                    final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, session.getDataSource());
+                    DBPDataSource dataSource = session.getDataSource();
+                    final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
                     if (objectContainer != null) {
-                        String catalogName = entityMeta.getCatalogName();
-                        String schemaName = entityMeta.getSchemaName();
-                        String entityName = entityMeta.getEntityName();
+                        String catalogName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getCatalogName());
+                        String schemaName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getSchemaName());
+                        String entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getEntityName());
                         Class<? extends DBSObject> scChildType = objectContainer.getChildType(monitor);
                         DBSObject entityObject;
                         if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
