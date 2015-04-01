@@ -22,7 +22,6 @@ package org.jkiss.dbeaver.model.impl.local;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.data.DBDDocument;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 
@@ -84,12 +83,6 @@ public class LocalResultSet implements DBCResultSet
     @Override
     public DBDValueMeta getRowMeta() throws DBCException
     {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBDDocument getRowDocument() throws DBCException {
         return null;
     }
 

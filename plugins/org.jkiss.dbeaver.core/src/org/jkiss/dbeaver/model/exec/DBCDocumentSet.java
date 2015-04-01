@@ -19,47 +19,22 @@
 
 package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
+import org.jkiss.dbeaver.model.data.DBDDocument;
 
 /**
  * DBCResultSet
  */
-public interface DBCResultSet extends DBPObject
+public interface DBCDocumentSet extends DBCResultSet
 {
-    DBCSession getSession();
-
-    DBCStatement getSourceStatement();
-
     /**
-     * Gets attribute value
-     * @param index    index (zero-based)
-     * @return         value (nullable)
-     * @throws DBCException
+     * Row document.
+     * In object oriented databases returns document associated with current row.
+     * In relational and non-document oriented databases returns null.
+     * @return document or null
+     * @throws org.jkiss.dbeaver.model.exec.DBCException
      */
     @Nullable
-    Object getAttributeValue(int index) throws DBCException;
+    DBDDocument getRowDocument() throws DBCException;
 
-    @Nullable
-    Object getAttributeValue(String name) throws DBCException;
-
-    @Nullable
-    DBDValueMeta getAttributeValueMeta(int index) throws DBCException;
-
-    @Nullable
-    DBDValueMeta getRowMeta() throws DBCException;
-
-    boolean nextRow() throws DBCException;
-
-    boolean moveTo(int position) throws DBCException;
-
-    @NotNull
-    DBCResultSetMetaData getMeta() throws DBCException;
-
-    @Nullable
-    String getResultSetName() throws DBCException;
-
-    void close();
 }

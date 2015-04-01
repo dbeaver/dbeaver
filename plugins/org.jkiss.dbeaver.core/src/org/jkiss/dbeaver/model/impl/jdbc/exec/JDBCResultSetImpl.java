@@ -18,10 +18,9 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDDocument;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -164,12 +163,6 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public DBDValueMeta getRowMeta() throws DBCException
     {
         // No meta information in standard JDBC
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBDDocument getRowDocument() throws DBCException {
         return null;
     }
 
