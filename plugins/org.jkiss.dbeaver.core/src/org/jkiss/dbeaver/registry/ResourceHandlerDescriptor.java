@@ -135,7 +135,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
         }
         if (!resourceTypes.isEmpty()) {
             for (ObjectType objectType : resourceTypes) {
-                if (objectType.appliesTo(resource)) {
+                if (objectType.appliesTo(resource, null)) {
                     return true;
                 }
             }

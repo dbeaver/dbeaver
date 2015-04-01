@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -491,7 +492,7 @@ public class ResultSetViewer extends Viewer
         return activePresentation;
     }
 
-    void updatePresentation(DBCResultSet resultSet) {
+    void updatePresentation(final DBCResultSet resultSet) {
         viewerPanel.setRedraw(false);
         try {
             if (resultSet instanceof StatResultSet) {
@@ -501,7 +502,21 @@ public class ResultSetViewer extends Viewer
                 activePresentationDescriptor = null;
             } else {
                 // Regular results
-                availablePresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet);
+                IResultSetContext context = new IResultSetContext() {
+                    @Override
+                    public boolean supportsAttributes() {
+                        DBDAttributeBinding[] attrs = model.getAttributes();
+                        return attrs.length > 0 &&
+                            (attrs[0].getDataKind() != DBPDataKind.DOCUMENT || !CommonUtils.isEmpty(attrs[0].getNestedBindings()));
+                    }
+
+                    @Override
+                    public boolean supportsDocument() {
+                        DBDAttributeBinding[] attrs = model.getAttributes();
+                        return attrs.length == 1 && attrs[0].getDataKind() == DBPDataKind.DOCUMENT;
+                    }
+                };
+                availablePresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet, context);
                 if (!availablePresentations.isEmpty()) {
                     for (ResultSetPresentationDescriptor pd : availablePresentations) {
                         if (pd == activePresentationDescriptor) {
