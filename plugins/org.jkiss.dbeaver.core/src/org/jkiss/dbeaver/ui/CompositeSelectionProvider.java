@@ -62,8 +62,9 @@ public class CompositeSelectionProvider implements ISelectionProvider {
     @Override
     public ISelection getSelection()
     {
-        if (provider != null) {
-            return provider.getSelection();
+        ISelectionProvider cp = getProvider();
+        if (cp != null) {
+            return cp.getSelection();
         } else {
             return selection;
         }
@@ -72,8 +73,9 @@ public class CompositeSelectionProvider implements ISelectionProvider {
     @Override
     public void setSelection(ISelection selection)
     {
-        if (provider != null) {
-            provider.setSelection(selection);
+        ISelectionProvider cp = getProvider();
+        if (cp != null) {
+            cp.setSelection(selection);
         } else {
             this.selection = selection;
             if (!CommonUtils.isEmpty(listeners)) {

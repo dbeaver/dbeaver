@@ -29,6 +29,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
@@ -124,7 +125,7 @@ public class SQLEditor extends SQLEditorBase
     private DBSDataSourceContainer dataSourceContainer;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<SQLQuery>();
-    private CompositeSelectionProvider selectionProvider;
+    private DynamicSelectionProvider selectionProvider;
 
     public SQLEditor()
     {
@@ -288,7 +289,7 @@ public class SQLEditor extends SQLEditorBase
 
         editorControl = sashForm.getChildren()[0];
 
-        selectionProvider = new CompositeSelectionProvider();
+        selectionProvider = new DynamicSelectionProvider();
         getSite().setSelectionProvider(selectionProvider);
 
         final StyledText textWidget = getTextViewer().getTextWidget();
@@ -427,9 +428,6 @@ public class SQLEditor extends SQLEditorBase
             menuMgr.setRemoveAllWhenShown(true);
             resultTabs.setMenu(menu);
         }
-
-        selectionProvider.trackProvider(getTextViewer().getTextWidget(), getTextViewer());
-        selectionProvider.trackProvider(planView.getViewer().getControl(), planView.getViewer());
     }
 
     private void toggleEditorMaximize()
@@ -1156,8 +1154,6 @@ public class SQLEditor extends SQLEditorBase
             this.resultSetNumber = resultSetNumber;
             viewer = new ResultSetViewer(resultTabs, getSite(), this);
 
-            selectionProvider.trackProvider(viewer.getActivePresentation().getControl(), viewer);
-
             //boolean firstResultSet = queryProcessors.isEmpty();
             int tabIndex = Math.max(resultTabs.getItemCount() - 3, 0);
             tabItem = new CTabItem(resultTabs, SWT.NONE, tabIndex);
@@ -1428,6 +1424,27 @@ public class SQLEditor extends SQLEditorBase
                 }
             }
             return getTextViewer().getFindReplaceTarget();
+        }
+    }
+
+    private class DynamicSelectionProvider extends CompositeSelectionProvider {
+        private boolean lastFocusInEditor = true;
+        @Override
+        public ISelectionProvider getProvider() {
+            ResultSetViewer rsv = getResultSetViewer();
+            boolean focusInEditor = getTextViewer().getTextWidget().isFocusControl();
+            if (!focusInEditor) {
+                if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
+                    focusInEditor = false;
+                } else {
+                    focusInEditor = lastFocusInEditor;
+                }
+            }
+            lastFocusInEditor = focusInEditor;
+            if (!focusInEditor && rsv != null) {
+                return rsv;
+            }
+            return getTextViewer().getSelectionProvider();
         }
     }
 
