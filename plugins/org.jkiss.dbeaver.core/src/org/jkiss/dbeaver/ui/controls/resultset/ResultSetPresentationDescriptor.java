@@ -67,7 +67,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     }
 
     public boolean supportedBy(DBCResultSet resultSet) {
-        return true;
+        return appliesTo(resultSet);
     }
 
     public IResultSetPresentation createInstance() throws DBException {
