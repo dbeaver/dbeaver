@@ -59,6 +59,11 @@ public class ResultSetRow {
         this.state = STATE_NORMAL;
     }
 
+    @NotNull
+    public Object[] getValues() {
+        return values;
+    }
+
     public boolean isChanged() {
         return changes != null && !changes.isEmpty();
     }
