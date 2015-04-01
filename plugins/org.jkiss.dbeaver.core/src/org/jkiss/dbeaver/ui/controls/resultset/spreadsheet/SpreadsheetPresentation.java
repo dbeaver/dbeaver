@@ -1147,6 +1147,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
                             return null;
                         }
                     case STRUCT:
+                    case DOCUMENT:
                     case ANY:
                         if (binding.getNestedBindings() != null) {
                             return binding.getNestedBindings().toArray();
@@ -1183,6 +1184,7 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
                 DBDAttributeBinding binding = (DBDAttributeBinding) element;
                 switch (binding.getAttribute().getDataKind()) {
                     case STRUCT:
+                    case DOCUMENT:
                         return ElementState.EXPANDED;
                     case ARRAY:
                         ResultSetRow curRow = controller.getCurrentRow();
