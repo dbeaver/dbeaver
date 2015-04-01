@@ -43,6 +43,9 @@ public abstract class AbstractDescriptor {
 
     static final Log log = Log.getLog(AbstractDescriptor.class);
 
+    public static final String VAR_OBJECT = "object";
+    public static final String VAR_CONTEXT = "context";
+
     protected class ObjectType {
         private final String implName;
         private Class<?> implClass;
@@ -99,13 +102,13 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public boolean appliesTo(Object object)
+        public boolean appliesTo(Object object, Object context)
         {
             if (!matchesType(object.getClass())) {
                 return false;
             }
             if (expression != null) {
-                Object result = expression.evaluate(makeContext(object));
+                Object result = expression.evaluate(makeContext(object, context));
                 return Boolean.TRUE.equals(result);
             }
             return true;
@@ -136,13 +139,14 @@ public abstract class AbstractDescriptor {
             return implClass != null && implClass.isAssignableFrom(clazz);
         }
 
-        private JexlContext makeContext(final Object object)
+        private JexlContext makeContext(final Object object, final Object context)
         {
             return new JexlContext() {
                 @Override
                 public Object get(String name)
                 {
-                    return name.equals("object") ? object : null; //$NON-NLS-1$
+                    return name.equals(VAR_OBJECT) ? object :
+                        (name.equals(VAR_CONTEXT) ? context : null); //$NON-NLS-1$
                 }
 
                 @Override
@@ -154,7 +158,9 @@ public abstract class AbstractDescriptor {
                 @Override
                 public boolean has(String name)
                 {
-                    return name.equals("object") && object != null; //$NON-NLS-1$
+                    return
+                        name.equals(VAR_OBJECT) && object != null || //$NON-NLS-1$
+                        name.equals(VAR_CONTEXT) && context != null; //$NON-NLS-1$
                 }
             };
         }

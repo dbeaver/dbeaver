@@ -24,7 +24,6 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
-import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
@@ -66,8 +65,8 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
-    public boolean supportedBy(DBCResultSet resultSet) {
-        return appliesTo(resultSet);
+    public boolean supportedBy(DBCResultSet resultSet, IResultSetContext context) {
+        return appliesTo(resultSet, context);
     }
 
     public IResultSetPresentation createInstance() throws DBException {

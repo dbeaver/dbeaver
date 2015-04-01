@@ -69,11 +69,11 @@ public class ResultSetPresentationRegistry {
         return null;
     }
 
-    public List<ResultSetPresentationDescriptor> getAvailablePresentations(DBCResultSet resultSet)
+    public List<ResultSetPresentationDescriptor> getAvailablePresentations(DBCResultSet resultSet, IResultSetContext context)
     {
         List<ResultSetPresentationDescriptor> result = new ArrayList<ResultSetPresentationDescriptor>();
         for (ResultSetPresentationDescriptor descriptor : presentations) {
-            if (descriptor.supportedBy(resultSet)) {
+            if (descriptor.supportedBy(resultSet, context)) {
                 result.add(descriptor);
             }
         }
