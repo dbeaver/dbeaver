@@ -99,7 +99,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (verticalBar.getSelection() + verticalBar.getPageIncrement() >= verticalBar.getMaximum()) {
-                    if (controller.isHasMoreData()) {
+                    if (!controller.isRecordMode() && controller.isHasMoreData()) {
                         controller.readNextSegment();
                     }
                 }
