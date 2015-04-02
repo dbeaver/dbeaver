@@ -1,5 +1,4 @@
 Fix product title (now Enterprise)
-Fix SQL composite sel provider
 Fix UI freeze in Mongo connection page
 PostgreSQL source code (add CREATE/params)
 
