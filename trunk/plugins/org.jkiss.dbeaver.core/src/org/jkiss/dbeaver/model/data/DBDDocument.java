@@ -19,9 +19,32 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
+
 /**
- * Document
+ * Document.
+ * Document is a set of hierarchically organized nodes - similarly to JSON.
+ * Each node can be a map, a list (collection) or a value (anything else).
+ * Map key is always a string, value is a node.
+ * List item is a value.
  */
 public interface DBDDocument extends DBDValue {
 
+    public static final String PROP_ID = "id";
+    public static final String PROP_TITLE = "title";
+    public static final String PROP_CREATE_TIME = "createTime";
+
+    /**
+     * document property
+     * @param name    property name
+     * @return property value
+     */
+    Object getDocumentProperty(String name);
+
+    /**
+     * Root node of document
+     * @return root node
+     */
+    @NotNull
+    Object getRootNode();
 }
