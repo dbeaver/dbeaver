@@ -24,6 +24,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.graphics.FontMetrics;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Point;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -190,4 +191,38 @@ public class TextUtils {
 		}
 		return sb.toString();
 	}
+
+    /**
+     * Gets text size.
+     * x: maximum line length
+     * y: number of lines
+     * @param text    source text
+     * @return size
+     */
+    public static Point getTextSize(String text) {
+        int length = text.length();
+        int maxLength = 0;
+        int lineCount = 1;
+        int lineLength = 0;
+        for (int i = 0; i < length; i++) {
+            char c = text.charAt(i);
+            switch (c) {
+                case '\n':
+                    maxLength = Math.max(maxLength, lineLength);
+                    lineCount++;
+                    lineLength = 0;
+                    break;
+                case '\r':
+                    break;
+                case '\t':
+                    lineLength += 4;
+                    break;
+                default:
+                    lineLength++;
+                    break;
+            }
+        }
+        return new Point(maxLength, lineCount);
+    }
+
 }
