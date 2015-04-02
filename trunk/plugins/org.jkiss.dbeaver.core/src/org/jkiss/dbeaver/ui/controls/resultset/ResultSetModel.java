@@ -44,6 +44,7 @@ public class ResultSetModel {
     // Attributes
     private DBDAttributeBinding[] attributes = new DBDAttributeBinding[0];
     private List<DBDAttributeBinding> visibleAttributes = new ArrayList<DBDAttributeBinding>();
+    private DBDAttributeBinding documentAttribute = null;
     private DBDDataFilter dataFilter;
     private boolean singleSourceCells;
     //private boolean refreshDynamicMeta;
@@ -142,6 +143,10 @@ public class ResultSetModel {
                 changesCount += row.changes.size();
             }
         }
+    }
+
+    public DBDAttributeBinding getDocumentAttribute() {
+        return documentAttribute;
     }
 
     @NotNull
@@ -406,6 +411,7 @@ public class ResultSetModel {
             }
             this.clearData();
             this.attributes = newAttributes;
+            this.documentAttribute = null;
             fillVisibleAttributes();
         }
         metadataChanged = update;
@@ -420,11 +426,15 @@ public class ResultSetModel {
         this.clearData();
 
         if (metadataChanged) {
-            if (attributes.length == 1 && attributes[0].getDataKind() == DBPDataKind.DOCUMENT) {
-                List<DBDAttributeBinding> nested = attributes[0].getNestedBindings();
-                if (nested != null && !nested.isEmpty()) {
-                    attributes = nested.toArray(new DBDAttributeBinding[nested.size()]);
-                    fillVisibleAttributes();
+            if (attributes.length == 1) {
+                DBDAttributeBinding topAttr = attributes[0];
+                if (topAttr.getDataKind() == DBPDataKind.DOCUMENT || topAttr.getDataKind() == DBPDataKind.STRUCT) {
+                    List<DBDAttributeBinding> nested = topAttr.getNestedBindings();
+                    if (nested != null && !nested.isEmpty()) {
+                        documentAttribute = topAttr;
+                        attributes = nested.toArray(new DBDAttributeBinding[nested.size()]);
+                        fillVisibleAttributes();
+                    }
                 }
             }
         }

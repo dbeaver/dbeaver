@@ -610,9 +610,9 @@ public class ResultSetViewer extends Viewer
             instance.refreshData(true, false);
 
             presentationSwitchCombo.combo.select(activePresentationDescriptor);
-            // Sa\ve in global preferences
+            // Save in global preferences
             DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.RESULT_SET_PRESENTATION, activePresentationDescriptor.getId());
-        } catch (DBException e1) {
+        } catch (Throwable e1) {
             UIUtils.showErrorDialog(
                 viewerPanel.getShell(),
                 "Presentation switch",
