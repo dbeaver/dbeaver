@@ -222,6 +222,7 @@ public class TextUtils {
                     break;
             }
         }
+        maxLength = Math.max(maxLength, lineLength);
         return new Point(maxLength, lineCount);
     }
 
