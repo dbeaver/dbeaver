@@ -585,14 +585,18 @@ public class ResultSetViewer extends Viewer
             findReplaceTarget.setTarget(nested);
         }
 
+
         // Set focus in presentation control
         // Use async exec to avoid focus switch after user UI interaction (e.g. combo)
-        getControl().getDisplay().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                activePresentation.getControl().setFocus();
-            }
-        });
+        Display display = getControl().getDisplay();
+        if (UIUtils.isParent(viewerPanel, display.getFocusControl())) {
+            display.asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    activePresentation.getControl().setFocus();
+                }
+            });
+        }
     }
 
     /**
