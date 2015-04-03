@@ -1,6 +1,5 @@
 Fix product title (now Enterprise)
 Fix UI freeze in Mongo connection page
-PostgreSQL source code (add CREATE/params)
 Analyse exception for error line/offset and position cursor in SQL editor
 
 IPropertyDescriptor, IPropertySource -> move to DBPPropertyDescriptor (get rid of org.eclipse.ui package dependency)
@@ -41,7 +40,6 @@ Office formats support (xls, doc) for export/import. Possibly office extension.
 Search in multiple data sources
 Search results reflect on disconnect
 
-Columns ordering/search (record mode)
 DB toolbar visibility config in Eclipse mode
 
 Rename mysql (generic?) table,column
