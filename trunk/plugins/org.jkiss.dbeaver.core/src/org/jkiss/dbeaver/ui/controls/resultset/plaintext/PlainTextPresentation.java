@@ -20,10 +20,8 @@
 package org.jkiss.dbeaver.ui.controls.resultset.plaintext;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.SWT;
@@ -37,7 +35,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
@@ -45,27 +42,21 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.StyledTextFindReplaceTarget;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
-import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Empty presentation.
  * Used when RSV has no results (initially).
  */
-public class PlainTextPresentation implements IResultSetPresentation, IAdaptable {
+public class PlainTextPresentation extends AbstractPresentation implements IAdaptable {
 
     public static final int MAX_COLUMN_WIDTH = 255;
     public static final int FIRST_ROW_LINE = 2;
-    private IResultSetController controller;
+
     private StyledText text;
     private DBDAttributeBinding curAttribute;
     private StyledTextFindReplaceTarget findReplaceTarget;
@@ -78,7 +69,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
-        this.controller = controller;
+        super.createPresentation(controller, parent);
 
         UIUtils.createHorizontalLine(parent);
         text = new StyledText(parent, SWT.READ_ONLY | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -109,22 +100,7 @@ public class PlainTextPresentation implements IResultSetPresentation, IAdaptable
         UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), text);
         applyThemeSettings();
 
-        // Register context menu
-        MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(text);
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
-                controller.fillContextMenu(
-                    manager,
-                    curAttribute,
-                    controller.getCurrentRow());
-            }
-        });
-        menuMgr.setRemoveAllWhenShown(true);
-        text.setMenu(menu);
-        controller.getSite().registerContextMenu(menuMgr, null);
+        registerContextMenu();
     }
 
     private void applyThemeSettings() {
