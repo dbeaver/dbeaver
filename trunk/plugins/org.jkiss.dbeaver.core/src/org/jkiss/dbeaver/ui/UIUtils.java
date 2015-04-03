@@ -811,7 +811,7 @@ public class UIUtils {
             {
                 // Display the dialog
                 StandardErrorDialog dialog = new StandardErrorDialog(shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
-                    title, message, status, IStatus.ERROR);
+                    title, message, RuntimeUtils.stripStack(status), IStatus.ERROR);
                 dialog.open();
             }
         };
