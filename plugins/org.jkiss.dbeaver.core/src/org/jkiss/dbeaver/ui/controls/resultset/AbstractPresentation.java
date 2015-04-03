@@ -22,14 +22,21 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Abstract presentation.
  */
 public abstract class AbstractPresentation implements IResultSetPresentation {
+
+    private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
 
     protected IResultSetController controller;
 
@@ -99,5 +106,17 @@ public abstract class AbstractPresentation implements IResultSetPresentation {
         menuMgr.setRemoveAllWhenShown(true);
         getControl().setMenu(menu);
         controller.getSite().registerContextMenu(menuMgr, null);
+    }
+
+    protected void trackPresentationControl() {
+        final Control control = getControl();
+        final IWorkbenchPartSite site = controller.getSite();
+        UIUtils.addFocusTracker(site, PRESENTATION_CONTROL_ID, control);
+        control.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                UIUtils.removeFocusTracker(site, control);
+            }
+        });
     }
 }
