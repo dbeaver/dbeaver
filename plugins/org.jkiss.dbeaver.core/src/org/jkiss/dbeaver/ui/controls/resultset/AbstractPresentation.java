@@ -42,6 +42,46 @@ public abstract class AbstractPresentation implements IResultSetPresentation {
         this.controller = controller;
     }
 
+    /**
+     * Shifts current row and redraws current control.
+     * In record mode refreshes data.
+     * @param position    position
+     */
+    @Override
+    public void scrollToRow(@NotNull RowPosition position) {
+        ResultSetRow currentRow = controller.getCurrentRow();
+        ResultSetModel model = controller.getModel();
+        switch (position) {
+            case FIRST:
+                if (model.getRowCount() > 0) {
+                    controller.setCurrentRow(model.getRow(0));
+                }
+                break;
+            case PREVIOUS:
+                if (currentRow != null && currentRow.getVisualNumber() > 0) {
+                    controller.setCurrentRow(model.getRow(currentRow.getVisualNumber() - 1));
+                }
+                break;
+            case NEXT:
+                if (currentRow != null && currentRow.getVisualNumber() < model.getRowCount() - 1) {
+                    controller.setCurrentRow(model.getRow(currentRow.getVisualNumber() + 1));
+                }
+                break;
+            case LAST:
+                if (currentRow != null) {
+                    controller.setCurrentRow(model.getRow(model.getRowCount() - 1));
+                }
+                break;
+        }
+        if (controller.isRecordMode()) {
+            refreshData(true, false);
+        } else {
+            getControl().redraw();
+        }
+        controller.updateStatusMessage();
+        controller.updateEditControls();
+    }
+
     protected void registerContextMenu() {
         // Register context menu
         MenuManager menuMgr = new MenuManager();
