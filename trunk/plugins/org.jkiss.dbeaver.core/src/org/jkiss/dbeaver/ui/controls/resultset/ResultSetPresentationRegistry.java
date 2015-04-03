@@ -25,6 +25,8 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -56,7 +58,12 @@ public class ResultSetPresentationRegistry {
                 presentations.add(descriptor);
             }
         }
-
+        Collections.sort(presentations, new Comparator<ResultSetPresentationDescriptor>() {
+            @Override
+            public int compare(ResultSetPresentationDescriptor o1, ResultSetPresentationDescriptor o2) {
+                return o1.getOrder() - o2.getOrder();
+            }
+        });
     }
 
     public ResultSetPresentationDescriptor getDescriptor(Class<? extends IResultSetPresentation> implType)
