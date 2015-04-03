@@ -48,7 +48,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         INLINE_EDITOR
     }
 
-    private static final String SPREADSHEET_CONTROL_ID = "org.jkiss.dbeaver.ui.spreadsheet";
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
     public static final int MAX_INLINE_EDIT_WITH = 300;
 
@@ -109,12 +108,9 @@ public class Spreadsheet extends LightGrid implements Listener {
         hookContextMenu();
 
         {
-            UIUtils.addFocusTracker(site, SPREADSHEET_CONTROL_ID, this);
-
             super.addDisposeListener(new DisposeListener() {
                 @Override
                 public void widgetDisposed(DisposeEvent e) {
-                    UIUtils.removeFocusTracker(site, Spreadsheet.this);
                     if (clipboard != null && !clipboard.isDisposed()) {
                         clipboard.dispose();
                     }
