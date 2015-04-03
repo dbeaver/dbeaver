@@ -1,6 +1,7 @@
 Fix product title (now Enterprise)
 Fix UI freeze in Mongo connection page
 PostgreSQL source code (add CREATE/params)
+Analyse exception for error line/offset and position cursor in SQL editor
 
 IPropertyDescriptor, IPropertySource -> move to DBPPropertyDescriptor (get rid of org.eclipse.ui package dependency)
 Data transfer DB->DB. Set default export mapping initially

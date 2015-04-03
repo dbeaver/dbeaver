@@ -2380,7 +2380,8 @@
                 label="Grid"
                 description="Result set grid/spreadsheet"
                 icon="icons/sql/grid.png"
-                class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation">
+                class="org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation"
+                order="100">
             <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
         </presentation>
         <presentation
@@ -2388,7 +2389,8 @@
                 label="Text"
                 description="Plain text presentation"
                 icon="icons/sql/sql_text.png"
-                class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation">
+                class="org.jkiss.dbeaver.ui.controls.resultset.plaintext.PlainTextPresentation"
+                order="200">
             <objectType name="org.jkiss.dbeaver.model.exec.DBCResultSet" if="context.supportsAttributes()"/>
         </presentation>
     </extension>
