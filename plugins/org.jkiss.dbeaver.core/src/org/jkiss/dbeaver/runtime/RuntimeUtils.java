@@ -91,7 +91,7 @@ public class RuntimeUtils {
                 severity,
                 DBeaverCore.getCorePluginID(),
                 getExceptionMessage(ex),
-                null);
+                ex);
         } else {
             if (ex instanceof DBException && CommonUtils.equalObjects(ex.getMessage(), cause.getMessage())) {
                 // Skip empty duplicate DBException
@@ -102,7 +102,7 @@ public class RuntimeUtils {
                 0,
                 new IStatus[]{makeExceptionStatus(severity, cause)},
                 getExceptionMessage(ex),
-                null);
+                ex);
         }
     }
 
@@ -447,6 +447,21 @@ public class RuntimeUtils {
     public static String getNativeBinaryName(String binName)
     {
         return DBeaverCore.getInstance().getLocalSystem().isWindows() ? binName + ".exe" : binName;
+    }
+
+    public static IStatus stripStack(IStatus status) {
+        if (status instanceof MultiStatus) {
+            IStatus[] children = status.getChildren();
+            if (children != null) {
+                for (int i = 0; i < children.length; i++) {
+                    children[i] = stripStack(children[i]);
+                }
+            }
+            return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
+        } else if (status instanceof Status) {
+            return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), status.getMessage(), null);
+        }
+        return null;
     }
 
     public static class ProgramInfo {

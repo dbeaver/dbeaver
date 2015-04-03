@@ -196,12 +196,7 @@ public class Log
                         corePluginID,
                         message == null ? null : message.toString()));
                 } else {
-                    log.log(new MultiStatus(
-                        corePluginID,
-                        0,
-                        new IStatus[]{RuntimeUtils.makeExceptionStatus(severity, t)},
-                        message == null ? null : message.toString(),
-                        t));
+                    log.log(RuntimeUtils.makeExceptionStatus(severity, t));
                 }
             }
         }
