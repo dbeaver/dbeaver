@@ -342,30 +342,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     @Override
     public void scrollToRow(@NotNull RowPosition position) {
         if (controller.isRecordMode()) {
-            ResultSetRow currentRow = controller.getCurrentRow();
-            switch (position) {
-                case FIRST:
-                    controller.setCurrentRow(controller.getModel().getRow(0));
-                    break;
-                case PREVIOUS:
-                    if (currentRow != null) {
-                        controller.setCurrentRow(controller.getModel().getRow(currentRow.getVisualNumber() - 1));
-                    }
-                    break;
-                case NEXT:
-                    if (currentRow != null) {
-                        controller.setCurrentRow(controller.getModel().getRow(currentRow.getVisualNumber() + 1));
-                    }
-                    break;
-                case LAST:
-                    if (currentRow != null) {
-                        controller.setCurrentRow(controller.getModel().getRow(controller.getModel().getRowCount() - 1));
-                    }
-                    break;
-            }
-            refreshData(true, false);
-            controller.updateStatusMessage();
-            controller.updateEditControls();
+            super.scrollToRow(position);
         } else {
             int caretOffset = text.getCaretOffset();
             if (caretOffset < 0) caretOffset = 0;
