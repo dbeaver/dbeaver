@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * ResultSetPresentationDescriptor
@@ -38,6 +39,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final String description;
     private final ObjectType presentationType;
     private final Image icon;
+    private final int order;
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);
@@ -47,6 +49,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.presentationType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER));
     }
 
     public String getId() {
@@ -63,6 +66,10 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
 
     public Image getIcon() {
         return icon;
+    }
+
+    public int getOrder() {
+        return order;
     }
 
     public boolean supportedBy(DBCResultSet resultSet, IResultSetContext context) {
