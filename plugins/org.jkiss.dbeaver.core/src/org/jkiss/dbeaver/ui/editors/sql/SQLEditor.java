@@ -583,10 +583,12 @@ public class SQLEditor extends SQLEditorBase
 
         final boolean isSingleQuery = (queries.size() == 1);
 
-        //if (newTab && !isSingleQuery) {
+        if (newTab && isSingleQuery) {
+            // We need new tab so don't close opened ones
+        } else {
             // If we execute a script with newTabs - close all previously opened ones
             closeExtraResultTabs(null);
-        //}
+        }
 
         if (newTab) {
             // Execute each query in a new tab
