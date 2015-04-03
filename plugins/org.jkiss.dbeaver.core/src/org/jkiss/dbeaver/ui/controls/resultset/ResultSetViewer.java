@@ -454,6 +454,7 @@ public class ResultSetViewer extends Viewer
             if (refreshData) {
                 refreshWithFilter(dataFilter);
             } else {
+                model.setDataFilter(dataFilter);
                 activePresentation.formatData(true);
                 updateFiltersText();
             }

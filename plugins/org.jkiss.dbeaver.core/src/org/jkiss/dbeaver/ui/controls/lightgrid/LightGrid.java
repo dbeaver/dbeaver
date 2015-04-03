@@ -3580,7 +3580,7 @@ public abstract class LightGrid extends Canvas {
 
     @Nullable
     public Object getFocusRowElement() {
-        if (focusItem == -1) {
+        if (focusItem < 0 || focusItem >= rowElements.length) {
             return null;
         }
         return rowElements[focusItem];
