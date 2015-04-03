@@ -289,7 +289,7 @@ public class ResultSetUtils
     }
 
     public static void copyToClipboard(String string) {
-        if (string.length() > 0) {
+        if (string != null && string.length() > 0) {
             Clipboard clipboard = new Clipboard(Display.getCurrent());
             try {
                 TextTransfer textTransfer = TextTransfer.getInstance();

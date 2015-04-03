@@ -101,6 +101,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         applyThemeSettings();
 
         registerContextMenu();
+        trackPresentationControl();
     }
 
     private void applyThemeSettings() {

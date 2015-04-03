@@ -102,14 +102,12 @@ import java.util.List;
  * Spreadsheet presentation.
  * Visualizes results as grid.
  */
-public class SpreadsheetPresentation implements IResultSetPresentation, IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable  {
+public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable  {
 
     static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
-
-    private IResultSetController controller;
 
     private SashForm resultsSash;
     private Spreadsheet spreadsheet;
@@ -148,10 +146,6 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
 
     }
 
-    public IResultSetController getController() {
-        return controller;
-    }
-
     public Spreadsheet getSpreadsheet() {
         return spreadsheet;
     }
@@ -164,10 +158,10 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
 
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
+        super.createPresentation(controller, parent);
+
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
         this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
-
-        this.controller = controller;
 
         {
             resultsSash = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
@@ -266,6 +260,9 @@ public class SpreadsheetPresentation implements IResultSetPresentation, IResultS
                 dispose();
             }
         });
+
+        trackPresentationControl();
+        UIUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), spreadsheet);
     }
 
     private void dispose()

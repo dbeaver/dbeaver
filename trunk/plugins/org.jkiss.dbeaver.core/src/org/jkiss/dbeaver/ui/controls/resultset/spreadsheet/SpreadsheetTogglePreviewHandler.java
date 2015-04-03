@@ -18,9 +18,12 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -31,6 +34,19 @@ import java.util.Map;
  * ResultSetModeTogglePreviewHandler
  */
 public class SpreadsheetTogglePreviewHandler extends SpreadsheetCommandHandler implements IElementUpdater {
+
+    @Nullable
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException
+    {
+        Spreadsheet spreadsheet = getActiveSpreadsheet(event);
+        if (spreadsheet == null) {
+            return null;
+        }
+
+        spreadsheet.getPresentation().togglePreview();
+        return null;
+    }
 
     @Override
     public void updateElement(UIElement element, Map parameters)
