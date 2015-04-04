@@ -101,6 +101,7 @@ public enum DBIcon
     PROPERTIES("properties", "icons/properties.png"), //$NON-NLS-1$ //$NON-NLS-2$
     CONFIGURATION("configuration", "icons/configuration.png"), //$NON-NLS-1$ //$NON-NLS-2$
     LINK("link", "icons/misc/link.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    CURSOR("cursor", "icons/misc/cursor.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     LOADING1("loading1", "icons/tree/load/loading1.gif"), //$NON-NLS-1$ //$NON-NLS-2$
     LOADING2("loading2", "icons/tree/load/loading2.gif"), //$NON-NLS-1$ //$NON-NLS-2$
