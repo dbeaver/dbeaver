@@ -558,8 +558,7 @@ public class HexEditControl extends Composite {
     /**
      * This method initializes composite
      */
-    private void initialize()
-    {
+    private void initialize() {
         GridLayout gridLayout1 = new GridLayout();
         gridLayout1.numColumns = 3;
         gridLayout1.marginHeight = 0;
@@ -568,167 +567,177 @@ public class HexEditControl extends Composite {
         gridLayout1.marginWidth = 0;
         setLayout(gridLayout1);
 
-        Composite linesColumn = new Composite(this, SWT.NONE);
-        GridLayout columnLayout = new GridLayout();
-        columnLayout.marginHeight = 0;
-        columnLayout.verticalSpacing = 1;
-        columnLayout.horizontalSpacing = 0;
-        columnLayout.marginWidth = 0;
-        linesColumn.setLayout(columnLayout);
-        //linesColumn.setBackground(COLOR_LIGHT_SHADOW);
-        GridData gridDataColumn = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
-        linesColumn.setLayoutData(gridDataColumn);
-
-        GridData gridDataTextSeparator = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
-        gridDataTextSeparator.widthHint = 10;
-        linesTextSeparator = new Text(linesColumn, SWT.SEPARATOR);
-        linesTextSeparator.setEnabled(false);
-        //linesTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
-        linesTextSeparator.setLayoutData(gridDataTextSeparator);
-
-        linesText = new StyledText(linesColumn, SWT.MULTI | SWT.READ_ONLY);
-        linesText.setEditable(false);
-        linesText.setEnabled(false);
-        //linesText.setBackground(COLOR_LIGHT_SHADOW);
-        //linesText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
-        fontDefault = new Font(Display.getCurrent(), DEFAULT_FONT_DATA);
-        fontCurrent = fontDefault;
-        linesText.setFont(fontCurrent);
-        GC styledTextGC = new GC(linesText);
-        fontCharWidth = styledTextGC.getFontMetrics().getAverageCharWidth();
-        styledTextGC.dispose();
-        GridData gridDataAddresses = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
-        gridDataAddresses.heightHint = numberOfLines * linesText.getLineHeight();
-        linesText.setLayoutData(gridDataAddresses);
-        setAddressesGridDataWidthHint();
-        linesText.setContent(new DisplayedContent(charsForAddress, numberOfLines));
-
-        Composite hexColumn = new Composite(this, SWT.NONE);
-        GridLayout column1Layout = new GridLayout();
-        column1Layout.marginHeight = 0;
-        column1Layout.verticalSpacing = 1;
-        column1Layout.horizontalSpacing = 0;
-        column1Layout.marginWidth = 0;
-        hexColumn.setLayout(column1Layout);
-        //hexColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-        GridData gridDataColumn1 = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
-        hexColumn.setLayoutData(gridDataColumn1);
-
-        Composite hexHeaderGroup = new Composite(hexColumn, SWT.NONE);
-        //hexHeaderGroup.setBackground(COLOR_LIGHT_SHADOW);
-        GridLayout column1HeaderLayout = new GridLayout();
-        column1HeaderLayout.marginHeight = 0;
-        column1HeaderLayout.marginWidth = 0;
-        hexHeaderGroup.setLayout(column1HeaderLayout);
-        GridData gridDataColumn1Header = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
-        hexHeaderGroup.setLayoutData(gridDataColumn1Header);
-
-        GridData gridData = new GridData();
-        gridData.horizontalIndent = 1;
-        hexHeaderText = new StyledText(hexHeaderGroup, SWT.SINGLE | SWT.READ_ONLY);
-        hexHeaderText.setEditable(false);
-        hexHeaderText.setEnabled(false);
-        //hexHeaderText.setBackground(COLOR_LIGHT_SHADOW);
-        hexHeaderText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
-        hexHeaderText.setLayoutData(gridData);
-        hexHeaderText.setFont(fontCurrent);
-        refreshHeader();
-
-        hexText = new StyledText(hexColumn, SWT.MULTI);
-        hexText.setFont(fontCurrent);
-        if (readOnly) {
-            hexText.setEditable(false);
-        }
-        styledText1GC = new GC(hexText);
-        int width = bytesPerLine * 3 * fontCharWidth;
-        textGridData = new GridData();
-        textGridData.horizontalIndent = 1;
-        textGridData.verticalAlignment = SWT.FILL;
-        textGridData.widthHint = hexText.computeTrim(0, 0, width, 0).width;
-        textGridData.grabExcessVerticalSpace = true;
-        hexText.setLayoutData(textGridData);
-        hexText.addKeyListener(keyAdapter);
         FocusListener myFocusAdapter = new FocusAdapter() {
             @Override
-            public void focusGained(FocusEvent e)
-            {
+            public void focusGained(FocusEvent e) {
                 drawUnfocusedCaret(false);
                 lastFocusedTextArea = 1;
                 if (e.widget == previewText)
                     lastFocusedTextArea = 2;
                 getDisplay().asyncExec(new Runnable() {
                     @Override
-                    public void run()
-                    {
+                    public void run() {
                         drawUnfocusedCaret(true);
                     }
                 });
             }
         };
-        hexText.addFocusListener(myFocusAdapter);
-        hexText.addMouseListener(new ControlMouseAdapter(true));
-        hexText.addPaintListener(new ControlPaintAdapter(true));
-        hexText.addTraverseListener(new ControlTraverseAdapter());
-        hexText.addVerifyKeyListener(new ControlVerifyKeyAdapter());
-        hexText.setContent(new DisplayedContent(bytesPerLine * 3, numberOfLines));
-        hexText.setDoubleClickEnabled(false);
-        hexText.addSelectionListener(new ControlSelectionAdapter(true));
-        // StyledText.setCaretOffset() version 3.448 bug resets the caret size if using the default one,
-        // so we use not the default one.
-        Caret defaultCaret = hexText.getCaret();
-        Caret nonDefaultCaret = new Caret(defaultCaret.getParent(), defaultCaret.getStyle());
-        nonDefaultCaret.setBounds(defaultCaret.getBounds());
-        hexText.setCaret(nonDefaultCaret);
+        Caret defaultCaret;
+        Caret nonDefaultCaret;
 
-        Composite previewColumn = new Composite(this, SWT.NONE);
-        GridLayout column2Layout = new GridLayout();
-        column2Layout.marginHeight = 0;
-        column2Layout.verticalSpacing = 1;
-        column2Layout.horizontalSpacing = 0;
-        column2Layout.marginWidth = 0;
-        previewColumn.setLayout(column2Layout);
-        previewColumn.setBackground(hexText.getBackground());
-        GridData gridDataColumn2 = new GridData(SWT.FILL, SWT.FILL, true, true);
-        previewColumn.setLayoutData(gridDataColumn2);
+        {
+            // Lines
+            Composite linesColumn = new Composite(this, SWT.NONE);
+            GridLayout columnLayout = new GridLayout();
+            columnLayout.marginHeight = 0;
+            columnLayout.verticalSpacing = 1;
+            columnLayout.horizontalSpacing = 0;
+            columnLayout.marginWidth = 0;
+            linesColumn.setLayout(columnLayout);
+            //linesColumn.setBackground(COLOR_LIGHT_SHADOW);
+            GridData gridDataColumn = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
+            linesColumn.setLayoutData(gridDataColumn);
 
-        GridData gridDataTextSeparator2 = new GridData();
-        gridDataTextSeparator2.horizontalAlignment = SWT.FILL;
-        gridDataTextSeparator2.verticalAlignment = SWT.FILL;
-        gridDataTextSeparator2.grabExcessHorizontalSpace = true;
-        previewTextSeparator = new Text(previewColumn, SWT.SEPARATOR);
-        previewTextSeparator.setEnabled(false);
-        //previewTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
-        previewTextSeparator.setLayoutData(gridDataTextSeparator2);
-        makeFirstRowSameHeight();
+            GridData gridDataTextSeparator = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+            gridDataTextSeparator.widthHint = 10;
+            linesTextSeparator = new Text(linesColumn, SWT.SEPARATOR);
+            linesTextSeparator.setEnabled(false);
+            linesTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+            linesTextSeparator.setLayoutData(gridDataTextSeparator);
 
-        previewText = new StyledText(previewColumn, SWT.MULTI);
-        previewText.setFont(fontCurrent);
-        if (readOnly) {
-            previewText.setEditable(false);
+            linesText = new StyledText(linesColumn, SWT.MULTI | SWT.READ_ONLY);
+            linesText.setEditable(false);
+            linesText.setEnabled(false);
+            //linesText.setBackground(COLOR_LIGHT_SHADOW);
+            //linesText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+            fontDefault = new Font(Display.getCurrent(), DEFAULT_FONT_DATA);
+            fontCurrent = fontDefault;
+            linesText.setFont(fontCurrent);
+            GC styledTextGC = new GC(linesText);
+            fontCharWidth = styledTextGC.getFontMetrics().getAverageCharWidth();
+            styledTextGC.dispose();
+            GridData gridDataAddresses = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
+            gridDataAddresses.heightHint = numberOfLines * linesText.getLineHeight();
+            linesText.setLayoutData(gridDataAddresses);
+            setAddressesGridDataWidthHint();
+            linesText.setContent(new DisplayedContent(charsForAddress, numberOfLines));
         }
-        width = bytesPerLine * fontCharWidth + 1;  // one pixel for caret in last linesColumn
-        previewGridData = new GridData();
-        previewGridData.verticalAlignment = SWT.FILL;
-        previewGridData.widthHint = previewText.computeTrim(0, 0, width, 0).width;
-        previewGridData.grabExcessVerticalSpace = true;
-        previewText.setLayoutData(previewGridData);
-        previewText.addKeyListener(keyAdapter);
-        previewText.addFocusListener(myFocusAdapter);
-        previewText.addMouseListener(new ControlMouseAdapter(false));
-        previewText.addPaintListener(new ControlPaintAdapter(false));
-        previewText.addTraverseListener(new ControlTraverseAdapter());
-        previewText.addVerifyKeyListener(new ControlVerifyKeyAdapter());
-        previewText.setContent(new DisplayedContent(bytesPerLine, numberOfLines));
-        previewText.setDoubleClickEnabled(false);
-        previewText.addSelectionListener(new ControlSelectionAdapter(false));
-        // StyledText.setCaretOffset() version 3.448 bug resets the caret size if using the default one,
-        // so we use not the default one.
-        defaultCaret = previewText.getCaret();
-        nonDefaultCaret = new Caret(defaultCaret.getParent(), defaultCaret.getStyle());
-        nonDefaultCaret.setBounds(defaultCaret.getBounds());
-        previewText.setCaret(nonDefaultCaret);
-        styledText2GC = new GC(previewText);
-        setCharset(null);
+
+        {
+            // Hex
+            Composite hexColumn = new Composite(this, SWT.NONE);
+            GridLayout column1Layout = new GridLayout();
+            column1Layout.marginHeight = 0;
+            column1Layout.verticalSpacing = 1;
+            column1Layout.horizontalSpacing = 0;
+            column1Layout.marginWidth = 0;
+            hexColumn.setLayout(column1Layout);
+            //hexColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            GridData gridDataColumn1 = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
+            hexColumn.setLayoutData(gridDataColumn1);
+
+            Composite hexHeaderGroup = new Composite(hexColumn, SWT.NONE);
+            //hexHeaderGroup.setBackground(COLOR_LIGHT_SHADOW);
+            GridLayout column1HeaderLayout = new GridLayout();
+            column1HeaderLayout.marginHeight = 0;
+            column1HeaderLayout.marginWidth = 0;
+            hexHeaderGroup.setLayout(column1HeaderLayout);
+            GridData gridDataColumn1Header = new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false);
+            hexHeaderGroup.setLayoutData(gridDataColumn1Header);
+
+            GridData gridData = new GridData();
+            gridData.horizontalIndent = 1;
+            hexHeaderText = new StyledText(hexHeaderGroup, SWT.SINGLE | SWT.READ_ONLY);
+            hexHeaderText.setEditable(false);
+            hexHeaderText.setEnabled(false);
+            hexHeaderText.setBackground(COLOR_LIGHT_SHADOW);
+            //hexHeaderText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+            hexHeaderText.setLayoutData(gridData);
+            hexHeaderText.setFont(fontCurrent);
+            refreshHeader();
+
+            hexText = new StyledText(hexColumn, SWT.MULTI);
+            hexText.setFont(fontCurrent);
+            if (readOnly) {
+                hexText.setEditable(false);
+            }
+            styledText1GC = new GC(hexText);
+            int width = bytesPerLine * 3 * fontCharWidth;
+            textGridData = new GridData();
+            textGridData.horizontalIndent = 1;
+            textGridData.verticalAlignment = SWT.FILL;
+            textGridData.widthHint = hexText.computeTrim(0, 0, width, 0).width;
+            textGridData.grabExcessVerticalSpace = true;
+            hexText.setLayoutData(textGridData);
+            hexText.addKeyListener(keyAdapter);
+            hexText.addFocusListener(myFocusAdapter);
+            hexText.addMouseListener(new ControlMouseAdapter(true));
+            hexText.addPaintListener(new ControlPaintAdapter(true));
+            hexText.addTraverseListener(new ControlTraverseAdapter());
+            hexText.addVerifyKeyListener(new ControlVerifyKeyAdapter());
+            hexText.setContent(new DisplayedContent(bytesPerLine * 3, numberOfLines));
+            hexText.setDoubleClickEnabled(false);
+            hexText.addSelectionListener(new ControlSelectionAdapter(true));
+            // StyledText.setCaretOffset() version 3.448 bug resets the caret size if using the default one,
+            // so we use not the default one.
+            defaultCaret = hexText.getCaret();
+            nonDefaultCaret = new Caret(defaultCaret.getParent(), defaultCaret.getStyle());
+            nonDefaultCaret.setBounds(defaultCaret.getBounds());
+            hexText.setCaret(nonDefaultCaret);
+        }
+
+        {
+            // Preview
+            Composite previewColumn = new Composite(this, SWT.NONE);
+            GridLayout column2Layout = new GridLayout();
+            column2Layout.marginHeight = 0;
+            column2Layout.verticalSpacing = 1;
+            column2Layout.horizontalSpacing = 0;
+            column2Layout.marginWidth = 0;
+            previewColumn.setLayout(column2Layout);
+            //previewColumn.setBackground(hexText.getBackground());
+            GridData gridDataColumn2 = new GridData(SWT.FILL, SWT.FILL, true, true);
+            previewColumn.setLayoutData(gridDataColumn2);
+
+            GridData gridDataTextSeparator2 = new GridData();
+            gridDataTextSeparator2.horizontalAlignment = SWT.FILL;
+            gridDataTextSeparator2.verticalAlignment = SWT.FILL;
+            gridDataTextSeparator2.grabExcessHorizontalSpace = true;
+            previewTextSeparator = new Text(previewColumn, SWT.SEPARATOR);
+            previewTextSeparator.setEnabled(false);
+            previewTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+            previewTextSeparator.setLayoutData(gridDataTextSeparator2);
+            makeFirstRowSameHeight();
+
+            previewText = new StyledText(previewColumn, SWT.MULTI);
+            previewText.setFont(fontCurrent);
+            if (readOnly) {
+                previewText.setEditable(false);
+            }
+            int width = bytesPerLine * fontCharWidth + 1;  // one pixel for caret in last linesColumn
+            previewGridData = new GridData();
+            previewGridData.verticalAlignment = SWT.FILL;
+            previewGridData.widthHint = previewText.computeTrim(0, 0, width, 0).width;
+            previewGridData.grabExcessVerticalSpace = true;
+            previewText.setLayoutData(previewGridData);
+            previewText.addKeyListener(keyAdapter);
+            previewText.addFocusListener(myFocusAdapter);
+            previewText.addMouseListener(new ControlMouseAdapter(false));
+            previewText.addPaintListener(new ControlPaintAdapter(false));
+            previewText.addTraverseListener(new ControlTraverseAdapter());
+            previewText.addVerifyKeyListener(new ControlVerifyKeyAdapter());
+            previewText.setContent(new DisplayedContent(bytesPerLine, numberOfLines));
+            previewText.setDoubleClickEnabled(false);
+            previewText.addSelectionListener(new ControlSelectionAdapter(false));
+            // StyledText.setCaretOffset() version 3.448 bug resets the caret size if using the default one,
+            // so we use not the default one.
+            defaultCaret = previewText.getCaret();
+            nonDefaultCaret = new Caret(defaultCaret.getParent(), defaultCaret.getStyle());
+            nonDefaultCaret.setBounds(defaultCaret.getBounds());
+            previewText.setCaret(nonDefaultCaret);
+            styledText2GC = new GC(previewText);
+            setCharset(null);
+        }
 
         super.setFont(fontCurrent);
         ScrollBar vertical = getVerticalBar();
