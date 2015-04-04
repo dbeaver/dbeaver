@@ -1707,7 +1707,7 @@ public class ResultSetViewer extends Viewer
         } finally {
             session.close();
         }
-        model.addNewRow(rowNum, cells);
+        curRow = model.addNewRow(rowNum, cells);
         redrawData(true);
         updateEditControls();
         fireResultSetChange();
