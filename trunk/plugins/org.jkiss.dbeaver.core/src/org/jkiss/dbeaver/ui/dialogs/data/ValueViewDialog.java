@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.data;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -181,7 +182,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
             }
 
             @Override
-            public ToolBar getEditToolBar()
+            public IContributionManager getEditBar()
             {
                 return null;
             }

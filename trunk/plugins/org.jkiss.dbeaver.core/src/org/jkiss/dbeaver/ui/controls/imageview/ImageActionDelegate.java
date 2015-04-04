@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ui.controls.imageview;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 
@@ -46,7 +47,8 @@ public class ImageActionDelegate extends Action {
      */
     public String id;
 
-    public ImageActionDelegate(ImageViewer viewControl, String id) {
+    public ImageActionDelegate(ImageViewer viewControl, String id, String name, ImageDescriptor image) {
+        super(name, image);
         this.imageViewControl = viewControl;
         this.id = id;
     }

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.data;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
@@ -327,7 +328,7 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public ToolBar getEditToolBar()
+        public IContributionManager getEditBar()
         {
             return null;
         }

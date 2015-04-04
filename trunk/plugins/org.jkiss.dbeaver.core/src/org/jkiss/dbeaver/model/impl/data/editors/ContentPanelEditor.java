@@ -178,7 +178,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
 
             if (imageDetector.isImage()) {
                 ImageViewer imageViewer = new ImageViewer(editPlaceholder, SWT.BORDER);
-                imageViewer.fillToolBar(valueController.getEditToolBar());
+                imageViewer.fillToolBar(valueController.getEditBar());
                 return imageViewer;
             } else {
                 return new HexEditControl(editPlaceholder, SWT.NONE);

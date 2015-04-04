@@ -1437,7 +1437,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public ToolBar getEditToolBar()
+        public org.eclipse.jface.action.IContributionManager getEditBar()
         {
             return isPreviewVisible() ? previewPane.getToolBar() : null;
         }

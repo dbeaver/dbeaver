@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.model.impl.data.editors;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -26,7 +28,6 @@ import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -50,10 +51,11 @@ public abstract class BaseValueEditor<T extends Control> implements DBDValueEdit
         if (this.control != null) {
             initInlineControl(this.control);
         }
-        ToolBar editToolBar = valueController.getEditToolBar();
+        IContributionManager editToolBar = valueController.getEditBar();
         if (editToolBar != null) {
+            editToolBar.add(new Separator());
             if (!valueController.isReadOnly()) {
-                UIUtils.createToolItem(editToolBar, "Save changes", DBIcon.SAVE.getImage(), new Action("Save") {
+                editToolBar.add(new Action("Apply changes", DBIcon.ACCEPT.getImageDescriptor()) {
                     @Override
                     public void run() {
                         saveValue();
