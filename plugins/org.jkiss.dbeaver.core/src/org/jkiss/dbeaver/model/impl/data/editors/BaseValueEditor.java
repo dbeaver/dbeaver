@@ -55,7 +55,7 @@ public abstract class BaseValueEditor<T extends Control> implements DBDValueEdit
         if (editToolBar != null) {
             editToolBar.add(new Separator());
             if (!valueController.isReadOnly()) {
-                editToolBar.add(new Action("Apply changes", DBIcon.ACCEPT.getImageDescriptor()) {
+                editToolBar.add(new Action("Apply changes", DBIcon.CONFIRM.getImageDescriptor()) {
                     @Override
                     public void run() {
                         saveValue();
