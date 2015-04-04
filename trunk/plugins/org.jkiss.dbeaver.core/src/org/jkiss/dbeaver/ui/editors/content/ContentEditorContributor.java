@@ -63,7 +63,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         public void propertyChanged(Object source, int propId)
         {
             if (propId == ContentEditor.PROP_DIRTY) {
-                if (applyAction != null && activeEditor != null) {
+                if (activeEditor != null) {
                     applyAction.setEnabled(activeEditor.isDirty());
                 }
             }
@@ -130,12 +130,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                     log.error(e);
                 }
             }
-            if (applyAction != null) {
-                applyAction.setEnabled(activeEditor.isDirty());
-            }
-            if (loadAction != null) {
-                loadAction.setEnabled(!activeEditor.getEditorInput().isReadOnly());
-            }
+            applyAction.setEnabled(activeEditor.isDirty());
+            loadAction.setEnabled(!activeEditor.getEditorInput().isReadOnly());
 
         }
     }
