@@ -107,7 +107,7 @@ public class HexEditControl extends Composite {
     private BinaryContent content = null;
     private long endPosition = 0L;
     private BinaryTextFinder finder = null;
-    private boolean isInserting = false;
+    private boolean isInserting = true;
     private KeyListener keyAdapter = new ControlKeyAdapter();
     private int lastFocusedTextArea = -1;  // 1 or 2;
     private long lastLocationPosition = -1L;
@@ -900,59 +900,64 @@ public class HexEditControl extends Composite {
                 aChar < '0' || aChar > '9' && aChar < 'A' || aChar > 'F' && aChar < 'a' || aChar > 'f')) {
             return;
         }
-
+        boolean origInserting = isInserting;
         if (getCaretPos() == content.length() && !isInserting) {
-            ensureCaretIsVisible();
-            redrawTextAreas(false);
-            return;
+//            ensureCaretIsVisible();
+//            redrawTextAreas(false);
+//            return;
+            isInserting = true;
         }
-        handleSelectedPreModify();
         try {
-            if (isInserting) {
-                if (event.widget == previewText) {
-                    content.insert((byte) aChar, getCaretPos());
-                } else if (upANibble == 0) {
-                    content.insert((byte) (hexToNibble[aChar - '0'] << 4), getCaretPos());
-                } else {
-                    content.overwrite(hexToNibble[aChar - '0'], 4, 4, getCaretPos());
-                }
-            } else {
-                if (event.widget == previewText) {
-                    content.overwrite((byte) aChar, getCaretPos());
-                } else {
-                    content.overwrite(hexToNibble[aChar - '0'], upANibble * 4, 4, getCaretPos());
-                }
-                content.get(ByteBuffer.wrap(tmpRawBuffer, 0, 1), null, getCaretPos());
-                int offset = (int) (getCaretPos() - textAreasStart);
-                hexText.replaceTextRange(offset * 3, 2, HexUtils.byteToHex[tmpRawBuffer[0] & 0x0ff]);
-                hexText.setStyleRange(new StyleRange(offset * 3, 2, COLOR_BLUE, null));
-                previewText.replaceTextRange(
-                    offset,
-                    1,
-                    Character.toString(byteToChar[tmpRawBuffer[0] & 0x0ff]));
-                previewText.setStyleRange(new StyleRange(offset, 1, COLOR_BLUE, null));
-            }
-        } catch (IOException e) {
-            log.warn(e);
-        }
-        startPosition = endPosition = incrementPosWithinLimits(getCaretPos(), event.widget == hexText);
-        Runnable delayed = new Runnable() {
-            @Override
-            public void run()
-            {
-                ensureCaretIsVisible();
-                redrawTextAreas(false);
+            handleSelectedPreModify();
+            try {
                 if (isInserting) {
-                    updateScrollBar();
-                    redrawTextAreas(true);
+                    if (event.widget == previewText) {
+                        content.insert((byte) aChar, getCaretPos());
+                    } else if (upANibble == 0) {
+                        content.insert((byte) (hexToNibble[aChar - '0'] << 4), getCaretPos());
+                    } else {
+                        content.overwrite(hexToNibble[aChar - '0'], 4, 4, getCaretPos());
+                    }
+                } else {
+                    if (event.widget == previewText) {
+                        content.overwrite((byte) aChar, getCaretPos());
+                    } else {
+                        content.overwrite(hexToNibble[aChar - '0'], upANibble * 4, 4, getCaretPos());
+                    }
+                    content.get(ByteBuffer.wrap(tmpRawBuffer, 0, 1), null, getCaretPos());
+                    int offset = (int) (getCaretPos() - textAreasStart);
+                    hexText.replaceTextRange(offset * 3, 2, HexUtils.byteToHex[tmpRawBuffer[0] & 0x0ff]);
+                    hexText.setStyleRange(new StyleRange(offset * 3, 2, COLOR_BLUE, null));
+                    previewText.replaceTextRange(
+                        offset,
+                        1,
+                        Character.toString(byteToChar[tmpRawBuffer[0] & 0x0ff]));
+                    previewText.setStyleRange(new StyleRange(offset, 1, COLOR_BLUE, null));
                 }
-                refreshSelections();
-                runnableEnd();
+            } catch (IOException e) {
+                log.warn(e);
             }
-        };
-        runnableAdd(delayed);
-        notifyListeners(SWT.Modify, null);
-        notifyLongSelectionListeners();
+            startPosition = endPosition = incrementPosWithinLimits(getCaretPos(), event.widget == hexText);
+            Runnable delayed = new Runnable() {
+                @Override
+                public void run()
+                {
+                    ensureCaretIsVisible();
+                    redrawTextAreas(false);
+                    if (isInserting) {
+                        updateScrollBar();
+                        redrawTextAreas(true);
+                    }
+                    refreshSelections();
+                    runnableEnd();
+                }
+            };
+            runnableAdd(delayed);
+            notifyListeners(SWT.Modify, null);
+            notifyLongSelectionListeners();
+        } finally {
+            isInserting = origInserting;
+        }
     }
 
 
