@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -68,6 +69,10 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
     @Override
     public void primeEditorValue(@Nullable final Object value) throws DBException
     {
+        if (value == null) {
+            log.warn("NULL content value. Must be DBDContent.");
+            return;
+        }
         DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -123,34 +128,37 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
     public Object extractEditorValue() throws DBException
     {
         final DBDContent content = (DBDContent) valueController.getValue();
-        DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                try {
-                    if (control instanceof Text) {
-                        Text styledText = (Text) control;
-                        content.updateContents(
-                            monitor,
-                            new StringContentStorage(styledText.getText()));
-                    } else if (control instanceof HexEditControl) {
-                        HexEditControl hexEditControl = (HexEditControl) control;
-                        BinaryContent binaryContent = hexEditControl.getContent();
-                        ByteBuffer buffer = ByteBuffer.allocate((int) binaryContent.length());
-                        try {
-                            binaryContent.get(buffer, 0);
-                        } catch (IOException e) {
-                            log.error(e);
+        if (content == null) {
+            log.warn("NULL content value. Must be DBDContent.");
+        } else {
+            DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        if (control instanceof Text) {
+                            Text styledText = (Text) control;
+                            content.updateContents(
+                                monitor,
+                                new StringContentStorage(styledText.getText()));
+                        } else if (control instanceof HexEditControl) {
+                            HexEditControl hexEditControl = (HexEditControl) control;
+                            BinaryContent binaryContent = hexEditControl.getContent();
+                            ByteBuffer buffer = ByteBuffer.allocate((int) binaryContent.length());
+                            try {
+                                binaryContent.get(buffer, 0);
+                            } catch (IOException e) {
+                                log.error(e);
+                            }
+                            content.updateContents(
+                                monitor,
+                                new BytesContentStorage(buffer.array(), ContentUtils.getDefaultFileEncoding()));
                         }
-                        content.updateContents(
-                            monitor,
-                            new BytesContentStorage(buffer.array(), ContentUtils.getDefaultFileEncoding()));
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
                     }
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
                 }
-            }
-        });
+            });
+        }
         return content;
     }
 
@@ -164,7 +172,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
             return text;
         } else {
             ImageDetector imageDetector = new ImageDetector(content);
-            if (!content.isNull()) {
+            if (!DBUtils.isNullValue(content)) {
                 DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), imageDetector);
             }
 
