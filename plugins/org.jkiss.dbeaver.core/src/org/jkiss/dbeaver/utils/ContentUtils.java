@@ -689,7 +689,7 @@ public class ContentUtils {
         throws DBCException
     {
         if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
-            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBIcon.SAVE.getImageDescriptor()) {
+            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBIcon.SAVE_AS.getImageDescriptor()) {
                 @Override
                 public void run() {
                     saveToFile(controller);

@@ -188,6 +188,8 @@ public enum DBIcon
     IMPORT("import", "/icons/file/import.png"), //$NON-NLS-1$ //$NON-NLS-2$
     EXPORT("export", "/icons/file/export.png"), //$NON-NLS-1$ //$NON-NLS-2$
     REFRESH("refresh", "/icons/refresh.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    CONFIRM("confirm", "/icons/misc/confirm.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    CLOSE("close", "/icons/misc/close.png"), //$NON-NLS-1$ //$NON-NLS-2$
     JAR("jar", "/icons/misc/jar.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SOURCES("sources", "/icons/misc/sources.png"), //$NON-NLS-1$ //$NON-NLS-2$
     CANCEL("cancel", "/icons/misc/cancel.png"), //$NON-NLS-1$ //$NON-NLS-2$
