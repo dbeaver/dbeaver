@@ -187,7 +187,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
                 }
                 return imageViewer;
             } else {
-                final HexEditControl hexEditor = new HexEditControl(editPlaceholder, SWT.NONE);
+                final HexEditControl hexEditor = new HexEditControl(editPlaceholder, SWT.BORDER);
                 if (editBar != null) {
                     editBar.add(new Action("Switch Insert/Overwrite mode", DBIcon.CURSOR.getImageDescriptor()) {
                         @Override

@@ -833,10 +833,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
         Color previewBack = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_PREVIEW_BACK);
         if (previewBack != null) {
-            this.previewPane.getViewPlaceholder().setBackground(previewBack);
-            for (Control control : this.previewPane.getViewPlaceholder().getChildren()) {
-                control.setBackground(previewBack);
-            }
+//            this.previewPane.getViewPlaceholder().setBackground(previewBack);
+//            for (Control control : this.previewPane.getViewPlaceholder().getChildren()) {
+//                control.setBackground(previewBack);
+//            }
         }
         this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
         this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
