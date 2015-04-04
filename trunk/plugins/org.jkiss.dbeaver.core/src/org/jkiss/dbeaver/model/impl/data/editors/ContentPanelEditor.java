@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl.data.editors;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
@@ -36,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
@@ -176,12 +179,24 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
                 DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), imageDetector);
             }
 
+            IContributionManager editBar = valueController.getEditBar();
             if (imageDetector.isImage()) {
                 ImageViewer imageViewer = new ImageViewer(editPlaceholder, SWT.BORDER);
-                imageViewer.fillToolBar(valueController.getEditBar());
+                if (editBar != null) {
+                    imageViewer.fillToolBar(editBar);
+                }
                 return imageViewer;
             } else {
-                return new HexEditControl(editPlaceholder, SWT.NONE);
+                final HexEditControl hexEditor = new HexEditControl(editPlaceholder, SWT.NONE);
+                if (editBar != null) {
+                    editBar.add(new Action("Switch Insert/Overwrite mode", DBIcon.CURSOR.getImageDescriptor()) {
+                        @Override
+                        public void run() {
+                            hexEditor.redrawCaret(true);
+                        }
+                    });
+                }
+                return hexEditor;
             }
         }
     }
