@@ -676,7 +676,7 @@ public class ContentUtils {
 
     public static boolean isTextContent(DBDContent content)
     {
-        String contentType = content.getContentType();
+        String contentType = content == null ? null : content.getContentType();
         return contentType != null && contentType.toLowerCase().startsWith("text");
     }
 
