@@ -151,8 +151,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
         IMenuManager menu = new MenuManager("L&OB Editor");
         manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
-        menu.add(loadAction);
         menu.add(saveAction);
+        menu.add(loadAction);
         menu.add(new Separator());
         menu.add(infoAction);
         menu.add(new Separator());
@@ -173,8 +173,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         super.contributeToToolBar(manager);
         textContributor.contributeToToolBar(manager);
         // Execution
-        manager.add(loadAction);
         manager.add(saveAction);
+        manager.add(loadAction);
         manager.add(new Separator());
         manager.add(infoAction);
         manager.add(new Separator());
@@ -258,7 +258,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public FileExportAction()
         {
-            super(IWorkbenchCommandConstants.FILE_EXPORT, "Export", "Save to File", DBIcon.EXPORT);
+            super(IWorkbenchCommandConstants.FILE_EXPORT, "Export", "Save to File", DBIcon.SAVE_AS);
         }
 
         @Override
@@ -301,7 +301,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public FileImportAction()
         {
-            super(IWorkbenchCommandConstants.FILE_IMPORT, "Import", "Load from File", DBIcon.IMPORT);
+            super(IWorkbenchCommandConstants.FILE_IMPORT, "Import", "Load from File", DBIcon.LOAD);
         }
 
         @Override
@@ -358,7 +358,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public ApplyAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Apply Changes", DBIcon.SAVE);
+            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Apply Changes", DBIcon.ACCEPT);
         }
 
         @Override

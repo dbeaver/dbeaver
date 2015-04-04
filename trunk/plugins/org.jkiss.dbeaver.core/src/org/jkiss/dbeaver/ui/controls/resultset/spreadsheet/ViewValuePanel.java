@@ -187,7 +187,7 @@ abstract class ViewValuePanel extends Composite {
 
     private void fillStandardToolBar()
     {
-        toolBarManager.add(new Action("Hide panel", DBIcon.REJECT.getImageDescriptor()) {
+        toolBarManager.add(new Action("Hide panel", DBIcon.CLOSE.getImageDescriptor()) {
             @Override
             public void run() {
                 hidePanel();
