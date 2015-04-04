@@ -462,10 +462,10 @@ public abstract class LightGrid extends Canvas {
             this.parentNodes = parents.toArray(new GridNode[parents.size()]);
         }
         this.displayedToolTipText = null;
+        this.topIndex = -1;
+        this.bottomIndex = -1;
 
         if (refreshColumns) {
-            this.topIndex = -1;
-            this.bottomIndex = -1;
             this.maxColumnDepth = 0;
 
             // Add columns
