@@ -167,7 +167,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
     {
         DBDContent content = (DBDContent) valueController.getValue();
         if (ContentUtils.isTextContent(content)) {
-            Text text = new Text(editPlaceholder, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             text.setEditable(!valueController.isReadOnly());
             return text;
         } else {
@@ -181,7 +181,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
                 imageViewer.fillToolBar(valueController.getEditToolBar());
                 return imageViewer;
             } else {
-                return new HexEditControl(editPlaceholder, SWT.BORDER);
+                return new HexEditControl(editPlaceholder, SWT.NONE);
             }
         }
     }

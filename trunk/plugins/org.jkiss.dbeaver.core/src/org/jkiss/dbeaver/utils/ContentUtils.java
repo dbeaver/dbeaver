@@ -617,7 +617,7 @@ public class ContentUtils {
             if (b < 0) {
                 b = -b + 127;
             }
-            chars[i] = (char) b;
+            chars[i - offset] = (char) b;
         }
         return new String(chars);
     }
