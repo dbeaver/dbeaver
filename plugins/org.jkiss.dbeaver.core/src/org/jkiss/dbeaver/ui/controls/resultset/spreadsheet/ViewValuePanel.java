@@ -18,15 +18,13 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -34,6 +32,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -49,7 +48,7 @@ abstract class ViewValuePanel extends Composite {
     static final Log log = Log.getLog(ViewValuePanel.class);
 
     private final Label columnImageLabel;
-    private final Label columnNameLabel;
+    private final Text columnNameLabel;
     private final Composite viewPlaceholder;
 
     private DBDValueController previewController;
@@ -64,29 +63,34 @@ abstract class ViewValuePanel extends Composite {
         gl.horizontalSpacing = 0;
         gl.marginHeight = 0;
         gl.marginWidth = 0;
+        gl.marginBottom = 5;
+        gl.marginRight = 5;
         setLayout(gl);
         //this.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Color infoBackground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        //Color infoBackground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
+        // Title
         Composite titleBar = UIUtils.createPlaceholder(this, 3);
         ((GridLayout)titleBar.getLayout()).marginWidth = 5;
+        ((GridLayout)titleBar.getLayout()).marginHeight = 3;
         ((GridLayout)titleBar.getLayout()).horizontalSpacing = 5;
         titleBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        titleBar.setBackground(infoBackground);
+        //titleBar.setBackground(infoBackground);
 
         columnImageLabel = new Label(titleBar, SWT.NONE);
         columnImageLabel.setImage(DBIcon.TYPE_OBJECT.getImage());
 
-        columnNameLabel = new Label(titleBar, SWT.NONE);
+        columnNameLabel = new Text(titleBar, SWT.READ_ONLY);
         columnNameLabel.setText("");
         columnNameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        ToolBar toolBar = new ToolBar(titleBar, SWT.HORIZONTAL);
+        ToolBar toolBar = new ToolBar(titleBar, SWT.FLAT | SWT.HORIZONTAL);
         toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
         toolBarManager = new ToolBarManager(toolBar);
         fillStandardToolBar();
 
+        // Value editor
         viewPlaceholder = UIUtils.createPlaceholder(this, 1);
         viewPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         viewPlaceholder.setLayout(new FillLayout());

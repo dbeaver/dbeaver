@@ -575,7 +575,7 @@ public class HexEditControl extends Composite {
         columnLayout.horizontalSpacing = 0;
         columnLayout.marginWidth = 0;
         linesColumn.setLayout(columnLayout);
-        linesColumn.setBackground(COLOR_LIGHT_SHADOW);
+        //linesColumn.setBackground(COLOR_LIGHT_SHADOW);
         GridData gridDataColumn = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
         linesColumn.setLayoutData(gridDataColumn);
 
@@ -583,14 +583,14 @@ public class HexEditControl extends Composite {
         gridDataTextSeparator.widthHint = 10;
         linesTextSeparator = new Text(linesColumn, SWT.SEPARATOR);
         linesTextSeparator.setEnabled(false);
-        linesTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+        //linesTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
         linesTextSeparator.setLayoutData(gridDataTextSeparator);
 
         linesText = new StyledText(linesColumn, SWT.MULTI | SWT.READ_ONLY);
         linesText.setEditable(false);
         linesText.setEnabled(false);
-        linesText.setBackground(COLOR_LIGHT_SHADOW);
-        linesText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+        //linesText.setBackground(COLOR_LIGHT_SHADOW);
+        //linesText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
         fontDefault = new Font(Display.getCurrent(), DEFAULT_FONT_DATA);
         fontCurrent = fontDefault;
         linesText.setFont(fontCurrent);
@@ -610,12 +610,12 @@ public class HexEditControl extends Composite {
         column1Layout.horizontalSpacing = 0;
         column1Layout.marginWidth = 0;
         hexColumn.setLayout(column1Layout);
-        hexColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        //hexColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
         GridData gridDataColumn1 = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
         hexColumn.setLayoutData(gridDataColumn1);
 
         Composite hexHeaderGroup = new Composite(hexColumn, SWT.NONE);
-        hexHeaderGroup.setBackground(COLOR_LIGHT_SHADOW);
+        //hexHeaderGroup.setBackground(COLOR_LIGHT_SHADOW);
         GridLayout column1HeaderLayout = new GridLayout();
         column1HeaderLayout.marginHeight = 0;
         column1HeaderLayout.marginWidth = 0;
@@ -628,7 +628,7 @@ public class HexEditControl extends Composite {
         hexHeaderText = new StyledText(hexHeaderGroup, SWT.SINGLE | SWT.READ_ONLY);
         hexHeaderText.setEditable(false);
         hexHeaderText.setEnabled(false);
-        hexHeaderText.setBackground(COLOR_LIGHT_SHADOW);
+        //hexHeaderText.setBackground(COLOR_LIGHT_SHADOW);
         hexHeaderText.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
         hexHeaderText.setLayoutData(gridData);
         hexHeaderText.setFont(fontCurrent);
@@ -697,7 +697,7 @@ public class HexEditControl extends Composite {
         gridDataTextSeparator2.grabExcessHorizontalSpace = true;
         previewTextSeparator = new Text(previewColumn, SWT.SEPARATOR);
         previewTextSeparator.setEnabled(false);
-        previewTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
+        //previewTextSeparator.setBackground(COLOR_LIGHT_SHADOW);
         previewTextSeparator.setLayoutData(gridDataTextSeparator2);
         makeFirstRowSameHeight();
 
