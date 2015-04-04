@@ -541,7 +541,7 @@ public class ResultSetModel {
         this.updateInProgress = updateInProgress;
     }
 
-    void addNewRow(int rowNum, @NotNull Object[] data)
+    ResultSetRow addNewRow(int rowNum, @NotNull Object[] data)
     {
         ResultSetRow newRow = new ResultSetRow(curRows.size(), data);
         newRow.setVisualNumber(rowNum);
@@ -549,6 +549,7 @@ public class ResultSetModel {
         shiftRows(newRow, 1);
         curRows.add(rowNum, newRow);
         changesCount++;
+        return newRow;
     }
 
     /**
