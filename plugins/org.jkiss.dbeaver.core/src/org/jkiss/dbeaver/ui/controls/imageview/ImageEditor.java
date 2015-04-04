@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.imageview;
 
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.graphics.Color;
@@ -26,7 +27,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.ToolBar;
 
 import java.io.InputStream;
 
@@ -63,11 +63,12 @@ public class ImageEditor extends ImageViewer {
             messageLabel.setLayoutData(gd);
 
             {
-                ToolBar toolBar = new ToolBar(statusGroup, SWT.NONE);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-                toolBar.setLayoutData(gd);
+                ToolBarManager toolBar = new ToolBarManager(SWT.NONE);
+//                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+//                toolBar.setLayoutData(gd);
 
                 fillToolBar(toolBar);
+                toolBar.createControl(statusGroup);
             }
         }
         updateActions();

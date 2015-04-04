@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.data;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -99,7 +100,7 @@ public interface DBDValueController extends IDataSourceProvider
      * @return toolbar or null if toolbar is not active
      */
     @Nullable
-    ToolBar getEditToolBar();
+    IContributionManager getEditBar();
 
     /**
      * Closes current value editor.

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.jkiss.dbeaver.core.Log;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -52,7 +54,7 @@ abstract class ViewValuePanel extends Composite {
 
     private DBDValueController previewController;
     private DBDValueEditor valueViewer;
-    private ToolBar toolBar;
+    private ToolBarManager toolBarManager;
 
     ViewValuePanel(Composite parent)
     {
@@ -80,8 +82,9 @@ abstract class ViewValuePanel extends Composite {
         columnNameLabel.setText("");
         columnNameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        toolBar = new ToolBar(titleBar, SWT.HORIZONTAL);
+        ToolBar toolBar = new ToolBar(titleBar, SWT.HORIZONTAL);
         toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+        toolBarManager = new ToolBarManager(toolBar);
         fillStandardToolBar();
 
         viewPlaceholder = UIUtils.createPlaceholder(this, 1);
@@ -110,7 +113,6 @@ abstract class ViewValuePanel extends Composite {
     {
         if (previewController == null || valueController.getValueType() != previewController.getValueType()) {
             cleanupPanel();
-
             // Rest column info
             columnImageLabel.setImage(DBUtils.getTypeImage(valueController.getValueType()));
             columnNameLabel.setText(valueController.getValueName());
@@ -121,7 +123,12 @@ abstract class ViewValuePanel extends Composite {
                 UIUtils.showErrorDialog(getShell(), "Value preview", "Can't create value viewer", e);
                 return;
             }
-            fillStandardToolBar();
+            toolBarManager.removeAll();
+            try {
+                valueController.getValueHandler().contributeActions(toolBarManager, valueController);
+            } catch (DBCException e) {
+                log.error("Error filling toolbar actions", e);
+            }
             if (valueViewer != null) {
                 valueViewer.createControl();
             } else {
@@ -139,7 +146,10 @@ abstract class ViewValuePanel extends Composite {
                 });
             }
             previewController = valueController;
-            toolBar.getParent().layout();
+
+            fillStandardToolBar();
+            toolBarManager.update(true);
+            toolBarManager.getControl().getParent().layout();
             viewPlaceholder.layout();
         }
         if (valueViewer != null) {
@@ -154,7 +164,7 @@ abstract class ViewValuePanel extends Composite {
     public void clearValue()
     {
         cleanupPanel();
-        toolBar.getParent().layout();
+        toolBarManager.getControl().getParent().layout();
         viewPlaceholder.layout();
     }
 
@@ -167,24 +177,22 @@ abstract class ViewValuePanel extends Composite {
         previewController = null;
 
         // Cleanup toolbar
-        for (ToolItem item : toolBar.getItems()) {
-            item.dispose();
-        }
+        toolBarManager.removeAll();
+        toolBarManager.update(true);
     }
 
     private void fillStandardToolBar()
     {
-        UIUtils.createToolItem(toolBar, "Hide panel", DBIcon.REJECT.getImage(), new Action() {
+        toolBarManager.add(new Action("Hide panel", DBIcon.REJECT.getImageDescriptor()) {
             @Override
-            public void run()
-            {
+            public void run() {
                 hidePanel();
             }
         });
     }
 
-    public ToolBar getToolBar()
+    public ToolBarManager getToolBar()
     {
-        return toolBar;
+        return toolBarManager;
     }
 }
