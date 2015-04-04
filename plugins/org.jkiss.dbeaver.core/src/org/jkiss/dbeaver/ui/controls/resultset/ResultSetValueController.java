@@ -18,8 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -172,7 +172,7 @@ public class ResultSetValueController implements DBDAttributeController, DBDRowC
 
     @Nullable
     @Override
-    public ToolBar getEditToolBar()
+    public IContributionManager getEditBar()
     {
         return null;
     }
