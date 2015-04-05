@@ -46,8 +46,15 @@ public class DateTimeInlineEditor extends BaseValueEditor<DateTime> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        if (value instanceof Date) {
-            Calendar cl = Calendar.getInstance();
+        Calendar cl = Calendar.getInstance();
+        if (value == null) {
+            if (dateEditor != null) {
+                dateEditor.setDate(cl.get(Calendar.YEAR), 0, 1);
+            }
+            if (timeEditor != null) {
+                timeEditor.setTime(0, 0, 0);
+            }
+        } else if (value instanceof Date) {
             cl.setTime((Date) value);
             if (dateEditor != null) {
                 dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
