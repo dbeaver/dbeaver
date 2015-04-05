@@ -23,13 +23,29 @@
 
 <plugin>
 
-    <extension
-          id="standalone"
-          name="DBeaver Standalone"
-          point="org.eclipse.core.runtime.applications">
+    <extension point="org.eclipse.core.runtime.applications" id="standalone" name="DBeaver Standalone">
         <application visible="true">
             <run class="org.jkiss.dbeaver.core.application.DBeaverApplication"/>
         </application>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.products" id="product">
+        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver Enterprise">
+            <property name="aboutText" value="DBeaver - Enterprise Database Manager"/>
+            <property name="copyright" value="%productCopyright"/>
+            <property name="subTitle" value="%productSubTitle"/>
+            <property name="website" value="%productWebsite"/>
+            <property name="email" value="%productEmail"/>
+            <property name="windowImages" value="icons/dbeaver.png"/>
+            <property name="appName" value="DBeaver"/>
+            <property name="startupForegroundColor" value="000000"/>
+            <property name="startupMessageRect" value="25,25,200,15"/>
+            <property name="startupProgressRect" value="25,45,150,15"/>
+            <property name="preferenceCustomization" value="plugin_customization.ini"/>
+            <property name="applicationXMI" value="org.eclipse.platform/LegacyIDE.e4xmi"/>
+            <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_classic"/>
+            <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
+        </product>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -194,25 +210,6 @@
 
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
 
-    </extension>
-
-    <extension id="product" point="org.eclipse.core.runtime.products">
-        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver Enterprise">
-            <property name="aboutText" value="DBeaver - Enterprise Database Manager"/>
-            <property name="copyright" value="%productCopyright"/>
-            <property name="subTitle" value="%productSubTitle"/>
-            <property name="website" value="%productWebsite"/>
-            <property name="email" value="%productEmail"/>
-            <property name="windowImages" value="icons/dbeaver.png"/>
-            <property name="appName" value="DBeaver"/>
-            <property name="startupForegroundColor" value="000000"/>
-            <property name="startupMessageRect" value="25,25,200,15"/>
-            <property name="startupProgressRect" value="25,45,150,15"/>
-            <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="applicationXMI" value="org.eclipse.platform/LegacyIDE.e4xmi"/>
-            <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_classic"/>
-            <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
-        </product>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
