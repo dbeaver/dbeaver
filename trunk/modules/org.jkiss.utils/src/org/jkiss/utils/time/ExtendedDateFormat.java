@@ -28,15 +28,19 @@ import java.util.Locale;
  */
 public class ExtendedDateFormat extends SimpleDateFormat {
 
+    private static final String NINE_ZEROES = "000000000";
+
     int nanoStart = -1, nanoLength;
     boolean nanoOptional;
     String nanoPrefix, nanoPostfix;
 
-    public ExtendedDateFormat(String pattern) {
+    public ExtendedDateFormat(String pattern)
+    {
         this(pattern, Locale.getDefault());
     }
 
-    public ExtendedDateFormat(String pattern, Locale locale) {
+    public ExtendedDateFormat(String pattern, Locale locale)
+    {
         super(stripNanos(pattern), locale);
 
         for (int i = 0; i < pattern.length(); i++) {
@@ -80,7 +84,8 @@ public class ExtendedDateFormat extends SimpleDateFormat {
     }
 
     @Override
-    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
+    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos)
+    {
         StringBuffer result = super.format(date, toAppendTo, pos);
         if (nanoStart >= 0) {
             long nanos = 0;
@@ -93,6 +98,13 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                     result.append(nanoPrefix);
                 }
                 String nanoStr = String.valueOf(nanos);
+
+                // nanoStr must be a string of exactly 9 chars in length. Pad with leading "0" if not
+                int nbZeroesToPad = 9 - nanoStr.length();
+                if (nbZeroesToPad > 0) {
+                    nanoStr = NINE_ZEROES.substring(0, nbZeroesToPad) + nanoStr;
+                }
+
                 if (nanoLength < nanoStr.length()) {
                     // Truncate nanos string to fit in the pattern
                     nanoStr = nanoStr.substring(0, nanoLength);
@@ -112,11 +124,13 @@ public class ExtendedDateFormat extends SimpleDateFormat {
     }
 
     @Override
-    public Date parse(String text, ParsePosition pos) {
+    public Date parse(String text, ParsePosition pos)
+    {
         return super.parse(text, pos);
     }
 
-    private static String stripNanos(String pattern) {
+    private static String stripNanos(String pattern)
+    {
         for (int i = 0; i < pattern.length(); i++) {
             char c = pattern.charAt(i);
             if (c == '\'') {
