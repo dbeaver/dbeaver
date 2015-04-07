@@ -647,7 +647,7 @@ public class ContentUtils {
     {
         Object value = controller.getValue();
         DBDValueController.EditType binaryEditType = DBDValueController.EditType.valueOf(
-            controller.getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
+            controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
         if (binaryEditType != DBDValueController.EditType.EDITOR && value instanceof DBDContentCached) {
             // Use string editor for cached content
             return new TextViewDialog(controller);

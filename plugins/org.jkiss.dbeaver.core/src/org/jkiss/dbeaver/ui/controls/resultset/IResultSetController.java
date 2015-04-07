@@ -28,6 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
@@ -49,6 +50,9 @@ public interface IResultSetController {
 
     @NotNull
     DBDDataReceiver getDataReceiver();
+
+    @Nullable
+    DBCExecutionContext getExecutionContext();
 
     boolean hasData();
 

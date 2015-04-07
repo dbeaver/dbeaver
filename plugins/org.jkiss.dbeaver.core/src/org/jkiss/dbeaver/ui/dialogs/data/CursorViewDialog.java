@@ -223,7 +223,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         public DBPDataSource getDataSource()
         {
             final DBDValueController valueController = getValueController();
-            return valueController == null ? null : valueController.getDataSource();
+            return valueController == null ? null : valueController.getExecutionContext().getDataSource();
         }
 
         @Override

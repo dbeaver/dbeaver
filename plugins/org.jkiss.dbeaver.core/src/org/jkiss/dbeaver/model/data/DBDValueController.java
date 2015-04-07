@@ -22,14 +22,16 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * DBD Value Controller
  */
-public interface DBDValueController extends IDataSourceProvider
+public interface DBDValueController
 {
     /**
      * Value editor type
@@ -41,6 +43,13 @@ public interface DBDValueController extends IDataSourceProvider
                 // May be reused to edit different cells of the same type.
         EDITOR  // Separate editor, dialog or standalone editor window
     }
+
+    /**
+     * Active execution context. Context lifetime is longer than value handler lifetime.
+     * @return execution context
+     */
+    @NotNull
+    DBCExecutionContext getExecutionContext();
 
     /**
      * Value name (name of attribute or other metadata object)
@@ -83,7 +92,7 @@ public interface DBDValueController extends IDataSourceProvider
 
     /**
      * Controller's host site
-     * @return
+     * @return site
      */
     IWorkbenchPartSite getValueSite();
 
