@@ -581,7 +581,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         } else if (adapter == DBAServerSessionManager.class) {
             return new MySQLSessionManager(this);
         }
-        return null;
+        return super.getAdapter(adapter);
     }
 
     @NotNull

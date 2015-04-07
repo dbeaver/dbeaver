@@ -73,12 +73,6 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     }
 
     @Override
-    public DBCTransactionManager getTransactionManager()
-    {
-        return new AbstractTransactionManager();
-    }
-
-    @Override
     public DBCExecutionPurpose getPurpose()
     {
         return purpose;
@@ -119,79 +113,6 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
             holdsBlock = false;
         }
         QMUtils.getDefaultHandler().handleSessionClose(this);
-    }
-
-    protected class AbstractTransactionManager implements DBCTransactionManager {
-
-        @Override
-        public DBPDataSource getDataSource()
-        {
-            return AbstractSession.this.getDataSource();
-        }
-
-        @Override
-        public DBPTransactionIsolation getTransactionIsolation()
-            throws DBCException
-        {
-            return null;
-        }
-
-        @Override
-        public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation)
-            throws DBCException
-        {
-            throw new DBCException("Transaction isolation change not supported");
-        }
-
-        @Override
-        public boolean isAutoCommit()
-            throws DBCException
-        {
-            return true;
-        }
-
-        @Override
-        public void setAutoCommit(boolean autoCommit)
-            throws DBCException
-        {
-            if (!autoCommit) {
-                throw new DBCException("Transactional mode not supported");
-            }
-        }
-
-        @Override
-        public boolean supportsSavepoints()
-        {
-            return getDataSource().getInfo().supportsSavepoints();
-        }
-
-        @Override
-        public DBCSavepoint setSavepoint(String name)
-            throws DBCException
-        {
-            throw new DBCException("Savepoint not supported");
-        }
-
-        @Override
-        public void releaseSavepoint(DBCSavepoint savepoint)
-            throws DBCException
-        {
-            throw new DBCException("Savepoint not supported");
-        }
-
-        @Override
-        public void commit()
-            throws DBCException
-        {
-            // do nothing
-        }
-
-        @Override
-        public void rollback(DBCSavepoint savepoint)
-            throws DBCException
-        {
-            throw new DBCException("Transactions not supported");
-        }
     }
 
 }

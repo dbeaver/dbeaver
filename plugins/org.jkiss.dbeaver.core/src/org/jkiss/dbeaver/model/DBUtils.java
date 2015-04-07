@@ -1266,7 +1266,8 @@ public final class DBUtils {
      * Puts list of linked SQL exceptions into a list.
      * This function exists to avoid infinite cycles in SQLException linking.
      */
-    public static List<SQLException> getExceptionsChain(SQLException ex) {
+    @NotNull
+    public static List<SQLException> getExceptionsChain(@NotNull SQLException ex) {
         if (ex.getNextException() == null) {
             return Collections.singletonList(ex);
         }
@@ -1278,6 +1279,14 @@ public final class DBUtils {
             chain.add(e);
         }
         return chain;
+    }
+
+    @Nullable
+    public static DBCTransactionManager getTransactionManager(@NotNull DBCExecutionContext executionContext) {
+        if (executionContext.isConnected()) {
+            return getAdapter(DBCTransactionManager.class, executionContext);
+        }
+        return null;//VoidTransactionManager.INSTANCE;
     }
 
 }

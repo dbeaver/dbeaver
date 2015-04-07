@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -81,7 +82,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 // Auto-commit has to be turned off because some drivers allows to read LOBs and
                 // other complex structures only in transactional mode
                 try {
-                    session.getTransactionManager().setAutoCommit(false);
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                    if (txnManager != null) {
+                        txnManager.setAutoCommit(false);
+                    }
                 } catch (DBCException e) {
                     log.warn("Can't change auto-commit", e);
                 }
@@ -127,10 +131,13 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             //dataContainer.readData(context, consumer, dataFilter, -1, -1);
         } finally {
             if (newConnection) {
-                try {
-                    session.getTransactionManager().commit();
-                } catch (DBCException e) {
-                    log.error("Can't finish transaction in data producer connection", e);
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                if (txnManager != null) {
+                    try {
+                        txnManager.commit();
+                    } catch (DBCException e) {
+                        log.error("Can't finish transaction in data producer connection", e);
+                    }
                 }
             }
             session.close();

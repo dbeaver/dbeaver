@@ -24,12 +24,11 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 
 /**
-* DBCSession
+* Transaction manager.
+ * It can be implemented by execution context.
  */
 public interface DBCTransactionManager
 {
-    DBPDataSource getDataSource();
-
     DBPTransactionIsolation getTransactionIsolation() throws DBCException;
 
     void setTransactionIsolation(DBPTransactionIsolation transactionIsolation) throws DBCException;

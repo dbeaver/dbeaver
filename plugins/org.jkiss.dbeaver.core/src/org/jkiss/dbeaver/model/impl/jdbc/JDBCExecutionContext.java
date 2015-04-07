@@ -18,28 +18,35 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Savepoint;
 
 /**
  * JDBCExecutionContext
  */
-public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
+public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManager
 {
     static final Log log = Log.getLog(JDBCExecutionContext.class);
 
@@ -53,6 +60,10 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
         this.dataSource = dataSource;
         this.purpose = purpose;
         this.copyState = copyState;
+    }
+
+    private Connection getConnection() {
+        return connectionHolder.getConnection();
     }
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
@@ -141,7 +152,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
     @Override
     public boolean isConnected()
     {
-        return connectionHolder != null && connectionHolder.getConnection() != null;
+        return connectionHolder != null && getConnection() != null;
     }
 
     @Override
@@ -153,7 +164,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
             return InvalidateResult.CONNECTED;
         }
 
-        if (!JDBCUtils.isConnectionAlive(this.connectionHolder.getConnection())) {
+        if (!JDBCUtils.isConnectionAlive(getConnection())) {
             Boolean prevAutocommit = connectionHolder.getAutoCommitCache();
             Integer txnLevel = connectionHolder.getTransactionIsolationCache();
             close();
@@ -203,4 +214,132 @@ public class JDBCExecutionContext implements DBCExecutionContext, JDBCConnector
         }
     }
 
+    @Override
+    public DBPTransactionIsolation getTransactionIsolation()
+        throws DBCException
+    {
+        try {
+            return JDBCTransactionIsolation.getByCode(getConnection().getTransactionIsolation());
+        } catch (SQLException e) {
+            throw new JDBCException(e, dataSource);
+        }
+    }
+
+    @Override
+    public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation)
+        throws DBCException
+    {
+        if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
+            throw new DBCException(CoreMessages.model_jdbc_exception_invalid_transaction_isolation_parameter);
+        }
+        JDBCTransactionIsolation jdbcTIL = (JDBCTransactionIsolation) transactionIsolation;
+        try {
+            getConnection().setTransactionIsolation(jdbcTIL.getCode());
+        } catch (SQLException e) {
+            throw new JDBCException(e, dataSource);
+        }
+
+        //QMUtils.getDefaultHandler().handleTransactionIsolation(getConnection(), jdbcTIL);
+    }
+
+    @Override
+    public boolean isAutoCommit()
+        throws DBCException
+    {
+        try {
+            return getConnection().getAutoCommit();
+        }
+        catch (SQLException e) {
+            throw new JDBCException(e, dataSource);
+        }
+    }
+
+    @Override
+    public void setAutoCommit(boolean autoCommit)
+        throws DBCException
+    {
+        try {
+            getConnection().setAutoCommit(autoCommit);
+        }
+        catch (SQLException e) {
+            throw new JDBCException(e, dataSource);
+        }
+    }
+
+    @Override
+    public DBCSavepoint setSavepoint(String name)
+        throws DBCException
+    {
+        Savepoint savepoint;
+        try {
+            if (name == null) {
+                savepoint = getConnection().setSavepoint();
+            } else {
+                savepoint = getConnection().setSavepoint(name);
+            }
+        }
+        catch (SQLException e) {
+            throw new DBCException(e, dataSource);
+        }
+        return new JDBCSavepointImpl(this, savepoint);
+    }
+
+    @Override
+    public boolean supportsSavepoints()
+    {
+        try {
+            return getConnection().getMetaData().supportsSavepoints();
+        }
+        catch (SQLException e) {
+            // ignore
+            return false;
+        }
+    }
+
+    @Override
+    public void releaseSavepoint(DBCSavepoint savepoint)
+        throws DBCException
+    {
+        try {
+            if (savepoint instanceof Savepoint) {
+                getConnection().releaseSavepoint((Savepoint) savepoint);
+            } else {
+                throw new SQLFeatureNotSupportedException(CoreMessages.model_jdbc_exception_bad_savepoint_object);
+            }
+        }
+        catch (SQLException e) {
+            throw new JDBCException(e, dataSource);
+        }
+    }
+
+    @Override
+    public void commit()
+        throws DBCException
+    {
+        try {
+            getConnection().commit();
+        }
+        catch (SQLException e) {
+            throw new JDBCException(e, dataSource);
+        }
+    }
+
+    @Override
+    public void rollback(DBCSavepoint savepoint)
+        throws DBCException
+    {
+        try {
+            if (savepoint != null) {
+                if (savepoint instanceof Savepoint) {
+                    getConnection().rollback((Savepoint) savepoint);
+                } else {
+                    throw new SQLFeatureNotSupportedException(CoreMessages.model_jdbc_exception_bad_savepoint_object);
+                }
+            }
+            getConnection().rollback();
+        }
+        catch (SQLException e) {
+            throw new JDBCException(e, dataSource);
+        }
+    }
 }

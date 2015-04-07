@@ -196,7 +196,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         if (adapter == DBSStructureAssistant.class) {
             return new DB2StructureAssistant(this);
         }
-        return null;
+        return super.getAdapter(adapter);
     }
 
     @Override
