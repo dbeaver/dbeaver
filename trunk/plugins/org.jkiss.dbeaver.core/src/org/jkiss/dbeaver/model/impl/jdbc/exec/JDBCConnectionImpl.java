@@ -18,19 +18,16 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -49,19 +46,13 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     static final Log log = Log.getLog(JDBCConnectionImpl.class);
 
-    private final JDBCConnector connector;
-    private boolean disableLogging;
+    final JDBCConnector connector;
+    boolean disableLogging;
 
     public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         super(monitor, purpose, taskTitle);
         this.connector = connector;
-    }
-
-    @Override
-    public DBCTransactionManager getTransactionManager()
-    {
-        return new TransactionManager();
     }
 
     @Override
@@ -84,6 +75,11 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLException
     {
         return connector.getConnection(getProgressMonitor());
+    }
+
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return connector;
     }
 
     @Override
@@ -428,7 +424,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     {
         Savepoint savepoint = getConnection().setSavepoint();
 
-        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(this, savepoint);
+        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(connector, savepoint);
 
         if (!disableLogging) {
             QMUtils.getDefaultHandler().handleTransactionSavepoint(jdbcSavepoint);
@@ -443,7 +439,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     {
         Savepoint savepoint = getConnection().setSavepoint(name);
 
-        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(this, savepoint);
+        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(connector, savepoint);
 
         if (!disableLogging) {
             QMUtils.getDefaultHandler().handleTransactionSavepoint(jdbcSavepoint);
@@ -687,128 +683,6 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLFeatureNotSupportedException
     {
         return new JDBCCallableStatementImpl(this, original, sql, disableLogging);
-    }
-
-    private class TransactionManager extends AbstractTransactionManager {
-
-        @Override
-        public DBPTransactionIsolation getTransactionIsolation()
-            throws DBCException
-        {
-            try {
-                return JDBCTransactionIsolation.getByCode(JDBCConnectionImpl.this.getTransactionIsolation());
-            } catch (SQLException e) {
-                throw new JDBCException(e, getDataSource());
-            }
-        }
-
-        @Override
-        public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation)
-            throws DBCException
-        {
-            if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
-                throw new DBCException(CoreMessages.model_jdbc_exception_invalid_transaction_isolation_parameter);
-            }
-            JDBCTransactionIsolation jdbcTIL = (JDBCTransactionIsolation) transactionIsolation;
-            try {
-                JDBCConnectionImpl.this.setTransactionIsolation(jdbcTIL.getCode());
-            } catch (SQLException e) {
-                throw new JDBCException(e, getDataSource());
-            }
-
-            if (!disableLogging) {
-                QMUtils.getDefaultHandler().handleTransactionIsolation(JDBCConnectionImpl.this, jdbcTIL);
-            }
-        }
-
-        @Override
-        public boolean isAutoCommit()
-            throws DBCException
-        {
-            try {
-                return JDBCConnectionImpl.this.getAutoCommit();
-            }
-            catch (SQLException e) {
-                throw new JDBCException(e, getDataSource());
-            }
-        }
-
-        @Override
-        public void setAutoCommit(boolean autoCommit)
-            throws DBCException
-        {
-            try {
-                JDBCConnectionImpl.this.setAutoCommit(autoCommit);
-            }
-            catch (SQLException e) {
-                throw new JDBCException(e, getDataSource());
-            }
-        }
-
-        @Override
-        public DBCSavepoint setSavepoint(String name)
-            throws DBCException
-        {
-            Savepoint savepoint;
-            try {
-                if (name == null) {
-                    savepoint = JDBCConnectionImpl.this.setSavepoint();
-                } else {
-                    savepoint = JDBCConnectionImpl.this.setSavepoint(name);
-                }
-            }
-            catch (SQLException e) {
-                throw new DBCException(e, connector.getDataSource());
-            }
-            return new JDBCSavepointImpl(JDBCConnectionImpl.this, savepoint);
-        }
-
-        @Override
-        public void releaseSavepoint(DBCSavepoint savepoint)
-            throws DBCException
-        {
-            try {
-                if (savepoint instanceof Savepoint) {
-                    JDBCConnectionImpl.this.releaseSavepoint((Savepoint)savepoint);
-                } else {
-                    throw new SQLFeatureNotSupportedException(CoreMessages.model_jdbc_exception_bad_savepoint_object);
-                }
-            }
-            catch (SQLException e) {
-                throw new JDBCException(e, getDataSource());
-            }
-        }
-
-        @Override
-        public void commit()
-            throws DBCException
-        {
-            try {
-                JDBCConnectionImpl.this.commit();
-            }
-            catch (SQLException e) {
-                throw new JDBCException(e, getDataSource());
-            }
-        }
-
-        @Override
-        public void rollback(DBCSavepoint savepoint)
-            throws DBCException
-        {
-            try {
-                if (savepoint != null) {
-                    if (savepoint instanceof Savepoint) {
-                        JDBCConnectionImpl.this.rollback((Savepoint)savepoint);
-                    } else {
-                        throw new SQLFeatureNotSupportedException(CoreMessages.model_jdbc_exception_bad_savepoint_object);
-                    }
-                }
-                JDBCConnectionImpl.this.rollback();
-            }
-            catch (SQLException e) {
-                throw new JDBCException(e, getDataSource());
-            }
-        }
     }
 
 }

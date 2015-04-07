@@ -806,7 +806,7 @@ public class GenericDataSource extends JDBCDataSource
             }
             return queryPlanner;
         } else {
-            return null;
+            return super.getAdapter(adapter);
         }
     }
 

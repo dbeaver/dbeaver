@@ -178,7 +178,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             } while (retryInsert);
         }
         if (settings.isUseTransactions() && needCommit) {
-            targetSession.getTransactionManager().commit();
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
+            if (txnManager != null) {
+                txnManager.commit();
+            }
         }
     }
 
@@ -216,7 +219,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
         targetSession.enableLogging(false);
         if (settings.isUseTransactions()) {
-            targetSession.getTransactionManager().setAutoCommit(false);
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
+            if (txnManager != null) {
+                txnManager.setAutoCommit(false);
+            }
         }
     }
 

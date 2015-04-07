@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -31,14 +30,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -51,7 +49,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
@@ -302,22 +299,19 @@ public class DataSourceDescriptor
     @Override
     public void setDefaultAutoCommit(final boolean autoCommit, boolean updateConnection)
     {
-        if (updateConnection && dataSource != null) {
+        final DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+        if (updateConnection && txnManager != null) {
             try {
                 DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
-                        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Change '" + getName() + "' transactional mode to " + (autoCommit ? "auto-commit" : "manual"));
                         try {
-                            DBCTransactionManager txnManager = session.getTransactionManager();
                             // Change auto-commit mode
                             txnManager.setAutoCommit(autoCommit);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
-                        } finally {
-                            session.close();
                         }
                     }
                 });
@@ -337,17 +331,13 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnectionAutoCommit()
     {
-        if (dataSource != null && dataSource.isConnected()) {
-            // We read this one synchronously because this function invoked many times per second by UI
-            DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE,
-                DBCExecutionPurpose.UTIL, "Get '" + getName() + "' auto-commit mode");
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+        if (txnManager != null) {
             try {
-                return session.getTransactionManager().isAutoCommit();
+                return txnManager.isAutoCommit();
             } catch (DBCException e) {
                 log.debug("Can't check auto-commit flag", e);
                 return false;
-            } finally {
-                session.close();
             }
         }
         return false;
@@ -357,17 +347,13 @@ public class DataSourceDescriptor
     @Override
     public DBPTransactionIsolation getDefaultTransactionsIsolation()
     {
-        if (isConnected()) {
-            // We read this one synchronously because this function invoked many times per second by UI
-            DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE,
-                DBCExecutionPurpose.UTIL, "Get '" + getName() + "' transactions isolation level");
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+        if (txnManager != null) {
             try {
-                return session.getTransactionManager().getTransactionIsolation();
+                return txnManager.getTransactionIsolation();
             } catch (DBCException e) {
                 log.debug("Can't determine isolation level", e);
                 return null;
-            } finally {
-                session.close();
             }
         } else {
             return null;
@@ -385,17 +371,16 @@ public class DataSourceDescriptor
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
-                        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Check connection's auto-commit state");
-                        final DBCTransactionManager txnManager = session.getTransactionManager();
-                        try {
-                            if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
-                                txnManager.setTransactionIsolation(isolationLevel);
-                                preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
+                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+                        if (txnManager != null) {
+                            try {
+                                if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
+                                    txnManager.setTransactionIsolation(isolationLevel);
+                                    preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
+                                }
+                            } catch (DBCException e) {
+                                throw new InvocationTargetException(e);
                             }
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
-                        } finally {
-                            session.close();
                         }
                     }
                 });
@@ -648,58 +633,56 @@ public class DataSourceDescriptor
                 dataSource.initialize(monitor);
                 // Change connection properties
 
-                DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Set session defaults ...");
-                try {
-                    DBCTransactionManager txnManager = session.getTransactionManager();
-                    // Set auto-commit
-                    boolean autoCommit = txnManager.isAutoCommit();
-                    boolean newAutoCommit;
-                    if (!preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
-                        newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
-                    } else {
-                        newAutoCommit = preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
-                    }
-                    if (autoCommit != newAutoCommit) {
-                        // Change auto-commit state
-                        txnManager.setAutoCommit(newAutoCommit);
-                    }
-                    // Set txn isolation level
-                    if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
-                        int isolationCode = preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
-                        Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
-                        if (!CommonUtils.isEmpty(supportedLevels)) {
-                            for (DBPTransactionIsolation level : supportedLevels) {
-                                if (level.getCode() == isolationCode) {
-                                    txnManager.setTransactionIsolation(level);
-                                    break;
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+                if (txnManager != null) {
+                    try {
+                        // Set auto-commit
+                        boolean autoCommit = txnManager.isAutoCommit();
+                        boolean newAutoCommit;
+                        if (!preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
+                            newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
+                        } else {
+                            newAutoCommit = preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
+                        }
+                        if (autoCommit != newAutoCommit) {
+                            // Change auto-commit state
+                            txnManager.setAutoCommit(newAutoCommit);
+                        }
+                        // Set txn isolation level
+                        if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
+                            int isolationCode = preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
+                            Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
+                            if (!CommonUtils.isEmpty(supportedLevels)) {
+                                for (DBPTransactionIsolation level : supportedLevels) {
+                                    if (level.getCode() == isolationCode) {
+                                        txnManager.setTransactionIsolation(level);
+                                        break;
+                                    }
                                 }
                             }
                         }
-                    }
-                    // Set active object
-                    if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
-                        String activeObject = getDefaultActiveObject();
-                        if (!CommonUtils.isEmptyTrimmed(activeObject)) {
-                            DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
-                            if (child != null) {
-                                try {
-                                    ((DBSObjectSelector)dataSource).selectObject(monitor, child);
-                                } catch (DBException e) {
-                                    log.warn("Can't select active object", e);
+                        // Set active object
+                        if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
+                            String activeObject = getDefaultActiveObject();
+                            if (!CommonUtils.isEmptyTrimmed(activeObject)) {
+                                DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
+                                if (child != null) {
+                                    try {
+                                        ((DBSObjectSelector) dataSource).selectObject(monitor, child);
+                                    } catch (DBException e) {
+                                        log.warn("Can't select active object", e);
+                                    }
+                                } else {
+                                    log.debug("Object '" + activeObject + "' not found");
                                 }
-                            } else {
-                                log.debug("Object '" + activeObject + "' not found");
                             }
                         }
+                    } catch (DBCException e) {
+                        log.error("Can't set session transactions state", e);
+                    } finally {
+                        monitor.worked(1);
                     }
                 }
-                catch (DBCException e) {
-                    log.error("Can't set session transactions state", e);
-                }
-                finally {
-                    session.close();
-                }
-                monitor.worked(1);
             }
 
             connectFailed = false;
@@ -854,9 +837,9 @@ public class DataSourceDescriptor
 
         // First rollback active transaction
         monitor.subTask("Rollback active transaction");
-        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
         try {
-            if (session.isConnected() && !session.getTransactionManager().isAutoCommit()) {
+            if (txnManager != null && !txnManager.isAutoCommit()) {
                 // Check current transaction
 
                 // If there are some executions in last savepoint then ask user about commit/rollback
@@ -884,10 +867,10 @@ public class DataSourceDescriptor
                             UIUtils.runInUI(null, closeConfirmer);
                             switch (closeConfirmer.result) {
                                 case IDialogConstants.YES_ID:
-                                    session.getTransactionManager().commit();
+                                    txnManager.commit();
                                     break;
                                 case IDialogConstants.NO_ID:
-                                    session.getTransactionManager().rollback(null);
+                                    txnManager.rollback(null);
                                     break;
                                 default:
                                     return false;
@@ -901,7 +884,6 @@ public class DataSourceDescriptor
             log.warn("Could not rollback active transaction before disconnect", e);
         }
         finally {
-            session.close();
             monitor.worked(1);
         }
         return true;
