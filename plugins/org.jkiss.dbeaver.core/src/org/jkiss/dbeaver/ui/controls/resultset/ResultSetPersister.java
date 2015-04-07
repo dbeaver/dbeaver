@@ -358,27 +358,30 @@ class ResultSetPersister {
 
         private Throwable executeStatements(DBRProgressMonitor monitor)
         {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getDataSource());
             DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_job_update);
             try {
                 monitor.beginTask(
                     CoreMessages.controls_resultset_viewer_monitor_aply_changes,
                     ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
-                monitor.subTask(CoreMessages.controls_resultset_check_autocommit_state);
-                try {
-                    this.autocommit = session.getTransactionManager().isAutoCommit();
-                }
-                catch (DBCException e) {
-                    log.warn("Could not determine autocommit state", e);
-                    this.autocommit = true;
+                if (txnManager != null) {
+                    monitor.subTask(CoreMessages.controls_resultset_check_autocommit_state);
+                    try {
+                        this.autocommit = txnManager.isAutoCommit();
+                    } catch (DBCException e) {
+                        log.warn("Could not determine autocommit state", e);
+                        this.autocommit = true;
+                    }
                 }
                 monitor.worked(1);
-                if (!this.autocommit && session.getTransactionManager().supportsSavepoints()) {
-                    try {
-                        this.savepoint = session.getTransactionManager().setSavepoint(null);
-                    }
-                    catch (Throwable e) {
-                        // May be savepoints not supported
-                        log.debug("Could not set savepoint", e);
+                if (txnManager != null) {
+                    if (!this.autocommit && txnManager.supportsSavepoints()) {
+                        try {
+                            this.savepoint = txnManager.setSavepoint(null);
+                        } catch (Throwable e) {
+                            // May be savepoints not supported
+                            log.debug("Could not set savepoint", e);
+                        }
                     }
                 }
                 try {
@@ -461,9 +464,9 @@ class ResultSetPersister {
                     return null;
                 }
                 finally {
-                    if (this.savepoint != null) {
+                    if (txnManager != null && this.savepoint != null) {
                         try {
-                            session.getTransactionManager().releaseSavepoint(this.savepoint);
+                            txnManager.releaseSavepoint(this.savepoint);
                         }
                         catch (Throwable e) {
                             // Maybe savepoints not supported
@@ -486,11 +489,13 @@ class ResultSetPersister {
         private void processStatementError(DataStatementInfo statement, DBCSession session)
         {
             statement.executed = false;
-            try {
-                session.getTransactionManager().rollback(savepoint);
-            }
-            catch (Throwable e) {
-                log.debug("Error during transaction rollback", e);
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getDataSource());
+            if (txnManager != null) {
+                try {
+                    txnManager.rollback(savepoint);
+                } catch (Throwable e) {
+                    log.debug("Error during transaction rollback", e);
+                }
             }
         }
 

@@ -28,7 +28,17 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBCSession extends DBPCloseableObject, DBDPreferences {
 
+    /**
+     * Session title
+     * @return title
+     */
     String getTaskTitle();
+
+    /**
+     * Data source of this session
+     * @return data source
+     */
+    DBCExecutionContext getExecutionContext();
 
     /**
      * Data source of this session
@@ -48,12 +58,6 @@ public interface DBCSession extends DBPCloseableObject, DBDPreferences {
      * @return progress monitor
      */
     DBRProgressMonitor getProgressMonitor();
-
-    /**
-     * Associated transaction manager
-     * @return transaction manager
-     */
-    DBCTransactionManager getTransactionManager();
 
     /**
      * Context's purpose

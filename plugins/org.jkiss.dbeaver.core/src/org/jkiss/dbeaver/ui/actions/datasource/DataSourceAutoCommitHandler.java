@@ -26,12 +26,10 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 
@@ -69,25 +67,21 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(activeEditor);
         if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
             final DBPDataSource dataSource = dataSourceContainer.getDataSource();
-            DBCSession session = dataSource.openSession(
-                VoidProgressMonitor.INSTANCE,
-                DBCExecutionPurpose.UTIL,
-                "Get autocommit mode");
-            try {
-                DBCTransactionManager txnManager = session.getTransactionManager();
-                // Change auto-commit mode
-                boolean autoCommit = txnManager.isAutoCommit();
-                element.setChecked(autoCommit);
-                // Update command image
-                element.setIcon(autoCommit ? DBIcon.TXN_COMMIT_AUTO.getImageDescriptor() : DBIcon.TXN_COMMIT_MANUAL.getImageDescriptor());
-                DBPTransactionIsolation isolation = txnManager.getTransactionIsolation();
-                String isolationName = isolation == null ? "?" : isolation.getTitle();
-                element.setText(autoCommit ? "Switch to manual commit (" + isolationName + ")" : "Switch to auto-commit");
-                element.setTooltip(autoCommit ? "Auto-commit" : "Manual commit (" + isolationName + ")");
-            } catch (DBCException e) {
-                log.warn(e);
-            } finally {
-                session.close();
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+            if (txnManager != null) {
+                try {
+                    // Change auto-commit mode
+                    boolean autoCommit = txnManager.isAutoCommit();
+                    element.setChecked(autoCommit);
+                    // Update command image
+                    element.setIcon(autoCommit ? DBIcon.TXN_COMMIT_AUTO.getImageDescriptor() : DBIcon.TXN_COMMIT_MANUAL.getImageDescriptor());
+                    DBPTransactionIsolation isolation = txnManager.getTransactionIsolation();
+                    String isolationName = isolation == null ? "?" : isolation.getTitle();
+                    element.setText(autoCommit ? "Switch to manual commit (" + isolationName + ")" : "Switch to auto-commit");
+                    element.setTooltip(autoCommit ? "Auto-commit" : "Manual commit (" + isolationName + ")");
+                } catch (DBCException e) {
+                    log.warn(e);
+                }
             }
         }
     }

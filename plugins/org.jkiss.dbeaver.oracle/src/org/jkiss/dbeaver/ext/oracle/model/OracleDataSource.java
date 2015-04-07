@@ -396,7 +396,7 @@ public class OracleDataSource extends JDBCDataSource
         if (adapter == DBSStructureAssistant.class) {
             return new OracleStructureAssistant(this);
         }
-        return null;
+        return super.getAdapter(adapter);
     }
 
     @NotNull

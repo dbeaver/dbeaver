@@ -133,15 +133,15 @@ public class SQLQueryJob extends DataSourceJob
     {
         statistics = new DBCStatistics();
         try {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getDataSource());
             DBCSession session = getDataSource().openSession(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
             try {
                 // Set transaction settings (only if autocommit is off)
                 QMUtils.getDefaultHandler().handleScriptBegin(session);
 
-                DBCTransactionManager txnManager = session.getTransactionManager();
-                boolean oldAutoCommit = txnManager.isAutoCommit();
+                boolean oldAutoCommit = txnManager == null || txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
-                if (!oldAutoCommit && newAutoCommit) {
+                if (txnManager != null && !oldAutoCommit && newAutoCommit) {
                     txnManager.setAutoCommit(true);
                 }
 
@@ -210,7 +210,7 @@ public class SQLQueryJob extends DataSourceJob
                 monitor.done();
 
                 // Commit data
-                if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
+                if (txnManager != null && !oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
                     if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
                         if (commitType != SQLScriptCommitType.NO_COMMIT) {
                             monitor.beginTask("Commit data", 1);
@@ -225,7 +225,7 @@ public class SQLQueryJob extends DataSourceJob
                 }
 
                 // Restore transactions settings
-                if (!oldAutoCommit && newAutoCommit) {
+                if (txnManager != null && !oldAutoCommit && newAutoCommit) {
                     txnManager.setAutoCommit(false);
                 }
 

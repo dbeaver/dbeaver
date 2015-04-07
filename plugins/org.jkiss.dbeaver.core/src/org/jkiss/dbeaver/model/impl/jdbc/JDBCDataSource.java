@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -58,7 +59,8 @@ public abstract class JDBCDataSource
         DBPRefreshableObject,
         DBSObject,
         DBSObjectContainer,
-        DBCQueryTransformProvider
+        DBCQueryTransformProvider,
+        IAdaptable
 {
     private final DBSDataSourceContainer container;
 
@@ -480,4 +482,11 @@ public abstract class JDBCDataSource
         return ErrorType.NORMAL;
     }
 
+    @Override
+    public Object getAdapter(Class adapter) {
+        if (adapter == DBCTransactionManager.class) {
+            return executionContext;
+        }
+        return null;
+    }
 }

@@ -19,10 +19,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -37,6 +34,11 @@ public class WMISession extends AbstractSession {
     {
         super(monitor, purpose, taskTitle);
         this.dataSource = dataSource;
+    }
+
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return dataSource;
     }
 
     @Override
