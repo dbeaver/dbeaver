@@ -119,7 +119,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 super.subTask(name);
             }
         };
-        DBCSession session = getDataSource().openSession(
+        DBCSession session = getExecutionContext().openSession(
             proxyMonitor,
             DBCExecutionPurpose.USER,
             NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.getName()));

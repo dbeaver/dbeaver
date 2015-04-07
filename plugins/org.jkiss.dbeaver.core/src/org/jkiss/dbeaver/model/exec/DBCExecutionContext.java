@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -44,9 +45,11 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
     }
 
     String getContextName();
+
     /**
      * Owner datasource
      */
+    @NotNull
     DBPDataSource getDataSource();
 
     /**

@@ -598,7 +598,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                         }
                     }
                 }
-                final DBCSession session = getDataSource().openSession(
+                final DBCSession session = getExecutionContext().openSession(
                     monitor,
                     DBCExecutionPurpose.UTIL,
                     NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getAttribute().getName()));

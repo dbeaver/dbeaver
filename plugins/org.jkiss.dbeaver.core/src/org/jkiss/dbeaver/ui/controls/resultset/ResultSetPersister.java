@@ -359,7 +359,7 @@ class ResultSetPersister {
         private Throwable executeStatements(DBRProgressMonitor monitor)
         {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(getDataSource());
-            DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_job_update);
+            DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_job_update);
             try {
                 monitor.beginTask(
                     CoreMessages.controls_resultset_viewer_monitor_aply_changes,

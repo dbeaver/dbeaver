@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -49,6 +50,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
 {
     static final Log log = Log.getLog(JDBCExecutionContext.class);
 
+    @NotNull
     private final JDBCDataSource dataSource;
     private final boolean copyState;
     private volatile Connection connection;
@@ -56,7 +58,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
 
-    public JDBCExecutionContext(JDBCDataSource dataSource, String purpose, boolean copyState)
+    public JDBCExecutionContext(@NotNull JDBCDataSource dataSource, String purpose, boolean copyState)
     {
         this.dataSource = dataSource;
         this.purpose = purpose;
@@ -146,6 +148,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         return purpose;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return dataSource;
