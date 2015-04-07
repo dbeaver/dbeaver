@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -123,7 +122,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {
-                DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
+                DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
                 try {
                     for (String line : scriptLines) {
                         DBCStatement statement = DBUtils.prepareStatement(session, line);

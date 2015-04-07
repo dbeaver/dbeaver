@@ -23,9 +23,6 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-
-import java.text.MessageFormat;
 
 /**
  * InvalidateJob
@@ -62,7 +59,7 @@ public class InvalidateJob extends DataSourceJob
             monitor.subTask("Invalidate datasource");
             long startTime = System.currentTimeMillis();
             try {
-                invalidateResult = getDataSource().invalidateContext(monitor);
+                invalidateResult = getExecutionContext().invalidateContext(monitor);
             } finally {
                 timeSpent = System.currentTimeMillis() - startTime;
             }

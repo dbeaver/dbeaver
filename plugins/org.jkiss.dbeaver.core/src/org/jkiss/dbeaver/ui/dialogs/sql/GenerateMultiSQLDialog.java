@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -146,7 +145,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                     }
                 });
                 monitor.beginTask(jobName, objects.size());
-                DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
+                DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
                 try {
                     for (int i = 0; i < objects.size(); i++) {
                         if (monitor.isCanceled()) {
