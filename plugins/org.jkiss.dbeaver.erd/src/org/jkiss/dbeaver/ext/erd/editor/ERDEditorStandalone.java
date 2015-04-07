@@ -29,13 +29,13 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
@@ -51,7 +51,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Standalone ERD editor
  */
-public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceContainerProvider, IResourceChangeListener {
+public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceProvider, IResourceChangeListener {
 
     /**
      * No-arg constructor
@@ -186,16 +186,18 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
     }
 
     @Override
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSource getDataSource()
     {
         for (Object part : getViewer().getSelectedEditParts()) {
             EditPart editPart = (EditPart) part;
             if (editPart.getModel() instanceof ERDObject) {
                 final ERDObject model = (ERDObject) editPart.getModel();
-                if (model.getObject() instanceof DBSObject) {
-                    DBSObject dbObject = (DBSObject) model.getObject();
-                    if (dbObject.getDataSource() != null) {
-                        return dbObject.getDataSource().getContainer();
+                Object object = model.getObject();
+                if (object instanceof DBSObject) {
+                    DBSObject dbObject = (DBSObject) object;
+                    DBPDataSource dataSource = dbObject.getDataSource();
+                    if (dataSource != null) {
+                        return dataSource;
                     }
                 }
             }
