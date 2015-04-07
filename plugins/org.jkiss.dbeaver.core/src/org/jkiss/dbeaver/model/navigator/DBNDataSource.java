@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -162,6 +163,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     }
 
     @Override
+    @NotNull
     public DataSourceDescriptor getDataSourceContainer()
     {
         return dataSource;
