@@ -18,12 +18,12 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
@@ -32,13 +32,9 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -49,6 +45,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -85,7 +82,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor, String purpose) throws DBCException
+    protected Connection openConnection(DBRProgressMonitor monitor, String purpose) throws DBCException
     {
         // Set tns admin directory
         DBPClientHome clientHome = getContainer().getClientHome();
@@ -93,9 +90,9 @@ public class OracleDataSource extends JDBCDataSource
             System.setProperty("oracle.net.tns_admin", new File(clientHome.getHomePath(), OCIUtils.TNSNAMES_FILE_PATH).getAbsolutePath());
         }
 
-        JDBCConnectionHolder connectionHolder = super.openConnection(monitor, purpose);
+        Connection connection = super.openConnection(monitor, purpose);
 /*
-        OracleConnection oracleConnection = (OracleConnection)connectionHolder.getConnection();
+        OracleConnection oracleConnection = (OracleConnection)connection.getConnection();
 
         try {
             oracleConnection.setClientInfo("ApplicationName", DBeaverCore.getProductTitle() + " - " + purpose);
@@ -105,7 +102,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 */
 
-        return connectionHolder;
+        return connection;
     }
 
     protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {

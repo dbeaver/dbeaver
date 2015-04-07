@@ -58,22 +58,6 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @Override
     public Connection getOriginal() throws SQLException
     {
-        return connector.getConnection(getProgressMonitor()).getConnection();
-    }
-
-    private Connection getConnection()
-        throws SQLException
-    {
-        JDBCConnectionHolder connectionHolder = getConnectionHolder();
-        if (connectionHolder == null) {
-            throw new SQLException("Connection closed");
-        }
-        return connectionHolder.getConnection();
-    }
-
-    private JDBCConnectionHolder getConnectionHolder()
-        throws SQLException
-    {
         return connector.getConnection(getProgressMonitor());
     }
 
@@ -212,35 +196,35 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public JDBCStatement createStatement()
         throws SQLException
     {
-        return makeStatement(getConnection().createStatement());
+        return makeStatement(getOriginal().createStatement());
     }
 
     @Override
     public JDBCPreparedStatement prepareStatement(String sql)
         throws SQLException
     {
-        return createPreparedStatementImpl(getConnection().prepareStatement(sql), sql);
+        return createPreparedStatementImpl(getOriginal().prepareStatement(sql), sql);
     }
 
     @Override
     public JDBCCallableStatement prepareCall(String sql)
         throws SQLException
     {
-        return createCallableStatementImpl(getConnection().prepareCall(sql), sql);
+        return createCallableStatementImpl(getOriginal().prepareCall(sql), sql);
     }
 
     @Override
     public String nativeSQL(String sql)
         throws SQLException
     {
-        return getConnection().nativeSQL(sql);
+        return getOriginal().nativeSQL(sql);
     }
 
     @Override
     public void setAutoCommit(boolean autoCommit)
         throws SQLException
     {
-        getConnectionHolder().setAutoCommit(autoCommit);
+        getOriginal().setAutoCommit(autoCommit);
 
         if (!disableLogging) {
             QMUtils.getDefaultHandler().handleTransactionAutocommit(this, autoCommit);
@@ -251,14 +235,14 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public boolean getAutoCommit()
         throws SQLException
     {
-        return getConnectionHolder().getAutoCommit();
+        return getOriginal().getAutoCommit();
     }
 
     @Override
     public void commit()
         throws SQLException
     {
-        getConnection().commit();
+        getOriginal().commit();
 
         if (!disableLogging) {
             QMUtils.getDefaultHandler().handleTransactionCommit(this);
@@ -269,7 +253,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public void rollback()
         throws SQLException
     {
-        getConnection().rollback();
+        getOriginal().rollback();
 
         if (!disableLogging) {
             QMUtils.getDefaultHandler().handleTransactionRollback(this, null);
@@ -283,7 +267,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         if (purpose == DBCExecutionPurpose.USER || purpose == DBCExecutionPurpose.USER_SCRIPT) {
             // Check for warnings
             try {
-                final Connection connection = getConnection();
+                final Connection connection = getOriginal();
                 if (connection != null) {
                     JDBCUtils.reportWarnings(this, connection.getWarnings());
                     connection.clearWarnings();
@@ -300,70 +284,70 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public boolean isClosed()
         throws SQLException
     {
-        return getConnection().isClosed();
+        return getOriginal().isClosed();
     }
 
     @Override
     public JDBCDatabaseMetaData getMetaData()
         throws SQLException
     {
-        return new JDBCDatabaseMetaDataImpl(this, getConnection().getMetaData());
+        return new JDBCDatabaseMetaDataImpl(this, getOriginal().getMetaData());
     }
 
     @Override
     public void setReadOnly(boolean readOnly)
         throws SQLException
     {
-        getConnection().setReadOnly(readOnly);
+        getOriginal().setReadOnly(readOnly);
     }
 
     @Override
     public boolean isReadOnly()
         throws SQLException
     {
-        return getConnection().isReadOnly();
+        return getOriginal().isReadOnly();
     }
 
     @Override
     public void setCatalog(String catalog)
         throws SQLException
     {
-        getConnection().setCatalog(catalog);
+        getOriginal().setCatalog(catalog);
     }
 
     @Override
     public String getCatalog()
         throws SQLException
     {
-        return getConnection().getCatalog();
+        return getOriginal().getCatalog();
     }
 
     @Override
     public void setTransactionIsolation(int level)
         throws SQLException
     {
-        getConnectionHolder().setTransactionIsolation(level);
+        getOriginal().setTransactionIsolation(level);
     }
 
     @Override
     public int getTransactionIsolation()
         throws SQLException
     {
-        return getConnectionHolder().getTransactionIsolation();
+        return getOriginal().getTransactionIsolation();
     }
 
     @Override
     public SQLWarning getWarnings()
         throws SQLException
     {
-        return getConnection().getWarnings();
+        return getOriginal().getWarnings();
     }
 
     @Override
     public void clearWarnings()
         throws SQLException
     {
-        getConnection().clearWarnings();
+        getOriginal().clearWarnings();
     }
 
     @Override
@@ -371,7 +355,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLException
     {
         return createStatementImpl(
-            getConnection().createStatement(resultSetType, resultSetConcurrency));
+            getOriginal().createStatement(resultSetType, resultSetConcurrency));
     }
 
     @Override
@@ -379,7 +363,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLException
     {
         return createPreparedStatementImpl(
-            getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency),
+            getOriginal().prepareStatement(sql, resultSetType, resultSetConcurrency),
             sql);
     }
 
@@ -387,42 +371,42 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public JDBCCallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return createCallableStatementImpl(getConnection().prepareCall(sql, resultSetType, resultSetConcurrency), sql);
+        return createCallableStatementImpl(getOriginal().prepareCall(sql, resultSetType, resultSetConcurrency), sql);
     }
 
     @Override
     public Map<String, Class<?>> getTypeMap()
         throws SQLException
     {
-        return getConnection().getTypeMap();
+        return getOriginal().getTypeMap();
     }
 
     @Override
     public void setTypeMap(Map<String, Class<?>> map)
         throws SQLException
     {
-        getConnection().setTypeMap(map);
+        getOriginal().setTypeMap(map);
     }
 
     @Override
     public void setHoldability(int holdability)
         throws SQLException
     {
-        getConnection().setHoldability(holdability);
+        getOriginal().setHoldability(holdability);
     }
 
     @Override
     public int getHoldability()
         throws SQLException
     {
-        return getConnection().getHoldability();
+        return getOriginal().getHoldability();
     }
 
     @Override
     public Savepoint setSavepoint()
         throws SQLException
     {
-        Savepoint savepoint = getConnection().setSavepoint();
+        Savepoint savepoint = getOriginal().setSavepoint();
 
         JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(connector, savepoint);
 
@@ -437,7 +421,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public Savepoint setSavepoint(String name)
         throws SQLException
     {
-        Savepoint savepoint = getConnection().setSavepoint(name);
+        Savepoint savepoint = getOriginal().setSavepoint(name);
 
         JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(connector, savepoint);
 
@@ -455,7 +439,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         if (savepoint instanceof JDBCSavepointImpl) {
             savepoint = ((JDBCSavepointImpl)savepoint).getOriginal();
         }
-        getConnection().rollback(savepoint);
+        getOriginal().rollback(savepoint);
 
         if (!disableLogging) {
             QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint instanceof DBCSavepoint ? (DBCSavepoint) savepoint : null);
@@ -469,14 +453,14 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         if (savepoint instanceof JDBCSavepointImpl) {
             savepoint = ((JDBCSavepointImpl)savepoint).getOriginal();
         }
-        getConnection().releaseSavepoint(savepoint);
+        getOriginal().releaseSavepoint(savepoint);
     }
 
     @Override
     public JDBCStatement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
-        return makeStatement(getConnection().createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
+        return makeStatement(getOriginal().createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
     }
 
     @Override
@@ -484,7 +468,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLException
     {
         return createPreparedStatementImpl(
-            getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
+            getOriginal().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
             sql);
     }
 
@@ -493,7 +477,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLException
     {
         return createCallableStatementImpl(
-            getConnection().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
+            getOriginal().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
             sql);
     }
 
@@ -501,49 +485,49 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public JDBCPreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
         throws SQLException
     {
-        return createPreparedStatementImpl(getConnection().prepareStatement(sql, autoGeneratedKeys), sql);
+        return createPreparedStatementImpl(getOriginal().prepareStatement(sql, autoGeneratedKeys), sql);
     }
 
     @Override
     public JDBCPreparedStatement prepareStatement(String sql, int[] columnIndexes)
         throws SQLException
     {
-        return createPreparedStatementImpl(getConnection().prepareStatement(sql, columnIndexes), sql);
+        return createPreparedStatementImpl(getOriginal().prepareStatement(sql, columnIndexes), sql);
     }
 
     @Override
     public JDBCPreparedStatement prepareStatement(String sql, String[] columnNames)
         throws SQLException
     {
-        return createPreparedStatementImpl(getConnection().prepareStatement(sql, columnNames), sql);
+        return createPreparedStatementImpl(getOriginal().prepareStatement(sql, columnNames), sql);
     }
 
     @Nullable
     @Override
     public String getSchema() throws SQLException
     {
-        return JDBCUtils.callMethod17(getConnection(), "getSchema", String.class, null);
+        return JDBCUtils.callMethod17(getOriginal(), "getSchema", String.class, null);
     }
 
     @Override
     public void setSchema(String schema) throws SQLException
     {
-        JDBCUtils.callMethod17(getConnection(), "setSchema", null, new Class[]{String.class}, schema);
+        JDBCUtils.callMethod17(getOriginal(), "setSchema", null, new Class[]{String.class}, schema);
     }
 
     @Override
     public void abort(Executor executor) throws SQLException {
-        JDBCUtils.callMethod17(getConnection(), "abort", null, new Class[]{Executor.class}, executor);
+        JDBCUtils.callMethod17(getOriginal(), "abort", null, new Class[]{Executor.class}, executor);
     }
 
     @Override
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        JDBCUtils.callMethod17(getConnection(), "setNetworkTimeout", null, new Class[]{Executor.class, Integer.TYPE}, executor, milliseconds);
+        JDBCUtils.callMethod17(getOriginal(), "setNetworkTimeout", null, new Class[]{Executor.class, Integer.TYPE}, executor, milliseconds);
     }
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-        Integer networkTimeout = JDBCUtils.callMethod17(getConnection(), "getNetworkTimeout", Integer.class, null);
+        Integer networkTimeout = JDBCUtils.callMethod17(getOriginal(), "getNetworkTimeout", Integer.class, null);
         return networkTimeout == null ? 0 : networkTimeout;
     }
 
@@ -551,35 +535,35 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public Clob createClob()
         throws SQLException
     {
-        return getConnection().createClob();
+        return getOriginal().createClob();
     }
 
     @Override
     public Blob createBlob()
         throws SQLException
     {
-        return getConnection().createBlob();
+        return getOriginal().createBlob();
     }
 
     @Override
     public NClob createNClob()
         throws SQLException
     {
-        return getConnection().createNClob();
+        return getOriginal().createNClob();
     }
 
     @Override
     public SQLXML createSQLXML()
         throws SQLException
     {
-        return getConnection().createSQLXML();
+        return getOriginal().createSQLXML();
     }
 
     @Override
     public boolean isValid(int timeout)
         throws SQLException
     {
-        return getConnection().isValid(timeout);
+        return getOriginal().isValid(timeout);
     }
 
     @Override
@@ -587,7 +571,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLClientInfoException
     {
         try {
-            getConnection().setClientInfo(name, value);
+            getOriginal().setClientInfo(name, value);
         } catch (SQLException e) {
             if (e instanceof SQLClientInfoException) {
                 throw (SQLClientInfoException)e;
@@ -602,7 +586,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws SQLClientInfoException
     {
         try {
-            getConnection().setClientInfo(properties);
+            getOriginal().setClientInfo(properties);
         } catch (SQLException e) {
             if (e instanceof SQLClientInfoException) {
                 throw (SQLClientInfoException)e;
@@ -617,42 +601,42 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public String getClientInfo(String name)
         throws SQLException
     {
-        return getConnection().getClientInfo(name);
+        return getOriginal().getClientInfo(name);
     }
 
     @Override
     public Properties getClientInfo()
         throws SQLException
     {
-        return getConnection().getClientInfo();
+        return getOriginal().getClientInfo();
     }
 
     @Override
     public Array createArrayOf(String typeName, Object[] elements)
         throws SQLException
     {
-        return getConnection().createArrayOf(typeName, elements);
+        return getOriginal().createArrayOf(typeName, elements);
     }
 
     @Override
     public Struct createStruct(String typeName, Object[] attributes)
         throws SQLException
     {
-        return getConnection().createStruct(typeName, attributes);
+        return getOriginal().createStruct(typeName, attributes);
     }
 
     @Override
     public <T> T unwrap(Class<T> iface)
         throws SQLException
     {
-        return getConnection().unwrap(iface);
+        return getOriginal().unwrap(iface);
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface)
         throws SQLException
     {
-        return getConnection().isWrapperFor(iface);
+        return getOriginal().isWrapperFor(iface);
     }
 
     @Override
@@ -660,7 +644,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         throws DBException
     {
         try {
-            getConnection().close();
+            getOriginal().close();
         }
         catch (SQLException e) {
             throw new DBCException(e, getDataSource());

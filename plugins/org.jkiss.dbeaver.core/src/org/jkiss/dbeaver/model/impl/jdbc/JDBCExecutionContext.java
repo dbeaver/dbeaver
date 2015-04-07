@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
@@ -52,8 +51,10 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
 
     private final JDBCDataSource dataSource;
     private final boolean copyState;
-    private volatile JDBCConnectionHolder connectionHolder;
+    private volatile Connection connection;
     private final String purpose;
+    private volatile Boolean autoCommit;
+    private volatile Integer transactionIsolationLevel;
 
     public JDBCExecutionContext(JDBCDataSource dataSource, String purpose, boolean copyState)
     {
@@ -63,7 +64,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     }
 
     private Connection getConnection() {
-        return connectionHolder.getConnection();
+        return connection;
     }
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
@@ -73,23 +74,25 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
 
     public void connect(DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel) throws DBCException
     {
-        if (connectionHolder != null) {
+        if (connection != null) {
             log.error("Reopening not-closed connection");
             close();
         }
         ACTIVE_CONTEXT.set(this);
         try {
-            this.connectionHolder = dataSource.openConnection(monitor, purpose);
+            this.connection = dataSource.openConnection(monitor, purpose);
             if (autoCommit != null) {
                 try {
-                    connectionHolder.setAutoCommit(autoCommit);
+                    connection.setAutoCommit(autoCommit);
+                    this.autoCommit = autoCommit;
                 } catch (Throwable e) {
                     log.warn("Could not set auto-commit state", e); //$NON-NLS-1$
                 }
             }
             if (txnLevel != null) {
                 try {
-                    connectionHolder.setTransactionIsolation(txnLevel);
+                    connection.setTransactionIsolation(txnLevel);
+                    this.transactionIsolationLevel = txnLevel;
                 } catch (Throwable e) {
                     log.warn("Could not set transaction isolation level", e); //$NON-NLS-1$
                 }
@@ -103,13 +106,12 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
             }
             {
                 // Notify QM
-                boolean autoCommitState = false;
                 try {
-                    autoCommitState = connectionHolder.getAutoCommit();
+                    this.autoCommit = connection.getAutoCommit();
                 } catch (Throwable e) {
                     log.warn("Could not check auto-commit state", e); //$NON-NLS-1$
                 }
-                QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommitState);
+                QMUtils.getDefaultHandler().handleContextOpen(this, !this.autoCommit);
             }
         } finally {
             ACTIVE_CONTEXT.remove();
@@ -117,9 +119,9 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     }
 
     @Override
-    public JDBCConnectionHolder getConnection(DBRProgressMonitor monitor) throws SQLException
+    public Connection getConnection(DBRProgressMonitor monitor) throws SQLException
     {
-        if (connectionHolder == null) {
+        if (connection == null) {
             try {
                 connect(monitor);
             } catch (DBCException e) {
@@ -130,7 +132,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
                 }
             }
         }
-        return connectionHolder;
+        return connection;
     }
 
     @Override
@@ -152,21 +154,21 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     @Override
     public boolean isConnected()
     {
-        return connectionHolder != null && getConnection() != null;
+        return connection != null;
     }
 
     @Override
     public InvalidateResult invalidateContext(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (this.connectionHolder == null) {
+        if (this.connection == null) {
             connect(monitor);
             return InvalidateResult.CONNECTED;
         }
 
         if (!JDBCUtils.isConnectionAlive(getConnection())) {
-            Boolean prevAutocommit = connectionHolder.getAutoCommitCache();
-            Integer txnLevel = connectionHolder.getTransactionIsolationCache();
+            Boolean prevAutocommit = autoCommit;
+            Integer txnLevel = transactionIsolationLevel;
             close();
             connect(monitor, prevAutocommit, txnLevel);
             invalidateState(monitor);
@@ -201,15 +203,15 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
 //            } catch (InterruptedException e) {
 //                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
 //            }
-            if (connectionHolder != null) {
+            if (connection != null) {
                 try {
-                    connectionHolder.close();
+                    connection.close();
                 }
                 catch (Throwable ex) {
                     log.error(ex);
                 }
                 QMUtils.getDefaultHandler().handleContextClose(this);
-                connectionHolder = null;
+                connection = null;
             }
         }
     }
@@ -219,7 +221,10 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         throws DBCException
     {
         try {
-            return JDBCTransactionIsolation.getByCode(connectionHolder.getTransactionIsolation());
+            if (transactionIsolationLevel == null) {
+                transactionIsolationLevel = getConnection().getTransactionIsolation();
+            }
+            return JDBCTransactionIsolation.getByCode(transactionIsolationLevel);
         } catch (SQLException e) {
             throw new JDBCException(e, dataSource);
         }
@@ -234,7 +239,8 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         }
         JDBCTransactionIsolation jdbcTIL = (JDBCTransactionIsolation) transactionIsolation;
         try {
-            connectionHolder.setTransactionIsolation(jdbcTIL.getCode());
+            getConnection().setTransactionIsolation(jdbcTIL.getCode());
+            transactionIsolationLevel = jdbcTIL.getCode();
         } catch (SQLException e) {
             throw new JDBCException(e, dataSource);
         }
@@ -247,7 +253,10 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         throws DBCException
     {
         try {
-            return connectionHolder.getAutoCommit();
+            if (autoCommit == null) {
+                autoCommit = getConnection().getAutoCommit();
+            }
+            return autoCommit;
         }
         catch (SQLException e) {
             throw new JDBCException(e, dataSource);
@@ -259,7 +268,8 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         throws DBCException
     {
         try {
-            connectionHolder.setAutoCommit(autoCommit);
+            connection.setAutoCommit(autoCommit);
+            this.autoCommit = null;
         }
         catch (SQLException e) {
             throw new JDBCException(e, dataSource);

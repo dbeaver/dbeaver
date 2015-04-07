@@ -1534,8 +1534,6 @@ public class ResultSetViewer extends Viewer
 
             @Override
             public void done(IJobChangeEvent event) {
-                dataPumpJob = null;
-
                 ResultSetDataPumpJob job = (ResultSetDataPumpJob)event.getJob();
                 final Throwable error = job.getError();
                 if (job.getStatistics() != null) {
@@ -1549,45 +1547,49 @@ public class ResultSetViewer extends Viewer
                     @Override
                     public void run()
                     {
-                        if (control.isDisposed()) {
-                            return;
-                        }
-                        final Shell shell = control.getShell();
-                        if (error != null) {
-                            //setStatus(error.getMessage(), true);
-                            UIUtils.showErrorDialog(
-                                shell,
-                                "Error executing query",
-                                "Query execution failed",
-                                error);
-                        } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
-                            // Seems to be refresh
-                            // Restore original position
-                            curRow = model.getRow(focusRow);
-                            //curAttribute = model.getVisibleAttribute(0);
-                            if (recordMode) {
-                                updateRecordMode();
-                            } else {
-                                updateStatusMessage();
+                        try {
+                            if (control.isDisposed()) {
+                                return;
                             }
-                            restorePresentationState(presentationState);
-                            activePresentation.updateValueView();
-                        }
+                            final Shell shell = control.getShell();
+                            if (error != null) {
+                                //setStatus(error.getMessage(), true);
+                                UIUtils.showErrorDialog(
+                                    shell,
+                                    "Error executing query",
+                                    "Query execution failed",
+                                    error);
+                            } else if (focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                                // Seems to be refresh
+                                // Restore original position
+                                curRow = model.getRow(focusRow);
+                                //curAttribute = model.getVisibleAttribute(0);
+                                if (recordMode) {
+                                    updateRecordMode();
+                                } else {
+                                    updateStatusMessage();
+                                }
+                                restorePresentationState(presentationState);
+                                activePresentation.updateValueView();
+                            }
 
-                        if (error == null) {
-                            setNewState(dataContainer, dataFilter != null ? dataFilter :
-                                (dataContainer == getDataContainer() ? model.getDataFilter() : null));
-                        }
+                            if (error == null) {
+                                setNewState(dataContainer, dataFilter != null ? dataFilter :
+                                    (dataContainer == getDataContainer() ? model.getDataFilter() : null));
+                            }
 
-                        model.setUpdateInProgress(false);
-                        if (dataFilter != null) {
-                            model.updateDataFilter(dataFilter);
-                        }
-                        updateFiltersText();
-                        fireResultSetLoad();
+                            model.setUpdateInProgress(false);
+                            if (dataFilter != null) {
+                                model.updateDataFilter(dataFilter);
+                            }
+                            updateFiltersText();
+                            fireResultSetLoad();
 
-                        if (finalizer != null) {
-                            finalizer.run();
+                            if (finalizer != null) {
+                                finalizer.run();
+                            }
+                        } finally {
+                            dataPumpJob = null;
                         }
                     }
                 });

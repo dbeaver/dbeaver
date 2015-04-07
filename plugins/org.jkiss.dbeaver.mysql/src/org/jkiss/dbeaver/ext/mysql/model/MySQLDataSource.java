@@ -18,13 +18,13 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -328,8 +329,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor, String purpose) throws DBCException {
-        JDBCConnectionHolder mysqlConnection = super.openConnection(monitor, purpose);
+    protected Connection openConnection(DBRProgressMonitor monitor, String purpose) throws DBCException {
+        Connection mysqlConnection = super.openConnection(monitor, purpose);
 
         {
             // Provide client info
@@ -337,7 +338,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             if (product != null) {
                 String appName = DBeaverCore.getProductTitle();
                 try {
-                    mysqlConnection.getConnection().setClientInfo("ApplicationName", appName + " - " + purpose);
+                    mysqlConnection.setClientInfo("ApplicationName", appName + " - " + purpose);
                 } catch (Throwable e) {
                     // just ignore
                     log.debug(e);

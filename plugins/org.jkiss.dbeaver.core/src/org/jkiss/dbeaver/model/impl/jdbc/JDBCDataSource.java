@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
@@ -77,7 +76,7 @@ public abstract class JDBCDataSource
         this.executionContext.connect(monitor);
     }
 
-    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor, String purpose)
+    protected Connection openConnection(DBRProgressMonitor monitor, String purpose)
         throws DBCException
     {
         // It MUST be a JDBC driver
@@ -146,7 +145,7 @@ public abstract class JDBCDataSource
                 connection.setReadOnly(true);
             }
 
-            return new JDBCConnectionHolder(connection);
+            return connection;
         }
         catch (SQLException ex) {
             throw new DBCException(ex, this);
