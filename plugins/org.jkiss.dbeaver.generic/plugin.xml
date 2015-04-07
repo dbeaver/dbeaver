@@ -577,6 +577,7 @@
                 <driver
                     id="vertica"
                     label="Vertica"
+                    icon="icons/vertica_icon.png"
                     class="com.vertica.jdbc.Driver"
                     sampleURL="jdbc:vertica://{host}:{port}/{database}"
                     defaultPort="5433"
