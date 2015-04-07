@@ -309,7 +309,7 @@ public class DataSourceDescriptor
                     {
                         try {
                             // Change auto-commit mode
-                            txnManager.setAutoCommit(autoCommit);
+                            txnManager.setAutoCommit(monitor, autoCommit);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -340,7 +340,7 @@ public class DataSourceDescriptor
                 return false;
             }
         }
-        return false;
+        return true;
     }
 
     @Nullable
@@ -375,7 +375,7 @@ public class DataSourceDescriptor
                         if (txnManager != null) {
                             try {
                                 if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
-                                    txnManager.setTransactionIsolation(isolationLevel);
+                                    txnManager.setTransactionIsolation(monitor, isolationLevel);
                                     preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
                                 }
                             } catch (DBCException e) {
@@ -646,7 +646,7 @@ public class DataSourceDescriptor
                         }
                         if (autoCommit != newAutoCommit) {
                             // Change auto-commit state
-                            txnManager.setAutoCommit(newAutoCommit);
+                            txnManager.setAutoCommit(monitor, newAutoCommit);
                         }
                         // Set txn isolation level
                         if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
@@ -655,7 +655,7 @@ public class DataSourceDescriptor
                             if (!CommonUtils.isEmpty(supportedLevels)) {
                                 for (DBPTransactionIsolation level : supportedLevels) {
                                     if (level.getCode() == isolationCode) {
-                                        txnManager.setTransactionIsolation(level);
+                                        txnManager.setTransactionIsolation(monitor, level);
                                         break;
                                     }
                                 }
@@ -867,10 +867,10 @@ public class DataSourceDescriptor
                             UIUtils.runInUI(null, closeConfirmer);
                             switch (closeConfirmer.result) {
                                 case IDialogConstants.YES_ID:
-                                    txnManager.commit();
+                                    txnManager.commit(monitor);
                                     break;
                                 case IDialogConstants.NO_ID:
-                                    txnManager.rollback(null);
+                                    txnManager.rollback(monitor, null);
                                     break;
                                 default:
                                     return false;

@@ -376,7 +376,7 @@ class ResultSetPersister {
                 if (txnManager != null) {
                     if (!this.autocommit && txnManager.supportsSavepoints()) {
                         try {
-                            this.savepoint = txnManager.setSavepoint(null);
+                            this.savepoint = txnManager.setSavepoint(monitor, null);
                         } catch (Throwable e) {
                             // May be savepoints not supported
                             log.debug("Could not set savepoint", e);
@@ -465,7 +465,7 @@ class ResultSetPersister {
                 finally {
                     if (txnManager != null && this.savepoint != null) {
                         try {
-                            txnManager.releaseSavepoint(this.savepoint);
+                            txnManager.releaseSavepoint(monitor, this.savepoint);
                         }
                         catch (Throwable e) {
                             // Maybe savepoints not supported
@@ -491,7 +491,7 @@ class ResultSetPersister {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(getDataSource());
             if (txnManager != null) {
                 try {
-                    txnManager.rollback(savepoint);
+                    txnManager.rollback(session.getProgressMonitor(), savepoint);
                 } catch (Throwable e) {
                     log.debug("Error during transaction rollback", e);
                 }

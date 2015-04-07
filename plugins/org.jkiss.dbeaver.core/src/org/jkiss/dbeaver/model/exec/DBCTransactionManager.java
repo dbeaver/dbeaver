@@ -20,8 +20,8 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
 * Transaction manager.
@@ -31,21 +31,21 @@ public interface DBCTransactionManager
 {
     DBPTransactionIsolation getTransactionIsolation() throws DBCException;
 
-    void setTransactionIsolation(DBPTransactionIsolation transactionIsolation) throws DBCException;
+    void setTransactionIsolation(DBRProgressMonitor monitor, DBPTransactionIsolation transactionIsolation) throws DBCException;
 
     boolean isAutoCommit() throws DBCException;
 
-    void setAutoCommit(boolean autoCommit) throws DBCException;
+    void setAutoCommit(DBRProgressMonitor monitor, boolean autoCommit) throws DBCException;
 
     boolean supportsSavepoints();
 
-    DBCSavepoint setSavepoint(String name)
+    DBCSavepoint setSavepoint(DBRProgressMonitor monitor, String name)
         throws DBCException;
 
-    void releaseSavepoint(DBCSavepoint savepoint) throws DBCException;
+    void releaseSavepoint(DBRProgressMonitor monitor, DBCSavepoint savepoint) throws DBCException;
 
-    void commit() throws DBCException;
+    void commit(DBRProgressMonitor monitor) throws DBCException;
 
-    void rollback(@Nullable DBCSavepoint savepoint) throws DBCException;
+    void rollback(DBRProgressMonitor monitor, @Nullable DBCSavepoint savepoint) throws DBCException;
 
 }
