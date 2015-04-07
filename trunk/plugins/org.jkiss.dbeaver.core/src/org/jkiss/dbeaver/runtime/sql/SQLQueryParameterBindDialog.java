@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -58,7 +59,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private static final String DIALOG_ID = "DBeaver.SQLQueryParameterBindDialog";//$NON-NLS-1$
 
     private IWorkbenchPartSite ownerSite;
-    private DBPDataSource dataSource;
+    private DBCExecutionContext executionContext;
     private List<SQLQueryParameter> parameters;
     private List<DBSDataType> validDataTypes = new ArrayList<DBSDataType>();
     private TableEditor tableEditor;
@@ -66,15 +67,17 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<String, SQLQueryParameterRegistry.ParameterInfo>();
 
-    protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBPDataSource dataSource, List<SQLQueryParameter> parameters)
+    protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBCExecutionContext executionContext, List<SQLQueryParameter> parameters)
     {
         super(ownerSite.getShell());
         this.ownerSite = ownerSite;
-        this.dataSource = dataSource;
+        this.executionContext = executionContext;
         this.parameters = parameters;
 
-        if (dataSource instanceof DBPDataTypeProvider) {
-            for (DBSDataType dataType : ((DBPDataTypeProvider)dataSource).getDataTypes()) {
+        DBPDataSource dataSource = executionContext.getDataSource();
+        DBPDataTypeProvider dataTypeProvider1 = DBUtils.getAdapter(DBPDataTypeProvider.class, dataSource);
+        if (dataTypeProvider1 != null) {
+            for (DBSDataType dataType : dataTypeProvider1.getDataTypes()) {
                 if (dataType.getDataKind() == DBPDataKind.UNKNOWN) {
                     continue;
                 }
@@ -326,9 +329,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public DBPDataSource getDataSource()
-        {
-            return dataSource;
+        public DBCExecutionContext getExecutionContext() {
+            return executionContext;
         }
 
         @Override

@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.ResourceAttributes;
@@ -30,14 +29,11 @@ import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -47,7 +43,7 @@ import java.io.*;
 /**
  * ContentEditorInput
  */
-public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider, IDataSourceContainerProvider
+public class ContentEditorInput implements IPathEditorInput
 {
     static final Log log = Log.getLog(ContentEditorInput.class);
 
@@ -331,18 +327,4 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         }
     }
 
-    ////////////////////////////////////////////////////////
-    // IDatabaseEditorInput methods
-
-    @Override
-    public DBPDataSource getDataSource() {
-        return valueController.getDataSource();
-    }
-
-    @Override
-    public DBSDataSourceContainer getDataSourceContainer()
-    {
-        DBPDataSource dataSource = valueController.getDataSource();
-        return dataSource == null ? null : dataSource.getContainer();
-    }
 }

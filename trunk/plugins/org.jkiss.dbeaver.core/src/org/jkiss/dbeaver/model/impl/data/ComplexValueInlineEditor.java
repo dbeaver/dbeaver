@@ -43,14 +43,14 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        editor.setModel(controller.getDataSource(), (DBDComplexValue) value);
+        editor.setModel(controller.getExecutionContext(), (DBDComplexValue) value);
     }
 
     @Override
     protected Tree createControl(Composite editPlaceholder)
     {
         editor = new ComplexObjectEditor(controller.getValueSite(), controller.getEditPlaceholder(), SWT.BORDER);
-        editor.setModel(controller.getDataSource(), (DBDComplexValue) controller.getValue());
+        editor.setModel(controller.getExecutionContext(), (DBDComplexValue) controller.getValue());
         return editor.getTree();
     }
 

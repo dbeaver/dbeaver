@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -55,7 +56,7 @@ public class ComplexObjectEditor extends TreeViewer {
     static final Log log = Log.getLog(ComplexObjectEditor.class);
 
     private IWorkbenchPartSite partSite;
-    private DBPDataSource dataSource;
+    private DBCExecutionContext executionContext;
     private final TreeEditor treeEditor;
     private DBDValueEditor curCellEditor;
 
@@ -150,11 +151,11 @@ public class ComplexObjectEditor extends TreeViewer {
         super.setContentProvider(new StructContentProvider());
     }
 
-    public void setModel(DBPDataSource dataSource, final DBDComplexValue value)
+    public void setModel(DBCExecutionContext executionContext, final DBDComplexValue value)
     {
         getTree().setRedraw(false);
         try {
-            this.dataSource = dataSource;
+            this.executionContext = executionContext;
             setInput(value);
             expandToLevel(2);
         } finally {
@@ -267,9 +268,9 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public DBPDataSource getDataSource()
+        public DBCExecutionContext getExecutionContext()
         {
-            return dataSource;
+            return executionContext;
         }
 
         @Override
@@ -417,7 +418,7 @@ public class ComplexObjectEditor extends TreeViewer {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
-                        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Read reference value");
+                        DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read reference value");
                         try {
                             result = reference.getReferencedObject(session);
                         } catch (DBCException e) {

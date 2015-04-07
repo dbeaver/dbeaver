@@ -23,11 +23,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Arrays;
@@ -67,12 +66,10 @@ public class ResultSetValueController implements DBDAttributeController, DBDRowC
         this.curRow = curRow;
     }
 
-    @Nullable
+
     @Override
-    public DBPDataSource getDataSource()
-    {
-        DBSDataContainer dataContainer = controller.getDataContainer();
-        return dataContainer == null ? null : dataContainer.getDataSource();
+    public DBCExecutionContext getExecutionContext() {
+        return controller.getExecutionContext();
     }
 
     @Override
@@ -103,10 +100,10 @@ public class ResultSetValueController implements DBDAttributeController, DBDRowC
     @NotNull
     @Override
     public String getColumnId() {
-        DBPDataSource dataSource = getDataSource();
+        DBCExecutionContext context = getExecutionContext();
         DBCAttributeMetaData metaAttribute = binding.getMetaAttribute();
         return DBUtils.getSimpleQualifiedName(
-            dataSource == null ? null : dataSource.getContainer().getName(),
+            context == null ? null : context.getDataSource().getContainer().getName(),
             metaAttribute.getEntityName(),
             metaAttribute.getName());
     }
