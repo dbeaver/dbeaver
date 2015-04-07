@@ -234,7 +234,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     }
 
     @Override
-    public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation)
+    public void setTransactionIsolation(DBRProgressMonitor monitor, DBPTransactionIsolation transactionIsolation)
         throws DBCException
     {
         if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
@@ -267,7 +267,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     }
 
     @Override
-    public void setAutoCommit(boolean autoCommit)
+    public void setAutoCommit(DBRProgressMonitor monitor, boolean autoCommit)
         throws DBCException
     {
         try {
@@ -280,7 +280,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     }
 
     @Override
-    public DBCSavepoint setSavepoint(String name)
+    public DBCSavepoint setSavepoint(DBRProgressMonitor monitor, String name)
         throws DBCException
     {
         Savepoint savepoint;
@@ -310,7 +310,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     }
 
     @Override
-    public void releaseSavepoint(DBCSavepoint savepoint)
+    public void releaseSavepoint(DBRProgressMonitor monitor, DBCSavepoint savepoint)
         throws DBCException
     {
         try {
@@ -326,7 +326,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     }
 
     @Override
-    public void commit()
+    public void commit(DBRProgressMonitor monitor)
         throws DBCException
     {
         try {
@@ -338,7 +338,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
     }
 
     @Override
-    public void rollback(DBCSavepoint savepoint)
+    public void rollback(DBRProgressMonitor monitor, DBCSavepoint savepoint)
         throws DBCException
     {
         try {
