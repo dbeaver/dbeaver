@@ -20,7 +20,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -31,7 +31,7 @@ import java.util.Map;
  * Command context.
  * Provides facilities for object edit commands, undo/redo, save/revert
  */
-public interface DBECommandContext extends IDataSourceContainerProvider {
+public interface DBECommandContext extends IDataSourceProvider {
 
     boolean isDirty();
 
