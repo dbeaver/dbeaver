@@ -87,12 +87,12 @@ public class SQLQueryJob extends DataSourceJob
     public SQLQueryJob(
         IWorkbenchPartSite partSite,
         String name,
-        DBPDataSource dataSource,
+        DBCExecutionContext executionContext,
         List<SQLQuery> queries,
         SQLResultsConsumer resultsConsumer,
         SQLQueryListener listener)
     {
-        super(name, DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor(), dataSource);
+        super(name, DBIcon.SQL_SCRIPT_EXECUTE.getImageDescriptor(), executionContext);
         this.partSite = partSite;
         this.queries = queries;
         this.resultsConsumer = resultsConsumer;
