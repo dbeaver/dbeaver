@@ -55,10 +55,7 @@ import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCServerOutputReader;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -76,7 +73,10 @@ import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
+import org.jkiss.dbeaver.ui.DynamicFindReplaceTarget;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -149,6 +149,11 @@ public class SQLEditor extends SQLEditorBase
             }
             return null;
         }
+    }
+
+    @Nullable
+    public DBCExecutionContext getExecutionContext() {
+        return getDataSource();
     }
 
     @Nullable
@@ -1006,8 +1011,8 @@ public class SQLEditor extends SQLEditorBase
                     CoreMessages.editors_sql_error_cant_execute_query_message);
                 return;
             }
-            final DBPDataSource dataSource = getDataSource();
-            if (dataSource == null) {
+            final DBCExecutionContext executionContext = getExecutionContext();
+            if (executionContext == null) {
                 UIUtils.showErrorDialog(
                     getSite().getShell(),
                     CoreMessages.editors_sql_error_cant_execute_query_title,
@@ -1025,7 +1030,7 @@ public class SQLEditor extends SQLEditorBase
                 final SQLQueryJob job = new SQLQueryJob(
                     getSite(),
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
-                    dataSource,
+                    executionContext,
                     queries,
                     this,
                     listener);
