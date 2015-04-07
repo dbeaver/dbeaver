@@ -648,7 +648,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public DBPDataSource getDataSource()
     {
-        DBCExecutionContext context = container.getExecutionContext();
+        DBCExecutionContext context = getExecutionContext();
         return context == null ? null : context.getDataSource();
     }
 
@@ -1119,7 +1119,7 @@ public class ResultSetViewer extends Viewer
         if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor)) {
             return true;
         }
-        DBCExecutionContext executionContext = container.getExecutionContext();
+        DBCExecutionContext executionContext = getExecutionContext();
         return
             executionContext == null ||
             !executionContext.isConnected() ||
@@ -1397,6 +1397,12 @@ public class ResultSetViewer extends Viewer
         return dataReceiver;
     }
 
+    @Nullable
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return container.getExecutionContext();
+    }
+
     @Override
     public void refresh()
     {
@@ -1528,7 +1534,7 @@ public class ResultSetViewer extends Viewer
             dataContainer,
             useDataFilter,
             getDataReceiver(),
-            container.getExecutionContext(),
+            getExecutionContext(),
             progressControl);
         dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
@@ -1672,7 +1678,7 @@ public class ResultSetViewer extends Viewer
             rowNum = 0;
         }
 
-        final DBCExecutionContext executionContext = container.getExecutionContext();
+        final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
             return;
         }

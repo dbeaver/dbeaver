@@ -454,12 +454,12 @@ public final class DBUtils {
     public static Object makeNullValue(@NotNull final DBDValueController valueController)
     {
         try {
-            DBPDataSource dataSource = valueController.getDataSource();
-            if (dataSource == null) {
+            DBCExecutionContext executionContext = valueController.getExecutionContext();
+            if (executionContext == null) {
                 throw new DBCException(CoreMessages.editors_sql_status_not_connected_to_database);
             }
             // We are going to create NULL value - it shouldn't result in any DB roundtrips so let's use dummy monitor
-            DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Set NULL value");
+            DBCSession session = executionContext.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Set NULL value");
             try {
                 return DBUtils.makeNullValue(
                     session,

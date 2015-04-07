@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -122,9 +123,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
     {
         DBDValueEditor editor = valueController.getValueHandler().createEditor(new DBDValueController() {
             @Override
-            public DBPDataSource getDataSource()
-            {
-                return valueController.getDataSource();
+            public DBCExecutionContext getExecutionContext() {
+                return valueController.getExecutionContext();
             }
 
             @Override
@@ -545,7 +545,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
             super(
                 CoreMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values",
                 DBIcon.SQL_EXECUTE.getImageDescriptor(),
-                valueController.getDataSource());
+                valueController.getExecutionContext());
             setUser(false);
         }
 

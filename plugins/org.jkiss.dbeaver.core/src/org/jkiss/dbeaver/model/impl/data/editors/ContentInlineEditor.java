@@ -60,10 +60,10 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
                 stringValue = "";  //$NON-NLS-1$
             } else if (cachedValue instanceof byte[]) {
                 byte[] bytes = (byte[]) cachedValue;
-                stringValue = DBUtils.getBinaryPresentation(valueController.getDataSource()).toString(bytes, 0, bytes.length);
+                stringValue = DBUtils.getBinaryPresentation(valueController.getExecutionContext().getDataSource()).toString(bytes, 0, bytes.length);
             } else if (cachedValue instanceof ByteBuffer) {
                 byte[] bytes = ((ByteBuffer) cachedValue).array();
-                stringValue = DBUtils.getBinaryPresentation(valueController.getDataSource()).toString(bytes, 0, bytes.length);
+                stringValue = DBUtils.getBinaryPresentation(valueController.getExecutionContext().getDataSource()).toString(bytes, 0, bytes.length);
             } else {
                 stringValue = cachedValue.toString();
             }

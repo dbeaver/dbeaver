@@ -210,7 +210,7 @@ public class TextViewDialog extends ValueViewDialog {
         try {
             stringValue = new String(
                 bytes, 0, length,
-                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getDataSource()));
+                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             stringValue = new String(bytes);
@@ -223,7 +223,7 @@ public class TextViewDialog extends ValueViewDialog {
         byte[] bytes;
         try {
             bytes = stringValue.getBytes(
-                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getDataSource()));
+                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             bytes = stringValue.getBytes();
@@ -236,7 +236,7 @@ public class TextViewDialog extends ValueViewDialog {
     {
         Object prevValue = getValueController().getValue();
         if (prevValue instanceof DBDContent) {
-            DBCSession session = getValueController().getDataSource().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor");
+            DBCSession session = getValueController().getExecutionContext().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor");
             try {
                 if (ContentUtils.isTextContent((DBDContent) prevValue)) {
                     String strValue = isTextEditorActive() ? textEdit.getText() : getBinaryString();

@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
@@ -33,8 +32,7 @@ import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditorStandalone;
@@ -54,7 +52,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageAbstractEditor implements IDataSourceProvider, DBDValueEditorStandalone, IResourceChangeListener
+public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEditorStandalone, IResourceChangeListener
 {
     @Override
     public ContentEditorInput getEditorInput()
@@ -94,12 +92,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     //public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
 
     static final Log log = Log.getLog(ContentEditor.class);
-
-    @Override
-    public DBPDataSource getDataSource()
-    {
-        return getEditorInput().getDataSource();
-    }
 
     static class ContentPartInfo {
         ContentEditorPart editorPart;
