@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -72,8 +73,8 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private long pumpStartTime;
     private String progressMessage;
 
-    protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, DBDDataReceiver dataReceiver, Composite progressControl) {
-        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataContainer.getDataSource());
+    protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, DBDDataReceiver dataReceiver, DBCExecutionContext executionContext, Composite progressControl) {
+        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBIcon.SQL_EXECUTE.getImageDescriptor(), executionContext);
         progressMessage = CoreMessages.controls_rs_pump_job_name;
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;

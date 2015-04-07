@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
@@ -112,6 +113,15 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
             resultSetView = null;
         }
         super.dispose();
+    }
+
+    /**
+     * Uses data source as main execution context
+     * @return data source reference. never null.
+     */
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return getDataContainer().getDataSource();
     }
 
     @Nullable

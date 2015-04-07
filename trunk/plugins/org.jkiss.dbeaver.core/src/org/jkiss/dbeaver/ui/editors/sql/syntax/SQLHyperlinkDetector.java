@@ -18,15 +18,17 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -46,7 +49,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 {
     static final Log log = Log.getLog(SQLHyperlinkDetector.class);
 
-    private IDataSourceProvider dataSourceProvider;
+    private final SQLEditorBase editor;
     private SQLSyntaxManager syntaxManager;
 
     private static class ObjectLookupCache {
@@ -57,9 +60,9 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     private Map<String, ObjectLookupCache> linksCache = new HashMap<String, ObjectLookupCache>();
 
 
-    public SQLHyperlinkDetector(IDataSourceProvider dataSourceProvider, SQLSyntaxManager syntaxManager)
+    public SQLHyperlinkDetector(SQLEditorBase editor, SQLSyntaxManager syntaxManager)
     {
-        this.dataSourceProvider = dataSourceProvider;
+        this.editor = editor;
         this.syntaxManager = syntaxManager;
     }
 
@@ -67,7 +70,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     @Override
     public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
-        if (region == null || textViewer == null || dataSourceProvider.getDataSource() == null) {
+        if (region == null || textViewer == null || editor.getExecutionContext() == null) {
             return null;
         }
 
@@ -105,7 +108,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             // Skip keywords
             return null;
         }
-        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSourceProvider.getDataSource());
+        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, editor.getDataSource());
         if (structureAssistant == null) {
             return null;
         }
@@ -167,7 +170,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
         protected TablesFinderJob(DBSStructureAssistant structureAssistant, String containerName, String word, boolean caseSensitive, ObjectLookupCache cache)
         {
-            super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataSourceProvider.getDataSource());
+            super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), editor.getExecutionContext());
             this.structureAssistant = structureAssistant;
             this.containerName = containerName;
             this.word = word;
@@ -185,7 +188,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
                 DBSObjectContainer container = null;
                 if (!CommonUtils.isEmpty(containerName)) {
-                    DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSourceProvider.getDataSource());
+                    DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, getDataSource());
                     if (dsContainer != null) {
                         DBSObject childContainer = dsContainer.getChild(monitor, containerName);
                         if (childContainer instanceof DBSObjectContainer) {

@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -113,6 +114,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     }
 
     public abstract SQLDataSource getDataSource();
+
+    public DBCExecutionContext getExecutionContext() {
+        return getDataSource();
+    }
 
     public boolean hasAnnotations()
     {

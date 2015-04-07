@@ -26,7 +26,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -187,11 +186,11 @@ class ResultSetPersister {
     private void execute(@Nullable DBRProgressMonitor monitor, @Nullable final DataUpdateListener listener)
         throws DBException
     {
-        DBPDataSource dataSource = viewer.getDataSource();
-        if (dataSource == null) {
-            throw new DBCException("Not connected to data source");
+        DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
+        if (executionContext == null) {
+            throw new DBCException("No execution context");
         }
-        DataUpdaterJob job = new DataUpdaterJob(listener, dataSource);
+        DataUpdaterJob job = new DataUpdaterJob(listener, executionContext);
         if (monitor == null) {
             job.schedule();
         } else {
@@ -299,9 +298,9 @@ class ResultSetPersister {
         private DBCStatistics updateStats, insertStats, deleteStats;
         private DBCSavepoint savepoint;
 
-        protected DataUpdaterJob(@Nullable DataUpdateListener listener, @NotNull DBPDataSource dataSource)
+        protected DataUpdaterJob(@Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext)
         {
-            super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), dataSource);
+            super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), executionContext);
             this.listener = listener;
         }
 

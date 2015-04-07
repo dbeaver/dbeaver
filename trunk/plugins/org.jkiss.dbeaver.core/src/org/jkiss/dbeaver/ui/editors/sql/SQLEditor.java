@@ -1181,6 +1181,11 @@ public class SQLEditor extends SQLEditorBase
             });
         }
 
+        @Override
+        public DBCExecutionContext getExecutionContext() {
+            return SQLEditor.this.getExecutionContext();
+        }
+
         @Nullable
         @Override
         public ResultSetViewer getResultSetViewer()
