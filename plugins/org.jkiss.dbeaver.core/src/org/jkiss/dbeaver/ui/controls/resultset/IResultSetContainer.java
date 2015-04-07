@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
@@ -27,9 +28,24 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
  */
 public interface IResultSetContainer {
 
+    /**
+     * Execution context which will be used by Results viewer to read data
+     * @return execution context. Maybe null is container is not connected
+     */
+    @Nullable
+    DBCExecutionContext getExecutionContext();
+
+    /**
+     * Hosted results viewer
+     * @return viewer or null
+     */
     @Nullable
     ResultSetViewer getResultSetViewer();
 
+    /**
+     * Data container (table or something).
+     * @return data container or null
+     */
     @Nullable
     DBSDataContainer getDataContainer();
 

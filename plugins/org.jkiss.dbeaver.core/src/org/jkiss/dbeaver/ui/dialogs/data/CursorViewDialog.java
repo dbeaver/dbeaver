@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -121,6 +118,11 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
         resultSetViewer.refresh();
+    }
+
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        return resultSetViewer.getContainer().getExecutionContext();
     }
 
     @Nullable

@@ -108,7 +108,7 @@ public class ResultSetViewer extends Viewer
 {
     static final Log log = Log.getLog(ResultSetViewer.class);
 
-    private static class StateItem {
+    private class StateItem {
         DBSDataContainer dataContainer;
         DBDDataFilter filter;
         int rowNumber;
@@ -119,9 +119,10 @@ public class ResultSetViewer extends Viewer
             this.rowNumber = rowNumber;
         }
 
-        public String describeState(DBPDataSource dataSource) {
+        public String describeState() {
+            DBPDataSource dataSource = getDataSource();
             String desc = dataContainer.getName();
-            if (filter != null && filter.hasConditions()) {
+            if (dataSource != null && filter != null && filter.hasConditions()) {
                 StringBuilder condBuffer = new StringBuilder();
                 SQLUtils.appendConditionString(filter, dataSource, null, condBuffer, true);
                 desc += " [" + condBuffer + "]";
@@ -206,6 +207,10 @@ public class ResultSetViewer extends Viewer
         });
 
         changeMode(false);
+    }
+
+    public IResultSetContainer getContainer() {
+        return container;
     }
 
     ////////////////////////////////////////////////////////////
@@ -409,20 +414,17 @@ public class ResultSetViewer extends Viewer
             filtersApplyButton.setEnabled(true);
             filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
             // Update history buttons
-            DBPDataSource dataSource = getDataSource();
-            if (dataSource != null) {
-                if (historyPosition > 0) {
-                    historyBackButton.setEnabled(true);
-                    historyBackButton.setToolTipText(stateHistory.get(historyPosition - 1).describeState(dataSource));
-                } else {
-                    historyBackButton.setEnabled(false);
-                }
-                if (historyPosition < stateHistory.size() - 1) {
-                    historyForwardButton.setEnabled(true);
-                    historyForwardButton.setToolTipText(stateHistory.get(historyPosition + 1).describeState(dataSource));
-                } else {
-                    historyForwardButton.setEnabled(false);
-                }
+            if (historyPosition > 0) {
+                historyBackButton.setEnabled(true);
+                historyBackButton.setToolTipText(stateHistory.get(historyPosition - 1).describeState());
+            } else {
+                historyBackButton.setEnabled(false);
+            }
+            if (historyPosition < stateHistory.size() - 1) {
+                historyForwardButton.setEnabled(true);
+                historyForwardButton.setToolTipText(stateHistory.get(historyPosition + 1).describeState());
+            } else {
+                historyForwardButton.setEnabled(false);
             }
         } else if (filtersEnableState == null) {
             filtersEnableState = ControlEnableState.disable(filtersPanel);
@@ -472,6 +474,13 @@ public class ResultSetViewer extends Viewer
             return dataSource.getContainer().getPreferenceStore();
         }
         return DBeaverCore.getGlobalPreferenceStore();
+    }
+
+    private void persistConfig() {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            dataSource.getContainer().persistConfiguration();
+        }
     }
 
     @Override
@@ -639,8 +648,8 @@ public class ResultSetViewer extends Viewer
     @Override
     public DBPDataSource getDataSource()
     {
-        DBSDataContainer dataContainer = getDataContainer();
-        return dataContainer == null ? null : dataContainer.getDataSource();
+        DBCExecutionContext context = container.getExecutionContext();
+        return context == null ? null : context.getDataSource();
     }
 
     @Nullable
@@ -1110,12 +1119,12 @@ public class ResultSetViewer extends Viewer
         if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor)) {
             return true;
         }
-        DBPDataSource dataSource = getDataSource();
+        DBCExecutionContext executionContext = container.getExecutionContext();
         return
-            dataSource == null ||
-            !dataSource.isConnected() ||
-            dataSource.getContainer().isConnectionReadOnly() ||
-            dataSource.getInfo().isReadOnlyData();
+            executionContext == null ||
+            !executionContext.isConnected() ||
+            executionContext.getDataSource().getContainer().isConnectionReadOnly() ||
+            executionContext.getDataSource().getInfo().isReadOnlyData();
     }
 
     /**
@@ -1519,6 +1528,7 @@ public class ResultSetViewer extends Viewer
             dataContainer,
             useDataFilter,
             getDataReceiver(),
+            container.getExecutionContext(),
             progressControl);
         dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
@@ -1662,8 +1672,8 @@ public class ResultSetViewer extends Viewer
             rowNum = 0;
         }
 
-        final DBPDataSource dataSource = getDataSource();
-        if (dataSource == null) {
+        final DBCExecutionContext executionContext = container.getExecutionContext();
+        if (executionContext == null) {
             return;
         }
 
@@ -1672,7 +1682,7 @@ public class ResultSetViewer extends Viewer
         final Object[] cells = new Object[attributes.length];
         final int currentRowNumber = rowNum;
         // Copy cell values in new context
-        DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
+        DBCSession session = executionContext.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
         try {
             if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < model.getRowCount()) {
                 Object[] origRow = model.getRowData(currentRowNumber);
@@ -1838,10 +1848,7 @@ public class ResultSetViewer extends Viewer
             return false;
         }
         virtualEntityIdentifier.reloadAttributes(monitor, model.getAttributes());
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
-            dataSource.getContainer().persistConfiguration();
-        }
+        persistConfig();
 
         return true;
     }
@@ -1857,10 +1864,7 @@ public class ResultSetViewer extends Viewer
             virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
         }
 
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
-            dataSource.getContainer().persistConfiguration();
-        }
+        persistConfig();
     }
 
     public void fireResultSetChange() {
@@ -2246,10 +2250,6 @@ public class ResultSetViewer extends Viewer
 
         @Override
         public void widgetSelected(SelectionEvent e) {
-            DBPDataSource dataSource = getDataSource();
-            if (dataSource == null) {
-                return;
-            }
             if (e.detail == SWT.ARROW) {
                 ToolItem item = (ToolItem) e.widget;
                 Rectangle rect = item.getBounds();
@@ -2261,7 +2261,7 @@ public class ResultSetViewer extends Viewer
                 for (int i = historyPosition + (back ? -1 : 1); i >= 0 && i < stateHistory.size(); i += back ? -1 : 1) {
                     MenuItem mi = new MenuItem(menu, SWT.NONE);
                     StateItem state = stateHistory.get(i);
-                    mi.setText(state.describeState(dataSource));
+                    mi.setText(state.describeState());
                     final int statePosition = i;
                     mi.addSelectionListener(new SelectionAdapter() {
                         @Override
