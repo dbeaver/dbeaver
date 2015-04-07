@@ -219,7 +219,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         throws DBCException
     {
         try {
-            return JDBCTransactionIsolation.getByCode(getConnection().getTransactionIsolation());
+            return JDBCTransactionIsolation.getByCode(connectionHolder.getTransactionIsolation());
         } catch (SQLException e) {
             throw new JDBCException(e, dataSource);
         }
@@ -234,7 +234,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         }
         JDBCTransactionIsolation jdbcTIL = (JDBCTransactionIsolation) transactionIsolation;
         try {
-            getConnection().setTransactionIsolation(jdbcTIL.getCode());
+            connectionHolder.setTransactionIsolation(jdbcTIL.getCode());
         } catch (SQLException e) {
             throw new JDBCException(e, dataSource);
         }
@@ -247,7 +247,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         throws DBCException
     {
         try {
-            return getConnection().getAutoCommit();
+            return connectionHolder.getAutoCommit();
         }
         catch (SQLException e) {
             throw new JDBCException(e, dataSource);
@@ -259,7 +259,7 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         throws DBCException
     {
         try {
-            getConnection().setAutoCommit(autoCommit);
+            connectionHolder.setAutoCommit(autoCommit);
         }
         catch (SQLException e) {
             throw new JDBCException(e, dataSource);
