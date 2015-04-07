@@ -101,8 +101,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * SQL Executor
  */
 public class SQLEditor extends SQLEditorBase
-    implements IDataSourceContainerProviderEx,
-    DBPEventListener, ISaveablePart2, IResultSetContainer, DBPDataSourceUser, DBPDataSourceHandler
+    implements IDataSourceContainerProviderEx, DBPEventListener, ISaveablePart2, IResultSetContainer, DBPDataSourceUser, DBPDataSourceHandler
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
@@ -125,7 +124,6 @@ public class SQLEditor extends SQLEditorBase
     private DBSDataSourceContainer dataSourceContainer;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<SQLQuery>();
-    private DynamicSelectionProvider selectionProvider;
 
     public SQLEditor()
     {
@@ -294,8 +292,7 @@ public class SQLEditor extends SQLEditorBase
 
         editorControl = sashForm.getChildren()[0];
 
-        selectionProvider = new DynamicSelectionProvider();
-        getSite().setSelectionProvider(selectionProvider);
+        getSite().setSelectionProvider(new DynamicSelectionProvider());
 
         final StyledText textWidget = getTextViewer().getTextWidget();
 

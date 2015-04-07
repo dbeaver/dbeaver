@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,7 +39,7 @@ import java.util.Collection;
 /**
  * DBNDataSource
  */
-public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataSourceContainerProvider
+public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
 {
     private DataSourceDescriptor dataSource;
     private DBXTreeNode treeRoot;
