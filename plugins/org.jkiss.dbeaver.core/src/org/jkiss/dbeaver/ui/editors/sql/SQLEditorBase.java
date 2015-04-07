@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -51,14 +50,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
@@ -74,7 +72,7 @@ import java.util.*;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider, IDataSourceContainerProvider {
+public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider {
     static protected final Log log = Log.getLog(SQLEditorBase.class);
 
     @NotNull
@@ -122,12 +120,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     public boolean hasAnnotations()
     {
         return false;
-    }
-
-    @Override
-    public DBSDataSourceContainer getDataSourceContainer() {
-        SQLDataSource dataSource = getDataSource();
-        return dataSource == null ? null : dataSource.getContainer();
     }
 
     @NotNull
@@ -379,7 +371,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     public void reloadSyntaxRules()
     {
         // Refresh syntax
-        syntaxManager.setDataSource(getDataSourceContainer() == null, getDataSource());
+        syntaxManager.setDataSource(getDataSource());
         syntaxManager.refreshRules();
 
         Document document = getDocument();
