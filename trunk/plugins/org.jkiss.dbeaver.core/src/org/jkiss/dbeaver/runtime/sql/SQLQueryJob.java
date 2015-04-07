@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -99,7 +100,7 @@ public class SQLQueryJob extends DataSourceJob
 
         {
             // Read config form preference store
-            IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
+            IPreferenceStore preferenceStore = getDataSourceContainer().getPreferenceStore();
             this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(DBeaverPreferences.SCRIPT_COMMIT_TYPE));
             this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING));
             this.fetchResultSets = queries.size() == 1 || preferenceStore.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
@@ -134,7 +135,7 @@ public class SQLQueryJob extends DataSourceJob
         statistics = new DBCStatistics();
         try {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(getDataSource());
-            DBCSession session = getDataSource().openSession(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
+            DBCSession session = getExecutionContext().openSession(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
             try {
                 // Set transaction settings (only if autocommit is off)
                 QMUtils.getDefaultHandler().handleScriptBegin(session);
@@ -260,7 +261,7 @@ public class SQLQueryJob extends DataSourceJob
         lastError = null;
 
         String sqlQuery = sqlStatement.getQuery();
-        DBPDataSource dataSource = getDataSource();
+        DBCExecutionContext executionContext = getExecutionContext();
         SQLQueryResult curResult = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
@@ -277,8 +278,9 @@ public class SQLQueryJob extends DataSourceJob
             closeStatement();
 
             // Check and invalidate connection
+            DBPDataSource dataSource = executionContext.getDataSource();
             if (!connectionInvalidated && dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
-                dataSource.invalidateContext(session.getProgressMonitor());
+                executionContext.invalidateContext(session.getProgressMonitor());
                 connectionInvalidated = true;
             }
 
@@ -467,7 +469,7 @@ public class SQLQueryJob extends DataSourceJob
             public void run()
             {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                        partSite,
+                    partSite,
                     getDataSource(),
                     parameters);
                 result = (dialog.open() == IDialogConstants.OK_ID);
@@ -596,10 +598,10 @@ public class SQLQueryJob extends DataSourceJob
     private boolean keepStatementOpen()
     {
         // Only in single query mode and if pref option set to true
-        DBPDataSource dataSource = getDataSource();
+        DBSDataSourceContainer container = getDataSourceContainer();
         return queries.size() == 1 &&
-            dataSource != null &&
-            dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN);
+            container != null &&
+            container.getPreferenceStore().getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN);
     }
 
     private void closeStatement()
