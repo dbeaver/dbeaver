@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -47,7 +48,7 @@ import java.util.*;
 /**
  * DBNDatabaseNode
  */
-public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper {
+public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper, IDataSourceContainerProvider {
 
     private volatile boolean locked;
     protected volatile List<DBNDatabaseNode> childNodes;

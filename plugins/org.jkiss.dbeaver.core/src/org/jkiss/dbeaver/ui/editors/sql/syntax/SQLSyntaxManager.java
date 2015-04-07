@@ -138,9 +138,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void setDataSource(boolean unassigned, @Nullable SQLDataSource dataSource)
+    public void setDataSource(@Nullable SQLDataSource dataSource)
     {
-        this.unassigned = unassigned;
+        this.unassigned = dataSource == null;
         this.dataSource = dataSource;
         if (this.dataSource == null) {
             sqlDialect = new BasicSQLDialect();
