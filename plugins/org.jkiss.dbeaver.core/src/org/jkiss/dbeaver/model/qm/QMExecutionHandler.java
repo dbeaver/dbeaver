@@ -41,15 +41,15 @@ public interface QMExecutionHandler {
 
     void handleSessionClose(DBCSession session);
 
-    void handleTransactionAutocommit(DBCSession session, boolean autoCommit);
+    void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit);
 
-    void handleTransactionIsolation(DBCSession session, DBPTransactionIsolation level);
+    void handleTransactionIsolation(DBCExecutionContext context, DBPTransactionIsolation level);
 
-    void handleTransactionCommit(DBCSession session);
+    void handleTransactionCommit(DBCExecutionContext context);
 
     void handleTransactionSavepoint(DBCSavepoint savepoint);
 
-    void handleTransactionRollback(DBCSession session, @Nullable DBCSavepoint savepoint);
+    void handleTransactionRollback(DBCExecutionContext context, @Nullable DBCSavepoint savepoint);
 
     void handleStatementOpen(DBCStatement statement);
 

@@ -53,19 +53,19 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
     }
 
     @Override
-    public void handleTransactionAutocommit(DBCSession session, boolean autoCommit)
+    public void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
     {
 
     }
 
     @Override
-    public void handleTransactionIsolation(DBCSession session, DBPTransactionIsolation level)
+    public void handleTransactionIsolation(DBCExecutionContext context, DBPTransactionIsolation level)
     {
 
     }
 
     @Override
-    public void handleTransactionCommit(DBCSession session)
+    public void handleTransactionCommit(DBCExecutionContext context)
     {
 
     }
@@ -77,7 +77,7 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
     }
 
     @Override
-    public void handleTransactionRollback(DBCSession session, DBCSavepoint savepoint)
+    public void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
     {
 
     }
