@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * VoidTransactionManager
@@ -37,7 +38,7 @@ public class VoidTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation) throws DBCException {
+    public void setTransactionIsolation(DBRProgressMonitor monitor, DBPTransactionIsolation transactionIsolation) throws DBCException {
 
     }
 
@@ -47,7 +48,7 @@ public class VoidTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public void setAutoCommit(boolean autoCommit) throws DBCException {
+    public void setAutoCommit(DBRProgressMonitor monitor, boolean autoCommit) throws DBCException {
     }
 
     @Override
@@ -56,20 +57,20 @@ public class VoidTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public DBCSavepoint setSavepoint(String name) throws DBCException {
+    public DBCSavepoint setSavepoint(DBRProgressMonitor monitor, String name) throws DBCException {
         throw new DBCException("Transactions not supported");
     }
 
     @Override
-    public void releaseSavepoint(DBCSavepoint savepoint) throws DBCException {
+    public void releaseSavepoint(DBRProgressMonitor monitor, DBCSavepoint savepoint) throws DBCException {
         throw new DBCException("Transactions not supported");
     }
 
     @Override
-    public void commit() throws DBCException {
+    public void commit(DBRProgressMonitor monitor) throws DBCException {
     }
 
     @Override
-    public void rollback(@Nullable DBCSavepoint savepoint) throws DBCException {
+    public void rollback(DBRProgressMonitor monitor, @Nullable DBCSavepoint savepoint) throws DBCException {
     }
 }

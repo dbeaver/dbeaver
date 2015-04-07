@@ -56,7 +56,7 @@ public class DataSourceCommitHandler extends DataSourceHandler
                     DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSourceContainer.getDataSource());
                     if (txnManager != null) {
                         try {
-                            txnManager.commit();
+                            txnManager.commit(monitor);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
                         }

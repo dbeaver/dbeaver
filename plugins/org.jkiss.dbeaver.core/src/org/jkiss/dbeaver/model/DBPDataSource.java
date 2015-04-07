@@ -49,6 +49,8 @@ public interface DBPDataSource extends DBCExecutionContext
     @NotNull
     DBPDataSourceInfo getInfo();
 
+    //DBCExecutionContext getPrimaryContext();
+
     /**
      * Opens new isolated execution context.
      *

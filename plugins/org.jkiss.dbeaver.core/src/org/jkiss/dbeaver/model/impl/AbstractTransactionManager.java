@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
 * AbstractTransactionManager
@@ -36,7 +37,7 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation)
+    public void setTransactionIsolation(DBRProgressMonitor monitor, DBPTransactionIsolation transactionIsolation)
         throws DBCException
     {
         throw new DBCException("Transaction isolation change not supported");
@@ -50,7 +51,7 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public void setAutoCommit(boolean autoCommit)
+    public void setAutoCommit(DBRProgressMonitor monitor, boolean autoCommit)
         throws DBCException
     {
         if (!autoCommit) {
@@ -65,28 +66,28 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public DBCSavepoint setSavepoint(String name)
+    public DBCSavepoint setSavepoint(DBRProgressMonitor monitor, String name)
         throws DBCException
     {
         throw new DBCException("Savepoint not supported");
     }
 
     @Override
-    public void releaseSavepoint(DBCSavepoint savepoint)
+    public void releaseSavepoint(DBRProgressMonitor monitor, DBCSavepoint savepoint)
         throws DBCException
     {
         throw new DBCException("Savepoint not supported");
     }
 
     @Override
-    public void commit()
+    public void commit(DBRProgressMonitor monitor)
         throws DBCException
     {
         // do nothing
     }
 
     @Override
-    public void rollback(DBCSavepoint savepoint)
+    public void rollback(DBRProgressMonitor monitor, DBCSavepoint savepoint)
         throws DBCException
     {
         throw new DBCException("Transactions not supported");

@@ -18,9 +18,9 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -180,7 +180,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (settings.isUseTransactions() && needCommit) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
             if (txnManager != null) {
-                txnManager.commit();
+                txnManager.commit(targetSession.getProgressMonitor());
             }
         }
     }
@@ -221,7 +221,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (settings.isUseTransactions()) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
             if (txnManager != null) {
-                txnManager.setAutoCommit(false);
+                txnManager.setAutoCommit(monitor, false);
             }
         }
     }

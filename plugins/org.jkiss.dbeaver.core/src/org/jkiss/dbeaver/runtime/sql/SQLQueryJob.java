@@ -143,7 +143,7 @@ public class SQLQueryJob extends DataSourceJob
                 boolean oldAutoCommit = txnManager == null || txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
                 if (txnManager != null && !oldAutoCommit && newAutoCommit) {
-                    txnManager.setAutoCommit(true);
+                    txnManager.setAutoCommit(monitor, true);
                 }
 
                 monitor.beginTask(this.getName(), queries.size());
@@ -215,19 +215,19 @@ public class SQLQueryJob extends DataSourceJob
                     if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
                         if (commitType != SQLScriptCommitType.NO_COMMIT) {
                             monitor.beginTask("Commit data", 1);
-                            txnManager.commit();
+                            txnManager.commit(monitor);
                             monitor.done();
                         }
                     } else {
                         monitor.beginTask("Rollback data", 1);
-                        txnManager.rollback(null);
+                        txnManager.rollback(monitor, null);
                         monitor.done();
                     }
                 }
 
                 // Restore transactions settings
                 if (txnManager != null && !oldAutoCommit && newAutoCommit) {
-                    txnManager.setAutoCommit(false);
+                    txnManager.setAutoCommit(monitor, false);
                 }
 
                 QMUtils.getDefaultHandler().handleScriptEnd(session);

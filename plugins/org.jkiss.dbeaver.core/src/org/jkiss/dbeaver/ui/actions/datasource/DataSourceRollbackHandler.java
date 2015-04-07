@@ -56,7 +56,7 @@ public class DataSourceRollbackHandler extends DataSourceHandler
                     DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSourceContainer.getDataSource());
                     if (txnManager != null) {
                         try {
-                            txnManager.rollback(null);
+                            txnManager.rollback(monitor, null);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
                         }

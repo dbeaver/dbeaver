@@ -84,7 +84,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 try {
                     DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                     if (txnManager != null) {
-                        txnManager.setAutoCommit(false);
+                        txnManager.setAutoCommit(monitor, false);
                     }
                 } catch (DBCException e) {
                     log.warn("Can't change auto-commit", e);
@@ -134,7 +134,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                 if (txnManager != null) {
                     try {
-                        txnManager.commit();
+                        txnManager.commit(monitor);
                     } catch (DBCException e) {
                         log.error("Can't finish transaction in data producer connection", e);
                     }
