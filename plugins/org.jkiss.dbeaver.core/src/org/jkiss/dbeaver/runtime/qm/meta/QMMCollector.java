@@ -168,9 +168,9 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public synchronized void handleTransactionAutocommit(DBCSession session, boolean autoCommit)
+    public synchronized void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(session.getDataSource());
+        QMMSessionInfo sessionInfo = getSessionInfo(context.getDataSource());
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.changeTransactional(!autoCommit);
             if (oldTxn != null) {
@@ -185,9 +185,9 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public synchronized void handleTransactionCommit(DBCSession session)
+    public synchronized void handleTransactionCommit(DBCExecutionContext context)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(session.getDataSource());
+        QMMSessionInfo sessionInfo = getSessionInfo(context.getDataSource());
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.commit();
             if (oldTxn != null) {
@@ -198,9 +198,9 @@ public class QMMCollector extends DefaultExecutionHandler {
     }
 
     @Override
-    public synchronized void handleTransactionRollback(DBCSession session, DBCSavepoint savepoint)
+    public synchronized void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(session.getDataSource());
+        QMMSessionInfo sessionInfo = getSessionInfo(context.getDataSource());
         if (sessionInfo != null) {
             QMMObject oldTxn = sessionInfo.rollback(savepoint);
             if (oldTxn != null) {
