@@ -121,8 +121,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
      */
     @Override
     public DBCExecutionContext getExecutionContext() {
-        DBSDataContainer dataContainer = getDataContainer();
-        return dataContainer == null ? null : dataContainer.getDataSource();
+        return getEditorInput().getDataSource();
     }
 
     @Nullable
