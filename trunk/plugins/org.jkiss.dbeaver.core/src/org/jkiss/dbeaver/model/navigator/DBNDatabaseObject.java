@@ -124,7 +124,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
         return getParentNode() instanceof DBNDatabaseNode ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPDataSource getDataSource()
     {

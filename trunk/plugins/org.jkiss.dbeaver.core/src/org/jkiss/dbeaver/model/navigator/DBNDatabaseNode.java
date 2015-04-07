@@ -505,11 +505,16 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public DataSourceDescriptor getDataSourceContainer()
     {
+        DBPDataSource dataSource = getDataSource();
+        return dataSource == null ? null : (DataSourceDescriptor) dataSource.getContainer();
+    }
+
+    public DBPDataSource getDataSource() {
         DBPDataSource dataSource = getObject().getDataSource();
         if(dataSource == null) {
             return null;
         }
-        return (DataSourceDescriptor) dataSource.getContainer();
+        return dataSource;
     }
 
     public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch)

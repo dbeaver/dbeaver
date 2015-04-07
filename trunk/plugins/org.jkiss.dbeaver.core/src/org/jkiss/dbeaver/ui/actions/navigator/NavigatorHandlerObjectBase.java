@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
@@ -131,8 +131,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         }
         if (container instanceof DBNDatabaseNode) {
             // No editor found - create new command context
-            DBSDataSourceContainer dsContainer = ((DBNDatabaseNode) container).getObject().getDataSource().getContainer();
-            return new CommandTarget(new DBECommandContextImpl(dsContainer, !openEditor));
+            DBPDataSource dataSource = ((DBNDatabaseNode) container).getObject().getDataSource();
+            return new CommandTarget(new DBECommandContextImpl(dataSource, !openEditor));
         } else {
             return new CommandTarget();
         }
@@ -205,7 +205,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (view != null) {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 view.getSite(),
-                commandContext.getDataSourceContainer().getDataSource(),
+                commandContext.getDataSource(),
                 dialogTitle,
                 DBIcon.SQL_PREVIEW.getImage(),
                 script.toString());
