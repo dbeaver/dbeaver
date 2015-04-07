@@ -36,10 +36,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -49,7 +46,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 public abstract class GenerateSQLDialog extends BaseSQLDialog {
 
-    private SQLDataSource dataSource;
+    private final DBCExecutionContext executionContext;
     private Runnable onSuccess;
 
     protected SelectionListener SQL_CHANGE_LISTENER = new SelectionAdapter() {
@@ -60,10 +57,10 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
         }
     };
 
-    public GenerateSQLDialog(IWorkbenchPartSite parentSite, SQLDataSource dataSource, String title, @Nullable Image image)
+    public GenerateSQLDialog(IWorkbenchPartSite parentSite, DBCExecutionContext executionContext, String title, @Nullable Image image)
     {
         super(parentSite, title, image);
-        this.dataSource = dataSource;
+        this.executionContext = executionContext;
     }
 
     public void setOnSuccess(Runnable onSuccess)
@@ -118,7 +115,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     {
         final String jobName = getShell().getText();
         final String[] scriptLines = generateSQLScript();
-        DataSourceJob job = new DataSourceJob(jobName, null, dataSource) {
+        DataSourceJob job = new DataSourceJob(jobName, null, executionContext) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {
@@ -157,19 +154,29 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     @Override
     public DBPDataSource getDataSource()
     {
-        return dataSource;
+        return executionContext.getDataSource();
     }
 
     @Override
     protected String getSQLText()
     {
-        String scriptDelimiter = dataSource.getSQLDialect().getScriptDelimiter() + ContentUtils.getDefaultLineSeparator();
-        String[] scriptLines = generateSQLScript();
-        StringBuilder sql = new StringBuilder(scriptLines.length * 64);
-        for (String line : scriptLines) {
-            sql.append(line).append(scriptDelimiter);
+        DBPDataSource dataSource = executionContext.getDataSource();
+        if (dataSource instanceof SQLDataSource) {
+            String lineSeparator = ContentUtils.getDefaultLineSeparator();
+            String scriptDelimiter = ((SQLDataSource)dataSource).getSQLDialect().getScriptDelimiter() + lineSeparator;
+            String[] scriptLines = generateSQLScript();
+            StringBuilder sql = new StringBuilder(scriptLines.length * 64);
+            for (String line : scriptLines) {
+                sql.append(line).append(scriptDelimiter);
+            }
+            // Cut last line separator
+            if (sql.length() > lineSeparator.length()) {
+                sql.setLength(sql.length() - lineSeparator.length());
+            }
+            return sql.toString();
+        } else {
+            return "-- Not-SQL data source";
         }
-        return sql.toString();
     }
 
     protected abstract void createControls(Composite parent);
