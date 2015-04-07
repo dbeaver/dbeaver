@@ -33,7 +33,6 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -59,7 +58,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     {
         super(
             partSite,
-            (SQLDataSource) objects.iterator().next().getDataSource(),
+            objects.iterator().next().getDataSource(),
             title,
             null);
         this.selectedObjects = objects;
