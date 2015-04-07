@@ -26,11 +26,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -46,7 +42,7 @@ import java.sql.Savepoint;
 /**
  * JDBCExecutionContext
  */
-public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManager
+public class JDBCExecutionContext implements DBCExecutionContext, DBCTransactionManager
 {
     static final Log log = Log.getLog(JDBCExecutionContext.class);
 
@@ -120,7 +116,6 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         }
     }
 
-    @Override
     public Connection getConnection(DBRProgressMonitor monitor) throws SQLException
     {
         if (connection == null) {
@@ -219,6 +214,10 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         }
     }
 
+    //////////////////////////////////////////////////////////////
+    // Transaction manager
+    //////////////////////////////////////////////////////////////
+
     @Override
     public DBPTransactionIsolation getTransactionIsolation()
         throws DBCException
@@ -246,6 +245,8 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
             transactionIsolationLevel = jdbcTIL.getCode();
         } catch (SQLException e) {
             throw new JDBCException(e, dataSource);
+        } finally {
+            QMUtils.getDefaultHandler().handleTransactionIsolation(this, transactionIsolation);
         }
 
         //QMUtils.getDefaultHandler().handleTransactionIsolation(getConnection(), jdbcTIL);
@@ -276,6 +277,8 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         }
         catch (SQLException e) {
             throw new JDBCException(e, dataSource);
+        } finally {
+            QMUtils.getDefaultHandler().handleTransactionAutocommit(this, autoCommit);
         }
     }
 
@@ -335,6 +338,9 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
         catch (SQLException e) {
             throw new JDBCException(e, dataSource);
         }
+        finally {
+            QMUtils.getDefaultHandler().handleTransactionCommit(this);
+        }
     }
 
     @Override
@@ -348,11 +354,15 @@ public class JDBCExecutionContext implements JDBCConnector, DBCTransactionManage
                 } else {
                     throw new SQLFeatureNotSupportedException(CoreMessages.model_jdbc_exception_bad_savepoint_object);
                 }
+            } else {
+                getConnection().rollback();
             }
-            getConnection().rollback();
         }
         catch (SQLException e) {
             throw new JDBCException(e, dataSource);
+        }
+        finally {
+            QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);
         }
     }
 }

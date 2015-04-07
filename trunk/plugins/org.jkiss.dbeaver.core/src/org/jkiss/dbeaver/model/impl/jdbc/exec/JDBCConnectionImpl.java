@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -46,36 +47,36 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     static final Log log = Log.getLog(JDBCConnectionImpl.class);
 
-    final JDBCConnector connector;
+    final JDBCExecutionContext context;
     boolean disableLogging;
 
-    public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
+    public JDBCConnectionImpl(JDBCExecutionContext context, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         super(monitor, purpose, taskTitle);
-        this.connector = connector;
+        this.context = context;
     }
 
     @Override
     public Connection getOriginal() throws SQLException
     {
-        return connector.getConnection(getProgressMonitor());
+        return context.getConnection(getProgressMonitor());
     }
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        return connector;
+        return context;
     }
 
     @Override
     public DBPDataSource getDataSource()
     {
-        return connector.getDataSource();
+        return context.getDataSource();
     }
 
     @Override
     public boolean isConnected() {
         try {
-            synchronized (connector) {
+            synchronized (context) {
                 return !isClosed();
             }
         } catch (SQLException e) {
@@ -227,7 +228,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         getOriginal().setAutoCommit(autoCommit);
 
         if (!disableLogging) {
-            QMUtils.getDefaultHandler().handleTransactionAutocommit(this, autoCommit);
+            QMUtils.getDefaultHandler().handleTransactionAutocommit(context, autoCommit);
         }
     }
 
@@ -245,7 +246,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         getOriginal().commit();
 
         if (!disableLogging) {
-            QMUtils.getDefaultHandler().handleTransactionCommit(this);
+            QMUtils.getDefaultHandler().handleTransactionCommit(context);
         }
     }
 
@@ -256,7 +257,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         getOriginal().rollback();
 
         if (!disableLogging) {
-            QMUtils.getDefaultHandler().handleTransactionRollback(this, null);
+            QMUtils.getDefaultHandler().handleTransactionRollback(context, null);
         }
     }
 
@@ -408,7 +409,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     {
         Savepoint savepoint = getOriginal().setSavepoint();
 
-        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(connector, savepoint);
+        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(context, savepoint);
 
         if (!disableLogging) {
             QMUtils.getDefaultHandler().handleTransactionSavepoint(jdbcSavepoint);
@@ -423,7 +424,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     {
         Savepoint savepoint = getOriginal().setSavepoint(name);
 
-        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(connector, savepoint);
+        JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(context, savepoint);
 
         if (!disableLogging) {
             QMUtils.getDefaultHandler().handleTransactionSavepoint(jdbcSavepoint);
@@ -442,7 +443,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         getOriginal().rollback(savepoint);
 
         if (!disableLogging) {
-            QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint instanceof DBCSavepoint ? (DBCSavepoint) savepoint : null);
+            QMUtils.getDefaultHandler().handleTransactionRollback(context, savepoint instanceof DBCSavepoint ? (DBCSavepoint) savepoint : null);
         }
     }
 
