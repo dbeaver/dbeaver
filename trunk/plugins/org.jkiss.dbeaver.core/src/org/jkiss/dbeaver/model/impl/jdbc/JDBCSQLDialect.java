@@ -188,7 +188,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             this.isCatalogAtStart = true;
         }
 
-        loadKeywords(metaData);
+        loadDriverKeywords(metaData);
     }
 
     @NotNull
@@ -198,7 +198,6 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     }
 
     @Nullable
-    @NotNull
     @Override
     public String getIdentifierQuoteString()
     {
@@ -208,7 +207,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     @NotNull
     @Override
     public Collection<String> getExecuteKeywords() {
-        return null;
+        return Collections.emptyList();
     }
 
     @NotNull
@@ -329,7 +328,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         return types;
     }
 
-    void loadKeywords(JDBCDatabaseMetaData metaData)
+    private void loadDriverKeywords(JDBCDatabaseMetaData metaData)
     {
         try {
             // Keywords
