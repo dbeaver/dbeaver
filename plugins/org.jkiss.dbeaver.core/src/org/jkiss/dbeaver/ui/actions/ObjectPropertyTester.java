@@ -97,6 +97,10 @@ public class ObjectPropertyTester extends PropertyTester
             if (!objectMaker.canCreateObject(container.getValueObject())) {
                 return false;
             }
+            // Do not check PASTE command state. It requires clipboard contents check
+            // which means UI interaction which can break menu popup [RedHat]
+            // and also is a slow operation. So let paste be always enabled.
+/*
             if (property.equals(PROP_CAN_CREATE)) {
                 return true;
             }
@@ -115,6 +119,7 @@ public class ObjectPropertyTester extends PropertyTester
                     return false;
                 }
             }
+*/
             return true;
         } else if (property.equals(PROP_CAN_DELETE)) {
             if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
