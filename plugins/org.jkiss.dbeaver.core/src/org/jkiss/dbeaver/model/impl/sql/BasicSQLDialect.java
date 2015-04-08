@@ -56,7 +56,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     public BasicSQLDialect()
     {
-        loadKeywords();
+        loadStandardKeywords();
     }
 
     @NotNull
@@ -285,7 +285,7 @@ public class BasicSQLDialect implements SQLDialect {
         return DEFAULT_LINE_COMMENTS;
     }
 
-    void loadKeywords()
+    protected void loadStandardKeywords()
     {
         // Add default set of keywords
         Collections.addAll(reservedWords, SQLConstants.SQL92_KEYWORDS);
