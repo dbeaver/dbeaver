@@ -25,6 +25,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.util.Collection;
@@ -39,7 +40,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         if (curNode != null) {
             Collection<DBNNode> cbNodes = TreeNodeTransfer.getFromClipboard();
             if (cbNodes == null) {
-                log.error("Clipboard contains data in unsupported format");
+                UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Paste error", "Clipboard contains data in unsupported format");
                 return null;
             }
             for (DBNNode nodeObject : cbNodes) {

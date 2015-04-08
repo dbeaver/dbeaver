@@ -62,10 +62,15 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
 
     @Override
     public void mouseUp(MouseEvent e) {
-        TableItem item = table.getItem(new Point(e.x, e.y));
+        final TableItem item = table.getItem(new Point(e.x, e.y));
         if (item != null) {
             columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
-            showEditor(item);
+            item.getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    showEditor(item);
+                }
+            });
         }
     }
 
