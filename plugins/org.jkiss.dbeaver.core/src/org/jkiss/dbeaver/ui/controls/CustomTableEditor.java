@@ -62,6 +62,10 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
 
     @Override
     public void mouseUp(MouseEvent e) {
+        if (e.button != 1) {
+            // Only on left click
+            return;
+        }
         final TableItem item = table.getItem(new Point(e.x, e.y));
         if (item != null) {
             columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
