@@ -31,6 +31,9 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -529,6 +532,18 @@ public class GenericDataSource extends JDBCDataSource
         this.initialize(monitor);
 
         return true;
+    }
+
+    @Nullable
+    @Override
+    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+        if (metaModel instanceof DBCQueryTransformProvider) {
+            DBCQueryTransformer transformer = ((DBCQueryTransformProvider) metaModel).createQueryTransformer(type);
+            if (transformer != null) {
+                return transformer;
+            }
+        }
+        return super.createQueryTransformer(type);
     }
 
     GenericTable findTable(DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)

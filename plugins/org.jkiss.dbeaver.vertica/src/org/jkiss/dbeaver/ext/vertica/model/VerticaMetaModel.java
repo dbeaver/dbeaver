@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.vertica.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -26,9 +27,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -36,7 +41,7 @@ import java.sql.SQLException;
 /**
  * VerticaMetaModel
  */
-public class VerticaMetaModel extends GenericMetaModel
+public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
     static final Log log = Log.getLog(VerticaMetaModel.class);
 
@@ -80,4 +85,12 @@ public class VerticaMetaModel extends GenericMetaModel
         return super.getProcedureDDL(monitor, sourceObject);
     }
 
+    @Nullable
+    @Override
+    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new QueryTransformerLimit();
+        }
+        return null;
+    }
 }
