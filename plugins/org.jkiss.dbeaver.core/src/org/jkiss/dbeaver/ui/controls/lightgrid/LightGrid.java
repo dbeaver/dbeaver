@@ -4029,7 +4029,7 @@ public abstract class LightGrid extends Canvas {
             }
             return toolTip;
         } else {
-            return null;
+            return "";
         }
     }
 
