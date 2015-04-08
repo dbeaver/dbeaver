@@ -53,12 +53,18 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
             GenericMetaModel metaModel;
             if (!CommonUtils.isEmpty(metaClass)) {
                 try {
-                    metaModel = AbstractDescriptor.getObjectClass(
+                    Class<? extends GenericMetaModel> metaClassImpl = AbstractDescriptor.getObjectClass(
                         Platform.getBundle(ext.getContributor().getName()),
                         metaClass,
-                        GenericMetaModel.class)
-                        .getConstructor(IConfigurationElement.class)
-                        .newInstance(ext);
+                        GenericMetaModel.class);
+                    if (metaClassImpl != null) {
+                        metaModel = metaClassImpl
+                            .getConstructor(IConfigurationElement.class)
+                            .newInstance(ext);
+                    } else {
+                        log.warn("Generic meta model implementation '" + metaClass + "' not found");
+                        continue;
+                    }
                 } catch (Exception e) {
                     log.error(e);
                     continue;
