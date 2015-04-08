@@ -16,17 +16,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.mysql.model;
+package org.jkiss.dbeaver.model.impl.sql;
 
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
+import java.util.regex.Pattern;
+
 /**
-* Query transformer for RS limit
+* Query transformer for LIMIT
 */
-class QueryTransformerLimit implements DBCQueryTransformer {
+public class QueryTransformerLimit implements DBCQueryTransformer {
+
+    private static final Pattern SELECT_PATTERN = Pattern.compile("\\s*(?:select|update|delete|insert).+", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     private Object offset;
     private Object length;
