@@ -920,14 +920,16 @@ public class DataSourceDescriptor
     public boolean reconnect(final DBRProgressMonitor monitor, boolean reflect)
         throws DBException
     {
+        if (connecting) {
+            log.debug("Can't reconnect - connect/disconnect is in progress");
+            return false;
+        }
         if (isConnected()) {
             if (!disconnect(monitor, reflect)) {
                 return false;
             }
         }
-        connect(monitor, true, reflect);
-
-        return true;
+        return connect(monitor, true, reflect);
     }
 
     @Override
