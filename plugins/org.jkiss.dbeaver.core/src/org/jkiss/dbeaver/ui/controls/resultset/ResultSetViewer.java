@@ -503,7 +503,6 @@ public class ResultSetViewer extends Viewer
     }
 
     void updatePresentation(final DBCResultSet resultSet) {
-        viewerPanel.setRedraw(false);
         try {
             if (resultSet instanceof StatResultSet) {
                 // Statistics - let's use special presentation for it
@@ -559,19 +558,22 @@ public class ResultSetViewer extends Viewer
         } finally {
             // Update combo
             CImageCombo combo = presentationSwitchCombo.combo;
-            if (activePresentationDescriptor == null) {
-                combo.setEnabled(false);
-            } else {
-                combo.setEnabled(true);
-                combo.removeAll();
-                for (ResultSetPresentationDescriptor pd : availablePresentations) {
-                    combo.add(pd.getIcon(), pd.getLabel(), null, pd);
+            combo.setRedraw(false);
+            try {
+                if (activePresentationDescriptor == null) {
+                    combo.setEnabled(false);
+                } else {
+                    combo.setEnabled(true);
+                    combo.removeAll();
+                    for (ResultSetPresentationDescriptor pd : availablePresentations) {
+                        combo.add(pd.getIcon(), pd.getLabel(), null, pd);
+                    }
+                    combo.select(activePresentationDescriptor);
                 }
-                combo.select(activePresentationDescriptor);
+            } finally {
+                // Enable redraw
+                combo.setRedraw(true);
             }
-
-            // Enable redraw
-            viewerPanel.setRedraw(true);
         }
 
     }
@@ -1453,7 +1455,8 @@ public class ResultSetViewer extends Viewer
             UIUtils.showErrorDialog(
                 viewerPanel.getShell(),
                 "Error executing query",
-                "Viewer detached rom data source or other query execution is in progress");
+                dataContainer == null ?
+                    "Viewer detached rom data source" : "Query execution is in progress");
         }
     }
 
@@ -1533,7 +1536,7 @@ public class ResultSetViewer extends Viewer
         dataPumpJob = new ResultSetDataPumpJob(
             dataContainer,
             useDataFilter,
-            getDataReceiver(),
+            this,
             getExecutionContext(),
             progressControl);
         dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
