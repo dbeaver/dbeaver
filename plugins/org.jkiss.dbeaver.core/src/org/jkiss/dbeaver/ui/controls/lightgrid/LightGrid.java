@@ -975,7 +975,7 @@ public abstract class LightGrid extends Canvas {
     {
         int index = indexOf(column);
 
-        if (index <= 0 || index == columns.size() - 1)
+        if (index < 0 || index >= columns.size() - 1)
             return null;
 
         return columns.get(index + 1);
@@ -3053,7 +3053,7 @@ public abstract class LightGrid extends Canvas {
 
                     boolean decreasing = (indexOf(iterCol) > indexOf(focusColumn));
 
-                    do {
+                    while (iterCol != null) {
                         getCells(iterCol, newSelected);
 
                         if (iterCol == focusColumn) {
@@ -3066,7 +3066,7 @@ public abstract class LightGrid extends Canvas {
                             iterCol = getNextVisibleColumn(iterCol);
                         }
 
-                    } while (true);
+                    }
 
                     selectionEvent = updateCellSelection(newSelected, ctrlFlag, true, false, EventSource.MOUSE);
                 }
