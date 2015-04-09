@@ -170,7 +170,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
     {
         DBDContent content = (DBDContent) valueController.getValue();
         if (ContentUtils.isTextContent(content)) {
-            Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
             text.setEditable(!valueController.isReadOnly());
             return text;
         } else {
