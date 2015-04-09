@@ -91,7 +91,7 @@ public class ResultSetPropertyTester extends PropertyTester
         } else if (PROP_CAN_TOGGLE.equals(property)) {
             return rsv.getActivePresentation().getControl().isFocusControl();
         } else if (PROP_CAN_SWITCH_PRESENTATION.equals(property)) {
-            return rsv.getAvailablePresentations() != null && rsv.getAvailablePresentations().size() > 1;
+            return !rsv.isRefreshInProgress() && rsv.getAvailablePresentations() != null && rsv.getAvailablePresentations().size() > 1;
         }
         return false;
     }

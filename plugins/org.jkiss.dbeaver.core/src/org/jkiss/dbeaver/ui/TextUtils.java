@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
  * Text utils
  */
 public class TextUtils {
+    public static final char PARAGRAPH_CHAR = (char) 182;
     public static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
 
     public static boolean isEmptyLine(IDocument document, int line)
@@ -226,4 +227,7 @@ public class TextUtils {
         return new Point(maxLength, lineCount);
     }
 
+    public static String getSingleLineString(String displayString) {
+        return displayString.replace('\n', PARAGRAPH_CHAR).replace("\r", "").replace((char)0, ' ');
+    }
 }

@@ -429,6 +429,7 @@ public class ResultSetViewer extends Viewer
         } else if (filtersEnableState == null) {
             filtersEnableState = ControlEnableState.disable(filtersPanel);
         }
+        presentationSwitchCombo.combo.setEnabled(enableFilters);
     }
 
     private void addFiltersHistory(String whereCondition)
@@ -1985,6 +1986,10 @@ public class ResultSetViewer extends Viewer
                 menuManager.add(new Separator());
                 for (final ResultSetPresentationDescriptor pd : availablePresentations) {
                     Action action = new Action(pd.getLabel(), IAction.AS_RADIO_BUTTON) {
+                        @Override
+                        public boolean isEnabled() {
+                            return !isRefreshInProgress();
+                        }
                         @Override
                         public boolean isChecked() {
                             return pd == activePresentationDescriptor;
