@@ -42,6 +42,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.StyledTextFindReplaceTarget;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
@@ -267,7 +268,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row) {
         String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
-        return displayString.replace('\n', UIUtils.PARAGRAPH_CHAR).replace("\r", "").replace((char)0, ' ');
+        return TextUtils.getSingleLineString(displayString);
     }
 
     private void printRecord() {
