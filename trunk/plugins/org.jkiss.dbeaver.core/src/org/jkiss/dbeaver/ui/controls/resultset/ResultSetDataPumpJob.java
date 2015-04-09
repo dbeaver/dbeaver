@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -39,7 +41,6 @@ import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -64,7 +65,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
 
     private DBSDataContainer dataContainer;
     private DBDDataFilter dataFilter;
-    private DBDDataReceiver dataReceiver;
+    private IResultSetController controller;
     private Composite progressControl;
     private int offset;
     private int maxRows;
@@ -73,12 +74,12 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private long pumpStartTime;
     private String progressMessage;
 
-    protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, DBDDataReceiver dataReceiver, DBCExecutionContext executionContext, Composite progressControl) {
+    protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, IResultSetController controller, DBCExecutionContext executionContext, Composite progressControl) {
         super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBIcon.SQL_EXECUTE.getImageDescriptor(), executionContext);
         progressMessage = CoreMessages.controls_rs_pump_job_name;
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;
-        this.dataReceiver = dataReceiver;
+        this.controller = controller;
         this.progressControl = progressControl;
         setUser(false);
     }
@@ -129,7 +130,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
             visualizer.schedule(PROGRESS_VISUALIZE_PERIOD * 2);
             statistics = dataContainer.readData(
                 session,
-                dataReceiver,
+                controller.getDataReceiver(),
                 dataFilter,
                 offset,
                 maxRows,
@@ -153,15 +154,21 @@ class ResultSetDataPumpJob extends DataSourceJob {
         private volatile int drawCount = 0;
         private Button cancelButton;
         private PaintListener painListener;
+        private Control presentationControl;
+        private Color shadowColor;
 
         public PumpVisualizer() {
             super(progressControl.getDisplay(), "RSV Pump Visualizer");
             setSystem(true);
+            presentationControl = controller.getActivePresentation().getControl();
         }
 
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor) {
             if (!progressControl.isDisposed()) {
+                if (shadowColor == null) {
+                    shadowColor = progressControl.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+                }
                 if (!finished) {
                     try {
                         showProgress(progressControl);
@@ -222,21 +229,17 @@ class ResultSetDataPumpJob extends DataSourceJob {
 
                         int statusX = (buttonBounds.x + buttonBounds.width / 2) - statusSize.x / 2;
                         int statusY = buttonBounds.y - imageBounds.height - 10 - statusSize.y;
-                        e.gc.setForeground(progressPlaceholder.getForeground());
-                        e.gc.setBackground(progressPlaceholder.getBackground());
+                        e.gc.setForeground(controller.getDefaultForeground());
+                        e.gc.setBackground(controller.getDefaultBackground());
                         e.gc.fillRectangle(statusX - 2, statusY - 2, statusSize.x + 4, statusSize.y + 4);
                         e.gc.drawText(status, statusX, statusY, true);
+                        e.gc.setForeground(shadowColor);
+                        e.gc.drawRoundRectangle(statusX - 3, statusY - 3, statusSize.x + 5, statusSize.y + 5, 5, 5);
                     }
                 };
-                progressPlaceholder.addPaintListener(painListener);
+                presentationControl.addPaintListener(painListener);
 
-                progressOverlay = new ControlEditor(progressPlaceholder) {
-                    @Override
-                    public void layout() {
-                        progressPlaceholder.redraw();
-                        super.layout();
-                    }
-                };
+                progressOverlay = new ControlEditor(progressPlaceholder);
                 Point buttonSize = cancelButton.computeSize(SWT.DEFAULT, SWT.DEFAULT);
                 progressOverlay.minimumWidth = buttonSize.x;
                 progressOverlay.minimumHeight = buttonSize.y;
@@ -244,16 +247,17 @@ class ResultSetDataPumpJob extends DataSourceJob {
             }
             drawCount++;
             progressOverlay.layout();
+            presentationControl.redraw();
             schedule(PROGRESS_VISUALIZE_PERIOD);
         }
 
         private void finishProgress(Composite control) {
-            // Last update - remove progress visualization
-            if (progressOverlay != null) {
+                // Last update - remove progress visualization
+            if (progressOverlay != null && !presentationControl.isDisposed()) {
                 progressOverlay.dispose();
                 progressOverlay = null;
                 cancelButton.dispose();
-                control.removePaintListener(painListener);
+                presentationControl.removePaintListener(painListener);
                 control.redraw();
             }
         }
