@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -26,6 +27,9 @@ import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -37,7 +41,7 @@ import java.sql.SQLException;
 /**
  * SQLServerMetaModel
  */
-public class SQLServerMetaModel extends GenericMetaModel
+public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
     static final Log log = Log.getLog(SQLServerMetaModel.class);
 
@@ -97,4 +101,14 @@ public class SQLServerMetaModel extends GenericMetaModel
             session.close();
         }
     }
+
+    @Nullable
+    @Override
+    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            //return new QueryTransformerTop();
+        }
+        return null;
+    }
+
 }
