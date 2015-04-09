@@ -32,14 +32,23 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
 
     private static final Pattern SELECT_PATTERN = Pattern.compile("\\s*(?:select|update|delete|insert).+", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
-    private Object offset;
-    private Object length;
+    private boolean supportsOffset;
+    private Number offset;
+    private Number length;
     private boolean limitSet;
+
+    public QueryTransformerLimit() {
+        this(true);
+    }
+
+    public QueryTransformerLimit(boolean supportsOffset) {
+        this.supportsOffset = supportsOffset;
+    }
 
     @Override
     public void setParameters(Object... parameters) {
-        this.offset = parameters[0];
-        this.length = parameters[1];
+        this.offset = (Number) parameters[0];
+        this.length = (Number) parameters[1];
     }
 
     @Override
@@ -49,8 +58,13 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement
             limitSet = false;
         } else {
-            query = query + SQLUtils.TOKEN_TRANSFORM_START + " LIMIT " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
-            limitSet = true;
+            if (supportsOffset) {
+                query = query + SQLUtils.TOKEN_TRANSFORM_START + " LIMIT " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
+            } else {
+                // We can limit only total row number
+                query = query + SQLUtils.TOKEN_TRANSFORM_START + " LIMIT " + (offset.longValue() + length.longValue()) + SQLUtils.TOKEN_TRANSFORM_END;
+            }
+            limitSet = supportsOffset;
         }
         return query;
     }
@@ -58,7 +72,7 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     @Override
     public void transformStatement(DBCStatement statement, int parameterIndex) throws DBCException {
         if (!limitSet) {
-            statement.setLimit(((Number)offset).longValue(), ((Number)length).longValue());
+            statement.setLimit(offset.longValue(), length.longValue());
         }
     }
 }
