@@ -197,7 +197,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 DBDAttributeBinding attr = attrs.get(i);
                 colWidths[i] = attr.getName().length();
                 for (ResultSetRow row : allRows) {
-                    String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
+                    String displayString = getCellString(model, attr, row);
                     colWidths[i] = Math.max(colWidths[i], displayString.length());
                 }
             }
@@ -242,7 +242,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             ResultSetRow row = allRows.get(i);
             for (int k = 0; k < attrs.size(); k++) {
                 DBDAttributeBinding attr = attrs.get(k);
-                String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
+                String displayString = getCellString(model, attr, row);
                 if (displayString.length() >= colWidths[k] - 1) {
                     displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
                 }
@@ -263,6 +263,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         }
 
         totalRows = allRows.size();
+    }
+
+    private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row) {
+        String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
+        return displayString.replace('\n', UIUtils.PARAGRAPH_CHAR).replace("\r", "").replace((char)0, ' ');
     }
 
     private void printRecord() {
