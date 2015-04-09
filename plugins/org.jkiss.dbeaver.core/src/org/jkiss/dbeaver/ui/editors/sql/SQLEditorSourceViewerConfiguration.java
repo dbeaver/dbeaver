@@ -48,9 +48,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
@@ -156,17 +154,11 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        if (editor instanceof IDataSourceContainerProvider) {
-            final DBSDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
-            if (container != null) {
-                store = container.getPreferenceStore();
-            }
-        } else {
-            final DBPDataSource dataSource = editor.getDataSource();
-            if (dataSource != null) {
-                store = dataSource.getContainer().getPreferenceStore();
-            }
+        final DBPDataSource dataSource = editor.getDataSource();
+        if (dataSource != null) {
+            store = dataSource.getContainer().getPreferenceStore();
         }
+
         final IPreferenceStore configStore = store;
 
         final ContentAssistant assistant = new ContentAssistant();

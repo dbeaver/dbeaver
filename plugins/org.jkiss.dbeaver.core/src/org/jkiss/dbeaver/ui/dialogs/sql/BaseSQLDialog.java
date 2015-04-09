@@ -35,8 +35,7 @@ import org.eclipse.ui.PartInitException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -47,7 +46,6 @@ public abstract class BaseSQLDialog extends BaseDialog implements IDataSourcePro
 
     private IEditorSite subSite;
     private SQLEditorBase sqlViewer;
-    private StringEditorInput sqlInput;
 
     public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable Image image)
     {
@@ -78,10 +76,8 @@ public abstract class BaseSQLDialog extends BaseDialog implements IDataSourcePro
 
         sqlViewer = new SQLEditorBase() {
             @Override
-            public SQLDataSource getDataSource()
-            {
-                DBPDataSource dataSource = BaseSQLDialog.this.getDataSource();
-                return dataSource instanceof SQLDataSource ? (SQLDataSource) dataSource : null;
+            public DBCExecutionContext getExecutionContext() {
+                return BaseSQLDialog.this.getDataSource();
             }
         };
         updateSQL();
@@ -131,7 +127,7 @@ public abstract class BaseSQLDialog extends BaseDialog implements IDataSourcePro
     protected void updateSQL()
     {
         try {
-            sqlInput = new StringEditorInput(getShell().getText(), getSQLText(), true);
+            StringEditorInput sqlInput = new StringEditorInput(getShell().getText(), getSQLText(), true);
             sqlViewer.init(subSite, sqlInput);
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(getShell(), getShell().getText(), null, e);

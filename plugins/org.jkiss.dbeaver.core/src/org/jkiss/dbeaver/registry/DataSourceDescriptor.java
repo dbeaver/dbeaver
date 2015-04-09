@@ -144,6 +144,7 @@ public class DataSourceDescriptor
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
     private volatile boolean disposed = false;
+    private volatile boolean connecting = false;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<DBRProcessDescriptor>();
     private DBWTunnel tunnel;
     private String folderPath;
@@ -582,19 +583,25 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void connect(DBRProgressMonitor monitor)
+    public boolean connect(DBRProgressMonitor monitor)
         throws DBException
     {
-        connect(monitor, true, true);
+        return connect(monitor, true, true);
     }
 
-    public void connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
+    public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
         throws DBException
     {
+        if (connecting) {
+            log.debug("Can't connect - connect/disconnect is in progress");
+            return false;
+        }
         if (this.isConnected()) {
-            return;
+            log.debug("Can't connect - already connected");
+            return false;
         }
 
+        connecting = true;
         DBPConnectionInfo savedConnectionInfo = null;
         tunnelConnectionInfo = null;
         try {
@@ -695,6 +702,8 @@ public class DataSourceDescriptor
                     true);
             }
             firePropertyChange();
+
+            return true;
         } catch (Exception e) {
             // Failed
             connectFailed = true;
@@ -714,6 +723,7 @@ public class DataSourceDescriptor
             if (savedConnectionInfo != null) {
                 connectionInfo = savedConnectionInfo;
             }
+            connecting = false;
         }
     }
 
@@ -731,102 +741,113 @@ public class DataSourceDescriptor
             log.error("Datasource is not connected");
             return true;
         }
-        {
-            List<DBPDataSourceUser> usersStamp;
-            synchronized (users) {
-                usersStamp = new ArrayList<DBPDataSourceUser>(users);
-            }
-            int jobCount = 0;
-            // Save all unsaved data
-            for (DBPDataSourceUser user : usersStamp) {
-                if (user instanceof Job) {
-                    jobCount++;
+        if (connecting) {
+            log.error("Connect/disconnect is in progress");
+            return false;
+        }
+
+        connecting = true;
+        try {
+            {
+                List<DBPDataSourceUser> usersStamp;
+                synchronized (users) {
+                    usersStamp = new ArrayList<DBPDataSourceUser>(users);
                 }
-                if (user instanceof ISaveablePart) {
-                    if (!RuntimeUtils.validateAndSave(monitor, (ISaveablePart) user)) {
-                        return false;
-                    }
-                }
-                if (user instanceof DBPDataSourceHandler) {
-                    ((DBPDataSourceHandler)user).beforeDisconnect();
-                }
-            }
-            if (jobCount > 0) {
-                monitor.beginTask("Waiting for all active tasks to finish", jobCount);
-                // Stop all jobs
+                int jobCount = 0;
+                // Save all unsaved data
                 for (DBPDataSourceUser user : usersStamp) {
                     if (user instanceof Job) {
-                        Job job = (Job)user;
-                        monitor.subTask("Stop '" + job.getName() + "'");
-                        if (job.getState() == Job.RUNNING) {
-                            job.cancel();
-                            try {
-                                // Wait for 3 seconds
-                                for (int i = 0; i < 10; i++) {
-                                    Thread.sleep(300);
-                                    if (job.getState() != Job.RUNNING) {
-                                        break;
-                                    }
-                                }
-                            } catch (InterruptedException e) {
-                                // its ok, do nothing
-                            }
+                        jobCount++;
+                    }
+                    if (user instanceof ISaveablePart) {
+                        if (!RuntimeUtils.validateAndSave(monitor, (ISaveablePart) user)) {
+                            return false;
                         }
-                        monitor.worked(1);
+                    }
+                    if (user instanceof DBPDataSourceHandler) {
+                        ((DBPDataSourceHandler) user).beforeDisconnect();
                     }
                 }
-                monitor.done();
-            }
-        }
-
-        monitor.beginTask("Disconnect from '" + getName() + "'", 4);
-
-        // Close datasource
-        monitor.subTask("Close connection");
-        if (dataSource != null) {
-            dataSource.close();
-        }
-        monitor.worked(1);
-
-        // Close tunnel
-        if (tunnel != null) {
-            monitor.subTask("Close tunnel");
-            try {
-                tunnel.closeTunnel(monitor, connectionInfo);
-            } catch (Exception e) {
-                log.warn("Error closing tunnel", e);
-            } finally {
-                this.tunnel = null;
-            }
-        }
-        monitor.worked(1);
-
-        monitor.done();
-
-        // Terminate child processes
-        synchronized (childProcesses) {
-            for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
-                DBRProcessDescriptor process = iter.next();
-                if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
-                    process.terminate();
+                if (jobCount > 0) {
+                    monitor.beginTask("Waiting for all active tasks to finish", jobCount);
+                    // Stop all jobs
+                    for (DBPDataSourceUser user : usersStamp) {
+                        if (user instanceof Job) {
+                            Job job = (Job) user;
+                            monitor.subTask("Stop '" + job.getName() + "'");
+                            if (job.getState() == Job.RUNNING) {
+                                job.cancel();
+                                try {
+                                    // Wait for 3 seconds
+                                    for (int i = 0; i < 10; i++) {
+                                        Thread.sleep(300);
+                                        if (job.getState() != Job.RUNNING) {
+                                            break;
+                                        }
+                                    }
+                                } catch (InterruptedException e) {
+                                    // its ok, do nothing
+                                }
+                            }
+                            monitor.worked(1);
+                        }
+                    }
+                    monitor.done();
                 }
-                iter.remove();
             }
+
+            monitor.beginTask("Disconnect from '" + getName() + "'", 4);
+
+            // Close datasource
+            monitor.subTask("Close connection");
+            if (dataSource != null) {
+                dataSource.close();
+            }
+            monitor.worked(1);
+
+            // Close tunnel
+            if (tunnel != null) {
+                monitor.subTask("Close tunnel");
+                try {
+                    tunnel.closeTunnel(monitor, connectionInfo);
+                } catch (Exception e) {
+                    log.warn("Error closing tunnel", e);
+                } finally {
+                    this.tunnel = null;
+                }
+            }
+            monitor.worked(1);
+
+            monitor.done();
+
+            // Terminate child processes
+            synchronized (childProcesses) {
+                for (Iterator<DBRProcessDescriptor> iter = childProcesses.iterator(); iter.hasNext(); ) {
+                    DBRProcessDescriptor process = iter.next();
+                    if (process.isRunning() && process.getCommand().isTerminateAtDisconnect()) {
+                        process.terminate();
+                    }
+                    iter.remove();
+                }
+            }
+
+            dataSource = null;
+            connectTime = null;
+
+            if (reflect) {
+                // Reflect UI
+                getRegistry().fireDataSourceEvent(
+                    DBPEvent.Action.OBJECT_UPDATE,
+                    this,
+                    false);
+                firePropertyChange();
+            }
+
+            return true;
         }
-
-        dataSource = null;
-        connectTime = null;
-
-        if (reflect) {
-            // Reflect UI
-            getRegistry().fireDataSourceEvent(
-                DBPEvent.Action.OBJECT_UPDATE,
-                this,
-                false);
-            firePropertyChange();
+        finally {
+            connecting = false;
         }
-
-        return true;
     }
 
     public boolean closeActiveTransaction(final DBRProgressMonitor monitor)
