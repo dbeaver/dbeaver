@@ -358,8 +358,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     @Nullable
     private DBSObject getTableFromAlias(DBRProgressMonitor monitor, DBSObjectContainer sc, @Nullable String token)
     {
-        final SQLDataSource dataSource = editor.getDataSource();
-        if (dataSource == null) {
+        final DBPDataSource dataSource = editor.getDataSource();
+        if (!(dataSource instanceof SQLDataSource)) {
             return null;
         }
         if (activeQuery == null) {
@@ -374,7 +374,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         {
             Matcher matcher;
             Pattern aliasPattern;
-            SQLDialect sqlDialect = dataSource.getSQLDialect();
+            SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
             String quoteString = sqlDialect.getIdentifierQuoteString();
             String quote = quoteString == null ? SQLConstants.STR_QUOTE_DOUBLE :
                 SQLConstants.STR_QUOTE_DOUBLE.equals(quoteString) ?
@@ -585,7 +585,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     private IPreferenceStore getPreferences() {
         IPreferenceStore store = null;
-        SQLDataSource dataSource = editor.getDataSource();
+        DBPDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
             store = dataSource.getContainer().getPreferenceStore();
         }
@@ -607,7 +607,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         @Nullable DBPNamedObject object)
     {
         IPreferenceStore store = getPreferences();
-        SQLDataSource dataSource = editor.getDataSource();
+        DBPDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
             if (isObject) {
                 // Escape replace string if required
@@ -628,7 +628,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 replaceString = replaceString.toLowerCase();
                 break;
             default:
-                DBPIdentifierCase convertCase = quotedString && dataSource != null ? dataSource.getSQLDialect().storesQuotedCase() : DBPIdentifierCase.MIXED;
+                DBPIdentifierCase convertCase = quotedString && dataSource instanceof SQLDataSource ?
+                    ((SQLDataSource) dataSource).getSQLDialect().storesQuotedCase() : DBPIdentifierCase.MIXED;
                 replaceString = convertCase.transform(replaceString);
                 break;
         }

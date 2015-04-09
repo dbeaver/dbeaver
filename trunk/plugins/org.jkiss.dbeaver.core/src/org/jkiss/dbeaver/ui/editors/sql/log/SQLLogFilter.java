@@ -64,7 +64,7 @@ class SQLLogFilter implements QMEventFilter {
 
     private boolean belongsToEditor(QMMSessionInfo session) {
         DBCExecutionContext executionContext = session.getReference();
-        return executionContext != null && executionContext.getDataSource() == editor.getDataSource();
+        return executionContext != null && executionContext == editor.getExecutionContext();
     }
 
     private boolean belongsToEditor(DBCStatement statement) {

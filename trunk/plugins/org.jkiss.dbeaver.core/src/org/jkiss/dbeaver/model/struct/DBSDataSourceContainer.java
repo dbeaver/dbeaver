@@ -101,7 +101,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IData
      * @param monitor progress monitor
      * @throws DBException on error
      */
-    void connect(DBRProgressMonitor monitor) throws DBException;
+    boolean connect(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Disconnects from datasource.

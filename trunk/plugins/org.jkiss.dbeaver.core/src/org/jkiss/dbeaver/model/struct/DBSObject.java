@@ -48,10 +48,11 @@ public interface DBSObject extends DBPNamedObject, DBPPersistedObject
 	DBSObject getParentObject();
 
     /**
-     * Datasource which this object belongs
-     * @return datasource reference
+     * Datasource which this object belongs.
+     * It can be null if object was detached from data source.
+     * @return datasource reference or null
      */
-    @NotNull
+    @Nullable
     DBPDataSource getDataSource();
 
 }

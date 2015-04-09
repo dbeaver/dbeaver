@@ -184,7 +184,9 @@ public class QMMSessionInfo extends QMMObject {
         if (exec == null) {
             exec = beginExecution(resultSet.getSourceStatement());
         }
-        exec.beginFetch();
+        if (exec != null) {
+            exec.beginFetch();
+        }
         return exec;
     }
 
