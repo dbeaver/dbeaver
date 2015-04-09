@@ -324,6 +324,10 @@ public class DBeaverCore implements DBPApplication {
         return projectRegistry;
     }
 
+    public IProject getTempProject() {
+        return tempProject;
+    }
+
     public IFolder getLobFolder(IProgressMonitor monitor)
         throws IOException
     {

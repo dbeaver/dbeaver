@@ -30,6 +30,8 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
@@ -43,7 +45,7 @@ import java.io.*;
 /**
  * ContentEditorInput
  */
-public class ContentEditorInput implements IPathEditorInput
+public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
 {
     static final Log log = Log.getLog(ContentEditorInput.class);
 
@@ -327,4 +329,9 @@ public class ContentEditorInput implements IPathEditorInput
         }
     }
 
+    @Nullable
+    @Override
+    public DBPDataSource getDataSource() {
+        return valueController.getExecutionContext().getDataSource();
+    }
 }
