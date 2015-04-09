@@ -1,3 +1,7 @@
+Make IDataSourceProvider -> IDatabaseContextProvider
+Connection per editor support. Host ExecutionContext in editors instead of DataSource.
+InvalidateContext -> InvalidateDataSource ??
+
 Fix product title (now Enterprise)
 Fix UI freeze in Mongo connection page
 Analyse exception for error line/offset and position cursor in SQL editor
@@ -31,7 +35,6 @@ In record mode show only existing attrs for dynamic metadata
 Hide dynamic columns which presents in less than 50% of records. Show them as arrays??
 
 4. Query manager fixes. + keep only primitive props + persistence
-5. Connection per editor support. Host ExecutionContext in editors instead of DataSource.
 7. Check on MacOS
 
 Connection "dirty" flag handle
