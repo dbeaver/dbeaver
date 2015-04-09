@@ -224,26 +224,26 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         rules.add(new NumberRule(numberToken));
 
         {
-            // Delimiter rule
+            // Default delim rule
             WordRule delimRule = new WordRule(new IWordDetector() {
                 @Override
                 public boolean isWordStart(char c)
                 {
-                    return SQLConstants.DEFAULT_STATEMENT_DELIMITER.charAt(0) == c ||
-                        statementDelimiter.charAt(0) == Character.toLowerCase(c);
+                    return SQLConstants.DEFAULT_STATEMENT_DELIMITER.charAt(0) == c;
                 }
 
                 @Override
                 public boolean isWordPart(char c)
                 {
-                    return SQLConstants.DEFAULT_STATEMENT_DELIMITER.indexOf(c) != -1 ||
-                        statementDelimiter.indexOf(Character.toLowerCase(c)) != -1;
+                    return SQLConstants.DEFAULT_STATEMENT_DELIMITER.indexOf(c) != -1;
                 }
-            }, Token.UNDEFINED, true);
+            }, Token.UNDEFINED, false);
             delimRule.addWord(SQLConstants.DEFAULT_STATEMENT_DELIMITER, delimiterToken);
-            if (!statementDelimiter.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
-                delimRule.addWord(statementDelimiter, delimiterToken);
-            }
+            rules.add(delimRule);
+        }
+        if (!statementDelimiter.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
+            WordRule delimRule = new WordRule(new SQLWordDetector(), Token.UNDEFINED, true);
+            delimRule.addWord(statementDelimiter, delimiterToken);
             rules.add(delimRule);
         }
 

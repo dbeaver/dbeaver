@@ -30,19 +30,26 @@ import java.util.regex.Pattern;
 */
 public class QueryTransformerLimit implements DBCQueryTransformer {
 
-    private static final Pattern SELECT_PATTERN = Pattern.compile("\\s*(?:select|update|delete|insert).+", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    //private static final Pattern SELECT_PATTERN = Pattern.compile("\\s*(?:select|update|delete|insert).+", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    public static final String KEYWORD_LIMIT = "LIMIT";
 
     private boolean supportsOffset;
     private Number offset;
     private Number length;
     private boolean limitSet;
+    private String limitKeyword;
 
     public QueryTransformerLimit() {
-        this(true);
+        this(true, KEYWORD_LIMIT);
     }
 
     public QueryTransformerLimit(boolean supportsOffset) {
+        this(supportsOffset, KEYWORD_LIMIT);
+    }
+
+    public QueryTransformerLimit(boolean supportsOffset, String limitKeyword) {
         this.supportsOffset = supportsOffset;
+        this.limitKeyword = limitKeyword;
     }
 
     @Override
@@ -54,15 +61,15 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     @Override
     public String transformQueryString(String query) throws DBCException {
         String testQuery = query.toUpperCase().trim();
-        if (!testQuery.startsWith("SELECT") || testQuery.contains("LIMIT") || testQuery.contains("INTO")) {
+        if (!testQuery.startsWith("SELECT") || testQuery.contains(limitKeyword) || testQuery.contains("INTO")) {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement
             limitSet = false;
         } else {
             if (supportsOffset) {
-                query = query + SQLUtils.TOKEN_TRANSFORM_START + " LIMIT " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
+                query = query + SQLUtils.TOKEN_TRANSFORM_START + " " + limitKeyword + " " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
             } else {
                 // We can limit only total row number
-                query = query + SQLUtils.TOKEN_TRANSFORM_START + " LIMIT " + (offset.longValue() + length.longValue()) + SQLUtils.TOKEN_TRANSFORM_END;
+                query = query + SQLUtils.TOKEN_TRANSFORM_START + " " + limitKeyword + " " + (offset.longValue() + length.longValue()) + SQLUtils.TOKEN_TRANSFORM_END;
             }
             limitSet = supportsOffset;
         }
