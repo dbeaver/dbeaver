@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.runtime.qm.*;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TableToolTip;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -584,7 +585,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         item.setData(object);
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             ColumnDescriptor cd = columns.get(i);
-            item.setText(i, cd.logColumn.getText(object).replace('\n', UIUtils.PARAGRAPH_CHAR));
+            item.setText(i, TextUtils.getSingleLineString(cd.logColumn.getText(object)));
         }
         item.setFont(getObjectFont(object));
         item.setForeground(getObjectForeground(object));

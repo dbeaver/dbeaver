@@ -73,7 +73,6 @@ public class UIUtils {
 
     static final Log log = Log.getLog(UIUtils.class);
 
-    public static final char PARAGRAPH_CHAR = (char) 182;
     public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";
 
     public static VerifyListener getIntegerVerifyListener(Locale locale)
