@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
@@ -26,9 +27,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
+import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -36,7 +41,7 @@ import java.sql.SQLException;
 /**
  * PostgreMetaModel
  */
-public class PostgreMetaModel extends GenericMetaModel
+public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
 
     public PostgreMetaModel(IConfigurationElement cfg) {
@@ -71,4 +76,14 @@ public class PostgreMetaModel extends GenericMetaModel
     public DBCQueryPlanner getQueryPlanner(GenericDataSource dataSource) {
         return new PostgreQueryPlaner(dataSource);
     }
+
+    @Nullable
+    @Override
+    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
+            return new QueryTransformerLimit(false);
+        }
+        return null;
+    }
+
 }
