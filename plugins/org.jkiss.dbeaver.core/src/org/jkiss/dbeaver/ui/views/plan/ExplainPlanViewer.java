@@ -37,11 +37,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -57,7 +56,6 @@ import org.jkiss.utils.CommonUtils;
 public class ExplainPlanViewer implements IPropertyChangeListener
 {
     //static final Log log = Log.getLog(ResultSetViewer.class);
-    private IDataSourceProvider dataSourceProvider;
     private SashForm planPanel;
     private Text sqlText;
     private PlanNodesTree planTree;
@@ -68,10 +66,9 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private ToggleViewAction toggleViewAction;
     private final SashForm leftPanel;
 
-    public ExplainPlanViewer(final IWorkbenchPart workbenchPart, Composite parent, IDataSourceProvider dataSourceProvider)
+    public ExplainPlanViewer(final IWorkbenchPart workbenchPart, Composite parent)
     {
         super();
-        this.dataSourceProvider = dataSourceProvider;
         createActions();
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -119,11 +116,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
             {
                 String message = null;
                 if (planner == null) {
-                    if (getDataSource() != null) {
-                        message = "Data provider doesn't support execution plan";
-                    } else {
-                        message = CoreMessages.editors_sql_status_not_connected_to_database;
-                    }
+                    message = "No connection or data source doesn't support execution plan";
                 } else if (CommonUtils.isEmpty(sqlText.getText())) {
 
                     message = "Select a query and run " + ActionUtils.findCommandDescription(
@@ -182,11 +175,6 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         this.refreshPlanAction.setEnabled(false);
     }
 
-    private DBPDataSource getDataSource()
-    {
-        return dataSourceProvider.getDataSource();
-    }
-
     public Control getControl()
     {
         return planPanel.getParent();
@@ -197,11 +185,13 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         return planTree.getItemsViewer();
     }
 
-    public void refresh()
+    public void refresh(DBCExecutionContext executionContext)
     {
         // Refresh plan
-        DBPDataSource dataSource = getDataSource();
-        planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
+        if (executionContext != null) {
+            DBPDataSource dataSource = executionContext.getDataSource();
+            planner = DBUtils.getAdapter(DBCQueryPlanner.class, dataSource);
+        }
         planTree.clearListData();
         refreshPlanAction.setEnabled(false);
     }

@@ -41,15 +41,14 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
+import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -99,13 +98,12 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public SQLDataSource getDataSource() {
+    public DBCExecutionContext getExecutionContext() {
         IDatabaseEditorInput editorInput = getEditorInput();
         if (editorInput == null) {
             return null;
         }
-        DBPDataSource dataSource = editorInput.getDataSource();
-        return dataSource instanceof SQLDataSource ? (SQLDataSource) dataSource : null;
+        return editorInput.getDataSource();
     }
 
     @Override

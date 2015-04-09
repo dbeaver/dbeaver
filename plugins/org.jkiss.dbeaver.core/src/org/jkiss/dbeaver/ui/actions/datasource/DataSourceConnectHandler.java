@@ -56,8 +56,8 @@ public class DataSourceConnectHandler extends DataSourceHandler
     /**
      * Connects datasource
      * @param monitor progress monitor or null. If nul then new job will be started
-     * @param dataSourceContainer
-     * @param onFinish
+     * @param dataSourceContainer    container to connect
+     * @param onFinish               finish handler
      */
     public static void execute(
         @Nullable DBRProgressMonitor monitor,

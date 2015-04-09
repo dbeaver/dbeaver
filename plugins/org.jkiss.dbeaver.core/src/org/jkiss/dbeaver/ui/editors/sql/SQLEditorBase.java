@@ -52,7 +52,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.ICommentsSupport;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -72,7 +72,7 @@ import java.util.*;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider {
+public abstract class SQLEditorBase extends BaseTextEditor {
     static protected final Log log = Log.getLog(SQLEditorBase.class);
 
     @NotNull
@@ -111,10 +111,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
     }
 
-    public abstract SQLDataSource getDataSource();
+    public abstract DBCExecutionContext getExecutionContext();
 
-    public DBCExecutionContext getExecutionContext() {
-        return getDataSource();
+    public final DBPDataSource getDataSource()
+    {
+        DBCExecutionContext context = getExecutionContext();
+        return context == null ? null : context.getDataSource();
     }
 
     public boolean hasAnnotations()
@@ -370,33 +372,37 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     public void reloadSyntaxRules()
     {
+        DBCExecutionContext executionContext = getExecutionContext();
+        DBPDataSource dataSource = executionContext == null ? null : executionContext.getDataSource();
         // Refresh syntax
-        syntaxManager.setDataSource(getDataSource());
-        syntaxManager.refreshRules();
+        if (dataSource instanceof SQLDataSource) {
+            syntaxManager.setDataSource((SQLDataSource) dataSource);
+            syntaxManager.refreshRules();
 
-        Document document = getDocument();
-        if (document != null) {
-            IDocumentPartitioner partitioner = new FastPartitioner(
-                new SQLPartitionScanner(syntaxManager),
-                SQLPartitionScanner.SQL_PARTITION_TYPES);
-            partitioner.connect(document);
-            document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+            Document document = getDocument();
+            if (document != null) {
+                IDocumentPartitioner partitioner = new FastPartitioner(
+                    new SQLPartitionScanner(syntaxManager),
+                    SQLPartitionScanner.SQL_PARTITION_TYPES);
+                partitioner.connect(document);
+                document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
 
-            ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
-            if (projectionViewer != null && document.getLength() > 0) {
-                // Refresh viewer
-                //projectionViewer.getTextWidget().redraw();
-                try {
-                    projectionViewer.reinitializeProjection();
-                } catch (Throwable ex) {
-                    // We can catch OutOfMemory here for too big/complex documents
-                    log.warn("Can't initialize SQL syntax projection", ex); //$NON-NLS-1$
+                ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
+                if (projectionViewer != null && document.getLength() > 0) {
+                    // Refresh viewer
+                    //projectionViewer.getTextWidget().redraw();
+                    try {
+                        projectionViewer.reinitializeProjection();
+                    } catch (Throwable ex) {
+                        // We can catch OutOfMemory here for too big/complex documents
+                        log.warn("Can't initialize SQL syntax projection", ex); //$NON-NLS-1$
+                    }
                 }
             }
         }
 
         getTextViewer().getTextWidget().setBackground(
-            getSyntaxManager().getColor(!syntaxManager.isUnassigned() && getDataSource() == null ?
+            getSyntaxManager().getColor(!syntaxManager.isUnassigned() && dataSource == null ?
                 SQLConstants.CONFIG_COLOR_DISABLED :
                 SQLConstants.CONFIG_COLOR_BACKGROUND));
 
@@ -618,9 +624,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     @Override
     public ICommentsSupport getCommentsSupport()
     {
-        SQLDataSource dataSource = getDataSource();
-        if (dataSource != null) {
-            return dataSource.getSQLDialect();
+        DBCExecutionContext context = getExecutionContext();
+        DBPDataSource dataSource = context == null ? null : context.getDataSource();
+        if (dataSource instanceof SQLDataSource) {
+            return ((SQLDataSource) dataSource).getSQLDialect();
         } else {
             return null;
         }
