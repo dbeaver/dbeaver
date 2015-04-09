@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -213,7 +214,10 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (activeObject instanceof IEditorInput) {
             final IFile file = ContentUtils.getFileFromEditorInput((IEditorInput) activeObject);
             if (file != null) {
-                return file.getProject();
+                // If this is a content editor file may belong to temp project
+                if (file.getProject() != DBeaverCore.getInstance().getTempProject()) {
+                    return file.getProject();
+                }
             }
         }
         return DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
