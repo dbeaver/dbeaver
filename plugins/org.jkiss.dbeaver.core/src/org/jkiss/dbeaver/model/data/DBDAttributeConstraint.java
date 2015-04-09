@@ -177,17 +177,14 @@ public class DBDAttributeConstraint {
         this.visualPosition = originalVisualPosition;
     }
 
-    public boolean equalFilters(DBDAttributeConstraint source)
+    public boolean equalFilters(DBDAttributeConstraint obj)
     {
-        return CommonUtils.equalObjects(this.attribute, source.attribute) &&
-            this.orderPosition == source.orderPosition &&
-            this.orderDescending == source.orderDescending &&
-            CommonUtils.equalObjects(this.criteria, source.criteria) &&
-            CommonUtils.equalObjects(this.operator, source.operator) &&
-            this.reverseOperator == source.reverseOperator &&
-            CommonUtils.equalObjects(this.value, source.value) &&
-            this.visible == source.visible &&
-            this.visualPosition == source.visualPosition;
+        return
+            CommonUtils.equalObjects(this.attribute, obj.attribute) &&
+            CommonUtils.equalObjects(this.criteria, obj.criteria) &&
+            CommonUtils.equalObjects(this.operator, obj.operator) &&
+            CommonUtils.equalObjects(this.reverseOperator, obj.reverseOperator) &&
+            CommonUtils.equalObjects(this.value, obj.value);
     }
 
     @Override
@@ -199,12 +196,21 @@ public class DBDAttributeConstraint {
     @Override
     public boolean equals(Object obj)
     {
-        return obj instanceof DBDAttributeConstraint &&
-            CommonUtils.equalObjects(this.attribute, ((DBDAttributeConstraint) obj).attribute) &&
-            CommonUtils.equalObjects(this.criteria, ((DBDAttributeConstraint) obj).criteria) &&
-            CommonUtils.equalObjects(this.operator, ((DBDAttributeConstraint) obj).operator) &&
-            CommonUtils.equalObjects(this.reverseOperator, ((DBDAttributeConstraint) obj).reverseOperator) &&
-            CommonUtils.equalObjects(this.value, ((DBDAttributeConstraint) obj).value);
+        if (obj instanceof DBDAttributeConstraint) {
+            DBDAttributeConstraint source = (DBDAttributeConstraint) obj;
+            return
+                CommonUtils.equalObjects(this.attribute, source.attribute) &&
+                this.orderPosition == source.orderPosition &&
+                this.orderDescending == source.orderDescending &&
+                CommonUtils.equalObjects(this.criteria, source.criteria) &&
+                CommonUtils.equalObjects(this.operator, source.operator) &&
+                this.reverseOperator == source.reverseOperator &&
+                CommonUtils.equalObjects(this.value, source.value) &&
+                this.visible == source.visible &&
+                this.visualPosition == source.visualPosition;
+        } else {
+            return false;
+        }
     }
 
     @Override
