@@ -140,8 +140,8 @@ class ResultSetDataPumpJob extends DataSourceJob {
             error = e;
         }
         finally {
-            session.close();
             visualizer.finished = true;
+            session.close();
         }
 
         return Status.OK_STATUS;
@@ -154,13 +154,11 @@ class ResultSetDataPumpJob extends DataSourceJob {
         private volatile int drawCount = 0;
         private Button cancelButton;
         private PaintListener painListener;
-        private Control presentationControl;
         private Color shadowColor;
 
         public PumpVisualizer() {
             super(progressControl.getDisplay(), "RSV Pump Visualizer");
             setSystem(true);
-            presentationControl = controller.getActivePresentation().getControl();
         }
 
         @Override
@@ -171,25 +169,25 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 }
                 if (!finished) {
                     try {
-                        showProgress(progressControl);
+                        showProgress();
                     } catch (Exception e) {
                         log.error("Internal error during progress visualization", e);
                         // Something went terribly wrong
                         // We shouldn't be here ever. In any case we must finish the job
-                        finishProgress(progressControl);
+                        finishProgress();
                     }
-                } else {
-                    finishProgress(progressControl);
-
+                }
+                if (finished) {
+                    finishProgress();
                 }
             }
             return Status.OK_STATUS;
         }
 
-        private void showProgress(final Composite progressPlaceholder) {
+        private void showProgress() {
             if (progressOverlay == null) {
                 // Start progress visualization
-                cancelButton = new Button(progressPlaceholder, SWT.PUSH);
+                cancelButton = new Button(progressControl, SWT.PUSH);
                 cancelButton.setText("Cancel");
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.verticalIndent = DBIcon.PROGRESS0.getImage().getBounds().height * 2;
@@ -237,9 +235,9 @@ class ResultSetDataPumpJob extends DataSourceJob {
                         e.gc.drawRoundRectangle(statusX - 3, statusY - 3, statusSize.x + 5, statusSize.y + 5, 5, 5);
                     }
                 };
-                presentationControl.addPaintListener(painListener);
+                progressControl.addPaintListener(painListener);
 
-                progressOverlay = new ControlEditor(progressPlaceholder);
+                progressOverlay = new ControlEditor(progressControl);
                 Point buttonSize = cancelButton.computeSize(SWT.DEFAULT, SWT.DEFAULT);
                 progressOverlay.minimumWidth = buttonSize.x;
                 progressOverlay.minimumHeight = buttonSize.y;
@@ -247,18 +245,22 @@ class ResultSetDataPumpJob extends DataSourceJob {
             }
             drawCount++;
             progressOverlay.layout();
-            presentationControl.redraw();
+            progressControl.redraw();
             schedule(PROGRESS_VISUALIZE_PERIOD);
         }
 
-        private void finishProgress(Composite control) {
+        private void finishProgress() {
                 // Last update - remove progress visualization
-            if (progressOverlay != null && !presentationControl.isDisposed()) {
+            if (progressOverlay != null) {
+                if (!progressControl.isDisposed()) {
+                    progressControl.removePaintListener(painListener);
+                }
                 progressOverlay.dispose();
                 progressOverlay = null;
-                cancelButton.dispose();
-                presentationControl.removePaintListener(painListener);
-                control.redraw();
+                if (!cancelButton.isDisposed()) {
+                    cancelButton.dispose();
+                }
+                progressControl.redraw();
             }
         }
 
