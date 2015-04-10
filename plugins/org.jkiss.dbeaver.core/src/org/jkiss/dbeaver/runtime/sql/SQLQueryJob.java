@@ -379,11 +379,13 @@ public class SQLQueryJob extends DataSourceJob
             curResult.setError(ex);
             lastError = ex;
         }
-        curResult.setQueryTime(System.currentTimeMillis() - startTime);
+        finally {
+            curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
-        if (fireEvents && listener != null) {
-            // Notify query end
-            listener.onEndQuery(curResult);
+            if (fireEvents && listener != null) {
+                // Notify query end
+                listener.onEndQuery(curResult);
+            }
         }
 
         if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {

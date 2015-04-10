@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -954,7 +955,9 @@ public class SQLEditor extends SQLEditorBase
         {
             final SQLQueryJob job = curJob;
             if (job != null) {
-                job.cancel();
+                if (job.getState() == Job.RUNNING) {
+                    job.cancel();
+                }
                 curJob = null;
             }
         }
