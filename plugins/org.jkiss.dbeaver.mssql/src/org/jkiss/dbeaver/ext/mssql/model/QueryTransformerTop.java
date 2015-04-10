@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -47,30 +48,32 @@ public class QueryTransformerTop implements DBCQueryTransformer {
     }
 
     @Override
-    public String transformQueryString(String query) throws DBCException {
+    public String transformQueryString(SQLQuery query) throws DBCException {
         limitSet = false;
-        try {
-            Statement statement = CCJSqlParserUtil.parse(query);
-            if (statement instanceof Select) {
-                Select select = (Select) statement;
-                if (select.getSelectBody() instanceof PlainSelect) {
-                    PlainSelect selectBody = (PlainSelect) select.getSelectBody();
-                    if (selectBody.getTop() == null && CommonUtils.isEmpty(selectBody.getIntoTables())) {
-                        Top top = new Top();
-                        top.setPercentage(false);
-                        top.setRowCount(offset.longValue() + length.longValue());
-                        selectBody.setTop(top);
+        if (query.isPlainSelect()) {
+            try {
+                Statement statement = query.getStatement();
+                if (statement instanceof Select) {
+                    Select select = (Select) statement;
+                    if (select.getSelectBody() instanceof PlainSelect) {
+                        PlainSelect selectBody = (PlainSelect) select.getSelectBody();
+                        if (selectBody.getTop() == null && CommonUtils.isEmpty(selectBody.getIntoTables())) {
+                            Top top = new Top();
+                            top.setPercentage(false);
+                            top.setRowCount(offset.longValue() + length.longValue());
+                            selectBody.setTop(top);
 
-                        limitSet = true;
-                        return statement.toString();
+                            limitSet = true;
+                            return statement.toString();
+                        }
                     }
                 }
+            } catch (Throwable e) {
+                // ignore
+                log.debug(e);
             }
-        } catch (Throwable e) {
-            // ignore
-            log.debug(e);
         }
-        return query;
+        return query.getQuery();
     }
 
     @Override

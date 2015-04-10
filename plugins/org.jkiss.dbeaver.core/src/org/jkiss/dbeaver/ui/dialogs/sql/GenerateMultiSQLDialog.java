@@ -163,7 +163,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         try {
                             final List<String> lines = objectsSQL.get(object);
                             for (String line : lines) {
-                                DBCStatement statement = DBUtils.prepareStatement(session, line);
+                                DBCStatement statement = DBUtils.prepareStatement(session, line, false);
                                 try {
                                     if (statement.executeStatement()) {
                                         final DBCResultSet resultSet = statement.openResultSet();
