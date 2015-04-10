@@ -194,41 +194,36 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         }
                         dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
 
-                        try {
-                            startTime = System.currentTimeMillis();
-                            long rowCount = 0;
-                            while (dbResult.nextRow()) {
-                                if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
-                                    // Fetch not more than max rows
-                                    break;
-                                }
-                                dataReceiver.fetchRow(session, dbResult);
-                                rowCount++;
-                                if (rowCount % 100 == 0) {
-                                    monitor.subTask(rowCount + CoreMessages.model_jdbc__rows_fetched);
-                                    monitor.worked(100);
-                                }
-/*
-                                try {
-                                    Thread.sleep(100);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-*/
-
+                        startTime = System.currentTimeMillis();
+                        long rowCount = 0;
+                        while (dbResult.nextRow()) {
+                            if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
+                                // Fetch not more than max rows
+                                break;
                             }
-                            statistics.setFetchTime(System.currentTimeMillis() - startTime);
-                            statistics.setRowsFetched(rowCount);
-                        } finally {
-                            try {
-                                dataReceiver.fetchEnd(session, dbResult);
-                            } catch (DBCException e) {
-                                log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                            dataReceiver.fetchRow(session, dbResult);
+                            rowCount++;
+                            if (rowCount % 100 == 0) {
+                                monitor.subTask(rowCount + CoreMessages.model_jdbc__rows_fetched);
+                                monitor.worked(100);
                             }
                         }
+                        statistics.setFetchTime(System.currentTimeMillis() - startTime);
+                        statistics.setRowsFetched(rowCount);
                     }
                     finally {
-                        dbResult.close();
+                        // First - close cursor
+                        try {
+                            dbResult.close();
+                        } catch (Throwable e) {
+                            log.error("Error closing result set", e); //$NON-NLS-1$
+                        }
+                        // Then - signal that fetch was ended
+                        try {
+                            dataReceiver.fetchEnd(session, dbResult);
+                        } catch (Throwable e) {
+                            log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                        }
                     }
                 }
             }

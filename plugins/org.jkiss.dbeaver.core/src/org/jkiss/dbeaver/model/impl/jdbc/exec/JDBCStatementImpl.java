@@ -512,7 +512,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         try {
             getOriginal().close();
         }
-        catch (SQLException e) {
+        catch (Throwable e) {
             log.error("Could not close statement", e); //$NON-NLS-1$
         }
     }

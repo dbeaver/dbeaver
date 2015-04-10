@@ -516,8 +516,11 @@ public class SQLQueryJob extends DataSourceJob
         if (resultSet == null) {
             return false;
         }
+        boolean keepCursor = keepStatementOpen();
 
-        curResultSets.add(resultSet);
+        if (keepCursor) {
+            curResultSets.add(resultSet);
+        }
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.subTask("Fetch result set");
         long rowCount = 0;
@@ -576,9 +579,16 @@ public class SQLQueryJob extends DataSourceJob
             }
         }
         finally {
+            if (!keepCursor) {
+                try {
+                    resultSet.close();
+                } catch (Throwable e) {
+                    log.error("Error while closing resultset", e);
+                }
+            }
             try {
                 dataReceiver.fetchEnd(session, resultSet);
-            } catch (DBCException e) {
+            } catch (Throwable e) {
                 log.error("Error while handling end of result set fetch", e);
             }
             dataReceiver.close();
@@ -612,7 +622,11 @@ public class SQLQueryJob extends DataSourceJob
             }
             curResultSets.clear();
 
-            curStatement.close();
+            try {
+                curStatement.close();
+            } catch (Throwable e) {
+                log.error("Error closing statement", e);
+            }
             curStatement = null;
         }
     }
