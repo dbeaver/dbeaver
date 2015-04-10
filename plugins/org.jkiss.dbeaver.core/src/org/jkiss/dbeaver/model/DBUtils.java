@@ -805,6 +805,7 @@ public final class DBUtils {
 
         if (hasLimits || offset > 0) {
             if (limitTransformer == null) {
+                // Set explicit limit - it is safe because we pretty sure that this is a plain SELECT query
                 dbStat.setLimit(offset, maxRows);
             } else {
                 limitTransformer.transformStatement(dbStat, 0);
