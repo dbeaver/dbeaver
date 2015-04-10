@@ -18,12 +18,12 @@
  */
 package org.jkiss.dbeaver.model.impl.sql;
 
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-
-import java.util.regex.Pattern;
 
 /**
 * Query transformer for LIMIT
@@ -37,19 +37,13 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     private Number offset;
     private Number length;
     private boolean limitSet;
-    private String limitKeyword;
 
     public QueryTransformerLimit() {
-        this(true, KEYWORD_LIMIT);
+        this(true);
     }
 
     public QueryTransformerLimit(boolean supportsOffset) {
-        this(supportsOffset, KEYWORD_LIMIT);
-    }
-
-    public QueryTransformerLimit(boolean supportsOffset, String limitKeyword) {
         this.supportsOffset = supportsOffset;
-        this.limitKeyword = limitKeyword;
     }
 
     @Override
@@ -59,21 +53,28 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     }
 
     @Override
-    public String transformQueryString(String query) throws DBCException {
-        String testQuery = query.toUpperCase().trim();
-        if (!testQuery.startsWith("SELECT") || testQuery.contains(limitKeyword) || testQuery.contains("INTO")) {
+    public String transformQueryString(SQLQuery query) throws DBCException {
+        String newQuery;
+        boolean plainSelect = query.isPlainSelect();
+        if (!plainSelect && query.getType() == SQLQueryType.UNKNOWN) {
+            // Not parsed. Try to check with simple matcher
+            String testQuery = query.getQuery().toUpperCase().trim();
+            plainSelect = testQuery.startsWith("SELECT") && !testQuery.contains("LIMIT") && !testQuery.contains("INTO");
+        }
+        if (!plainSelect) {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement
             limitSet = false;
+            newQuery = query.getQuery();
         } else {
             if (supportsOffset) {
-                query = query + SQLUtils.TOKEN_TRANSFORM_START + " " + limitKeyword + " " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
+                newQuery = query.getQuery() + SQLUtils.TOKEN_TRANSFORM_START + " " + KEYWORD_LIMIT + " " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
             } else {
                 // We can limit only total row number
-                query = query + SQLUtils.TOKEN_TRANSFORM_START + " " + limitKeyword + " " + (offset.longValue() + length.longValue()) + SQLUtils.TOKEN_TRANSFORM_END;
+                newQuery = query.getQuery() + SQLUtils.TOKEN_TRANSFORM_START + " " + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue()) + SQLUtils.TOKEN_TRANSFORM_END;
             }
             limitSet = supportsOffset;
         }
-        return query;
+        return newQuery;
     }
 
     @Override

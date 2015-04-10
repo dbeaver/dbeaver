@@ -122,7 +122,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
                 DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
                 try {
                     for (String line : scriptLines) {
-                        DBCStatement statement = DBUtils.prepareStatement(session, line);
+                        DBCStatement statement = DBUtils.prepareStatement(session, line, false);
                         try {
                             statement.executeStatement();
                         } finally {

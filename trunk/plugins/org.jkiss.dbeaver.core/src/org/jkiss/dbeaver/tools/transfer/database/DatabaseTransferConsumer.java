@@ -396,7 +396,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Create target metadata");
         try {
-            DBCStatement dbStat = DBUtils.prepareStatement(session, sql);
+            DBCStatement dbStat = DBUtils.prepareStatement(session, sql, false);
             try {
                 dbStat.executeStatement();
             } finally {

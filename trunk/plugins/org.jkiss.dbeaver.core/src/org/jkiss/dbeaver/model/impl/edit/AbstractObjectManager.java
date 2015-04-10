@@ -42,7 +42,7 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         if (script == null) {
             action.handleExecute(null);
         } else {
-            DBCStatement dbStat = DBUtils.createStatement(session, script);
+            DBCStatement dbStat = DBUtils.createStatement(session, script, false);
             try {
                 dbStat.executeStatement();
                 action.handleExecute(null);
