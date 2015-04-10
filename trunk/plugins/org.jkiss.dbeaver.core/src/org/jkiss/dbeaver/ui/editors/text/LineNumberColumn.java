@@ -21,13 +21,11 @@ package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -48,9 +46,6 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
      */
     public static final String ID = "org.jkiss.dbeaver.ui.editors.columns.linenumbers"; //$NON-NLS-1$
 
-    private static final String FG_COLOR_KEY = "lineNumberForeground";
-    private static final String BG_COLOR_KEY = "lineNumberBackground";
-    private static final String USE_DEFAULT_BG_KEY = "lineNumberBackgroundDefault";
     private final static String LINE_NUMBER_KEY = "lineNumberRuler";
 
     /**
@@ -62,7 +57,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
      */
     private ITextEditor fEditor;
     /**
-     * The delegate and implemenation of the ruler.
+     * The delegate and implementation of the ruler.
      */
     private IVerticalRulerColumn fDelegate;
     /**
@@ -70,6 +65,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
      * single preference listener.
      */
     private PropertyEventDispatcher fDispatcher;
+    private CompositeRuler parentRuler;
 
     public LineNumberColumn()
     {
@@ -126,8 +122,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     public Control createControl(CompositeRuler parentRuler, Composite parentControl)
     {
         Assert.isTrue(fDelegate != null);
-        ITextViewer viewer = parentRuler.getTextViewer();
-        Assert.isLegal(viewer instanceof ISourceViewer);
+        this.parentRuler = parentRuler;
         initialize();
         return fDelegate.createControl(parentRuler, parentControl);
     }
@@ -147,6 +142,8 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     @Override
     public void redraw()
     {
+        updateBackgroundColor(fDelegate);
+        updateForegroundColor(fDelegate);
         fDelegate.redraw();
     }
 
@@ -229,8 +226,8 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
             return;
 
         // initial set up
-        updateForegroundColor(store, fDelegate);
-        updateBackgroundColor(store, fDelegate);
+        updateForegroundColor(fDelegate);
+        updateBackgroundColor(fDelegate);
 
         updateLineNumbersVisibility(fDelegate);
 
@@ -238,25 +235,6 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
 
         // listen to changes
         fDispatcher = new PropertyEventDispatcher(store);
-
-        fDispatcher.addPropertyChangeListener(FG_COLOR_KEY, new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event)
-            {
-                updateForegroundColor(store, fDelegate);
-                fDelegate.redraw();
-            }
-        });
-        IPropertyChangeListener backgroundHandler = new IPropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent event)
-            {
-                updateBackgroundColor(store, fDelegate);
-                fDelegate.redraw();
-            }
-        };
-        fDispatcher.addPropertyChangeListener(BG_COLOR_KEY, backgroundHandler);
-        fDispatcher.addPropertyChangeListener(USE_DEFAULT_BG_KEY, backgroundHandler);
 
         fDispatcher.addPropertyChangeListener(LINE_NUMBER_KEY, new IPropertyChangeListener() {
             @Override
@@ -268,45 +246,24 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
         });
     }
 
-    private void updateForegroundColor(IPreferenceStore store, IVerticalRulerColumn column)
+    private void updateForegroundColor(IVerticalRulerColumn column)
     {
-        RGB rgb = getColorFromStore(store, FG_COLOR_KEY);
-        if (rgb == null)
-            rgb = new RGB(0, 0, 0);
-        ISharedTextColors sharedColors = getSharedColors();
-        if (column instanceof LineNumberRulerColumn)
-            ((LineNumberRulerColumn) column).setForeground(sharedColors.getColor(rgb));
+        if (parentRuler.getTextViewer() != null && column instanceof LineNumberRulerColumn) {
+            ((LineNumberRulerColumn) column).setForeground(parentRuler.getTextViewer().getTextWidget().getForeground());
+        }
     }
 
-    private void updateBackgroundColor(IPreferenceStore store, IVerticalRulerColumn column)
+    private void updateBackgroundColor(IVerticalRulerColumn column)
     {
-        // background color: same as editor, or system default
-        RGB rgb;
-        if (store.getBoolean(USE_DEFAULT_BG_KEY))
-            rgb = null;
-        else
-            rgb = getColorFromStore(store, BG_COLOR_KEY);
-        ISharedTextColors sharedColors = getSharedColors();
-        if (column instanceof LineNumberRulerColumn)
-            ((LineNumberRulerColumn) column).setBackground(sharedColors.getColor(rgb));
+        if (parentRuler.getTextViewer() != null && column instanceof LineNumberRulerColumn) {
+            ((LineNumberRulerColumn) column).setBackground(parentRuler.getTextViewer().getTextWidget().getBackground());
+        }
     }
 
     private void updateLineNumbersVisibility(IVerticalRulerColumn column)
     {
         if (column instanceof LineNumberChangeRulerColumn)
             ((LineNumberChangeRulerColumn) column).showLineNumbers(true);
-    }
-
-    private static RGB getColorFromStore(IPreferenceStore store, String key)
-    {
-        RGB rgb = null;
-        if (store.contains(key)) {
-            if (store.isDefault(key))
-                rgb = PreferenceConverter.getDefaultColor(store, key);
-            else
-                rgb = PreferenceConverter.getColor(store, key);
-        }
-        return rgb;
     }
 
     /**
@@ -318,10 +275,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     {
         IPreferenceStore store = getPreferenceStore();
         if (store != null) {
-            updateForegroundColor(store, rulerColumn);
-            updateBackgroundColor(store, rulerColumn);
             updateLineNumbersVisibility(rulerColumn);
-            rulerColumn.redraw();
         }
     }
 
