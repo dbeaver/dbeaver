@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+
 /**
  * Query transformer
  */
@@ -26,7 +28,7 @@ public interface DBCQueryTransformer {
 
     void setParameters(Object ... parameters);
 
-    String transformQueryString(String query)
+    String transformQueryString(SQLQuery query)
         throws DBCException;
 
     void transformStatement(DBCStatement statement, int parameterIndex)

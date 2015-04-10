@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -761,19 +758,24 @@ public final class DBUtils {
         long offset,
         long maxRows) throws DBCException
     {
+        SQLQuery sqlQuery = new SQLQuery(session, query);
+        return prepareStatement(session, statementType, sqlQuery, offset, maxRows);
+    }
+
+    @NotNull
+    public static DBCStatement prepareStatement(
+        DBCSession session,
+        DBCStatementType statementType,
+        SQLQuery sqlQuery,
+        long offset,
+        long maxRows)
+        throws DBCException
+    {
         // We need to detect whether it is a plain select statement
         // or some DML. For DML statements we mustn't set limits
         // because it sets update rows limit [SQL Server]
-//        boolean dataModifyQuery = !SQLSemanticProcessor.isSelectQuery(query);
-        final boolean selectQuery = SQLSemanticProcessor.isSelectQuery(query);
+        boolean selectQuery = sqlQuery.getType() == SQLQueryType.SELECT && sqlQuery.isPlainSelect();
         final boolean hasLimits = selectQuery && offset >= 0 && maxRows > 0;
-
-
-//        String testQuery = query.replace("\\n", "").toUpperCase();
-//        if (SELECT_QUERY_PATTERN.matcher(testQuery).find()) {
-//            dataModifyQuery = SELECT_INTO_PATTERN.matcher(testQuery).find();
-//        }
-//        final boolean hasLimits = !dataModifyQuery && offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
         if (selectQuery) {
@@ -787,16 +789,19 @@ public final class DBUtils {
             }
         }
 
+        String queryText;
         if (hasLimits && limitTransformer != null) {
             limitTransformer.setParameters(offset, maxRows);
-            query = limitTransformer.transformQueryString(query);
+            queryText = limitTransformer.transformQueryString(sqlQuery);
         } else if (fetchAllTransformer != null) {
-            query = fetchAllTransformer.transformQueryString(query);
+            queryText = fetchAllTransformer.transformQueryString(sqlQuery);
+        } else {
+            queryText = sqlQuery.getQuery();
         }
 
         DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?
-            createStatement(session, query) :
-            prepareStatement(session, query);
+            createStatement(session, queryText, hasLimits) :
+            prepareStatement(session, queryText, hasLimits);
 
         if (hasLimits || offset > 0) {
             if (limitTransformer == null) {
@@ -814,13 +819,14 @@ public final class DBUtils {
     @NotNull
     public static DBCStatement createStatement(
         DBCSession session,
-        String query) throws DBCException
+        String query,
+        boolean scrollable) throws DBCException
     {
         query = SQLUtils.makeUnifiedLineFeeds(query);
         return session.prepareStatement(
             DBCStatementType.SCRIPT,
             query,
-            session.getDataSource().getInfo().supportsResultSetScroll(),
+            scrollable && session.getDataSource().getInfo().supportsResultSetScroll(),
             false,
             false);
     }
@@ -828,7 +834,8 @@ public final class DBUtils {
     @NotNull
     public static DBCStatement prepareStatement(
         DBCSession session,
-        String query) throws DBCException
+        String query,
+        boolean scrollable) throws DBCException
     {
         DBCStatementType statementType = DBCStatementType.QUERY;
         // Normalize query
@@ -876,7 +883,7 @@ public final class DBUtils {
         return session.prepareStatement(
             statementType,
             query,
-            dataSource.getInfo().supportsResultSetScroll(),
+            scrollable && dataSource.getInfo().supportsResultSetScroll(),
             false,
             false);
     }

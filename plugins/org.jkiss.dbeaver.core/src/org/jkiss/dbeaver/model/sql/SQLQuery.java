@@ -70,12 +70,21 @@ public class SQLQuery {
     private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
 
+    public SQLQuery(@NotNull Object source, @NotNull String query)
+    {
+        this(source, query, 0, query.length());
+    }
+
     public SQLQuery(@NotNull Object source, @NotNull String query, int offset, int length)
     {
         this.source = source;
         this.originalQuery = this.query = query;
         this.offset = offset;
         this.length = length;
+        parseQuery();
+    }
+
+    public void parseQuery() {
         try {
             statement = CCJSqlParserUtil.parse(query);
             if (statement instanceof Select) {
@@ -114,23 +123,33 @@ public class SQLQuery {
         }
     }
 
+    public boolean isPlainSelect() {
+        return statement != null &&
+            ((Select) statement).getSelectBody() instanceof PlainSelect &&
+            CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables());
+    }
+
+    @NotNull
     public Object getSource() {
         return source;
     }
 
+    @NotNull
     public String getOriginalQuery() {
         return originalQuery;
     }
 
+    @NotNull
     public String getQuery()
     {
         return query;
     }
 
-    public void setQuery(String query) {
+    public void setQuery(@NotNull String query) {
         this.query = query;
     }
 
+    @Nullable
     public Statement getStatement() {
         return statement;
     }
@@ -161,6 +180,7 @@ public class SQLQuery {
         this.data = data;
     }
 
+    @NotNull
     public SQLQueryType getType()
     {
         return type;

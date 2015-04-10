@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -36,8 +37,8 @@ class QueryTransformerFetchAll implements DBCQueryTransformer {
     }
 
     @Override
-    public String transformQueryString(String query) throws DBCException {
-        return query;
+    public String transformQueryString(SQLQuery query) throws DBCException {
+        return query.getQuery();
     }
 
     @Override
