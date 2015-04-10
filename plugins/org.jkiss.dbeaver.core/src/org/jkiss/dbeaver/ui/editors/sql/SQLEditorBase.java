@@ -35,6 +35,7 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -401,15 +402,16 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
         }
 
-        getTextViewer().getTextWidget().setBackground(
-            getSyntaxManager().getColor(!syntaxManager.isUnassigned() && dataSource == null ?
-                SQLConstants.CONFIG_COLOR_DISABLED :
-                SQLConstants.CONFIG_COLOR_BACKGROUND));
+        Color bgColor = getSyntaxManager().getColor(!syntaxManager.isUnassigned() && dataSource == null ?
+            SQLConstants.CONFIG_COLOR_DISABLED :
+            SQLConstants.CONFIG_COLOR_BACKGROUND);
+        getTextViewer().getTextWidget().setBackground(bgColor);
 
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
             ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
         }
+        getVerticalRuler().update();
     }
 
     public boolean hasActiveQuery()
