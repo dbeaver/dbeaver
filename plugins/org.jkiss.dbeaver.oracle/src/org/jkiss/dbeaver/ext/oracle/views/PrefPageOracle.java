@@ -78,7 +78,7 @@ public class PrefPageOracle extends TargetPrefPage
             gd.horizontalSpan = 2;
             descLabel.setLayoutData(gd);
 
-            explainTableText = UIUtils.createLabelText(planGroup, "Plan table", "", SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            explainTableText = UIUtils.createLabelText(planGroup, "Plan table", "", SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL));
         }
 
         {

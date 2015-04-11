@@ -128,13 +128,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         if (!nextSegmentRead) {
             // Read locators' metadata
             ResultSetUtils.findValueLocators(session, metaColumns, rows);
-
-            runInUI(new Runnable() {
-                @Override
-                public void run() {
-                    resultSetViewer.updatePresentation(resultSet);
-                }
-            });
         }
 
         final List<Object[]> tmpRows = rows;
@@ -145,6 +138,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             public void run() {
                 // Push data into viewer
                 if (!nextSegmentRead) {
+                    resultSetViewer.updatePresentation(resultSet);
                     resultSetViewer.setData(tmpRows);
                 } else {
                     resultSetViewer.appendData(tmpRows);

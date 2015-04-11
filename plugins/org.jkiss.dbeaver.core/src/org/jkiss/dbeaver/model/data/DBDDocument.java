@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * Document.
@@ -35,10 +36,18 @@ public interface DBDDocument extends DBDValue {
     public static final String PROP_CREATE_TIME = "createTime";
 
     /**
+     * Return source raw document (e.g. {@link org.w3c.dom.Document})
+     * @return raw document
+     */
+    @NotNull
+    Object getRawDocument();
+
+    /**
      * document property
      * @param name    property name
      * @return property value
      */
+    @Nullable
     Object getDocumentProperty(String name);
 
     /**
