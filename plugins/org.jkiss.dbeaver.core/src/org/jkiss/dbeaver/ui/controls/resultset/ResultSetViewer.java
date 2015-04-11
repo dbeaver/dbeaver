@@ -1817,10 +1817,12 @@ public class ResultSetViewer extends Viewer
             // Check attributes of non-virtual identifier
             DBDRowIdentifier rowIdentifier = model.getVisibleAttribute(0).getRowIdentifier();
             if (rowIdentifier == null) {
+                // We shouldn't be here ever!
+                // Virtual id should be created if we missing natural one
                 UIUtils.showErrorDialog(
                     viewerPanel.getShell(),
                     "No entity identifier",
-                    "Entity " + entity.getName() + " has no identifier");
+                    "Entity " + entity.getName() + " has no unique key");
                 return false;
             } else if (CommonUtils.isEmpty(rowIdentifier.getAttributes())) {
                 UIUtils.showErrorDialog(
