@@ -414,10 +414,19 @@ public class ResultSetModel {
             this.documentAttribute = null;
             fillVisibleAttributes();
         }
+
         metadataChanged = update;
         metadataDynamic = this.attributes != null &&
             this.attributes.length > 0 &&
             this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
+
+
+        if (metadataChanged && attributes.length == 1) {
+            DBDAttributeBinding topAttr = attributes[0];
+            if (topAttr.getDataKind() == DBPDataKind.DOCUMENT) {
+                documentAttribute = topAttr;
+            }
+        }
     }
 
     public void setData(@NotNull List<Object[]> rows)
@@ -426,12 +435,12 @@ public class ResultSetModel {
         this.clearData();
 
         if (metadataChanged) {
+            // Extract nested attributes from single top-level attribute
             if (attributes.length == 1) {
                 DBDAttributeBinding topAttr = attributes[0];
                 if (topAttr.getDataKind() == DBPDataKind.DOCUMENT || topAttr.getDataKind() == DBPDataKind.STRUCT) {
                     List<DBDAttributeBinding> nested = topAttr.getNestedBindings();
                     if (nested != null && !nested.isEmpty()) {
-                        documentAttribute = topAttr;
                         attributes = nested.toArray(new DBDAttributeBinding[nested.size()]);
                         fillVisibleAttributes();
                     }
