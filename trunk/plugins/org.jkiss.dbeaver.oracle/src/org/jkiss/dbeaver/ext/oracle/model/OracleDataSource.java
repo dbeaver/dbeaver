@@ -518,7 +518,7 @@ public class OracleDataSource extends JDBCDataSource
     @Override
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerRowNum();
+            //return new QueryTransformerRowNum();
         }
         return super.createQueryTransformer(type);
     }

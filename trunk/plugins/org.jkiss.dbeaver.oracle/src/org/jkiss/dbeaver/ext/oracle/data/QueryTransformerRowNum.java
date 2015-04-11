@@ -55,7 +55,7 @@ public class QueryTransformerRowNum implements DBCQueryTransformer {
                     if (select.getSelectBody() instanceof PlainSelect) {
                         SQLSemanticProcessor.addWhereToSelect(
                             (PlainSelect) select.getSelectBody(),
-                            "ROWNUM < " + totalRows);
+                            "ROWNUM <= " + totalRows);
                         return statement.toString();
                     }
                 }
