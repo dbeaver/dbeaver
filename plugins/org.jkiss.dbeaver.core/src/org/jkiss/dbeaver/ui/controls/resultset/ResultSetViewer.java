@@ -516,14 +516,12 @@ public class ResultSetViewer extends Viewer
                     @Override
                     public boolean supportsAttributes() {
                         DBDAttributeBinding[] attrs = model.getAttributes();
-                        return attrs.length > 0 &&
-                            (attrs[0].getDataKind() != DBPDataKind.DOCUMENT || !CommonUtils.isEmpty(attrs[0].getNestedBindings()));
+                        return attrs.length > 0;
                     }
 
                     @Override
                     public boolean supportsDocument() {
-                        DBDAttributeBinding[] attrs = model.getAttributes();
-                        return attrs.length == 1 && attrs[0].getDataKind() == DBPDataKind.DOCUMENT;
+                        return model.getDocumentAttribute() != null;
                     }
                 };
                 availablePresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet, context);
