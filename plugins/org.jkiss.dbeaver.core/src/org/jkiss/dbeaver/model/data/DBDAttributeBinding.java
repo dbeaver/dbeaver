@@ -123,9 +123,10 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     public boolean matches(DBSAttributeBase attr, boolean searchByName) {
-        if (!searchByName) {
-            return attr != null && (this == attr || getMetaAttribute() == attr || getEntityAttribute() == attr);
-        } else {
+        if (attr != null && (this == attr || getMetaAttribute() == attr || getEntityAttribute() == attr)) {
+            return true;
+        }
+        if (searchByName) {
             if (attr instanceof DBDAttributeBinding) {
                 if (getLevel() != ((DBDAttributeBinding) attr).getLevel()) {
                     return false;
@@ -141,6 +142,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 return attr.getName().equals(this.getName());
             }
         }
+        return false;
     }
 
     @Nullable
