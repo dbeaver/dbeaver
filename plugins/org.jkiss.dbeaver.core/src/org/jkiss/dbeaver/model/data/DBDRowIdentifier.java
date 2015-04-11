@@ -81,24 +81,13 @@ public class DBDRowIdentifier implements DBPObject {
             DBDAttributeBinding binding = DBUtils.findBinding(bindings, cColumn.getAttribute());
             if (binding != null) {
                 this.attributes.add(binding);
+            } else {
+                // If at least one attribute is missing - this ID won't work anyway
+                // so let's just clean it up
+                this.attributes.clear();
+                break;
             }
-//            for (DBDAttributeBinding binding : bindings) {
-//
-//                if (binding.matches(cColumn.getAttribute(), false)) {
-//                    this.attributes.add(binding);
-//                    break;
-//                }
-//            }
         }
     }
-/*
-    public Object[] getKeyValues(Object[] row) {
-        Object[] keyValues = new Object[keyColumns.size()];
-        for (DBSTableColumn column : keyColumns) {
-            keyColumns
-        }
-        return keyValues;
-    }
-*/
 
 }

@@ -104,18 +104,8 @@ public class SQLSemanticProcessor {
         if (filter.hasConditions()) {
             StringBuilder whereString = new StringBuilder();
             SQLUtils.appendConditionString(filter, dataSource, tableAlias, whereString, true);
-            Expression filterWhere;
-            try {
-                filterWhere = CCJSqlParserUtil.parseCondExpression(whereString.toString());
-            } catch (JSQLParserException e) {
-                throw new JSQLParserException("Bad query condition: [" + whereString + "]", e);
-            }
-            Expression sourceWhere = select.getWhere();
-            if (sourceWhere == null) {
-                select.setWhere(filterWhere);
-            } else {
-                select.setWhere(new AndExpression(new Parenthesis(sourceWhere), filterWhere));
-            }
+            String condString = whereString.toString();
+            addWhereToSelect(select, condString);
         }
         // ORDER
         if (filter.hasOrdering()) {
@@ -138,6 +128,21 @@ public class SQLSemanticProcessor {
 
         }
 
+    }
+
+    public static void addWhereToSelect(PlainSelect select, String condString) throws JSQLParserException {
+        Expression filterWhere;
+        try {
+            filterWhere = CCJSqlParserUtil.parseCondExpression(condString);
+        } catch (JSQLParserException e) {
+            throw new JSQLParserException("Bad query condition: [" + condString + "]", e);
+        }
+        Expression sourceWhere = select.getWhere();
+        if (sourceWhere == null) {
+            select.setWhere(filterWhere);
+        } else {
+            select.setWhere(new AndExpression(new Parenthesis(sourceWhere), filterWhere));
+        }
     }
 
 }
