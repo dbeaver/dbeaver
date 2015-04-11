@@ -229,7 +229,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         }
         /*if (connection.getDataSource().getInfo().supportsResultSetLimit())*/ {
             try {
-                getOriginal().setMaxRows(totalRows);
+                setMaxRows(totalRows);
             }
             catch (SQLException e) {
                 // [JDBC:ODBC] Probably setMaxRows is not supported. Just log this error
