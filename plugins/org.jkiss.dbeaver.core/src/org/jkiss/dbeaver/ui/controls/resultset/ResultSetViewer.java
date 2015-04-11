@@ -1826,7 +1826,7 @@ public class ResultSetViewer extends Viewer
                 UIUtils.showErrorDialog(
                     viewerPanel.getShell(),
                     "No entity identifier",
-                    "Entity " + entity.getName() + " has empty identifier");
+                    "Attributes of '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey()) + "' are missing in result set");
                 return false;
             }
         }

@@ -523,7 +523,8 @@ public class ResultSetModel {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null || rowIdentifier.getAttributes().isEmpty() ||
+        if (rowIdentifier == null ||
+            //rowIdentifier.getAttributes().isEmpty() ||
             !(rowIdentifier.getEntity() instanceof DBSDataManipulator) ||
             (attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
             return true;
