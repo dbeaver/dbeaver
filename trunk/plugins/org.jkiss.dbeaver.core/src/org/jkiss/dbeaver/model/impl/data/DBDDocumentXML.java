@@ -16,37 +16,47 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDDocument;
+import org.w3c.dom.Document;
 
 /**
- * Document.
- * Document is a set of hierarchically organized nodes - similarly to JSON.
- * Each node can be a map, a list (collection) or a value (anything else).
- * Map key is always a string, value is a node.
- * List item is a value.
+ * XML document
  */
-public interface DBDDocument extends DBDValue {
+public class DBDDocumentXML implements DBDDocument {
 
-    public static final String PROP_ID = "id";
-    public static final String PROP_TITLE = "title";
-    public static final String PROP_CREATE_TIME = "createTime";
+    private Document document;
 
-    /**
-     * Document property
-     * @param name    property name
-     * @return property value
-     */
     @Nullable
-    Object getDocumentProperty(String name);
+    @Override
+    public Object getDocumentProperty(String name) {
+        if (PROP_ID.equals(name)) {
+            return document.getDocumentURI();
+        }
+        return null;
+    }
 
-    /**
-     * Root node of document
-     * @return root node
-     */
     @NotNull
-    Object getRootNode();
+    @Override
+    public Object getRootNode() {
+        return null;//new DocumentNode(document.getDocumentElement());
+    }
+
+    @Override
+    public Object getRawValue() {
+        return document;
+    }
+
+    @Override
+    public boolean isNull() {
+        return document == null;
+    }
+
+    @Override
+    public void release() {
+        document = null;
+    }
 }
