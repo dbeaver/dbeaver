@@ -41,6 +41,29 @@
     <versions>
 
         <version>
+            <number>3.3.1</number>
+            <type>minor</type>
+            <date>12.04.2015</date>
+
+            <release-notes>
+                - Results viewer UI was fixed and improved
+                - Plaintext results viewer was fixed (columns width, scrolling, etc)
+                - Dark theme support was improved
+                - Single entity diagrams (ERD) were improved (show more connections)
+                - Hex editor UI was fixed
+                - GTK: context menus was fixed
+                - GTK: UI freeze in cell editors was fixed
+                - Vertica extension was added (views and procedure source code)
+                - SQL Server &amp; Vertica: big resultsets reading was fixed
+                - PostgreSQL procedures source code viewer was improved
+                - DB2: nanoseconds support in date/time data types was added
+                - Cassandra: BLOBs columns reading was fixed
+                - MongoDB: JSON &amp; XML viewer added
+                - Many minor UI fixes were added
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.3.0</number>
             <type>major</type>
             <date>30.03.2015</date>
