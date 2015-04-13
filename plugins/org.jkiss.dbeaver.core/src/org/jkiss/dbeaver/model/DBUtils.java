@@ -1291,7 +1291,7 @@ public final class DBUtils {
 
     @Nullable
     public static DBCTransactionManager getTransactionManager(@NotNull DBCExecutionContext executionContext) {
-        if (executionContext.isConnected()) {
+        if (executionContext != null && executionContext.isConnected()) {
             return getAdapter(DBCTransactionManager.class, executionContext);
         }
         return null;//VoidTransactionManager.INSTANCE;
