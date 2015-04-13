@@ -1,3 +1,4 @@
+Accept license for Oracle and other included drivers.
 Make IDataSourceProvider -> IDatabaseContextProvider
 Connection per editor support. Host ExecutionContext in editors instead of DataSource.
 InvalidateContext -> InvalidateDataSource ??
