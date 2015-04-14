@@ -136,7 +136,7 @@ public class DataSourceDescriptor
     private DBDDataFormatterProfile formatterProfile;
     private DBPClientHome clientHome;
     private DataSourcePreferenceStore preferenceStore;
-
+    @Nullable
     private DBPDataSource dataSource;
 
     private final List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
@@ -300,25 +300,26 @@ public class DataSourceDescriptor
     @Override
     public void setDefaultAutoCommit(final boolean autoCommit, boolean updateConnection)
     {
-        final DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
-        if (updateConnection && txnManager != null) {
-            try {
-                DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            // Change auto-commit mode
-                            txnManager.setAutoCommit(monitor, autoCommit);
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
+        if (dataSource != null) {
+            final DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+            if (updateConnection && txnManager != null) {
+                try {
+                    DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor)
+                            throws InvocationTargetException, InterruptedException {
+                            try {
+                                // Change auto-commit mode
+                                txnManager.setAutoCommit(monitor, autoCommit);
+                            } catch (DBCException e) {
+                                throw new InvocationTargetException(e);
+                            }
                         }
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(null, "Auto-Commit", "Error while toggle auto-commit", e.getTargetException());
-                return;
+                    });
+                } catch (InvocationTargetException e) {
+                    UIUtils.showErrorDialog(null, "Auto-Commit", "Error while toggle auto-commit", e.getTargetException());
+                    return;
+                }
             }
         }
         // Save in preferences
@@ -332,13 +333,15 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnectionAutoCommit()
     {
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
-        if (txnManager != null) {
-            try {
-                return txnManager.isAutoCommit();
-            } catch (DBCException e) {
-                log.debug("Can't check auto-commit flag", e);
-                return false;
+        if (dataSource != null) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+            if (txnManager != null) {
+                try {
+                    return txnManager.isAutoCommit();
+                } catch (DBCException e) {
+                    log.debug("Can't check auto-commit flag", e);
+                    return false;
+                }
             }
         }
         return true;
@@ -348,17 +351,18 @@ public class DataSourceDescriptor
     @Override
     public DBPTransactionIsolation getDefaultTransactionsIsolation()
     {
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
-        if (txnManager != null) {
-            try {
-                return txnManager.getTransactionIsolation();
-            } catch (DBCException e) {
-                log.debug("Can't determine isolation level", e);
-                return null;
+        if (dataSource != null) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+            if (txnManager != null) {
+                try {
+                    return txnManager.getTransactionIsolation();
+                } catch (DBCException e) {
+                    log.debug("Can't determine isolation level", e);
+                    return null;
+                }
             }
-        } else {
-            return null;
         }
+        return null;
     }
 
     @Override
@@ -368,23 +372,24 @@ public class DataSourceDescriptor
             if (isolationLevel == null) {
                 preferenceStore.setToDefault(DBeaverPreferences.DEFAULT_ISOLATION);
             } else {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
-                        if (txnManager != null) {
-                            try {
-                                if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
-                                    txnManager.setTransactionIsolation(monitor, isolationLevel);
-                                    preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
+                preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
+                if (dataSource != null) {
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+                            if (txnManager != null) {
+                                try {
+                                    if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
+                                        txnManager.setTransactionIsolation(monitor, isolationLevel);
+                                    }
+                                } catch (DBCException e) {
+                                    throw new InvocationTargetException(e);
                                 }
-                            } catch (DBCException e) {
-                                throw new InvocationTargetException(e);
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(
@@ -540,7 +545,7 @@ public class DataSourceDescriptor
         this.loginDate = loginDate;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPDataSource getDataSource()
     {
@@ -1083,7 +1088,7 @@ public class DataSourceDescriptor
     @Property(order = 6)
     public String getPropertyServerName()
     {
-        if (isConnected()) {
+        if (dataSource != null) {
             String serverName = dataSource.getInfo().getDatabaseProductName();
             String serverVersion = dataSource.getInfo().getDatabaseProductVersion();
             if (serverName != null) {
@@ -1097,7 +1102,7 @@ public class DataSourceDescriptor
     @Property(order = 7)
     public String getPropertyDriver()
     {
-        if (isConnected()) {
+        if (dataSource != null) {
             String driverName = dataSource.getInfo().getDriverName();
             String driverVersion = dataSource.getInfo().getDriverVersion();
             if (driverName != null) {

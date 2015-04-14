@@ -124,9 +124,11 @@ public class SQLQuery {
     }
 
     public boolean isPlainSelect() {
-        return statement != null &&
-            ((Select) statement).getSelectBody() instanceof PlainSelect &&
-            CommonUtils.isEmpty(((PlainSelect) ((Select) statement).getSelectBody()).getIntoTables());
+        if (statement != null && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+            PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
+            return CommonUtils.isEmpty(selectBody.getIntoTables()) && selectBody.getLimit() == null && selectBody.getTop() == null;
+        }
+        return false;
     }
 
     @NotNull
