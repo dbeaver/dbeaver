@@ -123,6 +123,10 @@ public class SQLQuery {
         }
     }
 
+    /**
+     * Plain select is a SELECT statement without INTO clause, without LIMIT or TOP modifiers
+     * @return true is this query is a plain select
+     */
     public boolean isPlainSelect() {
         if (statement != null && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
