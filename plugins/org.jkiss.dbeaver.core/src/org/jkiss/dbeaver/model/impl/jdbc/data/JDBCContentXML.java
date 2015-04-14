@@ -162,7 +162,7 @@ public class JDBCContentXML extends JDBCContentLOB {
     }
 
     @Override
-    public Object getRawValue() {
+    public SQLXML getRawValue() {
         return xml;
     }
 
