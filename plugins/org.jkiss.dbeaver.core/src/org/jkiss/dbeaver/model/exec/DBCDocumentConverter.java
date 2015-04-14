@@ -16,33 +16,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.dbeaver.model.data.DBDAttributeValue;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-
-import java.util.List;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDDocument;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**
- * Data request
+ * Document converter.
+ * Converts binary content into documents and back
  */
-public interface DBCDataRequest {
+public interface DBCDocumentConverter {
 
-    void setDataReceiver(DBDDataReceiver dataReceiver);
+    boolean canConvertFromContent(DBSAttributeBase attribute)
+        throws DBCException;
 
-    void setDataFilter(DBDDataFilter dataFilter);
+    DBDDocument getDocumentFromContent(DBRProgressMonitor monitor, DBSAttributeBase attribute, DBDContent content)
+        throws DBCException;
 
-    void setLimit(long firstRow, long maxRows);
-
-    void setKeys(List<DBDAttributeValue> attributes);
-
-    void setData(List<DBDAttributeValue> attributes);
-
-    long execute(DBCSession session);
-
-    long getResult();
-
-    String generateScript(DBCSession session);
+    DBDContent getContentFromDocument(DBRProgressMonitor monitor, DBSAttributeBase attribute, DBDContent originalContent, DBDDocument document)
+        throws DBCException;
 
 }
