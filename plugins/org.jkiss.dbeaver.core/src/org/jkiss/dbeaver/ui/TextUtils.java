@@ -227,6 +227,11 @@ public class TextUtils {
         return new Point(maxLength, lineCount);
     }
 
+    public static boolean isPointInRectangle(int x, int y, int rectX, int rectY, int rectWidth, int rectHeight)
+    {
+        return (x >= rectX) && (y >= rectY) && x < (rectX + rectWidth) && y < (rectY + rectHeight);
+    }
+
     public static String getSingleLineString(String displayString) {
         return displayString.replace('\n', PARAGRAPH_CHAR).replace("\r", "").replace((char)0, ' ');
     }
