@@ -103,6 +103,7 @@ public final class DBeaverPreferences
     public static final String RS_COMMIT_ON_CONTENT_APPLY = "resultset.commit.oncontentapply"; //$NON-NLS-1$
 
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows"; //$NON-NLS-1$
+    public static final String RESULT_SET_MAX_ROWS_USE_SQL = "resultset.maxrows.sql"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_EDITOR_TYPE = "resultset.binary.editor"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_SHOW_STRINGS = "resultset.binary.showStrings"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_PRESENTATION = "resultset.binary.representation"; //$NON-NLS-1$
