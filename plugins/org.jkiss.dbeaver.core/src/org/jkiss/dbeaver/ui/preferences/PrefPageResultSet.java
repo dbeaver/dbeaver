@@ -43,6 +43,7 @@ public class PrefPageResultSet extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset"; //$NON-NLS-1$
 
     private Spinner resultSetSize;
+    private Button resultSetUseSQLCheck;
     //private Button binaryShowStrings;
     private Combo binaryPresentationCombo;
     private Combo binaryEditorType;
@@ -71,6 +72,7 @@ public class PrefPageResultSet extends TargetPrefPage
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
+            store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
             store.contains(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
             store.contains(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE) ||
@@ -109,6 +111,7 @@ public class PrefPageResultSet extends TargetPrefPage
             resultSetSize.setMinimum(1);
             resultSetSize.setMaximum(1024 * 1024);
 
+            resultSetUseSQLCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, false);
             serverSideOrderingCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false);
         }
 
@@ -177,6 +180,7 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         try {
             resultSetSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS));
+            resultSetUseSQLCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
@@ -214,6 +218,7 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         try {
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
@@ -247,6 +252,7 @@ public class PrefPageResultSet extends TargetPrefPage
     protected void clearPreferences(IPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE);

@@ -149,6 +149,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
       // ResultSet
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS, 200);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL, true);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION, DBDBinaryFormatter.FORMATS[0].getId());
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_SHOW_STRINGS, true);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE, DBDValueController.EditType.EDITOR);
