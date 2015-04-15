@@ -130,7 +130,7 @@ public class SQLQuery {
     public boolean isPlainSelect() {
         if (statement != null && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
-            return CommonUtils.isEmpty(selectBody.getIntoTables()) && selectBody.getLimit() == null && selectBody.getTop() == null;
+            return selectBody.getFromItem() != null && CommonUtils.isEmpty(selectBody.getIntoTables()) && selectBody.getLimit() == null && selectBody.getTop() == null;
         }
         return false;
     }

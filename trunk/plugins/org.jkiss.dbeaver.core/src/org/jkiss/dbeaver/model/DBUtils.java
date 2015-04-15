@@ -778,7 +778,7 @@ public final class DBUtils {
         final boolean hasLimits = selectQuery && offset >= 0 && maxRows > 0;
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
-        if (selectQuery) {
+        if (selectQuery && session.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL)) {
             DBCQueryTransformProvider transformProvider = DBUtils.getAdapter(DBCQueryTransformProvider.class, session.getDataSource());
             if (transformProvider != null) {
                 if (hasLimits) {
