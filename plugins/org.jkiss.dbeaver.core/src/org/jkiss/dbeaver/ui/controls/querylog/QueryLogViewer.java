@@ -125,9 +125,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         {
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo statement = (QMMStatementExecuteInfo) object;
-                return SQLUtils
-                    .stripTransformations(statement.getQueryString());
-                    //.replace('\n', ' ');
+                //return SQLUtils.stripTransformations(statement.getQueryString());
+                return statement.getQueryString();
             } else if (object instanceof QMMTransactionInfo) {
                 if (((QMMTransactionInfo)object).isCommited()) {
                     return CoreMessages.controls_querylog_commit;
