@@ -181,6 +181,10 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                     typeName = dataType.getTypeName();
                 }
             }
+            if (dataType != null && dataType.getDataKind() != dataKind) {
+                // Type mismatch
+                dataType = null;
+            }
             if (dataType == null) {
                 // Type not supported by target database
                 // Let's try to find something similar
@@ -194,7 +198,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                 if (!possibleTypes.isEmpty()) {
                     DBSDataType targetType = null;
                     for (DBSDataType type : possibleTypes) {
-                        if (type.getName().equals(typeName)) {
+                        if (type.getName().equalsIgnoreCase(typeName)) {
                             targetType = type;
                             break;
                         }
