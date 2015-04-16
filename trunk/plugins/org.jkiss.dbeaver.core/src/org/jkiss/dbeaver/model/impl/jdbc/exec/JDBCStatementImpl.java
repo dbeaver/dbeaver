@@ -227,7 +227,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             this.rsMaxRows = limit;
             totalRows = (int)(offset + limit);
         }
-        /*if (connection.getDataSource().getInfo().supportsResultSetLimit())*/ {
+        if (connection.getDataSource().getInfo().supportsResultSetLimit()) {
             try {
                 setMaxRows(totalRows);
             }
