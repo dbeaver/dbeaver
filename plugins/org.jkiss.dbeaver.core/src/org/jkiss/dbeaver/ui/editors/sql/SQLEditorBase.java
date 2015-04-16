@@ -402,9 +402,13 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
         }
 
+        Color fgColor = getSyntaxManager().getColor(SQLConstants.CONFIG_COLOR_TEXT);
         Color bgColor = getSyntaxManager().getColor(!syntaxManager.isUnassigned() && dataSource == null ?
             SQLConstants.CONFIG_COLOR_DISABLED :
             SQLConstants.CONFIG_COLOR_BACKGROUND);
+        if (fgColor != null) {
+            getTextViewer().getTextWidget().setForeground(fgColor);
+        }
         getTextViewer().getTextWidget().setBackground(bgColor);
 
         // Update configuration
