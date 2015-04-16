@@ -17,20 +17,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 /**
- * Error assistant
+ * Connect exception
  */
-public interface DBPErrorAssistant
+public class DBCConnectException extends DBCException
 {
-    enum ErrorType {
-        NORMAL,
-        CONNECTION_LOST,
-        DRIVER_CLASS_MISSING
+
+    public DBCConnectException(String message, Throwable cause, DBPDataSource dataSource) {
+        super(message, cause, dataSource);
     }
 
-    ErrorType discoverErrorType(DBException error);
+    public DBCConnectException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public DBCConnectException(Throwable cause)
+    {
+        super(cause, null);
+    }
+
 }

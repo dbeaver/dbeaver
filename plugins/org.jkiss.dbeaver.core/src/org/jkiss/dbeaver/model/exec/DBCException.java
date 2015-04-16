@@ -53,4 +53,8 @@ public class DBCException extends DBException
     {
         super(ex, dataSource);
     }
+
+    public DBCException(String message, Throwable cause, DBPDataSource dataSource) {
+        super(message, cause, dataSource);
+    }
 }

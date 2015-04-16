@@ -21,9 +21,7 @@ package org.jkiss.dbeaver;
 
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -54,7 +52,7 @@ public class DBException extends Exception
     }
 
 
-    public DBException(String message, SQLException cause, DBPDataSource dataSource)
+    public DBException(String message, Throwable cause, DBPDataSource dataSource)
     {
         super(message, cause);
         this.dataSource = dataSource;
