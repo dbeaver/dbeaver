@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
@@ -478,6 +479,14 @@ public abstract class JDBCDataSource
         {
             return ErrorType.CONNECTION_LOST;
         }
+        if (error instanceof DBCConnectException) {
+            Throwable rootCause = RuntimeUtils.getRootCause(error);
+            if (rootCause instanceof ClassNotFoundException) {
+                // Looks like bad driver configuration
+                return ErrorType.DRIVER_CLASS_MISSING;
+            }
+        }
+
         return ErrorType.NORMAL;
     }
 
