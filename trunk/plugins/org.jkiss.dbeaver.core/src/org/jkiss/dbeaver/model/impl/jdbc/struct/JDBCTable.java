@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.ExecuteBatchImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -55,7 +56,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 {
     static final Log log = Log.getLog(JDBCTable.class);
     public static final String DEFAULT_TABLE_ALIAS = "x";
-    //public static final int DEFAULT_READ_FETCH_SIZE = 10000;
+    public static final int DEFAULT_READ_FETCH_SIZE = 10000;
 
     private boolean persisted;
 
@@ -159,17 +160,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             firstRow,
             maxRows);
         try {
+
             dbStat.setStatementSource(this);
-/*
+
             if (dbStat instanceof JDBCStatement) {
                 try {
                     ((JDBCStatement)dbStat).setFetchSize(
-                        maxRows < DEFAULT_READ_FETCH_SIZE ? DEFAULT_READ_FETCH_SIZE : (int)maxRows);
+                        maxRows <= 0 ? DEFAULT_READ_FETCH_SIZE : (int)maxRows);
                 } catch (Exception e) {
                     log.warn(e);
                 }
             }
-*/
+
             long startTime = System.currentTimeMillis();
             boolean executeResult = dbStat.executeStatement();
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
