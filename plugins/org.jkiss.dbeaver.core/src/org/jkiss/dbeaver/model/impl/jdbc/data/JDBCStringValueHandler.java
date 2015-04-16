@@ -100,8 +100,8 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof byte[]) {
             return new String((byte[])object);
         } else {
-            log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to string");
-            return null;
+            log.debug("Unrecognized type '" + object.getClass().getName() + "' - can't convert to string");
+            return object.toString();
         }
     }
 
