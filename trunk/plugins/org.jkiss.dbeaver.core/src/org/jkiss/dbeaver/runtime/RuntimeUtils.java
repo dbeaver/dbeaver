@@ -459,7 +459,11 @@ public class RuntimeUtils {
             }
             return new MultiStatus(status.getPlugin(), status.getCode(), children, status.getMessage(), null);
         } else if (status instanceof Status) {
-            return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), status.getMessage(), null);
+            String messagePrefix = "";
+            if (status.getException() != null) {
+                messagePrefix = status.getException().getClass().getName() + ": ";
+            }
+            return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), messagePrefix + status.getMessage(), null);
         }
         return null;
     }
