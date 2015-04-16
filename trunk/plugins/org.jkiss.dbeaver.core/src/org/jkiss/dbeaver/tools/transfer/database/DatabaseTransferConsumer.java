@@ -402,6 +402,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             } finally {
                 dbStat.close();
             }
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+            if (txnManager != null) {
+                // Commit DDL changes
+                txnManager.commit(session);
+            }
         }
         finally {
             session.close();
