@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -1204,17 +1203,13 @@ public final class DBUtils {
         DBPDataSource dataSource = error.getDataSource();
         if (dataSource instanceof DBPErrorAssistant) {
             DBPErrorAssistant.ErrorType errorType = ((DBPErrorAssistant) dataSource).discoverErrorType(error);
-            if (errorType == DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
-                DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
-                return true;
-            }
-        }
-        if (dataSource != null && error instanceof DBCConnectException) {
-            Throwable rootCause = RuntimeUtils.getRootCause(error);
-            if (rootCause instanceof ClassNotFoundException) {
-                // Looks like bad driver configuration
-                DriverEditDialog.showBadConfigDialog(shell, message, error);
-                return true;
+            switch (errorType) {
+                case CONNECTION_LOST:
+                    DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
+                    return true;
+                case DRIVER_CLASS_MISSING:
+                    DriverEditDialog.showBadConfigDialog(shell, message, error);
+                    return true;
             }
         }
 
