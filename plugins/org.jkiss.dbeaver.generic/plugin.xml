@@ -115,6 +115,7 @@
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
                     <property id="query-set-active-db" label="Set active database" description="Query to change active database" type="string" required="false" defaultValue=""/>
                     <property id="active-entity-type" label="Active object type" description="Type of selectable object (schema, catalog)" type="string" required="false" defaultValue="" validValues="catalog,schema"/>
+                    <property id="supports-scroll" label="Driver supports results scrolling" description="Driver supports resultset scrolling" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
@@ -140,6 +141,7 @@
                     <parameter name="query-set-active-db" value="SET search_path = ?"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="omit-type-cache" value="true"/>
+                    <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
                     id="oracle"
@@ -369,6 +371,7 @@
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
+                    <parameter name="supports-scroll" value="true"/>
                     <file type="jar" path="drivers/derby/derby-10.11.1.1.jar" url="*"/>
                     <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                 </driver>
@@ -385,6 +388,7 @@
                     <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
+                    <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
                     id="mimer"
@@ -550,7 +554,6 @@
                     <parameter name="supports-struct-cache" value="false"/>
                     <parameter name="supports-indexes" value="true"/>
                     <parameter name="supports-stored-code" value="false"/>
-
                 </driver>
 
                 <driver
@@ -587,6 +590,7 @@
                     <file type="jar" path="drivers/vertica/vertica-jdk5-6.1.2-0.jar" url="*"/>
                     <parameter name="supports-limits" value="false"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
                     id="csvjdbc"
