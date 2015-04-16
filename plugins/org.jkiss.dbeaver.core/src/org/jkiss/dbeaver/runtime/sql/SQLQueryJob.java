@@ -215,12 +215,12 @@ public class SQLQueryJob extends DataSourceJob
                     if (lastError == null || errorHandling == SQLScriptErrorHandling.STOP_COMMIT) {
                         if (commitType != SQLScriptCommitType.NO_COMMIT) {
                             monitor.beginTask("Commit data", 1);
-                            txnManager.commit(monitor);
+                            txnManager.commit(session);
                             monitor.done();
                         }
                     } else {
                         monitor.beginTask("Rollback data", 1);
-                        txnManager.rollback(monitor, null);
+                        txnManager.rollback(session, null);
                         monitor.done();
                     }
                 }

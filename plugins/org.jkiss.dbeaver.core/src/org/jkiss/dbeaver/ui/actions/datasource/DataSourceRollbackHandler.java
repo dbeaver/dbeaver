@@ -23,8 +23,11 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -53,12 +56,18 @@ public class DataSourceRollbackHandler extends DataSourceHandler
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSourceContainer.getDataSource());
-                    if (txnManager != null) {
-                        try {
-                            txnManager.rollback(monitor, null);
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
+                    DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                    if (dataSource != null) {
+                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+                        if (txnManager != null) {
+                            DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
+                            try {
+                                txnManager.rollback(session, null);
+                            } catch (DBCException e) {
+                                throw new InvocationTargetException(e);
+                            } finally {
+                                session.close();
+                            }
                         }
                     }
                 }

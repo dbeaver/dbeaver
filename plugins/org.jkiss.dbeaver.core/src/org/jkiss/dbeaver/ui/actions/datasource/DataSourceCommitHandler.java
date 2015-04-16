@@ -22,9 +22,13 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -46,19 +50,25 @@ public class DataSourceCommitHandler extends DataSourceHandler
         return null;
     }
 
-    public static void execute(Shell shell, final DBSDataSourceContainer dataSourceContainer) {
+    public static void execute(Shell shell, @NotNull final DBSDataSourceContainer dataSourceContainer) {
         try {
             DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSourceContainer.getDataSource());
-                    if (txnManager != null) {
-                        try {
-                            txnManager.commit(monitor);
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
+                    DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                    if (dataSource != null) {
+                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+                        if (txnManager != null) {
+                            DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction");
+                            try {
+                                txnManager.commit(session);
+                            } catch (DBCException e) {
+                                throw new InvocationTargetException(e);
+                            } finally {
+                                session.close();
+                            }
                         }
                     }
                 }

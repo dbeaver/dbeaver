@@ -180,7 +180,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (settings.isUseTransactions() && needCommit) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
             if (txnManager != null) {
-                txnManager.commit(targetSession.getProgressMonitor());
+                txnManager.commit(targetSession);
             }
         }
     }

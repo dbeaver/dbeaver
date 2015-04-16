@@ -491,7 +491,7 @@ class ResultSetPersister {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(getDataSource());
             if (txnManager != null) {
                 try {
-                    txnManager.rollback(session.getProgressMonitor(), savepoint);
+                    txnManager.rollback(session, savepoint);
                 } catch (Throwable e) {
                     log.debug("Error during transaction rollback", e);
                 }
