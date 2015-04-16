@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.core.runtime.IStatus;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -39,6 +41,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -51,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.ClientHomesPanel;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.ArrayUtils;
@@ -62,7 +66,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -680,6 +683,20 @@ public class DriverEditDialog extends HelpEnabledDialog
         super.okPressed();
     }
 
+    public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {
+        //log.debug(message);
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run()
+            {
+                DBPDataSource dataSource = error.getDataSource();
+                String title = "Bad driver [" + dataSource.getContainer().getDriver().getName() + "] configuration";
+                new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
+            }
+        };
+        UIUtils.runInUI(shell, runnable);
+    }
+
     private class ClassFindJob implements IRunnableWithProgress {
 
         public static final String SQL_DRIVER_CLASS_NAME = "java/sql/Driver";
@@ -785,4 +802,38 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     }
 
+    private static class BadDriverConfigDialog extends StandardErrorDialog {
+
+        private final DBPDataSource dataSource;
+
+        public BadDriverConfigDialog(Shell shell, String title, String message, DBException error)
+        {
+            super(
+                shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
+                title,
+                message,
+                RuntimeUtils.stripStack(RuntimeUtils.makeExceptionStatus(error)),
+                IStatus.ERROR);
+            dataSource = error.getDataSource();
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent)
+        {
+            createButton(parent, IDialogConstants.RETRY_ID, "Open Driver Configuration", true);
+            createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, false);
+            createDetailsButton(parent);
+        }
+
+        @Override
+        protected void buttonPressed(int id)
+        {
+            if (id == IDialogConstants.RETRY_ID) {
+                DriverEditDialog dialog = new DriverEditDialog(getShell(), (DriverDescriptor) dataSource.getContainer().getDriver());
+                dialog.open();
+                super.buttonPressed(IDialogConstants.OK_ID);
+            }
+            super.buttonPressed(id);
+        }
+    }
 }

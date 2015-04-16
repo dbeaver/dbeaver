@@ -38,10 +38,12 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -1207,6 +1209,15 @@ public final class DBUtils {
                 return true;
             }
         }
+        if (dataSource != null && error instanceof DBCConnectException) {
+            Throwable rootCause = RuntimeUtils.getRootCause(error);
+            if (rootCause instanceof ClassNotFoundException) {
+                // Looks like bad driver configuration
+                DriverEditDialog.showBadConfigDialog(shell, message, error);
+                return true;
+            }
+        }
+
         return false;
     }
 
