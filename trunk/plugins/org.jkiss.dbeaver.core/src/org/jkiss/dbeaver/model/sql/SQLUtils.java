@@ -50,8 +50,8 @@ public final class SQLUtils {
 
     //static final Log log = Log.getLog(SQLUtils.class);
 
-    public static final String TOKEN_TRANSFORM_START = "/*DB[*/";
-    public static final String TOKEN_TRANSFORM_END = "/*]DB*/";
+    public static final String TOKEN_TRANSFORM_START = "";//"/*DB[*/";
+    public static final String TOKEN_TRANSFORM_END = "";//"/*]DB*/";
 
     public static final Pattern PATTERN_XFORM = Pattern.compile(Pattern.quote(TOKEN_TRANSFORM_START) + "[^" + Pattern.quote(TOKEN_TRANSFORM_END) + "]*" + Pattern.quote(TOKEN_TRANSFORM_END));
 
@@ -59,11 +59,12 @@ public final class SQLUtils {
 
     public static String stripTransformations(String query)
     {
-        if (!query.contains(TOKEN_TRANSFORM_START)) {
-            return query;
-        } else {
-            return PATTERN_XFORM.matcher(query).replaceAll("");
-        }
+        return query;
+//        if (!query.contains(TOKEN_TRANSFORM_START)) {
+//            return query;
+//        } else {
+//            return PATTERN_XFORM.matcher(query).replaceAll("");
+//        }
     }
 
     public static String stripComments(SQLDataSource dataSource, String query)
