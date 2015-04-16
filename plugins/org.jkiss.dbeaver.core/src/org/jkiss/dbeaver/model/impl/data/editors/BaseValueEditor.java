@@ -77,7 +77,7 @@ public abstract class BaseValueEditor<T extends Control> implements DBDValueEdit
     {
         boolean isInline = (valueController.getEditType() == DBDValueController.EditType.INLINE);
         if (isInline && UIUtils.isInDialog(inlineControl)) {
-            isInline = false;
+            //isInline = false;
         }
         UIUtils.enableHostEditorKeyBindingsSupport(valueController.getValueSite(), inlineControl);
 
