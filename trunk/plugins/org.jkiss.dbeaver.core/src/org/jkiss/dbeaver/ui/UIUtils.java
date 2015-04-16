@@ -770,10 +770,6 @@ public class UIUtils {
 
     public static void showErrorDialog(@Nullable Shell shell, String title, @Nullable String message, @Nullable Throwable error)
     {
-        if (error instanceof DBException && DBUtils.showDatabaseError(shell, title, message, (DBException) error)) {
-            // If this DB error was handled by some DB-specific way then just don't care about it
-            return;
-        }
         if (error != null) {
             log.error(error);
         }
@@ -803,6 +799,20 @@ public class UIUtils {
     public static void showErrorDialog(@Nullable final Shell shell, @NotNull final String title, @Nullable final String message,
         @NotNull final IStatus status)
     {
+        for (IStatus s = status; s != null; ) {
+            if (s.getException() instanceof DBException) {
+                if (DBUtils.showDatabaseError(shell, title, message, (DBException) s.getException())) {
+                    // If this DB error was handled by some DB-specific way then just don't care about it
+                    return;
+                }
+                break;
+            }
+            if (s.getChildren() != null && s.getChildren().length > 0) {
+                s = s.getChildren()[0];
+            } else {
+                break;
+            }
+        }
         // log.debug(message);
         Runnable runnable = new Runnable() {
             @Override

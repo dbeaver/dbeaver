@@ -116,6 +116,14 @@ public class RuntimeUtils {
             null);
     }
 
+    public static Throwable getRootCause(Throwable ex) {
+        for (Throwable e = ex; ; e = e.getCause()) {
+            if (e.getCause() == null) {
+                return e;
+            }
+        }
+    }
+
     public static IStatus getRootStatus(IStatus status) {
         IStatus[] children = status.getChildren();
         if (children == null || children.length == 0) {

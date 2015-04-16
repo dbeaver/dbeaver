@@ -84,7 +84,7 @@ public abstract class JDBCDataSource
         try {
             driverInstance = getDriverInstance(monitor);
         } catch (DBException e) {
-            throw new DBCException("Can't create driver instance", e);
+            throw new DBCConnectException("Can't create driver instance", e, this);
         }
 
         // Set properties
@@ -148,13 +148,13 @@ public abstract class JDBCDataSource
             return connection;
         }
         catch (SQLException ex) {
-            throw new DBCException(ex, this);
+            throw new DBCConnectException(ex.getMessage(), ex, this);
         }
         catch (DBCException ex) {
             throw ex;
         }
         catch (Throwable e) {
-            throw new DBCException("Unexpected driver error occurred while connecting to database", e);
+            throw new DBCConnectException("Unexpected driver error occurred while connecting to database", e);
         }
     }
 
