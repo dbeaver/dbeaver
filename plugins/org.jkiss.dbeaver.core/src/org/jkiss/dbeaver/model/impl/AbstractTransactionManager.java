@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -80,14 +81,14 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public void commit(DBRProgressMonitor monitor)
+    public void commit(DBCSession session)
         throws DBCException
     {
         // do nothing
     }
 
     @Override
-    public void rollback(DBRProgressMonitor monitor, DBCSavepoint savepoint)
+    public void rollback(DBCSession session, DBCSavepoint savepoint)
         throws DBCException
     {
         throw new DBCException("Transactions not supported");

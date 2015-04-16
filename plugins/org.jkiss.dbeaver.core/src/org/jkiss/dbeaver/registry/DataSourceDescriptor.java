@@ -37,6 +37,8 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -891,15 +893,20 @@ public class DataSourceDescriptor
                             // Ask for confirmation
                             TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
                             UIUtils.runInUI(null, closeConfirmer);
-                            switch (closeConfirmer.result) {
-                                case IDialogConstants.YES_ID:
-                                    txnManager.commit(monitor);
-                                    break;
-                                case IDialogConstants.NO_ID:
-                                    txnManager.rollback(monitor, null);
-                                    break;
-                                default:
-                                    return false;
+                            DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
+                            try {
+                                switch (closeConfirmer.result) {
+                                    case IDialogConstants.YES_ID:
+                                        txnManager.commit(session);
+                                        break;
+                                    case IDialogConstants.NO_ID:
+                                        txnManager.rollback(session, null);
+                                        break;
+                                    default:
+                                        return false;
+                                }
+                            } finally {
+                                session.close();
                             }
                         }
                     }

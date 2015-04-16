@@ -329,7 +329,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
     }
 
     @Override
-    public void commit(DBRProgressMonitor monitor)
+    public void commit(DBCSession session)
         throws DBCException
     {
         try {
@@ -339,12 +339,14 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
             throw new JDBCException(e, dataSource);
         }
         finally {
-            QMUtils.getDefaultHandler().handleTransactionCommit(this);
+            if (session.isLoggingEnabled()) {
+                QMUtils.getDefaultHandler().handleTransactionCommit(this);
+            }
         }
     }
 
     @Override
-    public void rollback(DBRProgressMonitor monitor, DBCSavepoint savepoint)
+    public void rollback(DBCSession session, DBCSavepoint savepoint)
         throws DBCException
     {
         try {
@@ -362,7 +364,9 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
             throw new JDBCException(e, dataSource);
         }
         finally {
-            QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);
+            if (session.isLoggingEnabled()) {
+                QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);
+            }
         }
     }
 }
