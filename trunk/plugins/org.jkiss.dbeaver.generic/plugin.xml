@@ -297,7 +297,8 @@
                 </driver>
                 <driver
                     id="sap_maxdb"
-                    label="SAP MaxDB"
+                    category="SAP"
+                    label="MaxDB"
                     class="com.sap.dbtech.jdbc.DriverSapDB"
                     sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
                     defaultPort="7200"
@@ -628,6 +629,49 @@
                     defaultPort="5480"
                     webURL=""
                     description="Netezza database driver">
+                </driver>
+
+
+                <driver
+                    id="nuodb"
+                    label="NuoDB"
+                    class="com.nuodb.jdbc.Driver"
+                    sampleURL="jdbc:com.nuodb://{host}[:{port}]/[{database}]"
+                    defaultPort=""
+                    description="NuoDB"
+                    webURL="http://www.nuodb.com/">
+                    <!--<library path="C:\Program Files\Java\lib\jdbc\nuodbjdbc.jar"/>-->
+                </driver>
+                <driver
+                    id="gemfire_xd"
+                    label="GemfireXD"
+                    class="com.pivotal.gemfirexd.jdbc.ClientDriver"
+                    sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
+                    defaultPort="1527"
+                    description="Pivotal GemfireXD"
+                    webURL="http://blog.pivotal.io/tag/gemfire-xd">
+                    <!--<library path="C:\Program Files\Java\lib\jdbc\gemfirexd-client.jar"/>-->
+                </driver>
+                <driver
+                    id="exasol"
+                    label="ExaSol"
+                    class="com.exasol.jdbc.EXADriver"
+                    sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
+                    defaultPort="8563"
+                    description="ExaSol"
+                    webURL="http://www.exasol.com/en/">
+                    <!--<library path="C:\Program Files\Java\lib\jdbc\exajdbc.jar"/>-->
+                </driver>
+                <driver
+                    id="sap_hana"
+                    category="SAP"
+                    label="HANA"
+                    class="com.sap.db.jdbc.Driver"
+                    sampleURL="jdbc:sap://{host}[:{port}]"
+                    defaultPort="30015"
+                    description=""
+                    webURL="http://scn.sap.com/community/developer-center/hana">
+                    <!--<library path="C:\Program Files\Java\lib\jdbc\ngdbc.jar"/>-->
                 </driver>
 
             </drivers>
