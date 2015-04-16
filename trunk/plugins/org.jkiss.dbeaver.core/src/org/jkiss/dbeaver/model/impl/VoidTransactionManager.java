@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -67,10 +68,10 @@ public class VoidTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public void commit(DBRProgressMonitor monitor) throws DBCException {
+    public void commit(DBCSession session) throws DBCException {
     }
 
     @Override
-    public void rollback(DBRProgressMonitor monitor, @Nullable DBCSavepoint savepoint) throws DBCException {
+    public void rollback(DBCSession session, @Nullable DBCSavepoint savepoint) throws DBCException {
     }
 }

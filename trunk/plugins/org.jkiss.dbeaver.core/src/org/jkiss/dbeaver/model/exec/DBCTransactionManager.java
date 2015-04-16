@@ -44,8 +44,8 @@ public interface DBCTransactionManager
 
     void releaseSavepoint(DBRProgressMonitor monitor, DBCSavepoint savepoint) throws DBCException;
 
-    void commit(DBRProgressMonitor monitor) throws DBCException;
+    void commit(DBCSession session) throws DBCException;
 
-    void rollback(DBRProgressMonitor monitor, @Nullable DBCSavepoint savepoint) throws DBCException;
+    void rollback(DBCSession session, @Nullable DBCSavepoint savepoint) throws DBCException;
 
 }

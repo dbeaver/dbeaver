@@ -39,6 +39,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     private String taskTitle;
     private DBDDataFormatterProfile dataFormatterProfile;
     private boolean holdsBlock = false;
+    private boolean loggingEnabled = true;
 
     public AbstractSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
@@ -79,8 +80,13 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
     }
 
     @Override
-    public void enableLogging(boolean enable) {
+    public boolean isLoggingEnabled() {
+        return loggingEnabled;
+    }
 
+    @Override
+    public void enableLogging(boolean enable) {
+        loggingEnabled = enable;
     }
 
     @Override

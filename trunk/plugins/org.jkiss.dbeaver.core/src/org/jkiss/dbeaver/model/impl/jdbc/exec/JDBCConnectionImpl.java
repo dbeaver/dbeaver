@@ -48,7 +48,6 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     static final Log log = Log.getLog(JDBCConnectionImpl.class);
 
     final JDBCExecutionContext context;
-    boolean disableLogging;
 
     public JDBCConnectionImpl(JDBCExecutionContext context, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
@@ -169,11 +168,6 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         }
     }
 
-    @Override
-    public void enableLogging(boolean enable) {
-        disableLogging = !enable;
-    }
-
     @NotNull
     @Override
     public DBDValueHandler getDefaultValueHandler()
@@ -227,7 +221,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     {
         getOriginal().setAutoCommit(autoCommit);
 
-        if (!disableLogging) {
+        if (isLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleTransactionAutocommit(context, autoCommit);
         }
     }
@@ -245,7 +239,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     {
         getOriginal().commit();
 
-        if (!disableLogging) {
+        if (isLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleTransactionCommit(context);
         }
     }
@@ -256,7 +250,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     {
         getOriginal().rollback();
 
-        if (!disableLogging) {
+        if (isLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleTransactionRollback(context, null);
         }
     }
@@ -411,7 +405,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
         JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(context, savepoint);
 
-        if (!disableLogging) {
+        if (isLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleTransactionSavepoint(jdbcSavepoint);
         }
 
@@ -426,7 +420,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
         JDBCSavepointImpl jdbcSavepoint = new JDBCSavepointImpl(context, savepoint);
 
-        if (!disableLogging) {
+        if (isLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleTransactionSavepoint(jdbcSavepoint);
         }
 
@@ -442,7 +436,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         }
         getOriginal().rollback(savepoint);
 
-        if (!disableLogging) {
+        if (isLoggingEnabled()) {
             QMUtils.getDefaultHandler().handleTransactionRollback(context, savepoint instanceof DBCSavepoint ? (DBCSavepoint) savepoint : null);
         }
     }
@@ -655,19 +649,19 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     protected JDBCStatement createStatementImpl(Statement original)
         throws SQLFeatureNotSupportedException
     {
-        return new JDBCStatementImpl<Statement>(this, original, disableLogging);
+        return new JDBCStatementImpl<Statement>(this, original, !isLoggingEnabled());
     }
 
     protected JDBCPreparedStatement createPreparedStatementImpl(PreparedStatement original, @Nullable String sql)
         throws SQLFeatureNotSupportedException
     {
-        return new JDBCPreparedStatementImpl(this, original, sql, disableLogging);
+        return new JDBCPreparedStatementImpl(this, original, sql, !isLoggingEnabled());
     }
 
     protected JDBCCallableStatement createCallableStatementImpl(CallableStatement original, @Nullable String sql)
         throws SQLFeatureNotSupportedException
     {
-        return new JDBCCallableStatementImpl(this, original, sql, disableLogging);
+        return new JDBCCallableStatementImpl(this, original, sql, !isLoggingEnabled());
     }
 
 }
