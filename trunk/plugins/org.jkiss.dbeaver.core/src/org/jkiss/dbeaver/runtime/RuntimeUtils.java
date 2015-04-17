@@ -24,6 +24,7 @@ import org.apache.commons.jexl2.JexlException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
@@ -59,10 +61,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * RuntimeUtils
@@ -621,6 +620,61 @@ public class RuntimeUtils {
             return new File(new URI(filePath));
         } catch (URISyntaxException e) {
             throw new IOException("Bad local file path: " + filePath, e);
+        }
+    }
+
+    public static boolean runTask(final DBRRunnableWithProgress task, final long waitTime) {
+        final MonitoringTask monitoringTask = new MonitoringTask(task);
+        Job monitorJob = new AbstractJob("Disconnect from data sources") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor)
+            {
+                try {
+                    monitoringTask.run(monitor);
+                } catch (InvocationTargetException e) {
+                    return RuntimeUtils.makeExceptionStatus(e.getTargetException());
+                } catch (InterruptedException e) {
+                    // do nothing
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        monitorJob.schedule();
+
+        // Wait for job to finish
+        long startTime = System.currentTimeMillis();
+        if (waitTime > 0) {
+            while (!monitoringTask.finished && System.currentTimeMillis() - startTime < waitTime) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+        return monitoringTask.finished;
+    }
+
+    private static class MonitoringTask implements DBRRunnableWithProgress {
+        private final DBRRunnableWithProgress task;
+        volatile boolean finished;
+
+        private MonitoringTask(DBRRunnableWithProgress task) {
+            this.task = task;
+        }
+
+        public boolean isFinished() {
+            return finished;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            try {
+                task.run(monitor);
+            } finally {
+                monitor.done();
+                finished = true;
+            }
         }
     }
 

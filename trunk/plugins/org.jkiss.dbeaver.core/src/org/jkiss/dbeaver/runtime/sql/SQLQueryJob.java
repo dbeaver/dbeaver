@@ -533,7 +533,7 @@ public class SQLQueryJob extends DataSourceJob
             // Retrieve source entity
             if (result != null) {
                 DBCResultSetMetaData rsMeta = resultSet.getMeta();
-                String sourceName = null;
+                String sourceName = null;//resultSet.getResultSetName();
                 for (DBCAttributeMetaData attr : rsMeta.getAttributes()) {
                     String entityName = attr.getEntityName();
                     if (!CommonUtils.isEmpty(entityName)) {
@@ -610,10 +610,8 @@ public class SQLQueryJob extends DataSourceJob
     private boolean keepStatementOpen()
     {
         // Only in single query mode and if pref option set to true
-        DBSDataSourceContainer container = getDataSourceContainer();
         return queries.size() == 1 &&
-            container != null &&
-            container.getPreferenceStore().getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN);
+            getDataSourceContainer().getPreferenceStore().getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN);
     }
 
     private void closeStatement()
