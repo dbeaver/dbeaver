@@ -81,6 +81,8 @@ public class DataSourceDescriptor
 {
     static final Log log = Log.getLog(DataSourceDescriptor.class);
 
+    public static final int END_TRANSACTION_WAIT_TIME = 3000;
+
     public static class FilterMapping {
         public final Class<?> type;
         public DBSObjectFilter defaultFilter;
@@ -864,62 +866,67 @@ public class DataSourceDescriptor
         }
 
         // First rollback active transaction
-        monitor.subTask("Rollback active transaction");
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
         try {
-            if (txnManager != null && !txnManager.isAutoCommit()) {
-                // Check current transaction
+            if (txnManager == null || txnManager.isAutoCommit()) {
+                return true;
+            }
 
-                // If there are some executions in last savepoint then ask user about commit/rollback
-                QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
-                if (qmm != null) {
-                    QMMSessionInfo qmmSession = qmm.getSessionInfo(dataSource);
-                    QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
-                    QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
-                    if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
-                        boolean hasUserExec = false;
-                        if (true) {
-                            // Do not check whether we have user queries, just ask for confirmation
-                            hasUserExec = true;
-                        } else {
-                            for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
-                                if (psp.hasUserExecutions()) {
-                                    hasUserExec = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (hasUserExec) {
-                            // Ask for confirmation
-                            TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
-                            UIUtils.runInUI(null, closeConfirmer);
-                            DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
-                            try {
-                                switch (closeConfirmer.result) {
-                                    case IDialogConstants.YES_ID:
-                                        txnManager.commit(session);
-                                        break;
-                                    case IDialogConstants.NO_ID:
-                                        txnManager.rollback(session, null);
-                                        break;
-                                    default:
-                                        return false;
-                                }
-                            } finally {
-                                session.close();
+            // If there are some executions in last savepoint then ask user about commit/rollback
+            QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
+            if (qmm != null) {
+                QMMSessionInfo qmmSession = qmm.getSessionInfo(dataSource);
+                QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
+                QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
+                if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
+                    boolean hasUserExec = false;
+                    if (true) {
+                        // Do not check whether we have user queries, just ask for confirmation
+                        hasUserExec = true;
+                    } else {
+                        for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
+                            if (psp.hasUserExecutions()) {
+                                hasUserExec = true;
+                                break;
                             }
                         }
                     }
+                    if (hasUserExec) {
+                        // Ask for confirmation
+                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(getName());
+                        UIUtils.runInUI(null, closeConfirmer);
+                        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
+                        try {
+                            boolean commit;
+                            switch (closeConfirmer.result) {
+                                case IDialogConstants.YES_ID:
+                                    commit = true;
+                                    break;
+                                case IDialogConstants.NO_ID:
+                                    commit = false;
+                                    break;
+                                default:
+                                    return false;
+                            }
+                            monitor.subTask("End active transaction");
+                            EndTransactionTask task = new EndTransactionTask(session, commit);
+                            RuntimeUtils.runTask(task, END_TRANSACTION_WAIT_TIME);
+                        } finally {
+                            session.close();
+                        }
+                        return true;
+                    }
                 }
             }
+            return true;
         }
         catch (Throwable e) {
             log.warn("Could not rollback active transaction before disconnect", e);
+            return true;
         }
         finally {
             monitor.worked(1);
         }
-        return true;
     }
 
     @Override
@@ -1149,19 +1156,6 @@ public class DataSourceDescriptor
         }
     }
 
-    private class TransactionCloseConfirmer implements Runnable {
-        int result = IDialogConstants.NO_ID;
-        @Override
-        public void run()
-        {
-            result = ConfirmationDialog.showConfirmDialog(
-                null,
-                DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
-                ConfirmationDialog.QUESTION_WITH_CANCEL,
-                getName());
-        }
-    }
-
     public void copyFrom(DataSourceDescriptor descriptor) {
         filterMap.clear();
         for (FilterMapping mapping : descriptor.getObjectFilters()) {
@@ -1180,4 +1174,50 @@ public class DataSourceDescriptor
     public String toString() {
         return name + " [" + driver + "]";
     }
+
+    private static class EndTransactionTask implements DBRRunnableWithProgress {
+        private final DBCSession session;
+        private final boolean commit;
+
+        private EndTransactionTask(DBCSession session, boolean commit) {
+            this.session = session;
+            this.commit = commit;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getDataSource());
+            if (txnManager != null) {
+                try {
+                    if (commit) {
+                        txnManager.commit(session);
+                    } else {
+                        txnManager.rollback(session, null);
+                    }
+                } catch (DBCException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        }
+    }
+
+    private static class TransactionCloseConfirmer implements Runnable {
+        final String name;
+        int result = IDialogConstants.NO_ID;
+
+        private TransactionCloseConfirmer(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void run()
+        {
+            result = ConfirmationDialog.showConfirmDialog(
+                null,
+                DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
+                ConfirmationDialog.QUESTION_WITH_CANCEL,
+                name);
+        }
+    }
+
 }
