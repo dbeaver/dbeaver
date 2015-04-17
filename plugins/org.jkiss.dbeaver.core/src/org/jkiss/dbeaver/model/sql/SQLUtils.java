@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -50,10 +53,10 @@ public final class SQLUtils {
 
     //static final Log log = Log.getLog(SQLUtils.class);
 
-    public static final String TOKEN_TRANSFORM_START = "";//"/*DB[*/";
-    public static final String TOKEN_TRANSFORM_END = "";//"/*]DB*/";
+    //public static final String TOKEN_TRANSFORM_START = "/*DB[*/";
+    //public static final String TOKEN_TRANSFORM_END = "/*]DB*/";
 
-    public static final Pattern PATTERN_XFORM = Pattern.compile(Pattern.quote(TOKEN_TRANSFORM_START) + "[^" + Pattern.quote(TOKEN_TRANSFORM_END) + "]*" + Pattern.quote(TOKEN_TRANSFORM_END));
+    //public static final Pattern PATTERN_XFORM = Pattern.compile(Pattern.quote(TOKEN_TRANSFORM_START) + "[^" + Pattern.quote(TOKEN_TRANSFORM_END) + "]*" + Pattern.quote(TOKEN_TRANSFORM_END));
 
     public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
 

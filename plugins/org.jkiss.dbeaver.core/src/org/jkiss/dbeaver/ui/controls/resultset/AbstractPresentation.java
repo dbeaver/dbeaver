@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -47,6 +48,16 @@ public abstract class AbstractPresentation implements IResultSetPresentation {
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
         this.controller = controller;
+    }
+
+    @Override
+    public void fillToolbar(@NotNull IToolBarManager toolBar) {
+
+    }
+
+    @Override
+    public void fillMenu(@NotNull IMenuManager menu) {
+
     }
 
     /**

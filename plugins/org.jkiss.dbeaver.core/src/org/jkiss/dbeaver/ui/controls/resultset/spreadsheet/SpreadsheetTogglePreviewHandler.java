@@ -24,8 +24,8 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 import java.util.Map;
@@ -53,17 +53,15 @@ public class SpreadsheetTogglePreviewHandler extends SpreadsheetCommandHandler i
     {
         if (element.getServiceLocator() instanceof IWorkbenchPartSite) {
             IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator();
-            if (partSite.getPart() instanceof IResultSetContainer) {
-                ResultSetViewer rsv = ((IResultSetContainer) partSite.getPart()).getResultSetViewer();
-                if (rsv != null) {
-                    IResultSetPresentation presentation = rsv.getActivePresentation();
-                    if (presentation instanceof SpreadsheetPresentation && ((SpreadsheetPresentation) presentation).isPreviewVisible()) {
-                        element.setText("Hide value view panel");
-                        element.setChecked(true);
-                    } else {
-                        element.setText("Show value view panel");
-                        element.setChecked(false);
-                    }
+            ResultSetViewer rsv = ResultSetCommandHandler.getActiveResultSet(partSite.getPart());
+            if (rsv != null) {
+                IResultSetPresentation presentation = rsv.getActivePresentation();
+                if (presentation instanceof SpreadsheetPresentation && ((SpreadsheetPresentation) presentation).isPreviewVisible()) {
+                    element.setText("Hide value view panel");
+                    element.setChecked(true);
+                } else {
+                    element.setText("Show value view panel");
+                    element.setChecked(false);
                 }
             }
         }
