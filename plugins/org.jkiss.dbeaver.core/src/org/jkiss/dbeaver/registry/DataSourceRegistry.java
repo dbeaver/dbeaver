@@ -18,19 +18,15 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.StringConverter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -43,7 +39,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
-import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -128,34 +123,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             return;
         }
         final DisconnectTask disconnectTask = new DisconnectTask();
-        Job disconnectJob = new AbstractJob("Disconnect from data sources") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor)
-            {
-                try {
-                    disconnectTask.run(monitor);
-                } catch (InvocationTargetException e) {
-                    return RuntimeUtils.makeExceptionStatus(e.getTargetException());
-                } catch (InterruptedException e) {
-                    // do nothing
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        disconnectJob.schedule();
-
-        // Wait for job to finish
-        long startTime = System.currentTimeMillis();
-        if (waitTime > 0) {
-            while (!disconnectTask.finished && System.currentTimeMillis() - startTime < waitTime) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-        }
-        if (!disconnectTask.finished) {
+        if (!RuntimeUtils.runTask(disconnectTask, waitTime)) {
             log.warn("Some data source connections wasn't closed on shutdown in " + waitTime + "ms. Probably network timeout occurred.");
         }
     }
@@ -810,7 +778,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private class DisconnectTask implements DBRRunnableWithProgress {
         boolean disconnected;
-        volatile boolean finished;
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             List<DataSourceDescriptor> dsSnapshot;
@@ -836,7 +803,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
             } finally {
                 monitor.done();
-                finished = true;
             }
         }
     }

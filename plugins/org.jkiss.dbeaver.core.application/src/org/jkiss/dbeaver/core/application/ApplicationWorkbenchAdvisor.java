@@ -140,32 +140,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         if (!closeActiveTransactions()) {
             return false;
         }
-/*
-        final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        DBRProgressMonitor nullMonitor = VoidProgressMonitor.INSTANCE;
-        for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
-            for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
-                try {
-                    if (editorRef.getEditor(false) == null) {
-                        continue;
-                    }
-                    IEditorInput editorInput = editorRef.getEditorInput();
-
-                    if (editorInput instanceof IAutoSaveEditorInput && ((IAutoSaveEditorInput) editorInput).isAutoSaveEnabled()) {
-                        IEditorPart editor = editorRef.getEditor(false);
-                        if (editor != null) {
-                            if (!RuntimeUtils.validateAndSave(nullMonitor, editor)) {
-                                return false;
-                            }
-                        }
-                    }
-                } catch (CoreException ex) {
-                    log.error("Can't obtain editor storage", ex); //$NON-NLS-1$
-                }
-            }
-        }
-*/
-
         return true;
     }
 

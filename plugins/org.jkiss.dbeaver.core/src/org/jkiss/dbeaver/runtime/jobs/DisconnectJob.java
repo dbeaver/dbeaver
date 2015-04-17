@@ -28,13 +28,12 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
- * DisconnectJob
+ * Disconnect Job
  */
 public class DisconnectJob extends EventProcessorJob
 {
 
-    public DisconnectJob(
-        DataSourceDescriptor container)
+    public DisconnectJob(DataSourceDescriptor container)
     {
         super(NLS.bind(CoreMessages.runtime_jobs_disconnect_name, container.getName()), container);
         setUser(true);
