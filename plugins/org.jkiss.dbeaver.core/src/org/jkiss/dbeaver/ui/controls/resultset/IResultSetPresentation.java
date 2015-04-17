@@ -36,6 +36,9 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
  */
 public interface IResultSetPresentation {
 
+    String PRES_TOOLS_BEGIN = "rsv_pres_begin";
+    String PRES_TOOLS_END = "rsv_pres_end";
+
     public enum RowPosition {
         FIRST,
         PREVIOUS,

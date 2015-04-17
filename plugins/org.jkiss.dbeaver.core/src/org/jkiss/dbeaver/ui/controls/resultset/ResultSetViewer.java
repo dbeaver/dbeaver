@@ -597,6 +597,26 @@ public class ResultSetViewer extends Viewer
             findReplaceTarget.setTarget(nested);
         }
 
+        // Update toolbar
+        if (toolBarManager != null) {
+            // Cleanup previous presentation contributions
+            boolean presContributions = false;
+            for (IContributionItem item : toolBarManager.getItems()) {
+                if (presContributions) {
+                    if (IResultSetPresentation.PRES_TOOLS_END.equals(item.getId())) {
+                        break;
+                    }
+                    toolBarManager.remove(item);
+                } else if (IResultSetPresentation.PRES_TOOLS_BEGIN.equals(item.getId())) {
+                    presContributions = true;
+                }
+            }
+
+
+            // fill presentation contributions
+            activePresentation.fillToolbar(toolBarManager);
+            toolBarManager.update(true);
+        }
 
         // Set focus in presentation control
         // Use async exec to avoid focus switch after user UI interaction (e.g. combo)
@@ -798,9 +818,10 @@ public class ResultSetViewer extends Viewer
         toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
-        activePresentation.fillToolbar(toolBarManager);
-        toolBarManager.add(new ConfigAction());
+        toolBarManager.add(new GroupMarker(IResultSetPresentation.PRES_TOOLS_BEGIN));
+        toolBarManager.add(new GroupMarker(IResultSetPresentation.PRES_TOOLS_END));
 
+        toolBarManager.add(new ConfigAction());
         toolBarManager.createControl(statusBar);
 
         //updateEditControls();
