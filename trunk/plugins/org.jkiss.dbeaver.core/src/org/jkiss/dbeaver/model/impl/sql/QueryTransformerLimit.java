@@ -18,12 +18,11 @@
  */
 package org.jkiss.dbeaver.model.impl.sql;
 
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryType;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
 
 /**
 * Query transformer for LIMIT
@@ -67,10 +66,10 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
             newQuery = query.getQuery();
         } else {
             if (supportsOffset) {
-                newQuery = query.getQuery() + SQLUtils.TOKEN_TRANSFORM_START + " " + KEYWORD_LIMIT + " " + offset + ", " + length + SQLUtils.TOKEN_TRANSFORM_END;
+                newQuery = query.getQuery() + " " + KEYWORD_LIMIT + " " + offset + ", " + length;
             } else {
                 // We can limit only total row number
-                newQuery = query.getQuery() + SQLUtils.TOKEN_TRANSFORM_START + " " + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue()) + SQLUtils.TOKEN_TRANSFORM_END;
+                newQuery = query.getQuery() + " " + KEYWORD_LIMIT + " " + (offset.longValue() + length.longValue());
             }
             limitSet = supportsOffset;
         }

@@ -19,9 +19,10 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -33,8 +34,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,14 +43,13 @@ import org.jkiss.utils.CommonUtils;
  * Execution statistics presentation.
  * Special internal presentation for execution statistics visualization.
  */
-public class StatisticsPresentation implements IResultSetPresentation {
+public class StatisticsPresentation extends AbstractPresentation {
 
-    private IResultSetController controller;
     private TableViewer tableViewer;
 
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
-        this.controller = controller;
+        super.createPresentation(controller, parent);
         UIUtils.createHorizontalLine(parent);
         tableViewer = new TableViewer(parent, SWT.MULTI | SWT.FULL_SELECTION);
         Table table = tableViewer.getTable();
@@ -102,22 +102,7 @@ public class StatisticsPresentation implements IResultSetPresentation {
     }
 
     @Override
-    public void fillToolbar(@NotNull IToolBarManager toolBar) {
-
-    }
-
-    @Override
-    public void fillMenu(@NotNull IMenuManager menu) {
-
-    }
-
-    @Override
     public void changeMode(boolean recordMode) {
-
-    }
-
-    @Override
-    public void scrollToRow(@NotNull RowPosition position) {
 
     }
 

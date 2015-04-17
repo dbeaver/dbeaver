@@ -20,10 +20,11 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
  * Spreadsheet command handler.
@@ -36,10 +37,19 @@ public abstract class SpreadsheetCommandHandler extends AbstractHandler {
     public static Spreadsheet getActiveSpreadsheet(ExecutionEvent event)
     {
         Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
-        if (!(control instanceof Spreadsheet)) {
-            return null;
+        if (control instanceof Spreadsheet) {
+            return (Spreadsheet)control;
         }
-        return (Spreadsheet)control;
+
+        ResultSetViewer rsv = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        if (rsv != null) {
+            IResultSetPresentation activePresentation = rsv.getActivePresentation();
+            if (activePresentation instanceof SpreadsheetPresentation) {
+                return ((SpreadsheetPresentation) activePresentation).getSpreadsheet();
+            }
+        }
+
+        return null;
     }
 
 }
