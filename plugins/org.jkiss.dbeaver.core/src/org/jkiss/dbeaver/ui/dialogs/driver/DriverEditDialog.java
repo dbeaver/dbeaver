@@ -242,23 +242,11 @@ public class DriverEditDialog extends HelpEnabledDialog
                 urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             }
-//            if (!isReadOnly) {
-//                anonymousCheck = UIUtils.createLabelCheckbox(propsGroup, "Anonymous", driver.isAnonymousAccess(), SWT.NONE);
-//                anonymousCheck.addSelectionListener(new SelectionAdapter() {
-//                    @Override
-//                    public void widgetSelected(SelectionEvent e)
-//                    {
-//                        onChangeProperty();
-//                    }
-//                });
-//            }
         }
 
-        final String license = driver.getLicense();
         {
             TabFolder tabFolder = new TabFolder(group, SWT.NONE);
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-            //tabFolder.setLayout(new FillLayout());
 
             if (provider.isDriversManagable()) {
                 createLibrariesTab(tabFolder);
@@ -270,6 +258,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 createClientHomesTab(tabFolder);
             }
 
+            final String license = driver.getLicense();
             if (license != null) {
                 createLicenseTab(tabFolder, license);
             }
@@ -286,7 +275,6 @@ public class DriverEditDialog extends HelpEnabledDialog
         Composite libsGroup = new Composite(group, SWT.NONE);
         libsGroup.setLayout(new GridLayout(2, false));
 
-        //ListViewer list = new ListViewer(libsGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
         {
             Composite libsListGroup = new Composite(libsGroup, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);
@@ -531,9 +519,6 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private void createClientHomesTab(TabFolder group)
     {
-        //Composite paramsGroup = new Composite(group, SWT.NONE);
-        //paramsGroup.setLayout(new GridLayout(1, false));
-
         clientHomesPanel = new ClientHomesPanel(group, SWT.NONE);
         clientHomesPanel.loadHomes(driver);
         clientHomesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
