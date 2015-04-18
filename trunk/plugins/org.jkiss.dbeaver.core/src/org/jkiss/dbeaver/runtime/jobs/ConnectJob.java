@@ -18,29 +18,23 @@
  */
 package org.jkiss.dbeaver.runtime.jobs;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.progress.IProgressConstants;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * ConnectJob
+ * Connect job
  */
 public class ConnectJob extends EventProcessorJob
 {
-    static final Log log = Log.getLog(ConnectJob.class);
-
     private volatile Thread connectThread;
     private boolean reflect = true;
 
@@ -74,18 +68,15 @@ public class ConnectJob extends EventProcessorJob
             }
 
             processEvents(DBPConnectionEventType.AFTER_CONNECT);
-
-            return new Status(
-                Status.OK,
-                DBeaverCore.getCorePluginID(),
-                CoreMessages.runtime_jobs_connect_status_connected);
         }
         catch (Throwable ex) {
-            log.error(ex);
-            return RuntimeUtils.stripStack(RuntimeUtils.makeExceptionStatus(
+            UIUtils.showErrorDialog(
+                null,
                 NLS.bind(CoreMessages.runtime_jobs_connect_status_error, container.getName()),
-                ex));
+                null,
+                ex);
         }
+        return Status.OK_STATUS;
     }
 
     public IStatus runSync(DBRProgressMonitor monitor)

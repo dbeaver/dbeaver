@@ -768,7 +768,7 @@ public class UIUtils {
         return sash;
     }
 
-    public static void showErrorDialog(@Nullable Shell shell, String title, @Nullable String message, @Nullable Throwable error)
+    public static void showErrorDialog(@Nullable Shell shell, @NotNull String title, @Nullable String message, @Nullable Throwable error)
     {
         if (error != null) {
             log.error(error);

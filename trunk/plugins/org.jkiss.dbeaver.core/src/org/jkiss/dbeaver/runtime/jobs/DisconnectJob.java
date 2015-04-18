@@ -25,10 +25,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * Disconnect Job
+ * Disconnect job
  */
 public class DisconnectJob extends EventProcessorJob
 {
@@ -49,13 +49,15 @@ public class DisconnectJob extends EventProcessorJob
                 processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
             }
 
-            return Status.OK_STATUS;
         }
         catch (Exception ex) {
-            return RuntimeUtils.stripStack(RuntimeUtils.makeExceptionStatus(
+            UIUtils.showErrorDialog(
+                null,
                 NLS.bind(CoreMessages.runtime_jobs_disconnect_error, container.getName()),
-                ex));
+                null,
+                ex);
         }
+        return Status.OK_STATUS;
     }
 
     @Override
