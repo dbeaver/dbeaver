@@ -52,9 +52,9 @@ public class DisconnectJob extends EventProcessorJob
             return Status.OK_STATUS;
         }
         catch (Exception ex) {
-            return RuntimeUtils.makeExceptionStatus(
+            return RuntimeUtils.stripStack(RuntimeUtils.makeExceptionStatus(
                 NLS.bind(CoreMessages.runtime_jobs_disconnect_error, container.getName()),
-                ex);
+                ex));
         }
     }
 
