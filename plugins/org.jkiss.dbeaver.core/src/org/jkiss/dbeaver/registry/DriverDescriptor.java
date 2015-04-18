@@ -975,18 +975,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                         log.warn(e);
                     }
                 }
-                if (libraryFile.exists()) {
-                    try {
-                        String licenseText = ContentUtils.readFileToString(libraryFile);
-                        LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
-                        UIUtils.runInUI(null, licenceAcceptor);
-                        if (!licenceAcceptor.result) {
-                            return false;
-                        }
-                    } catch (IOException e) {
-                        log.warn("Can't read license text", e);
-                    }
-                }
+            }
+        }
+        String licenseText = getLicense();
+        if (licenseText != null) {
+            LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
+            UIUtils.runInUI(null, licenceAcceptor);
+            if (!licenceAcceptor.result) {
+                return false;
             }
         }
         return true;
