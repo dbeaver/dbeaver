@@ -319,7 +319,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
             }
             return 1;
         } catch (IndexOutOfBoundsException e) {
-            // e.printStackTrace();
+            e.printStackTrace();
             return 0;
         }
     }
