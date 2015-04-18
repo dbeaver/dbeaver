@@ -483,9 +483,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         if (this.driverClassName == null || !this.driverClassName.equals(driverClassName)) {
             this.driverClassName = driverClassName;
-            this.driverInstance = null;
-            this.driverClass = null;
-            this.isLoaded = false;
+            resetDriverInstance();
         }
     }
 
@@ -497,6 +495,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             loadDriver(runnableContext);
         }
         return driverInstance;
+    }
+
+    private void resetDriverInstance() {
+        this.driverInstance = null;
+        this.driverClass = null;
+        this.isLoaded = false;
     }
 
     Object createDriverInstance()
@@ -647,7 +651,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
         DriverFileDescriptor lib = new DriverFileDescriptor(this, DBPDriverFileType.jar, path);
-        this.files.add(lib);
+        addLibrary(lib);
         return lib;
     }
 
@@ -655,6 +659,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         if (!files.contains(descriptor)) {
             this.files.add(descriptor);
+            resetDriverInstance();
             return true;
         }
         return false;
@@ -664,6 +669,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         if (!lib.isCustom()) {
             lib.setDisabled(true);
+            resetDriverInstance();
             return true;
         } else {
             return this.files.remove(lib);
