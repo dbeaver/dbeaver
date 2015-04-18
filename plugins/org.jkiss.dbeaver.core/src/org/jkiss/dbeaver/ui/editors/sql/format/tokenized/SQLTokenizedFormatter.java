@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
 
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -33,11 +34,14 @@ import java.util.List;
 public class SQLTokenizedFormatter implements SQLFormatter {
     private SQLFormatterConfiguration formatterCfg;
     private List<Boolean> functionBracket = new ArrayList<Boolean>();
+    private List<String> statementDelimiters = new ArrayList<String>(2);
 
     @Override
     public String format(final String argSql, SQLFormatterConfiguration configuration)
     {
         formatterCfg = configuration;
+        statementDelimiters.add(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+        statementDelimiters.add(formatterCfg.getSyntaxManager().getStatementDelimiter().toUpperCase());
         SQLTokensParser fParser = new SQLTokensParser(formatterCfg);
 
         functionBracket.clear();
@@ -99,6 +103,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
             }
         }
 
+        // Remove extra tokens (spaces, etc)
         for (int index = argList.size() - 1; index >= 1; index--) {
             token = argList.get(index);
             FormatterToken prevToken = argList.get(index - 1);
@@ -155,7 +160,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     functionBracket.remove(functionBracket.size() - 1);
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     index += insertReturnAndIndent(argList, index + 1, indent);
-                } else if (tokenString.equals(";")) { //$NON-NLS-1$
+                } else if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
                     indent = 0;
                     index += insertReturnAndIndent(argList, index, indent);
                 }
@@ -166,8 +171,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                 {
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
-                }
-                if (tokenString.equals("INSERT") //$NON-NLS-1$
+                } else if (tokenString.equals("INSERT") //$NON-NLS-1$
                         || tokenString.equals("INTO") //$NON-NLS-1$
                         || tokenString.equals("CREATE") //$NON-NLS-1$
                         || tokenString.equals("DROP") //$NON-NLS-1$
@@ -176,8 +180,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                         || tokenString.equals("CASE")) { //$NON-NLS-1$
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
-                }
-                if (tokenString.equals("FROM") //$NON-NLS-1$
+                } else if (tokenString.equals("FROM") //$NON-NLS-1$
                         || tokenString.equals("WHERE") //$NON-NLS-1$
                         || tokenString.equals("SET") //$NON-NLS-1$
                         || tokenString.equals("ORDER BY") //$NON-NLS-1$
@@ -185,24 +188,19 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                         || tokenString.equals("HAVING")) { //$NON-NLS-1$
                     index += insertReturnAndIndent(argList, index, indent - 1);
                     index += insertReturnAndIndent(argList, index + 1, indent);
-                }
-                if (tokenString.equals("VALUES")) { //$NON-NLS-1$
+                } else if (tokenString.equals("VALUES")) { //$NON-NLS-1$
                     indent--;
                     index += insertReturnAndIndent(argList, index, indent);
-                }
-                if (tokenString.equals("END")) { //$NON-NLS-1$
+                } else if (tokenString.equals("END")) { //$NON-NLS-1$
                     indent--;
                     index += insertReturnAndIndent(argList, index, indent);
-                }
-                if (tokenString.equals("OR") //$NON-NLS-1$
+                } else if (tokenString.equals("OR") //$NON-NLS-1$
                         || tokenString.equals("THEN") //$NON-NLS-1$
                         || tokenString.equals("ELSE")) { //$NON-NLS-1$
                     index += insertReturnAndIndent(argList, index, indent);
-                }
-                if (tokenString.equals("ON") || tokenString.equals("USING")) { //$NON-NLS-1$ //$NON-NLS-2$
+                } else if (tokenString.equals("ON") || tokenString.equals("USING")) { //$NON-NLS-1$ //$NON-NLS-2$
                     index += insertReturnAndIndent(argList, index, indent + 1);
-                }
-                if (tokenString.equals("UNION") //$NON-NLS-1$
+                } else if (tokenString.equals("UNION") //$NON-NLS-1$
                     || tokenString.equals("INTERSECT") //$NON-NLS-1$
                     || tokenString.equals("EXCEPT")) //$NON-NLS-1$
                 {
@@ -210,11 +208,9 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     index += insertReturnAndIndent(argList, index, indent);
                     //index += insertReturnAndIndent(argList, index + 1, indent);
                     indent++;
-                }
-                if (tokenString.equals("BETWEEN")) { //$NON-NLS-1$
+                } else if (tokenString.equals("BETWEEN")) { //$NON-NLS-1$
                     encounterBetween = true;
-                }
-                if (tokenString.equals("AND")) { //$NON-NLS-1$
+                } else if (tokenString.equals("AND")) { //$NON-NLS-1$
                     if (!encounterBetween) {
                         index += insertReturnAndIndent(argList, index, indent);
                     }
@@ -226,6 +222,11 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     if (token.getString().startsWith(mlComments.getFirst())) {
                         index += insertReturnAndIndent(argList, index + 1, indent);
                     }
+                }
+            } else {
+                if (statementDelimiters.contains(tokenString)) {
+                    indent = 0;
+                    index += insertReturnAndIndent(argList, index, indent);
                 }
             }
             prev = token;
@@ -262,7 +263,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                 token.getType() != FormatterConstants.SPACE &&
                 !token.getString().startsWith("("))
             {
-                if (prev.getString().equals(",")) { //$NON-NLS-1$
+                if (token.getString().equals(",") || statementDelimiters.contains(token.getString())) { //$NON-NLS-1$
                     continue;
                 }
                 if (formatterCfg.isFunction(prev.getString())
@@ -299,13 +300,23 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                 token.setString(s);
                 return 0;
             }
+            boolean isDelimiter = statementDelimiters.contains(token.getString().toUpperCase());
 
-            token = argList.get(argIndex - 1);
-            if (token.getType() == FormatterConstants.SPACE) {
-                token.setString(s);
-                return 0;
+            if (!isDelimiter) {
+                token = argList.get(argIndex - 1);
+                if (token.getType() == FormatterConstants.SPACE) {
+                    token.setString(s);
+                    return 0;
+                }
             }
-            argList.add(argIndex, new FormatterToken(FormatterConstants.SPACE, s));
+
+            if (isDelimiter) {
+                if (argList.size() > argIndex + 1) {
+                    argList.add(argIndex + 1, new FormatterToken(FormatterConstants.SPACE, s + s));
+                }
+            } else {
+                argList.add(argIndex, new FormatterToken(FormatterConstants.SPACE, s));
+            }
             return 1;
         } catch (IndexOutOfBoundsException e) {
             // e.printStackTrace();
