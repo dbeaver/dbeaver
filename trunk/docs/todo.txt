@@ -1,4 +1,5 @@
-Accept license for Oracle and other included drivers.
+Custom SQL delimiter
+Vertica keywords
 
 Make IDataSourceProvider -> IDatabaseContextProvider
 Connection per editor support. Host ExecutionContext in editors instead of DataSource.

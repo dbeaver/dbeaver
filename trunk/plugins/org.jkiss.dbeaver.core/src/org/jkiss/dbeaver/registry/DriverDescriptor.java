@@ -84,6 +84,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public static final String PROP_FOLDER = "folder"; //$NON-NLS-1$
     public static final String PROP_FILE = "file"; //$NON-NLS-1$
 
+    private static final String LICENSE_ACCEPT_KEY = "driver.license.accept.";
+
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
     private String category;
@@ -821,6 +823,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         loadLibraries(runnableContext);
 
+        if (!acceptDriverLicenses(runnableContext)) {
+            throw new DBException("You have to accept driver '" + getName() + "' license to be able to connect");
+        }
+
         try {
             if (!isCustomDriverLoader()) {
                 try {
@@ -985,13 +991,27 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         String licenseText = getLicense();
         if (licenseText != null) {
-            LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
-            UIUtils.runInUI(null, licenceAcceptor);
-            if (!licenceAcceptor.result) {
-                return false;
-            }
+            return acceptLicense(licenseText);
         }
         return true;
+    }
+
+    private boolean acceptLicense(String licenseText) {
+        // Check registry
+        IPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+        String acceptedStr = prefs.getString(LICENSE_ACCEPT_KEY + getId());
+        if (!CommonUtils.isEmpty(acceptedStr)) {
+            return true;
+        }
+
+        LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
+        UIUtils.runInUI(null, licenceAcceptor);
+        if (licenceAcceptor.result) {
+            // Save in registry
+            prefs.setValue(LICENSE_ACCEPT_KEY + getId(), true + ":" + System.currentTimeMillis() + ":" + System.getProperty("user.name"));
+            return true;
+        }
+        return false;
     }
 
     private int downloadLibraryFile(IRunnableContext runnableContext, final DriverFileDescriptor file)
