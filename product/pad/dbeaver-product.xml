@@ -43,10 +43,19 @@
         <version>
             <number>3.3.2</number>
             <type>minor</type>
-            <date>21.04.2015</date>
+            <date>22.04.2015</date>
 
             <release-notes>
-                -
+                - Driver license accept is now required
+                - Parameters binding dialog fix
+                - Error dialog fix
+                - Added driver configuration for NuoDB, GemfireXD, ExaSol
+                - SQL formatter fixed
+                - Data transfer DDL generator fixed
+                - Data transfer performance fix
+                - LIMIT clause fix + SQL limit configuration
+                - Document renderer improved (MongoDB)
+                - UI freeze on disconnect fixed
             </release-notes>
         </version>
 

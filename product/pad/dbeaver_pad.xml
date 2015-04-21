@@ -18,9 +18,9 @@
     </Company_Info>
     <Program_Info>
         <Program_Name>DBeaver</Program_Name>
-        <Program_Version>3.3.1</Program_Version>
+        <Program_Version>3.3.2</Program_Version>
         <Program_Release_Month>04</Program_Release_Month>
-        <Program_Release_Day>12</Program_Release_Day>
+        <Program_Release_Day>22</Program_Release_Day>
         <Program_Release_Year>2015</Program_Release_Year>
         <Program_Cost_Dollars>0</Program_Cost_Dollars>
         <Program_Type>Freeware</Program_Type>
@@ -31,20 +31,16 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            - Results viewer UI was fixed and improved
-            - Plaintext results viewer was fixed (columns width, scrolling, etc)
-            - Dark theme support was improved
-            - Single entity diagrams (ERD) were improved (show more connections)
-            - Hex editor UI was fixed
-            - GTK: context menus was fixed
-            - GTK: UI freeze in cell editors was fixed
-            - Vertica extension was added (views and procedure source code)
-            - SQL Server &amp; Vertica: big resultsets reading was fixed
-            - PostgreSQL procedures source code viewer was improved
-            - DB2: nanoseconds support in date/time data types was added
-            - Cassandra: BLOBs columns reading was fixed
-            - MongoDB: JSON &amp; XML viewer added
-            - Many minor UI fixes were added
+            - Driver license accept is now required
+            - Parameters binding dialog fix
+            - Error dialog fix
+            - Added driver configuration for NuoDB, GemfireXD, ExaSol
+            - SQL formatter fixed
+            - Data transfer DDL generator fixed
+            - Data transfer performance fix
+            - LIMIT clause fix + SQL limit configuration
+            - Document renderer improved (MongoDB)
+            - UI freeze on disconnect fixed
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -67,8 +63,8 @@
             <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
         </Application_URLs>
         <Download_URLs>
-            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.3.1-x86-setup.exe</Primary_Download_URL>
-            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.3.1-x86_64-setup.exe
+            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.3.2-x86-setup.exe</Primary_Download_URL>
+            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.3.2-x86_64-setup.exe
             </Secondary_Download_URL>
             <Additional_Download_URL_1></Additional_Download_URL_1>
             <Additional_Download_URL_2></Additional_Download_URL_2>
