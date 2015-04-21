@@ -83,23 +83,29 @@ public class DBNBookmark extends DBNResource
     @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
-        try {
-            storage.setTitle(newName);
-            InputStream data = storage.serialize();
-            ((IFile)getResource()).setContents(data, true, false, monitor.getNestedMonitor());
-        } catch (Exception e) {
-            throw new DBException("Can't rename bookmark", e);
+        IFile file = (IFile) getResource();
+        if (file != null) {
+            try {
+                storage.setTitle(newName);
+                InputStream data = storage.serialize();
+                file.setContents(data, true, false, monitor.getNestedMonitor());
+            } catch (Exception e) {
+                throw new DBException("Can't rename bookmark", e);
+            }
         }
     }
 
     @Override
     public Collection<DBSDataSourceContainer> getAssociatedDataSources()
     {
-        DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(getResource().getProject());
-        if (dataSourceRegistry != null) {
-            DBSDataSourceContainer dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
-            if (dataSource != null) {
-                return Collections.singleton(dataSource);
+        IResource resource = getResource();
+        if (resource != null) {
+            DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(resource.getProject());
+            if (dataSourceRegistry != null) {
+                DBSDataSourceContainer dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
+                if (dataSource != null) {
+                    return Collections.singleton(dataSource);
+                }
             }
         }
         return null;

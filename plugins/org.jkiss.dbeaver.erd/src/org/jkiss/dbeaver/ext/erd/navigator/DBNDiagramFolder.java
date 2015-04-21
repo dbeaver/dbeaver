@@ -54,7 +54,8 @@ public class DBNDiagramFolder extends DBNResource
     @Override
     public Image getNodeIcon()
     {
-        if (getResource().getParent() instanceof IProject) {
+        IResource resource = getResource();
+        if (resource != null && resource.getParent() instanceof IProject) {
             if (image == null) {
                 image = Activator.getImageDescriptor("icons/erd_folder.png").createImage();
             }
