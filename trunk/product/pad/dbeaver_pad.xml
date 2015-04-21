@@ -39,6 +39,7 @@
             - Data transfer DDL generator fixed
             - Data transfer performance fix
             - LIMIT clause fix + SQL limit configuration
+            - ERD UI fixes
             - Document renderer improved (MongoDB)
             - UI freeze on disconnect fixed
         </Program_Change_Info>
