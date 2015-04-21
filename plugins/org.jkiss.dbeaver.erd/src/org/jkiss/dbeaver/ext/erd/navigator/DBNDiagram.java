@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class DBNDiagram extends DBNResource
 {
     private Image image;
-    private EntityDiagram diagram;
 
     public DBNDiagram(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
     {
@@ -58,8 +57,4 @@ public class DBNDiagram extends DBNResource
         return image;
     }
 
-    public EntityDiagram getDiagram()
-    {
-        return diagram;
-    }
 }

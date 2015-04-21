@@ -70,17 +70,4 @@ public class DBNDiagramFolder extends DBNResource
         return otherNode instanceof DBNDiagram || super.supportsDrop(otherNode);
     }
 
-    @Override
-    public void dropNodes(Collection<DBNNode> nodes) throws DBException
-    {
-        for (DBNNode node : nodes) {
-            if (node instanceof DBNDiagram) {
-                ERDResourceHandler.createDiagram(
-                    ((DBNDiagram) node).getDiagram(),
-                    node.getNodeName(),
-                    (IFolder) getResource(),
-                    null);
-            }
-        }
-    }
 }
