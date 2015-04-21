@@ -22,6 +22,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -171,7 +172,7 @@ public class DBNResource extends DBNNode
             return null;
         }
         for (DBNNode child : children) {
-            if (child instanceof DBNResource && ((DBNResource)child).getResource().equals(resource)) {
+            if (child instanceof DBNResource && resource.equals(((DBNResource)child).getResource())) {
                 return (DBNResource) child;
             }
         }
@@ -270,18 +271,21 @@ public class DBNResource extends DBNNode
     {
         for (DBNNode node : nodes) {
             DBNResource resourceNode = (DBNResource) node;
-            try {
-                IResource otherResource = resourceNode.getResource();
-                otherResource.move(
-                    resource.getFullPath().append(otherResource.getName()),
-                    true,
-                    new NullProgressMonitor());
-            } catch (CoreException e) {
-                throw new DBException("Can't delete resource", e);
+            IResource otherResource = resourceNode.getResource();
+            if (otherResource != null) {
+                try {
+                    otherResource.move(
+                        resource.getFullPath().append(otherResource.getName()),
+                        true,
+                        new NullProgressMonitor());
+                } catch (CoreException e) {
+                    throw new DBException("Can't delete resource", e);
+                }
             }
         }
     }
 
+    @Nullable
     public IResource getResource()
     {
         return resource;
