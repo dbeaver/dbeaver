@@ -45,7 +45,8 @@ public class DBNBookmarkFolder extends DBNResource
     @Override
     public Image getNodeIcon()
     {
-        if (getResource().getParent() instanceof IProject) {
+        IResource resource = getResource();
+        if (resource != null && resource.getParent() instanceof IProject) {
             return DBIcon.BOOKMARK_FOLDER.getImage();
         }
         return super.getNodeIcon();
