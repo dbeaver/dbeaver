@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
