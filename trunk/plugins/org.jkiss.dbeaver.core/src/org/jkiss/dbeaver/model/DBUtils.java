@@ -524,11 +524,22 @@ public final class DBUtils {
             // Can't migrate into itself
             return false;
         }
+        // Migrating association is: if all referenced attributes are included in some unique key
+        List<DBSEntityAttribute> ownAttrs = getEntityAttributes(monitor, referrer);
         Collection<? extends DBSEntityConstraint> constraints = association.getParentObject().getConstraints(monitor);
         if (constraints != null) {
+            boolean hasPrimaryKey = false;
             for (DBSEntityConstraint constraint : constraints) {
-                if (constraint.getConstraintType().isUnique() && constraint instanceof DBSEntityReferrer) {
-                    List<DBSEntityAttribute> ownAttrs = getEntityAttributes(monitor, referrer);
+                if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                    hasPrimaryKey = true;
+                    break;
+                }
+            }
+            for (DBSEntityConstraint constraint : constraints) {
+                if (constraint instanceof DBSEntityReferrer &&
+                    ((hasPrimaryKey && constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) ||
+                    (!hasPrimaryKey && constraint.getConstraintType().isUnique())))
+                {
                     List<DBSEntityAttribute> constAttrs = getEntityAttributes(monitor, (DBSEntityReferrer) constraint);
 
                     boolean included = true;
