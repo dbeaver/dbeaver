@@ -83,6 +83,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             sqlPath = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SQL_PATH);
             persisted = true;
         } else {
+            defaultCharset = dataSource.getCharset("utf8");
+            defaultCollation = dataSource.getCollation("utf8_general_ci");
+            sqlPath = "";
             persisted = false;
         }
     }
