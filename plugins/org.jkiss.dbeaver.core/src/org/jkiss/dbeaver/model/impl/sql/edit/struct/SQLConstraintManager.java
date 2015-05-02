@@ -78,7 +78,9 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
 
         boolean legacySyntax = isLegacyConstraintsSyntax(owner);
         StringBuilder decl = new StringBuilder(40);
-        decl.append("CONSTRAINT "); //$NON-NLS-1$
+        if (!legacySyntax || !constraint.isPersisted()) {
+            decl.append("CONSTRAINT "); //$NON-NLS-1$
+        }
         if (!legacySyntax) {
             decl.append(constraintName).append(" ");
         }
