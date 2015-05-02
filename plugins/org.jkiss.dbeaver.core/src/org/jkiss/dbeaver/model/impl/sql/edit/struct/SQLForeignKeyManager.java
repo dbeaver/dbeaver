@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * JDBC foreign key manager
@@ -74,21 +75,23 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
     protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
     {
         OBJECT_TYPE foreignKey = command.getObject();
+        boolean legacySyntax = isLegacyForeignKeySyntax(owner);
 
         // Create column
         String constraintName = DBUtils.getQuotedIdentifier(foreignKey.getDataSource(), foreignKey.getName());
 
         StringBuilder decl = new StringBuilder(40);
-        decl
-            .append("CONSTRAINT ").append(constraintName) //$NON-NLS-1$
-            .append(" ").append(foreignKey.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
+        decl.append("CONSTRAINT ");
+        if (!legacySyntax) {
+            decl.append(constraintName).append(" "); //$NON-NLS-1$
+        }
+        decl.append(foreignKey.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
-        boolean firstColumn = false;
         try {
             // Get columns using void monitor
             final Collection<? extends DBSEntityAttributeRef> columns = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
-            firstColumn = true;
-            for (DBSEntityAttributeRef constraintColumn : columns) {
+            boolean firstColumn = true;
+            for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
                 decl.append(constraintColumn.getAttribute().getName());
@@ -97,9 +100,10 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             log.error("Can't obtain reference attributes", e);
         }
         decl.append(") REFERENCES ").append(foreignKey.getReferencedConstraint().getParentObject().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
-        firstColumn = true;
         try {
-            for (DBSEntityAttributeRef constraintColumn : foreignKey.getReferencedConstraint().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
+            boolean firstColumn = true;
+            List<? extends DBSEntityAttributeRef> columns = foreignKey.getReferencedConstraint().getAttributeReferences(VoidProgressMonitor.INSTANCE);
+            for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
                 decl.append(constraintColumn.getAttribute().getName());
@@ -114,6 +118,10 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         if (foreignKey.getUpdateRule() != null && !CommonUtils.isEmpty(foreignKey.getUpdateRule().getClause())) {
             decl.append(" ON UPDATE ").append(foreignKey.getUpdateRule().getClause()); //$NON-NLS-1$
         }
+
+        if (legacySyntax) {
+            decl.append(" CONSTRAINT ").append(constraintName); //$NON-NLS-1$
+        }
         return decl;
     }
 
@@ -122,5 +130,8 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    protected boolean isLegacyForeignKeySyntax(TABLE_TYPE owner) {
+        return false;
+    }
 }
 

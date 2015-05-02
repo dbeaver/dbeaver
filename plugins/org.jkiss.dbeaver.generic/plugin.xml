@@ -119,6 +119,7 @@
                 </propertyGroup>
                 <propertyGroup label="DDL" description="DDL generation options">
                     <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
+                    <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
             </driver-properties>
 
@@ -321,6 +322,7 @@
                     <file type="license" path="drivers/informix/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value=""/>
+                    <parameter name="legacy-sql-dialect" value="true"/>
                 </driver>
                 <driver
                     id="h2_server"

@@ -21,10 +21,7 @@ package org.jkiss.dbeaver.ext.generic.edit;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -80,4 +77,8 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
         return primaryKey;
     }
 
+    @Override
+    protected boolean isLegacyConstraintsSyntax(GenericTable owner) {
+        return ((GenericSQLDialect)owner.getDataSource().getSQLDialect()).isLegacySQLDialect();
+    }
 }

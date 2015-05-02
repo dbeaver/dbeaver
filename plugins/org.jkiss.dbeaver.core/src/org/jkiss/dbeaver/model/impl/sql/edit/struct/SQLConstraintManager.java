@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
+import java.util.List;
+
 /**
  * JDBC constraint manager
  */
@@ -74,23 +76,33 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         // Create column
         String constraintName = DBUtils.getQuotedIdentifier(constraint.getDataSource(), constraint.getName());
 
+        boolean legacySyntax = isLegacyConstraintsSyntax(owner);
         StringBuilder decl = new StringBuilder(40);
-        decl
-            .append("CONSTRAINT ").append(constraintName) //$NON-NLS-1$
-            .append(" ").append(constraint.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
+        decl.append("CONSTRAINT "); //$NON-NLS-1$
+        if (!legacySyntax) {
+            decl.append(constraintName).append(" ");
+        }
+        decl.append(constraint.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
-        boolean firstColumn = true;
         try {
-            for (DBSEntityAttributeRef constraintColumn : command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
-                if (!firstColumn) decl.append(","); //$NON-NLS-1$
-                firstColumn = false;
-                decl.append(constraintColumn.getAttribute().getName());
+            List<? extends DBSEntityAttributeRef> attrs = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
+            if (attrs != null) {
+                boolean firstColumn = true;
+                for (DBSEntityAttributeRef constraintColumn : attrs) {
+                    if (!firstColumn) decl.append(","); //$NON-NLS-1$
+                    firstColumn = false;
+                    decl.append(constraintColumn.getAttribute().getName());
+                }
             }
         } catch (DBException e) {
             log.warn("Can't obtain attribute references", e);
         }
         decl.append(")"); //$NON-NLS-1$
+
+        if (legacySyntax) {
+            decl.append(" CONSTRAINT ").append(constraintName); //$NON-NLS-1$
+        }
         return decl;
     }
 
@@ -99,5 +111,8 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    protected boolean isLegacyConstraintsSyntax(TABLE_TYPE owner) {
+        return false;
+    }
 }
 

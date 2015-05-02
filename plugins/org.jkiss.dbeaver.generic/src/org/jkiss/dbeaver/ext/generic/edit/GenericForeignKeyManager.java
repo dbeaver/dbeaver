@@ -84,4 +84,8 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
         return foreignKey;
     }
 
+    @Override
+    protected boolean isLegacyForeignKeySyntax(GenericTable owner) {
+        return ((GenericSQLDialect)owner.getDataSource().getSQLDialect()).isLegacySQLDialect();
+    }
 }
