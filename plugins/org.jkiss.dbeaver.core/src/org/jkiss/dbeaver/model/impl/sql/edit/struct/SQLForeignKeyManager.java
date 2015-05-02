@@ -81,7 +81,9 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         String constraintName = DBUtils.getQuotedIdentifier(foreignKey.getDataSource(), foreignKey.getName());
 
         StringBuilder decl = new StringBuilder(40);
-        decl.append("CONSTRAINT ");
+        if (!legacySyntax || !foreignKey.isPersisted()) {
+            decl.append("CONSTRAINT ");
+        }
         if (!legacySyntax) {
             decl.append(constraintName).append(" "); //$NON-NLS-1$
         }
