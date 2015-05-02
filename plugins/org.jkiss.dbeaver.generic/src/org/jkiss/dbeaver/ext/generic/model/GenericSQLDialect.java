@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Generic data source info
  */
-class GenericSQLDialect extends JDBCSQLDialect {
+public class GenericSQLDialect extends JDBCSQLDialect {
 
     private static List<String> EXEC_KEYWORDS = new ArrayList<String>();
 
@@ -45,11 +45,13 @@ class GenericSQLDialect extends JDBCSQLDialect {
     }
 
     private final String scriptDelimiter;
+    private final boolean legacySQLDialect;
 
     public GenericSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData)
     {
         super(dataSource, "Generic", metaData);
         scriptDelimiter = CommonUtils.toString(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+        legacySQLDialect = CommonUtils.toBoolean(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
     }
 
     @NotNull
@@ -66,4 +68,7 @@ class GenericSQLDialect extends JDBCSQLDialect {
         return EXEC_KEYWORDS;
     }
 
+    public boolean isLegacySQLDialect() {
+        return legacySQLDialect;
+    }
 }
