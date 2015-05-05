@@ -28,7 +28,6 @@ import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.source.*;
-import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
@@ -64,13 +63,14 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockBeginToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockEndToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ResourceBundle;
 
 /**
  * SQL Executor
@@ -83,7 +83,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     private ProjectionSupport projectionSupport;
 
     private ProjectionAnnotationModel annotationModel;
-    private Map<Annotation, Position> curAnnotations;
+    //private Map<Annotation, Position> curAnnotations;
 
     private IAnnotationAccess annotationAccess;
     private boolean hasVerticalRuler = true;
@@ -199,10 +199,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         return hasVerticalRuler ? super.createVerticalRuler() : new VerticalRuler(0);
     }
 
-    public void setHasVerticalRuler(boolean hasVerticalRuler)
-    {
-        this.hasVerticalRuler = hasVerticalRuler;
-    }
+//    public void setHasVerticalRuler(boolean hasVerticalRuler)
+//    {
+//        this.hasVerticalRuler = hasVerticalRuler;
+//    }
 
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException
@@ -422,6 +422,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
 
     public boolean hasActiveQuery()
     {
+        Document document = getDocument();
+        if (document == null) {
+            return false;
+        }
         ISelectionProvider selectionProvider = getSelectionProvider();
         if (selectionProvider == null) {
             return false;
@@ -429,7 +433,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
         String selText = selection.getText();
         if (CommonUtils.isEmpty(selText) && selection.getOffset() >= 0) {
-            Document document = getDocument();
             try {
                 IRegion lineRegion = document.getLineInformationOfOffset(selection.getOffset());
                 selText = document.get(lineRegion.getOffset(), lineRegion.getLength());
@@ -468,7 +471,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     public SQLQuery extractQueryAtPos(int currentPos)
     {
         Document document = getDocument();
-        if (document.getLength() == 0) {
+        if (document == null || document.getLength() == 0) {
             return null;
         }
         IDocumentPartitioner partitioner = document.getDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING);
@@ -484,7 +487,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         int endPos = document.getLength();
         try {
             int currentLine = document.getLineOfOffset(currentPos);
-            int lineOffset = document.getLineOffset(currentLine);
+            //int lineOffset = document.getLineOffset(currentLine);
             int linesCount = document.getNumberOfLines();
             int firstLine = currentLine, lastLine = currentLine;
             while (firstLine > 0) {
@@ -506,24 +509,21 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
             startPos = document.getLineOffset(firstLine);
             endPos = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
-            //String lastDelimiter = document.getLineDelimiter(lastLine);
-            //if (lastDelimiter != null) {
-            //    endPos += lastDelimiter.length();
-            //}
-
-            // Move currentPos at line begin
-            currentPos = lineOffset;
         } catch (BadLocationException e) {
             log.warn(e);
         }
         return parseQuery(document, startPos, endPos);
     }
 
-    protected SQLQuery parseQuery(Document document, int startPos, int endPos) {
+    protected SQLQuery parseQuery(IDocument document, int startPos, int endPos) {
+        if (endPos - startPos <= 0) {
+            return null;
+        }
         // Parse range
         syntaxManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         int bracketDepth = 0;
+        boolean hasValuableTokens = false;
         for (; ; ) {
             IToken token = syntaxManager.nextToken();
             int tokenOffset = syntaxManager.getTokenOffset();
@@ -549,7 +549,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 // Delimiter in some brackets - ignore it
                 continue;
             }
-            if (token.isEOF() || (isDelimiter && tokenOffset >= startPos) || tokenOffset > endPos) {
+            if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= startPos) || tokenOffset > endPos)) {
                 // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
@@ -570,10 +570,22 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
                         tokenOffset--;
                     }
+                    if (tokenOffset == statementStart) {
+                        // Empty statement
+                        return null;
+                    }
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
                     queryText = queryText.trim();
-                    if (queryText.endsWith(syntaxManager.getStatementDelimiter())) {
-                        queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length());
+
+                    String delimiterText;
+                    if (isDelimiter) {
+                        delimiterText = document.get(tokenOffset, tokenLength);
+                    } else {
+                        delimiterText = syntaxManager.getStatementDelimiter();
+                    }
+
+                    if (queryText.endsWith(delimiterText)) {
+                        queryText = queryText.substring(0, queryText.length() - delimiterText.length());
                     }
                     // make script line
                     return new SQLQuery(
@@ -592,9 +604,13 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             if (token.isEOF()) {
                 return null;
             }
+            if (!token.isWhitespace() && !(token instanceof SQLCommentToken)) {
+                hasValuableTokens = true;
+            }
         }
     }
 
+/*
     public synchronized void updateFoldingStructure(int offset, int length, List<Position> positions)
     {
         if (curAnnotations == null) {
@@ -629,6 +645,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         // Update current annotations
         curAnnotations.putAll(newAnnotations);
     }
+*/
 
     public boolean isDisposed()
     {
