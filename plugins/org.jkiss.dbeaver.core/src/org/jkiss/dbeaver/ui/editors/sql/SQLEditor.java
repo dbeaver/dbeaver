@@ -29,7 +29,6 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -83,9 +82,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -590,43 +586,15 @@ public class SQLEditor extends SQLEditorBase
             return queryList;
         }
 
-        SQLSyntaxManager syntaxManager = getSyntaxManager();
-        syntaxManager.setRange(document, startOffset, length);
-        int statementStart = startOffset;
-        boolean hasValuableTokens = false;
-        for (;;) {
-            IToken token = syntaxManager.nextToken();
-            if (token.isEOF() || token instanceof SQLDelimiterToken) {
-                int tokenOffset = syntaxManager.getTokenOffset();
-                if (tokenOffset >= document.getLength()) {
-                    tokenOffset = document.getLength();
-                }
-                try {
-                    while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
-                        statementStart++;
-                    }
-                    if (hasValuableTokens) {
-                        int queryLength = tokenOffset - statementStart;
-                        String query = document.get(statementStart, queryLength);
-                        query = query.trim();
-                        if (query.length() > 0) {
-                            SQLQuery statementInfo = new SQLQuery(this, query, statementStart, queryLength);
-                            queryList.add(statementInfo);
-                        }
-                    }
-                    hasValuableTokens = false;
-                } catch (BadLocationException ex) {
-                    log.error("Error extracting script query", ex); //$NON-NLS-1$
-                }
-                statementStart = tokenOffset + syntaxManager.getTokenLength();
-            }
-            if (token.isEOF()) {
+        for (int queryOffset = startOffset;;) {
+            SQLQuery query = parseQuery(document, queryOffset, startOffset + length);
+            if (query == null) {
                 break;
             }
-            if (!token.isWhitespace() && !(token instanceof SQLCommentToken)) {
-                hasValuableTokens = true;
-            }
+            queryList.add(query);
+            queryOffset = query.getOffset() + query.getLength() + 1;
         }
+
         // Parse parameters
         for (SQLQuery query : queryList) {
             query.parseParameters(getDocument(), getSyntaxManager());
