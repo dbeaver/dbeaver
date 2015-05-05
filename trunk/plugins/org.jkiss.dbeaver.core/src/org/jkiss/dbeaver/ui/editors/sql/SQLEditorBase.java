@@ -62,6 +62,8 @@ import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockBeginToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockEndToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
@@ -514,7 +516,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         } catch (BadLocationException e) {
             log.warn(e);
         }
+        return parseQuery(document, startPos, endPos);
+    }
 
+    protected SQLQuery parseQuery(Document document, int startPos, int endPos) {
         // Parse range
         syntaxManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
@@ -536,11 +541,15 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     log.warn(e);
                 }
             }
-            if (isDelimiter && bracketDepth > 0) {
+            if (token instanceof SQLBlockBeginToken) {
+                bracketDepth++;
+            } else if (token instanceof SQLBlockEndToken) {
+                bracketDepth--;
+            } else if (isDelimiter && bracketDepth > 0) {
                 // Delimiter in some brackets - ignore it
                 continue;
             }
-            if (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos) {
+            if (token.isEOF() || (isDelimiter && tokenOffset >= startPos) || tokenOffset > endPos) {
                 // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
@@ -551,7 +560,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     // last token offset is beyond document range
                     tokenOffset = document.getLength();
                 }
-                assert (tokenOffset >= currentPos);
+                assert (tokenOffset >= startPos);
                 try {
                     // remove leading spaces
                     while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
@@ -567,8 +576,11 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                         queryText = queryText.substring(0, queryText.length() - syntaxManager.getStatementDelimiter().length());
                     }
                     // make script line
-                    SQLQuery statementInfo = new SQLQuery(this, queryText.trim(), statementStart, tokenOffset - statementStart);
-                    return statementInfo;
+                    return new SQLQuery(
+                        this,
+                        queryText.trim(),
+                        statementStart,
+                        tokenOffset - statementStart);
                 } catch (BadLocationException ex) {
                     log.warn("Can't extract query", ex); //$NON-NLS-1$
                     return null;
