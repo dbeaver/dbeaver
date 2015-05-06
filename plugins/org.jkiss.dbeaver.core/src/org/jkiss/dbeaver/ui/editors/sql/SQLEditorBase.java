@@ -489,7 +489,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         int endPos = document.getLength();
         try {
             int currentLine = document.getLineOfOffset(currentPos);
-            //int lineOffset = document.getLineOffset(currentLine);
+            int lineOffset = document.getLineOffset(currentLine);
             int linesCount = document.getNumberOfLines();
             int firstLine = currentLine, lastLine = currentLine;
             while (firstLine > 0) {
@@ -511,13 +511,16 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
             startPos = document.getLineOffset(firstLine);
             endPos = document.getLineOffset(lastLine) + document.getLineLength(lastLine);
+
+            // Move currentPos at line begin
+            currentPos = lineOffset;
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQuery(document, startPos, endPos);
+        return parseQuery(document, startPos, endPos, currentPos);
     }
 
-    protected SQLQuery parseQuery(IDocument document, int startPos, int endPos) {
+    protected SQLQuery parseQuery(IDocument document, int startPos, int endPos, int currentPos) {
         if (endPos - startPos <= 0) {
             return null;
         }
@@ -551,7 +554,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 // Delimiter in some brackets - ignore it
                 continue;
             }
-            if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= startPos) || tokenOffset > endPos)) {
+            if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
                 // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
@@ -562,7 +565,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     // last token offset is beyond document range
                     tokenOffset = document.getLength();
                 }
-                assert (tokenOffset >= startPos);
+                assert (tokenOffset >= currentPos);
                 try {
                     // remove leading spaces
                     while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
