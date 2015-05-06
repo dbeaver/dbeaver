@@ -25,11 +25,10 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,45 +44,41 @@ import org.jkiss.utils.CommonUtils;
  */
 public class StatisticsPresentation extends AbstractPresentation {
 
-    private TableViewer tableViewer;
+    private Table table;
 
     @Override
     public void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent) {
         super.createPresentation(controller, parent);
         UIUtils.createHorizontalLine(parent);
-        tableViewer = new TableViewer(parent, SWT.MULTI | SWT.FULL_SELECTION);
-        Table table = tableViewer.getTable();
+        table = new Table(parent, SWT.MULTI | SWT.FULL_SELECTION);
         table.setLinesVisible(true);
         table.setHeaderVisible(true);
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        tableViewer.setContentProvider(new ListContentProvider());
-        new TableViewerColumn(tableViewer, UIUtils.createTableColumn(table, SWT.LEFT, "Name"))
-            .setLabelProvider(new CellLabelProvider() {
-                @Override
-                public void update(ViewerCell cell) {
-                    cell.setText(StatisticsPresentation.this.controller.getModel().getAttribute(0).getName());
-                }
-            });
-        new TableViewerColumn(tableViewer, UIUtils.createTableColumn(table, SWT.LEFT, "Value"))
-            .setLabelProvider(new CellLabelProvider() {
-                @Override
-                public void update(ViewerCell cell) {
-                    String name = CommonUtils.toString(((ResultSetRow) cell.getElement()).values[0]);
-                    cell.setText(name);
-                }
-            });
+        UIUtils.createTableColumn(table, SWT.LEFT, "Name");
+        UIUtils.createTableColumn(table, SWT.LEFT, "Value");
     }
 
     @Override
     public Control getControl() {
-        return tableViewer.getControl();
+        return table;
     }
 
     @Override
     public void refreshData(boolean refreshMetadata, boolean append) {
-        tableViewer.setInput(controller.getModel().getAllRows());
-        UIUtils.packColumns(tableViewer.getTable());
+        table.removeAll();
+
+        ResultSetRow row = controller.getModel().getRow(0);
+        java.util.List<DBDAttributeBinding> visibleAttributes = controller.getModel().getVisibleAttributes();
+        for (int i = 0; i < visibleAttributes.size(); i++) {
+            DBDAttributeBinding attr = visibleAttributes.get(i);
+            Object value = row.getValues()[i];
+            TableItem item = new TableItem(table, SWT.LEFT);
+            item.setText(0, attr.getName());
+            item.setText(1, DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
+        }
+
+        UIUtils.packColumns(table);
     }
 
     @Override
