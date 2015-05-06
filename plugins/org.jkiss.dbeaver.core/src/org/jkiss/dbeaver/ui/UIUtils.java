@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
@@ -1143,7 +1144,10 @@ public class UIUtils {
                 Method activatorMethod = AbstractTextEditor.class.getDeclaredMethod("setActionActivation", Boolean.TYPE);
                 activatorMethod.setAccessible(true);
                 activatorMethod.invoke(hostEditor, enable);
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                if (e instanceof InvocationTargetException) {
+                    e = ((InvocationTargetException) e).getTargetException();
+                }
                 log.warn("Can't disable text editor action activations", e);
             }
 
