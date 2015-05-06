@@ -158,7 +158,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             catalogSeparator = sqlDialect.getCatalogSeparator();
             sqlDialect.getSearchStringEscape();
             escapeChar = '\\';
-            statementDelimiters.add(sqlDialect.getScriptDelimiter().toLowerCase());
+            if (!this.dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
+                statementDelimiters.add(sqlDialect.getScriptDelimiter().toLowerCase());
+            }
 
             String extraDelimiters = this.dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER);
             StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
