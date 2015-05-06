@@ -188,13 +188,8 @@ public class SQLEditor extends SQLEditorBase
         if (container == dataSourceContainer) {
             return true;
         }
-        // Acquire ds container
-        if (dataSourceContainer != null) {
-            dataSourceContainer.getPreferenceStore().removePropertyChangeListener(this);
-            dataSourceContainer.release(this);
-            dataSourceContainer = null;
-        }
-
+        // Release ds container
+        releaseContainer();
         closeAllJobs();
 
         dataSourceContainer = container;
@@ -219,6 +214,14 @@ public class SQLEditor extends SQLEditorBase
             dataSourceContainer.acquire(this);
         }
         return true;
+    }
+
+    private void releaseContainer() {
+        if (dataSourceContainer != null) {
+            dataSourceContainer.getPreferenceStore().removePropertyChangeListener(this);
+            dataSourceContainer.release(this);
+            dataSourceContainer = null;
+        }
     }
 
     @Override
@@ -592,7 +595,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         for (int queryOffset = startOffset;;) {
-            SQLQuery query = parseQuery(document, queryOffset, startOffset + length);
+            SQLQuery query = parseQuery(document, queryOffset, startOffset + length, queryOffset);
             if (query == null) {
                 break;
             }
@@ -696,8 +699,7 @@ public class SQLEditor extends SQLEditorBase
     public void dispose()
     {
         // Acquire ds container
-        setDataSourceContainer(null);
-
+        releaseContainer();
         closeAllJobs();
 
         IProject project = getProject();
