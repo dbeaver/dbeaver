@@ -237,20 +237,21 @@ public final class SQLUtils {
     public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql)
     {
         sql = sql.trim();
-        String statementDelimiter = syntaxManager.getStatementDelimiter();
-        if (sql.endsWith(statementDelimiter) && sql.length() > statementDelimiter.length()) {
-            if (Character.isAlphabetic(statementDelimiter.charAt(0))) {
-                // Delimiter is alphabetic (e.g. "GO") so it must be prefixed with whitespace
-                char lastChar = sql.charAt(sql.length() - statementDelimiter.length() - 1);
-                if (Character.isUnicodeIdentifierPart(lastChar)) {
-                    return sql;
+        for (String statementDelimiter : syntaxManager.getStatementDelimiters()) {
+            if (sql.endsWith(statementDelimiter) && sql.length() > statementDelimiter.length()) {
+                if (Character.isAlphabetic(statementDelimiter.charAt(0))) {
+                    // Delimiter is alphabetic (e.g. "GO") so it must be prefixed with whitespace
+                    char lastChar = sql.charAt(sql.length() - statementDelimiter.length() - 1);
+                    if (Character.isUnicodeIdentifierPart(lastChar)) {
+                        return sql;
+                    }
                 }
-            }
-            // Remove trailing delimiter only if it is not block end
-            String trimmed = sql.substring(0, sql.length() - statementDelimiter.length());
-            String test = trimmed.toUpperCase().trim();
-            if (!test.endsWith(SQLConstants.BLOCK_END)) {
-                sql = trimmed;
+                // Remove trailing delimiter only if it is not block end
+                String trimmed = sql.substring(0, sql.length() - statementDelimiter.length());
+                String test = trimmed.toUpperCase().trim();
+                if (!test.endsWith(SQLConstants.BLOCK_END)) {
+                    sql = trimmed;
+                }
             }
         }
         return sql;

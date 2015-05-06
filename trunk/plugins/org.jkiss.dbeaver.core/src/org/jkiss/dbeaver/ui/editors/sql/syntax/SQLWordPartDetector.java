@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 import java.util.ArrayList;
@@ -83,9 +82,11 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 if (prevDelimiter == null) {
                     prevDelimiter = prevPiece.toString();
                 }
-                if (prevPiece.indexOf(syntaxManager.getStatementDelimiter()) != -1) {
-                    // Statement delimiter found - do not process to previous keyword
-                    return;
+                for (String delim : syntaxManager.getStatementDelimiters()) {
+                    if (prevPiece.indexOf(delim) != -1) {
+                        // Statement delimiter found - do not process to previous keyword
+                        return;
+                    }
                 }
                 int prevStartOffset = prevOffset + 1;
                 while (prevOffset >= topIndex) {
