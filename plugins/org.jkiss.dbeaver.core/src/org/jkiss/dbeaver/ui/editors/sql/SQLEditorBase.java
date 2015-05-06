@@ -70,6 +70,8 @@ import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.ResourceBundle;
 
 /**
@@ -577,15 +579,17 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
                     queryText = queryText.trim();
 
-                    String delimiterText;
+                    Collection<String> delimiterTexts;
                     if (isDelimiter) {
-                        delimiterText = document.get(tokenOffset, tokenLength);
+                        delimiterTexts = Collections.singleton(document.get(tokenOffset, tokenLength));
                     } else {
-                        delimiterText = syntaxManager.getStatementDelimiter();
+                        delimiterTexts = syntaxManager.getStatementDelimiters();
                     }
 
-                    if (queryText.endsWith(delimiterText)) {
-                        queryText = queryText.substring(0, queryText.length() - delimiterText.length());
+                    for (String delim : delimiterTexts) {
+                        if (queryText.endsWith(delim)) {
+                            queryText = queryText.substring(0, queryText.length() - delim.length());
+                        }
                     }
                     // make script line
                     return new SQLQuery(

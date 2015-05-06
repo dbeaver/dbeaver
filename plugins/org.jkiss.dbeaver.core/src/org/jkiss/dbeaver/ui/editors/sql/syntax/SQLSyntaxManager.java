@@ -29,6 +29,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -59,7 +60,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     @NotNull
     private String catalogSeparator;
     @NotNull
-    private String statementDelimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
+    private Set<String> statementDelimiters = new LinkedHashSet<String>();//SQLConstants.DEFAULT_STATEMENT_DELIMITER;
     @NotNull
     private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<Integer, SQLScriptPosition>();
 
@@ -101,9 +102,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     }
 
     @NotNull
-    public String getStatementDelimiter()
+    public Set<String> getStatementDelimiters()
     {
-        return statementDelimiter;
+        return statementDelimiters;
     }
 
     @Nullable
@@ -142,13 +143,14 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     {
         this.unassigned = dataSource == null;
         this.dataSource = dataSource;
+        this.statementDelimiters.clear();
         if (this.dataSource == null) {
             sqlDialect = new BasicSQLDialect();
             quoteSymbol = null;
             structSeparator = SQLConstants.STRUCT_SEPARATOR;
             catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             escapeChar = '\\';
-            statementDelimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
+            statementDelimiters.add(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         } else {
             sqlDialect = this.dataSource.getSQLDialect();
             quoteSymbol = sqlDialect.getIdentifierQuoteString();
@@ -156,7 +158,13 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             catalogSeparator = sqlDialect.getCatalogSeparator();
             sqlDialect.getSearchStringEscape();
             escapeChar = '\\';
-            statementDelimiter = sqlDialect.getScriptDelimiter().toLowerCase();
+            statementDelimiters.add(sqlDialect.getScriptDelimiter().toLowerCase());
+
+            String extraDelimiters = this.dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER);
+            StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
+            while (st.hasMoreTokens()) {
+                statementDelimiters.add(st.nextToken());
+            }
         }
     }
 
@@ -223,27 +231,26 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         // Add numeric rule
         rules.add(new NumberRule(numberToken));
 
-        {
-            // Default delim rule
-            WordRule delimRule = new WordRule(new IWordDetector() {
-                @Override
-                public boolean isWordStart(char c)
-                {
-                    return SQLConstants.DEFAULT_STATEMENT_DELIMITER.charAt(0) == c;
-                }
+        for (final String delimiter : statementDelimiters) {
+            WordRule delimRule;
+            if (Character.isLetterOrDigit(delimiter.charAt(0))) {
+                delimRule = new WordRule(new SQLWordDetector(), Token.UNDEFINED, true);
+                delimRule.addWord(delimiter, delimiterToken);
+            } else {
+                // Default delim rule
+                delimRule = new WordRule(new IWordDetector() {
+                    @Override
+                    public boolean isWordStart(char c) {
+                        return delimiter.charAt(0) == c;
+                    }
 
-                @Override
-                public boolean isWordPart(char c)
-                {
-                    return SQLConstants.DEFAULT_STATEMENT_DELIMITER.indexOf(c) != -1;
-                }
-            }, Token.UNDEFINED, false);
-            delimRule.addWord(SQLConstants.DEFAULT_STATEMENT_DELIMITER, delimiterToken);
-            rules.add(delimRule);
-        }
-        if (!statementDelimiter.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
-            WordRule delimRule = new WordRule(new SQLWordDetector(), Token.UNDEFINED, true);
-            delimRule.addWord(statementDelimiter, delimiterToken);
+                    @Override
+                    public boolean isWordPart(char c) {
+                        return delimiter.indexOf(c) != -1;
+                    }
+                }, Token.UNDEFINED, false);
+                delimRule.addWord(delimiter, delimiterToken);
+            }
             rules.add(delimRule);
         }
 

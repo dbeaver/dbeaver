@@ -29,6 +29,8 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -97,8 +99,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * SQL Executor
  */
 public class SQLEditor extends SQLEditorBase
-    implements IDataSourceContainerProviderEx, DBPEventListener, ISaveablePart2, IResultSetContainer, DBPDataSourceUser, DBPDataSourceHandler
-{
+    implements IDataSourceContainerProviderEx, DBPEventListener, ISaveablePart2, IResultSetContainer, DBPDataSourceUser, DBPDataSourceHandler, IPropertyChangeListener {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
     private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
@@ -189,6 +190,7 @@ public class SQLEditor extends SQLEditorBase
         }
         // Acquire ds container
         if (dataSourceContainer != null) {
+            dataSourceContainer.getPreferenceStore().removePropertyChangeListener(this);
             dataSourceContainer.release(this);
             dataSourceContainer = null;
         }
@@ -196,6 +198,9 @@ public class SQLEditor extends SQLEditorBase
         closeAllJobs();
 
         dataSourceContainer = container;
+        if (dataSourceContainer != null) {
+            dataSourceContainer.getPreferenceStore().addPropertyChangeListener(this);
+        }
         IPathEditorInput input = getEditorInput();
         if (input == null) {
             return false;
@@ -691,10 +696,7 @@ public class SQLEditor extends SQLEditorBase
     public void dispose()
     {
         // Acquire ds container
-        final DBSDataSourceContainer dsContainer = getDataSourceContainer();
-        if (dsContainer != null) {
-            dsContainer.release(this);
-        }
+        setDataSourceContainer(null);
 
         closeAllJobs();
 
@@ -869,6 +871,13 @@ public class SQLEditor extends SQLEditorBase
         }
 
         return queryProcessor;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (event.getProperty().equals(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER)) {
+            reloadSyntaxRules();
+        }
     }
 
     public class QueryProcessor implements SQLResultsConsumer {
