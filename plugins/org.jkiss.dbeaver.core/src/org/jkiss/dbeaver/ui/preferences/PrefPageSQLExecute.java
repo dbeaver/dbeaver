@@ -46,6 +46,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Combo errorHandlingCombo;
     private Spinner commitLinesText;
     private Button fetchResultSetsCheck;
+    private Text statementDelimiterText;
 
     public PrefPageSQLExecute()
     {
@@ -62,7 +63,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(DBeaverPreferences.SCRIPT_COMMIT_TYPE) ||
             store.contains(DBeaverPreferences.SCRIPT_ERROR_HANDLING) ||
             store.contains(DBeaverPreferences.SCRIPT_COMMIT_LINES) ||
-            store.contains(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS)
+            store.contains(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS) ||
+            store.contains(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER)
         ;
     }
 
@@ -127,6 +129,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             }
 
             fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
+            statementDelimiterText = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "");
         }
 
         return composite;
@@ -143,6 +146,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING)).ordinal());
             commitLinesText.setSelection(store.getInt(DBeaverPreferences.SCRIPT_COMMIT_LINES));
             fetchResultSetsCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS));
+            statementDelimiterText.setText(store.getString(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -159,6 +163,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_ERROR_HANDLING, CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
+            store.setValue(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -175,6 +180,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_LINES);
         store.setToDefault(DBeaverPreferences.SCRIPT_ERROR_HANDLING);
         store.setToDefault(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
+        store.setToDefault(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER);
     }
 
     @Override
