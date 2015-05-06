@@ -875,7 +875,9 @@ public class SQLEditor extends SQLEditorBase
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (event.getProperty().equals(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER)) {
+        if (event.getProperty().equals(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER) ||
+            event.getProperty().equals(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER))
+        {
             reloadSyntaxRules();
         }
     }
