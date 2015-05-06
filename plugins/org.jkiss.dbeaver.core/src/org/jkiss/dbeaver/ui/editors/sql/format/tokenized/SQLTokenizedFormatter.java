@@ -19,13 +19,13 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
 
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,14 +34,13 @@ import java.util.List;
 public class SQLTokenizedFormatter implements SQLFormatter {
     private SQLFormatterConfiguration formatterCfg;
     private List<Boolean> functionBracket = new ArrayList<Boolean>();
-    private List<String> statementDelimiters = new ArrayList<String>(2);
+    private Collection<String> statementDelimiters = new ArrayList<String>(2);
 
     @Override
     public String format(final String argSql, SQLFormatterConfiguration configuration)
     {
         formatterCfg = configuration;
-        statementDelimiters.add(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
-        statementDelimiters.add(formatterCfg.getSyntaxManager().getStatementDelimiter().toUpperCase());
+        statementDelimiters = formatterCfg.getSyntaxManager().getStatementDelimiters();
         SQLTokensParser fParser = new SQLTokensParser(formatterCfg);
 
         functionBracket.clear();
