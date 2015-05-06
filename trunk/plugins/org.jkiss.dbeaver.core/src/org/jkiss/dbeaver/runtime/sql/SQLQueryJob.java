@@ -318,6 +318,7 @@ public class SQLQueryJob extends DataSourceJob
                 boolean hasResultSet = curStatement.executeStatement();
                 curResult.setHasResultSet(hasResultSet);
                 statistics.addExecuteTime(System.currentTimeMillis() - startTime);
+                statistics.addStatementsCount();
 
                 long updateCount = -1;
                 while (hasResultSet || resultSetNumber == 0 || updateCount >= 0) {
@@ -351,8 +352,6 @@ public class SQLQueryJob extends DataSourceJob
                         // Nothing else to fetch
                         break;
                     }
-
-                    statistics.addStatementsCount();
 
                     if (dataSource.getInfo().supportsMultipleResults()) {
                         hasResultSet = curStatement.nextResults();
@@ -433,8 +432,9 @@ public class SQLQueryJob extends DataSourceJob
             // Single statement
             long updateCount = statistics.getRowsUpdated();
             if (updateCount >= 0) {
+                fakeResultSet.addColumn("Query", DBPDataKind.STRING);
                 fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
-                fakeResultSet.addRow(updateCount);
+                fakeResultSet.addRow(query.getQuery(), updateCount);
             } else {
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
