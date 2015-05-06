@@ -347,6 +347,7 @@ public class SQLQueryJob extends DataSourceJob
                     }
                     if (hasResultSet && fetchResultSets) {
                         resultSetNumber++;
+                        fetchResultSetNumber = resultSetNumber;
                     }
                     if (!hasResultSet && updateCount < 0) {
                         // Nothing else to fetch
