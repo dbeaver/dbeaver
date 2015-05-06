@@ -31,6 +31,7 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
@@ -55,6 +56,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -1140,6 +1142,12 @@ public class UIUtils {
         IWorkbenchPart part = partSite.getPart();
         if (part instanceof AbstractTextEditor) {
             AbstractTextEditor hostEditor = (AbstractTextEditor) part;
+            if (hostEditor instanceof BaseTextEditor) {
+                StyledText textWidget = ((BaseTextEditor) hostEditor).getTextViewer().getTextWidget();
+                if (textWidget == null || textWidget.isDisposed()) {
+                    return;
+                }
+            }
             try {
                 Method activatorMethod = AbstractTextEditor.class.getDeclaredMethod("setActionActivation", Boolean.TYPE);
                 activatorMethod.setAccessible(true);
