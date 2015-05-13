@@ -50,11 +50,16 @@ public class CustomTimeEditor {
 
     public Date getValue()
     {
-        String timeText = timeEditor.getText();
+        final String timeText = timeEditor.getText();
         try {
             return (Date)formatter.parseValue(timeText, Date.class);
-        } catch (Exception e) {
-            UIUtils.showErrorDialog(timeEditor.getShell(), "Bad time", "Bad time value: [" + timeText + "]", e);
+        } catch (final Exception e) {
+            timeEditor.getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    UIUtils.showErrorDialog(null, "Bad time", "Bad time value: [" + timeText + "]", e);
+                }
+            });
             return new Date();
         }
     }
