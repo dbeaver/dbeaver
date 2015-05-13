@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.data.editors;
 
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 
 /**
@@ -32,4 +33,5 @@ public interface DateTimeEditorHelper {
 
     Object getValueFromMillis(DBDValueController valueController, long ms);
 
+    DBDDataFormatter getFormatter(String typeId);
 }
