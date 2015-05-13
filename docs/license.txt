@@ -1,2 +1,0 @@
-DBeaver is freeware. You can use it for any purpose with no limitations.
-This software is provided "as is" without express or implied warranty.
