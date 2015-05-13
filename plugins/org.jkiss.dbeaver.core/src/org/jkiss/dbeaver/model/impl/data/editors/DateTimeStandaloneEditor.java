@@ -25,7 +25,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -33,16 +32,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
 
-import java.util.Calendar;
 import java.util.Date;
 
 /**
- * DateTimeViewDialog
+ * DateTimeStandaloneEditor
  */
 public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     private final DateTimeEditorHelper helper;
-    private DateTime dateEditor;
     private CustomTimeEditor timeEditor;
 
     public DateTimeStandaloneEditor(DBDValueController valueController, DateTimeEditorHelper helper) {
@@ -56,12 +53,8 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         DBDValueController valueController = getValueController();
         Object value = valueController.getValue();
 
-        boolean isDate = helper.isDate(valueController);
-        boolean isTime = helper.isTime(valueController);
-        boolean isTimeStamp = helper.isTimestamp(valueController);
-
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
-        Composite panel = UIUtils.createPlaceholder(dialogGroup, isTimeStamp ? 2 : 3);
+        Composite panel = UIUtils.createPlaceholder(dialogGroup, 2);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         int style = SWT.BORDER;
@@ -69,34 +62,21 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
             style |= SWT.READ_ONLY;
         }
 
-        if (isDate || isTimeStamp) {
-            UIUtils.createControlLabel(panel, "Date").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            dateEditor = new DateTime(panel, SWT.CALENDAR | style);
-        }
-        if (isTime || isTimeStamp) {
-            UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            DBDDataFormatter formatter = helper.getFormatter(DBDDataFormatter.TYPE_NAME_TIME);
-            timeEditor = new CustomTimeEditor(panel, SWT.TIME | SWT.LONG | style, formatter);
-        }
+        UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        DBDDataFormatter formatter = helper.getFormatter(valueController.getValueType());
+        timeEditor = new CustomTimeEditor(panel, SWT.TIME | SWT.LONG | style, formatter);
 
-        if (dateEditor != null) {
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalAlignment = GridData.CENTER;
-            dateEditor.setLayoutData(gd);
-        }
-        if (timeEditor != null) {
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalAlignment = GridData.CENTER;
-            timeEditor.getControl().setLayoutData(gd);
-        }
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalAlignment = GridData.CENTER;
+        timeEditor.getControl().setLayoutData(gd);
+
         primeEditorValue(value);
 
         Button button = UIUtils.createPushButton(panel, "Set Current", null);
-        if (isTimeStamp) {
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END);
-            gd.horizontalSpan = 2;
-            button.setLayoutData(gd);
-        }
+        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END);
+        gd.horizontalSpan = 2;
+        button.setLayoutData(gd);
+
         button.setEnabled(!valueController.isReadOnly());
         button.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -112,22 +92,13 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     @Override
     public void primeEditorValue(@Nullable Object value)
     {
-        if (value instanceof Date) {
-            Calendar cl = Calendar.getInstance();
-            cl.setTime((Date)value);
-            if (dateEditor != null) {
-                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
-            }
-            if (timeEditor != null) {
-                timeEditor.setValue(value);
-            }
-        }
+        timeEditor.setValue(value);
     }
 
     @Override
     public Object extractEditorValue()
     {
-        return DateTimeInlineEditor.getDateFromControls(dateEditor, timeEditor);
+        return timeEditor.getValue();
     }
 
     @Override
