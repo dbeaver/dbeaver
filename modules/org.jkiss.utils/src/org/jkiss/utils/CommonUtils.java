@@ -254,9 +254,9 @@ public class CommonUtils {
         if (o1 == null || o2 == null) {
             return false;
         }
-        if (o1.getClass() != o2.getClass()) {
-            return false;
-        }
+//        if (o1.getClass() != o2.getClass()) {
+//            return false;
+//        }
         return o1.equals(o2);
     }
 

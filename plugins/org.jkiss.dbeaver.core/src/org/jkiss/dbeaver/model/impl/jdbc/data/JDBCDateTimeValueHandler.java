@@ -17,111 +17,81 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.editors.DateTimeEditorHelper;
-import org.jkiss.dbeaver.model.impl.data.editors.DateTimeInlineEditor;
-import org.jkiss.dbeaver.model.impl.data.editors.DateTimeStandaloneEditor;
-import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
+import org.jkiss.dbeaver.model.impl.data.DateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
 /**
  * JDBC string value handler
  */
-public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implements DateTimeEditorHelper {
-
-    private DBDDataFormatterProfile formatterProfile;
-    private DBDDataFormatter formatter;
-    //private Calendar calendar;
+public class JDBCDateTimeValueHandler extends DateTimeValueHandler {
 
     public JDBCDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
     {
-        this.formatterProfile = formatterProfile;
-        //this.calendar = Calendar.getInstance(formatterProfile.getLocale());
+        super(formatterProfile);
     }
 
-    private DBDDataFormatter getFormatter(String typeId)
-    {
-        if (formatter == null) {
-            try {
-                formatter = formatterProfile.createFormatter(typeId);
-            } catch (Exception e) {
-                log.error("Could not create formatter for datetime value handler", e); //$NON-NLS-1$
-                formatter = DefaultDataFormatter.INSTANCE;
+    @Override
+    public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
+        try {
+            if (resultSet instanceof JDBCResultSet) {
+                JDBCResultSet dbResults = (JDBCResultSet) resultSet;
+                // It seems that some drivers doesn't support reading date/time values with explicit calendar
+                // So let's use simple version
+                switch (type.getTypeID()) {
+                    case java.sql.Types.TIME:
+                        return dbResults.getTime(index + 1);
+                    case java.sql.Types.DATE:
+                        return dbResults.getDate(index + 1);
+                    default:
+                        return dbResults.getTimestamp(index + 1);
+                }
+            } else {
+                return resultSet.getAttributeValue(index);
             }
         }
-        return formatter;
-    }
-
-    @Override
-    protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type,
-                                      int index)
-        throws DBCException, SQLException
-    {
-        // It seems that some drivers doesn't support reading date/time values with explicit calendar
-        // So let's use simple version
-        switch (type.getTypeID()) {
-            case java.sql.Types.TIME:
-                return resultSet.getTime(index); //, this.calendar
-            case java.sql.Types.DATE:
-                return resultSet.getDate(index); //, this.calendar
-            default:
-                return resultSet.getTimestamp(index); //, this.calendar
+        catch (SQLException e) {
+            throw new DBCException(e, session.getDataSource());
         }
     }
 
     @Override
-    protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType,
-                                 int paramIndex, Object value) throws SQLException
-    {
-        if (value == null) {
-            statement.setNull(paramIndex, paramType.getTypeID());
-        } else {
-            switch (paramType.getTypeID()) {
-                case java.sql.Types.TIME:
-                    statement.setTime(paramIndex, getTimeValue(value));
-                    break;
-                case java.sql.Types.DATE:
-                    statement.setDate(paramIndex, getDateValue(value));
-                    break;
-                default:
-                    statement.setTimestamp(paramIndex, getTimestampValue(value));
-                    break;
+    public void bindValueObject(@NotNull DBCSession session, @NotNull DBCStatement statement, @NotNull DBSTypedObject type, int index, @Nullable Object value) throws DBCException {
+        try {
+            JDBCPreparedStatement dbStat = (JDBCPreparedStatement)statement;
+            // JDBC uses 1-based indexes
+            if (value == null) {
+                dbStat.setNull(index + 1, type.getTypeID());
+            } else {
+                switch (type.getTypeID()) {
+                    case java.sql.Types.TIME:
+                        dbStat.setTime(index + 1, getTimeValue(value));
+                        break;
+                    case java.sql.Types.DATE:
+                        dbStat.setDate(index + 1, getDateValue(value));
+                        break;
+                    default:
+                        dbStat.setTimestamp(index + 1, getTimestampValue(value));
+                        break;
+                }
             }
         }
-    }
-
-    @Override
-    public DBDValueEditor createEditor(@NotNull DBDValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case INLINE:
-            case PANEL:
-                return new DateTimeInlineEditor(controller, this);
-            case EDITOR:
-                return new DateTimeStandaloneEditor(controller, this);
-            default:
-                return null;
+        catch (SQLException e) {
+            throw new DBCException(CoreMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
         }
     }
 
@@ -160,159 +130,5 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         }
     }
 
-    @Override
-    public int getFeatures()
-    {
-        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
-    }
 
-    @Override
-    public Class getValueObjectType()
-    {
-        return Date.class;
-    }
-
-    @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
-    {
-        if (object == null) {
-            return null;
-        } else if (object instanceof Date) {
-            return copy ? ((Date)object).clone() : object;
-        } else if (object instanceof String) {
-            String strValue = (String)object;
-            try {
-                return getFormatter(type).parseValue(strValue, null);
-            } catch (ParseException e) {
-                // Try to parse with standard date/time formats
-
-                //DateFormat.get
-                try {
-                    // Try to parse as java date
-                    @SuppressWarnings("deprecation")
-                    Date result = new Date(strValue);
-                    return result;
-                } catch (Exception e1) {
-                    log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
-                    return null;
-                }
-            }
-        } else {
-            log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
-            return null;
-        }
-    }
-
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final DBDValueController controller)
-        throws DBCException
-    {
-        manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBIcon.TYPE_DATETIME.getImageDescriptor()) {
-            @Override
-            public void run() {
-                controller.updateValue(new Date());
-            }
-        });
-    }
-
-    @Override
-    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller)
-    {
-        super.contributeProperties(propertySource, controller);
-        propertySource.addProperty(
-            "Date/Time",
-            "format", //$NON-NLS-1$
-            "Pattern",
-            getFormatter(controller.getValueType()).getPattern());
-    }
-
-    @Nullable
-    private static java.sql.Time getTimeValue(Object value)
-    {
-        if (value instanceof java.sql.Time) {
-            return (java.sql.Time) value;
-        } else if (value instanceof Date) {
-            return new java.sql.Time(((Date) value).getTime());
-        } else if (value != null) {
-            return Time.valueOf(value.toString());
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
-    private static java.sql.Date getDateValue(Object value)
-    {
-        if (value instanceof java.sql.Date) {
-            return (java.sql.Date) value;
-        } else if (value instanceof Date) {
-            return new java.sql.Date(((Date) value).getTime());
-        } else if (value != null) {
-            return java.sql.Date.valueOf(value.toString());
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
-    private static java.sql.Timestamp getTimestampValue(Object value)
-    {
-        if (value instanceof java.sql.Timestamp) {
-            return (java.sql.Timestamp) value;
-        } else if (value instanceof Date) {
-            return new java.sql.Timestamp(((Date) value).getTime());
-        } else if (value != null) {
-            return java.sql.Timestamp.valueOf(value.toString());
-        } else {
-            return null;
-        }
-    }
-
-    protected static String getTwoDigitValue(int value)
-    {
-        if (value < 10) {
-            return "0" + value;
-        } else {
-            return String.valueOf(value);
-        }
-    }
-
-    @NotNull
-    protected DBDDataFormatter getFormatter(DBSTypedObject column)
-    {
-        switch (column.getTypeID()) {
-            case java.sql.Types.TIME:
-                return getFormatter(DBDDataFormatter.TYPE_NAME_TIME);
-            case java.sql.Types.DATE:
-                return getFormatter(DBDDataFormatter.TYPE_NAME_DATE);
-            default:
-                return getFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP);
-        }
-    }
-
-    @Override
-    public boolean isTimestamp(DBDValueController valueController) {
-        return valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP;
-    }
-
-    @Override
-    public boolean isTime(DBDValueController valueController) {
-        return valueController.getValueType().getTypeID() == java.sql.Types.TIME;
-    }
-
-    @Override
-    public boolean isDate(DBDValueController valueController) {
-        return valueController.getValueType().getTypeID() == java.sql.Types.DATE;
-    }
-
-    @Override
-    public Object getValueFromMillis(DBDValueController valueController, long ms) {
-        if (isTimestamp(valueController)) {
-            return new Timestamp(ms);
-        } else if (isTime(valueController)) {
-            return new java.sql.Time(ms);
-        } else {
-            return new java.sql.Date(ms);
-        }
-    }
 }
