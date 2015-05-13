@@ -8,6 +8,7 @@ InvalidateContext -> InvalidateDataSource ??
 Fix product title (now Enterprise)
 Fix UI freeze in Mongo connection page
 Analyse exception for error line/offset and position cursor in SQL editor
+ERD export in XMI/GraphML formats
 
 IPropertyDescriptor, IPropertySource -> move to DBPPropertyDescriptor (get rid of org.eclipse.ui package dependency)
 Data transfer DB->DB. Set default export mapping initially
