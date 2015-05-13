@@ -100,9 +100,14 @@ public class DBeaverCore implements DBPApplication {
             }
         }
 
-        instance = new DBeaverCore();
-        instance.initialize();
-        return instance;
+        try {
+            instance = new DBeaverCore();
+            instance.initialize();
+            return instance;
+        } catch (Throwable e) {
+            log.error("Error initializing DBeaverCore", e);
+            throw new IllegalStateException("Error initializing DBeaverCore", e);
+        }
     }
 
     public static String getCorePluginID()
