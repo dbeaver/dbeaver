@@ -18,20 +18,13 @@
 package org.jkiss.dbeaver.model.impl.data.editors;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
 * DateTimeEditorHelper
 */
 public interface DateTimeEditorHelper {
 
-    boolean isTimestamp(DBDValueController valueController);
+    DBDDataFormatter getFormatter(DBSTypedObject column);
 
-    boolean isTime(DBDValueController valueController);
-
-    boolean isDate(DBDValueController valueController);
-
-    Object getValueFromMillis(DBDValueController valueController, long ms);
-
-    DBDDataFormatter getFormatter(String typeId);
 }

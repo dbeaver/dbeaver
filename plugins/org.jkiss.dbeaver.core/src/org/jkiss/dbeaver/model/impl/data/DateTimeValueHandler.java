@@ -199,7 +199,6 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
         }
     }
 
-    @Override
     public DBDDataFormatter getFormatter(String typeId)
     {
         try {
@@ -210,6 +209,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
         }
     }
 
+    @Override
     @NotNull
     public DBDDataFormatter getFormatter(DBSTypedObject column)
     {
@@ -229,30 +229,8 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
         return formatter;
     }
 
-    @Override
-    public boolean isTimestamp(DBDValueController valueController) {
+    private boolean isTimestamp(DBDValueController valueController) {
         return valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP;
-    }
-
-    @Override
-    public boolean isTime(DBDValueController valueController) {
-        return valueController.getValueType().getTypeID() == java.sql.Types.TIME;
-    }
-
-    @Override
-    public boolean isDate(DBDValueController valueController) {
-        return valueController.getValueType().getTypeID() == java.sql.Types.DATE;
-    }
-
-    @Override
-    public Object getValueFromMillis(DBDValueController valueController, long ms) {
-        if (isTimestamp(valueController)) {
-            return new java.sql.Timestamp(ms);
-        } else if (isTime(valueController)) {
-            return new java.sql.Time(ms);
-        } else {
-            return new java.sql.Date(ms);
-        }
     }
 
 }
