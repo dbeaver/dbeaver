@@ -29,6 +29,7 @@ import java.util.Locale;
 public class ExtendedDateFormat extends SimpleDateFormat {
 
     private static final String NINE_ZEROES = "000000000";
+    public static final int MAX_NANO_LENGTH = 8;
 
     int nanoStart = -1, nanoLength;
     boolean nanoOptional;
@@ -126,7 +127,32 @@ public class ExtendedDateFormat extends SimpleDateFormat {
     @Override
     public Date parse(String text, ParsePosition pos)
     {
-        return super.parse(text, pos);
+        Date date = super.parse(text, pos);
+        int index = pos.getIndex();
+        if (index == nanoStart) {
+            long nanos = 0;
+            for (int i = 0; i < nanoLength; i++) {
+                int digitPos = index + i;
+                if (digitPos == text.length()) {
+                    break;
+                }
+                char c = text.charAt(digitPos);
+                if (!Character.isDigit(c)) {
+                    throw new IllegalArgumentException("Invalid nanosecond character at pos " + digitPos + ": " + c);
+                }
+                long digit = ((int)c - (int)'0');
+                for (int k = MAX_NANO_LENGTH - i; k > 0; k--) {
+                    digit *= 10;
+                }
+                nanos += digit;
+            }
+            if (nanos > 0) {
+                Timestamp ts = new Timestamp(date.getTime());
+                ts.setNanos((int)nanos);
+                return ts;
+            }
+        }
+        return date;
     }
 
     private static String stripNanos(String pattern)

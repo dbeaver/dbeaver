@@ -27,8 +27,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
 
 import java.util.Calendar;
@@ -41,7 +43,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     private final DateTimeEditorHelper helper;
     private DateTime dateEditor;
-    private DateTime timeEditor;
+    private CustomTimeEditor timeEditor;
 
     public DateTimeStandaloneEditor(DBDValueController valueController, DateTimeEditorHelper helper) {
         super(valueController);
@@ -73,7 +75,8 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         }
         if (isTime || isTimeStamp) {
             UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            timeEditor = new DateTime(panel, SWT.TIME | SWT.LONG | style);
+            DBDDataFormatter formatter = helper.getFormatter(DBDDataFormatter.TYPE_NAME_TIME);
+            timeEditor = new CustomTimeEditor(panel, SWT.TIME | SWT.LONG | style, formatter);
         }
 
         if (dateEditor != null) {
@@ -84,7 +87,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         if (timeEditor != null) {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalAlignment = GridData.CENTER;
-            timeEditor.setLayoutData(gd);
+            timeEditor.getControl().setLayoutData(gd);
         }
         primeEditorValue(value);
 
@@ -116,7 +119,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
                 dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
             }
             if (timeEditor != null) {
-                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+                timeEditor.setValue(value);
             }
         }
     }
@@ -124,8 +127,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     @Override
     public Object extractEditorValue()
     {
-        long ms = DateTimeInlineEditor.getCalendarFromControls(dateEditor, timeEditor).getTimeInMillis();
-        return helper.getValueFromMillis(getValueController(), ms);
+        return DateTimeInlineEditor.getDateFromControls(dateEditor, timeEditor);
     }
 
     @Override

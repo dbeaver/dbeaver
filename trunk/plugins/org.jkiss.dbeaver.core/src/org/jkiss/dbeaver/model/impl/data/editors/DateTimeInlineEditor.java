@@ -18,24 +18,29 @@
 package org.jkiss.dbeaver.model.impl.data.editors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 
 /**
 * DateTimeInlineEditor
 */
-public class DateTimeInlineEditor extends BaseValueEditor<DateTime> {
+public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     private final DateTimeEditorHelper helper;
     private DateTime dateEditor;
-    private DateTime timeEditor;
+    private CustomTimeEditor timeEditor;
 
     public DateTimeInlineEditor(DBDValueController controller, DateTimeEditorHelper helper) {
         super(controller);
@@ -51,7 +56,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<DateTime> {
                 dateEditor.setDate(cl.get(Calendar.YEAR), 0, 1);
             }
             if (timeEditor != null) {
-                timeEditor.setTime(0, 0, 0);
+                timeEditor.setValue(null);
             }
         } else if (value instanceof Date) {
             cl.setTime((Date) value);
@@ -59,13 +64,13 @@ public class DateTimeInlineEditor extends BaseValueEditor<DateTime> {
                 dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
             }
             if (timeEditor != null) {
-                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+                timeEditor.setValue(value);
             }
         }
     }
 
     @Override
-    protected DateTime createControl(Composite editPlaceholder)
+    protected Control createControl(Composite editPlaceholder)
     {
         boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
         final Composite dateTimeGroup = inline ?
@@ -91,42 +96,53 @@ public class DateTimeInlineEditor extends BaseValueEditor<DateTime> {
             UIUtils.createControlLabel(dateTimeGroup, "Time");
         }
         if (isTime || isTimeStamp) {
-            timeEditor = new DateTime(dateTimeGroup,
-                (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG);
+            timeEditor = new CustomTimeEditor(dateTimeGroup,
+                (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG,
+                helper.getFormatter(DBDDataFormatter.TYPE_NAME_TIME));
             timeEditor.setEnabled(!valueController.isReadOnly());
+            if (!inline) {
+                timeEditor.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            }
         }
 
         if (dateEditor != null) {
             if (timeEditor != null) {
-                initInlineControl(timeEditor);
+                initInlineControl(timeEditor.getControl());
             }
             return dateEditor;
         }
-        return timeEditor;
+        return timeEditor == null ? dateEditor : timeEditor.getControl();
     }
 
     @Override
     public Object extractEditorValue()
     {
-        Calendar cl = getCalendarFromControls(dateEditor, timeEditor);
-        return helper.getValueFromMillis(valueController, cl.getTimeInMillis());
+        return getDateFromControls(dateEditor, timeEditor);
     }
 
-    public static Calendar getCalendarFromControls(DateTime dateEditor, DateTime timeEditor) {
-        Calendar cl = Calendar.getInstance();
-        cl.clear();
+    public static Date getDateFromControls(DateTime dateEditor, CustomTimeEditor timeEditor) {
+        Date timeValue = null;
+        if (timeEditor != null) {
+            timeValue = timeEditor.getValue();
+        }
         if (dateEditor != null) {
+            Calendar cl = Calendar.getInstance();
+            cl.clear();
+            if (timeValue != null) {
+                cl.setTime(timeValue);
+            }
             cl.set(Calendar.YEAR, dateEditor.getYear());
             cl.set(Calendar.MONTH, dateEditor.getMonth());
             cl.set(Calendar.DAY_OF_MONTH, dateEditor.getDay());
+            Date dateTimeValue = cl.getTime();
+            if (timeValue instanceof Timestamp && ((Timestamp) timeValue).getNanos() > 0) {
+                dateTimeValue = new Timestamp(dateTimeValue.getTime());
+                ((Timestamp)dateTimeValue).setNanos(((Timestamp) timeValue).getNanos());
+            }
+            return dateTimeValue;
+        } else {
+            return timeValue;
         }
-        if (timeEditor != null) {
-            cl.set(Calendar.HOUR_OF_DAY, timeEditor.getHours());
-            cl.set(Calendar.MINUTE, timeEditor.getMinutes());
-            cl.set(Calendar.SECOND, timeEditor.getSeconds());
-            cl.set(Calendar.MILLISECOND, 0);
-        }
-        return cl;
     }
 
 }
