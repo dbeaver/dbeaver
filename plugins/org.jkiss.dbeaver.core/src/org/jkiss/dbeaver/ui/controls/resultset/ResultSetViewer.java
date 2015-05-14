@@ -803,9 +803,7 @@ public class ResultSetViewer extends Viewer
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
         toolBarManager.add(new Separator());
-        // Link to standard Find/Replace action - it has to be handled by owner site
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, CommandContributionItem.STYLE_PUSH, DBIcon.FIND_TEXT.getImageDescriptor()));
-
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
         Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBIcon.RS_REFRESH.getImageDescriptor()) {
             @Override
@@ -815,6 +813,10 @@ public class ResultSetViewer extends Viewer
             }
         };
         toolBarManager.add(refreshAction);
+        toolBarManager.add(new Separator());
+        // Link to standard Find/Replace action - it has to be handled by owner site
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, CommandContributionItem.STYLE_PUSH, DBIcon.FIND_TEXT.getImageDescriptor()));
+
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
         toolBarManager.add(new GroupMarker(IResultSetPresentation.PRES_TOOLS_BEGIN));
@@ -1622,6 +1624,7 @@ public class ResultSetViewer extends Viewer
                                 model.updateDataFilter(dataFilter);
                             }
                             updateFiltersText();
+                            updateToolbar();
                             fireResultSetLoad();
 
                             if (finalizer != null) {
