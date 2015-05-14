@@ -68,8 +68,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     @Override
-    public Date extractEditorValue()
-    {
+    public Date extractEditorValue() throws DBException {
         return timeEditor.getValue();
     }
 
