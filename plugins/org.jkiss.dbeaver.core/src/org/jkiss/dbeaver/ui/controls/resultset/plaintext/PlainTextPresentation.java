@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.StyledTextFindReplaceTarget;
@@ -90,7 +91,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (verticalBar.getSelection() + verticalBar.getPageIncrement() >= verticalBar.getMaximum()) {
-                    if (!controller.isRecordMode() && controller.isHasMoreData()) {
+                    if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
+                        !controller.isRecordMode() &&
+                        controller.isHasMoreData())
+                    {
                         controller.readNextSegment();
                     }
                 }
@@ -163,7 +167,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 }
             }
 
-            if (lineNum == lineCount - 1 && controller.isHasMoreData()) {
+            if (lineNum == lineCount - 1 &&
+                controller.isHasMoreData() &&
+                controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT))
+            {
                 controller.readNextSegment();
             }
         }

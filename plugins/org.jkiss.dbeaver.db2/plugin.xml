@@ -495,9 +495,11 @@
 
             <datasource id="db2"/>
 
+<!--
             <type name="DATE"/>
             <type name="DATETIME"/>
             <type name="TIMESTAMP"/>
+-->
         </provider>
     </extension>
 
