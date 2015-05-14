@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -96,8 +97,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     }
 
     @Override
-    public Object extractEditorValue()
-    {
+    public Object extractEditorValue() throws DBException {
         return timeEditor.getValue();
     }
 
