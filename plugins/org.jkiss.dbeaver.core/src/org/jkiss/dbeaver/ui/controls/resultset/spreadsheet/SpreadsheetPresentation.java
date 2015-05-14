@@ -1230,7 +1230,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             Object value = controller.getModel().getCellValue(attr, row);
 
             boolean recordMode = controller.isRecordMode();
-            if (rowNum > 0 && rowNum == controller.getModel().getRowCount() - 1 && (recordMode || spreadsheet.isRowVisible(rowNum)) && controller.isHasMoreData()) {
+            if (rowNum > 0 &&
+                rowNum == controller.getModel().getRowCount() - 1 &&
+                controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
+                (recordMode || spreadsheet.isRowVisible(rowNum)) && controller.isHasMoreData())
+            {
                 controller.readNextSegment();
             }
 

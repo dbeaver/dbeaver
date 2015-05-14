@@ -42,6 +42,7 @@ public class PrefPageResultSet extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset"; //$NON-NLS-1$
 
+    private Button autoFetchNextSegmentCheck;
     private Spinner resultSetSize;
     private Button resultSetUseSQLCheck;
     //private Button binaryShowStrings;
@@ -71,6 +72,7 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
+            store.contains(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
             store.contains(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR) ||
@@ -111,6 +113,7 @@ public class PrefPageResultSet extends TargetPrefPage
             resultSetSize.setMinimum(1);
             resultSetSize.setMaximum(1024 * 1024);
 
+            autoFetchNextSegmentCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, true);
             resultSetUseSQLCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, false);
             serverSideOrderingCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false);
         }
@@ -179,6 +182,7 @@ public class PrefPageResultSet extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
+            autoFetchNextSegmentCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
             resultSetSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS));
             resultSetUseSQLCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
@@ -217,6 +221,7 @@ public class PrefPageResultSet extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
+            store.setValue(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
@@ -251,6 +256,7 @@ public class PrefPageResultSet extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
+        store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
