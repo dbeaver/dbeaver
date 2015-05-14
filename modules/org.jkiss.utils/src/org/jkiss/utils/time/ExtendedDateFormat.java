@@ -129,7 +129,7 @@ public class ExtendedDateFormat extends SimpleDateFormat {
     {
         Date date = super.parse(text, pos);
         int index = pos.getIndex();
-        if (index == nanoStart) {
+        if (index < text.length() && nanoStart > 0) {
             long nanos = 0;
             for (int i = 0; i < nanoLength; i++) {
                 int digitPos = index + i;
