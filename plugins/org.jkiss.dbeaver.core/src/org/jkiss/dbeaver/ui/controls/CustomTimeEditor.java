@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -49,18 +50,13 @@ public class CustomTimeEditor {
     }
 
     public Date getValue()
+        throws DBException
     {
         final String timeText = timeEditor.getText();
         try {
             return (Date)formatter.parseValue(timeText, Date.class);
         } catch (final Exception e) {
-            timeEditor.getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    UIUtils.showErrorDialog(null, "Bad time", "Bad time value: [" + timeText + "]", e);
-                }
-            });
-            return new Date();
+            throw new DBException("Error parsing date value [" + timeText + "]", e);
         }
     }
 
