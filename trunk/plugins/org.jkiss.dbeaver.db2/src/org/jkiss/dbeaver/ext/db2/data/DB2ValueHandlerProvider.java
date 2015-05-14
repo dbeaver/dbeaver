@@ -43,13 +43,6 @@ public class DB2ValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        switch (typedObject.getTypeID()) {
-        case Types.DATE:
-        case Types.TIME:
-        case Types.TIMESTAMP:
-            return new DB2DateTimeValueHandler(preferences.getDataFormatterProfile());
-        default:
-            return null;
-        }
+        return null;
     }
 }
