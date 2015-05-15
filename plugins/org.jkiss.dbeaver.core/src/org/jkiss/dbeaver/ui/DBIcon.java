@@ -118,11 +118,11 @@ public enum DBIcon
     PROGRESS8("progress8", "icons/misc/progress_8.gif"), //$NON-NLS-1$ //$NON-NLS-2$
     PROGRESS9("progress9", "icons/misc/progress_9.gif"), //$NON-NLS-1$ //$NON-NLS-2$
 
-    RS_FIRST("rs_first", "/icons/sql/resultset_first.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    RS_LAST("rs_last", "/icons/sql/resultset_last.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    RS_NEXT("rs_next", "/icons/sql/resultset_next.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    RS_PREV("rs_prev", "/icons/sql/resultset_previous.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    RS_FETCH_PAGE("resultset_fetch_page.png", "icons/sql/resultset_fetch_page.png"), //$NON-NLS-1$ //$NON-NLS-2$
+//    RS_FIRST("rs_first", "/icons/sql/resultset_first.png"), //$NON-NLS-1$ //$NON-NLS-2$
+//    RS_LAST("rs_last", "/icons/sql/resultset_last.png"), //$NON-NLS-1$ //$NON-NLS-2$
+//    RS_NEXT("rs_next", "/icons/sql/resultset_next.png"), //$NON-NLS-1$ //$NON-NLS-2$
+//    RS_PREV("rs_prev", "/icons/sql/resultset_previous.png"), //$NON-NLS-1$ //$NON-NLS-2$
+//    RS_FETCH_PAGE("resultset_fetch_page.png", "icons/sql/resultset_fetch_page.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_REFRESH("rs_refresh", "/icons/sql/resultset_refresh.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_GRID("rs_mode_grid", "icons/sql/grid.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_DETAILS("rs_details", "icons/sql/details.png"), //$NON-NLS-1$ //$NON-NLS-2$
