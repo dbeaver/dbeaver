@@ -67,6 +67,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_EXIT);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ORDER_RESULTSET);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_RS_EDIT_CLOSE);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_RS_FETCH_ALL);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_TXN_DISCONNECT);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_VERSION_CHECK);
