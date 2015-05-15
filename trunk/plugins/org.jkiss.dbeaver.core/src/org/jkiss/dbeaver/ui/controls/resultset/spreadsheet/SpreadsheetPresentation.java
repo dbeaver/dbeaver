@@ -42,6 +42,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -882,10 +883,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         //int newSort;
         if (constraint.getOrderPosition() == 0) {
             if (ResultSetUtils.isServerSideFiltering(controller) && supportsDataFilter()) {
-                if (!ConfirmationDialog.confirmActionWithParams(
+                if (ConfirmationDialog.showConfirmDialogEx(
                     spreadsheet.getShell(),
                     DBeaverPreferences.CONFIRM_ORDER_RESULTSET,
-                    metaColumn.getName()))
+                    ConfirmationDialog.QUESTION,
+                    ConfirmationDialog.WARNING,
+                    metaColumn.getName()) != IDialogConstants.YES_ID)
                 {
                     return;
                 }

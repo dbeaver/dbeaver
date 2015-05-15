@@ -1533,6 +1533,15 @@ public class ResultSetViewer extends Viewer
         if (!dataReceiver.isHasMoreData()) {
             return;
         }
+        if (ConfirmationDialog.showConfirmDialogEx(
+            viewerPanel.getShell(),
+            DBeaverPreferences.CONFIRM_RS_FETCH_ALL,
+            ConfirmationDialog.QUESTION,
+            ConfirmationDialog.WARNING) != IDialogConstants.YES_ID)
+        {
+            return;
+        }
+
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && !model.isUpdateInProgress() && dataPumpJob == null) {
             dataReceiver.setHasMoreData(false);

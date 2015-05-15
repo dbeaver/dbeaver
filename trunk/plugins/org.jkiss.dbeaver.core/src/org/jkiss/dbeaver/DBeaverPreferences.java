@@ -61,6 +61,7 @@ public final class DBeaverPreferences
 
     public static final String CONFIRM_EXIT = "exit"; //$NON-NLS-1$
     public static final String CONFIRM_ORDER_RESULTSET = "order_resultset"; //$NON-NLS-1$
+    public static final String CONFIRM_RS_FETCH_ALL = "fetch_all_rows"; //$NON-NLS-1$
     public static final String CONFIRM_RS_EDIT_CLOSE = "close_resultset_edit"; //$NON-NLS-1$
     public static final String CONFIRM_TXN_DISCONNECT = "disconnect_txn"; //$NON-NLS-1$
     public static final String CONFIRM_ENTITY_EDIT_CLOSE = "close_entity_edit"; //$NON-NLS-1$

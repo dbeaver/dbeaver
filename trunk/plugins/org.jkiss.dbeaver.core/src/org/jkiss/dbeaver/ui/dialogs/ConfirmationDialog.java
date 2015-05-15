@@ -122,15 +122,15 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     public static boolean confirmActionWithParams(Shell shell, String id, Object ... args)
     {
-        return showConfirmDialog(shell, id, CONFIRM, args) == 0;
+        return showConfirmDialog(shell, id, CONFIRM, args) == IDialogConstants.OK_ID;
     }
 
     public static int showConfirmDialog(@Nullable Shell shell, String id, int type, Object ... args)
     {
-        return showConfirmDialog(shell, id, type, type, args);
+        return showConfirmDialogEx(shell, id, type, type, args);
     }
 
-    public static int showConfirmDialog(Shell shell, String id, int type, int imageType, Object ... args)
+    public static int showConfirmDialogEx(Shell shell, String id, int type, int imageType, Object... args)
     {
         ResourceBundle bundle = DBeaverActivator.getResourceBundle();
         String titleKey = getResourceKey(id, RES_KEY_TITLE);
