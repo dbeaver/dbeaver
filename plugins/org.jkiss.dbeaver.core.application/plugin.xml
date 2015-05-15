@@ -29,8 +29,8 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.products" id="product">
-        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver Enterprise">
-            <property name="aboutText" value="DBeaver - Enterprise Database Manager"/>
+        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver">
+            <property name="aboutText" value="DBeaver - Universal Database Manager"/>
             <property name="copyright" value="%productCopyright"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
