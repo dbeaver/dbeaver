@@ -141,7 +141,7 @@ public class DBeaverCore implements DBPApplication {
 
     public static String getProductTitle()
     {
-        return "DBeaver " + getVersion();
+        return Platform.getProduct().getName() + " " + getVersion();
     }
 
     public static IPreferenceStore getGlobalPreferenceStore()
