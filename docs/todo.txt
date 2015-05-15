@@ -1,3 +1,4 @@
+Fetch All - confirm
 Vertica keywords
 
 Make IDataSourceProvider -> IDatabaseContextProvider
