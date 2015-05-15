@@ -40,6 +40,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_ROW_NEXT = "org.jkiss.dbeaver.core.resultset.row.next";
     public static final String CMD_ROW_LAST = "org.jkiss.dbeaver.core.resultset.row.last";
     public static final String CMD_FETCH_PAGE = "org.jkiss.dbeaver.core.resultset.fetch.page";
+    public static final String CMD_FETCH_ALL = "org.jkiss.dbeaver.core.resultset.fetch.all";
     public static final String CMD_ROW_EDIT = "org.jkiss.dbeaver.core.resultset.row.edit";
     public static final String CMD_ROW_EDIT_INLINE = "org.jkiss.dbeaver.core.resultset.row.edit.inline";
     public static final String CMD_ROW_ADD = "org.jkiss.dbeaver.core.resultset.row.add";
@@ -74,6 +75,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
             presentation.scrollToRow(IResultSetPresentation.RowPosition.LAST);
         } else if (actionId.equals(CMD_FETCH_PAGE)) {
             resultSet.readNextSegment();
+        } else if (actionId.equals(CMD_FETCH_ALL)) {
+            resultSet.readAllData();
         } else if (actionId.equals(CMD_ROW_EDIT)) {
             if (presentation instanceof IResultSetEditor) {
                 ((IResultSetEditor) presentation).openValueEditor(false);
