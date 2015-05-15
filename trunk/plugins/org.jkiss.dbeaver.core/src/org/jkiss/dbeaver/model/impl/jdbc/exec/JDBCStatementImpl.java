@@ -224,9 +224,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             // Remember limit values - we'll use them in resultset fetch routine
             this.rsOffset = offset;
             this.rsMaxRows = limit;
-            totalRows = (int)(offset + limit);
+            totalRows = limit > 0 ? (int)(offset + limit) : -1;
         }
-        if (connection.getDataSource().getInfo().supportsResultSetLimit()) {
+        if (totalRows > 0 && connection.getDataSource().getInfo().supportsResultSetLimit()) {
             try {
                 setMaxRows(totalRows);
             }

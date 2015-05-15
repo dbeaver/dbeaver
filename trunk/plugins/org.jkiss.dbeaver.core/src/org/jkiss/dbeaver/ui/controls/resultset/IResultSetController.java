@@ -83,6 +83,12 @@ public interface IResultSetController {
     void readNextSegment();
 
     /**
+     * Reads all rows from data container.
+     * Note: in case of huge resultset this function may eventually throw {@link java.lang.OutOfMemoryError}
+     */
+    void readAllData();
+
+    /**
      * Redraws results and updates all toolbars/edit controls
      * @param rowsChanged updates contents
      */

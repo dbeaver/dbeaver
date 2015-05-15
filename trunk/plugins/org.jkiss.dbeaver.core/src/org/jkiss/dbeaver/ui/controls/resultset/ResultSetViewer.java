@@ -804,6 +804,7 @@ public class ResultSetViewer extends Viewer
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
         Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBIcon.RS_REFRESH.getImageDescriptor()) {
             @Override
@@ -1522,6 +1523,26 @@ public class ResultSetViewer extends Viewer
                 null,
                 model.getRowCount(),
                 getSegmentMaxRows(),
+                curRow == null ? -1 : curRow.getRowNumber(),
+                null);
+        }
+    }
+
+    @Override
+    public void readAllData() {
+        if (!dataReceiver.isHasMoreData()) {
+            return;
+        }
+        DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer != null && !model.isUpdateInProgress() && dataPumpJob == null) {
+            dataReceiver.setHasMoreData(false);
+            dataReceiver.setNextSegmentRead(true);
+
+            runDataPump(
+                dataContainer,
+                null,
+                model.getRowCount(),
+                -1,
                 curRow == null ? -1 : curRow.getRowNumber(),
                 null);
         }
