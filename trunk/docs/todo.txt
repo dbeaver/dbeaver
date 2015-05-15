@@ -1,4 +1,3 @@
-Custom SQL delimiter
 Vertica keywords
 
 Make IDataSourceProvider -> IDatabaseContextProvider
