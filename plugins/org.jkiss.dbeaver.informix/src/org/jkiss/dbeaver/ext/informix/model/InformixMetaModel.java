@@ -45,4 +45,13 @@ public class InformixMetaModel extends GenericMetaModel
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         return InformixUtils.getProcedureSource(monitor, sourceObject);
     }
+    
+    @Override
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
+    	String tableDDL = super.getTableDDL(monitor, sourceObject);
+    	// Triggers, Serials
+    	// 
+    	return tableDDL + InformixUtils.getTriggerDDL(monitor, sourceObject);
+    }
+    
 }
