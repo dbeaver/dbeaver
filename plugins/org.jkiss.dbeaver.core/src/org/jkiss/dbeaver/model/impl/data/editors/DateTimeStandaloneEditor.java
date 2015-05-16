@@ -55,7 +55,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         Object value = valueController.getValue();
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
-        Composite panel = UIUtils.createPlaceholder(dialogGroup, 2);
+        Composite panel = UIUtils.createPlaceholder(dialogGroup, 3);
         panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         int style = SWT.BORDER;
@@ -65,7 +65,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
         UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         DBDDataFormatter formatter = helper.getFormatter(valueController.getValueType());
-        timeEditor = new CustomTimeEditor(panel, SWT.TIME | SWT.LONG | style, formatter);
+        timeEditor = new CustomTimeEditor(panel, style, formatter);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
@@ -74,9 +74,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         primeEditorValue(value);
 
         Button button = UIUtils.createPushButton(panel, "Set Current", null);
-        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 2;
-        button.setLayoutData(gd);
+        button.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
         button.setEnabled(!valueController.isReadOnly());
         button.addSelectionListener(new SelectionAdapter() {
