@@ -31,7 +31,16 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            -
+            - Informix database extension was added (thanks to Bert Herngreen)
+            - Resultset scrolling UI was fixed. Auto-fetch of results next page if now configurable.
+            - Date/time editor was redesigned + nanoseconds support added
+            - Custom SQL delimiter support was added
+            - Complex SQL (DDL) execution was improved
+            - Association rendering in ERD was fixed
+            - Vertica extension was fixed (results scrolling support)
+            - Many minor UI bugfixes
+            - Licensing was made consistent (GPL2)
+            - EE version branding was fixed
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
