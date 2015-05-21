@@ -66,10 +66,6 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     {
         createResultSetView();
 
-//        FindReplaceAction action = (FindReplaceAction)getEditorSite().getActionBars().getGlobalActionHandler(ActionFactory.FIND.getId());
-//        if (action != null) {
-//            action.update();
-//        }
         IDatabaseEditorInput editorInput = getEditorInput();
         boolean suspendQuery = CommonUtils.toBoolean(editorInput.getAttribute(ATTR_SUSPEND_QUERY));
         DBDDataFilter dataFilter = (DBDDataFilter) editorInput.getAttribute(ATTR_DATA_FILTER);
