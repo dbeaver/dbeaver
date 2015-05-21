@@ -227,10 +227,13 @@ public class Spreadsheet extends LightGrid implements Listener {
     {
         switch (event.type) {
             case SWT.KeyDown:
-                if (event.keyCode == SWT.CR ||
+                boolean ctrlPressed = ((event.stateMask & SWT.MOD1) != 0);
+
+                if (!ctrlPressed &&
+                    (event.keyCode == SWT.CR ||
                     (event.keyCode >= SWT.KEYPAD_0 && event.keyCode <= SWT.KEYPAD_9) ||
                     (event.keyCode >= 'a' && event.keyCode <= 'z') ||
-                    (event.keyCode >= '0' && event.keyCode <= '9'))
+                    (event.keyCode >= '0' && event.keyCode <= '9')))
                 {
                     final Control editorControl = presentation.openValueEditor(true);
                     if (editorControl != null && event.keyCode != SWT.CR) {

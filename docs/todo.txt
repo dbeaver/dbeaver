@@ -1,4 +1,5 @@
-Fetch All - confirm
+Extract non-visual part to a separate plugin
+RSV find/replace action
 Vertica keywords
 
 Make IDataSourceProvider -> IDatabaseContextProvider

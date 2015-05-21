@@ -1157,7 +1157,7 @@ public class UIUtils {
                 }
                 log.warn("Can't disable text editor action activations", e);
             }
-
+            //hostEditor.getEditorSite().getActionBarContributor().setActiveEditor(hostEditor);
         }
     }
 
