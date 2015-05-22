@@ -54,14 +54,14 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.qm.*;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TableToolTip;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -709,7 +709,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {
             QMMObject item = (QMMObject)i.next();
             if (tdt.length() > 0) {
-                tdt.append(ContentUtils.getDefaultLineSeparator());
+                tdt.append(GeneralUtils.getDefaultLineSeparator());
             }
             if (extraInfo) {
                 for (int i1 = 0, columnsSize = columns.size(); i1 < columnsSize; i1++) {

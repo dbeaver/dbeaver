@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.ext.IDatabaseEditorContributorManager;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;

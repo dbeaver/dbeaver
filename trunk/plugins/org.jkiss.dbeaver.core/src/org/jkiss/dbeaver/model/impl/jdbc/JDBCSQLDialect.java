@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
+import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;

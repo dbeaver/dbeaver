@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 public abstract class AbstractProcedure<
     DATASOURCE extends DBPDataSource,
     CONTAINER extends DBSObjectContainer>
-    implements DBSProcedure, DBPSaveableObject, IObjectImageProvider
+    implements DBSProcedure, DBPSaveableObject, DBPImageProvider
 {
     protected CONTAINER container;
     protected String name;

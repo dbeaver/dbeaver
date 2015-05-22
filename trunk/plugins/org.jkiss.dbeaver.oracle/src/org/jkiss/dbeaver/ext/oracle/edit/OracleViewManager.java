@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -100,7 +100,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
         List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>(2);
         if (!hasComment || command.getProperties().size() > 1) {
             StringBuilder decl = new StringBuilder(200);
-            final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+            final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
             decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
                 .append("AS ").append(view.getAdditionalInfo().getText()); //$NON-NLS-1$
             actions.add(new SQLDatabasePersistAction("Create view", decl.toString()));

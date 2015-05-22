@@ -19,14 +19,14 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTriggerColumn;
 
 /**
  * AbstractTriggerColumn
  */
-public abstract class AbstractTriggerColumn implements DBSTriggerColumn, IObjectImageProvider
+public abstract class AbstractTriggerColumn implements DBSTriggerColumn, DBPImageProvider
 {
 
     @Override
@@ -40,8 +40,8 @@ public abstract class AbstractTriggerColumn implements DBSTriggerColumn, IObject
     public Image getObjectImage()
     {
         DBSTableColumn tableColumn = getTableColumn();
-        if (tableColumn instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider)tableColumn).getObjectImage();
+        if (tableColumn instanceof DBPImageProvider) {
+            return ((DBPImageProvider)tableColumn).getObjectImage();
         }
         return null;
     }

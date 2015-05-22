@@ -23,7 +23,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;

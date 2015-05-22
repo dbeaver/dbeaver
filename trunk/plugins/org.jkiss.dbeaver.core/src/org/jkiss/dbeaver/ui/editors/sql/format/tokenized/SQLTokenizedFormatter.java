@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
 
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
         }
 
         if (isSqlEndsWithNewLine) {
-            after.append(ContentUtils.getDefaultLineSeparator());
+            after.append(GeneralUtils.getDefaultLineSeparator());
         }
 
         return after.toString();
@@ -284,7 +284,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
         if (functionBracket.contains(Boolean.TRUE))
             return 0;
         try {
-            String s = ContentUtils.getDefaultLineSeparator();
+            String s = GeneralUtils.getDefaultLineSeparator();
             final FormatterToken prevToken = argList.get(argIndex - 1);
             if (prevToken.getType() == FormatterConstants.COMMENT && prevToken.getString().startsWith("--")) { //$NON-NLS-1$
                 s = ""; //$NON-NLS-1$

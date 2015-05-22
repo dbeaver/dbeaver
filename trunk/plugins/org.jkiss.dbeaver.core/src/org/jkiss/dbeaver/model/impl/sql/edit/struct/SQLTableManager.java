@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
         final String tableName = table.getFullQualifiedName();
 
-        final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append("CREATE TABLE ").append(tableName).append(" (").append(lineSeparator); //$NON-NLS-1$ //$NON-NLS-2$
         boolean hasNestedDeclarations = false;

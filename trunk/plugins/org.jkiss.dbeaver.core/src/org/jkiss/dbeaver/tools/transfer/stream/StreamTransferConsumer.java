@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
@@ -213,7 +214,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
             // Check for BOM
             if (!outputClipboard && settings.isOutputEncodingBOM()) {
-                byte[] bom = ContentUtils.getCharsetBOM(settings.getOutputEncoding());
+                byte[] bom = GeneralUtils.getCharsetBOM(settings.getOutputEncoding());
                 if (bom != null) {
                     outputStream.write(bom);
                     outputStream.flush();
@@ -450,7 +451,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                         if (count <= 0) {
                             break;
                         }
-                        ContentUtils.writeBytesAsHex(writer, buffer, 0, count);
+                        GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
                     }
                     break;
                 }

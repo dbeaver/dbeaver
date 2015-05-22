@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -105,9 +105,9 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     public String getBody()
     {
         if (this.body == null && !persisted) {
-            this.body = "BEGIN" + ContentUtils.getDefaultLineSeparator() + "END";
+            this.body = "BEGIN" + GeneralUtils.getDefaultLineSeparator() + "END";
             if (procedureType == DBSProcedureType.FUNCTION) {
-                body = "RETURNS INT" + ContentUtils.getDefaultLineSeparator() + body;
+                body = "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() + body;
             }
         }
         return body;
@@ -136,16 +136,16 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                 appendParameterType(cb, column);
                 colIndex++;
             }
-            cb.append(")").append(ContentUtils.getDefaultLineSeparator());
+            cb.append(")").append(GeneralUtils.getDefaultLineSeparator());
             for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
                 if (column.getParameterType() == DBSProcedureParameterType.RETURN) {
                     cb.append("RETURNS ");
                     appendParameterType(cb, column);
-                    cb.append(ContentUtils.getDefaultLineSeparator());
+                    cb.append(GeneralUtils.getDefaultLineSeparator());
                 }
             }
             if (deterministic) {
-                cb.append("DETERMINISTIC").append(ContentUtils.getDefaultLineSeparator());
+                cb.append("DETERMINISTIC").append(GeneralUtils.getDefaultLineSeparator());
             }
             cb.append(getBody());
             clientBody = cb.toString();

@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;

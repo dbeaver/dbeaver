@@ -22,7 +22,7 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -54,7 +54,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     private String outputFolder = System.getProperty("user.home");
     private String outputFilePattern = PATTERN_TABLE + "_" + PATTERN_TIMESTAMP;
-    private String outputEncoding = ContentUtils.getDefaultFileEncoding();
+    private String outputEncoding = GeneralUtils.getDefaultFileEncoding();
     private boolean outputEncodingBOM = true;
 
     private DBDDataFormatterProfile formatterProfile;

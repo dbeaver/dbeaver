@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.utils.TextUtils;
 
 /**
  * Grid column renderer
@@ -116,7 +117,7 @@ class GridColumnRenderer extends AbstractRenderer
 
         String text = getColumnText(element);
 
-        text = org.jkiss.dbeaver.ui.TextUtils.getShortString(grid.fontMetrics, text, width);
+        text = TextUtils.getShortString(grid.fontMetrics, text, width);
 
         gc.drawString(text, bounds.x + x + pushedDrawingOffset, y + pushedDrawingOffset, true);
 

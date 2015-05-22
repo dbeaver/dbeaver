@@ -16,27 +16,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
-
-import org.jkiss.code.Nullable;
-import org.jkiss.utils.Pair;
+package org.jkiss.dbeaver.ui;
 
 /**
- * Comments manager.
- * <p/>
- * Contains information about comments
+ * IPropertyChangeReflector
  */
-public interface ICommentsSupport {
-    /**
-     * Two-item array containing begin and end of multi-line comments.
-     * @return string array or null if multi-line comments are not supported
-     */
-    @Nullable
-    Pair<String, String> getMultiLineComments();
+public interface IPropertyChangeReflector {
 
-    /**
-     * List of possible single-line comment prefixes
-     * @return comment prefixes or null if single line comments are nto supported
-     */
-    String[] getSingleLineComments();
+    void handlePropertyChange(int propId);
+
 }

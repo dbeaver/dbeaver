@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -228,7 +228,7 @@ public class DataSourceProviderRegistry
         File driversConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME, false);
         try {
             OutputStream os = new FileOutputStream(driversConfig);
-            XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
             xml.setButify(true);
             xml.startElement(RegistryConstants.TAG_DRIVERS);
             for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
@@ -302,7 +302,7 @@ public class DataSourceProviderRegistry
         File ctConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME, false);
         try {
             OutputStream os = new FileOutputStream(ctConfig);
-            XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+            XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
             xml.setButify(true);
             xml.startElement(RegistryConstants.TAG_TYPES);
             for (DBPConnectionType connectionType : connectionTypes.values()) {

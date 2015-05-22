@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.ui.ICommentsSupport;
+import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;

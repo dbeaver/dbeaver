@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -70,7 +71,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
             rowsInStatement = 10;
         }
         out = site.getWriter();
-        rowDelimiter = ContentUtils.getDefaultLineSeparator();
+        rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         dialect = SQLUtils.getDialectFromObject(site.getSource());
     }
 

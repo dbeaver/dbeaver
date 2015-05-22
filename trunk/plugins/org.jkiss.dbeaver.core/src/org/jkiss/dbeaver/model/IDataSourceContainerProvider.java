@@ -16,20 +16,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.model;
 
-import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
- * INavigatorView
+ * DataSource provider editor.
+ * May be editor, view or selection element
  */
-public interface INavigatorModelView
-{
-    DBNNode getRootNode();
-    
+public interface IDataSourceContainerProvider {
+
+    /**
+     * Underlying datasource container
+     * @return data source object.
+     */
     @Nullable
-    Viewer getNavigatorViewer();
+    DBSDataSourceContainer getDataSourceContainer();
 
 }

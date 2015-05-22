@@ -23,7 +23,7 @@ import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -119,7 +119,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             log.error(e);
         }
 
-        return ContentUtils.getDefaultLineSeparator();
+        return GeneralUtils.getDefaultLineSeparator();
     }
 
     private boolean isLineDelimiter(IDocument document, String text)

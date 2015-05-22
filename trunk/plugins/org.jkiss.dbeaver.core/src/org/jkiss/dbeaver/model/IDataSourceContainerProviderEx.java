@@ -16,17 +16,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.model;
 
-import org.eclipse.jface.dialogs.IDialogPage;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
- * ICompositeDialogPage
+ * DataSource provider editor.
+ * May be editor, view or selection element
  */
-public interface ICompositeDialogPage extends IDialogPage
-{
-    @Nullable
-    IDialogPage[] getSubPages();
+public interface IDataSourceContainerProviderEx extends IDataSourceContainerProvider {
+
+    /**
+     * Change underlying datasource container
+     * @return data source object.
+     */
+    boolean setDataSourceContainer(@Nullable DBSDataSourceContainer dataSourceContainer);
 
 }

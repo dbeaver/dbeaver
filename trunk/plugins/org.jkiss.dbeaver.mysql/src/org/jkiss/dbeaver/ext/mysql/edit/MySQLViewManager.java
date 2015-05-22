@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -94,7 +94,7 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
     private DBEPersistAction[] createOrReplaceViewQuery(MySQLView view)
     {
         StringBuilder decl = new StringBuilder(200);
-        final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
             .append("AS ").append(view.getAdditionalInfo().getDefinition()); //$NON-NLS-1$
         final MySQLView.CheckOption checkOption = view.getAdditionalInfo().getCheckOption();

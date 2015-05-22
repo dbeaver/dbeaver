@@ -20,12 +20,10 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
+import org.jkiss.dbeaver.ui.ITooltipProvider;
 
 public interface IGridLabelProvider extends IColorProvider, IFontProvider, ITooltipProvider {
 

@@ -31,12 +31,12 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
 import java.io.ByteArrayInputStream;

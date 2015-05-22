@@ -23,9 +23,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.model.IDataSourceProvider;
 
 /**
  * AbstractDatabaseEditor

@@ -15,32 +15,13 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.runtime;
 
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.ui.progress.UIJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+package org.jkiss.dbeaver.ui;
 
 /**
- * Abstract Database Job
+ * IRefreshablePart
  */
-public abstract class AbstractUIJob extends UIJob
+public interface IRefreshablePart
 {
-    static protected final Log log = Log.getLog(AbstractUIJob.class);
-
-    protected AbstractUIJob(String name)
-    {
-        super(name);
-    }
-
-    @Override
-    public IStatus runInUIThread(IProgressMonitor monitor)
-    {
-        return this.runInUIThread(RuntimeUtils.makeMonitor(monitor));
-    }
-
-    protected abstract IStatus runInUIThread(DBRProgressMonitor monitor);
-
+    void refreshPart(Object source, boolean force);
 }

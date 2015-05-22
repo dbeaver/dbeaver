@@ -15,16 +15,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.ui;
 
-import java.util.Map;
+package org.jkiss.dbeaver.ui.editors;
+
+import org.eclipse.ui.IEditorInput;
 
 /**
- * IDataSourceConnectionEditor
+ * Nested editor input factory
  */
-public interface IObjectPropertyConfiguration
-{
+public interface IDatabaseEditorInputFactory {
 
-    Map<String, String> getProperties();
-    
+    IEditorInput createNestedEditorInput(IDatabaseEditorInput mainInput);
+
 }

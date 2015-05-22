@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.ObjectPropertyTester;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -94,7 +94,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                             selectedObjects.add(dbObject);
                         }
                         if (buf.length() > 0) {
-                            buf.append(ContentUtils.getDefaultLineSeparator());
+                            buf.append(GeneralUtils.getDefaultLineSeparator());
                         }
                         buf.append(objectValue);
                     }

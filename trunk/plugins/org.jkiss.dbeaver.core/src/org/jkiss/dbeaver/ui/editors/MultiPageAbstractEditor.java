@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Layout;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorPart;
-import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
+import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**

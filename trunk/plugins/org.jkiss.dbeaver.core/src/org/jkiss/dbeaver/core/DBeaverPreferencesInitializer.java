@@ -37,11 +37,11 @@ import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
+import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -102,7 +102,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_LONG_AS_LOB, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.CONTENT_HEX_ENCODING, ContentUtils.getDefaultFileEncoding());
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.CONTENT_HEX_ENCODING, GeneralUtils.getDefaultFileEncoding());
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, false);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, false);
 

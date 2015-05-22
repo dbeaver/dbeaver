@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -132,7 +133,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
         if (storage == null) {
             throw new CoreException(new Status(Status.ERROR, DBeaverConstants.PLUGIN_ID, "Could not obtain file from editor input"));
         }
-        String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : ContentUtils.getDefaultFileEncoding());
+        String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
 
         Charset charset;
         try {
@@ -199,7 +200,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
         try {
             InputStream contentStream = storage.getContents();
             try {
-                String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : ContentUtils.getDefaultFileEncoding());
+                String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
                 setDocumentContent(document, contentStream, encoding);
             } finally {
                 ContentUtils.close(contentStream);
@@ -216,7 +217,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
         try {
             if (encoding == null) {
-                encoding = ContentUtils.DEFAULT_FILE_CHARSET_NAME;
+                encoding = GeneralUtils.DEFAULT_FILE_CHARSET_NAME;
             }
 
             in = new BufferedReader(new InputStreamReader(contentStream, encoding), DEFAULT_BUFFER_SIZE);
@@ -284,7 +285,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
                 // Set the initial line delimiter
                 if (d instanceof IDocumentExtension4) {
-                    String initialLineDelimiter = ContentUtils.getDefaultLineSeparator();
+                    String initialLineDelimiter = GeneralUtils.getDefaultLineSeparator();
                     if (initialLineDelimiter != null) {
                         ((IDocumentExtension4) d).setInitialLineDelimiter(initialLineDelimiter);
                     }

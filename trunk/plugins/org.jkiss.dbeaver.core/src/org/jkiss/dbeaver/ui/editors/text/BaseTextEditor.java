@@ -47,7 +47,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.ui.ICommentsSupport;
+import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ext.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.model.impl.resources.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -299,7 +300,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
         try {
             Reader reader = new InputStreamReader(
                 new FileInputStream(loadFile),
-                ContentUtils.DEFAULT_FILE_CHARSET);
+                GeneralUtils.DEFAULT_FILE_CHARSET);
             try {
                 StringWriter buffer = new StringWriter();
                 IOUtils.copyText(reader, buffer, 10000);
@@ -349,7 +350,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
                     });
 
                     try {
-                        ContentUtils.saveContentToFile(new StringReader(document.get()), saveFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
+                        ContentUtils.saveContentToFile(new StringReader(document.get()), saveFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }

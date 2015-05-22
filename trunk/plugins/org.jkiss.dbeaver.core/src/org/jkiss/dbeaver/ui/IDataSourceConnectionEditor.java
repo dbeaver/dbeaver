@@ -16,15 +16,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext;
+package org.jkiss.dbeaver.ui;
 
-import org.eclipse.ui.IEditorActionBarContributor;
+import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
- * Contributor manager
+ * IDataSourceConnectionEditor
  */
-public interface IDatabaseEditorContributorManager {
+public interface IDataSourceConnectionEditor extends IDialogPage
+{
+    void setSite(IDataSourceConnectionEditorSite site);
 
-    IEditorActionBarContributor getContributor(Class<? extends IEditorActionBarContributor> type);
+    boolean isComplete();
+
+    void loadSettings();
+
+    void saveSettings(DataSourceDescriptor dataSource);
 
 }
