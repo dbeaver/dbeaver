@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IFilter;
@@ -25,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -282,7 +282,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         } else if (editableValue instanceof IDataSourceProvider) {
             filter = new DataSourcePropertyFilter(((IDataSourceProvider) editableValue).getDataSource());
         } else {
-            filter = new DataSourcePropertyFilter(null);
+            filter = new DataSourcePropertyFilter();
         }
         List<ObjectPropertyDescriptor> annoProps = ObjectAttributeDescriptor.extractAnnotations(this, editableValue.getClass(), filter);
         for (final ObjectPropertyDescriptor desc : annoProps) {

@@ -151,9 +151,8 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     }
 
     @Override
-    public DBPDataSource getDataSource()
-    {
-        return executionContext.getDataSource();
+    protected DBCExecutionContext getExecutionContext() {
+        return executionContext;
     }
 
     @Override
