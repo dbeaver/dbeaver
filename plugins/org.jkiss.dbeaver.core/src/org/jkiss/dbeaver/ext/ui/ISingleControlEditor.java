@@ -15,18 +15,23 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ext.ui;
 
-package org.jkiss.dbeaver.ext;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.NotNull;
 
 /**
- * Term provider.
+ * Editor with single main control.
+ * Usually used by editors represented by text of table/tree control.
  */
-public interface IDatabaseTermProvider {
-
+public interface ISingleControlEditor extends IEditorPart
+{
     /**
-     * Underlying datasource
-     * @return data source object.
+     * Gets main editor control
+     * @return control
      */
-    String getObjectTypeTerm(String path, String objectType, boolean multiple);
+    @NotNull
+    Control getEditorControl();
 
 }

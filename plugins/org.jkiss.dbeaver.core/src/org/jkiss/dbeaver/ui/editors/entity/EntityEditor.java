@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
+import org.jkiss.dbeaver.ext.ui.IPropertyChangeReflector;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;

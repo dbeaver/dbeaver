@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.registry.tree;
 
-import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
+import org.jkiss.dbeaver.model.DBPTermProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 
@@ -91,8 +91,8 @@ public class DBXTreeItem extends DBXTreeNode
 
     private String getNodeTerm(DBPDataSource dataSource, String termId, boolean multiple)
     {
-        if (termId.startsWith("#") && dataSource instanceof IDatabaseTermProvider) {
-            final String term = ((IDatabaseTermProvider) dataSource).getObjectTypeTerm(getPath(), termId.substring(1), multiple);
+        if (termId.startsWith("#") && dataSource instanceof DBPTermProvider) {
+            final String term = ((DBPTermProvider) dataSource).getObjectTypeTerm(getPath(), termId.substring(1), multiple);
             if (term != null) {
                 return term;
             }
