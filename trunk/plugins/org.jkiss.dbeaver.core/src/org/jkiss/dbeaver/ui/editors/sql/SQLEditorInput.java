@@ -17,21 +17,20 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.internal.IPreferenceConstants;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -47,7 +46,7 @@ import java.util.Map;
 /**
  * SQLEditorInput
  */
-public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput, IDataSourceProvider, IDataSourceContainerProvider
+public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IDataSourceProvider, IDataSourceContainerProvider
 {
     public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
 
@@ -133,12 +132,6 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public void saveState(IMemento memento)
     {
         SQLEditorInputFactory.saveState(memento, this);
-    }
-
-    @Override
-    public boolean isAutoSaveEnabled()
-    {
-        return true;
     }
 
     @Nullable
