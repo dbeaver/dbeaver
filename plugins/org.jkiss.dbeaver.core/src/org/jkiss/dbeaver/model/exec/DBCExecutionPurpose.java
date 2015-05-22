@@ -34,5 +34,6 @@ public enum DBCExecutionPurpose {
     USER_SCRIPT,        // User script query
     UTIL,               // Utility query (utility method initialized by user)
     META,               // Metadata query, processed by data source providers internally
+    META_DDL,           // Metadata modifications (DDL)
 
 }

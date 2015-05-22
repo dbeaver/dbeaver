@@ -363,7 +363,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         sql.append(")");
         try {
-            executeSQL(monitor, targetDataSource, sql.toString());
+            executeDDL(monitor, targetDataSource, sql.toString());
         } catch (DBCException e) {
             throw new DBCException("Can't create target table:\n" + sql, e);
         }
@@ -384,16 +384,16 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             .append(" ADD ");
         appendAttributeClause(sql, attribute);
         try {
-            executeSQL(monitor, attribute.getParent().getTarget().getDataSource(), sql.toString());
+            executeDDL(monitor, attribute.getParent().getTarget().getDataSource(), sql.toString());
         } catch (DBCException e) {
             throw new DBCException("Can't create target column:\n" + sql, e);
         }
     }
 
-    private void executeSQL(DBRProgressMonitor monitor, DBPDataSource dataSource, String sql)
+    private void executeDDL(DBRProgressMonitor monitor, DBPDataSource dataSource, String sql)
         throws DBCException
     {
-        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Create target metadata");
+        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META_DDL, "Create target metadata");
         try {
             DBCStatement dbStat = DBUtils.prepareStatement(session, sql, false);
             try {
