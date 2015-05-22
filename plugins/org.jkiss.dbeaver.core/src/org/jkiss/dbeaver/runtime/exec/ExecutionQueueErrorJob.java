@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**

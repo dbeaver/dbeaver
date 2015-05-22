@@ -15,24 +15,33 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ui;
 
-package org.jkiss.dbeaver.ext.ui;
+import org.jkiss.dbeaver.core.Log;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.ui.progress.UIJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
- * ISearchContextProvider
+ * Abstract Database Job
  */
-public interface ISearchContextProvider
+public abstract class AbstractUIJob extends UIJob
 {
-    public static enum SearchType {
-        NONE,
-        NEXT,
-        PREVIOUS
+    static protected final Log log = Log.getLog(AbstractUIJob.class);
+
+    protected AbstractUIJob(String name)
+    {
+        super(name);
     }
 
-    boolean isSearchPossible();
+    @Override
+    public IStatus runInUIThread(IProgressMonitor monitor)
+    {
+        return this.runInUIThread(RuntimeUtils.makeMonitor(monitor));
+    }
 
-    boolean isSearchEnabled();
-
-    boolean performSearch(SearchType searchType);
+    protected abstract IStatus runInUIThread(DBRProgressMonitor monitor);
 
 }

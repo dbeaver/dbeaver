@@ -15,23 +15,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ui;
 
-package org.jkiss.dbeaver.ext.ui;
-
-import org.eclipse.jface.dialogs.IDialogPage;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.eclipse.swt.widgets.Composite;
 
 /**
  * IDataSourceConnectionEditor
  */
-public interface IDataSourceConnectionEditor extends IDialogPage
+public interface IObjectPropertyConfigurator<T extends IObjectPropertyConfiguration>
 {
-    void setSite(IDataSourceConnectionEditorSite site);
+    void createControl(Composite parent);
+
+    void loadSettings(T configuration);
+
+    void saveSettings(T configuration);
 
     boolean isComplete();
-
-    void loadSettings();
-
-    void saveSettings(DataSourceDescriptor dataSource);
 
 }

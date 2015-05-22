@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.nio.ByteBuffer;
 
@@ -99,7 +100,7 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
             } else {
                 content.updateContents(
                     VoidProgressMonitor.INSTANCE,
-                    new BytesContentStorage(newValue.getBytes(ContentUtils.getDefaultFileEncoding()), ContentUtils.getDefaultFileEncoding()));
+                    new BytesContentStorage(newValue.getBytes(GeneralUtils.getDefaultFileEncoding()), GeneralUtils.getDefaultFileEncoding()));
             }
         } catch (Exception e) {
             log.error(e);

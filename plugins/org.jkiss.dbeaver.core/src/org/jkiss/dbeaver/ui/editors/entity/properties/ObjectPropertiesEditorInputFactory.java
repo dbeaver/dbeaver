@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.ui.IEditorInput;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.IDatabaseEditorInputFactory;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInputFactory;
 
 /**
  * ObjectPropertiesEditorInputFactory

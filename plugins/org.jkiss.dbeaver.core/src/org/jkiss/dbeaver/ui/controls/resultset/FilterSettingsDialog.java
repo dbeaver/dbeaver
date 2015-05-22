@@ -30,7 +30,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -370,8 +370,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         public Image getColumnImage(Object element, int columnIndex)
         {
             DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
-            if (columnIndex == 0 && constraint.getAttribute() instanceof IObjectImageProvider) {
-                return ((IObjectImageProvider)constraint.getAttribute()).getObjectImage();
+            if (columnIndex == 0 && constraint.getAttribute() instanceof DBPImageProvider) {
+                return ((DBPImageProvider)constraint.getAttribute()).getObjectImage();
             }
             if (columnIndex == 2) {
                 if (constraint.getOrderPosition() > 0) {

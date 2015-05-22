@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;

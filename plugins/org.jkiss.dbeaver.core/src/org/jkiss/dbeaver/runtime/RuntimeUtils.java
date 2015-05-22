@@ -24,7 +24,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
@@ -33,9 +32,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -44,9 +43,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -59,6 +56,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -375,16 +373,6 @@ public class RuntimeUtils {
 */
     }
 
-    public static boolean validateAndSave(DBRProgressMonitor monitor, ISaveablePart saveable)
-    {
-        if (!saveable.isDirty()) {
-            return true;
-        }
-        SaveRunner saveRunner = new SaveRunner(monitor, saveable);
-        UIUtils.runInUI(null, saveRunner);
-        return saveRunner.getResult();
-    }
-
     public static Expression parseExpression(String exprString) throws DBException
     {
         synchronized (RuntimeUtils.class) {
@@ -474,6 +462,39 @@ public class RuntimeUtils {
         return null;
     }
 
+    public static Object makeDisplayString(Object object)
+    {
+        if (object == null) {
+            return ""; //$NON-NLS-1$
+        }
+        if (object instanceof Number) {
+            return NumberFormat.getInstance().format(object);
+        }
+        Class<?> eClass = object.getClass();
+        if (eClass.isArray()) {
+            if (eClass == byte[].class)
+                return Arrays.toString((byte[]) object);
+            else if (eClass == short[].class)
+                return Arrays.toString((short[]) object);
+            else if (eClass == int[].class)
+                return Arrays.toString((int[]) object);
+            else if (eClass == long[].class)
+                return Arrays.toString((long[]) object);
+            else if (eClass == char[].class)
+                return Arrays.toString((char[]) object);
+            else if (eClass == float[].class)
+                return Arrays.toString((float[]) object);
+            else if (eClass == double[].class)
+                return Arrays.toString((double[]) object);
+            else if (eClass == boolean[].class)
+                return Arrays.toString((boolean[]) object);
+            else { // element is an array of object references
+                return Arrays.deepToString((Object[]) object);
+            }
+        }
+        return object;
+    }
+
     public static class ProgramInfo {
         final Program program;
         Image image;
@@ -541,72 +562,6 @@ public class RuntimeUtils {
     public static void launchProgram(String path)
     {
         Program.launch(path);
-    }
-
-    private static class SaveRunner implements Runnable {
-        private final DBRProgressMonitor monitor;
-        private final ISaveablePart saveable;
-        private boolean result;
-
-        private SaveRunner(DBRProgressMonitor monitor, ISaveablePart saveable)
-        {
-            this.monitor = monitor;
-            this.saveable = saveable;
-        }
-
-        public boolean getResult()
-        {
-            return result;
-        }
-
-        @Override
-        public void run()
-        {
-            int choice = -1;
-            if (saveable instanceof ISaveablePart2) {
-                choice = ((ISaveablePart2) saveable).promptToSaveOnClose();
-            }
-            if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
-                Shell shell;
-                String saveableName;
-                if (saveable instanceof IWorkbenchPart) {
-                    shell = ((IWorkbenchPart) saveable).getSite().getShell();
-                    saveableName = ((IWorkbenchPart) saveable).getTitle();
-                } else {
-                    shell = DBeaverUI.getActiveWorkbenchShell();
-                    saveableName = CommonUtils.toString(saveable);
-                }
-                int confirmResult = ConfirmationDialog.showConfirmDialog(
-                    shell,
-                    DBeaverPreferences.CONFIRM_EDITOR_CLOSE,
-                    ConfirmationDialog.QUESTION_WITH_CANCEL,
-                    saveableName);
-                switch (confirmResult) {
-                    case IDialogConstants.YES_ID:
-                        choice = ISaveablePart2.YES;
-                        break;
-                    case IDialogConstants.NO_ID:
-                        choice = ISaveablePart2.NO;
-                        break;
-                    default:
-                        choice = ISaveablePart2.CANCEL;
-                        break;
-                }
-            }
-            switch (choice) {
-                case ISaveablePart2.YES: //yes
-                    saveable.doSave(monitor.getNestedMonitor());
-                    result = !saveable.isDirty();
-                    break;
-                case ISaveablePart2.NO: //no
-                    result = true;
-                    break;
-                case ISaveablePart2.CANCEL: //cancel
-                default:
-                    result = false;
-                    break;
-            }
-        }
     }
 
     public static File getPlatformFile(String platformURL) throws IOException

@@ -16,22 +16,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext;
+package org.jkiss.dbeaver.ui;
 
+import org.eclipse.jface.operation.IRunnableContext;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
 /**
- * DataSource provider.
- * May be editor, view or selection element
+ * IDataSourceConnectionEditorSite
  */
-public interface IDataSourceProvider {
+public interface IDataSourceConnectionEditorSite
+{
+    IRunnableContext getRunnableContext();
 
-    /**
-     * Underlying datasource
-     * @return data source object.
-     */
-    @Nullable
-    DBPDataSource getDataSource();
+    DataSourceRegistry getDataSourceRegistry();
+
+    boolean isNew();
+
+    DBPDriver getDriver();
+
+    @NotNull
+    DataSourceDescriptor getActiveDataSource();
+
+    void updateButtons();
+
+    boolean openDriverEditor();
 
 }

@@ -28,7 +28,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;

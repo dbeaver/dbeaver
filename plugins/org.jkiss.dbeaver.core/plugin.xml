@@ -79,7 +79,7 @@
                 id="org.jkiss.dbeaver.ui.editors.DatabaseEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.database.editor"
                 properties="active"
-                type="org.jkiss.dbeaver.ext.IDatabaseEditor"/>
+                type="org.jkiss.dbeaver.ui.editors.IDatabaseEditor"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
@@ -355,13 +355,13 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
             <with variable="activePart">
-                <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                <instanceof value="org.jkiss.dbeaver.ui.INavigatorModelView"/>
                 <!--<test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>-->
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">
             <with variable="activePart">
-                <instanceof value="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
+                <instanceof value="org.jkiss.dbeaver.model.IDataSourceProvider"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
@@ -400,8 +400,8 @@
             <enabledWhen>
                 <with variable="activePart">
                     <or>
-                        <adapt type="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
-                        <adapt type="org.jkiss.dbeaver.ext.ui.IRefreshablePart"/>
+                        <adapt type="org.jkiss.dbeaver.ui.INavigatorModelView"/>
+                        <adapt type="org.jkiss.dbeaver.ui.IRefreshablePart"/>
                     </or>
                 </with>
             </enabledWhen>

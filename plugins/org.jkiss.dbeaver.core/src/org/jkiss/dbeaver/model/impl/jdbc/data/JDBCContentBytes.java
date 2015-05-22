@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
 import java.io.*;
@@ -95,7 +96,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     @Override
     public String getCharset()
     {
-        return ContentUtils.getDefaultBinaryFileEncoding(dataSource);
+        return GeneralUtils.getDefaultBinaryFileEncoding(dataSource);
     }
 
     @Override

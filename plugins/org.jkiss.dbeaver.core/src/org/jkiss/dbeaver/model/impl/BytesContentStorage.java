@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.*;
 import java.util.Arrays;
@@ -66,7 +66,7 @@ public class BytesContentStorage implements DBDContentStorage {
     @Override
     public String getCharset()
     {
-        return ContentUtils.getDefaultFileEncoding();
+        return GeneralUtils.getDefaultFileEncoding();
     }
 
     @Override

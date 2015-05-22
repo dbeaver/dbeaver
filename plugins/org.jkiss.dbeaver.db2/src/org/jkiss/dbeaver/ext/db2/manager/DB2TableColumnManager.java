@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     private static final String CMD_COMMENT = "Comment on Column";
     private static final String CMD_REORG = "Reorg table";
 
-    private static final String LINE_SEPARATOR = ContentUtils.getDefaultLineSeparator();
+    private static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
     // -----------------
     // Business Contract

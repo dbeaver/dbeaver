@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -167,7 +167,7 @@ public class DataFormatterRegistry
         try {
             OutputStream os = new FileOutputStream(storeFile);
             try {
-                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+                XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
                 xml.setButify(true);
                 xml.startElement(RegistryConstants.TAG_PROFILES);
                 for (DBDDataFormatterProfile profile : customProfiles) {

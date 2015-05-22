@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
@@ -203,7 +203,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     /////////////////////////////////////////////////////////////
     // Meta property
 
-    private class MetaProperty implements DBCAttributeMetaData,IObjectImageProvider
+    private class MetaProperty implements DBCAttributeMetaData,DBPImageProvider
     {
         private final WMIObjectAttribute attribute;
         private final int index;

@@ -16,16 +16,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.ui;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 
 /**
- * IProgressControlProvider
+ * Tooltip provider.
+ * Extension of ILabelProvider
  */
-public interface IProgressControlProvider
-{
+public interface ITooltipProvider {
+
     @Nullable
-    ProgressPageControl getProgressControl();
+    public String getTooltip(Object element);
+
 }

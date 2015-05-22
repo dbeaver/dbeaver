@@ -8,8 +8,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ext,
- org.jkiss.dbeaver.ext.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.access,
  org.jkiss.dbeaver.model.admin.sessions,

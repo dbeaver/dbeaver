@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizard> {
@@ -189,7 +189,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         if (selectionIndex >= 0) {
             encoding = encodingCombo.getItem(selectionIndex);
         }
-        if (settings.isOutputClipboard() || encoding == null || ContentUtils.getCharsetBOM(encoding) == null) {
+        if (settings.isOutputClipboard() || encoding == null || GeneralUtils.getCharsetBOM(encoding) == null) {
             encodingBOMLabel.setEnabled(false);
             encodingBOMCheckbox.setEnabled(false);
         } else {

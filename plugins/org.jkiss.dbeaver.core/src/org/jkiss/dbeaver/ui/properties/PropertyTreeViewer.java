@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -535,7 +536,7 @@ public class PropertyTreeViewer extends TreeViewer {
             return prop.category;
         } else {
             final Object propertyValue = prop.propertySource.getPropertyValue(prop.property.getId());
-            return UIUtils.makeStringForUI(propertyValue);
+            return RuntimeUtils.makeDisplayString(propertyValue);
         }
     }
 

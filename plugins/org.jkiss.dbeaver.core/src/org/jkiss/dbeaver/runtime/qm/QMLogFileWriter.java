@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -50,7 +51,7 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
 
     public QMLogFileWriter()
     {
-        lineSeparator = ContentUtils.getDefaultLineSeparator();
+        lineSeparator = GeneralUtils.getDefaultLineSeparator();
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
         initLogFile();
     }

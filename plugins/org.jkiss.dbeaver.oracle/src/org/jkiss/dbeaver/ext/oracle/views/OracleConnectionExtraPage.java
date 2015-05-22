@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -96,7 +96,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
             hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, "Hide empty schemas", true);
             hideEmptySchemasCheckbox.setToolTipText(
-                "Check existence of objects within schema and do not show empty schemas in tree. " + ContentUtils.getDefaultLineSeparator() +
+                "Check existence of objects within schema and do not show empty schemas in tree. " + GeneralUtils.getDefaultLineSeparator() +
                 "Enabled by default but it may cause performance problems on databases with very big number of objects.");
 
             showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, "Always show DBA objects", false);

@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -72,7 +72,7 @@ import java.util.*;
 public class DataSourceDescriptor
     implements
         DBSDataSourceContainer,
-        IObjectImageProvider,
+    DBPImageProvider,
         IAdaptable,
         DBEPrivateObjectEditor,
         DBSObjectStateful,
@@ -768,7 +768,7 @@ public class DataSourceDescriptor
                         jobCount++;
                     }
                     if (user instanceof ISaveablePart) {
-                        if (!RuntimeUtils.validateAndSave(monitor, (ISaveablePart) user)) {
+                        if (!UIUtils.validateAndSave(monitor, (ISaveablePart) user)) {
                             return false;
                         }
                     }

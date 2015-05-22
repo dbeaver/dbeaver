@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.TabItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;

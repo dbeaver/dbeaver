@@ -52,9 +52,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -120,7 +120,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     int line = -1, position = -1;
                     StringBuilder fullMessage = new StringBuilder();
                     for (DBCCompileError oce : compileLog.getErrorStack()) {
-                        fullMessage.append(oce.toString()).append(ContentUtils.getDefaultLineSeparator());
+                        fullMessage.append(oce.toString()).append(GeneralUtils.getDefaultLineSeparator());
                         if (line < 0) {
                             line = oce.getLine();
                             position = oce.getPosition();

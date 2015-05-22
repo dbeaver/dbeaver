@@ -15,20 +15,20 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ui.editors;
 
-package org.jkiss.dbeaver.ext.ui;
+import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.DBPDataSourceUser;
 
 /**
- * ISearchExecutor
+ * IDatabaseEditor
  */
-public interface ISearchExecutor
+public interface IDatabaseEditor extends IEditorPart, DBPDataSourceUser, IDataSourceProvider, IRefreshablePart
 {
-    public static final int SEARCH_CASE_SENSITIVE   = 1;
-    public static final int SEARCH_NEXT = 2;
-    public static final int SEARCH_PREVIOUS = 4;
 
-    boolean performSearch(String searchString, int options);
-
-    void cancelSearch();
+    @Override
+    IDatabaseEditorInput getEditorInput();
 
 }

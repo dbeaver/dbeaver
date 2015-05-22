@@ -25,7 +25,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
-import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
+import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;

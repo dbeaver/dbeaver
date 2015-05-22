@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * JDBC abstract column
  */
-public abstract class JDBCColumn extends AbstractAttribute implements DBSObject, IObjectImageProvider {
+public abstract class JDBCColumn extends AbstractAttribute implements DBSObject, DBPImageProvider {
 
     private static final Map<Image, Map<JDBCColumnKeyType, Image>> overlayCache = new IdentityHashMap<Image, Map<JDBCColumnKeyType, Image>>();
 

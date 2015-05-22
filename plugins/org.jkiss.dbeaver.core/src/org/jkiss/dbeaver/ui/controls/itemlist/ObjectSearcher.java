@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
+import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.utils.CommonUtils;
 

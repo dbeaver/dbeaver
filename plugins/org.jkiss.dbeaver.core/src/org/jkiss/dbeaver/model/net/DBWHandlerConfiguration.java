@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfiguration;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.NetworkHandlerDescriptor;
 

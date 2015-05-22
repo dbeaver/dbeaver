@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -33,7 +33,7 @@ import org.jkiss.wmi.service.WMIObjectAttribute;
 /**
  * Class property
  */
-public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> implements DBSEntityAttribute, IObjectImageProvider
+public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> implements DBSEntityAttribute, DBPImageProvider
 {
     protected WMIClassAttribute(WMIClass wmiClass, WMIObjectAttribute attribute)
     {

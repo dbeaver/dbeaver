@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
@@ -150,7 +151,7 @@ public class BookmarkStorage {
     public ByteArrayInputStream serialize() throws IOException
     {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(5000);
-        XMLBuilder xml = new XMLBuilder(buffer, ContentUtils.getDefaultFileEncoding());
+        XMLBuilder xml = new XMLBuilder(buffer, GeneralUtils.getDefaultFileEncoding());
         xml.startElement(TAG_BOOKMARK);
         xml.addAttribute(ATTR_TITLE, title);
         if (description != null) {

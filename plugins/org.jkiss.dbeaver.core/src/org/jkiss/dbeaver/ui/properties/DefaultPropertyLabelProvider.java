@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.jface.viewers.LabelProvider;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
  * Label provider for property sources
@@ -29,6 +29,6 @@ public class DefaultPropertyLabelProvider extends LabelProvider
     @Override
     public String getText(Object element)
     {
-        return UIUtils.makeStringForUI(element).toString();
+        return RuntimeUtils.makeDisplayString(element).toString();
     }
 }

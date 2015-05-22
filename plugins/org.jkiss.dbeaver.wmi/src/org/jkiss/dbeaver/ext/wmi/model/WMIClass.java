@@ -23,7 +23,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -51,7 +51,7 @@ import java.util.List;
  * WMI class
  */
 public class WMIClass extends WMIContainer
-    implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBPSystemObject, DBSDataContainer, IObjectImageProvider
+    implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBPSystemObject, DBSDataContainer, DBPImageProvider
 {
     private static Image IMG_CLASS;
     private static Image IMG_CLASS_ABSTRACT;

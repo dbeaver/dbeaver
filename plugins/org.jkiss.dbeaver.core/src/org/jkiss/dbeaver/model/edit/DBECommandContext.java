@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 

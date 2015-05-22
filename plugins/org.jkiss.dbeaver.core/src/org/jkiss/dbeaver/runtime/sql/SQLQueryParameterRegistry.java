@@ -22,8 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -117,7 +116,7 @@ public class SQLQueryParameterRegistry
         try {
             OutputStream os = new FileOutputStream(storeFile);
             try {
-                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+                XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
                 xml.setButify(true);
                 xml.startElement("bindings");
                 for (Map.Entry<String, ParameterInfo> binding : parameterMap.entrySet()) {

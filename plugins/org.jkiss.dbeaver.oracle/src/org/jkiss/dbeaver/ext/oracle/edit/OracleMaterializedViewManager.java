@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -92,7 +92,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     private DBEPersistAction[] createOrReplaceViewQuery(OracleMaterializedView view)
     {
         StringBuilder decl = new StringBuilder(200);
-        final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
             .append("AS ").append(view.getSourceDeclaration(null)); //$NON-NLS-1$
         return new DBEPersistAction[] {

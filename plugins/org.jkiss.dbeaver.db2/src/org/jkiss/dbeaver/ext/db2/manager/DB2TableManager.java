@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -64,7 +64,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     private static final String CMD_COMMENT = "Comment on Table";
     private static final String CMD_RENAME = "Rename Table";
 
-    private static final String LINE_SEPARATOR = ContentUtils.getDefaultLineSeparator();
+    private static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
     private static final Class<?>[] CHILD_TYPES = { DB2TableColumn.class, DB2TableUniqueKey.class, DB2TableForeignKey.class,
         DB2Index.class };

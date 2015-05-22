@@ -30,7 +30,7 @@ import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -202,7 +202,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
         StringBuilder tdt = new StringBuilder();
         for (TableItem item : selection) {
             tdt.append(item.getText())
-                .append(ContentUtils.getDefaultLineSeparator());
+                .append(GeneralUtils.getDefaultLineSeparator());
         }
         UIUtils.setClipboardContents(
             infoTable.getDisplay(),

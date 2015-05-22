@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
@@ -38,7 +37,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
@@ -62,12 +60,9 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Content manipulation utilities
@@ -77,30 +72,17 @@ public class ContentUtils {
     static final int STREAM_COPY_BUFFER_SIZE = 10000;
 
     static final Log log = Log.getLog(ContentUtils.class);
-    public static final String DEFAULT_FILE_CHARSET_NAME = "UTF-8";
-
-    public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
-    public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
-    public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
-
-    private static final Map<String, byte[]> BOM_MAP = new HashMap<String, byte[]>();
 
     static {
-        BOM_MAP.put("UTF-8", new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF} );
-        BOM_MAP.put("UTF-16", new byte[] {(byte) 0xFE, (byte) 0xFF} );
-        BOM_MAP.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF} );
-        BOM_MAP.put("UTF-16LE", new byte[] {(byte) 0xFF, (byte) 0xFE} );
-        BOM_MAP.put("UTF-32", new byte[] { 0x0, 0x0, (byte) 0xFE, (byte) 0xFF} );
-        BOM_MAP.put("UTF-32BE", new byte[] { 0x0, 0x0, (byte) 0xFE, (byte) 0xFF} );
-        BOM_MAP.put("UTF-32LE", new byte[] { (byte) 0xFE, (byte) 0xFF, 0x0, 0x0} );
+        GeneralUtils.BOM_MAP.put("UTF-8", new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF} );
+        GeneralUtils.BOM_MAP.put("UTF-16", new byte[] {(byte) 0xFE, (byte) 0xFF} );
+        GeneralUtils.BOM_MAP.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF} );
+        GeneralUtils.BOM_MAP.put("UTF-16LE", new byte[] {(byte) 0xFF, (byte) 0xFE} );
+        GeneralUtils.BOM_MAP.put("UTF-32", new byte[] { 0x0, 0x0, (byte) 0xFE, (byte) 0xFF} );
+        GeneralUtils.BOM_MAP.put("UTF-32BE", new byte[] { 0x0, 0x0, (byte) 0xFE, (byte) 0xFF} );
+        GeneralUtils.BOM_MAP.put("UTF-32LE", new byte[] { (byte) 0xFE, (byte) 0xFF, 0x0, 0x0} );
     }
 
-    static final char[] HEX_CHAR_TABLE = {
-      '0', '1', '2', '3',
-      '4', '5', '6', '7',
-      '8', '9', 'a', 'b',
-      'c', 'd', 'e', 'f'
-    };
     private static String curDialogFolder = System.getProperty("user.dir");
 
     public static String getCurDialogFolder()
@@ -113,47 +95,6 @@ public class ContentUtils {
         ContentUtils.curDialogFolder = curDialogFolder;
     }
 
-    public static byte[] getCharsetBOM(String charsetName)
-    {
-        return BOM_MAP.get(charsetName.toUpperCase());
-    }
-
-    public static void writeByteAsHex(Writer out, byte b) throws IOException
-    {
-        int v = b & 0xFF;
-        out.write(HEX_CHAR_TABLE[v >>> 4]);
-        out.write(HEX_CHAR_TABLE[v & 0xF]);
-    }
-
-    public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException
-    {
-        for (int i = 0; i < len; i++) {
-            byte b = buf[off + i];
-            int v = b & 0xFF;
-            out.write(HEX_CHAR_TABLE[v >>> 4]);
-            out.write(HEX_CHAR_TABLE[v & 0xF]);
-        }
-    }
-
-    public static String getDefaultFileEncoding()
-    {
-        return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
-    }
-
-    public static String getDefaultConsoleEncoding()
-    {
-        String consoleEncoding = System.getProperty("console.encoding");
-        if (CommonUtils.isEmpty(consoleEncoding)) {
-            consoleEncoding = getDefaultFileEncoding();
-        }
-        return consoleEncoding;
-    }
-
-    public static String getDefaultLineSeparator()
-    {
-        return System.getProperty("line.separator", "\n");
-    }
-
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)
         throws IOException
     {
@@ -163,7 +104,7 @@ public class ContentUtils {
             fileName,
             "data");
         try {
-            file.setCharset(getDefaultBinaryFileEncoding(null), monitor.getNestedMonitor());
+            file.setCharset(GeneralUtils.getDefaultBinaryFileEncoding(null), monitor.getNestedMonitor());
         } catch (CoreException e) {
             log.error("Can't set file charset", e);
         }
@@ -495,7 +436,7 @@ public class ContentUtils {
     {
         InputStream fileStream = new FileInputStream(file);
         try {
-            UnicodeReader unicodeReader = new UnicodeReader(fileStream, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+            UnicodeReader unicodeReader = new UnicodeReader(fileStream, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
             StringBuilder result = new StringBuilder((int) file.length());
             char[] buffer = new char[4000];
             for (;;) {
@@ -593,55 +534,6 @@ public class ContentUtils {
         return wFile == null ? null : wFile.getFullPath();
     }
 
-    public static String getDefaultBinaryFileEncoding(DBPDataSource dataSource)
-    {
-        IPreferenceStore preferenceStore;
-        if (dataSource == null) {
-            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
-        } else {
-            preferenceStore = dataSource.getContainer().getPreferenceStore();
-        }
-        String fileEncoding = preferenceStore.getString(DBeaverPreferences.CONTENT_HEX_ENCODING);
-        if (CommonUtils.isEmpty(fileEncoding)) {
-            fileEncoding = getDefaultFileEncoding();
-        }
-        return fileEncoding;
-    }
-
-    public static String convertToString(byte[] bytes, int offset, int length)
-    {
-        char[] chars = new char[length];
-        for (int i = offset; i < offset + length; i++) {
-            int b = bytes[i];
-            if (b < 0) {
-                b = -b + 127;
-            }
-            chars[i - offset] = (char) b;
-        }
-        return new String(chars);
-    }
-
-    /**
-     * Converts string to byte array.
-     * This is loosy algorithm because it gets only first byte from each char.
-     *
-     * @param strValue
-     * @return
-     */
-    public static byte[] convertToBytes(String strValue)
-    {
-        int length = strValue.length();
-        byte[] bytes = new byte[length];
-        for (int i = 0; i < length; i++) {
-            int c = strValue.charAt(i) & 255;
-            if (c > 127) {
-                c = -(c - 127);
-            }
-            bytes[i] = (byte)c;
-        }
-        return bytes;
-    }
-
     public static DBDValueEditor openContentEditor(@NotNull DBDValueController controller)
     {
         Object value = controller.getValue();
@@ -723,7 +615,7 @@ public class ContentUtils {
                 try {
                     DBDContentStorage storage;
                     if (ContentUtils.isTextContent(value)) {
-                        storage = new ExternalContentStorage(openFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+                        storage = new ExternalContentStorage(openFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
                     } else {
                         storage = new ExternalContentStorage(openFile);
                     }
@@ -761,7 +653,7 @@ public class ContentUtils {
                             ContentUtils.saveContentToFile(
                                 storage.getContentReader(),
                                 saveFile,
-                                ContentUtils.DEFAULT_FILE_CHARSET_NAME,
+                                GeneralUtils.DEFAULT_FILE_CHARSET_NAME,
                                 monitor
                             );
                         } else {

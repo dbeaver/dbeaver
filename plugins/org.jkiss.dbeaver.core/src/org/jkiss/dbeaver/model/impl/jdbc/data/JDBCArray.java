@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
+import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 
 import java.sql.Array;
 import java.sql.ResultSet;

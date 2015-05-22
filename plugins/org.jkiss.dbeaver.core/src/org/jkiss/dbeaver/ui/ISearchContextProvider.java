@@ -16,25 +16,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
-
-import org.eclipse.ui.IWorkbenchPart;
+package org.jkiss.dbeaver.ui;
 
 /**
- * Active workbench part
+ * ISearchContextProvider
  */
-public interface IActiveWorkbenchPart extends IWorkbenchPart
+public interface ISearchContextProvider
 {
-    /**
-     * Activates editor part.
-     * Called when part becomes active (visible).
-     */
-    void activatePart();
+    public static enum SearchType {
+        NONE,
+        NEXT,
+        PREVIOUS
+    }
 
-    /**
-     * Deactivates editor part.
-     * Called when part becomes inactive (invisible).
-     */
-    void deactivatePart();
+    boolean isSearchPossible();
+
+    boolean isSearchEnabled();
+
+    boolean performSearch(SearchType searchType);
 
 }

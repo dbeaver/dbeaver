@@ -16,13 +16,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.ui;
+
+import org.eclipse.jface.viewers.Viewer;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 /**
- * IPropertyChangeReflector
+ * INavigatorView
  */
-public interface IPropertyChangeReflector {
-
-    void handlePropertyChange(int propId);
+public interface INavigatorModelView
+{
+    DBNNode getRootNode();
+    
+    @Nullable
+    Viewer getNavigatorViewer();
 
 }

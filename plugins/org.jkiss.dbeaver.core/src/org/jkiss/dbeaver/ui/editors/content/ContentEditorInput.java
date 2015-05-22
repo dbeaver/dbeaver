@@ -29,7 +29,7 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;

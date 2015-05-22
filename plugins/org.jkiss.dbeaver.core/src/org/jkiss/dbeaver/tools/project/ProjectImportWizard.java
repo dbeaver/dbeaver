@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -459,14 +460,14 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         final InputStream configContents = configFile.getContents();
         String filteredContent;
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(configContents, ContentUtils.DEFAULT_FILE_CHARSET));
+            BufferedReader in = new BufferedReader(new InputStreamReader(configContents, GeneralUtils.DEFAULT_FILE_CHARSET));
             StringBuilder buffer = new StringBuilder();
             for (;;) {
                 String line = in.readLine();
                 if (line == null) {
                     break;
                 }
-                buffer.append(line).append(ContentUtils.getDefaultLineSeparator());
+                buffer.append(line).append(GeneralUtils.getDefaultLineSeparator());
             }
             filteredContent = buffer.toString();
             for (Map.Entry<String, String> entry : driverMap.entrySet()) {
@@ -480,7 +481,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
         // Update configuration
         configFile.setContents(
-            new ByteArrayInputStream(filteredContent.getBytes(ContentUtils.DEFAULT_FILE_CHARSET)),
+            new ByteArrayInputStream(filteredContent.getBytes(GeneralUtils.DEFAULT_FILE_CHARSET)),
             true,
             false,
             monitor.getNestedMonitor());

@@ -33,9 +33,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -991,7 +992,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         lazyCache.put(element, objectCache);
                     }
                 }
-                String objectName = UIUtils.makeStringForUI(getObjectValue(element)).toString();
+                String objectName = RuntimeUtils.makeDisplayString(getObjectValue(element)).toString();
                 monitor.subTask(NLS.bind(CoreMessages.controls_object_list_monitor_load_props, objectName));
                 for (ObjectColumn column : entry.getValue()) {
                     if (monitor.isCanceled() || isDisposed()) {

@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -50,13 +51,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.*;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,7 +69,6 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -116,39 +119,6 @@ public class UIUtils {
                 e.doit = true;
             }
         };
-    }
-
-    public static Object makeStringForUI(Object object)
-    {
-        if (object == null) {
-            return ""; //$NON-NLS-1$
-        }
-        if (object instanceof Number) {
-            return NumberFormat.getInstance().format(object);
-        }
-        Class<?> eClass = object.getClass();
-        if (eClass.isArray()) {
-            if (eClass == byte[].class)
-                return Arrays.toString((byte[]) object);
-            else if (eClass == short[].class)
-                return Arrays.toString((short[]) object);
-            else if (eClass == int[].class)
-                return Arrays.toString((int[]) object);
-            else if (eClass == long[].class)
-                return Arrays.toString((long[]) object);
-            else if (eClass == char[].class)
-                return Arrays.toString((char[]) object);
-            else if (eClass == float[].class)
-                return Arrays.toString((float[]) object);
-            else if (eClass == double[].class)
-                return Arrays.toString((double[]) object);
-            else if (eClass == boolean[].class)
-                return Arrays.toString((boolean[]) object);
-            else { // element is an array of object references
-                return Arrays.deepToString((Object[]) object);
-            }
-        }
-        return object;
     }
 
     public static ToolItem createToolItem(ToolBar toolBar, String text, Image icon, final IAction action)
@@ -694,7 +664,7 @@ public class UIUtils {
     public static Combo createEncodingCombo(Composite parent, String curCharset)
     {
         if (curCharset == null) {
-            curCharset = ContentUtils.getDefaultFileEncoding();
+            curCharset = GeneralUtils.getDefaultFileEncoding();
         }
         Combo encodingCombo = new Combo(parent, SWT.DROP_DOWN);
         encodingCombo.setVisibleItemCount(30);
@@ -1241,4 +1211,79 @@ public class UIUtils {
         return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
     }
 
+    public static boolean validateAndSave(DBRProgressMonitor monitor, ISaveablePart saveable)
+    {
+        if (!saveable.isDirty()) {
+            return true;
+        }
+        SaveRunner saveRunner = new SaveRunner(monitor, saveable);
+        runInUI(null, saveRunner);
+        return saveRunner.getResult();
+    }
+
+    private static class SaveRunner implements Runnable {
+        private final DBRProgressMonitor monitor;
+        private final ISaveablePart saveable;
+        private boolean result;
+
+        private SaveRunner(DBRProgressMonitor monitor, ISaveablePart saveable)
+        {
+            this.monitor = monitor;
+            this.saveable = saveable;
+        }
+
+        public boolean getResult()
+        {
+            return result;
+        }
+
+        @Override
+        public void run()
+        {
+            int choice = -1;
+            if (saveable instanceof ISaveablePart2) {
+                choice = ((ISaveablePart2) saveable).promptToSaveOnClose();
+            }
+            if (choice == -1 || choice == ISaveablePart2.DEFAULT) {
+                Shell shell;
+                String saveableName;
+                if (saveable instanceof IWorkbenchPart) {
+                    shell = ((IWorkbenchPart) saveable).getSite().getShell();
+                    saveableName = ((IWorkbenchPart) saveable).getTitle();
+                } else {
+                    shell = DBeaverUI.getActiveWorkbenchShell();
+                    saveableName = CommonUtils.toString(saveable);
+                }
+                int confirmResult = ConfirmationDialog.showConfirmDialog(
+                    shell,
+                    DBeaverPreferences.CONFIRM_EDITOR_CLOSE,
+                    ConfirmationDialog.QUESTION_WITH_CANCEL,
+                    saveableName);
+                switch (confirmResult) {
+                    case IDialogConstants.YES_ID:
+                        choice = ISaveablePart2.YES;
+                        break;
+                    case IDialogConstants.NO_ID:
+                        choice = ISaveablePart2.NO;
+                        break;
+                    default:
+                        choice = ISaveablePart2.CANCEL;
+                        break;
+                }
+            }
+            switch (choice) {
+                case ISaveablePart2.YES: //yes
+                    saveable.doSave(monitor.getNestedMonitor());
+                    result = !saveable.isDirty();
+                    break;
+                case ISaveablePart2.NO: //no
+                    result = true;
+                    break;
+                case ISaveablePart2.CANCEL: //cancel
+                default:
+                    result = false;
+                    break;
+            }
+        }
+    }
 }

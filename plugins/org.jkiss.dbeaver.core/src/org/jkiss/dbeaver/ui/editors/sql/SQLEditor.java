@@ -52,7 +52,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
+import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -86,6 +86,7 @@ import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -1332,7 +1333,7 @@ public class SQLEditor extends SQLEditorBase
 
             if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                 DBeaverUI.notifyAgent(
-                        "Query completed [" + getEditorInput().getPath().lastSegment() + "]" + ContentUtils.getDefaultLineSeparator() +
+                        "Query completed [" + getEditorInput().getPath().lastSegment() + "]" + GeneralUtils.getDefaultLineSeparator() +
                                 CommonUtils.truncateString(query == null ? "" : query.getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
             }
         }

@@ -25,7 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericMessages;
-import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;

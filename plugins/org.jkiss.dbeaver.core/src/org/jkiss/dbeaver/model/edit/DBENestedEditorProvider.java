@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

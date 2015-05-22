@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
@@ -63,8 +63,8 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     @Override
     public Image getIcon()
     {
-        if (source instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider) source).getObjectImage();
+        if (source instanceof DBPImageProvider) {
+            return ((DBPImageProvider) source).getObjectImage();
         }
         return DBIcon.TREE_COLUMN.getImage();
     }
