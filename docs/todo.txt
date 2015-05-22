@@ -29,7 +29,7 @@ Paste into multiple cells
 Transaction state in status bar
 
 Process scripts with external native tool (SQLPlus + mysql)
-Process SQL blocks (begin/end/final delimiter)
+Client-side scripting language (velocity style)
 Driver popularity score for drivers ordering (MySQL, Oracle, DB2 on the top)
 Secure-storage for passwords
 

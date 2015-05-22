@@ -16,14 +16,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext;
+package org.jkiss.dbeaver.ext.ui;
+
+import org.jkiss.code.Nullable;
+import org.jkiss.utils.Pair;
 
 /**
- * IAutoSaveEditorInput
+ * Comments manager.
+ * <p/>
+ * Contains information about comments
  */
-public interface IAutoSaveEditorInput
-{
+public interface ICommentsSupport {
+    /**
+     * Two-item array containing begin and end of multi-line comments.
+     * @return string array or null if multi-line comments are not supported
+     */
+    @Nullable
+    Pair<String, String> getMultiLineComments();
 
-    boolean isAutoSaveEnabled();
-
+    /**
+     * List of possible single-line comment prefixes
+     * @return comment prefixes or null if single line comments are nto supported
+     */
+    String[] getSingleLineComments();
 }

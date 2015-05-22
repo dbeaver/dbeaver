@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
+import org.jkiss.dbeaver.model.DBPTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -59,7 +59,7 @@ import java.util.List;
  * GenericDataSource
  */
 public class GenericDataSource extends JDBCDataSource
-    implements DBSObjectSelector, IDatabaseTermProvider, IAdaptable, GenericStructContainer
+    implements DBSObjectSelector, DBPTermProvider, IAdaptable, GenericStructContainer
 {
     static final Log log = Log.getLog(GenericDataSource.class);
 

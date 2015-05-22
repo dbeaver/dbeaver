@@ -20,13 +20,12 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
-import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
 /**
  * ERDEditorInput
  */
-public class ERDEditorInput extends ProjectFileEditorInput implements IPersistableElement, IAutoSaveEditorInput
+public class ERDEditorInput extends ProjectFileEditorInput implements IPersistableElement
 {
     private String diagramName;
 
@@ -64,12 +63,6 @@ public class ERDEditorInput extends ProjectFileEditorInput implements IPersistab
     public void saveState(IMemento memento)
     {
         ERDEditorInputFactory.saveState(memento, this);
-    }
-
-    @Override
-    public boolean isAutoSaveEnabled()
-    {
-        return false;
     }
 
 }

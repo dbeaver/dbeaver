@@ -19,11 +19,10 @@
 package org.jkiss.dbeaver.ui.editors.content;
 
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ISingleControlEditor;
+import org.jkiss.dbeaver.ext.ui.ISingleControlEditor;
 
 import javax.activation.MimeType;
 
