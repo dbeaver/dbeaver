@@ -90,7 +90,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -386,7 +386,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (delimiter == null) {
             delimiter = "\t";
         }
-        String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         List<Object> selectedColumns = spreadsheet.getColumnSelection();
         IGridLabelProvider labelProvider = spreadsheet.getLabelProvider();
         StringBuilder tdt = new StringBuilder();

@@ -33,8 +33,7 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -129,7 +128,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
                 try {
                     final InputStream execOut = process.getInputStream();
                     final BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(execOut, ContentUtils.getDefaultConsoleEncoding())
+                        new InputStreamReader(execOut, GeneralUtils.getDefaultConsoleEncoding())
                     );
 
                     for (;;) {
@@ -159,7 +158,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         if (shell == null) {
             return;
         }
-        final String logLine = line + ContentUtils.getDefaultLineSeparator();
+        final String logLine = line + GeneralUtils.getDefaultLineSeparator();
         shell.getDisplay().asyncExec(new Runnable() {
             @Override
             public void run()

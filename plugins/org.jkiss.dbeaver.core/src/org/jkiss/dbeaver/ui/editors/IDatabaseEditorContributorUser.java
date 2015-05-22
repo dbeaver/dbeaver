@@ -16,17 +16,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.ui.editors;
 
-import org.jkiss.code.Nullable;
+import org.eclipse.ui.IEditorActionBarContributor;
 
 /**
- * Tooltip provider.
- * Extension of ILabelProvider
+ * ISection which provides action contributions
  */
-public interface ITooltipProvider {
+public interface IDatabaseEditorContributorUser {
 
-    @Nullable
-    public String getTooltip(Object element);
+    /**
+     * Returns null or contributor (new or obtained from manager)
+     * then it should use it and return null.
+     * @param manager contributor manager
+     * @return null or contributor
+     */
+    IEditorActionBarContributor getContributor(IDatabaseEditorContributorManager manager);
 
 }

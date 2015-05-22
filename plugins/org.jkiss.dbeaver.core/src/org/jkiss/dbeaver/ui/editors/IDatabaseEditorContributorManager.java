@@ -16,17 +16,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.swt.graphics.Image;
-import org.jkiss.code.Nullable;
+import org.eclipse.ui.IEditorActionBarContributor;
 
 /**
- * Image provider
+ * Contributor manager
  */
-public interface IObjectImageProvider {
+public interface IDatabaseEditorContributorManager {
 
-    @Nullable
-    Image getObjectImage();
+    IEditorActionBarContributor getContributor(Class<? extends IEditorActionBarContributor> type);
 
 }

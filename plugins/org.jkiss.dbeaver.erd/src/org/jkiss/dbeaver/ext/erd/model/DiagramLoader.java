@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
@@ -391,7 +391,7 @@ public class DiagramLoader
         Map<ERDEntity, TableSaveInfo> infoMap = new IdentityHashMap<ERDEntity, TableSaveInfo>();
 
         // Save as XML
-        XMLBuilder xml = new XMLBuilder(out, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+        XMLBuilder xml = new XMLBuilder(out, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
         xml.setButify(true);
         if (verbose) {
             xml.addContent(

@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.editors.text.handlers;
 
 import org.eclipse.jface.text.*;
-import org.jkiss.dbeaver.ext.ui.ICommentsSupport;
+import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.ArrayUtils;
 

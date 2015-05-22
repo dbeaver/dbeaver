@@ -106,7 +106,7 @@
                   
                </documentation>
                <appInfo>
-                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator"/>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.IObjectPropertyConfigurator"/>
                </appInfo>
             </annotation>
          </attribute>

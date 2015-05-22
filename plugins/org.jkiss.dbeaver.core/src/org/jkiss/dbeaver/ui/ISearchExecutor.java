@@ -16,21 +16,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext;
-
-import org.eclipse.ui.IEditorActionBarContributor;
+package org.jkiss.dbeaver.ui;
 
 /**
- * ISection which provides action contributions
+ * ISearchExecutor
  */
-public interface IDatabaseEditorContributorUser {
+public interface ISearchExecutor
+{
+    public static final int SEARCH_CASE_SENSITIVE   = 1;
+    public static final int SEARCH_NEXT = 2;
+    public static final int SEARCH_PREVIOUS = 4;
 
-    /**
-     * Returns null or contributor (new or obtained from manager)
-     * then it should use it and return null.
-     * @param manager contributor manager
-     * @return null or contributor
-     */
-    IEditorActionBarContributor getContributor(IDatabaseEditorContributorManager manager);
+    boolean performSearch(String searchString, int options);
+
+    void cancelSearch();
 
 }

@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
-import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
+import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
+import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 

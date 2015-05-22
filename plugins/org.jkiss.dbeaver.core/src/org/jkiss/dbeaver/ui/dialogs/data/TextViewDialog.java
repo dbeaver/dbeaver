@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -209,7 +210,7 @@ public class TextViewDialog extends ValueViewDialog {
         try {
             stringValue = new String(
                 bytes, 0, length,
-                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
+                GeneralUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             stringValue = new String(bytes);
@@ -222,7 +223,7 @@ public class TextViewDialog extends ValueViewDialog {
         byte[] bytes;
         try {
             bytes = stringValue.getBytes(
-                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
+                GeneralUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             bytes = stringValue.getBytes();
@@ -245,7 +246,7 @@ public class TextViewDialog extends ValueViewDialog {
                         strValue,
                         false);
                 } else {
-                    byte[] bytesValue = isTextEditorActive() ? ContentUtils.convertToBytes(textEdit.getText()) : getBinaryContent();
+                    byte[] bytesValue = isTextEditorActive() ? GeneralUtils.convertToBytes(textEdit.getText()) : getBinaryContent();
                     return getValueController().getValueHandler().getValueFromObject(
                         session,
                         getValueController().getValueType(),
@@ -298,7 +299,7 @@ public class TextViewDialog extends ValueViewDialog {
         if (value instanceof byte[]) {
             // Binary
             byte[] bytes = (byte[]) value;
-            textEdit.setText(ContentUtils.convertToString(bytes, 0 , bytes.length));
+            textEdit.setText(GeneralUtils.convertToString(bytes, 0, bytes.length));
             if (hexEditControl != null) {
                 hexEditControl.setContent(bytes);
             }

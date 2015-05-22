@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
             delimiter = DEF_DELIMITER;
         }
         out = site.getWriter();
-        rowDelimiter = ContentUtils.getDefaultLineSeparator();
+        rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         try {
             headerPosition = HeaderPosition.valueOf(String.valueOf(site.getProperties().get(PROP_HEADER)));
         } catch (Exception e) {

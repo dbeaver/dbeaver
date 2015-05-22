@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.data;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Type attribute value binding info
  */
-public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCAttributeMetaData, IObjectImageProvider {
+public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCAttributeMetaData, DBPImageProvider {
     @NotNull
     private final DBSAttributeBase attribute;
 
@@ -185,8 +185,8 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
     @Nullable
     @Override
     public Image getObjectImage() {
-        if (attribute instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider) attribute).getObjectImage();
+        if (attribute instanceof DBPImageProvider) {
+            return ((DBPImageProvider) attribute).getObjectImage();
         }
         return DBUtils.getDataIcon(this).getImage();
     }

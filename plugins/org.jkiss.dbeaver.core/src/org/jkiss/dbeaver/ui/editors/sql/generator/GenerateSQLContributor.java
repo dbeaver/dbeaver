@@ -57,7 +57,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -429,7 +429,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         IDocumentProvider provider=textEditor.getDocumentProvider();
                         IDocument doc = provider.getDocument(activeEditor.getEditorInput());
                         try {
-                            sql = ContentUtils.getDefaultLineSeparator() + sql;
+                            sql = GeneralUtils.getDefaultLineSeparator() + sql;
                             doc.replace(selection.getOffset(), selection.getLength(), sql);
                             textEditor.getSelectionProvider().setSelection(
                                 new TextSelection(doc, selection.getOffset() + sql.length(), 0));

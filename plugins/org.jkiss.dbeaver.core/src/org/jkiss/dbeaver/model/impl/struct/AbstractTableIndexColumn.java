@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 /**
  * AbstractTableIndexColumn
  */
-public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, IObjectImageProvider
+public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, DBPImageProvider
 {
 
     @Override
@@ -42,8 +42,8 @@ public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, I
     public Image getObjectImage()
     {
         DBSTableColumn tableColumn = getTableColumn();
-        if (tableColumn instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider)tableColumn).getObjectImage();
+        if (tableColumn instanceof DBPImageProvider) {
+            return ((DBPImageProvider)tableColumn).getObjectImage();
         }
         return null;
     }

@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -153,7 +154,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
                             }
                             content.updateContents(
                                 monitor,
-                                new BytesContentStorage(buffer.array(), ContentUtils.getDefaultFileEncoding()));
+                                new BytesContentStorage(buffer.array(), GeneralUtils.getDefaultFileEncoding()));
                         }
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);

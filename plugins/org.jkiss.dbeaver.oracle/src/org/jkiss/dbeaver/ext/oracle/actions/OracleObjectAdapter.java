@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.actions;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;

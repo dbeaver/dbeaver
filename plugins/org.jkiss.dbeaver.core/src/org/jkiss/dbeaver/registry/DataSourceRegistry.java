@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -338,7 +339,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 // Save in temp memory to be safe (any error during direct write will corrupt configuration)
                 ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
                 try {
-                    XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+                    XMLBuilder xml = new XMLBuilder(tempStream, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
                     xml.setButify(true);
                     xml.startElement("data-sources");
                     for (DataSourceDescriptor dataSource : localDataSources) {

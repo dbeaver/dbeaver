@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -39,11 +39,10 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.runtime.sql.SQLConstants;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -1019,7 +1018,7 @@ public final class DBUtils {
                 byte[] bytes = (byte[]) value;
                 return CommonUtils.toHexString(bytes, 0, 2000);
             } else {
-                return UIUtils.makeStringForUI(value).toString();
+                return RuntimeUtils.makeDisplayString(value).toString();
             }
         }
         String className = value.getClass().getName();
@@ -1113,7 +1112,7 @@ public final class DBUtils {
     @NotNull
     public static String generateScript(DBEPersistAction[] persistActions)
     {
-        String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder script = new StringBuilder(64);
         for (DBEPersistAction action : ArrayUtils.safeArray(persistActions)) {
             String scriptLine = action.getScript();
@@ -1175,8 +1174,8 @@ public final class DBUtils {
     public static Image getTypeImage(DBSTypedObject column)
     {
         Image image = null;
-        if (column instanceof IObjectImageProvider) {
-            image = ((IObjectImageProvider)column).getObjectImage();
+        if (column instanceof DBPImageProvider) {
+            image = ((DBPImageProvider)column).getObjectImage();
         }
         if (image == null) {
             image = DBIcon.TREE_COLUMN.getImage();

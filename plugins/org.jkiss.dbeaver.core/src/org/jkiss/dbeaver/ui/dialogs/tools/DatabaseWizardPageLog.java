@@ -26,7 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -132,7 +132,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         public void run()
         {
             clearLog();
-            String lf = ContentUtils.getDefaultLineSeparator();
+            String lf = GeneralUtils.getDefaultLineSeparator();
             List<String> command = processBuilder.command();
             StringBuilder cmdString = new StringBuilder();
             cmdString.append(command.get(0));

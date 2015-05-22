@@ -32,15 +32,17 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ext.*;
-import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
-import org.jkiss.dbeaver.ext.ui.IPropertyChangeReflector;
-import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
+import org.jkiss.dbeaver.ui.IPropertyChangeReflector;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ext.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderEditorSite;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorManager;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 
 /**

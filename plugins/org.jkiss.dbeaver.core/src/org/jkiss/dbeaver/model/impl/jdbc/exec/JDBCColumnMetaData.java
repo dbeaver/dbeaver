@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,7 +40,7 @@ import java.sql.SQLException;
 /**
  * JDBCColumnMetaData
  */
-public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImageProvider {
+public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvider {
     static final Log log = Log.getLog(JDBCColumnMetaData.class);
 
     public static final String PROP_CATEGORY_COLUMN = "Column";

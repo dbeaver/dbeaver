@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.utils.TextUtils;
 
 import java.io.IOException;
 import java.util.Map;

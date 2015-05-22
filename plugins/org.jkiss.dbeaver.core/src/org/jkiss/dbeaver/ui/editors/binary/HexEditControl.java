@@ -27,7 +27,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -500,7 +500,7 @@ public class HexEditControl extends Composite {
     public void setCharset(String name)
     {
         if (CommonUtils.isEmpty(name)) {
-            name = ContentUtils.getDefaultFileEncoding();
+            name = GeneralUtils.getDefaultFileEncoding();
         }
         charset = name;
         composeByteToCharMap();

@@ -16,15 +16,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.model;
+
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 
 /**
- * IRefreshablePart
+ * Image provider
  */
-public interface IRefreshableContainer
-{
-    void addRefreshClient(IRefreshablePart part);
+public interface DBPImageProvider {
 
-    void removeRefreshClient(IRefreshablePart part);
+    @Nullable
+    Image getObjectImage();
 
 }

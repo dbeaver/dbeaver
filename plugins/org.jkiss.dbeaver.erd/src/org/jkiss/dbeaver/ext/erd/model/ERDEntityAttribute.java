@@ -21,7 +21,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -46,8 +46,8 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 
     public Image getLabelImage()
     {
-        if (object instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider)object).getObjectImage();
+        if (object instanceof DBPImageProvider) {
+            return ((DBPImageProvider)object).getObjectImage();
         } else {
             return DBIcon.TYPE_UNKNOWN.getImage();
         }

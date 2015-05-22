@@ -16,12 +16,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.ui;
+package org.jkiss.dbeaver.ui;
+
+import org.eclipse.ui.IWorkbenchPart;
 
 /**
- * IRefreshablePart
+ * Active workbench part
  */
-public interface IRefreshablePart
+public interface IActiveWorkbenchPart extends IWorkbenchPart
 {
-    void refreshPart(Object source, boolean force);
+    /**
+     * Activates editor part.
+     * Called when part becomes active (visible).
+     */
+    void activatePart();
+
+    /**
+     * Deactivates editor part.
+     * Called when part becomes inactive (invisible).
+     */
+    void deactivatePart();
+
 }

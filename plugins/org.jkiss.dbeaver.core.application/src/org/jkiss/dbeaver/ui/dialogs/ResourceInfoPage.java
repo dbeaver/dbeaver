@@ -41,7 +41,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.net.URI;
 import java.text.DateFormat;
@@ -251,7 +251,7 @@ public class ResourceInfoPage extends PropertyPage {
 		createBasicInfoGroup(encodingComposite, resource);
 
         {
-            defEncoding = ContentUtils.getDefaultFileEncoding();
+            defEncoding = GeneralUtils.getDefaultFileEncoding();
 
             UIUtils.createControlLabel(encodingComposite, "Encoding");
             if (resource instanceof IFile) {

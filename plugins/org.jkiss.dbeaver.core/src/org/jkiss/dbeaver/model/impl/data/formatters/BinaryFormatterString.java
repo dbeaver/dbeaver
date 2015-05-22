@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * String formatter
@@ -40,13 +40,13 @@ public class BinaryFormatterString implements DBDBinaryFormatter {
     @Override
     public String toString(byte[] bytes, int offset, int length)
     {
-        return ContentUtils.convertToString(bytes, offset, length);
+        return GeneralUtils.convertToString(bytes, offset, length);
     }
 
     @Override
     public byte[] toBytes(String string)
     {
-        return ContentUtils.convertToBytes(string);
+        return GeneralUtils.convertToBytes(string);
     }
 
 }

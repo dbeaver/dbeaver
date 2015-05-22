@@ -36,8 +36,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.ui.IProgressControlProvider;
-import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.ui.IProgressControlProvider;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -349,8 +349,8 @@ public class EditForeignKeyDialog extends Dialog {
 
     private Image getColumnIcon(DBSEntityAttribute column)
     {
-        if (column instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider) column).getObjectImage();
+        if (column instanceof DBPImageProvider) {
+            return ((DBPImageProvider) column).getObjectImage();
         }
         return null;
     }

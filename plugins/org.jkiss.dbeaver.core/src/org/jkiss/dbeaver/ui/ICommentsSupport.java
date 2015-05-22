@@ -16,15 +16,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext;
+package org.jkiss.dbeaver.ui;
 
-import org.eclipse.ui.IEditorInput;
+import org.jkiss.code.Nullable;
+import org.jkiss.utils.Pair;
 
 /**
- * Nested editor input factory
+ * Comments manager.
+ * <p/>
+ * Contains information about comments
  */
-public interface IDatabaseEditorInputFactory {
+public interface ICommentsSupport {
+    /**
+     * Two-item array containing begin and end of multi-line comments.
+     * @return string array or null if multi-line comments are not supported
+     */
+    @Nullable
+    Pair<String, String> getMultiLineComments();
 
-    IEditorInput createNestedEditorInput(IDatabaseEditorInput mainInput);
-
+    /**
+     * List of possible single-line comment prefixes
+     * @return comment prefixes or null if single line comments are nto supported
+     */
+    String[] getSingleLineComments();
 }

@@ -16,21 +16,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext;
-
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+package org.jkiss.dbeaver.ui;
 
 /**
- * DataSource provider editor.
- * May be editor, view or selection element
+ * IRefreshablePart
  */
-public interface IDataSourceContainerProviderEx extends IDataSourceContainerProvider {
+public interface IRefreshableContainer
+{
+    void addRefreshClient(IRefreshablePart part);
 
-    /**
-     * Change underlying datasource container
-     * @return data source object.
-     */
-    boolean setDataSourceContainer(@Nullable DBSDataSourceContainer dataSourceContainer);
+    void removeRefreshClient(IRefreshablePart part);
 
 }

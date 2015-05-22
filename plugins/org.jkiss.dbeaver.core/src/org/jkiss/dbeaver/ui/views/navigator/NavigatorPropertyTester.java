@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.views.navigator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
-import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
+import org.jkiss.dbeaver.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
 /**
