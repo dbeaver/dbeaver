@@ -645,7 +645,7 @@ public class DBECommandContextImpl implements DBECommandContext {
     {
         return dataSource.openSession(
             monitor,
-            DBCExecutionPurpose.USER_SCRIPT,
+            DBCExecutionPurpose.META_DDL,
             CoreMessages.model_edit_execute_ + command.getTitle());
     }
 

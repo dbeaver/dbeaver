@@ -190,7 +190,7 @@ public abstract class JDBCDataSource
     @Override
     public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
-        if (purpose == DBCExecutionPurpose.META && metaContext != null) {
+        if (metaContext != null && (purpose == DBCExecutionPurpose.META || purpose == DBCExecutionPurpose.META_DDL)) {
             return createConnection(monitor, this.metaContext, purpose, taskTitle);
         }
         return createConnection(monitor, executionContext, purpose, taskTitle);
