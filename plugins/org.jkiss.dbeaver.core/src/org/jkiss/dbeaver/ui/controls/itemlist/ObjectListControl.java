@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -367,8 +368,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
 
                 IFilter propertyFilter = new DataSourcePropertyFilter(
-                    ObjectListControl.this instanceof IDataSourceProvider ?
-                        ((IDataSourceProvider)ObjectListControl.this).getDataSource() :
+                    ObjectListControl.this instanceof IDataSourceContainerProvider ?
+                        ((IDataSourceContainerProvider)ObjectListControl.this).getDataSourceContainer() :
                         null);
 
                 // Create columns from classes' annotations

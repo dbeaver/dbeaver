@@ -130,7 +130,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             generateObjectCommand(lines, object);
             objectsSQL.put(object, lines);
         }
-        final DataSourceJob job = new DataSourceJob(jobName, null, getDataSource()) {
+        final DataSourceJob job = new DataSourceJob(jobName, null, getExecutionContext()) {
             public Exception objectProcessingError;
 
             @Override

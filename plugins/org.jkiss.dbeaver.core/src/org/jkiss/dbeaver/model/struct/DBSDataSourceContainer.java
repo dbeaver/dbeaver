@@ -21,7 +21,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,7 +31,7 @@ import java.util.Collection;
 /**
  * DBSDataSourceContainer
  */
-public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, IDataSourceProvider
+public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 {
     /**
      * Container unique ID

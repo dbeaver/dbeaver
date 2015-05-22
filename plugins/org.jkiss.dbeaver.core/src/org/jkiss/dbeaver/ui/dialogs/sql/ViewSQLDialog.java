@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 public class ViewSQLDialog extends BaseSQLDialog {
 
@@ -106,10 +107,8 @@ public class ViewSQLDialog extends BaseSQLDialog {
         }
     }
 
-    @Nullable
     @Override
-    public DBPDataSource getDataSource()
-    {
+    protected DBCExecutionContext getExecutionContext() {
         return dataSource;
     }
 }

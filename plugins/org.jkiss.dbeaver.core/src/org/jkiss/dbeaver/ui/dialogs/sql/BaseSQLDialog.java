@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
-public abstract class BaseSQLDialog extends BaseDialog implements IDataSourceProvider {
+public abstract class BaseSQLDialog extends BaseDialog {
 
     private IEditorSite subSite;
     private SQLEditorBase sqlViewer;
@@ -76,7 +76,7 @@ public abstract class BaseSQLDialog extends BaseDialog implements IDataSourcePro
         sqlViewer = new SQLEditorBase() {
             @Override
             public DBCExecutionContext getExecutionContext() {
-                return BaseSQLDialog.this.getDataSource();
+                return BaseSQLDialog.this.getExecutionContext();
             }
         };
         updateSQL();
@@ -99,6 +99,8 @@ public abstract class BaseSQLDialog extends BaseDialog implements IDataSourcePro
 
         return panel;
     }
+
+    protected abstract DBCExecutionContext getExecutionContext();
 
     protected abstract String getSQLText();
 
