@@ -54,8 +54,6 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     private Button editorFullName;
     private Combo doubleClickBehavior;
 
-    private Button editorSeparateConnectionCheck;
-
     public PrefPageDatabaseGeneral()
     {
         super();
@@ -108,12 +106,6 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
             doubleClickBehavior.add("Expand / Collapse", NavigatorViewBase.DoubleClickBehavior.EXPAND.ordinal());
         }
 
-        {
-            Group connectionsGroup = UIUtils.createControlGroup(composite, "Connections", 2, SWT.NONE, 0);
-
-            editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, "Open connection for each editor", false);
-        }
-
         performDefaults();
 
         return composite;
@@ -133,8 +125,6 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         editorFullName.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME));
         doubleClickBehavior.select(
             NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)).ordinal());
-
-        editorSeparateConnectionCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION));
     }
 
     @Override
@@ -152,9 +142,6 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         store.setValue(DBeaverPreferences.NAVIGATOR_EDITOR_FULL_NAME, editorFullName.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,
             CommonUtils.fromOrdinal(NavigatorViewBase.DoubleClickBehavior.class, doubleClickBehavior.getSelectionIndex()).name());
-
-        store.setValue(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
-
 
         RuntimeUtils.savePreferenceStore(store);
 
