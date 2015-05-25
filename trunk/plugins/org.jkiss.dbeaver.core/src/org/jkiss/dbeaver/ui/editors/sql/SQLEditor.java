@@ -234,7 +234,7 @@ public class SQLEditor extends SQLEditorBase implements
                 releaseExecutionContext();
             } else if (curDataSource != dataSource) {
                 releaseExecutionContext();
-                if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
+                if (dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
                     try {
                         DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                             @Override
