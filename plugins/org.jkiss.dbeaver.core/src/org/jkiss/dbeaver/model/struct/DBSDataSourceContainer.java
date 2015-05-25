@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 
@@ -67,7 +68,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     boolean isDefaultAutoCommit();
 
-    void setDefaultAutoCommit(boolean autoCommit, boolean updateConnection);
+    void setDefaultAutoCommit(boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection);
 
     @Nullable
     DBPTransactionIsolation getDefaultTransactionsIsolation();

@@ -127,6 +127,9 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<QueryProcessor> queryProcessors = new ArrayList<QueryProcessor>();
 
     private DBSDataSourceContainer dataSourceContainer;
+    private DBPDataSource curDataSource;
+    private DBCExecutionContext executionContext;
+    private boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<SQLQuery>();
 
@@ -137,12 +140,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        if (dataSourceContainer == null) {
-            return null;
-        }
-        DBPDataSource dataSource = dataSourceContainer.getDataSource();
-        return dataSource == null ? null : dataSource.getDefaultContext(false);
+        return executionContext;
     }
 
     @Nullable
@@ -222,7 +220,51 @@ public class SQLEditor extends SQLEditorBase implements
         if (dataSourceContainer != null) {
             dataSourceContainer.acquire(this);
         }
+
         return true;
+    }
+
+    private void updateExecutionContext() {
+        if (dataSourceContainer == null) {
+            releaseExecutionContext();
+        } else {
+            // Get/open context
+            final DBPDataSource dataSource = dataSourceContainer.getDataSource();
+            if (dataSource == null) {
+                releaseExecutionContext();
+            } else if (curDataSource != dataSource) {
+                releaseExecutionContext();
+                if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
+                    try {
+                        DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
+                            @Override
+                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                                try {
+                                    executionContext = dataSource.openIsolatedContext(monitor, "SQLEditor connection");
+                                } catch (DBException e) {
+                                    throw new InvocationTargetException(e);
+                                }
+                                ownContext = true;
+                            }
+                        });
+                    } catch (InvocationTargetException e) {
+                        UIUtils.showErrorDialog(getSite().getShell(), "Open context", "Can't open editor connection", e);
+                    }
+                } else {
+                    executionContext = dataSource.getDefaultContext(false);
+                }
+            }
+            curDataSource = dataSource;
+        }
+    }
+
+    private void releaseExecutionContext() {
+        if (ownContext && executionContext != null) {
+            executionContext.close();
+        }
+        executionContext = null;
+        ownContext = false;
+        curDataSource = null;
     }
 
     private void releaseContainer() {
@@ -231,6 +273,7 @@ public class SQLEditor extends SQLEditorBase implements
             dataSourceContainer.release(this);
             dataSourceContainer = null;
         }
+        releaseExecutionContext();
     }
 
     @Override
@@ -656,9 +699,12 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void onDataSourceChange()
     {
+        updateExecutionContext();
+
         if (sashForm == null || sashForm.isDisposed()) {
             return;
         }
+
         DatabaseEditorUtils.setPartBackground(this, sashForm);
 
         DBCExecutionContext executionContext = getExecutionContext();
