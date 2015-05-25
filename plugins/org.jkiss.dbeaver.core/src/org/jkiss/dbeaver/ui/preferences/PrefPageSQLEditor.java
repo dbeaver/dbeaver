@@ -46,6 +46,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor"; //$NON-NLS-1$
 
+    private Button editorSeparateConnectionCheck;
     private Button csAutoActivationCheck;
     private Spinner csAutoActivationDelaySpinner;
     private Button csAutoInsertCheck;
@@ -68,6 +69,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
+            store.contains(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION) ||
             store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS) ||
             store.contains(DBeaverPreferences.SCRIPT_TITLE_PATTERN) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
@@ -90,11 +92,19 @@ public class PrefPageSQLEditor extends TargetPrefPage
         Composite composite2 = UIUtils.createPlaceholder(composite, 2);
         ((GridLayout)composite2.getLayout()).horizontalSpacing = 5;
         composite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        {
+            Group connectionsGroup = UIUtils.createControlGroup(composite2, "Connections", 2, GridData.FILL_HORIZONTAL, 0);
+            ((GridData)connectionsGroup.getLayoutData()).horizontalSpan = 2;
+            editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, "Open separate connection for each editor", false);
+        }
+
+
         // Content assistant
         {
             Composite assistGroup = UIUtils.createControlGroup(composite2, "Content assistant", 2, GridData.FILL_HORIZONTAL, 0);
             assistGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
-            ((GridData)assistGroup.getLayoutData()).horizontalSpan = 2;
+            ((GridData)assistGroup.getLayoutData()).verticalSpan = 2;
 
             csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", "Enables the content assistant's auto activation", false);
             UIUtils.createControlLabel(assistGroup, "Auto activation delay");
@@ -127,7 +137,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 final RulerColumnDescriptor descriptor = (RulerColumnDescriptor)obj;
                 if (!descriptor.isGlobal())
                     continue;
-                Button checkbox = UIUtils.createCheckbox(rulersGroup, descriptor.getName(), false);
+                Button checkbox = UIUtils.createLabelCheckbox(rulersGroup, descriptor.getName(), false);
                 rulerChecks.put(descriptor, checkbox);
             }
         }
@@ -155,12 +165,14 @@ public class PrefPageSQLEditor extends TargetPrefPage
             for (int i = 0; i <vars.length; i++) {
                 legend.append("\n\t- ${").append(vars[i]).append("}:  ").append(explain[i]);
             }
-
+            scriptTitlePattern.setToolTipText(legend.toString());
+/*
             Label legendLabel = new Label(scriptsGroup, SWT.NONE);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             legendLabel.setLayoutData(gd);
             legendLabel.setText(legend.toString());
+*/
         }
         return composite;
     }
@@ -169,6 +181,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
+            editorSeparateConnectionCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION));
+
             csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
@@ -196,6 +210,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
+            store.setValue(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
+
             store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
@@ -224,6 +240,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
+        store.setToDefault(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION);
+
         store.setToDefault(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
         store.setToDefault(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY);
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
