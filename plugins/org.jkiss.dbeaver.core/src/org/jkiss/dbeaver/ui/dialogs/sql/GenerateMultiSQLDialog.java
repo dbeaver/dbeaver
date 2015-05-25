@@ -30,6 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,11 +56,25 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     public GenerateMultiSQLDialog(
         IWorkbenchPartSite partSite,
         String title,
+        Collection<T> objects,
+        boolean meta)
+    {
+        this(
+            partSite,
+            getContextFromObjects(objects, meta),
+            title,
+            objects);
+    }
+
+    public GenerateMultiSQLDialog(
+        IWorkbenchPartSite partSite,
+        DBCExecutionContext context,
+        String title,
         Collection<T> objects)
     {
         super(
             partSite,
-            objects.iterator().next().getDataSource(),
+            context,
             title,
             null);
         this.selectedObjects = objects;
@@ -225,5 +241,15 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     }
 
     protected abstract void generateObjectCommand(List<String> sql, T object);
+
+    protected static <T extends DBSObject> DBCExecutionContext getContextFromObjects(@NotNull Collection<T> objects, boolean meta) {
+        Iterator<T> iterator = objects.iterator();
+        if (iterator.hasNext()) {
+            T object = iterator.next();
+            DBPDataSource dataSource = object.getDataSource();
+            return dataSource == null ? null : dataSource.getDefaultContext(meta);
+        }
+        return null;
+    }
 
 }

@@ -19,19 +19,20 @@ package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -110,15 +111,6 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         super.dispose();
     }
 
-    /**
-     * Uses data source as main execution context
-     * @return data source reference. never null.
-     */
-    @Override
-    public DBCExecutionContext getExecutionContext() {
-        return getEditorInput().getDataSource();
-    }
-
     @Nullable
     @Override
     public ResultSetViewer getResultSetViewer()
@@ -158,14 +150,6 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     }
 
     @Override
-    public void refreshPart(Object source, boolean force)
-    {
-        if (loaded) {
-            //resultSetView.refresh();
-        }
-    }
-
-    @Override
     public boolean isDirty()
     {
         return resultSetView != null && !resultSetView.getControl().isDisposed() && resultSetView.isDirty();
@@ -202,4 +186,8 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         return super.getAdapter(required);
     }
 
+    @Override
+    public void refreshPart(Object source, boolean force) {
+
+    }
 }

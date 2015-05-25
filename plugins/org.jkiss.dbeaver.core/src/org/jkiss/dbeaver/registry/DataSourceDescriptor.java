@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -304,7 +301,7 @@ public class DataSourceDescriptor
     public void setDefaultAutoCommit(final boolean autoCommit, boolean updateConnection)
     {
         if (dataSource != null) {
-            final DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+            final DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
             if (updateConnection && txnManager != null) {
                 try {
                     DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
@@ -333,29 +330,12 @@ public class DataSourceDescriptor
         }
     }
 
-    @Override
-    public boolean isConnectionAutoCommit()
-    {
-        if (dataSource != null) {
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
-            if (txnManager != null) {
-                try {
-                    return txnManager.isAutoCommit();
-                } catch (DBCException e) {
-                    log.debug("Can't check auto-commit flag", e);
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
     @Nullable
     @Override
     public DBPTransactionIsolation getDefaultTransactionsIsolation()
     {
         if (dataSource != null) {
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
             if (txnManager != null) {
                 try {
                     return txnManager.getTransactionIsolation();
@@ -380,7 +360,7 @@ public class DataSourceDescriptor
                     DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+                            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
                             if (txnManager != null) {
                                 try {
                                     if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
@@ -648,56 +628,7 @@ public class DataSourceDescriptor
                 dataSource.initialize(monitor);
                 // Change connection properties
 
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
-                if (txnManager != null) {
-                    try {
-                        // Set auto-commit
-                        boolean autoCommit = txnManager.isAutoCommit();
-                        boolean newAutoCommit;
-                        if (!preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
-                            newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
-                        } else {
-                            newAutoCommit = preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
-                        }
-                        if (autoCommit != newAutoCommit) {
-                            // Change auto-commit state
-                            txnManager.setAutoCommit(monitor, newAutoCommit);
-                        }
-                        // Set txn isolation level
-                        if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
-                            int isolationCode = preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
-                            Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
-                            if (!CommonUtils.isEmpty(supportedLevels)) {
-                                for (DBPTransactionIsolation level : supportedLevels) {
-                                    if (level.getCode() == isolationCode) {
-                                        txnManager.setTransactionIsolation(monitor, level);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        // Set active object
-                        if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
-                            String activeObject = getDefaultActiveObject();
-                            if (!CommonUtils.isEmptyTrimmed(activeObject)) {
-                                DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
-                                if (child != null) {
-                                    try {
-                                        ((DBSObjectSelector) dataSource).selectObject(monitor, child);
-                                    } catch (DBException e) {
-                                        log.warn("Can't select active object", e);
-                                    }
-                                } else {
-                                    log.debug("Object '" + activeObject + "' not found");
-                                }
-                            }
-                        }
-                    } catch (DBCException e) {
-                        log.error("Can't set session transactions state", e);
-                    } finally {
-                        monitor.worked(1);
-                    }
-                }
+                prepareContext(monitor);
             }
 
             connectFailed = false;
@@ -732,6 +663,62 @@ public class DataSourceDescriptor
                 connectionInfo = savedConnectionInfo;
             }
             connecting = false;
+        }
+    }
+
+    private void prepareContext(DBRProgressMonitor monitor) throws DBException {
+        if (dataSource == null) {
+            return;
+        }
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
+        if (txnManager != null) {
+            try {
+                // Set auto-commit
+                boolean autoCommit = txnManager.isAutoCommit();
+                boolean newAutoCommit;
+                if (!preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
+                    newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
+                } else {
+                    newAutoCommit = preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
+                }
+                if (autoCommit != newAutoCommit) {
+                    // Change auto-commit state
+                    txnManager.setAutoCommit(monitor, newAutoCommit);
+                }
+                // Set txn isolation level
+                if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
+                    int isolationCode = preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
+                    Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
+                    if (!CommonUtils.isEmpty(supportedLevels)) {
+                        for (DBPTransactionIsolation level : supportedLevels) {
+                            if (level.getCode() == isolationCode) {
+                                txnManager.setTransactionIsolation(monitor, level);
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Set active object
+                if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
+                    String activeObject = getDefaultActiveObject();
+                    if (!CommonUtils.isEmptyTrimmed(activeObject)) {
+                        DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
+                        if (child != null) {
+                            try {
+                                ((DBSObjectSelector) dataSource).selectObject(monitor, child);
+                            } catch (DBException e) {
+                                log.warn("Can't select active object", e);
+                            }
+                        } else {
+                            log.debug("Object '" + activeObject + "' not found");
+                        }
+                    }
+                }
+            } catch (DBCException e) {
+                log.error("Can't set session transactions state", e);
+            } finally {
+                monitor.worked(1);
+            }
         }
     }
 
@@ -864,68 +851,66 @@ public class DataSourceDescriptor
             return true;
         }
 
-        // First rollback active transaction
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
-        try {
-            if (txnManager == null || txnManager.isAutoCommit()) {
-                return true;
-            }
+        for (DBCExecutionContext context : dataSource.getAllContexts()) {
+            // First rollback active transaction
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+            try {
+                if (txnManager == null || txnManager.isAutoCommit()) {
+                    continue;
+                }
 
-            // If there are some executions in last savepoint then ask user about commit/rollback
-            QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
-            if (qmm != null) {
-                QMMSessionInfo qmmSession = qmm.getSessionInfo(dataSource);
-                QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
-                QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
-                if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
-                    boolean hasUserExec = false;
-                    if (true) {
-                        // Do not check whether we have user queries, just ask for confirmation
-                        hasUserExec = true;
-                    } else {
-                        for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
-                            if (psp.hasUserExecutions()) {
-                                hasUserExec = true;
-                                break;
+                // If there are some executions in last savepoint then ask user about commit/rollback
+                QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
+                if (qmm != null) {
+                    QMMSessionInfo qmmSession = qmm.getSessionInfo(context);
+                    QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
+                    QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
+                    if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
+                        boolean hasUserExec = false;
+                        if (true) {
+                            // Do not check whether we have user queries, just ask for confirmation
+                            hasUserExec = true;
+                        } else {
+                            for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
+                                if (psp.hasUserExecutions()) {
+                                    hasUserExec = true;
+                                    break;
+                                }
                             }
                         }
-                    }
-                    if (hasUserExec) {
-                        // Ask for confirmation
-                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(getName());
-                        UIUtils.runInUI(null, closeConfirmer);
-                        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
-                        try {
-                            boolean commit;
-                            switch (closeConfirmer.result) {
-                                case IDialogConstants.YES_ID:
-                                    commit = true;
-                                    break;
-                                case IDialogConstants.NO_ID:
-                                    commit = false;
-                                    break;
-                                default:
-                                    return false;
+                        if (hasUserExec) {
+                            // Ask for confirmation
+                            TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(getName());
+                            UIUtils.runInUI(null, closeConfirmer);
+                            DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
+                            try {
+                                boolean commit;
+                                switch (closeConfirmer.result) {
+                                    case IDialogConstants.YES_ID:
+                                        commit = true;
+                                        break;
+                                    case IDialogConstants.NO_ID:
+                                        commit = false;
+                                        break;
+                                    default:
+                                        return false;
+                                }
+                                monitor.subTask("End active transaction");
+                                EndTransactionTask task = new EndTransactionTask(session, commit);
+                                RuntimeUtils.runTask(task, END_TRANSACTION_WAIT_TIME);
+                            } finally {
+                                session.close();
                             }
-                            monitor.subTask("End active transaction");
-                            EndTransactionTask task = new EndTransactionTask(session, commit);
-                            RuntimeUtils.runTask(task, END_TRANSACTION_WAIT_TIME);
-                        } finally {
-                            session.close();
                         }
-                        return true;
                     }
                 }
+            } catch (Throwable e) {
+                log.warn("Could not rollback active transaction before disconnect", e);
+            } finally {
+                monitor.worked(1);
             }
-            return true;
         }
-        catch (Throwable e) {
-            log.warn("Could not rollback active transaction before disconnect", e);
-            return true;
-        }
-        finally {
-            monitor.worked(1);
-        }
+        return true;
     }
 
     @Override
@@ -1185,7 +1170,7 @@ public class DataSourceDescriptor
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getDataSource());
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
             if (txnManager != null) {
                 try {
                     if (commit) {

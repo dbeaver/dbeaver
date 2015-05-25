@@ -884,7 +884,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 getEditorSite(),
-                getDataSource(),
+                getExecutionContext(),
                 allowSave ? CoreMessages.editors_entity_dialog_persist_title : CoreMessages.editors_entity_dialog_preview_title,
                 DBIcon.SQL_PREVIEW.getImage(),
                 script.toString());

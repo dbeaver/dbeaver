@@ -476,7 +476,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         if (schema == null || !TYPE_CODE_COLLECTION.equals(typeCode) || !getDataSource().isAtLeastV10()) {
             return null;
         }
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load collection types");
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load collection types");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT ELEM_TYPE_OWNER,ELEM_TYPE_NAME,ELEM_TYPE_MOD FROM SYS.ALL_COLL_TYPES WHERE OWNER=? AND TYPE_NAME=?");

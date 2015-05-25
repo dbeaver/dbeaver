@@ -21,8 +21,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.templates.*;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 import java.util.Collection;
@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * SQL context
  */
-public class SQLContext extends DocumentTemplateContext implements IDataSourceProvider {
+public class SQLContext extends DocumentTemplateContext implements DBPContextProvider {
 
     private SQLEditorBase editor;
     private Map<String, SQLVariable> variables = new HashMap<String, SQLVariable>();
@@ -49,9 +49,9 @@ public class SQLContext extends DocumentTemplateContext implements IDataSourcePr
     }
 
     @Override
-    public DBPDataSource getDataSource()
+    public DBCExecutionContext getExecutionContext()
     {
-        return editor.getDataSource();
+        return editor.getExecutionContext();
     }
 
     @Override

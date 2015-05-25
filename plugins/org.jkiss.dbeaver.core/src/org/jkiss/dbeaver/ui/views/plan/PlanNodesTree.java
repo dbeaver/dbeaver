@@ -136,7 +136,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCSession session = planner.getDataSource().openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'");
+                DBCSession session = planner.getDataSource().getDefaultContext(false).openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'");
                 try {
                     DBCPlan plan = planner.planQueryExecution(session, query);
                     return (Collection<DBCPlanNode>) plan.getPlanNodes();
@@ -145,11 +145,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
                     session.close();
                 }
             } catch (Throwable ex) {
-                if (ex instanceof InvocationTargetException) {
-                    throw (InvocationTargetException)ex;
-                } else {
-                    throw new InvocationTargetException(ex);
-                }
+                throw new InvocationTargetException(ex);
             }
         }
     }

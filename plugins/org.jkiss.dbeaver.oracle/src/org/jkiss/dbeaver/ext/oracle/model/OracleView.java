@@ -178,7 +178,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             additionalInfo.loaded = true;
             return;
         }
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table status");
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME\n" +

@@ -47,17 +47,17 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
 
     @NotNull
     private final JDBCDataSource dataSource;
-    private final boolean copyState;
+    private final boolean primaryContext;
     private volatile Connection connection;
     private final String purpose;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
 
-    public JDBCExecutionContext(@NotNull JDBCDataSource dataSource, String purpose, boolean copyState)
+    public JDBCExecutionContext(@NotNull JDBCDataSource dataSource, String purpose, boolean primary)
     {
         this.dataSource = dataSource;
         this.purpose = purpose;
-        this.copyState = copyState;
+        this.primaryContext = primary;
     }
 
     private Connection getConnection() {
@@ -94,13 +94,9 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                     log.warn("Could not set transaction isolation level", e); //$NON-NLS-1$
                 }
             }
-            if (copyState) {
-                // Set active object
-                if (dataSource instanceof DBSObjectSelector) {
-    //                ((DBSObjectSelector) dataSource).selectObject();
-    //                ((DBSObjectSelector) dataSource).getSelectedObject()
-                }
-            }
+            // Copy context state
+            dataSource.initializeContextState(monitor, this, primaryContext);
+
             {
                 // Notify QM
                 try {

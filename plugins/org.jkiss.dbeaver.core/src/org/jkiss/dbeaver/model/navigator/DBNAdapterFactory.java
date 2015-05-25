@@ -28,10 +28,7 @@ import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 
@@ -48,6 +45,7 @@ public class DBNAdapterFactory implements IAdapterFactory
         DBSDataContainer.class,
         DBSDataManipulator.class,
         DBSDataSourceContainer.class,
+//        DBPContextProvider.class,
         IPropertySource.class,
         IProject.class,
         IFolder.class,

@@ -23,7 +23,7 @@ import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.jface.text.templates.TemplateVariableResolver;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -54,33 +54,31 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
         final String tableName = tableVariable == null ? null : tableVariable.getDefaultValue();
         if (!CommonUtils.isEmpty(tableName)) {
             final List<DBSEntityAttribute> attributes = new ArrayList<DBSEntityAttribute>();
-            if (context instanceof IDataSourceProvider) {
-                try {
-                    DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException
-                        {
-                            try {
-                                List<DBSEntity> entities = new ArrayList<DBSEntity>();
-                                SQLEntityResolver.resolveTables(monitor, ((IDataSourceProvider) context).getDataSource(), context, entities);
-                                if (!CommonUtils.isEmpty(entities)) {
-                                    DBSEntity table = DBUtils.findObject(entities, tableName);
-                                    if (table != null) {
-                                        attributes.addAll(CommonUtils.safeCollection(table.getAttributes(monitor)));
-                                    }
+            try {
+                DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            List<DBSEntity> entities = new ArrayList<DBSEntity>();
+                            SQLEntityResolver.resolveTables(monitor, ((DBPContextProvider) context).getExecutionContext(), context, entities);
+                            if (!CommonUtils.isEmpty(entities)) {
+                                DBSEntity table = DBUtils.findObject(entities, tableName);
+                                if (table != null) {
+                                    attributes.addAll(CommonUtils.safeCollection(table.getAttributes(monitor)));
                                 }
-                            } catch (DBException e) {
-                                throw new InvocationTargetException(e);
                             }
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
                         }
-                    };
-                    DBeaverUI.runInProgressService(runnable);
-                } catch (InvocationTargetException e) {
-                    log.error(e.getTargetException());
-                } catch (InterruptedException e) {
-                    // skip
-                }
+                    }
+                };
+                DBeaverUI.runInProgressService(runnable);
+            } catch (InvocationTargetException e) {
+                log.error(e.getTargetException());
+            } catch (InterruptedException e) {
+                // skip
             }
             if (!CommonUtils.isEmpty(attributes)) {
                 String[] result = new String[attributes.size()];

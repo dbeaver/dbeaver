@@ -20,13 +20,12 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 
 /**
  * MultiPageDatabaseEditor
  */
-public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor implements IDatabaseEditor, IDataSourceProvider
+public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor implements IDatabaseEditor, DBPContextProvider
 {
     private DatabaseEditorListener listener;
 
@@ -52,8 +51,8 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
     }
 
     @Override
-    public DBPDataSource getDataSource() {
-        return getEditorInput().getDataSource();
+    public org.jkiss.dbeaver.model.exec.DBCExecutionContext getExecutionContext() {
+        return getEditorInput().getExecutionContext();
     }
 
     @Override

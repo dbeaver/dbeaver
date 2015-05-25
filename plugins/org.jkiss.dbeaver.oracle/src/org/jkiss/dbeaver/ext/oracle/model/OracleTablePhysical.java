@@ -85,7 +85,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
         if (realRowCount == null) {
             // Query row count
-            DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read row count");
+            DBCSession session = getDataSource().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.META, "Read row count");
             try {
                 realRowCount = countData(session, null);
             }
@@ -136,7 +136,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public PartitionInfo getPartitionInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (partitionInfo == null && partitioned) {
-            final JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load partitioning info");
+            final JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load partitioning info");
             try {
                 final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM ALL_PART_TABLES WHERE OWNER=? AND TABLE_NAME=?");
                 try {

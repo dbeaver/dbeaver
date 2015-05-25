@@ -39,7 +39,7 @@ public class PostgreUtils {
     public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure)
         throws DBException
     {
-        JDBCSession session = procedure.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load procedure source code");
+        JDBCSession session = procedure.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedure source code");
         try {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
             return (String)fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
@@ -54,7 +54,7 @@ public class PostgreUtils {
     public static String getViewSource(DBRProgressMonitor monitor, GenericTable view)
         throws DBException
     {
-        JDBCSession session = view.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load view source code");
+        JDBCSession session = view.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load view source code");
         try {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
             return (String)fbMetaData.getClass().getMethod("getViewSourceCode", String.class).invoke(fbMetaData, view.getName());

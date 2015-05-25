@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.views.properties.IPropertySource2;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -30,7 +30,7 @@ import java.util.Collection;
 /**
  * IDatabaseEditorInput
  */
-public interface IDatabaseEditorInput extends IEditorInput, IDataSourceProvider {
+public interface IDatabaseEditorInput extends IEditorInput, DBPContextProvider {
 
     DBNDatabaseNode getTreeNode();
 

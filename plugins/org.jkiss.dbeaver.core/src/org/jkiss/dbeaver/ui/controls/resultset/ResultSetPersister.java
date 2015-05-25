@@ -487,7 +487,7 @@ class ResultSetPersister {
         private void processStatementError(DataStatementInfo statement, DBCSession session)
         {
             statement.executed = false;
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getDataSource());
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
             if (txnManager != null) {
                 try {
                     txnManager.rollback(session, savepoint);

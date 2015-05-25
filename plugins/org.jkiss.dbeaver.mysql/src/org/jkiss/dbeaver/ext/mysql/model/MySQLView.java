@@ -183,7 +183,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
             additionalInfo.loaded = true;
             return;
         }
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table status");
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_VIEWS + " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=? AND " + MySQLConstants.COL_TABLE_NAME + "=?");

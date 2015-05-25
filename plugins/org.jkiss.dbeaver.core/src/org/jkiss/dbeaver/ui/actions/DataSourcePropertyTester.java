@@ -17,14 +17,18 @@
  */
 package org.jkiss.dbeaver.ui.actions;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
@@ -36,7 +40,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
  */
 public class DataSourcePropertyTester extends PropertyTester
 {
-    static final Log log = Log.getLog(DataSourcePropertyTester.class);
+    static protected final Log log = Log.getLog(DataSourcePropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasource";
     public static final String PROP_CONNECTED = "connected";
@@ -49,21 +53,32 @@ public class DataSourcePropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof DBSDataSourceContainer)) {
+        if (!(receiver instanceof DBPContextProvider)) {
             return false;
         }
-        DBSDataSourceContainer dataSourceContainer = (DBSDataSourceContainer)receiver;
+        DBPContextProvider contextProvider = (DBPContextProvider)receiver;
+        @Nullable
+        DBCExecutionContext context = contextProvider.getExecutionContext();
         if (PROP_CONNECTED.equals(property)) {
-            return dataSourceContainer.isConnected() == Boolean.valueOf(String.valueOf(expectedValue));
+            boolean isConnected = Boolean.TRUE.equals(expectedValue);
+            return isConnected ? context != null && context.isConnected() : context == null || !context.isConnected();
         } else if (PROP_TRANSACTIONAL.equals(property)) {
-            if (!dataSourceContainer.isConnected()) {
+            if (context == null) {
+                return false;
+            }
+            if (!context.isConnected()) {
                 return Boolean.FALSE.equals(expectedValue);
             }
-            return Boolean.valueOf(!dataSourceContainer.isConnectionAutoCommit()).equals(expectedValue);
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+            try {
+                return txnManager != null && Boolean.valueOf(!txnManager.isAutoCommit()).equals(expectedValue);
+            } catch (DBCException e) {
+                log.debug("Error checking auto-commit state", e);
+                return false;
+            }
         } else if (PROP_TRANSACTION_ACTIVE.equals(property)) {
-            if (dataSourceContainer.isConnected()) {
-                DBPDataSource dataSource = dataSourceContainer.getDataSource();
-                QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(dataSource);
+            if (context != null && context.isConnected()) {
+                QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(context);
                 QMMTransactionInfo transaction = session.getTransaction();
                 if (transaction != null) {
                     QMMTransactionSavepointInfo savepoint = transaction.getCurrentSavepoint();

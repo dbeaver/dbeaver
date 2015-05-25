@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -40,7 +40,7 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource implements DBPDataSource, SQLDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
+public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
 {
     private DBSDataSourceContainer container;
     private WMINamespace rootNamespace;
@@ -65,6 +65,18 @@ public class WMIDataSource implements DBPDataSource, SQLDataSource, IAdaptable//
     public DBPDataSourceInfo getInfo()
     {
         return new WMIDataSourceInfo();
+    }
+
+    @NotNull
+    @Override
+    public DBCExecutionContext getDefaultContext(boolean meta) {
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public Collection<DBCExecutionContext> getAllContexts() {
+        return Collections.<DBCExecutionContext>singleton(this);
     }
 
     @Override

@@ -88,8 +88,13 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         continue;
                     }
                     monitor.subTask(objectName);
+                    DBPDataSource dataSource = dataContainer.getDataSource();
+                    if (dataSource == null) {
+                        log.warn("Object \"" + objectName + "\" not connected");
+                        continue;
+                    }
                     SearchTableMonitor searchMonitor = new SearchTableMonitor();
-                    DBCSession session = dataContainer.getDataSource().openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows in " + objectName);
+                    DBCSession session = dataSource.getDefaultContext(false).openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows in " + objectName);
                     try {
                         TestDataReceiver dataReceiver = new TestDataReceiver(searchMonitor);
                         findRows(session, dataContainer, dataReceiver);

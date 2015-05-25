@@ -65,8 +65,9 @@ public class OracleUtils {
             schema = ((OracleTableBase)object).getContainer();
         }
         final OracleDataSource dataSource = (OracleDataSource) object.getDataSource();
+        assert(dataSource != null);
         monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
-        final JDBCSession session = dataSource.openSession(
+        final JDBCSession session = dataSource.getDefaultContext(true).openSession(
             monitor,
             DBCExecutionPurpose.META,
             "Load source code for " + objectType + " '" + objectFullName + "'");
@@ -171,7 +172,7 @@ public class OracleUtils {
             return null;
         }
         monitor.beginTask("Load sources for '" + sourceObject.getName() + "'...", 1);
-        final JDBCSession session = sourceOwner.getDataSource().openSession(
+        final JDBCSession session = sourceOwner.getDataSource().getDefaultContext(true).openSession(
             monitor,
             DBCExecutionPurpose.META,
             "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
@@ -259,7 +260,7 @@ public class OracleUtils {
         OracleObjectType objectType)
         throws DBCException
     {
-        final JDBCSession session = object.getDataSource().openSession(
+        final JDBCSession session = object.getDataSource().getDefaultContext(true).openSession(
             monitor,
             DBCExecutionPurpose.META,
             "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'");

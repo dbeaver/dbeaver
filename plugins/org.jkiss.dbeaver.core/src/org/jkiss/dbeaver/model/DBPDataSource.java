@@ -23,14 +23,16 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
+import java.util.Collection;
+
 /**
  * Data Source.
  * Root object of all database structure and data objects.
  * Note: do not store direct references on datasource objects in any GUI components -
  * datasource instance could be refreshed at any time. Obtain references on datasource only
- * from DBSObject or IDataSourceProvider interfaces.
+ * from DBSObject or DBPContextProvider interfaces.
  */
-public interface DBPDataSource extends DBCExecutionContext
+public interface DBPDataSource extends DBPObject, DBPCloseableObject
 {
     /**
      * Datasource container
@@ -48,7 +50,20 @@ public interface DBPDataSource extends DBCExecutionContext
     @NotNull
     DBPDataSourceInfo getInfo();
 
-    //DBCExecutionContext getPrimaryContext();
+    /**
+     * Default execution context
+     * @param meta request for metadata operations context
+     * @return default data source execution context.
+     */
+    @NotNull
+    DBCExecutionContext getDefaultContext(boolean meta);
+
+    /**
+     * All opened execution contexts
+     * @return collection of contexts
+     */
+    @NotNull
+    Collection<DBCExecutionContext> getAllContexts();
 
     /**
      * Opens new isolated execution context.

@@ -169,7 +169,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(context.getDataSource());
+        QMMSessionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.changeTransactional(!autoCommit);
             if (oldTxn != null) {
@@ -186,7 +186,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleTransactionCommit(DBCExecutionContext context)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(context.getDataSource());
+        QMMSessionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
             QMMTransactionInfo oldTxn = sessionInfo.commit();
             if (oldTxn != null) {
@@ -199,7 +199,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
     {
-        QMMSessionInfo sessionInfo = getSessionInfo(context.getDataSource());
+        QMMSessionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
             QMMObject oldTxn = sessionInfo.rollback(savepoint);
             if (oldTxn != null) {
@@ -212,7 +212,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementOpen(DBCStatement statement)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getSession().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementInfo stat = session.openStatement(statement);
             fireMetaEvent(stat, QMMetaEvent.Action.BEGIN);
@@ -222,7 +222,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementClose(DBCStatement statement)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getSession().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementInfo stat = session.closeStatement(statement);
             if (stat == null) {
@@ -236,7 +236,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementExecuteBegin(DBCStatement statement)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getSession().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginExecution(statement);
             if (exec != null) {
@@ -249,7 +249,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
     {
-        QMMSessionInfo session = getSessionInfo(statement.getSession().getDataSource());
+        QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endExecution(statement, rows, error);
             if (exec != null) {
@@ -261,7 +261,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleResultSetOpen(DBCResultSet resultSet)
     {
-        QMMSessionInfo session = getSessionInfo(resultSet.getSession().getDataSource());
+        QMMSessionInfo session = getSessionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.beginFetch(resultSet);
             if (exec != null) {
@@ -273,7 +273,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     @Override
     public synchronized void handleResultSetClose(DBCResultSet resultSet, long rowCount)
     {
-        QMMSessionInfo session = getSessionInfo(resultSet.getSession().getDataSource());
+        QMMSessionInfo session = getSessionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
             QMMStatementExecuteInfo exec = session.endFetch(resultSet, rowCount);
             if (exec != null) {

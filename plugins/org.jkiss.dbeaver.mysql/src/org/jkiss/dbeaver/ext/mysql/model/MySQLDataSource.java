@@ -79,8 +79,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return MySQLDataSourceProvider.getConnectionsProps();
     }
 
-    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
-        useDatabase(monitor, isolatedContext, getSelectedObject());
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
+        if (!primary) {
+            useDatabase(monitor, context, getSelectedObject());
+        }
     }
 
     @Override
@@ -115,7 +117,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         super.initialize(monitor);
 
         dataTypeCache.getObjects(monitor, this);
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
+        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
         try {
             // Read engines
             {
@@ -307,7 +309,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
     }
 
-    private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, MySQLCatalog catalog) throws DBException {
+    private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, MySQLCatalog catalog) throws DBCException {
         if (catalog == null) {
             log.debug("Null current database");
             return;
@@ -321,7 +323,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 dbStat.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e, this);
+            throw new DBCException(e, this);
         }
         finally {
             session.close();
@@ -368,7 +370,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLUser> loadUsers(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load users");
+        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load users");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM mysql.user ORDER BY user");
             try {
@@ -465,7 +467,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load privileges");
+        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load privileges");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PRIVILEGES");
             try {
@@ -523,7 +525,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private List<MySQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
     {
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load status");
+        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load status");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW " + 

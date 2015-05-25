@@ -168,7 +168,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
             return this.grants;
         }
 
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Read catalog privileges");
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read catalog privileges");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + getFullName());
             try {
