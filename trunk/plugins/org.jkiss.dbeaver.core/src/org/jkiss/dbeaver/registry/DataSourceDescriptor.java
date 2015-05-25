@@ -298,10 +298,10 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultAutoCommit(final boolean autoCommit, boolean updateConnection)
+    public void setDefaultAutoCommit(final boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection)
     {
-        if (dataSource != null) {
-            final DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
+        if (updateContext != null) {
+            final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
             if (updateConnection && txnManager != null) {
                 try {
                     DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {

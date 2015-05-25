@@ -50,7 +50,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                         // Get flag from connection
                         newAutocommit = !txnManager.isAutoCommit();
                     }
-                    container.setDefaultAutoCommit(newAutocommit, true);
+                    container.setDefaultAutoCommit(newAutocommit, context, true);
                     container.persistConfiguration();
                 } catch (DBCException e) {
                     log.warn("Error changing auto-commit state", e);
