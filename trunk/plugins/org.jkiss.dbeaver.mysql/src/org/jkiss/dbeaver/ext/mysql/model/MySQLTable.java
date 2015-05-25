@@ -206,7 +206,7 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return "";
         }
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
         try {
             PreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
@@ -270,7 +270,7 @@ public class MySQLTable extends MySQLTableBase
             additionalInfo.loaded = true;
             return;
         }
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table status");
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'");
@@ -324,7 +324,7 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return fkList;
         }
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<String, MySQLTableForeignKey>();
             Map<String, MySQLTableConstraint> pkMap = new HashMap<String, MySQLTableConstraint>();

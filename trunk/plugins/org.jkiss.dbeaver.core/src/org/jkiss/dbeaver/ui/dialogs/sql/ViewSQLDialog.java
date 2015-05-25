@@ -25,21 +25,20 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 public class ViewSQLDialog extends BaseSQLDialog {
 
-    private DBPDataSource dataSource;
+    private DBCExecutionContext context;
     private String text;
     private boolean showSaveButton = false;
     private boolean enlargeViewPanel = true;
     private boolean wordWrap = false;
 
-    public ViewSQLDialog(final IWorkbenchPartSite parentSite, @Nullable DBPDataSource dataSource, String title, @Nullable Image image, String text)
+    public ViewSQLDialog(final IWorkbenchPartSite parentSite, @Nullable DBCExecutionContext context, String title, @Nullable Image image, String text)
     {
         super(parentSite, title, image);
-        this.dataSource = dataSource;
+        this.context = context;
         this.text = text;
     }
 
@@ -109,6 +108,6 @@ public class ViewSQLDialog extends BaseSQLDialog {
 
     @Override
     protected DBCExecutionContext getExecutionContext() {
-        return dataSource;
+        return context;
     }
 }

@@ -26,9 +26,10 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
@@ -36,6 +37,34 @@ import org.jkiss.dbeaver.ui.NavigatorUtils;
 public abstract class DataSourceHandler extends AbstractHandler {
 
     static protected final Log log = Log.getLog(DataSourceHandler.class);
+
+    protected DBCExecutionContext getExecutionContext(ExecutionEvent event, boolean useEditor)
+    {
+        if (useEditor) {
+            IEditorPart editor = HandlerUtil.getActiveEditor(event);
+            if (editor instanceof DBPContextProvider) {
+                return ((DBPContextProvider) editor).getExecutionContext();
+            }
+            return null;
+        }
+        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+
+        if (activePart instanceof DBPContextProvider) {
+            return ((DBPContextProvider) activePart).getExecutionContext();
+        }
+
+        ISelection selection = HandlerUtil.getCurrentSelection(event);
+        if (selection instanceof IStructuredSelection) {
+            DBSObject selectedObject = NavigatorUtils.getSelectedObject((IStructuredSelection) selection);
+            if (selectedObject != null) {
+                DBPDataSource dataSource = selectedObject.getDataSource();
+                if (dataSource != null) {
+                    return dataSource.getDefaultContext(false);
+                }
+            }
+        }
+        return null;
+    }
 
     protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor)
     {
@@ -67,14 +96,22 @@ public abstract class DataSourceHandler extends AbstractHandler {
         return null;
     }
 
+    public static DBCExecutionContext getExecutionContext(IWorkbenchPart activePart)
+    {
+        if (activePart instanceof DBPContextProvider) {
+            return ((DBPContextProvider) activePart).getExecutionContext();
+        }
+        return null;
+    }
+
     public static DBSDataSourceContainer getDataSourceContainer(IWorkbenchPart activePart)
     {
         if (activePart instanceof IDataSourceContainerProvider) {
             return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();
         }
-        if (activePart instanceof IDataSourceProvider) {
-            DBPDataSource dataSource = ((IDataSourceProvider) activePart).getDataSource();
-            return dataSource == null ? null : dataSource.getContainer();
+        if (activePart instanceof DBPContextProvider) {
+            DBCExecutionContext context = ((DBPContextProvider) activePart).getExecutionContext();
+            return context == null ? null : context.getDataSource().getContainer();
         }
         return null;
     }

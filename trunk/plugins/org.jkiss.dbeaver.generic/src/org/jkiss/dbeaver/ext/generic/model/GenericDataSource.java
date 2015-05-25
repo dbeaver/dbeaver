@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -108,8 +105,10 @@ public class GenericDataSource extends JDBCDataSource
         return executionContext;
     }
 
-    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
-        setActiveEntityName(monitor, isolatedContext, getSelectedObject());
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
+        if (!primary) {
+            setActiveEntityName(monitor, context, getSelectedObject());
+        }
     }
 
     public String getAllObjectsPattern()
@@ -331,7 +330,7 @@ public class GenericDataSource extends JDBCDataSource
             // Use basic data types
             dataTypeCache.fillStandardTypes(this);
         }
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Read generic metadata");
+        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read generic metadata");
         try {
             // Read metadata
             JDBCDatabaseMetaData metaData = session.getMetaData();
@@ -771,7 +770,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    void setActiveEntityName(DBRProgressMonitor monitor, JDBCExecutionContext context, DBSObject entity) throws DBException
+    void setActiveEntityName(DBRProgressMonitor monitor, JDBCExecutionContext context, DBSObject entity) throws DBCException
     {
         if (entity == null) {
             log.debug("Null current entity");
@@ -786,11 +785,11 @@ public class GenericDataSource extends JDBCDataSource
                 } else if (selectedEntityType.equals(GenericConstants.ENTITY_TYPE_SCHEMA)) {
                     session.setSchema(entity.getName());
                 } else {
-                    throw new DBException("No API to change active entity if type '" + selectedEntityType + "'");
+                    throw new DBCException("No API to change active entity if type '" + selectedEntityType + "'");
                 }
             } else {
                 if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericObjectContainer)) {
-                    throw new DBException("Active database can't be changed for this kind of datasource!");
+                    throw new DBCException("Active database can't be changed for this kind of datasource!");
                 }
                 String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
                 JDBCPreparedStatement dbStat = session.prepareStatement(changeQuery);
@@ -801,7 +800,7 @@ public class GenericDataSource extends JDBCDataSource
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBCException(e, session.getDataSource());
         }
         finally {
             session.close();

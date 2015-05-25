@@ -120,7 +120,7 @@ public class DB2Utils {
 
         monitor.beginTask("Executing command " + command, 1);
 
-        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "ADMIN_CMD");
+        JDBCSession session = dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "ADMIN_CMD");
         try {
             JDBCUtils.executeProcedure(session, sql);
         } finally {
@@ -157,7 +157,7 @@ public class DB2Utils {
         StringBuilder sb = new StringBuilder(2048);
         String command = String.format(DB2LK_COMMAND, statementDelimiter, db2Table.getFullQualifiedName());
 
-        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Generate DDL");
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Generate DDL");
         try {
             LOG.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
 
@@ -228,7 +228,7 @@ public class DB2Utils {
 
     public static String getMessageFromCode(DB2DataSource db2DataSource, Integer sqlErrorCode) throws SQLException
     {
-        JDBCSession session = db2DataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Get Error Code");
+        JDBCSession session = db2DataSource.getDefaultContext(false).openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Get Error Code");
         return JDBCUtils.queryString(session, GET_MSG, sqlErrorCode);
     }
 
@@ -265,7 +265,7 @@ public class DB2Utils {
 
         monitor.beginTask("Check EXPLAIN tables", 1);
 
-        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Verify EXPLAIN tables");
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Verify EXPLAIN tables");
 
         try {
             // First Check with given schema
@@ -304,7 +304,7 @@ public class DB2Utils {
 
         monitor.beginTask("Create EXPLAIN Tables", 1);
 
-        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Create EXPLAIN tables");
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Create EXPLAIN tables");
         try {
             JDBCCallableStatement stmtSP = session.prepareCall(CALL_INST_OBJ);
             try {

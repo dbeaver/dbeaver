@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.Dialog;
@@ -38,9 +37,9 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -48,6 +47,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 /**
  * TargetPrefPage
@@ -57,7 +57,6 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     static final Log log = Log.getLog(TargetPrefPage.class);
 
     private DBNDataSource containerNode;
-    private Composite parentComposite;
     private Button dataSourceSettingsButton;
     private Control configurationBlockControl;
     private Link changeSettingsTargetLink;
@@ -118,10 +117,10 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                 if (dbNode instanceof DBNDataSource) {
                     containerNode = (DBNDataSource)dbNode;
                 }
-            } else if (element instanceof IDataSourceProvider) {
-                DBPDataSource dataSource = ((IDataSourceProvider) element).getDataSource();
-                if (dataSource != null) {
-                    containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(dataSource.getContainer());
+            } else if (element instanceof DBPContextProvider) {
+                DBCExecutionContext context = ((DBPContextProvider) element).getExecutionContext();
+                if (context != null) {
+                    containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(context.getDataSource().getContainer());
                 }
             } else if (element instanceof DBSDataSourceContainer) {
                 containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBSDataSourceContainer) element);
@@ -132,7 +131,6 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     @Override
     protected Label createDescriptionLabel(Composite parent)
     {
-        parentComposite = parent;
         if (isDataSourcePreferencePage()) {
             Composite composite = UIUtils.createPlaceholder(parent, 2);
             composite.setFont(parent.getFont());

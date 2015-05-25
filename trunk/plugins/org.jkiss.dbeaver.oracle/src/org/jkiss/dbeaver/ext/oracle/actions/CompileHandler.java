@@ -222,7 +222,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             return true;
         }
 
-        final JDBCSession session = unit.getDataSource().openSession(
+        final JDBCSession session = unit.getDataSource().getDefaultContext(false).openSession(
             monitor,
             DBCExecutionPurpose.UTIL,
             "Compile '" + unit.getName() + "'");

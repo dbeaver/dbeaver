@@ -156,7 +156,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     {
         super.initialize(monitor);
 
-        final JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+        final JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
         try {
 
             // First try to get active schema from special register 'CURRENT SCHEMA'
@@ -185,8 +185,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         this.dataTypeCache.getObjects(monitor, this);
     }
 
-    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
-        setCurrentSchema(monitor, isolatedContext, getSelectedObject());
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
+        if (!primary) {
+            setCurrentSchema(monitor, context, getSelectedObject());
+        }
     }
 
     @Override
@@ -378,7 +380,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
     }
 
-    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, DB2Schema object) throws DBException {
+    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, DB2Schema object) throws DBCException {
         if (object == null) {
             LOG.debug("Null current schema");
             return;
@@ -387,7 +389,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         try {
             JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, object.getName()));
         } catch (SQLException e) {
-            throw new DBException(e, this);
+            throw new DBCException(e, this);
         } finally {
             session.close();
         }
@@ -629,7 +631,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbParameters(DBRProgressMonitor monitor) throws DBException
     {
         if (listDBParameters == null) {
-            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters");
+            JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters");
             try {
                 listDBParameters = DB2Utils.readDBCfg(monitor, session);
             } catch (SQLException e) {
@@ -644,7 +646,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException
     {
         if (listDBMParameters == null) {
-            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Instance Parameters");
+            JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Instance Parameters");
             try {
                 listDBMParameters = DB2Utils.readDBMCfg(monitor, session);
             } catch (SQLException e) {
@@ -659,7 +661,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2XMLString> getXmlStrings(DBRProgressMonitor monitor) throws DBException
     {
         if (listXMLStrings == null) {
-            JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load Global XMLStrings");
+            JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Global XMLStrings");
             try {
                 listXMLStrings = DB2Utils.readXMLStrings(monitor, session);
             } catch (SQLException e) {

@@ -23,10 +23,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -39,15 +39,23 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true);
-        if (dataSourceContainer != null) {
-            boolean newAutocommit = !dataSourceContainer.isDefaultAutoCommit();
-            if (dataSourceContainer.isConnected()) {
-                // Get flag from connection
-                newAutocommit = !dataSourceContainer.isConnectionAutoCommit();
+        DBCExecutionContext context = getExecutionContext(event, true);
+        if (context != null) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+            if (txnManager != null) {
+                try {
+                    DBSDataSourceContainer container = context.getDataSource().getContainer();
+                    boolean newAutocommit = !container.isDefaultAutoCommit();
+                    if (context.isConnected()) {
+                        // Get flag from connection
+                        newAutocommit = !txnManager.isAutoCommit();
+                    }
+                    container.setDefaultAutoCommit(newAutocommit, true);
+                    container.persistConfiguration();
+                } catch (DBCException e) {
+                    log.warn("Error changing auto-commit state", e);
+                }
             }
-            dataSourceContainer.setDefaultAutoCommit(newAutocommit, true);
-            dataSourceContainer.persistConfiguration();
         }
         return null;
     }
@@ -63,10 +71,9 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
         if (activeEditor == null) {
             return;
         }
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(activeEditor);
-        if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
-            final DBPDataSource dataSource = dataSourceContainer.getDataSource();
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+        DBCExecutionContext context = getExecutionContext(activeEditor);
+        if (context != null && context.isConnected()) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null) {
                 try {
                     // Change auto-commit mode

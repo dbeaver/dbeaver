@@ -471,7 +471,7 @@ public class SQLQueryJob extends DataSourceJob
             {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
                     partSite,
-                    getDataSource(),
+                    getExecutionContext(),
                     parameters);
                 result = (dialog.open() == IDialogConstants.OK_ID);
             }
@@ -668,7 +668,7 @@ public class SQLQueryJob extends DataSourceJob
                 if (lastError instanceof DBCException) {
                     throw (DBCException) lastError;
                 } else {
-                    throw new DBCException(lastError, getDataSource());
+                    throw new DBCException(lastError, getExecutionContext().getDataSource());
                 }
             } else if (result) {
                 showExecutionResult(session);

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.perspective;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -45,8 +46,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -96,9 +98,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         private final CurrentDatabasesInfo databasesInfo;
         private boolean enabled;
 
-        public DatabaseListReader(DBPDataSource dataSource)
+        public DatabaseListReader(@NotNull DBCExecutionContext context)
         {
-            super(CoreMessages.toolbar_datasource_selector_action_read_databases, null, dataSource);
+            super(CoreMessages.toolbar_datasource_selector_action_read_databases, null, context);
             setSystem(true);
             this.databasesInfo = new CurrentDatabasesInfo();
             this.enabled = false;
@@ -107,8 +109,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         @Override
         public IStatus run(DBRProgressMonitor monitor)
         {
-            DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, getDataSource());
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, getDataSource());
+            DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, getExecutionContext().getDataSource());
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, getExecutionContext().getDataSource());
             if (objectContainer == null || objectSelector == null) {
                 return Status.CANCEL_STATUS;
             }
@@ -234,12 +236,13 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
         if (activeObject instanceof IDataSourceContainerProvider) {
             return ((IDataSourceContainerProvider)activeObject).getDataSourceContainer();
-        } else if (activeObject instanceof IDataSourceProvider) {
-            final DBPDataSource dataSource = ((IDataSourceProvider) activeObject).getDataSource();
-            return dataSource == null ? null : dataSource.getContainer();
-        } else {
-            return null;
+        } else if (activeObject instanceof DBPContextProvider) {
+            DBCExecutionContext executionContext = ((DBPContextProvider) activeObject).getExecutionContext();
+            if (executionContext != null) {
+                return executionContext.getDataSource().getContainer();
+            }
         }
+        return null;
     }
 
     @Nullable
@@ -381,7 +384,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (event.getAction() == DBPEvent.Action.OBJECT_ADD ||
             event.getAction() == DBPEvent.Action.OBJECT_REMOVE ||
             (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() == getDataSourceContainer()) ||
-            (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) && event.getObject().getDataSource().getContainer() == getDataSourceContainer())
+            (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) && event.getObject().getDataSource() != null && event.getObject().getDataSource().getContainer() == getDataSourceContainer())
             )
         {
             Display.getDefault().asyncExec(
@@ -465,29 +468,28 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             databaseCombo.setEnabled(dsContainer != null);
             if (dsContainer != null && dsContainer.isConnected()) {
                 final DBPDataSource dataSource = dsContainer.getDataSource();
-
-                synchronized (dbListReads) {
-                    for (DatabaseListReader reader : dbListReads) {
-                        if (reader.getDataSource() == dataSource) {
-                            return;
+                if (dataSource != null) {
+                    synchronized (dbListReads) {
+                        for (DatabaseListReader reader : dbListReads) {
+                            if (reader.getExecutionContext().getDataSource() == dataSource) {
+                                return;
+                            }
                         }
+                        DatabaseListReader databaseReader = new DatabaseListReader(dataSource.getDefaultContext(true));
+                        databaseReader.addJobChangeListener(new JobChangeAdapter() {
+                            @Override
+                            public void done(final IJobChangeEvent event) {
+                                UIUtils.runInUI(null, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        fillDatabaseList((DatabaseListReader) event.getJob(), dsContainer);
+                                    }
+                                });
+                            }
+                        });
+                        dbListReads.add(databaseReader);
+                        databaseReader.schedule();
                     }
-                    DatabaseListReader databaseReader = new DatabaseListReader(dataSource);
-                    databaseReader.addJobChangeListener(new JobChangeAdapter() {
-                        @Override
-                        public void done(final IJobChangeEvent event)
-                        {
-                            UIUtils.runInUI(null, new Runnable() {
-                                @Override
-                                public void run()
-                                {
-                                    fillDatabaseList((DatabaseListReader) event.getJob(), dsContainer);
-                                }
-                            });
-                        }
-                    });
-                    dbListReads.add(databaseReader);
-                    databaseReader.schedule();
                 }
 
                 curDataSourceContainer = new SoftReference<DBSDataSourceContainer>(dsContainer);
@@ -507,7 +509,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             synchronized (dbListReads) {
                 dbListReads.remove(reader);
             }
-            if (!reader.enabled || dsContainer.getDataSource() != reader.getDataSource()) {
+            if (!reader.enabled || dsContainer.getDataSource() != reader.getExecutionContext().getDataSource()) {
                 databaseCombo.setEnabled(reader.enabled);
                 return;
             }
@@ -521,11 +523,13 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                         DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(database);
                         if (dbNode != null) {
                             DBPDataSource dataSource = database.getDataSource();
-                            databaseCombo.add(
-                                dbNode.getNodeIconDefault(),
-                                database.getName(),
-                                dataSource.getContainer().getConnectionInfo().getColor(),
-                                database);
+                            if (dataSource != null) {
+                                databaseCombo.add(
+                                    dbNode.getNodeIconDefault(),
+                                    database.getName(),
+                                    dataSource.getContainer().getConnectionInfo().getColor(),
+                                    database);
+                            }
                         }
                     }
                 }

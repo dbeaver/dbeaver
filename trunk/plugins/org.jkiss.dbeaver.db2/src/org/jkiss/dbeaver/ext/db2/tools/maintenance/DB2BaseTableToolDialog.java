@@ -45,7 +45,7 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
 
     public DB2BaseTableToolDialog(IWorkbenchPartSite partSite, String title, Collection<DB2Table> objects)
     {
-        super(partSite, title, objects);
+        super(partSite, title, objects, true);
     }
 
     protected int getNumberExtraResultingColumns()

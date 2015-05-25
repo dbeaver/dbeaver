@@ -70,7 +70,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         throws DBException
     {
         if (schemas == null && !isInitialized) {
-            JDBCSession session = this.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load catalog schemas");
+            JDBCSession session = this.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load catalog schemas");
             try {
                 this.schemas = this.getDataSource().loadSchemas(session, this);
                 this.isInitialized = true;

@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ui.editors.sql.templates;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.text.templates.TemplateContext;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -49,9 +49,9 @@ public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjec
     }
 
     @Override
-    protected void resolveObjects(DBRProgressMonitor monitor, DBPDataSource dataSource, TemplateContext context, List<T> entities) throws DBException
+    protected void resolveObjects(DBRProgressMonitor monitor, DBCExecutionContext executionContext, TemplateContext context, List<T> entities) throws DBException
     {
-        DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
         if (objectContainer != null) {
             makeProposalsFromChildren(monitor, objectContainer, entities);
         }

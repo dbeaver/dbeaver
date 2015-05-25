@@ -178,7 +178,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         if (settings.isUseTransactions() && needCommit) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(targetSession.getExecutionContext());
-            if (txnManager != null) {
+            if (txnManager != null && !txnManager.isAutoCommit()) {
                 txnManager.commit(targetSession);
             }
         }
@@ -209,11 +209,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject));
         }
         DBPDataSource dataSource = containerMapping.getTarget().getDataSource();
+        assert (dataSource != null);
         try {
             targetContext = settings.isOpenNewConnections() ?
-                dataSource.openIsolatedContext(monitor, "Data transfer consumer") : dataSource;
+                dataSource.openIsolatedContext(monitor, "Data transfer consumer") : dataSource.getDefaultContext(false);
         } catch (DBException e) {
-            e.printStackTrace();
+            throw new DBCException("Error opening new connection", e);
         }
         targetSession = targetContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Data load");
         targetSession.enableLogging(false);
@@ -393,7 +394,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void executeDDL(DBRProgressMonitor monitor, DBPDataSource dataSource, String sql)
         throws DBCException
     {
-        DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META_DDL, "Create target metadata");
+        DBCExecutionContext context = dataSource.getDefaultContext(true);
+        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.META_DDL, "Create target metadata");
         try {
             DBCStatement dbStat = DBUtils.prepareStatement(session, sql, false);
             try {
@@ -401,7 +403,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             } finally {
                 dbStat.close();
             }
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource);
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null && !txnManager.isAutoCommit()) {
                 // Commit DDL changes
                 txnManager.commit(session);

@@ -228,7 +228,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
         if (rowCount == null) {
             // Query row count
-            DBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, "Read row count");
+            DBCSession session = getDataSource().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Read row count");
             try {
                 rowCount = countData(session, null);
             }
@@ -293,7 +293,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
             return new ArrayList<GenericTableForeignKey>();
         }
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
             // Read foreign keys in two passes
             // First read entire resultset to prevent recursive metadata requests

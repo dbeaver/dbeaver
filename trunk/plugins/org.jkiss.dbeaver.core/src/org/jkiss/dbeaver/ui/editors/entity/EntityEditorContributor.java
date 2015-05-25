@@ -26,13 +26,13 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
-import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
 
 /**
@@ -65,11 +65,11 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
         if (curEditor == null) {
             return false;
         }
-        DBPDataSource dataSource = curEditor.getEditorInput().getDataSource();
-        if (dataSource == null) {
+        DBCExecutionContext context = curEditor.getEditorInput().getExecutionContext();
+        if (context == null) {
             return false;
         }
-        if (dataSource.getInfo().isReadOnlyMetaData()) {
+        if (context.getDataSource().getInfo().isReadOnlyMetaData()) {
             return false;
         }
         DBSObject databaseObject = curEditor.getEditorInput().getDatabaseObject();

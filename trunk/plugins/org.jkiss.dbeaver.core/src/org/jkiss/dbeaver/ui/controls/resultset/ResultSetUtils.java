@@ -275,7 +275,7 @@ public class ResultSetUtils
     public static Object getAttributeValueFromClipboard(DBDAttributeBinding attribute) throws DBCException
     {
         DBPDataSource dataSource = attribute.getDataSource();
-        DBCSession session = dataSource.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
+        DBCSession session = dataSource.getDefaultContext(false).openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
         Clipboard clipboard = new Clipboard(Display.getCurrent());
         try {
             String strValue = (String) clipboard.getContents(TextTransfer.getInstance());

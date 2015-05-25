@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
@@ -145,9 +144,9 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     }
 
     @Override
-    public DBPDataSource getDataSource()
+    public org.jkiss.dbeaver.model.exec.DBCExecutionContext getExecutionContext()
     {
-        return getEditorInput().getDataSource();
+        return getEditorInput().getExecutionContext();
     }
 
     private EntityDiagram loadFromDatabase(DBRProgressMonitor monitor)

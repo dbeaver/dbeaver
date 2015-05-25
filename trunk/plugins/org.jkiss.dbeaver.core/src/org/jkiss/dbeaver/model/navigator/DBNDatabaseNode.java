@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -47,7 +49,7 @@ import java.util.*;
 /**
  * DBNDatabaseNode
  */
-public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper, IDataSourceContainerProvider {
+public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper, DBPContextProvider, IDataSourceContainerProvider {
 
     private volatile boolean locked;
     protected volatile List<DBNDatabaseNode> childNodes;
@@ -501,6 +503,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             }
         }
         return true;
+    }
+
+    @Nullable
+    @Override
+    public DBCExecutionContext getExecutionContext() {
+        DBPDataSource dataSource = getDataSource();
+        return dataSource == null ? null : dataSource.getDefaultContext(true);
     }
 
     public DataSourceDescriptor getDataSourceContainer()

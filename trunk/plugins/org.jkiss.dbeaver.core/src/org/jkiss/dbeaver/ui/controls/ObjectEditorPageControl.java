@@ -23,11 +23,11 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
 
@@ -80,11 +80,11 @@ public class ObjectEditorPageControl extends ProgressPageControl {
 
     public boolean isObjectEditable()
     {
-        DBPDataSource dataSource = getEditorPart().getEditorInput().getDataSource();
-        if (dataSource == null) {
+        DBCExecutionContext context = getEditorPart().getEditorInput().getExecutionContext();
+        if (context == null) {
             return false;
         }
-        if (dataSource.getInfo().isReadOnlyMetaData()) {
+        if (context.getDataSource().getInfo().isReadOnlyMetaData()) {
             return false;
         }
         DBSObject databaseObject = getEditorPart().getEditorInput().getDatabaseObject();

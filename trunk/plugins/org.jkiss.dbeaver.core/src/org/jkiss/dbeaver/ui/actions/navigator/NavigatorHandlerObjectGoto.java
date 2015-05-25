@@ -24,7 +24,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -42,11 +43,11 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBPDataSource dataSource = null;
+        DBCExecutionContext context = null;
         DBSObject container = null;
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart instanceof IDataSourceProvider) {
-            dataSource = ((IDataSourceProvider) activePart).getDataSource();
+        if (activePart instanceof DBPContextProvider) {
+            context = ((DBPContextProvider) activePart).getExecutionContext();
         } else if (activePart instanceof INavigatorModelView) {
             final ISelection selection = HandlerUtil.getCurrentSelection(event);
             if (selection instanceof IStructuredSelection) {
@@ -58,16 +59,19 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
                         while (container instanceof DBSFolder) {
                             container = container.getParentObject();
                         }
-                        dataSource = object.getDataSource();
+                        DBPDataSource dataSource = object.getDataSource();
+                        if (dataSource != null) {
+                            context = dataSource.getDefaultContext(true);
+                        }
                     }
                 }
             }
         }
-        if (dataSource == null) {
+        if (context == null) {
             return null;
         }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        GotoObjectDialog dialog = new GotoObjectDialog(HandlerUtil.getActiveShell(event), dataSource, container);
+        GotoObjectDialog dialog = new GotoObjectDialog(HandlerUtil.getActiveShell(event), context, container);
         dialog.open();
         Object[] objectsToOpen = dialog.getResult();
         if (!ArrayUtils.isEmpty(objectsToOpen)) {

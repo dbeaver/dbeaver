@@ -22,6 +22,7 @@ import org.eclipse.jface.text.templates.TemplateVariable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -43,9 +44,9 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
     }
 
     @Override
-    protected void resolveObjects(DBRProgressMonitor monitor, DBPDataSource dataSource, TemplateContext context, List<DBSEntity> entities) throws DBException
+    protected void resolveObjects(DBRProgressMonitor monitor, DBCExecutionContext executionContext, TemplateContext context, List<DBSEntity> entities) throws DBException
     {
-        resolveTables(monitor, dataSource, context, entities);
+        resolveTables(monitor, executionContext, context, entities);
     }
 
     public void resolve(TemplateVariable variable, TemplateContext context)
@@ -56,14 +57,14 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
         }
     }
 
-    static void resolveTables(DBRProgressMonitor monitor, DBPDataSource dataSource, TemplateContext context, List<DBSEntity> entities) throws DBException
+    static void resolveTables(DBRProgressMonitor monitor, DBCExecutionContext executionContext, TemplateContext context, List<DBSEntity> entities) throws DBException
     {
         TemplateVariable schemaVariable = ((SQLContext) context).getTemplateVariable(SQLContainerResolver.VAR_NAME_SCHEMA);
         TemplateVariable catalogVariable = ((SQLContext) context).getTemplateVariable(SQLContainerResolver.VAR_NAME_CATALOG);
 
         String catalogName = catalogVariable == null ? null : catalogVariable.getDefaultValue();
         String schemaName = schemaVariable == null ? null : schemaVariable.getDefaultValue();
-        DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
         if (objectContainer == null) {
             return;
         }
@@ -71,7 +72,7 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
             // Find container for specified schema/catalog
             objectContainer = (DBSObjectContainer)DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, null);
         } else {
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, executionContext.getDataSource());
             if (objectSelector != null) {
                 objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
             }

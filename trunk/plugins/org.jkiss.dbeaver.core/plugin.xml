@@ -61,7 +61,7 @@
                 id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
                 namespace="org.jkiss.dbeaver.core.datasource"
                 properties="connected,transactional,transactionActive"
-                type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer"/>
+                type="org.jkiss.dbeaver.model.DBPContextProvider"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
@@ -361,7 +361,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">
             <with variable="activePart">
-                <instanceof value="org.jkiss.dbeaver.model.IDataSourceProvider"/>
+                <instanceof value="org.jkiss.dbeaver.model.DBPContextProvider"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
@@ -553,13 +553,13 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                            <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                                 <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
                             </adapt>
                         </iterate>
                     </with>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                             <test property="org.jkiss.dbeaver.core.datasource.connected" value="false"/>
                         </adapt>
                     </with>
@@ -572,13 +572,13 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                            <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                                 <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
                             </adapt>
                         </iterate>
                     </with>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                             <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
                         </adapt>
                     </with>
@@ -591,13 +591,13 @@
                     <with variable="selection">
                         <count value="1"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                            <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                                 <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
                             </adapt>
                         </iterate>
                     </with>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                        <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                             <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
                         </adapt>
                     </with>
@@ -607,7 +607,7 @@
         <handler commandId="org.jkiss.dbeaver.core.commit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceCommitHandler">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                         <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
                     </adapt>
                 </with>
@@ -616,7 +616,7 @@
         <handler commandId="org.jkiss.dbeaver.core.rollback" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceRollbackHandler">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                         <test property="org.jkiss.dbeaver.core.datasource.transactional" value="true"/>
                     </adapt>
                 </with>
@@ -625,7 +625,7 @@
         <handler commandId="org.jkiss.dbeaver.core.txn.autocommit" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceAutoCommitHandler">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                    <adapt type="org.jkiss.dbeaver.model.DBPContextProvider">
                         <test property="org.jkiss.dbeaver.core.datasource.connected" value="true"/>
                     </adapt>
                 </with>

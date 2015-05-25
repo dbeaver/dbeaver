@@ -99,7 +99,7 @@ public class GenericMetaModel {
         Map<String, GenericPackage> packageMap = null;
         GenericDataSource dataSource = container.getDataSource();
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
-        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Load procedures");
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedures");
         try {
             // Read procedures
             JDBCResultSet dbResult = session.getMetaData().getProcedures(

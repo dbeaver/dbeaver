@@ -26,6 +26,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -63,7 +64,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
     public void createPartControl(Composite parent) {
         killSessionAction = new KillSessionAction(false);
         terminateQueryAction = new KillSessionAction(true);
-        sessionsViewer = new SessionManagerViewer(this, parent, new MySQLSessionManager(getDataSource())) {
+        sessionsViewer = new SessionManagerViewer(this, parent, new MySQLSessionManager((MySQLDataSource) getExecutionContext().getDataSource())) {
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
             {
@@ -82,17 +83,6 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         };
 
         sessionsViewer.refreshSessions();
-    }
-
-    @Override
-    public MySQLDataSource getDataSource()
-    {
-        DBPDataSource dataSource = super.getDataSource();
-        if (dataSource instanceof MySQLDataSource) {
-            return (MySQLDataSource)dataSource;
-        }
-        log.error("Bad datasource object: " + dataSource); //$NON-NLS-1$
-        return null;
     }
 
     @Override

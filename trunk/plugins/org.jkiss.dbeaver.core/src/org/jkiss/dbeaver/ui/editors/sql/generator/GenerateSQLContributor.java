@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.ContributionItem;
@@ -38,6 +37,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -440,13 +440,16 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         showDialog = false;
                     }
                     if (showDialog) {
-                        ViewSQLDialog dialog = new ViewSQLDialog(
-                            DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
-                            runnable.getEntity().getDataSource(),
-                            "Generated SQL",
-                            null,
-                            sql);
-                        dialog.open();
+                        DBPDataSource dataSource = runnable.getEntity().getDataSource();
+                        if (dataSource != null) {
+                            ViewSQLDialog dialog = new ViewSQLDialog(
+                                DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
+                                dataSource.getDefaultContext(false),
+                                "Generated SQL",
+                                null,
+                                sql);
+                            dialog.open();
+                        }
                     } else {
                         UIUtils.setClipboardContents(DBeaverUI.getActiveWorkbenchShell().getDisplay(), TextTransfer.getInstance(), sql);
                     }

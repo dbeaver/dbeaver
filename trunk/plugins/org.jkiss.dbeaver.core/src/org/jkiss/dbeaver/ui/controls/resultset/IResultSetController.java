@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -34,7 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 /**
  * IResultSetController
  */
-public interface IResultSetController {
+public interface IResultSetController extends DBPContextProvider {
 
     public static final String MENU_GROUP_EDIT = "edit";
 
@@ -49,9 +50,6 @@ public interface IResultSetController {
 
     @NotNull
     DBDDataReceiver getDataReceiver();
-
-    @Nullable
-    DBCExecutionContext getExecutionContext();
 
     boolean hasData();
 

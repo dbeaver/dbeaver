@@ -31,9 +31,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.utils.TextUtils;
@@ -46,7 +47,7 @@ import java.util.Map;
 /**
  * SQLEditorInput
  */
-public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, IDataSourceProvider, IDataSourceContainerProvider
+public class SQLEditorInput extends ProjectFileEditorInput implements IPersistableElement, DBPContextProvider, IDataSourceContainerProvider
 {
     public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
 
@@ -136,10 +137,16 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 
     @Nullable
     @Override
-    public DBPDataSource getDataSource()
+    public DBCExecutionContext getExecutionContext()
     {
         DBSDataSourceContainer container = getDataSourceContainer();
-        return container == null ? null : container.getDataSource();
+        if (container != null) {
+            DBPDataSource dataSource = container.getDataSource();
+            if (dataSource != null) {
+                return dataSource.getDefaultContext(false);
+            }
+        }
+        return null;
     }
 
     @Nullable

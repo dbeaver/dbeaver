@@ -19,16 +19,15 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
@@ -81,7 +80,11 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
         List<OBJECT> tmpObjectList = new ArrayList<OBJECT>();
 
-        JDBCSession session = (JDBCSession)owner.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load objects from " + owner.getName());
+        DBPDataSource dataSource = owner.getDataSource();
+        if (dataSource == null) {
+            throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
+        }
+        JDBCSession session = (JDBCSession) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load objects from " + owner.getName());
         try {
             JDBCStatement dbStat = prepareObjectsStatement(session, owner);
             try {

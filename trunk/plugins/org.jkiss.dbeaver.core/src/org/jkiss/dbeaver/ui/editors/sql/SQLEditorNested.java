@@ -102,7 +102,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         if (editorInput == null) {
             return null;
         }
-        return editorInput.getDataSource();
+        return editorInput.getExecutionContext();
     }
 
     @Override

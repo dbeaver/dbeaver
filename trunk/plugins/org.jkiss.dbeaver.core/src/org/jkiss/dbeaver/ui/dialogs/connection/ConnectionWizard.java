@@ -147,6 +147,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 testDataSource.connect(monitor, initOnTest, false);
                 monitor.worked(1);
                 DBPDataSource dataSource = testDataSource.getDataSource();
+                if (dataSource == null) {
+                    throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
+                }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
 
                 DBPDataSourceInfo info = dataSource.getInfo();
@@ -160,7 +163,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         log.error("Can't obtain connection metadata", e);
                     }
                 } else {
-                    DBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection");
+                    DBCSession session = dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection");
                     try {
                         if (session instanceof Connection) {
                             try {

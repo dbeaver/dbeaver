@@ -23,9 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -42,7 +42,7 @@ public class DBECommandContextImpl implements DBECommandContext {
 
     static final Log log = Log.getLog(DBECommandContextImpl.class);
 
-    private final DBPDataSource dataSource;
+    private final DBCExecutionContext executionContext;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
     private List<CommandQueue> commandQueues;
@@ -54,20 +54,20 @@ public class DBECommandContextImpl implements DBECommandContext {
 
     /**
      * Creates new context
-     * @param dataSource DS container
+     * @param executionContext Execution context
      * @param atomic atomic context reflect commands in UI only after all comands were executed. Non-atomic
      *               reflects each command at the moment it executed
      */
-    public DBECommandContextImpl(DBPDataSource dataSource, boolean atomic)
+    public DBECommandContextImpl(DBCExecutionContext executionContext, boolean atomic)
     {
-        this.dataSource = dataSource;
+        this.executionContext = executionContext;
         this.atomic = atomic;
     }
 
     @Override
-    public DBPDataSource getDataSource()
+    public DBCExecutionContext getExecutionContext()
     {
-        return dataSource;
+        return executionContext;
     }
 
     @Override
@@ -80,7 +80,7 @@ public class DBECommandContextImpl implements DBECommandContext {
 
     @Override
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
-        if (!dataSource.isConnected()) {
+        if (!executionContext.isConnected()) {
             throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
         }
         List<CommandQueue> commandQueues = getCommandQueues();
@@ -118,7 +118,7 @@ public class DBECommandContextImpl implements DBECommandContext {
                             }
                         //}
                         if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                            DBCSession session = openCommandPersistContext(monitor, dataSource.getDataSource(), cmd.command);
+                            DBCSession session = openCommandPersistContext(monitor, cmd.command);
                             try {
                                 DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {
@@ -639,11 +639,10 @@ public class DBECommandContextImpl implements DBECommandContext {
 
     protected DBCSession openCommandPersistContext(
         DBRProgressMonitor monitor,
-        DBPDataSource dataSource,
         DBECommand<?> command)
         throws DBException
     {
-        return dataSource.openSession(
+        return executionContext.openSession(
             monitor,
             DBCExecutionPurpose.META_DDL,
             CoreMessages.model_edit_execute_ + command.getTitle());

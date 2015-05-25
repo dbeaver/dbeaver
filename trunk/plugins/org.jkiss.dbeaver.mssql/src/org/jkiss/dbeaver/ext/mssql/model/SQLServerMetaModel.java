@@ -58,7 +58,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
-        JDBCSession session = dataSource.openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
         try {
             String activeCatalog = dataSource.getSelectedEntityName();
             boolean switchDatabase = !catalog.equals(activeCatalog);

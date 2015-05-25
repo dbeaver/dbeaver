@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -33,9 +32,9 @@ public class InvalidateJob extends DataSourceJob
     private Exception invalidateError;
 
     public InvalidateJob(
-        DBPDataSource dataSource)
+        DBCExecutionContext context)
     {
-        super("Invalidate " + dataSource.getContainer().getName(), null, dataSource);
+        super("Invalidate " + context.getDataSource().getContainer().getName(), null, context);
     }
 
     public DBCExecutionContext.InvalidateResult getInvalidateResult() {

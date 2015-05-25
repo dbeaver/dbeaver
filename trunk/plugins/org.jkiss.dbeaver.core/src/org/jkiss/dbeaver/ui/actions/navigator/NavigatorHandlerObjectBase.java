@@ -131,10 +131,11 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (container instanceof DBNDatabaseNode) {
             // No editor found - create new command context
             DBPDataSource dataSource = ((DBNDatabaseNode) container).getObject().getDataSource();
-            return new CommandTarget(new DBECommandContextImpl(dataSource, !openEditor));
-        } else {
-            return new CommandTarget();
+            if (dataSource != null) {
+                return new CommandTarget(new DBECommandContextImpl(dataSource.getDefaultContext(true), !openEditor));
+            }
         }
+        return new CommandTarget();
     }
 
     private static void switchEditorFolder(DBNContainer container, IEditorPart editor)
@@ -204,7 +205,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (view != null) {
             ViewSQLDialog dialog = new ViewSQLDialog(
                 view.getSite(),
-                commandContext.getDataSource(),
+                commandContext.getExecutionContext(),
                 dialogTitle,
                 DBIcon.SQL_PREVIEW.getImage(),
                 script.toString());
