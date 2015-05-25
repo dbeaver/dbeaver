@@ -53,9 +53,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -103,7 +102,7 @@ import java.util.List;
  *
  */
 public class ResultSetViewer extends Viewer
-    implements IDataSourceProvider, IResultSetController, ISaveablePart2, IAdaptable
+    implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
     static final Log log = Log.getLog(ResultSetViewer.class);
 
@@ -119,11 +118,11 @@ public class ResultSetViewer extends Viewer
         }
 
         public String describeState() {
-            DBPDataSource dataSource = getDataSource();
+            DBCExecutionContext context = getExecutionContext();
             String desc = dataContainer.getName();
-            if (dataSource != null && filter != null && filter.hasConditions()) {
+            if (context != null && filter != null && filter.hasConditions()) {
                 StringBuilder condBuffer = new StringBuilder();
-                SQLUtils.appendConditionString(filter, dataSource, null, condBuffer, true);
+                SQLUtils.appendConditionString(filter, context.getDataSource(), null, condBuffer, true);
                 desc += " [" + condBuffer + "]";
             }
             return desc;
@@ -243,7 +242,7 @@ public class ResultSetViewer extends Viewer
                 if (queryText == null || queryText.isEmpty()) {
                     queryText = "<empty>";
                 }
-                ViewSQLDialog dialog = new ViewSQLDialog(site, getDataSource(), "Query Text", DBIcon.SQL_TEXT.getImage(), queryText);
+                ViewSQLDialog dialog = new ViewSQLDialog(site, getExecutionContext(), "Query Text", DBIcon.SQL_TEXT.getImage(), queryText);
                 dialog.setEnlargeViewPanel(false);
                 dialog.setWordWrap(true);
                 dialog.open();
@@ -360,13 +359,13 @@ public class ResultSetViewer extends Viewer
 
     private void setCustomDataFilter()
     {
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource == null) {
+        DBCExecutionContext context = getExecutionContext();
+        if (context == null) {
             return;
         }
         String condition = filtersText.getText();
         StringBuilder currentCondition = new StringBuilder();
-        SQLUtils.appendConditionString(model.getDataFilter(), dataSource, null, currentCondition, true);
+        SQLUtils.appendConditionString(model.getDataFilter(), context.getDataSource(), null, currentCondition, true);
         if (currentCondition.toString().trim().equals(condition.trim())) {
             // The same
             return;
@@ -380,13 +379,13 @@ public class ResultSetViewer extends Viewer
     public void updateFiltersText()
     {
         boolean enableFilters = false;
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
+        DBCExecutionContext context = getExecutionContext();
+        if (context != null) {
             if (activePresentation instanceof StatisticsPresentation) {
                 enableFilters = false;
             } else {
                 StringBuilder where = new StringBuilder();
-                SQLUtils.appendConditionString(model.getDataFilter(), dataSource, null, where, true);
+                SQLUtils.appendConditionString(model.getDataFilter(), context.getDataSource(), null, where, true);
                 String whereCondition = where.toString().trim();
                 filtersText.setText(whereCondition);
                 if (!whereCondition.isEmpty()) {
@@ -469,17 +468,17 @@ public class ResultSetViewer extends Viewer
     @NotNull
     public IPreferenceStore getPreferenceStore()
     {
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
-            return dataSource.getContainer().getPreferenceStore();
+        DBCExecutionContext context = getExecutionContext();
+        if (context != null) {
+            return context.getDataSource().getContainer().getPreferenceStore();
         }
         return DBeaverCore.getGlobalPreferenceStore();
     }
 
     private void persistConfig() {
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
-            dataSource.getContainer().persistConfiguration();
+        DBCExecutionContext context = getExecutionContext();
+        if (context != null) {
+            context.getDataSource().getContainer().persistConfiguration();
         }
     }
 
@@ -663,14 +662,6 @@ public class ResultSetViewer extends Viewer
                 "Can't switch presentation",
                 e1);
         }
-    }
-
-    @Nullable
-    @Override
-    public DBPDataSource getDataSource()
-    {
-        DBCExecutionContext context = getExecutionContext();
-        return context == null ? null : context.getDataSource();
     }
 
     @Nullable
@@ -1848,6 +1839,10 @@ public class ResultSetViewer extends Viewer
                 "Can't detect source entity");
             return false;
         }
+        final DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            return false;
+        }
         // Check for value locators
         // Probably we have only virtual one with empty attribute set
         final DBDRowIdentifier identifier = getVirtualEntityIdentifier();
@@ -1858,7 +1853,7 @@ public class ResultSetViewer extends Viewer
                     @Override
                     public void run()
                     {
-                        result = ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this);
+                        result = ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext);
                     }
                 };
                 UIUtils.runInUI(getControl().getShell(), confirmer);
@@ -2194,8 +2189,8 @@ public class ResultSetViewer extends Viewer
     private String translateFilterPattern(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
     {
         Object value = type.getValue(this, attribute, operator, true);
-        DBPDataSource dataSource = getDataSource();
-        String strValue = dataSource == null ? String.valueOf(value) : SQLUtils.convertValueToSQL(dataSource, attribute, value);
+        DBCExecutionContext executionContext = getExecutionContext();
+        String strValue = executionContext == null ? String.valueOf(value) : SQLUtils.convertValueToSQL(executionContext.getDataSource(), attribute, value);
         if (operator.getArgumentCount() == 0) {
             return operator.getStringValue();
         } else {

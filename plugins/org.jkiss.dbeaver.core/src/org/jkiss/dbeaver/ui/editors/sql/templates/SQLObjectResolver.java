@@ -22,8 +22,9 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateVariableResolver;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -49,7 +50,7 @@ public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVar
     protected String[] resolveAll(final TemplateContext context)
     {
         final List<T> entities = new ArrayList<T>();
-        if (context instanceof IDataSourceProvider) {
+        if (context instanceof DBPContextProvider) {
             try {
                 DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
@@ -57,7 +58,7 @@ public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVar
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            resolveObjects(monitor, ((IDataSourceProvider) context).getDataSource(), context, entities);
+                            resolveObjects(monitor, ((DBPContextProvider) context).getExecutionContext(), context, entities);
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -80,5 +81,5 @@ public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVar
         return super.resolveAll(context);
     }
 
-    protected abstract void resolveObjects(DBRProgressMonitor monitor, DBPDataSource dataSource, TemplateContext context, List<T> entities) throws DBException;
+    protected abstract void resolveObjects(DBRProgressMonitor monitor, DBCExecutionContext executionContext, TemplateContext context, List<T> entities) throws DBException;
 }

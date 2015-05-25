@@ -72,7 +72,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         List<DBSObjectReference> references = new ArrayList<DBSObjectReference>();
-        JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_jdbc_find_objects_by_name);
+        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_jdbc_find_objects_by_name);
         try {
             for (DBSObjectType type : objectTypes) {
                 findObjectsByMask(session, type, parentObject, objectNameMask, caseSensitive, maxResults - references.size(), references);

@@ -70,12 +70,6 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
     }
 
     @NotNull
-    public DBPDataSource getDataSource()
-    {
-        return executionContext.getDataSource();
-    }
-
-    @NotNull
     public DBCExecutionContext getExecutionContext()
     {
         return executionContext;
@@ -84,7 +78,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
     @Override
     public boolean belongsTo(Object family)
     {
-        return getDataSource() == family || family == DBPDataSource.class;
+        return executionContext == family || family == DBPDataSource.class;
     }
 
 

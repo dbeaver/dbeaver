@@ -25,7 +25,8 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
@@ -279,8 +280,9 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         IFilter filter;
         if (editableValue instanceof DBSObject) {
             filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
-        } else if (editableValue instanceof IDataSourceProvider) {
-            filter = new DataSourcePropertyFilter(((IDataSourceProvider) editableValue).getDataSource());
+        } else if (editableValue instanceof DBPContextProvider) {
+            DBCExecutionContext context = ((DBPContextProvider) editableValue).getExecutionContext();
+            filter = context == null ? new DataSourcePropertyFilter() : new DataSourcePropertyFilter(context.getDataSource());
         } else {
             filter = new DataSourcePropertyFilter();
         }

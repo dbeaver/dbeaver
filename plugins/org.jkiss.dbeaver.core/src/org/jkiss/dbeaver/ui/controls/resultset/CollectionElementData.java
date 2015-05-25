@@ -49,7 +49,7 @@ public class CollectionElementData {
         for (int i = 0; i < count; i++) {
             elements[i] = new DBDAttributeBindingElement(collectionBinding, collection, i);
         }
-        DBCSession session = collectionBinding.getDataSource().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Collection types read");
+        DBCSession session = collectionBinding.getDataSource().getDefaultContext(true).openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Collection types read");
         try {
             Object[] row = new Object[1];
             List<Object[]> rows = Collections.singletonList(row);

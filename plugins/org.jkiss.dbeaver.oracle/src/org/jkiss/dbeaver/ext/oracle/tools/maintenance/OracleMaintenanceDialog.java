@@ -39,7 +39,7 @@ public abstract class OracleMaintenanceDialog<T extends DBSObject> extends Gener
 {
 
     public OracleMaintenanceDialog(IWorkbenchPartSite partSite, String title, Collection<T> objects) {
-        super(partSite, title, objects);
+        super(partSite, title, objects, true);
     }
 
     @Override

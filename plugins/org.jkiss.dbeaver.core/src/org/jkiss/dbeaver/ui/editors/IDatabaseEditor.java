@@ -18,14 +18,14 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 
 /**
  * IDatabaseEditor
  */
-public interface IDatabaseEditor extends IEditorPart, DBPDataSourceUser, IDataSourceProvider, IRefreshablePart
+public interface IDatabaseEditor extends IEditorPart, DBPDataSourceUser, DBPContextProvider, IRefreshablePart
 {
 
     @Override

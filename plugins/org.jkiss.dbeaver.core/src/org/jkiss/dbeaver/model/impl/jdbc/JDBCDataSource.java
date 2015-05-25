@@ -41,9 +41,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * GenericDataSource
@@ -71,7 +69,7 @@ public abstract class JDBCDataSource
         throws DBException
     {
         this.container = container;
-        this.executionContext = new JDBCExecutionContext(this, "Main connection", false);
+        this.executionContext = new JDBCExecutionContext(this, "Main connection", true);
         this.executionContext.connect(monitor);
     }
 
@@ -187,6 +185,7 @@ public abstract class JDBCDataSource
         return null;
     }
 
+/*
     @Override
     public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
@@ -195,17 +194,18 @@ public abstract class JDBCDataSource
         }
         return createConnection(monitor, executionContext, purpose, taskTitle);
     }
+*/
 
     @NotNull
     @Override
     public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException
     {
-        JDBCExecutionContext isolatedContext = new JDBCExecutionContext(this, purpose, true);
-        copyContextState(monitor, isolatedContext);
-        return isolatedContext;
+        JDBCExecutionContext context = new JDBCExecutionContext(this, purpose, false);
+        context.connect(monitor);
+        return context;
     }
 
-    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
 
     }
 
@@ -237,26 +237,22 @@ public abstract class JDBCDataSource
         return sqlDialect;
     }
 
+    @NotNull
     @Override
-    public String getContextName() {
-        return executionContext.getContextName();
-    }
-
-    @Override
-    public boolean isConnected()
-    {
-        return executionContext.isConnected();
-    }
-
-    @Override
-    public InvalidateResult invalidateContext(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        InvalidateResult result = this.executionContext.invalidateContext(monitor);
-        if (metaContext != null && metaContext.isConnected()) {
-            result = metaContext.invalidateContext(monitor);
+    public JDBCExecutionContext getDefaultContext(boolean meta) {
+        if (metaContext != null && meta) {
+            return this.metaContext;
         }
-        return result;
+        return executionContext;
+    }
+
+    @NotNull
+    @Override
+    public Collection<DBCExecutionContext> getAllContexts() {
+        if (metaContext == null) {
+            return Collections.<DBCExecutionContext>singleton(executionContext);
+        }
+        return Arrays.<DBCExecutionContext>asList(metaContext, executionContext);
     }
 
     @Override
@@ -265,11 +261,11 @@ public abstract class JDBCDataSource
     {
         if (!isEmbeddedDataSource() && container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {
             synchronized (this) {
-                this.metaContext = new JDBCExecutionContext(this, "Metadata reader", false);
+                this.metaContext = new JDBCExecutionContext(this, "Metadata reader", true);
                 this.metaContext.connect(monitor, true, null);
             }
         }
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
+        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
         try {
             JDBCDatabaseMetaData metaData = session.getMetaData();
             sqlDialect = createSQLDialect(metaData);

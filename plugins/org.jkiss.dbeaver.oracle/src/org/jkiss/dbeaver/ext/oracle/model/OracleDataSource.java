@@ -104,8 +104,15 @@ public class OracleDataSource extends JDBCDataSource
         return connection;
     }
 
-    protected void copyContextState(DBRProgressMonitor monitor, JDBCExecutionContext isolatedContext) throws DBException {
-        setCurrentSchema(monitor, isolatedContext, getSelectedObject());
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
+        // Enable DBMS output
+        enableServerOutput(
+            monitor,
+            context,
+            isServerOutputEnabled());
+        if (!primary) {
+            setCurrentSchema(monitor, context, getSelectedObject());
+        }
     }
 
     @Override
@@ -220,7 +227,7 @@ public class OracleDataSource extends JDBCDataSource
 
         this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
-            final JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+            final JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
             try {
                 // Set session settings
                 DBPConnectionInfo connectionInfo = getContainer().getConnectionInfo();
@@ -273,12 +280,6 @@ public class OracleDataSource extends JDBCDataSource
         }
         // Cache data types
         this.dataTypeCache.getObjects(monitor, this);
-
-        // Enable DBMS output
-        enableServerOutput(
-            monitor,
-            this,
-            isServerOutputEnabled());
     }
 
     @Override
@@ -361,7 +362,7 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
-    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, OracleSchema object) throws DBException {
+    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, OracleSchema object) throws DBCException {
         if (object == null) {
             log.debug("Null current schema");
             return;
@@ -370,7 +371,7 @@ public class OracleDataSource extends JDBCDataSource
         try {
             JDBCUtils.executeSQL(session, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
+            throw new DBCException(e, session.getDataSource());
         }
         finally {
             session.close();
@@ -501,9 +502,9 @@ public class OracleDataSource extends JDBCDataSource
         String sql = enable ?
             "BEGIN DBMS_OUTPUT.ENABLE(" + OracleConstants.MAXIMUM_DBMS_OUTPUT_SIZE + "); END;" :
             "BEGIN DBMS_OUTPUT.DISABLE; END;";
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output");
+        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output");
         try {
-            JDBCUtils.executeSQL(session, sql);
+            JDBCUtils.executeSQL((JDBCSession) session, sql);
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
@@ -523,7 +524,7 @@ public class OracleDataSource extends JDBCDataSource
 
     @Override
     public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
-        JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output");
+        JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output");
         try {
             final JDBCCallableStatement dbCall = session.prepareCall(
                 "DECLARE " +

@@ -42,7 +42,7 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<MySQLTable>
 {
 
     public TableToolDialog(IWorkbenchPartSite partSite, String title, Collection<MySQLTable> objects) {
-        super(partSite, title, objects);
+        super(partSite, title, objects, true);
     }
 
     @Override

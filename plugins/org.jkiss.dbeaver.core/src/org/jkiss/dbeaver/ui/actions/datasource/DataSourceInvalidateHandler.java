@@ -32,8 +32,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,26 +40,27 @@ import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.utils.ArrayUtils;
 
+// TODO: invalidate ALL contexts
 public class DataSourceInvalidateHandler extends DataSourceHandler
 {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false);
-        if (dataSourceContainer != null) {
-            execute(HandlerUtil.getActiveShell(event), dataSourceContainer);
+        DBCExecutionContext context = getExecutionContext(event, true);
+        if (context != null) {
+            execute(HandlerUtil.getActiveShell(event), context);
         }
         return null;
     }
 
-    public static void execute(final Shell shell, final DBSDataSourceContainer dataSourceContainer) {
-        if (dataSourceContainer instanceof DataSourceDescriptor && dataSourceContainer.isConnected()) {
-            final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
-            if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
+    public static void execute(final Shell shell, final DBCExecutionContext context) {
+        if (context != null && context.isConnected()) {
+            //final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) context;
+            if (!ArrayUtils.isEmpty(Job.getJobManager().find(context.getDataSource().getContainer()))) {
                 // Already connecting/disconnecting - just return
                 return;
             }
-            final InvalidateJob invalidateJob = new InvalidateJob(dataSourceContainer.getDataSource());
+            final InvalidateJob invalidateJob = new InvalidateJob(context);
             invalidateJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
@@ -91,7 +91,7 @@ public class DataSourceInvalidateHandler extends DataSourceHandler
                     }
                     UIUtils.showMessageBox(
                         shell,
-                        "Invalidate [" + dataSourceContainer.getName() + "]",
+                        "Invalidate [" + context.getContextName() + "]",
                         message,// + "\nTime spent: " + RuntimeUtils.formatExecutionTime(invalidateJob.getTimeSpent()),
                         error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
                 }
@@ -147,7 +147,9 @@ public class DataSourceInvalidateHandler extends DataSourceHandler
         protected void buttonPressed(int id)
         {
             if (id == IDialogConstants.RETRY_ID) {
-                execute(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), dataSource.getContainer());
+                execute(
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
+                    dataSource.getDefaultContext(false));
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);

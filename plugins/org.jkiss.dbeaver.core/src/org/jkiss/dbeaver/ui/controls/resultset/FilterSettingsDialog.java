@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -396,12 +397,14 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     return ""; //$NON-NLS-1$
                 }
                 case 3: {
-                    String condition = SQLUtils.getConstraintCondition(resultSetViewer.getDataSource(), constraint, true);
-                    if (condition != null) {
-                        return condition;
-                    } else {
-                        return ""; //$NON-NLS-1$
+                    DBCExecutionContext executionContext = resultSetViewer.getExecutionContext();
+                    if (executionContext != null) {
+                        String condition = SQLUtils.getConstraintCondition(executionContext.getDataSource(), constraint, true);
+                        if (condition != null) {
+                            return condition;
+                        }
                     }
+                    return ""; //$NON-NLS-1$
                 }
                 default: return ""; //$NON-NLS-1$
             }

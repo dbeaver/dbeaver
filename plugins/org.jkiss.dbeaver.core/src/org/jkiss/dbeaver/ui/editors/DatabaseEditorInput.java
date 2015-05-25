@@ -26,8 +26,8 @@ import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -42,6 +42,7 @@ import java.util.*;
 public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implements IPersistableElement, IDatabaseEditorInput, IDataSourceContainerProvider
 {
     private final NODE node;
+    private final DBCExecutionContext executionContext;
     private final DBECommandContext commandContext;
     private String defaultPageId;
     private String defaultFolderId;
@@ -56,10 +57,11 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     protected DatabaseEditorInput(NODE node, DBECommandContext commandContext)
     {
         this.node = node;
+        this.executionContext = node.getDataSource().getDefaultContext(false);
         this.commandContext = commandContext != null ?
             commandContext :
             new DBECommandContextImpl(
-                node.getDataSource(),
+                this.executionContext,
                 false);
     }
 
@@ -88,7 +90,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public IPersistableElement getPersistable()
     {
-        return getDataSource() == null ? null : this;
+        return getExecutionContext() == null ? null : this;
     }
 
     @Override
@@ -123,14 +125,12 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
-        final DBPDataSource dbpDataSource = getDataSource();
-        return dbpDataSource == null ? null : dbpDataSource.getContainer();
+        return executionContext.getDataSource().getContainer();
     }
 
     @Override
-    public DBPDataSource getDataSource() {
-        DBSObject object = node.getObject();
-        return object == null ? null : object.getDataSource();
+    public DBCExecutionContext getExecutionContext() {
+        return executionContext;
     }
 
     @Override

@@ -32,9 +32,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.eclipse.ui.dialogs.SearchPattern;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -55,16 +55,16 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     private static final String DIALOG_ID = "GotoObjectDialog";
 
-    private final DBPDataSource dataSource;
+    private final DBCExecutionContext context;
     private DBSObject container;
 
-    public GotoObjectDialog(Shell shell, DBPDataSource dataSource, DBSObject container)
+    public GotoObjectDialog(Shell shell, DBCExecutionContext context, DBSObject container)
     {
         super(shell, true);
-        this.dataSource = dataSource;
+        this.context = context;
         this.container = container;
 
-        setTitle("Goto Meta Object in '" + dataSource.getContainer().getName() + "'");
+        setTitle("Goto Meta Object in '" + context.getDataSource().getContainer().getName() + "'");
         setListLabelProvider(new ObjectLabelProvider());
         setDetailsLabelProvider(new DetailsLabelProvider());
     }
@@ -113,7 +113,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     protected void fillContentProvider(AbstractContentProvider contentProvider, ItemsFilter itemsFilter, IProgressMonitor progressMonitor)
         throws CoreException
     {
-        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
+        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, context);
         if (structureAssistant == null) {
             return;
         }

@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 /**
  * DB editor utils
@@ -42,16 +42,16 @@ public class DatabaseEditorUtils {
             return;
         }
 
-        DBPDataSource dataSource = null;
-        if (editor instanceof IDataSourceProvider) {
-            dataSource = ((IDataSourceProvider) editor).getDataSource();
+        DBCExecutionContext context = null;
+        if (editor instanceof DBPContextProvider) {
+            context = ((DBPContextProvider) editor).getExecutionContext();
         }
-        if (dataSource == null) {
+        if (context == null) {
             rootComposite.setBackground(null);
             return;
         }
         rootComposite.setBackground(
-            dataSource.getContainer().getConnectionInfo().getColor());
+            context.getDataSource().getContainer().getConnectionInfo().getColor());
     }
 
 }

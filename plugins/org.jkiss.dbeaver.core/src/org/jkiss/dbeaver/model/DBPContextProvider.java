@@ -19,18 +19,19 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 /**
  * DataSource provider.
  * May be editor, view or selection element
  */
-public interface IDataSourceProvider {
+public interface DBPContextProvider {
 
     /**
      * Underlying datasource
      * @return data source object.
      */
     @Nullable
-    DBPDataSource getDataSource();
+    DBCExecutionContext getExecutionContext();
 
 }

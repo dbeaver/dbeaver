@@ -59,7 +59,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
     public void createPartControl(Composite parent) {
         killSessionAction = new DisconnectSessionAction(true);
         disconnectSessionAction = new DisconnectSessionAction(false);
-        sessionsViewer = new SessionManagerViewer(this, parent, new OracleServerSessionManager((OracleDataSource) getDataSource())) {
+        sessionsViewer = new SessionManagerViewer(this, parent, new OracleServerSessionManager((OracleDataSource) getExecutionContext())) {
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
             {

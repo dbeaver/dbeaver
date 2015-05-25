@@ -28,12 +28,13 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -50,7 +51,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Standalone ERD editor
  */
-public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceProvider, IResourceChangeListener {
+public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProvider, IResourceChangeListener {
 
     /**
      * No-arg constructor
@@ -185,7 +186,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourcePro
     }
 
     @Override
-    public DBPDataSource getDataSource()
+    public DBCExecutionContext getExecutionContext()
     {
         for (Object part : getViewer().getSelectedEditParts()) {
             EditPart editPart = (EditPart) part;
@@ -196,7 +197,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourcePro
                     DBSObject dbObject = (DBSObject) object;
                     DBPDataSource dataSource = dbObject.getDataSource();
                     if (dataSource != null) {
-                        return dataSource;
+                        return dataSource.getDefaultContext(true);
                     }
                 }
             }

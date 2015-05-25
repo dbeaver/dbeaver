@@ -136,7 +136,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         throws DBException
     {
         if (comment == null) {
-            final JDBCSession session = getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load table comments");
+            final JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table comments");
             try {
                 comment = JDBCUtils.queryString(
                     session,

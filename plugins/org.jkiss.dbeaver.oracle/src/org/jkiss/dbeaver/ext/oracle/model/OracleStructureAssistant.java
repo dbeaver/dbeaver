@@ -96,7 +96,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         OracleSchema schema = parentObject instanceof OracleSchema ? (OracleSchema) parentObject : null;
-        JDBCSession session = dataSource.openSession(
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(
             monitor, DBCExecutionPurpose.META, "Find objects by name");
         try {
             List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();

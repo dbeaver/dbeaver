@@ -98,8 +98,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * SQL Executor
  */
-public class SQLEditor extends SQLEditorBase
-    implements IDataSourceContainerProviderEx, DBPEventListener, ISaveablePart2, IResultSetContainer, DBPDataSourceUser, DBPDataSourceHandler, IPropertyChangeListener {
+public class SQLEditor extends SQLEditorBase implements
+    IDataSourceContainerProviderEx,
+    DBPContextProvider,
+    DBPEventListener,
+    ISaveablePart2,
+    IResultSetContainer,
+    DBPDataSourceUser,
+    DBPDataSourceHandler,
+    IPropertyChangeListener
+{
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
     private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
@@ -133,7 +141,8 @@ public class SQLEditor extends SQLEditorBase
         if (dataSourceContainer == null) {
             return null;
         }
-        return dataSourceContainer.getDataSource();
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        return dataSource == null ? null : dataSource.getDefaultContext(false);
     }
 
     @Nullable

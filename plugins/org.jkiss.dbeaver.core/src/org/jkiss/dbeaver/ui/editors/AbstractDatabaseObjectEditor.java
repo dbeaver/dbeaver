@@ -22,8 +22,9 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
@@ -78,9 +79,13 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     }
 
     @Override
+    public DBCExecutionContext getExecutionContext() {
+        return getEditorInput().getExecutionContext();
+    }
+
     public DBPDataSource getDataSource() {
-        OBJECT_TYPE object = getDatabaseObject();
-        return object == null ? null : object.getDataSource();
+        DBCExecutionContext executionContext = getEditorInput().getExecutionContext();
+        return executionContext == null ? null : executionContext.getDataSource();
     }
 
     public OBJECT_TYPE getDatabaseObject() {
@@ -123,4 +128,5 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     {
         getObjectCommander().updateCommand(command, reflector);
     }
+
 }

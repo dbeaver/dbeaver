@@ -20,7 +20,8 @@ package org.jkiss.dbeaver.ui.editors.content.parts;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.model.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -74,8 +75,11 @@ public class ContentTextEditorPart extends BaseTextEditor implements ContentEdit
     @Override
     public long getMaxContentLength()
     {
-        if (contentEditor instanceof IDataSourceProvider) {
-            return ((IDataSourceProvider)contentEditor).getDataSource().getContainer().getPreferenceStore().getInt(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);
+        if (contentEditor instanceof DBPContextProvider) {
+            DBCExecutionContext context = ((DBPContextProvider) contentEditor).getExecutionContext();
+            if (context != null) {
+                return context.getDataSource().getContainer().getPreferenceStore().getInt(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);
+            }
         }
         return 10 * 1024 * 1024;
     }

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -188,7 +189,9 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         } else {
             // Seems to be a dynamic query. Execute it to get metadata
-            DBCSession session = source.getDataSource().openSession(monitor, DBCExecutionPurpose.UTIL, "Read query meta data");
+            DBPDataSource dataSource = source.getDataSource();
+            assert (dataSource != null);
+            DBCSession session = dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Read query meta data");
             try {
                 MetadataReceiver receiver = new MetadataReceiver();
                 source.readData(session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);

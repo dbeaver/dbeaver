@@ -187,7 +187,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
                 DBSObjectContainer container = null;
                 if (!CommonUtils.isEmpty(containerName)) {
-                    DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, getDataSource());
+                    DBSObjectContainer dsContainer = DBUtils.getAdapter(DBSObjectContainer.class, getExecutionContext().getDataSource());
                     if (dsContainer != null) {
                         DBSObject childContainer = dsContainer.getChild(monitor, containerName);
                         if (childContainer instanceof DBSObjectContainer) {

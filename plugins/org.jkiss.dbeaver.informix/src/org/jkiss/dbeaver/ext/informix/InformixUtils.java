@@ -44,7 +44,7 @@ public class InformixUtils {
 	private static List<String> getSource(DBRProgressMonitor monitor,
 			String sqlStatement, String dbObjectName,
 			GenericDataSource datasource) throws DBException {
-		JDBCSession session = datasource.openSession(monitor,
+		JDBCSession session = datasource.getDefaultContext(true).openSession(monitor,
 				DBCExecutionPurpose.META, "Load source code");
 		List<String> result = new ArrayList<String>();
 		try {

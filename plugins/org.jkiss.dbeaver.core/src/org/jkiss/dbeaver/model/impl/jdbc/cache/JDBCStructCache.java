@@ -17,10 +17,12 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -78,7 +80,11 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             super.loadObjects(monitor, owner);
         }
 
-        JDBCSession session = (JDBCSession) owner.getDataSource().openSession(monitor, DBCExecutionPurpose.META,
+        DBPDataSource dataSource = owner.getDataSource();
+        if (dataSource == null) {
+            throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
+        }
+        JDBCSession session = (JDBCSession) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META,
             "Load child objects");
         try {
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<OBJECT, List<CHILD>>();

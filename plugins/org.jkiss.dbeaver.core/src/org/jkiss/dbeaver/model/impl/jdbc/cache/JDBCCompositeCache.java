@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -208,7 +209,9 @@ public abstract class JDBCCompositeCache<
         List<OBJECT> precachedObjects = new ArrayList<OBJECT>();
 
         // Load index columns
-        JDBCSession session = (JDBCSession) owner.getDataSource().openSession(monitor, DBCExecutionPurpose.META, "Load composite objects");
+        DBPDataSource dataSource = owner.getDataSource();
+        assert (dataSource != null);
+        JDBCSession session = (JDBCSession) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load composite objects");
         try {
 
             JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent);
@@ -216,7 +219,7 @@ public abstract class JDBCCompositeCache<
             try {
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
-                try {
+                if (dbResult != null) try {
                     while (dbResult.next()) {
                         if (monitor.isCanceled()) {
                             break;

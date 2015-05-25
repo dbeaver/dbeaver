@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 /**
  * SinglePageDatabaseEditor
@@ -41,8 +41,8 @@ public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEdito
     }
 
     @Override
-    public DBPDataSource getDataSource() {
-        return getEditorInput() == null || getEditorInput().getDatabaseObject() == null ? null : getEditorInput().getDatabaseObject().getDataSource();
+    public DBCExecutionContext getExecutionContext() {
+        return getEditorInput() == null ? null : getEditorInput().getExecutionContext();
     }
 
 }

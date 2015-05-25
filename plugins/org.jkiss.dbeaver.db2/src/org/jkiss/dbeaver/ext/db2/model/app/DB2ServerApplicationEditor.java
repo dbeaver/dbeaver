@@ -56,7 +56,7 @@ public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDataba
     public void createPartControl(Composite parent)
     {
         forceApplicationAction = new ForceApplicationAction();
-        applicationViewer = new SessionManagerViewer(this, parent, new DB2ServerApplicationManager((DB2DataSource) getDataSource())) {
+        applicationViewer = new SessionManagerViewer(this, parent, new DB2ServerApplicationManager((DB2DataSource) getExecutionContext())) {
 
             @Override
             @SuppressWarnings("rawtypes")
