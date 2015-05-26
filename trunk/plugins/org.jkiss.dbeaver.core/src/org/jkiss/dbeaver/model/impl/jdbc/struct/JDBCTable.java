@@ -545,7 +545,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             getAttributes(monitor);
         }
         catch (DBException e) {
-            throw new DBCException("Could not cache table columns", e);
+            throw new DBCException("Can't cache table columns", e);
         }
     }
 

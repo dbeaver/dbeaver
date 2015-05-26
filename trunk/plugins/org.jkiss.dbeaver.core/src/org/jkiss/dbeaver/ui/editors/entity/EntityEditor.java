@@ -278,7 +278,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 }
             }
             if (error != null) {
-                UIUtils.showErrorDialog(getSite().getShell(), "Could not save '" + getDatabaseObject().getName() + "'", null, error);
+                UIUtils.showErrorDialog(getSite().getShell(), "Can't save '" + getDatabaseObject().getName() + "'", null, error);
             }
         }
     }

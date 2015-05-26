@@ -82,7 +82,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
                 ContentEditor.class.getName());
         }
         catch (PartInitException e) {
-            log.error("Could not open LOB editorPart", e);
+            log.error("Can't open LOB editorPart", e);
             return null;
         }
     }
@@ -210,8 +210,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
                 catch (Exception e) {
                     UIUtils.showErrorDialog(
                         getSite().getShell(),
-                        "Could not save content",
-                        "Could not save content to database",
+                        "Can't save content",
+                        "Can't save content to database",
                         e);
                 }
             }
@@ -311,13 +311,13 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
         try {
             contentType = content.getContentType();
         } catch (Exception e) {
-            log.error("Could not determine value content type", e);
+            log.error("Can't determine value content type", e);
         }
         long contentLength;
         try {
             contentLength = content.getContentLength();
         } catch (Exception e) {
-            log.warn("Could not determine value content length", e);
+            log.warn("Can't determine value content length", e);
             // Get file length
             contentLength = getEditorInput().getFile().getFullPath().toFile().length();
         }

@@ -498,7 +498,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             JDBCUtils.reportWarnings(getOriginal().getWarnings());
             getOriginal().clearWarnings();
         } catch (Throwable e) {
-            log.debug("Could not check for statement warnings", e);
+            log.debug("Can't check for statement warnings", e);
         }
 */
 
@@ -512,7 +512,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             getOriginal().close();
         }
         catch (Throwable e) {
-            log.error("Could not close statement", e); //$NON-NLS-1$
+            log.error("Can't close statement", e); //$NON-NLS-1$
         }
     }
 

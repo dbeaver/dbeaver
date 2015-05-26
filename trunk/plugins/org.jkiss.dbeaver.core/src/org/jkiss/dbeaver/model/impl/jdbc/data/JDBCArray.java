@@ -129,7 +129,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
             try {
                 dbResult.close();
             } catch (SQLException e) {
-                log.debug("Could not close array result set", e); //$NON-NLS-1$
+                log.debug("Can't close array result set", e); //$NON-NLS-1$
             }
         }
     }

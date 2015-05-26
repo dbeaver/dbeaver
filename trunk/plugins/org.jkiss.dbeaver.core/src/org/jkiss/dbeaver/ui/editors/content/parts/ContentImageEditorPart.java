@@ -111,7 +111,7 @@ public class ContentImageEditorPart extends EditorPart implements ContentEditorP
                 }
             }
             catch (Exception e) {
-                log.error("Could not load image contents", e);
+                log.error("Can't load image contents", e);
             }
         }
     }

@@ -130,7 +130,7 @@ public class ContentUtils {
             file.delete(true, false, monitor.getNestedMonitor());
         }
         catch (CoreException e) {
-            log.warn("Could not delete temporary file '" + file.getFullPath().toString() + "'", e);
+            log.warn("Can't delete temporary file '" + file.getFullPath().toString() + "'", e);
         }
     }
 
@@ -217,7 +217,7 @@ public class ContentUtils {
             if (monitor.isCanceled()) {
                 // Delete output file
                 if (!file.delete()) {
-                    log.warn("Could not delete incomplete file '" + file.getAbsolutePath() + "'");
+                    log.warn("Can't delete incomplete file '" + file.getAbsolutePath() + "'");
                 }
             }
         }
@@ -244,7 +244,7 @@ public class ContentUtils {
             if (monitor.isCanceled()) {
                 // Delete output file
                 if (!file.delete()) {
-                    log.warn("Could not delete incomplete file '" + file.getAbsolutePath() + "'");
+                    log.warn("Can't delete incomplete file '" + file.getAbsolutePath() + "'");
                 }
             }
         }
@@ -417,7 +417,7 @@ public class ContentUtils {
             localFile.refreshLocal(IFile.DEPTH_ZERO, monitor.getNestedMonitor());
         }
         catch (CoreException e) {
-            log.warn("Could not synchronize file '" + localFile + "' with contents", e);
+            log.warn("Can't synchronize file '" + localFile + "' with contents", e);
         }
     }
 

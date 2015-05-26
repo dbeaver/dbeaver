@@ -312,7 +312,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             String sampleValue = formatter.formatValue(formatterDescriptor.getSample().getSampleValue());
             sampleText.setText(sampleValue);
         } catch (Exception e) {
-            log.warn("Could not render sample value", e); //$NON-NLS-1$
+            log.warn("Can't render sample value", e); //$NON-NLS-1$
         }
     }
 

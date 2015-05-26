@@ -183,7 +183,7 @@ void WMIService::Connect(
 		EOAC_NONE                    // proxy capabilities 
 		);
     if (FAILED(hres)) {
-        THROW_COMMON_ERROR(L"Could not set proxy blanket", hres);
+        THROW_COMMON_ERROR(L"Can't set proxy blanket", hres);
 		return;
     }
 
@@ -208,7 +208,7 @@ jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 	CComPtr<IWbemServices> ptrNamespace;
 	HRESULT hres = ptrWbemServices->OpenNamespace(nsName, lFlags, NULL, &ptrNamespace, NULL);
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not open namespace", hres);
+		THROW_COMMON_ERROR(L"Can't open namespace", hres);
 		return NULL;
 	}
     hres = CoSetProxyBlanket(
@@ -222,7 +222,7 @@ jobject WMIService::OpenNamespace(JNIEnv* pJavaEnv, LPWSTR nsName, LONG lFlags)
 		EOAC_NONE                    // proxy capabilities 
 		);
     if (FAILED(hres)) {
-        THROW_COMMON_ERROR(L"Could not set proxy blanket for opened namespace", hres);
+        THROW_COMMON_ERROR(L"Can't set proxy blanket for opened namespace", hres);
 		return NULL;
     }
 
@@ -303,7 +303,7 @@ void WMIService::ExecuteQueryAsync(JNIEnv* pJavaEnv, LPWSTR queryString, jobject
         NULL,
 		pActiveSink);
     if (FAILED(hres)) {
-        THROW_COMMON_ERROR(L"Could not execute query", hres);
+        THROW_COMMON_ERROR(L"Can't execute query", hres);
 		return;
     }
 }
@@ -324,7 +324,7 @@ void WMIService::EnumClasses(JNIEnv* pJavaEnv, LPWSTR baseClass, jobject javaSin
         NULL,
 		pActiveSink);
     if (FAILED(hres)) {
-        THROW_COMMON_ERROR(L"Could not create classes enumerator", hres);
+        THROW_COMMON_ERROR(L"Can't create classes enumerator", hres);
 		return;
     }
 }
@@ -345,7 +345,7 @@ void WMIService::EnumInstances(JNIEnv* pJavaEnv, LPWSTR className, jobject javaS
         NULL,
 		pActiveSink);
     if (FAILED(hres)) {
-        THROW_COMMON_ERROR(L"Could not create classes enumerator", hres);
+        THROW_COMMON_ERROR(L"Can't create classes enumerator", hres);
 		return;
     }
 }
@@ -374,13 +374,13 @@ void WMIService::CancelAsyncOperation(JNIEnv* pJavaEnv, jobject javaSinkObject)
 		}
 	}
 	if (pSink == NULL) {
-		THROW_COMMON_EXCEPTION(L"Could not find internal sink for specified object");
+		THROW_COMMON_EXCEPTION(L"Can't find internal sink for specified object");
 		return;
 	}
 
 	HRESULT hres = ptrWbemServices->CancelAsyncCall(pSink);
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not cancel async call", hres);
+		THROW_COMMON_ERROR(L"`Can't cancel async call", hres);
 		return;
 	}
 }

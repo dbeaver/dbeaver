@@ -203,7 +203,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 }
                 monitor.worked(1);
             } catch (DBException e) {
-                log.warn("Could not load table foreign keys", e);
+                log.warn("Can't load table foreign keys", e);
             }
             if (monitor.isCanceled()) {
                 return result;
@@ -218,7 +218,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 }
                 monitor.worked(1);
             } catch (DBException e) {
-                log.warn("Could not load table references", e);
+                log.warn("Can't load table references", e);
             }
             if (monitor.isCanceled()) {
                 return result;
@@ -242,7 +242,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 result.addAll(secondLevelEntities);
                 monitor.worked(1);
             } catch (DBException e) {
-                log.warn("Could not load table references", e);
+                log.warn("Can't load table references", e);
             }
 
             monitor.done();

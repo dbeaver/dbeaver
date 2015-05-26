@@ -154,7 +154,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             try {
                 DBeaverUI.runInProgressService(nodeLoader);
             } catch (InvocationTargetException e) {
-                log.warn("Could not load node for object '" + object.getName() + "'", e.getTargetException());
+                log.warn("Can't load node for object '" + object.getName() + "'", e.getTargetException());
             } catch (InterruptedException e) {
                 // do nothing
             }
@@ -185,7 +185,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             try {
                 DBeaverUI.runInProgressService(nodeLoader);
             } catch (InvocationTargetException e) {
-                log.warn("Could not load node for objects " + missingObjects.size(), e.getTargetException());
+                log.warn("Can't load node for objects " + missingObjects.size(), e.getTargetException());
             } catch (InterruptedException e) {
                 // do nothing
             }

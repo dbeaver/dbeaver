@@ -281,7 +281,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
                 }
             } catch (DBException e) {
                 // just skip this problematic columns
-                log.debug("Could not load table '" + entity.getName() + "'columns", e);
+                log.debug("Can't load table '" + entity.getName() + "'columns", e);
             }
         }
         return erdEntity;
@@ -321,7 +321,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
             }
 
         } catch (DBException e) {
-            log.warn("Could not load table '" + getObject().getName() + "' foreign keys", e);
+            log.warn("Can't load table '" + getObject().getName() + "' foreign keys", e);
         }
     }
 

@@ -126,7 +126,7 @@ public class QMMCollector extends DefaultExecutionHandler {
         String contextId = context.getDataSource().getContainer().getId() + ":" + context.getContextName();
         QMMSessionInfo sessionInfo = sessionMap.get(contextId);
         if (sessionInfo == null) {
-            log.warn("Could not find sessionInfo meta information: " + contextId);
+            log.warn("Can't find sessionInfo meta information: " + contextId);
         }
         return sessionInfo;
     }
@@ -226,7 +226,7 @@ public class QMMCollector extends DefaultExecutionHandler {
         if (session != null) {
             QMMStatementInfo stat = session.closeStatement(statement);
             if (stat == null) {
-                log.warn("Could not properly handle statement close");
+                log.warn("Can't properly handle statement close");
             } else {
                 fireMetaEvent(stat, QMMetaEvent.Action.END);
             }
