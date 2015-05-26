@@ -239,10 +239,15 @@ public class SQLEditor extends SQLEditorBase implements
                         DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                             @Override
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                                monitor.beginTask("Open SQLEditor isolated connection", 1);
                                 try {
-                                    executionContext = dataSource.openIsolatedContext(monitor, "SQLEditor connection");
+                                    String title = "SQLEditor <" + getEditorInput().getPath().removeFileExtension().lastSegment() + ">";
+                                    monitor.subTask("Open context " + title);
+                                    executionContext = dataSource.openIsolatedContext(monitor, title);
                                 } catch (DBException e) {
                                     throw new InvocationTargetException(e);
+                                } finally {
+                                    monitor.done();
                                 }
                                 ownContext = true;
                             }
