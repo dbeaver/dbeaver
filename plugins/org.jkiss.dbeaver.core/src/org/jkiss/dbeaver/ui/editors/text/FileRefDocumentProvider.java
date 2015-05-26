@@ -131,7 +131,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
     {
         IStorage storage = getStorageFromInput(element);
         if (storage == null) {
-            throw new CoreException(new Status(Status.ERROR, DBeaverConstants.PLUGIN_ID, "Could not obtain file from editor input"));
+            throw new CoreException(new Status(Status.ERROR, DBeaverConstants.PLUGIN_ID, "Can't obtain file from editor input"));
         }
         String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
 
@@ -269,7 +269,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                 try {
                     refreshFile(file);
                 } catch (CoreException x) {
-                    log.warn("Could not refresh file", x);
+                    log.warn("Can't refresh file", x);
                 }
 
                 IDocument d;
@@ -278,7 +278,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                 try {
                     d = createDocument(element);
                 } catch (CoreException x) {
-                    log.warn("Could not create document", x);
+                    log.warn("Can't create document", x);
                     s = x.getStatus();
                     d = createEmptyDocument();
                 }

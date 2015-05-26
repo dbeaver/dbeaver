@@ -290,7 +290,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
                 JDBCUtils.reportWarnings(session, getOriginal().getWarnings());
                 getOriginal().clearWarnings();
             } catch (Throwable e) {
-                log.debug("Could not check for resultset warnings", e);
+                log.debug("Can't check for resultset warnings", e);
             }
 */
             if (this.statement.isQMLoggingEnabled()) {
@@ -303,7 +303,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
                 original.close();
             }
             catch (SQLException e) {
-                log.error("Could not close result set", e);
+                log.error("Can't close result set", e);
             }
         }
 

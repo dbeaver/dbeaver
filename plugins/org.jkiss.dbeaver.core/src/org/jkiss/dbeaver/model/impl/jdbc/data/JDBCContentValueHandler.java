@@ -218,7 +218,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             }
         }
         catch (Exception e) {
-            log.warn("Could not extract LOB value information", e); //$NON-NLS-1$
+            log.warn("Can't extract LOB value information", e); //$NON-NLS-1$
         }
     }
 

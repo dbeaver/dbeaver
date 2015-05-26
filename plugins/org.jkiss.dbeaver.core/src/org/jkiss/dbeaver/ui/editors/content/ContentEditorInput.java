@@ -177,7 +177,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
                         contentFile.delete(true, false, monitor.getNestedMonitor());
                     }
                     catch (CoreException e1) {
-                        log.warn("Could not delete temporary content file", e);
+                        log.warn("Can't delete temporary content file", e);
                     }
                 }
                 throw new DBException("Can't delete content file", e);
@@ -312,7 +312,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         throws DBException
     {
         if (valueController.isReadOnly()) {
-            throw new DBCException("Could not update read-only value");
+            throw new DBCException("Can't update read-only value");
         }
 
         DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);

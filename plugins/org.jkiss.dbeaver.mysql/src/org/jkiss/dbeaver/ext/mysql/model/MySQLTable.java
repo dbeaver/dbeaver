@@ -400,7 +400,7 @@ public class MySQLTable extends MySQLTableBase
                         }
                     }
                     if (pk == null) {
-                        log.warn("Could not find primary key for table " + pkTable.getFullQualifiedName());
+                        log.warn("Can't find primary key for table " + pkTable.getFullQualifiedName());
                         // Too bad. But we have to create new fake PK for this FK
                         String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                         pk = pkMap.get(pkFullName);
@@ -416,7 +416,7 @@ public class MySQLTable extends MySQLTableBase
                     if (references) {
                         fk = DBUtils.findObject(fkTable.getAssociations(monitor), fkName);
                         if (fk == null) {
-                            log.warn("Could not find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
+                            log.warn("Can't find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
                             // No choice, we have to create fake foreign key :(
                         } else {
                             if (!fkList.contains(fk)) {

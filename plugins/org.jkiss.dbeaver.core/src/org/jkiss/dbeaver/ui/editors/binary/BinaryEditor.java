@@ -228,7 +228,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 manager.openFile(systemFile, charset);
             }
             catch (IOException e) {
-                log.error("Could not open binary content", e);
+                log.error("Can't open binary content", e);
             }
             setPartName(systemFile.getName());
         }
@@ -274,7 +274,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 manager.getContent().get(systemFile);
             }
             catch (IOException e) {
-                log.error("Could not save binary content", e);
+                log.error("Can't save binary content", e);
             }
             // Sync file changes
             ContentUtils.syncFile(RuntimeUtils.makeMonitor(monitor), file);

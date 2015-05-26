@@ -128,7 +128,7 @@ public class ActionUtils
                     return command != null && command.isEnabled();
                 }
             } catch (Exception e) {
-                log.error("Could not execute command '" + commandId + "'", e);
+                log.error("Can't execute command '" + commandId + "'", e);
             }
         }
         return false;
@@ -192,7 +192,7 @@ public class ActionUtils
                     }
                 }
             } catch (Exception e) {
-                log.error("Could not execute command '" + commandId + "'", e);
+                log.error("Can't execute command '" + commandId + "'", e);
             }
         }
     }

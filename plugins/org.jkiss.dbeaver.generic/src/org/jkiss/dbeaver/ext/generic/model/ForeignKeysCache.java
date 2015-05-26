@@ -138,7 +138,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 }
             }
             if (pk == null) {
-                log.warn("Could not find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
+                log.warn("Can't find unique key for table " + pkTable.getFullQualifiedName() + " column " + pkColumn.getName());
                 // Too bad. But we have to create new fake PK for this FK
                 String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
                 pk = pkMap.get(pkFullName);

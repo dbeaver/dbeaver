@@ -407,7 +407,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         encPassword = encrypter.encrypt(encPassword);
                     }
                     catch (EncryptionException e) {
-                        log.error("Could not encrypt password. Save it as is", e);
+                        log.error("Can't encrypt password. Save it as is", e);
                     }
                 }
                 xml.addAttribute(RegistryConstants.ATTR_PASSWORD, encPassword);
@@ -457,7 +457,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             encPassword = encrypter.encrypt(encPassword);
                         }
                         catch (EncryptionException e) {
-                            log.error("Could not encrypt password. Save it as is", e);
+                            log.error("Can't encrypt password. Save it as is", e);
                         }
                     }
                     xml.addAttribute(RegistryConstants.ATTR_PASSWORD, encPassword);

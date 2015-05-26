@@ -54,7 +54,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             locale = formatterProfile.getLocale();
             formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER);
         } catch (Exception e) {
-            log.error("Could not create formatter for number value handler", e); //$NON-NLS-1$
+            log.error("Can't create formatter for number value handler", e); //$NON-NLS-1$
             formatter = DefaultDataFormatter.INSTANCE;
         }
     }

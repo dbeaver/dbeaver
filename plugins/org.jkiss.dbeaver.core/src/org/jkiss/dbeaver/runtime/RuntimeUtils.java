@@ -207,7 +207,7 @@ public class RuntimeUtils {
                 log.warn(e);
             }
         } else {
-            log.debug("Could not save preference store '" + store + "' - not a persistent one"); //$NON-NLS-1$
+            log.debug("Can't save preference store '" + store + "' - not a persistent one"); //$NON-NLS-1$
         }
     }
 

@@ -67,7 +67,7 @@ void WMIObjectSink::FlushObjectsCache(JNIEnv* pJavaEnv)
 	DeleteLocalRef(pJavaEnv, javaArray);
 
 	if (pJavaEnv->ExceptionCheck()) {
-		//pService->WriteLog(pJavaEnv, LT_ERROR, L"Could not call indicate for object sink");
+		//pService->WriteLog(pJavaEnv, LT_ERROR, L"Can't call indicate for object sink");
 		pJavaEnv->ExceptionClear();
 	}
 }
@@ -167,7 +167,7 @@ HRESULT WMIObjectSink::SetStatus(
 
 	if (pJavaEnv->ExceptionCheck()) {
 		//pJavaEnv->ExceptionDescribe();
-		//pService->WriteLog(pJavaEnv, LT_ERROR, L"Could not set status for object sink");
+		//pService->WriteLog(pJavaEnv, LT_ERROR, L"Can't set status for object sink");
 		pJavaEnv->ExceptionClear();
 	}
 
