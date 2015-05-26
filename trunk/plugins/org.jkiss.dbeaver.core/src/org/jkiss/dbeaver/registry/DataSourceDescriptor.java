@@ -23,6 +23,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -56,6 +57,7 @@ import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
@@ -249,7 +251,6 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    @Property(order = 100)
     public String getDescription()
     {
         return description;
@@ -1011,6 +1012,17 @@ public class DataSourceDescriptor
     {
         if (DBSDataSourceContainer.class.isAssignableFrom(adapter)) {
             return this;
+        } else if (adapter == IPropertySource.class) {
+            PropertyCollector coll = new PropertyCollector(this, true);
+            coll.collectProperties();
+            if (dataSource != null) {
+                int conIndex = 0;
+                for (DBCExecutionContext context : dataSource.getAllContexts()) {
+                    conIndex++;
+                    coll.addProperty("Connections", conIndex, String.valueOf(conIndex), new ContextInfo(context));
+                }
+            }
+            return coll;
         }
         return null;
     }
@@ -1051,13 +1063,13 @@ public class DataSourceDescriptor
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
     }
 
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, order = 2, category = "Driver")
     public String getPropertyDriverType()
     {
         return driver.getName();
     }
 
-    @Property(order = 3)
+    @Property(order = 3, category = "Server")
     public String getPropertyAddress()
     {
         StringBuilder addr = new StringBuilder();
@@ -1070,20 +1082,20 @@ public class DataSourceDescriptor
         return addr.toString();
     }
 
-    @Property(order = 4)
+    @Property(order = 4, category = "Server")
     public String getPropertyDatabase()
     {
         return connectionInfo.getDatabaseName();
     }
 
-    @Property(order = 5)
+    @Property(order = 5, category = "Server")
     public String getPropertyURL()
     {
         return connectionInfo.getUrl();
     }
 
     @Nullable
-    @Property(order = 6)
+    @Property(order = 6, category = "Server")
     public String getPropertyServerName()
     {
         if (dataSource != null) {
@@ -1097,7 +1109,7 @@ public class DataSourceDescriptor
     }
 
     @Nullable
-    @Property(order = 7)
+    @Property(order = 7, category = "Driver")
     public String getPropertyDriver()
     {
         if (dataSource != null) {
@@ -1201,6 +1213,24 @@ public class DataSourceDescriptor
                 DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
                 ConfirmationDialog.QUESTION_WITH_CANCEL,
                 name);
+        }
+    }
+
+    public static class ContextInfo implements DBPObject {
+        private final DBCExecutionContext context;
+
+        public ContextInfo(DBCExecutionContext context) {
+            this.context = context;
+        }
+
+        @Property(viewable = true, order = 1)
+        public String getName() {
+            return context.getContextName();
+        }
+
+        @Override
+        public String toString() {
+            return getName();
         }
     }
 
