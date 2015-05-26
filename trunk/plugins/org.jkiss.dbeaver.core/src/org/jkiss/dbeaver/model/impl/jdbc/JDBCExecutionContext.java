@@ -78,6 +78,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
         ACTIVE_CONTEXT.set(this);
         try {
             this.connection = dataSource.openConnection(monitor, purpose);
+
             if (autoCommit != null) {
                 try {
                     connection.setAutoCommit(autoCommit);
@@ -94,18 +95,19 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                     log.warn("Can't set transaction isolation level", e); //$NON-NLS-1$
                 }
             }
-            // Copy context state
-            dataSource.initializeContextState(monitor, this, primaryContext);
-
             {
-                // Notify QM
+                // Cache auto-commit
                 try {
                     this.autoCommit = connection.getAutoCommit();
                 } catch (Throwable e) {
                     log.warn("Can't check auto-commit state", e); //$NON-NLS-1$
                 }
-                QMUtils.getDefaultHandler().handleContextOpen(this, !this.autoCommit);
             }
+            QMUtils.getDefaultHandler().handleContextOpen(this, !this.autoCommit);
+
+            // Copy context state
+            dataSource.initializeContextState(monitor, this, primaryContext);
+
         } finally {
             ACTIVE_CONTEXT.remove();
         }
@@ -363,5 +365,10 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                 QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return dataSource.getName() + " - " + purpose;
     }
 }

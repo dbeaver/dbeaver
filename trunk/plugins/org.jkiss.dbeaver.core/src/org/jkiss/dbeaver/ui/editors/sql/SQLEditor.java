@@ -234,6 +234,7 @@ public class SQLEditor extends SQLEditorBase implements
                 releaseExecutionContext();
             } else if (curDataSource != dataSource) {
                 releaseExecutionContext();
+                curDataSource = dataSource;
                 if (dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
                     try {
                         DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
@@ -253,13 +254,13 @@ public class SQLEditor extends SQLEditorBase implements
                             }
                         });
                     } catch (InvocationTargetException e) {
+                        releaseExecutionContext();
                         UIUtils.showErrorDialog(getSite().getShell(), "Open context", "Can't open editor connection", e);
                     }
                 } else {
                     executionContext = dataSource.getDefaultContext(false);
                 }
             }
-            curDataSource = dataSource;
         }
     }
 
