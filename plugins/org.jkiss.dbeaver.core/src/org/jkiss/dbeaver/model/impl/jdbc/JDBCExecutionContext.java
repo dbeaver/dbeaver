@@ -58,6 +58,8 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
         this.dataSource = dataSource;
         this.purpose = purpose;
         this.primaryContext = primary;
+        // Add self to context list
+        this.dataSource.allContexts.add(this);
     }
 
     private Connection getConnection() {
@@ -209,6 +211,9 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                 connection = null;
             }
         }
+
+        // Remove self from context list
+        this.dataSource.allContexts.remove(this);
     }
 
     //////////////////////////////////////////////////////////////
