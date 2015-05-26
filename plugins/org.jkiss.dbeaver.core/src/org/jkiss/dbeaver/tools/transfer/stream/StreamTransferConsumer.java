@@ -173,7 +173,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             lobDirectory = new File(settings.getOutputFolder(), LOB_DIRECTORY_NAME);
             if (!lobDirectory.exists()) {
                 if (!lobDirectory.mkdir()) {
-                    throw new IOException("Could not create directory for LOB files: " + lobDirectory.getAbsolutePath());
+                    throw new IOException("Can't create directory for LOB files: " + lobDirectory.getAbsolutePath());
                 }
             }
         }
@@ -229,7 +229,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             // init exporter
             processor.init(exportSite);
         } catch (DBException e) {
-            throw new DBCException("Could not initialize data exporter", e);
+            throw new DBCException("Can't initialize data exporter", e);
         }
     }
 

@@ -286,8 +286,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             catch (InvocationTargetException e) {
                 UIUtils.showErrorDialog(
                     shell,
-                    "Could not save content",
-                    "Could not save content to file '" + saveFile.getAbsolutePath() + "'",
+                    "Can't save content",
+                    "Can't save content to file '" + saveFile.getAbsolutePath() + "'",
                     e.getTargetException());
             }
             catch (InterruptedException e) {
@@ -329,8 +329,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             catch (InvocationTargetException e) {
                 UIUtils.showErrorDialog(
                     shell,
-                    "Could not load content",
-                    "Could not load content from file '" + loadFile.getAbsolutePath() + "'",
+                    "Can't load content",
+                    "Can't load content from file '" + loadFile.getAbsolutePath() + "'",
                     e.getTargetException());
             }
             catch (InterruptedException e) {
@@ -376,8 +376,8 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             catch (InvocationTargetException e) {
                 UIUtils.showErrorDialog(
                     getEditor().getSite().getShell(),
-                    "Could not apply content changes",
-                    "Could not apply content changes",
+                    "Can't apply content changes",
+                    "Can't apply content changes",
                     e.getTargetException());
             }
             catch (InterruptedException e) {

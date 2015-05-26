@@ -511,7 +511,7 @@ public class GenericDataSource extends JDBCDataSource
             return null;
         } catch (Exception ex) {
             // Schemas do not supported - just ignore this error
-            log.warn("Could not read schema list", ex);
+            log.warn("Can't read schema list", ex);
             return null;
         }
     }

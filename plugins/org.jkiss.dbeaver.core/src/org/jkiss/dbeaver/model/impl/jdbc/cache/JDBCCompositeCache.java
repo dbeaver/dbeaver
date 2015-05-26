@@ -270,7 +270,7 @@ public abstract class JDBCCompositeCache<
                         if (objectInfo == null) {
                             OBJECT object = fetchObject(session, owner, parent, objectName, dbResult);
                             if (object == null) {
-                                // Could not fetch object
+                                // Can't fetch object
                                 continue;
                             }
                             objectName = object.getName();

@@ -45,7 +45,7 @@ public class LoadingUtils {
         try {
             Method getter = findPropertyReadMethod(object.getClass(), propertyName);
             if (getter == null) {
-                log.warn("Could not find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
+                log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
                 return null;
             }
             Class<?>[] paramTypes = getter.getParameterTypes();
@@ -56,7 +56,7 @@ public class LoadingUtils {
                 // Read with progress monitor
                 return getter.invoke(object, monitor);
             } else {
-                log.warn("Could not read property '" + propertyName + "' - bad method signature: " + getter.toString());
+                log.warn("Can't read property '" + propertyName + "' - bad method signature: " + getter.toString());
                 return null;
             }
         }

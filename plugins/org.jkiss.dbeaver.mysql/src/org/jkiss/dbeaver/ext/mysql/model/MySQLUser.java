@@ -197,7 +197,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
                                 }
                                 MySQLPrivilege priv = getDataSource().getPrivilege(monitor, privName);
                                 if (priv == null) {
-                                    log.warn("Could not find privilege '" + privName + "'");
+                                    log.warn("Can't find privilege '" + privName + "'");
                                 } else {
                                     privileges.add(priv);
                                 }
@@ -205,7 +205,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
                             catalog = matcher.group(2);
                             table = matcher.group(3);
                         } else {
-                            log.warn("Could not parse GRANT string: " + grantString);
+                            log.warn("Can't parse GRANT string: " + grantString);
                             continue;
                         }
                         grants.add(

@@ -204,7 +204,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
         try {
             return formatterProfile.createFormatter(typeId);
         } catch (Exception e) {
-            log.error("Could not create formatter for datetime value handler", e); //$NON-NLS-1$
+            log.error("Can't create formatter for datetime value handler", e); //$NON-NLS-1$
             return DefaultDataFormatter.INSTANCE;
         }
     }

@@ -90,7 +90,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
                     ((DBDComplexValue) value).getObjectDataType().getName());
             }
         } catch (Exception e) {
-            log.warn("Could not extract complex type information", e); //$NON-NLS-1$
+            log.warn("Can't extract complex type information", e); //$NON-NLS-1$
         }
     }
 */

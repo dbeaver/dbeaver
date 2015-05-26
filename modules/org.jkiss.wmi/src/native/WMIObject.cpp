@@ -69,7 +69,7 @@ void WMIObject::ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags
 	// Fill class object properties
 	HRESULT hres = ptrClassObject->BeginEnumeration(lFlags);
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not start class object attributes enumeration", hres);
+		THROW_COMMON_ERROR(L"Can't start class object attributes enumeration", hres);
 		return;
 	}
 
@@ -80,7 +80,7 @@ void WMIObject::ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags
 		LONG flavor;
 		hres = ptrClassObject->Next(0, &propName, &propValue, &cimType, &flavor);
 		if (FAILED(hres)) {
-			THROW_COMMON_ERROR(L"Could not obtain next attribute from enumeration", hres);
+			THROW_COMMON_ERROR(L"Can't obtain next attribute from enumeration", hres);
 			break;
 		}
 		if (hres == WBEM_S_NO_MORE_DATA) {
@@ -117,7 +117,7 @@ void WMIObject::ReadAttributes(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags
 
 	hres = ptrClassObject->EndEnumeration();
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not finish class object enumeration", hres);
+		THROW_COMMON_ERROR(L"Can't finish class object enumeration", hres);
 	}
 }
 
@@ -128,7 +128,7 @@ void WMIObject::ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags, j
 	// Fill class object properties
 	HRESULT hres = ptrClassObject->BeginMethodEnumeration(lFlags);
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not start class object methods enumeration", hres);
+		THROW_COMMON_ERROR(L"Can't start class object methods enumeration", hres);
 		return;
 	}
 
@@ -138,7 +138,7 @@ void WMIObject::ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags, j
 		CComPtr<IWbemClassObject> ptrOutSignature;
 		hres = ptrClassObject->NextMethod(0, &methodName, &ptrInSignature, &ptrOutSignature);
 		if (FAILED(hres)) {
-			THROW_COMMON_ERROR(L"Could not obtain next method from enumeration", hres);
+			THROW_COMMON_ERROR(L"Can't obtain next method from enumeration", hres);
 			break;
 		}
 		if (hres == WBEM_S_NO_MORE_DATA) {
@@ -180,7 +180,7 @@ void WMIObject::ReadMethods(JNIEnv* pJavaEnv, jobject javaObject, LONG lFlags, j
 
 	hres = ptrClassObject->EndMethodEnumeration();
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not finish class object enumeration", hres);
+		THROW_COMMON_ERROR(L"Can't finish class object enumeration", hres);
 	}
 }
 
@@ -202,14 +202,14 @@ void WMIObject::ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isAttr
 		hres = ptrClassObject->GetMethodQualifierSet(bstrPropName, &ptrQFSet);
 	}
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not create qualifiers enumeration", hres);
+		THROW_COMMON_ERROR(L"Can't create qualifiers enumeration", hres);
 		return;
 	}
 
 	// Fill class object properties
 	hres = ptrQFSet->BeginEnumeration(0);
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not begin qualifiers enumeration", hres);
+		THROW_COMMON_ERROR(L"Can't begin qualifiers enumeration", hres);
 		return;
 	}
 
@@ -219,7 +219,7 @@ void WMIObject::ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isAttr
 		LONG flavor;
 		hres = ptrQFSet->Next(0, &qfName, &qfValue, &flavor);
 		if (FAILED(hres)) {
-			THROW_COMMON_ERROR(L"Could not obtain next qualifier from enumeration", hres);
+			THROW_COMMON_ERROR(L"Can't obtain next qualifier from enumeration", hres);
 			break;
 		}
 		if (hres == WBEM_S_NO_MORE_DATA) {
@@ -254,6 +254,6 @@ void WMIObject::ReadQualifiers(JNIEnv* pJavaEnv, jobject javaObject, bool isAttr
 
 	hres = ptrQFSet->EndEnumeration();
 	if (FAILED(hres)) {
-		THROW_COMMON_ERROR(L"Could not finish qualifiers enumeration", hres);
+		THROW_COMMON_ERROR(L"Can't finish qualifiers enumeration", hres);
 	}
 }

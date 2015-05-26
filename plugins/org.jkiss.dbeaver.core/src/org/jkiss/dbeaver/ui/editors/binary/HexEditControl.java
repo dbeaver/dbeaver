@@ -449,7 +449,7 @@ public class HexEditControl extends Composite {
                 try {
                     myClipboard.dispose();
                 } catch (IOException ex) {
-                    log.warn("Could not cleanup clipboard temporary data");
+                    log.warn("Can't cleanup clipboard temporary data");
                 }
             }
         });

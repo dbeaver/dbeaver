@@ -905,7 +905,7 @@ public class DataSourceDescriptor
                     }
                 }
             } catch (Throwable e) {
-                log.warn("Could not rollback active transaction before disconnect", e);
+                log.warn("Can't rollback active transaction before disconnect", e);
             } finally {
                 monitor.worked(1);
             }

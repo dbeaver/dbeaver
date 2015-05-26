@@ -83,7 +83,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                     connection.setAutoCommit(autoCommit);
                     this.autoCommit = autoCommit;
                 } catch (Throwable e) {
-                    log.warn("Could not set auto-commit state", e); //$NON-NLS-1$
+                    log.warn("Can't set auto-commit state", e); //$NON-NLS-1$
                 }
             }
             if (txnLevel != null) {
@@ -91,7 +91,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                     connection.setTransactionIsolation(txnLevel);
                     this.transactionIsolationLevel = txnLevel;
                 } catch (Throwable e) {
-                    log.warn("Could not set transaction isolation level", e); //$NON-NLS-1$
+                    log.warn("Can't set transaction isolation level", e); //$NON-NLS-1$
                 }
             }
             // Copy context state
@@ -102,7 +102,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                 try {
                     this.autoCommit = connection.getAutoCommit();
                 } catch (Throwable e) {
-                    log.warn("Could not check auto-commit state", e); //$NON-NLS-1$
+                    log.warn("Can't check auto-commit state", e); //$NON-NLS-1$
                 }
                 QMUtils.getDefaultHandler().handleContextOpen(this, !this.autoCommit);
             }

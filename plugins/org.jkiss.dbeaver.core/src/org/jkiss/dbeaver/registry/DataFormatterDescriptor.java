@@ -57,7 +57,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         try {
             sample = (DBDDataFormatterSample)objectClass.newInstance();
         } catch (Exception e) {
-            log.error("Could not instantiate data formatter '" + getId() + "' sample");
+            log.error("Can't instantiate data formatter '" + getId() + "' sample");
         }
     }
 

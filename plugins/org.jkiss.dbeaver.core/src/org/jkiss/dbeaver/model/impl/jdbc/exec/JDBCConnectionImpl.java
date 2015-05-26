@@ -267,7 +267,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     connection.clearWarnings();
                 }
             } catch (Throwable e) {
-                log.debug("Could not check for connection warnings", e);
+                log.debug("Can't check for connection warnings", e);
             }
         }
 

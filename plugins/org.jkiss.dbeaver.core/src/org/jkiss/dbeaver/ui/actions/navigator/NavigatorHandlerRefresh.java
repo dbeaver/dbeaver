@@ -116,7 +116,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         }
                     }
                     catch (DBException ex) {
-                        log.error("Could not refresh navigator node", ex);
+                        log.error("Can't refresh navigator node", ex);
                     }
                 }
                 return Status.OK_STATUS;
