@@ -40,7 +40,8 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
         DISCONNECTED,
         CONNECTED,
         RECONNECTED,
-        ALIVE
+        ALIVE,
+        ERROR
     }
 
     String getContextName();

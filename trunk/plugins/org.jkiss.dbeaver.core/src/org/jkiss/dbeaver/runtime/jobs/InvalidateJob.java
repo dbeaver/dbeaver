@@ -19,17 +19,31 @@ package org.jkiss.dbeaver.runtime.jobs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * InvalidateJob
  */
 public class InvalidateJob extends DataSourceJob
 {
+    public static class ContextInvalidateResult {
+        public final DBCExecutionContext.InvalidateResult result;
+        public final Exception error;
+
+        public ContextInvalidateResult(DBCExecutionContext.InvalidateResult result, Exception error) {
+            this.result = result;
+            this.error = error;
+        }
+    }
+
     private long timeSpent;
-    private DBCExecutionContext.InvalidateResult invalidateResult;
-    private Exception invalidateError;
+    private List<ContextInvalidateResult> invalidateResults = new ArrayList<ContextInvalidateResult>();
 
     public InvalidateJob(
         DBCExecutionContext context)
@@ -37,12 +51,8 @@ public class InvalidateJob extends DataSourceJob
         super("Invalidate " + context.getDataSource().getContainer().getName(), null, context);
     }
 
-    public DBCExecutionContext.InvalidateResult getInvalidateResult() {
-        return invalidateResult;
-    }
-
-    public Exception getInvalidateError() {
-        return invalidateError;
+    public List<ContextInvalidateResult> getInvalidateResults() {
+        return invalidateResults;
     }
 
     public long getTimeSpent() {
@@ -52,20 +62,21 @@ public class InvalidateJob extends DataSourceJob
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
-        try {
-            // Close datasource
-            monitor.subTask("Invalidate datasource");
+        DBPDataSource dataSource = getExecutionContext().getDataSource();
+        // Invalidate datasource
+        monitor.subTask("Invalidate datasource [" + dataSource.getContainer().getName() + "]");
+        List<DBCExecutionContext> allContexts = new ArrayList<DBCExecutionContext>(dataSource.getAllContexts());
+        for (DBCExecutionContext context : allContexts) {
             long startTime = System.currentTimeMillis();
             try {
-                invalidateResult = getExecutionContext().invalidateContext(monitor);
+                invalidateResults.add(new ContextInvalidateResult(context.invalidateContext(monitor), null));
+            } catch (Exception e) {
+                invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
             } finally {
-                timeSpent = System.currentTimeMillis() - startTime;
+                timeSpent += (System.currentTimeMillis() - startTime);
             }
+        }
 
-        }
-        catch (Exception ex) {
-            invalidateError = ex;
-        }
         return Status.OK_STATUS;
     }
 
