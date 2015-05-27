@@ -64,35 +64,37 @@ public class DataSourceInvalidateHandler extends DataSourceHandler
             invalidateJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
-                    String message;
-                    boolean error;
-                    if (invalidateJob.getInvalidateError() != null) {
-                        message = "Error: " + invalidateJob.getInvalidateError().getMessage();
-                        error = true;
-                    } else {
-                        switch (invalidateJob.getInvalidateResult()) {
-                            case DISCONNECTED:
-                                message = "Not connected";
-                                error = true;
-                                break;
+                    StringBuilder message = new StringBuilder();
+                    boolean error = false;
+                    int totalNum = 0, connectedNum = 0, aliveNum = 0;
+                    for (InvalidateJob.ContextInvalidateResult result : invalidateJob.getInvalidateResults()) {
+                        totalNum++;
+                        if (result.error != null) {
+                            error = true;
+                            if (message.length() > 0) message.append("\n");
+                            message.append("Error: ").append(result.error.getMessage());
+                        }
+                        switch (result.result) {
                             case CONNECTED:
-                                message = "Connected";
-                                error = false;
-                                break;
                             case RECONNECTED:
-                                message = "Connection was reopened";
-                                error = false;
+                                connectedNum++;
+                                break;
+                            case ALIVE:
+                                aliveNum++;
                                 break;
                             default:
-                                message = "Connection is alive";
-                                error = false;
                                 break;
                         }
                     }
+                    if (connectedNum > 0) {
+                        message.insert(0, "Connections reopened: " + connectedNum + " (of " + totalNum + ")");
+                    } else if (message.length() == 0) {
+                        message.insert(0, "All connections (" + totalNum + ") are alive!");
+                    }
                     UIUtils.showMessageBox(
                         shell,
-                        "Invalidate [" + context.getContextName() + "]",
-                        message,// + "\nTime spent: " + RuntimeUtils.formatExecutionTime(invalidateJob.getTimeSpent()),
+                        "Invalidate data source [" + context.getDataSource().getContainer().getName() + "]",
+                        message.toString(),// + "\nTime spent: " + RuntimeUtils.formatExecutionTime(invalidateJob.getTimeSpent()),
                         error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
                 }
             });
