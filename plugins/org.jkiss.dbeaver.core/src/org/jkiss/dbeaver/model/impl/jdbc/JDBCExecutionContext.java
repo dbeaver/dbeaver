@@ -58,8 +58,6 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
         this.dataSource = dataSource;
         this.purpose = purpose;
         this.primaryContext = primary;
-        // Add self to context list
-        this.dataSource.allContexts.add(this);
     }
 
     private Connection getConnection() {
@@ -110,6 +108,8 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
             // Copy context state
             dataSource.initializeContextState(monitor, this, primaryContext);
 
+            // Add self to context list
+            this.dataSource.allContexts.add(this);
         } finally {
             ACTIVE_CONTEXT.remove();
         }

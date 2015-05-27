@@ -568,7 +568,7 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnected()
     {
-        return connectTime != null;
+        return dataSource != null && dataSource.getDefaultContext(false).isConnected();
     }
 
     @Override
