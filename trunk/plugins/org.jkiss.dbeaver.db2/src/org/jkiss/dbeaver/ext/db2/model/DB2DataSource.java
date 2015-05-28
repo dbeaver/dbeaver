@@ -185,8 +185,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         this.dataTypeCache.getObjects(monitor, this);
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
-        if (!primary) {
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+        if (setActiveObject) {
             setCurrentSchema(monitor, context, getSelectedObject());
         }
     }
