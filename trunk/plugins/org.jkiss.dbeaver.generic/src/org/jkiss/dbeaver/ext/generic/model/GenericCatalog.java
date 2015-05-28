@@ -21,8 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -186,7 +188,10 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
             throw new DBException("Wrong child object specified as active: " + object);
         }
 
-        getDataSource().setActiveEntityName(monitor, getDataSource().getExecutionContext(), object);
+        GenericDataSource dataSource = getDataSource();
+        for (JDBCExecutionContext context : dataSource.getAllContexts()) {
+            dataSource.setActiveEntityName(monitor, context, object);
+        }
 
         if (oldSelectedEntity != null) {
             DBUtils.fireObjectSelect(oldSelectedEntity, false);

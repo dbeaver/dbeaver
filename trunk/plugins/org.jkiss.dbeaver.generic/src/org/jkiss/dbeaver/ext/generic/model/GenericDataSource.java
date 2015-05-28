@@ -686,7 +686,9 @@ public class GenericDataSource extends JDBCDataSource
             throw new DBException("Bad child object specified as active: " + object);
         }
 
-        setActiveEntityName(monitor, executionContext, object);
+        for (JDBCExecutionContext context : getAllContexts()) {
+            setActiveEntityName(monitor, context, object);
+        }
 
         if (oldSelectedEntity != null) {
             DBUtils.fireObjectSelect(oldSelectedEntity, false);

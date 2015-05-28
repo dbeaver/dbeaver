@@ -350,7 +350,9 @@ public class OracleDataSource extends JDBCDataSource
         if (!(object instanceof OracleSchema)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
-        setCurrentSchema(monitor, executionContext, (OracleSchema)object);
+        for (JDBCExecutionContext context : getAllContexts()) {
+            setCurrentSchema(monitor, context, (OracleSchema) object);
+        }
         activeSchemaName = object.getName();
 
         // Send notifications
