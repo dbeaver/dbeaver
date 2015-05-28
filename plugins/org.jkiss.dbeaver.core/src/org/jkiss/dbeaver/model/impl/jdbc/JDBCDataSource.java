@@ -62,7 +62,7 @@ public abstract class JDBCDataSource
 
     protected final JDBCExecutionContext executionContext;
     protected volatile JDBCExecutionContext metaContext;
-    protected final List<DBCExecutionContext> allContexts = new ArrayList<DBCExecutionContext>();
+    protected final List<JDBCExecutionContext> allContexts = new ArrayList<JDBCExecutionContext>();
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected volatile SQLDialect sqlDialect;
 
@@ -249,7 +249,7 @@ public abstract class JDBCDataSource
 
     @NotNull
     @Override
-    public Collection<DBCExecutionContext> getAllContexts() {
+    public Collection<JDBCExecutionContext> getAllContexts() {
         return allContexts;
     }
 

@@ -51,6 +51,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -221,7 +222,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             return ""; //$NON-NLS-1$
         }
     };
-    private static LogColumn COLUMN_CONNECTION = new LogColumn(CoreMessages.controls_querylog_column_connection_name, CoreMessages.controls_querylog_column_connection_tooltip, 150) {
+    private static LogColumn COLUMN_DATA_SOURCE = new LogColumn(CoreMessages.controls_querylog_column_connection_name, CoreMessages.controls_querylog_column_connection_tooltip, 150) {
         @Override
         String getText(QMMObject object)
         {
@@ -240,6 +241,27 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             return container == null ? "?" : container.getName();
         }
     };
+    private static LogColumn COLUMN_CONTEXT = new LogColumn(CoreMessages.controls_querylog_column_context_name, CoreMessages.controls_querylog_column_context_tooltip, 150) {
+        @Override
+        String getText(QMMObject object) {
+            DBCExecutionContext context = null;
+            if (object instanceof QMMSessionInfo) {
+                context = ((QMMSessionInfo) object).getReference();
+            } else if (object instanceof QMMTransactionInfo) {
+                context = ((QMMTransactionInfo) object).getSession().getReference();
+            } else if (object instanceof QMMTransactionSavepointInfo) {
+                context = ((QMMTransactionSavepointInfo) object).getTransaction().getSession().getReference();
+            } else if (object instanceof QMMStatementInfo) {
+                context = ((QMMStatementInfo) object).getSession().getReference();
+            } else if (object instanceof QMMStatementExecuteInfo) {
+                context = ((QMMStatementExecuteInfo) object).getStatement().getSession().getReference();
+            }
+            if (context == null) {
+                return "?";
+            }
+            return context.getContextName();
+        }
+    };
     private static LogColumn[] ALL_COLUMNS = new LogColumn[] {
         COLUMN_TIME,
         COLUMN_TYPE,
@@ -247,7 +269,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         COLUMN_DURATION,
         COLUMN_ROWS,
         COLUMN_RESULT,
-        COLUMN_CONNECTION,
+        COLUMN_DATA_SOURCE,
+        COLUMN_CONTEXT,
     };
 
     private final IWorkbenchPartSite site;
@@ -355,7 +378,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         columns.clear();
 
         for (LogColumn logColumn : ALL_COLUMNS) {
-            if (!showConnection && logColumn == COLUMN_CONNECTION) {
+            if (!showConnection && (logColumn == COLUMN_DATA_SOURCE || logColumn == COLUMN_CONTEXT)) {
                 continue;
             }
             TableColumn tableColumn = UIUtils.createTableColumn(logTable, SWT.NONE, logColumn.title);

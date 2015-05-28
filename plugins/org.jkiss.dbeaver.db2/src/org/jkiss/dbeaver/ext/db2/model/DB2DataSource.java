@@ -367,7 +367,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
 
-        setCurrentSchema(monitor, executionContext, (DB2Schema)object);
+        for (JDBCExecutionContext context : getAllContexts()) {
+            setCurrentSchema(monitor, context, (DB2Schema) object);
+        }
 
         activeSchemaName = object.getName();
 
