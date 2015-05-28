@@ -104,13 +104,13 @@ public class OracleDataSource extends JDBCDataSource
         return connection;
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         // Enable DBMS output
         enableServerOutput(
             monitor,
             context,
             isServerOutputEnabled());
-        if (!primary) {
+        if (setActiveObject) {
             setCurrentSchema(monitor, context, getSelectedObject());
         }
     }
