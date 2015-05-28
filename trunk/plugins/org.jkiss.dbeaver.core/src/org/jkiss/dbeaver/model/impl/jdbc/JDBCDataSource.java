@@ -70,7 +70,7 @@ public abstract class JDBCDataSource
         throws DBException
     {
         this.container = container;
-        this.executionContext = new JDBCExecutionContext(this, "Main connection", true);
+        this.executionContext = new JDBCExecutionContext(this, "Main", true);
         this.executionContext.connect(monitor);
     }
 
@@ -259,7 +259,7 @@ public abstract class JDBCDataSource
     {
         if (!isEmbeddedDataSource() && container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {
             synchronized (this) {
-                this.metaContext = new JDBCExecutionContext(this, "Metadata reader", true);
+                this.metaContext = new JDBCExecutionContext(this, "Metadata", true);
                 this.metaContext.connect(monitor, true, null, false);
             }
         }
