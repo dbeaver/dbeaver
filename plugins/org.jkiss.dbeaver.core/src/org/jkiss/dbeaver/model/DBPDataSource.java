@@ -63,7 +63,7 @@ public interface DBPDataSource extends DBPObject, DBPCloseableObject
      * @return collection of contexts
      */
     @NotNull
-    Collection<DBCExecutionContext> getAllContexts();
+    Collection<? extends DBCExecutionContext> getAllContexts();
 
     /**
      * Opens new isolated execution context.

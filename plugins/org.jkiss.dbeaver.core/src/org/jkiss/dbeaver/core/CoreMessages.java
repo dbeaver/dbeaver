@@ -263,6 +263,8 @@ public class CoreMessages extends NLS {
 
     public static String controls_querylog_column_connection_name;
     public static String controls_querylog_column_connection_tooltip;
+	public static String controls_querylog_column_context_name;
+	public static String controls_querylog_column_context_tooltip;
 
     public static String controls_querylog_commit;
 
