@@ -24,14 +24,11 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -66,10 +63,10 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
 
     public void connect(DBRProgressMonitor monitor) throws DBCException
     {
-        connect(monitor, null, null);
+        connect(monitor, null, null, false);
     }
 
-    public void connect(DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel) throws DBCException
+    void connect(DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, boolean forceActiveObject) throws DBCException
     {
         if (connection != null) {
             log.error("Reopening not-closed connection");
@@ -106,7 +103,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
             QMUtils.getDefaultHandler().handleContextOpen(this, !this.autoCommit);
 
             // Copy context state
-            dataSource.initializeContextState(monitor, this, primaryContext);
+            dataSource.initializeContextState(monitor, this, !primaryContext || forceActiveObject);
 
             // Add self to context list
             this.dataSource.allContexts.add(this);
@@ -167,26 +164,11 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
             Boolean prevAutocommit = autoCommit;
             Integer txnLevel = transactionIsolationLevel;
             close();
-            connect(monitor, prevAutocommit, txnLevel);
-            invalidateState(monitor);
+            connect(monitor, prevAutocommit, txnLevel, true);
+
             return InvalidateResult.RECONNECTED;
         }
         return InvalidateResult.ALIVE;
-    }
-
-    protected void invalidateState(DBRProgressMonitor monitor)
-    {
-        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, this);
-        if (objectSelector != null && objectSelector.supportsObjectSelect()) {
-            DBSObject selectedObject = objectSelector.getSelectedObject();
-            if (selectedObject != null) {
-                try {
-                    objectSelector.selectObject(monitor, selectedObject);
-                } catch (DBException e) {
-                    log.warn("Can't select object '" + selectedObject.getName() + "'", e);
-                }
-            }
-        }
     }
 
     @Override

@@ -105,8 +105,8 @@ public class GenericDataSource extends JDBCDataSource
         return executionContext;
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
-        if (!primary) {
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+        if (setActiveObject) {
             setActiveEntityName(monitor, context, getSelectedObject());
         }
     }

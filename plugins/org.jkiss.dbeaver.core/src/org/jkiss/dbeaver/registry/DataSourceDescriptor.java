@@ -699,28 +699,30 @@ public class DataSourceDescriptor
                         }
                     }
                 }
-                // Set active object
-                if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
-                    String activeObject = getDefaultActiveObject();
-                    if (!CommonUtils.isEmptyTrimmed(activeObject)) {
-                        DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
-                        if (child != null) {
-                            try {
-                                ((DBSObjectSelector) dataSource).selectObject(monitor, child);
-                            } catch (DBException e) {
-                                log.warn("Can't select active object", e);
-                            }
-                        } else {
-                            log.debug("Object '" + activeObject + "' not found");
-                        }
-                    }
-                }
             } catch (DBCException e) {
                 log.error("Can't set session transactions state", e);
             } finally {
                 monitor.worked(1);
             }
         }
+
+        // Set active object
+        if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
+            String activeObject = getDefaultActiveObject();
+            if (!CommonUtils.isEmptyTrimmed(activeObject)) {
+                DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
+                if (child != null) {
+                    try {
+                        ((DBSObjectSelector) dataSource).selectObject(monitor, child);
+                    } catch (DBException e) {
+                        log.warn("Can't select active object", e);
+                    }
+                } else {
+                    log.debug("Object '" + activeObject + "' not found");
+                }
+            }
+        }
+
     }
 
     @Override

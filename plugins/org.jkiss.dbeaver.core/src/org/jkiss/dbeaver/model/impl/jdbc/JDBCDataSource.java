@@ -206,7 +206,7 @@ public abstract class JDBCDataSource
         return context;
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean primary) throws DBCException {
+    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
 
     }
 
@@ -260,7 +260,7 @@ public abstract class JDBCDataSource
         if (!isEmbeddedDataSource() && container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {
             synchronized (this) {
                 this.metaContext = new JDBCExecutionContext(this, "Metadata reader", true);
-                this.metaContext.connect(monitor, true, null);
+                this.metaContext.connect(monitor, true, null, false);
             }
         }
         JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, CoreMessages.model_html_read_database_meta_data);
