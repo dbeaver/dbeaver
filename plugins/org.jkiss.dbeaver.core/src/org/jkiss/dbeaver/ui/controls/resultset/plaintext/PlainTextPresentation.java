@@ -202,7 +202,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
             for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
-                colWidths[i] = attr.getName().length();
+                colWidths[i] = getAttributeName(attr).length();
                 for (ResultSetRow row : allRows) {
                     String displayString = getCellString(model, attr, row);
                     colWidths[i] = Math.max(colWidths[i], displayString.length());
@@ -220,7 +220,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             // Print header
             for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
-                String attrName = attr.getName();
+                String attrName = getAttributeName(attr);
                 grid.append(attrName);
                 for (int k = colWidths[i] - attrName.length(); k > 0; k--) {
                     grid.append(" ");
@@ -272,6 +272,14 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         totalRows = allRows.size();
     }
 
+    private static String getAttributeName(DBDAttributeBinding attr) {
+        if (CommonUtils.isEmpty(attr.getLabel())) {
+            return attr.getName();
+        } else {
+            return attr.getLabel();
+        }
+    }
+
     private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row) {
         String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), DBDDisplayFormat.EDIT);
         return TextUtils.getSingleLineString(displayString);
@@ -284,11 +292,11 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         String[] values = new String[attrs.size()];
         ResultSetRow currentRow = controller.getCurrentRow();
 
-            // Calculate column widths
+        // Calculate column widths
         int nameWidth = 4, valueWidth = 5;
         for (int i = 0; i < attrs.size(); i++) {
             DBDAttributeBinding attr = attrs.get(i);
-            nameWidth = Math.max(nameWidth, attr.getName().length());
+            nameWidth = Math.max(nameWidth, getAttributeName(attr).length());
             values[i] = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, currentRow), DBDDisplayFormat.EDIT);
             valueWidth = Math.max(valueWidth, values[i].length());
         }
@@ -307,7 +315,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         // Values
         for (int i = 0; i < attrs.size(); i++) {
             DBDAttributeBinding attr = attrs.get(i);
-            String name = attr.getName();
+            String name = getAttributeName(attr);
             grid.append(name);
             for (int j = nameWidth - name.length(); j > 0; j--) {
                 grid.append(" ");
