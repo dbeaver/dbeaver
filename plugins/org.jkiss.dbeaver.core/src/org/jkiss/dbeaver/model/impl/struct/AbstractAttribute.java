@@ -146,7 +146,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(viewable = false, order = 60)
+    @Property(viewable = true, order = 60)
     public int getScale()
     {
         return scale;
@@ -158,7 +158,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(viewable = false, order = 61)
+    @Property(viewable = true, order = 61)
     public int getPrecision()
     {
         return precision;
