@@ -159,6 +159,20 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return super.getMaxLength();
     }
 
+    @Override
+    @Property(viewable = true, order = 41)
+    public int getScale()
+    {
+        return super.getScale();
+    }
+
+    @Override
+    @Property(viewable = true, order = 42)
+    public int getPrecision()
+    {
+        return super.getPrecision();
+    }
+
     @Property(viewable = true, editable = true, updatable = true, order = 50)
     @Override
     public boolean isRequired()
