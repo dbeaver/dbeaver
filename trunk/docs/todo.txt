@@ -1,3 +1,4 @@
+quick-search in navigator tree
 Extract non-visual part to a separate plugin
 RSV find/replace action
 Vertica keywords

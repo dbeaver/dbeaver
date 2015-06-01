@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
+import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -102,6 +104,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
 //                }
 //            });
         } else {
+            //FilteredTree filteredTree = new FilteredTree(this, treeStyle, new TreeFilter(), true);
             this.viewer = new TreeViewer(this, treeStyle) {
                 @Override
                 public ISelection getSelection()
@@ -406,4 +409,15 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         if (oldEditor != null) oldEditor.dispose();
     }
 
+    private static class TreeFilter extends PatternFilter {
+        @Override
+        public boolean isElementVisible(Viewer viewer, Object element) {
+            Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) viewer)
+                .getContentProvider()).getParent(element);
+            if (parent != null && isLeafMatch(viewer, parent)) {
+                return true;
+            }
+            return isParentMatch(viewer, element) || isLeafMatch(viewer, element);
+        }
+    }
 }
