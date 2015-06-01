@@ -22,7 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.ui.ISingleControlEditor;
+import org.jkiss.dbeaver.ui.ISingleControlEditor;
 
 import javax.activation.MimeType;
 

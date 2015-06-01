@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.IPropertyChangeReflector;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ext.ui.ISingleControlEditor;
+import org.jkiss.dbeaver.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
