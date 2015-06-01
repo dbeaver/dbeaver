@@ -18,10 +18,13 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
  * DB editor utils
@@ -42,16 +45,21 @@ public class DatabaseEditorUtils {
             return;
         }
 
-        DBCExecutionContext context = null;
-        if (editor instanceof DBPContextProvider) {
-            context = ((DBPContextProvider) editor).getExecutionContext();
+        Color bgColor = null;
+        if (editor instanceof IDataSourceContainerProvider) {
+            DBSDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
+            if (container != null) {
+                bgColor = container.getConnectionInfo().getColor();
+            }
+        } else if (editor instanceof DBPContextProvider) {
+            DBCExecutionContext context = ((DBPContextProvider) editor).getExecutionContext();
+            bgColor = context.getDataSource().getContainer().getConnectionInfo().getColor();
         }
-        if (context == null) {
+        if (bgColor == null) {
             rootComposite.setBackground(null);
-            return;
+        } else {
+            rootComposite.setBackground(bgColor);
         }
-        rootComposite.setBackground(
-            context.getDataSource().getContainer().getConnectionInfo().getColor());
     }
 
 }
