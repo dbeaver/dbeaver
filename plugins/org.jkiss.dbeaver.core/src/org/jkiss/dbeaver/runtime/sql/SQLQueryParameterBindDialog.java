@@ -362,7 +362,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             } else {
                 parameter.setValue(value);
             }
-            String displayString = getValueHandler().getValueDisplayString(parameter, value, DBDDisplayFormat.NATIVE);
+            String displayString = getValueHandler().getValueDisplayString(parameter, value, DBDDisplayFormat.EDIT);
             item.setText(3, displayString);
             String paramName = parameter.getName();
             boolean isNumber = true;

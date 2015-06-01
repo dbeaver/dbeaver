@@ -477,7 +477,8 @@ public class SQLQueryJob extends DataSourceJob
             }
         };
         UIUtils.runInUI(partSite.getShell(), binder);
-        return binder.getResult();
+        Boolean result = binder.getResult();
+        return result != null && result;
     }
 
     private void bindStatementParameters(DBCSession session, SQLQuery sqlStatement) throws DBCException {
