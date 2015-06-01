@@ -45,7 +45,14 @@ public class CustomTimeEditor {
         if (value == null) {
             value = new Date(0l);
         }
-        String timeText = formatter.formatValue(value);
+        String timeText;
+        if (value instanceof Date) {
+            timeText = formatter.formatValue(value);
+        } else if (value instanceof String) {
+            timeText = (String) value;
+        } else {
+            timeText = value.toString();
+        }
         timeEditor.setText(timeText);
     }
 
