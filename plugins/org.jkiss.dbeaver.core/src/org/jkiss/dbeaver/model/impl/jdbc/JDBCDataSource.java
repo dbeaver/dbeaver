@@ -132,7 +132,7 @@ public abstract class JDBCDataSource
                     // Just write a warning in log. Some drivers are poorly coded and always returns false here.
                     log.error("Bad URL: " + connectionInfo.getUrl());
                 }
-            } catch (SQLException e) {
+            } catch (Throwable e) {
                 log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL()", e);
             }
             Connection connection;
