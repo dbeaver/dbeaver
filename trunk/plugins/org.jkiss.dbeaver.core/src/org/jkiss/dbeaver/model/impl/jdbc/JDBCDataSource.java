@@ -127,9 +127,13 @@ public abstract class JDBCDataSource
         }
         // Obtain connection
         try {
-            if (driverInstance != null && !driverInstance.acceptsURL(connectionInfo.getUrl())) {
-                // Just write a warning in log. Some drivers are poorly coded and always returns false here.
-                log.error("Bad URL: " + connectionInfo.getUrl());
+            try {
+                if (driverInstance != null && !driverInstance.acceptsURL(connectionInfo.getUrl())) {
+                    // Just write a warning in log. Some drivers are poorly coded and always returns false here.
+                    log.error("Bad URL: " + connectionInfo.getUrl());
+                }
+            } catch (SQLException e) {
+                log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL()", e);
             }
             Connection connection;
             if (driverInstance == null) {
