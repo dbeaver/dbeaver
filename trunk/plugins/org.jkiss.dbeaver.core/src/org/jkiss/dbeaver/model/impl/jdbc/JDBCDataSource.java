@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -58,6 +59,7 @@ public abstract class JDBCDataSource
         DBCQueryTransformProvider,
         IAdaptable
 {
+    static final Log log = Log.getLog(JDBCDataSource.class);
     private final DBSDataSourceContainer container;
 
     protected final JDBCExecutionContext executionContext;
@@ -126,7 +128,8 @@ public abstract class JDBCDataSource
         // Obtain connection
         try {
             if (driverInstance != null && !driverInstance.acceptsURL(connectionInfo.getUrl())) {
-                throw new DBCException("Bad URL: " + connectionInfo.getUrl());
+                // Just write a warning in log. Some drivers are poorly coded and always returns false here.
+                log.error("Bad URL: " + connectionInfo.getUrl());
             }
             Connection connection;
             if (driverInstance == null) {
