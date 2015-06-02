@@ -823,7 +823,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         loadLibraries(runnableContext);
 
         if (!acceptDriverLicenses(runnableContext)) {
-            throw new DBException("You have to accept driver '" + getName() + "' license to be able to connect");
+            throw new DBException("You have to accept driver '" + getFullName() + "' license to be able to connect");
         }
 
         try {
