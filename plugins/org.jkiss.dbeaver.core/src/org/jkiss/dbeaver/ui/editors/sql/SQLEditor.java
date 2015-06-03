@@ -235,7 +235,7 @@ public class SQLEditor extends SQLEditorBase implements
             } else if (curDataSource != dataSource) {
                 releaseExecutionContext();
                 curDataSource = dataSource;
-                if (dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
+                if (getActivePreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
                     try {
                         DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                             @Override
@@ -661,9 +661,11 @@ public class SQLEditor extends SQLEditorBase implements
             queryOffset = query.getOffset() + query.getLength() + 1;
         }
 
-        // Parse parameters
-        for (SQLQuery query : queryList) {
-            query.parseParameters(getDocument(), getSyntaxManager());
+        if (getActivePreferenceStore().getBoolean(DBeaverPreferences.SQL_PARAMETERS_ENABLED)) {
+            // Parse parameters
+            for (SQLQuery query : queryList) {
+                query.parseParameters(getDocument(), getSyntaxManager());
+            }
         }
         return queryList;
     }
