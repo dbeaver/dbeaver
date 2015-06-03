@@ -46,6 +46,7 @@ import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -124,6 +125,11 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         return context == null ? null : context.getDataSource();
     }
 
+    public IPreferenceStore getActivePreferenceStore() {
+        DBPDataSource dataSource = getDataSource();
+        return dataSource == null ? DBeaverCore.getGlobalPreferenceStore() : dataSource.getContainer().getPreferenceStore();
+    }
+
     public boolean hasAnnotations()
     {
         return false;
@@ -169,7 +175,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         {
             SQLSymbolInserter symbolInserter = new SQLSymbolInserter(this);
 
-            IPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
+            IPreferenceStore preferenceStore = getActivePreferenceStore();
             boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
             boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
             boolean closeBrackets = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
@@ -185,7 +191,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
 
         if (decorationSupport != null) {
-            decorationSupport.install(getPreferenceStore());
+            decorationSupport.install(getActivePreferenceStore());
         }
     }
 
@@ -466,7 +472,9 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         if (sqlQuery == null || CommonUtils.isEmpty(sqlQuery.getQuery())) {
             return null;
         }
-        sqlQuery.parseParameters(getDocument(), getSyntaxManager());
+        if (getActivePreferenceStore().getBoolean(DBeaverPreferences.SQL_PARAMETERS_ENABLED)) {
+            sqlQuery.parseParameters(getDocument(), getSyntaxManager());
+        }
         return sqlQuery;
     }
 
