@@ -245,7 +245,7 @@
 
         <command id="org.jkiss.dbeaver.core.process.stop" name="%command.org.jkiss.dbeaver.core.process.stop.name" description="%command.org.jkiss.dbeaver.core.process.stop.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
-        <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="Content Format" description="Format text"/>
+        <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="Content Format" description="Format SQL text" categoryId="org.jkiss.dbeaver.core.sql"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
