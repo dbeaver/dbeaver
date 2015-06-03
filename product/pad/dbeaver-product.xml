@@ -40,6 +40,20 @@
     <versions>
 
         <version>
+            <number>3.4.1</number>
+            <type>major</type>
+            <date>03.06.2015</date>
+
+            <release-notes>
+                - Support of separate connections for SQL editor added
+                - Connection invalidate improved
+                - Plain text presentation was fixed
+                - Date/time editor was fixed
+                - Many minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.4.0</number>
             <type>major</type>
             <date>18.05.2015</date>
