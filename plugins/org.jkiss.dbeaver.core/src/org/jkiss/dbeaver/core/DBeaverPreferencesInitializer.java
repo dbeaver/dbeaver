@@ -92,6 +92,9 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_AUTO_FOLDERS, false);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_TITLE_PATTERN, SQLEditorInput.DEFAULT_PATTERN);
 
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SQL_PARAMETERS_ENABLED, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SQL_PARAMETERS_MARK, "?");
+
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 10 * 1000);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, 10000);

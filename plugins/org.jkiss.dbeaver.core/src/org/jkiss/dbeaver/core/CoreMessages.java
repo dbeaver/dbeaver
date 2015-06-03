@@ -1255,6 +1255,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_checkbox_fetch_resultsets;
 	public static String pref_page_sql_editor_text_statement_delimiter;
     public static String pref_page_sql_editor_checkbox_ignore_native_delimiter;
+	public static String pref_page_sql_editor_checkbox_enable_sql_parameters;
 	public static String pref_page_sql_editor_title_pattern;
 	public static String pref_page_sql_editor_checkbox_put_new_scripts;
 
