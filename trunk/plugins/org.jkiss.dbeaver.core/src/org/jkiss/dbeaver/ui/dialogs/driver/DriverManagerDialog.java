@@ -17,9 +17,9 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.viewers.*;
@@ -37,10 +37,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -55,7 +58,7 @@ import java.util.List;
 /**
  * EditDriverDialog
  */
-public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener, IRunnableContext {
+public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener, DBRRunnableContext {
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
 
@@ -353,7 +356,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     }
 
     @Override
-    public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
+    public void run(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
     {
         // Code copied from WizardDialog
         if (monitorPart != null) {
@@ -365,7 +368,16 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         // thread.
         // Otherwise the UI is blocked anyway.
         try {
-            ModalContext.run(runnable, true, monitorPart, getShell().getDisplay());
+            ModalContext.run(
+                new IRunnableWithProgress() {
+                    @Override
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        runnable.run(new DefaultProgressMonitor(monitor));
+                    }
+                },
+                true,
+                monitorPart,
+                getShell().getDisplay());
         } finally {
             // explicitly invoke done() on our progress monitor so that its
             // label does not spill over to the next invocation, see bug 271530

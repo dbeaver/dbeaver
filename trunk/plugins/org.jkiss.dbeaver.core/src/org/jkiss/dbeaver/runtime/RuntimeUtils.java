@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -162,13 +163,13 @@ public class RuntimeUtils {
         return new DefaultProgressMonitor(monitor);
     }
 
-    public static IRunnableContext makeContext(final DBRProgressMonitor monitor)
+    public static DBRRunnableContext makeContext(final DBRProgressMonitor monitor)
     {
-        return new IRunnableContext() {
+        return new DBRRunnableContext() {
             @Override
-            public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
+            public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
             {
-                runnable.run(monitor.getNestedMonitor());
+                runnable.run(monitor);
             }
         };
     }

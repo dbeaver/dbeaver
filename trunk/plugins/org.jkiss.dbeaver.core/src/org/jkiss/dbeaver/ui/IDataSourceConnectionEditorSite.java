@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -32,7 +33,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
  */
 public interface IDataSourceConnectionEditorSite
 {
-    IRunnableContext getRunnableContext();
+    DBRRunnableContext getRunnableContext();
 
     DataSourceRegistry getDataSourceRegistry();
 

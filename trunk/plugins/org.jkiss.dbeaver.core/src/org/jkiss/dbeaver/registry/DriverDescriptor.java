@@ -18,13 +18,10 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
@@ -40,6 +37,9 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
@@ -487,7 +487,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    public Object getDriverInstance(IRunnableContext runnableContext)
+    public Object getDriverInstance(DBRRunnableContext runnableContext)
         throws DBException
     {
         if (driverInstance == null) {
@@ -801,13 +801,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    public void loadDriver(IRunnableContext runnableContext)
+    public void loadDriver(DBRRunnableContext runnableContext)
         throws DBException
     {
         this.loadDriver(runnableContext, false);
     }
 
-    public void loadDriver(IRunnableContext runnableContext, boolean forceReload)
+    public void loadDriver(DBRRunnableContext runnableContext, boolean forceReload)
         throws DBException
     {
         if (isLoaded && !forceReload) {
@@ -850,7 +850,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private void loadLibraries(IRunnableContext runnableContext)
+    private void loadLibraries(DBRRunnableContext runnableContext)
         throws DBException
     {
         this.classLoader = null;
@@ -880,7 +880,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    public void validateFilesPresence(final IRunnableContext runnableContext)
+    public void validateFilesPresence(final DBRRunnableContext runnableContext)
     {
         for (DriverFileDescriptor file : files) {
             if (file.isCustom() && file.getFile().exists()) {
@@ -935,7 +935,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private void downloadLibraryFiles(IRunnableContext runnableContext, final List<DriverFileDescriptor> files)
+    private void downloadLibraryFiles(DBRRunnableContext runnableContext, final List<DriverFileDescriptor> files)
     {
         if (!acceptDriverLicenses(runnableContext)) {
             return;
@@ -958,7 +958,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private boolean acceptDriverLicenses(IRunnableContext runnableContext)
+    private boolean acceptDriverLicenses(DBRRunnableContext runnableContext)
     {
         // User must accept all licenses before actual drivers download
         for (final DriverFileDescriptor file : getFiles()) {
@@ -966,9 +966,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 final File libraryFile = file.getFile();
                 if (!libraryFile.exists()) {
                     try {
-                        runnableContext.run(true, true, new IRunnableWithProgress() {
+                        runnableContext.run(true, true, new DBRRunnableWithProgress() {
                             @Override
-                            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 try {
                                     downloadLibraryFile(monitor, file);
@@ -1008,12 +1008,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return false;
     }
 
-    private int downloadLibraryFile(IRunnableContext runnableContext, final DriverFileDescriptor file)
+    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DriverFileDescriptor file)
     {
         try {
-            runnableContext.run(true, true, new IRunnableWithProgress() {
+            runnableContext.run(true, true, new DBRRunnableWithProgress() {
                 @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
                         downloadLibraryFile(monitor, file);
@@ -1036,7 +1036,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private void downloadLibraryFile(IProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
+    private void downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
     {
         IPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
         String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
