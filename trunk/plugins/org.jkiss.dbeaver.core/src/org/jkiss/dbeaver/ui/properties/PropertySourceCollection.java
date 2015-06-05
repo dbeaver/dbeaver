@@ -22,6 +22,8 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.DBUtils;
 
 import java.util.ArrayList;
@@ -31,7 +33,7 @@ import java.util.List;
 /**
  * Simple property source which store properties in map
  */
-public class PropertySourceCollection implements IPropertySource {
+public class PropertySourceCollection implements DBPPropertySource, IPropertySource {
 
     private List<IPropertyDescriptor> props = new ArrayList<IPropertyDescriptor>();
 
@@ -53,6 +55,11 @@ public class PropertySourceCollection implements IPropertySource {
     }
 
     @Override
+    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+    }
+
+    @Override
     public IPropertyDescriptor[] getPropertyDescriptors()
     {
         return props.toArray(new IPropertyDescriptor[props.size()]);
@@ -71,8 +78,18 @@ public class PropertySourceCollection implements IPropertySource {
     }
 
     @Override
+    public boolean isPropertyResettable(Object id) {
+        return false;
+    }
+
+    @Override
     public void resetPropertyValue(Object id)
     {
+
+    }
+
+    @Override
+    public void resetPropertyValueToDefault(Object id) {
 
     }
 
@@ -81,7 +98,17 @@ public class PropertySourceCollection implements IPropertySource {
     {
     }
 
-    private class ItemPropertyDescriptor implements IPropertyDescriptor {
+    @Override
+    public boolean isDirty(Object id) {
+        return false;
+    }
+
+    @Override
+    public boolean hasDefaultValue(Object id) {
+        return false;
+    }
+
+    private class ItemPropertyDescriptor implements DBPPropertyDescriptor, IPropertyDescriptor {
         private Integer id;
         private Object item;
 
@@ -103,6 +130,26 @@ public class PropertySourceCollection implements IPropertySource {
         @Override
         public String getDescription() {
             return null;
+        }
+
+        @Override
+        public Class<?> getDataType() {
+            return Object.class;
+        }
+
+        @Override
+        public boolean isRequired() {
+            return false;
+        }
+
+        @Override
+        public Object getDefaultValue() {
+            return null;
+        }
+
+        @Override
+        public boolean isEditable(Object object) {
+            return false;
         }
 
         @Override

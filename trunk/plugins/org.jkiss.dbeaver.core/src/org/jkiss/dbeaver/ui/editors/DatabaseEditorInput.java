@@ -22,9 +22,9 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
-import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -193,7 +193,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     }
 
     @Override
-    public IPropertySource2 getPropertySource()
+    public DBPPropertySource getPropertySource()
     {
         if (propertySource == null) {
             propertySource = new PropertySourceEditable(

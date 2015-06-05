@@ -17,9 +17,9 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.viewers.IFilter;
-import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -41,7 +41,7 @@ public abstract class ObjectAttributeDescriptor {
 
     static final Log log = Log.getLog(ObjectAttributeDescriptor.class);
 
-    private final IPropertySource source;
+    private final DBPPropertySource source;
     private ObjectPropertyGroupDescriptor parent;
     private int orderNumber;
     private String id;
@@ -51,7 +51,7 @@ public abstract class ObjectAttributeDescriptor {
     private Class<?> declaringClass;
 
     public ObjectAttributeDescriptor(
-        IPropertySource source,
+        DBPPropertySource source,
         ObjectPropertyGroupDescriptor parent,
         Method getter,
         String id,
@@ -88,7 +88,7 @@ public abstract class ObjectAttributeDescriptor {
         return declaringClass;
     }
 
-    public IPropertySource getSource()
+    public DBPPropertySource getSource()
     {
         return source;
     }
@@ -148,7 +148,7 @@ public abstract class ObjectAttributeDescriptor {
     public abstract String getDescription();
 
     public static List<ObjectPropertyDescriptor> extractAnnotations(
-        IPropertySource source,
+        DBPPropertySource source,
         Class<?> theClass,
         IFilter filter)
     {
@@ -157,7 +157,7 @@ public abstract class ObjectAttributeDescriptor {
         return annoProps;
     }
 
-    static void extractAnnotations(IPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IFilter filter)
+    static void extractAnnotations(DBPPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IFilter filter)
     {
         Method[] methods = theClass.getMethods();
         for (Method method : methods) {

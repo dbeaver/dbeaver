@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;

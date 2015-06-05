@@ -26,11 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
-import org.eclipse.ui.views.properties.IPropertySource;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
@@ -47,7 +43,7 @@ public class FolderPageProperties extends FolderPage implements ILazyPropertyLoa
 	protected PropertyTreeViewer propertyTree;
     private Font boldFont;
     private UIJob refreshJob = null;
-    private IPropertySource curPropertySource;
+    private DBPPropertySource curPropertySource;
 
     public FolderPageProperties(IDatabaseEditorInput input) {
         this.input = input;
