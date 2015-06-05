@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.wmi;
 
 import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.wmi.model.WMIDataSource;
@@ -45,7 +44,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     }
 
     @Override
-    public IPropertyDescriptor[] getConnectionProperties(
+    public DBPPropertyDescriptor[] getConnectionProperties(
         IRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo) throws DBException

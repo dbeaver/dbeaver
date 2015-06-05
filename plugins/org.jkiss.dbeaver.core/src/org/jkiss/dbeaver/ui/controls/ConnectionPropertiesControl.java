@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
@@ -46,8 +47,8 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     public static final String USER_PROPERTIES_CATEGORY = CoreMessages.controls_connection_properties_category_user_properties;
 
-    private List<IPropertyDescriptor> driverProvidedProperties;
-    private List<IPropertyDescriptor> customProperties;
+    private List<DBPPropertyDescriptor> driverProvidedProperties;
+    private List<DBPPropertyDescriptor> customProperties;
 
     public ConnectionPropertiesControl(Composite parent, int style)
     {
@@ -120,8 +121,8 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         }
     }
 
-    private List<IPropertyDescriptor> getAllProperties(DBPDriver driver, boolean includeCustom) {
-        List<IPropertyDescriptor> propertyDescriptors = new ArrayList<IPropertyDescriptor>();
+    private List<DBPPropertyDescriptor> getAllProperties(DBPDriver driver, boolean includeCustom) {
+        List<DBPPropertyDescriptor> propertyDescriptors = new ArrayList<DBPPropertyDescriptor>();
         propertyDescriptors.addAll(driver.getConnectionPropertyDescriptors());
         if (driverProvidedProperties != null) {
             propertyDescriptors.addAll(driverProvidedProperties);
@@ -135,9 +136,9 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     private void loadDriverProperties(IRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         try {
-            final IPropertyDescriptor[] connectionsProps =
+            final DBPPropertyDescriptor[] connectionsProps =
                 driver.getDataSourceProvider().getConnectionProperties(runnableContext, driver, connectionInfo);
-            driverProvidedProperties = new ArrayList<IPropertyDescriptor>();
+            driverProvidedProperties = new ArrayList<DBPPropertyDescriptor>();
             if (connectionsProps != null) {
                 Collections.addAll(driverProvidedProperties, connectionsProps);
             }
@@ -150,12 +151,12 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     {
         // Collect all driver (and all other) properties
         Set<String> propNames = new TreeSet<String>();
-        List<IPropertyDescriptor> allProperties = getAllProperties(driver, false);
-        for (IPropertyDescriptor prop : allProperties) {
+        List<DBPPropertyDescriptor> allProperties = getAllProperties(driver, false);
+        for (DBPPropertyDescriptor prop : allProperties) {
             propNames.add(CommonUtils.toString(prop.getId()));
         }
 
-        customProperties = new ArrayList<IPropertyDescriptor>();
+        customProperties = new ArrayList<DBPPropertyDescriptor>();
         // Find prop values which are not from driver
         for (Object propId : properties.keySet()) {
             final String propName = propId.toString();
