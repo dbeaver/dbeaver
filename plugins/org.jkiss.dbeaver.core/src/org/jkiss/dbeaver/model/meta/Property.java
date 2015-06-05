@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.model.meta;
 
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.lang.annotation.ElementType;
