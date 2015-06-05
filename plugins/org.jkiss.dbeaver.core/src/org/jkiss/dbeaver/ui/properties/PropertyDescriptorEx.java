@@ -17,17 +17,12 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,7 +32,7 @@ import java.util.List;
 /**
  * PropertyDescriptorEx
  */
-public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyDescriptor, IPropertyValueListProvider<Object>
+public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
 {
 
     static final Log log = Log.getLog(PropertyDescriptorEx.class);
@@ -121,15 +116,6 @@ public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyDes
         this.editable = editable;
     }
 
-    @Override
-    public CellEditor createPropertyEditor(Composite parent)
-    {
-        if (!editable) {
-            return null;
-        }
-        return UIUtils.createCellEditor(parent, null, this);
-    }
-
     @Nullable
     @Override
     public String getCategory()
@@ -144,36 +130,11 @@ public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyDes
         return id;
     }
 
-    @Override
-    public ILabelProvider getLabelProvider()
-    {
-        return null;
-    }
-
-    @Override
-    public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
-    {
-        return CommonUtils.equalObjects(category, anotherProperty.getCategory()) &&
-            CommonUtils.equalObjects(id, anotherProperty.getId());
-    }
-
     @NotNull
     @Override
     public String getDisplayName()
     {
         return name;
-    }
-
-    @Override
-    public String[] getFilterFlags()
-    {
-        return new String[0];  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public Object getHelpContextIds()
-    {
-        return null;
     }
 
     @Override

@@ -55,7 +55,7 @@
             <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-            <adapter type="org.eclipse.ui.views.properties.IPropertySource"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPPropertySource"/>
         </factory>
         <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter">
            <adapter type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>

@@ -78,7 +78,6 @@ public class PropertyTreeViewer extends TreeViewer {
         //this.setLayoutData(gd);
 
         super.setContentProvider(new PropsContentProvider());
-        //super.setLabelProvider(labelProvider);
         final Tree treeControl = super.getTree();
         if (parent.getLayout() instanceof GridLayout) {
             GridData gd = new GridData(GridData.FILL_BOTH);

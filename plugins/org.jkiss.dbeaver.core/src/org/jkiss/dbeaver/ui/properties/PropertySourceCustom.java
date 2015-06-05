@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
-import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -30,7 +27,7 @@ import java.util.*;
 /**
  * Simple property source which store properties in map
  */
-public class PropertySourceCustom implements DBPPropertySource, IPropertySource2 {
+public class PropertySourceCustom implements DBPPropertySource {
 
     private List<DBPPropertyDescriptor> props = new ArrayList<DBPPropertyDescriptor>();
 
@@ -105,12 +102,6 @@ public class PropertySourceCustom implements DBPPropertySource, IPropertySource2
     @Override
     public DBPPropertyDescriptor[] getPropertyDescriptors2() {
         return props.toArray(new DBPPropertyDescriptor[props.size()]);
-    }
-
-    @Override
-    public IPropertyDescriptor[] getPropertyDescriptors()
-    {
-        return props.toArray(new IPropertyDescriptor[props.size()]);
     }
 
     @Override

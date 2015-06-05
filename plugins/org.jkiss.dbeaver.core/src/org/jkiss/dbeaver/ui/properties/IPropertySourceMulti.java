@@ -18,12 +18,12 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
-import org.eclipse.ui.views.properties.IPropertySource2;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 
 /**
  * Property source which allows editing of multiple objects.
  */
-public interface IPropertySourceMulti extends IPropertySource2 {
+public interface IPropertySourceMulti extends DBPPropertySource {
 
     boolean isPropertySet(Object object, ObjectPropertyDescriptor id);
 

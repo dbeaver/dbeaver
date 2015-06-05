@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 
 /**
  * Navigator AdapterFactory
@@ -104,10 +105,17 @@ public class DBNAdapterFactory implements IAdapterFactory
             if (dbObject instanceof IPropertySource) {
                 return dbObject;
             }
+            if (dbObject instanceof DBPPropertySource) {
+                return new PropertySourceDelegate((DBPPropertySource) dbObject);
+            }
             if (dbObject instanceof IAdaptable) {
                 Object adapter = ((IAdaptable) dbObject).getAdapter(IPropertySource.class);
                 if (adapter != null) {
                     return adapter;
+                }
+                adapter = ((IAdaptable) dbObject).getAdapter(DBPPropertySource.class);
+                if (adapter != null) {
+                    return new PropertySourceDelegate((DBPPropertySource) adapter);
                 }
             }
             if (dbObject != null) {
@@ -119,7 +127,7 @@ public class DBNAdapterFactory implements IAdapterFactory
                     props.addProperty(null, "name", CoreMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
                     props.addProperty(null, "desc", CoreMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
                 }
-                return props;
+                return new PropertySourceDelegate(props);
             }
         } else if (adapterType == IWorkbenchAdapter.class) {
             // Workbench adapter

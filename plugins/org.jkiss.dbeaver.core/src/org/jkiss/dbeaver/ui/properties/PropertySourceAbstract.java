@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -117,12 +116,6 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
     public Object getEditableValue()
     {
         return object;
-    }
-
-    @Override
-    public IPropertyDescriptor[] getPropertyDescriptors()
-    {
-        return props.toArray(new IPropertyDescriptor[props.size()]);
     }
 
     @Override
