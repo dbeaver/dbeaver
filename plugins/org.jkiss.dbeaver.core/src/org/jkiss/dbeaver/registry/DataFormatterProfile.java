@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -35,7 +33,7 @@ import java.util.Map;
 /**
  * DataFormatterProfile
  */
-public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyChangeListener {
+public class DataFormatterProfile implements DBDDataFormatterProfile {
 
     private static final String PROP_LANGUAGE = "dataformat.profile.language"; //$NON-NLS-1$
     private static final String PROP_COUNTRY = "dataformat.profile.country"; //$NON-NLS-1$
@@ -52,9 +50,6 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
     {
         this.name = profileName;
         this.store = store;
-        if (store instanceof AbstractPreferenceStore) {
-            ((AbstractPreferenceStore)store).getParentStore().addPropertyChangeListener(this);
-        }
         loadProfile();
     }
 
@@ -216,15 +211,6 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
         }
         formatter.init(locale, formatterProps);
         return formatter;
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent event)
-    {
-        if (event.getProperty() != null && event.getProperty().startsWith(DATAFORMAT_PREFIX)) {
-            // Reload this profile
-            loadProfile();
-        }
     }
 
     public static void initDefaultPreferences(IPreferenceStore store, Locale locale)
