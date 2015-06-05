@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
@@ -55,7 +56,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         setExpandSingleRoot(false);
     }
 
-    public PropertySourceCustom makeProperties(IRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public PropertySourceCustom makeProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         Map<Object, Object> connectionProps = new HashMap<Object, Object>();
         connectionProps.putAll(driver.getConnectionProperties());
@@ -132,7 +133,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         return propertyDescriptors;
     }
 
-    private void loadDriverProperties(IRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
+    private void loadDriverProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         try {
             final DBPPropertyDescriptor[] connectionsProps =

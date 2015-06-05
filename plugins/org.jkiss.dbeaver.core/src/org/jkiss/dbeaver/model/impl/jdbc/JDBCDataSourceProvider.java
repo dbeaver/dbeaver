@@ -17,12 +17,12 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
 import java.sql.Driver;
@@ -50,7 +50,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
 
     @Override
     public DBPPropertyDescriptor[] getConnectionProperties(
-        IRunnableContext runnableContext,
+        DBRRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
         throws DBException {

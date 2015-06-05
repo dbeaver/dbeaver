@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -30,13 +29,16 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
+import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.osgi.framework.Bundle;
 
 import java.lang.reflect.InvocationTargetException;
@@ -175,17 +177,17 @@ public class DBeaverUI {
     }
 */
 
-    public static IRunnableContext getDefaultRunnableContext()
+    public static DBRRunnableContext getDefaultRunnableContext()
     {
         IWorkbench workbench = PlatformUI.getWorkbench();
         if (workbench != null && workbench.getActiveWorkbenchWindow() != null) {
-            return workbench.getActiveWorkbenchWindow();
+            return new RunnableContextDelegate(workbench.getActiveWorkbenchWindow());
         } else {
-            return new IRunnableContext() {
+            return new DBRRunnableContext() {
                 @Override
-                public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
+                public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
                 {
-                    runnable.run(new NullProgressMonitor());
+                    runnable.run(VoidProgressMonitor.INSTANCE);
                 }
             };
         }
@@ -194,12 +196,12 @@ public class DBeaverUI {
     public static void runInProgressService(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
-        getDefaultRunnableContext().run(true, true, new IRunnableWithProgress() {
+        getDefaultRunnableContext().run(true, true, new DBRRunnableWithProgress() {
                 @Override
-                public void run(IProgressMonitor monitor)
+                public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
-                    runnable.run(RuntimeUtils.makeMonitor(monitor));
+                    runnable.run(monitor);
                 }
             });
     }

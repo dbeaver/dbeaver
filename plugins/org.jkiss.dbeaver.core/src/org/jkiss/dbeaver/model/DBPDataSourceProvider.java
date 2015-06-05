@@ -17,10 +17,10 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
@@ -53,7 +53,7 @@ public interface DBPDataSourceProvider
      * @throws DBException on any error
      */
     DBPPropertyDescriptor[] getConnectionProperties(
-        IRunnableContext runnableContext,
+        DBRRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
         throws DBException;
