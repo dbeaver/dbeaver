@@ -21,16 +21,17 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
 /**
  * ProxyPropertyDescriptor
 */
-public class ProxyPropertyDescriptor implements IPropertyDescriptor
+public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
 {
 
-    protected final IPropertyDescriptor original;
+    protected final DBPPropertyDescriptor original;
 
-    public ProxyPropertyDescriptor(IPropertyDescriptor original)
+    public ProxyPropertyDescriptor(DBPPropertyDescriptor original)
     {
         this.original = original;
     }
@@ -39,12 +40,6 @@ public class ProxyPropertyDescriptor implements IPropertyDescriptor
     public Object getId()
     {
         return this.original.getId();
-    }
-
-    @Override
-    public CellEditor createPropertyEditor(Composite parent)
-    {
-        return this.original.createPropertyEditor(parent);
     }
 
     @Override
@@ -60,33 +55,30 @@ public class ProxyPropertyDescriptor implements IPropertyDescriptor
     }
 
     @Override
+    public Class<?> getDataType() {
+        return original.getDataType();
+    }
+
+    @Override
+    public boolean isRequired() {
+        return original.isRequired();
+    }
+
+    @Override
+    public Object getDefaultValue() {
+        return original.getDefaultValue();
+    }
+
+    @Override
+    public boolean isEditable(Object object) {
+        return original.isEditable(object);
+    }
+
+    @Override
     public String getDisplayName()
     {
         return this.original.getDisplayName();
     }
 
-    @Override
-    public String[] getFilterFlags()
-    {
-        return this.original.getFilterFlags();
-    }
-
-    @Override
-    public Object getHelpContextIds()
-    {
-        return this.original.getHelpContextIds();
-    }
-
-    @Override
-    public ILabelProvider getLabelProvider()
-    {
-        return this.original.getLabelProvider();
-    }
-
-    @Override
-    public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
-    {
-        return this.original.isCompatibleWith(anotherProperty);
-    }
 
 }

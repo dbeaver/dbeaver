@@ -18,10 +18,10 @@
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
@@ -56,7 +56,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
     }
 
     @Override
-    public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
+    public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, DBPPropertyDescriptor property)
     {
         return new PropertyHandler(property);
     }
@@ -129,7 +129,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
         return null;
     }
 
-    protected void validateObjectProperty(OBJECT_TYPE object, IPropertyDescriptor property, Object value) throws DBException
+    protected void validateObjectProperty(OBJECT_TYPE object, DBPPropertyDescriptor property, Object value) throws DBException
     {
 
     }
@@ -150,7 +150,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
         extends ProxyPropertyDescriptor
         implements DBEPropertyHandler<OBJECT_TYPE>, DBEPropertyReflector<OBJECT_TYPE>, DBEPropertyValidator<OBJECT_TYPE>
     {
-        private PropertyHandler(IPropertyDescriptor property)
+        private PropertyHandler(DBPPropertyDescriptor property)
         {
             super(property);
         }
