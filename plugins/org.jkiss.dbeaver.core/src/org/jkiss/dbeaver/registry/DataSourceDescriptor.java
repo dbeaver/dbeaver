@@ -23,7 +23,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -1014,7 +1013,7 @@ public class DataSourceDescriptor
     {
         if (DBSDataSourceContainer.class.isAssignableFrom(adapter)) {
             return this;
-        } else if (adapter == IPropertySource.class) {
+        } else if (adapter == DBPPropertySource.class) {
             PropertyCollector coll = new PropertyCollector(this, true);
             coll.collectProperties();
             if (dataSource != null) {
