@@ -17,8 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.wmi.edit;
 
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.wmi.model.WMINamespace;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -39,7 +39,7 @@ public class WMINamespaceManager extends AbstractObjectManager<WMINamespace> imp
     }
 
     @Override
-    public DBEPropertyHandler<WMINamespace> makePropertyHandler(WMINamespace object, IPropertyDescriptor property)
+    public DBEPropertyHandler<WMINamespace> makePropertyHandler(WMINamespace object, DBPPropertyDescriptor property)
     {
         return null;
     }
