@@ -17,12 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
-import org.eclipse.ui.views.properties.PropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.properties.DefaultPropertyLabelProvider;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertySource;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIQualifiedObject;
 import org.jkiss.wmi.service.WMIQualifier;
@@ -32,10 +31,10 @@ import java.util.Collection;
 /**
  * Property source based on WMI qualifiers
  */
-public abstract class WMIPropertySource implements IPropertySource
+public abstract class WMIPropertySource implements DBPPropertySource
 {
     static final Log log = Log.getLog(WMIPropertySource.class);
-    private static final IPropertyDescriptor[] EMPTY_PROPERTIES = new IPropertyDescriptor[0];
+    private static final DBPPropertyDescriptor[] EMPTY_PROPERTIES = new DBPPropertyDescriptor[0];
 
     protected abstract WMIQualifiedObject getQualifiedObject();
 
@@ -57,7 +56,7 @@ public abstract class WMIPropertySource implements IPropertySource
     }
 
     @Override
-    public IPropertyDescriptor[] getPropertyDescriptors()
+    public DBPPropertyDescriptor[] getPropertyDescriptors2()
     {
         try {
             WMIQualifiedObject qualifiedObject = getQualifiedObject();
@@ -65,13 +64,11 @@ public abstract class WMIPropertySource implements IPropertySource
                 return EMPTY_PROPERTIES;
             }
             Collection<WMIQualifier> qualifiers = qualifiedObject.getQualifiers();
-            IPropertyDescriptor[] result = new IPropertyDescriptor[qualifiers.size()];
+            DBPPropertyDescriptor[] result = new DBPPropertyDescriptor[qualifiers.size()];
             int index = 0;
             for (WMIQualifier qualifier : qualifiers) {
                 String name = qualifier.getName();
-                PropertyDescriptor prop = new PropertyDescriptor(name, name);
-                prop.setLabelProvider(DefaultPropertyLabelProvider.INSTANCE);
-                prop.setCategory("WMI");
+                PropertyDescriptorEx prop = new PropertyDescriptorEx("WMI", name, name, null, null, false, null, null, false);
                 result[index++] = prop;
             }
             return result;
@@ -113,6 +110,26 @@ public abstract class WMIPropertySource implements IPropertySource
     public void setPropertyValue(Object id, Object value)
     {
 
+    }
+
+    @Override
+    public boolean isPropertyResettable(Object id) {
+        return false;
+    }
+
+    @Override
+    public void resetPropertyValueToDefault(Object id) {
+
+    }
+
+    @Override
+    public boolean isDirty(Object id) {
+        return false;
+    }
+
+    @Override
+    public boolean hasDefaultValue(Object id) {
+        return false;
     }
 
 }

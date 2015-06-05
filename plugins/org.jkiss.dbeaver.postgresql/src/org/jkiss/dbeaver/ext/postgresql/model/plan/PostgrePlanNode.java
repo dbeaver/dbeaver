@@ -17,8 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
@@ -27,12 +27,15 @@ import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * MySQL execution plan node
  */
-public class PostgrePlanNode implements DBCPlanNode, IPropertySource {
+public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
 
     public static final String ATTR_NODE_TYPE = "Node-Type";
     public static final String ATTR_RELATION_NAME = "Relation-Name";
@@ -115,8 +118,8 @@ public class PostgrePlanNode implements DBCPlanNode, IPropertySource {
     }
 
     @Override
-    public IPropertyDescriptor[] getPropertyDescriptors() {
-        IPropertyDescriptor[] props = new IPropertyDescriptor[attributes.size()];
+    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+        DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[attributes.size()];
         int index = 0;
         for (Map.Entry<String, String> attr : attributes.entrySet()) {
             props[index++] = new PropertyDescriptorEx("Source", attr.getKey(), attr.getKey(), null, String.class, false, null, null, false);
@@ -135,13 +138,33 @@ public class PostgrePlanNode implements DBCPlanNode, IPropertySource {
     }
 
     @Override
+    public boolean isPropertyResettable(Object id) {
+        return false;
+    }
+
+    @Override
     public void resetPropertyValue(Object id) {
+
+    }
+
+    @Override
+    public void resetPropertyValueToDefault(Object id) {
 
     }
 
     @Override
     public void setPropertyValue(Object id, Object value) {
 
+    }
+
+    @Override
+    public boolean isDirty(Object id) {
+        return false;
+    }
+
+    @Override
+    public boolean hasDefaultValue(Object id) {
+        return false;
     }
 
     @Override

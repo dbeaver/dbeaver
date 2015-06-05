@@ -25,13 +25,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
@@ -369,10 +369,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
 
         @Override
-        public IPropertyDescriptor[] getPropertyDescriptors()
+        public DBPPropertyDescriptor[] getPropertyDescriptors2()
         {
-            Set<IPropertyDescriptor> props = getAllProperties();
-            return props.toArray(new IPropertyDescriptor[props.size()]);
+            Set<DBPPropertyDescriptor> props = getAllProperties();
+            return props.toArray(new DBPPropertyDescriptor[props.size()]);
         }
 
     }
