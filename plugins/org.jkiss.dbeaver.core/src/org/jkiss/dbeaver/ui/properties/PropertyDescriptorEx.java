@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * PropertyDescriptorEx
  */
-public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyDescriptorEx, IPropertyValueListProvider<Object>
+public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyDescriptor, IPropertyValueListProvider<Object>
 {
 
     static final Log log = Log.getLog(PropertyDescriptorEx.class);

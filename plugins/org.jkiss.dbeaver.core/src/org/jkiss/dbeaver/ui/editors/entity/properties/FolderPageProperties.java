@@ -26,17 +26,16 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
-import org.jkiss.dbeaver.ui.properties.IPropertyDescriptorEx;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 /**
@@ -82,7 +81,7 @@ public class FolderPageProperties extends FolderPage implements ILazyPropertyLoa
 	}
 
     @Override
-    public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
+    public void handlePropertyLoad(Object object, DBPPropertyDescriptor property, Object propertyValue, boolean completed)
     {
         if (curPropertySource.getEditableValue() == object && !propertyTree.getControl().isDisposed()) {
             refreshProperties();
@@ -111,7 +110,7 @@ public class FolderPageProperties extends FolderPage implements ILazyPropertyLoa
         @Override
         public Font getFont(Object element)
         {
-            if (element instanceof IPropertyDescriptorEx && curPropertySource != null && ((IPropertyDescriptorEx) element).isEditable(curPropertySource.getEditableValue())) {
+            if (element instanceof DBPPropertyDescriptor && curPropertySource != null && ((DBPPropertyDescriptor) element).isEditable(curPropertySource.getEditableValue())) {
                 return boldFont;
             }
             return null;

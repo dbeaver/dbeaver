@@ -54,7 +54,7 @@ import java.util.ResourceBundle;
 /**
  * ObjectPropertyDescriptor
 */
-public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements DBPPropertyDescriptor, IPropertyDescriptorEx, IPropertyValueListProvider<Object>
+public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements DBPPropertyDescriptor, IPropertyDescriptor, IPropertyValueListProvider<Object>
 {
     private final Property propInfo;
     private final String propName;
@@ -331,7 +331,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return null;
     }
 
-    public static CellEditor createCellEditor(Composite parent, Object object, IPropertyDescriptorEx property)
+    public static CellEditor createCellEditor(Composite parent, Object object, DBPPropertyDescriptor property)
     {
         // List
         if (property instanceof IPropertyValueListProvider) {

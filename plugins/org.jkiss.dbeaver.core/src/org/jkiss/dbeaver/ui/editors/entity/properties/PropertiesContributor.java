@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class PropertiesContributor {
         }
     }
 
-    public void notifyPropertyLoad(Object object, IPropertyDescriptor propertyId, Object propertyValue, boolean completed)
+    public void notifyPropertyLoad(Object object, DBPPropertyDescriptor propertyId, Object propertyValue, boolean completed)
     {
         synchronized (lazyListeners) {
             if (!lazyListeners.isEmpty()) {
