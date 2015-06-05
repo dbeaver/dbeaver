@@ -186,29 +186,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         if (!CommonUtils.isEmpty(dialogSettings.get("formatterProfile"))) {
             formatterProfile = DataFormatterRegistry.getInstance().getCustomProfile(dialogSettings.get("formatterProfile"));
         }
-/*
-        IDialogSettings[] expSections = dialogSettings.getSections();
-        if (expSections != null && expSections.length > 0) {
-            for (IDialogSettings expSection : expSections) {
-                expId = expSection.getName();
-                IStreamDataExporterDescriptor exporter = DBeaverCore.getInstance().getDataTransferRegistry().getDataExporter(expId);
-                if (exporter != null) {
-                    Map<Object, Object> expProps = new HashMap<Object, Object>();
-                    exporterPropsHistory.put(exporter, expProps);
-                    for (IPropertyDescriptor prop : exporter.getProperties()) {
-                        Object value = expSection.get(prop.getId().toString());
-                        if (value != null) {
-                            if ("extractImages".equals(prop.getId())) {
-                                value = Boolean.parseBoolean((String) value);
-                            }
-                            expProps.put(prop.getId(), value);
-                        }
-                    }
-                }
-            }
-        }
-        setExporterDescriptor(dataExporter);
-*/
     }
 
     @Override
