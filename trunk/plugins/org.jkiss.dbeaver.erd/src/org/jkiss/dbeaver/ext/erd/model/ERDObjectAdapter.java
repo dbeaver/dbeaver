@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.gef.EditPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -46,6 +47,13 @@ public class ERDObjectAdapter implements IAdapterFactory {
                     if (object != null && adapterType.isAssignableFrom(object.getClass())) {
                         return object;
                     }
+                }
+            }
+        } else if (DBPPropertySource.class.isAssignableFrom(adapterType)) {
+            if (adaptableObject instanceof EditPart) {
+                Object model = ((EditPart) adaptableObject).getModel();
+                if (model instanceof ERDObject) {
+                    return ((ERDObject) model).getAdapter(adapterType);
                 }
             }
         }

@@ -18,23 +18,13 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -47,13 +37,12 @@ import java.util.ResourceBundle;
 /**
  * ObjectPropertyDescriptor
 */
-public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements DBPPropertyDescriptor, IPropertyDescriptor, IPropertyValueListProvider<Object>
+public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
 {
     private final Property propInfo;
     private final String propName;
     private final String propDescription;
     private Method setter;
-    private ILabelProvider labelProvider;
     private IPropertyValueTransformer valueTransformer;
     private final Class<?> declaringClass;
 
@@ -76,19 +65,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             if (setter == null) {
                 c = c.getSuperclass();
             }
-        }
-
-        // Obtain label provider
-        Class<? extends ILabelProvider> labelProviderClass = propInfo.labelProvider();
-        if (labelProviderClass != null && labelProviderClass != ILabelProvider.class) {
-            try {
-                this.labelProvider = labelProviderClass.newInstance();
-            } catch (Throwable e) {
-                log.warn(e);
-            }
-        }
-        if (this.labelProvider == null) {
-            this.labelProvider = new DefaultLabelProvider();
         }
 
         // Obtain value transformer
@@ -139,12 +115,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     }
 
     @Override
-    public CellEditor createPropertyEditor(Composite parent)
-    {
-        return UIUtils.createPropertyEditor(parent, getSource(), this);
-    }
-
-    @Override
     public boolean isEditable(Object object)
     {
         final DBPPropertySource propertySource = getSource();
@@ -181,31 +151,6 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     public String getDisplayName()
     {
         return propName;
-    }
-
-    @Override
-    public String[] getFilterFlags()
-    {
-        return null;
-    }
-
-    @Override
-    public Object getHelpContextIds()
-    {
-        return propInfo.helpContextId();
-    }
-
-    @Override
-    public ILabelProvider getLabelProvider()
-    {
-        return this.labelProvider;
-    }
-
-    @Override
-    public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
-    {
-        return anotherProperty instanceof ObjectPropertyDescriptor &&
-            ((ObjectPropertyDescriptor)anotherProperty).propInfo == propInfo;
     }
 
     public Object readValue(Object object, DBRProgressMonitor progressMonitor)
@@ -363,36 +308,5 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return string;
     }
 
-    private class DefaultLabelProvider extends LabelProvider implements IFontProvider {
-
-        @Override
-        public Image getImage(Object element)
-        {
-//            if (getSource() instanceof IPropertySourceEditable) {
-//                if (isReadOnly()) {
-//                    return DBIcon.BULLET_GREEN.getImage();
-//                } else {
-//                    return DBIcon.BULLET_BLACK.getImage();
-//                }
-//            }
-            return null;
-        }
-
-        @Override
-        public String getText(Object element)
-        {
-            return element == null ?
-                "" :
-                element instanceof DBSObject ?
-                    ((DBSObject)element).getName() :
-                    element.toString();
-        }
-
-        @Override
-        public Font getFont(Object element)
-        {
-            return null;
-        }
-    }
 
 }

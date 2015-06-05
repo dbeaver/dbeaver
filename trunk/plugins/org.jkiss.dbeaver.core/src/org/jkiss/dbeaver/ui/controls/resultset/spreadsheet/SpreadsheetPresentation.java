@@ -90,6 +90,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -946,7 +947,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         PropertyCollector props = new PropertyCollector(valueController.getBinding().getAttribute(), false);
                         props.collectProperties();
                         valueController.getValueHandler().contributeProperties(props, valueController);
-                        return props;
+                        return new PropertySourceDelegate(props);
                     }
                     return null;
                 }

@@ -95,8 +95,6 @@ public @interface Property
 
     String helpContextId() default ""; //NON-NLS-1
 
-    Class<? extends ILabelProvider> labelProvider() default ILabelProvider.class;
-
     Class<? extends IPropertyValueTransformer> valueTransformer() default IPropertyValueTransformer.class;
 
     Class<? extends IPropertyValueListProvider> listProvider() default IPropertyValueListProvider.class;

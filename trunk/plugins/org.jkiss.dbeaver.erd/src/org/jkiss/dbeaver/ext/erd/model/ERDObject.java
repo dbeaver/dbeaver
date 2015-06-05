@@ -23,10 +23,10 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -119,7 +119,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
 
     @Override
     public Object getAdapter(Class adapter) {
-        if (adapter == IPropertySource.class) {
+        if (adapter == DBPPropertySource.class) {
             return getPropertyCollector();
         }
         return null;

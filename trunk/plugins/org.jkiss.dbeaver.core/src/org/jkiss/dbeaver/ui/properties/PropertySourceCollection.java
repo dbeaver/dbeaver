@@ -17,11 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.ILabelProvider;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -33,9 +28,9 @@ import java.util.List;
 /**
  * Simple property source which store properties in map
  */
-public class PropertySourceCollection implements DBPPropertySource, IPropertySource {
+public class PropertySourceCollection implements DBPPropertySource {
 
-    private List<IPropertyDescriptor> props = new ArrayList<IPropertyDescriptor>();
+    private List<DBPPropertyDescriptor> props = new ArrayList<DBPPropertyDescriptor>();
 
     private List<Object> items;
 
@@ -57,12 +52,6 @@ public class PropertySourceCollection implements DBPPropertySource, IPropertySou
     @Override
     public DBPPropertyDescriptor[] getPropertyDescriptors2() {
         return props.toArray(new DBPPropertyDescriptor[props.size()]);
-    }
-
-    @Override
-    public IPropertyDescriptor[] getPropertyDescriptors()
-    {
-        return props.toArray(new IPropertyDescriptor[props.size()]);
     }
 
     @Override
@@ -108,18 +97,13 @@ public class PropertySourceCollection implements DBPPropertySource, IPropertySou
         return false;
     }
 
-    private class ItemPropertyDescriptor implements DBPPropertyDescriptor, IPropertyDescriptor {
+    private class ItemPropertyDescriptor implements DBPPropertyDescriptor {
         private Integer id;
         private Object item;
 
         private ItemPropertyDescriptor(Integer id, Object item) {
             this.id = id;
             this.item = item;
-        }
-
-        @Override
-        public CellEditor createPropertyEditor(Composite composite) {
-            return null;
         }
 
         @Override
@@ -158,28 +142,8 @@ public class PropertySourceCollection implements DBPPropertySource, IPropertySou
         }
 
         @Override
-        public String[] getFilterFlags() {
-            return null;
-        }
-
-        @Override
-        public Object getHelpContextIds() {
-            return null;
-        }
-
-        @Override
         public Object getId() {
             return id;
-        }
-
-        @Override
-        public ILabelProvider getLabelProvider() {
-            return null;
-        }
-
-        @Override
-        public boolean isCompatibleWith(IPropertyDescriptor prop) {
-            return this.equals(prop);
         }
     }
 }
