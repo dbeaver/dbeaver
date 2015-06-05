@@ -1,4 +1,4 @@
-quick-search in navigator tree
+Data transfer DECIMAL(x,y) types convert.
 Extract non-visual part to a separate plugin
 RSV find/replace action
 Vertica keywords
