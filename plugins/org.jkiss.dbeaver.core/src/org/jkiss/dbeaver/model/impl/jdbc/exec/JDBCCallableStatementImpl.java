@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -37,8 +38,8 @@ import java.util.Map;
 public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl implements JDBCCallableStatement {
 
     public JDBCCallableStatementImpl(
-        JDBCSession connection,
-        CallableStatement original,
+        @NotNull JDBCSession connection,
+        @NotNull CallableStatement original,
         @Nullable String query,
         boolean disableLogging)
     {

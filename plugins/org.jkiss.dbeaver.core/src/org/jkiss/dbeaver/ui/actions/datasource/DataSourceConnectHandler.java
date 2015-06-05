@@ -41,17 +41,6 @@ import org.jkiss.utils.ArrayUtils;
 
 public class DataSourceConnectHandler extends DataSourceHandler
 {
-    @Nullable
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
-        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false);
-        if (dataSourceContainer != null) {
-            execute(null, dataSourceContainer, null);
-        }
-        return null;
-    }
-
     /**
      * Connects datasource
      * @param monitor progress monitor or null. If nul then new job will be started
@@ -153,6 +142,17 @@ public class DataSourceConnectHandler extends DataSourceHandler
                 });
             }
         }
+    }
+
+    @Nullable
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException
+    {
+        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false);
+        if (dataSourceContainer != null) {
+            execute(null, dataSourceContainer, null);
+        }
+        return null;
     }
 
     private static void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor)

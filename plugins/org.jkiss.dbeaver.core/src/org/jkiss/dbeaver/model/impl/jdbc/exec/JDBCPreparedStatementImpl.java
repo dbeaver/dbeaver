@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -38,8 +39,8 @@ import java.util.Calendar;
 public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStatement> implements JDBCPreparedStatement {
 
     public JDBCPreparedStatementImpl(
-        JDBCSession connection,
-        PreparedStatement original,
+        @NotNull JDBCSession connection,
+        @NotNull PreparedStatement original,
         String query,
         boolean disableLogging)
     {
