@@ -26,6 +26,8 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -43,7 +45,7 @@ import java.util.*;
 /**
  * PropertyCollector
  */
-public abstract class PropertySourceAbstract implements IPropertySourceMulti
+public abstract class PropertySourceAbstract implements DBPPropertySource, IPropertySourceMulti
 {
     static final Log log = Log.getLog(PropertySourceAbstract.class);
 
@@ -102,6 +104,11 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         return props.isEmpty();
     }
 
+    @Override
+    public boolean isDirty(Object id) {
+        return false;
+    }
+
     public Object getSourceObject()
     {
         return sourceObject;
@@ -119,6 +126,10 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         return props.toArray(new IPropertyDescriptor[props.size()]);
     }
 
+    @Override
+    public DBPPropertyDescriptor[] getPropertyDescriptors2() {
+        return props.toArray(new DBPPropertyDescriptor[props.size()]);
+    }
 /*
     public IPropertyDescriptor getPropertyDescriptor(final Object id)
     {
@@ -250,6 +261,16 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
     public void resetPropertyValue(Object object, ObjectPropertyDescriptor id)
     {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
+    }
+
+    @Override
+    public void resetPropertyValueToDefault(Object id) {
+        throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
+    }
+
+    @Override
+    public boolean hasDefaultValue(Object id) {
+        return false;
     }
 
     @Override
