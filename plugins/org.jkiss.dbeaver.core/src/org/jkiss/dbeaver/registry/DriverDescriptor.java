@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -33,12 +32,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -47,7 +46,6 @@ import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.properties.IPropertyDescriptorEx;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -109,7 +107,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private final List<DriverFileDescriptor> files = new ArrayList<DriverFileDescriptor>();
     private final List<DriverFileDescriptor> origFiles = new ArrayList<DriverFileDescriptor>();
     private final List<DriverPathDescriptor> pathList = new ArrayList<DriverPathDescriptor>();
-    private final List<IPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<IPropertyDescriptor>();
+    private final List<DBPPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<DBPPropertyDescriptor>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<OSDescriptor>();
 
     private final List<ReplaceInfo> driverReplacements = new ArrayList<ReplaceInfo>();
@@ -703,7 +701,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
     
     @Override
-    public List<IPropertyDescriptor> getConnectionPropertyDescriptors()
+    public List<DBPPropertyDescriptor> getConnectionPropertyDescriptors()
     {
         return connectionPropertyDescriptors;
     }
@@ -750,11 +748,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public void setDriverParameter(String name, String value, boolean setDefault)
     {
-        Object valueObject = value;
-        IPropertyDescriptor prop = getProviderDescriptor().getDriverProperty(name);
-        if (prop instanceof IPropertyDescriptorEx) {
-            valueObject = RuntimeUtils.convertString(value, ((IPropertyDescriptorEx)prop).getDataType());
-        }
+        DBPPropertyDescriptor prop = getProviderDescriptor().getDriverProperty(name);
+        Object valueObject = prop == null ? value : RuntimeUtils.convertString(value, prop.getDataType());
         customParameters.put(name, valueObject);
         if (setDefault) {
             defaultParameters.put(name, valueObject);

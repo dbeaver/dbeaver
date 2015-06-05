@@ -17,12 +17,11 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
@@ -50,12 +49,12 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
     }
 
     @Override
-    public IPropertyDescriptor[] getConnectionProperties(
+    public DBPPropertyDescriptor[] getConnectionProperties(
         IRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
         throws DBException {
-        Collection<IPropertyDescriptor> props = null;
+        Collection<DBPPropertyDescriptor> props = null;
         Object driverInstance = driver.getDriverInstance(runnableContext);
         if (driverInstance instanceof Driver) {
             props = readDriverProperties(connectionInfo, (Driver) driverInstance);
@@ -63,10 +62,10 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
         if (props == null) {
             return null;
         }
-        return props.toArray(new IPropertyDescriptor[props.size()]);
+        return props.toArray(new DBPPropertyDescriptor[props.size()]);
     }
 
-    private Collection<IPropertyDescriptor> readDriverProperties(
+    private Collection<DBPPropertyDescriptor> readDriverProperties(
         DBPConnectionInfo connectionInfo,
         Driver driver)
         throws DBException {
@@ -83,7 +82,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
             return null;
         }
 
-        List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
+        List<DBPPropertyDescriptor> properties = new ArrayList<DBPPropertyDescriptor>();
         for (DriverPropertyInfo desc : propDescs) {
             if (DBConstants.DATA_SOURCE_PROPERTY_USER.equals(desc.name) || DBConstants.DATA_SOURCE_PROPERTY_PASSWORD.equals(desc.name)) {
                 // Skip user/password properties

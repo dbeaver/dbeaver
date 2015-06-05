@@ -23,11 +23,11 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.*;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -58,7 +58,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private DBXTreeNode treeDescriptor;
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<String, DBXTreeNode>();
     private boolean driversManagable;
-    private final List<IPropertyDescriptor> driverProperties = new ArrayList<IPropertyDescriptor>();
+    private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<DBPPropertyDescriptor>();
     private final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
     private final List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
     private final Map<String, ToolGroupDescriptor> toolGroups = new LinkedHashMap<String, ToolGroupDescriptor>();
@@ -99,7 +99,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 this.driversManagable = driversElement.getAttribute(RegistryConstants.ATTR_MANAGABLE) == null ||
                     CommonUtils.getBoolean(driversElement.getAttribute(RegistryConstants.ATTR_MANAGABLE));
                 for (IConfigurationElement driverElement : driversElement.getChildren(RegistryConstants.TAG_DRIVER)) {
-                    this.drivers.add(loadDriver(driverElement));
+                    try {
+                        this.drivers.add(loadDriver(driverElement));
+                    } catch (Exception e) {
+                        log.error("Error loading driver", e);
+                    }
                 }
             }
         }
@@ -200,14 +204,14 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return driversManagable;
     }
 
-    public List<IPropertyDescriptor> getDriverProperties()
+    public List<DBPPropertyDescriptor> getDriverProperties()
     {
         return driverProperties;
     }
 
-    public IPropertyDescriptor getDriverProperty(String name)
+    public DBPPropertyDescriptor getDriverProperty(String name)
     {
-        for (IPropertyDescriptor prop : driverProperties) {
+        for (DBPPropertyDescriptor prop : driverProperties) {
             if (prop.getId().equals(name)) {
                 return prop;
             }
