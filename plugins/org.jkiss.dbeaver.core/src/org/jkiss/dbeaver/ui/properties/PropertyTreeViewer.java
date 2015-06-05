@@ -29,8 +29,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -64,7 +62,7 @@ public class PropertyTreeViewer extends TreeViewer {
     //private Color colorBlue;
     private int selectedColumn = -1;
     private CellEditor curCellEditor;
-    private IPropertyDescriptor selectedProperty;
+    private DBPPropertyDescriptor selectedProperty;
 
     private String[] customCategories;
     private IBaseLabelProvider extraLabelProvider;
@@ -174,12 +172,12 @@ public class PropertyTreeViewer extends TreeViewer {
         };
     }
 
-    public void loadProperties(IPropertySource propertySource)
+    public void loadProperties(DBPPropertySource propertySource)
     {
         loadProperties(null, propertySource);
     }
 
-    protected void loadProperties(TreeNode parent, IPropertySource propertySource)
+    protected void loadProperties(TreeNode parent, DBPPropertySource propertySource)
     {
         // Make tree model
         customCategories = getCustomCategories();
@@ -209,11 +207,11 @@ public class PropertyTreeViewer extends TreeViewer {
         UIUtils.packColumns(getTree(), true, new float[]{0.5f, 0.5f});
     }
 
-    private Map<String, TreeNode> loadTreeNodes(TreeNode parent, IPropertySource propertySource)
+    private Map<String, TreeNode> loadTreeNodes(TreeNode parent, DBPPropertySource propertySource)
     {
         Map<String, TreeNode> categories = new LinkedHashMap<String, TreeNode>();
-        final IPropertyDescriptor[] props = propertySource.getPropertyDescriptors();
-        for (IPropertyDescriptor prop : props) {
+        final DBPPropertyDescriptor[] props = propertySource.getPropertyDescriptors2();
+        for (DBPPropertyDescriptor prop : props) {
             String categoryName = prop.getCategory();
             if (CommonUtils.isEmpty(categoryName)) {
                 categoryName = CATEGORY_GENERAL;
@@ -225,7 +223,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             TreeNode propNode = new TreeNode(category, propertySource, prop);
             // Load nested object's properties
-            if (!(propertySource instanceof IPropertySourceEditable) && prop instanceof DBPPropertyDescriptor) {
+            if (!(propertySource instanceof IPropertySourceEditable)) {
                 Class<?> propType = ((DBPPropertyDescriptor) prop).getDataType();
                 if (propType != null) {
                     if (DBPObject.class.isAssignableFrom(propType)) {
@@ -246,7 +244,7 @@ public class PropertyTreeViewer extends TreeViewer {
                                 collection = (Collection<?>) propertyValue;
                             }
                             PropertySourceCollection psc = new PropertySourceCollection(collection);
-                            for (IPropertyDescriptor pd : psc.getPropertyDescriptors()) {
+                            for (DBPPropertyDescriptor pd : psc.getPropertyDescriptors2()) {
                                 TreeNode itemNode = new TreeNode(propNode, psc, pd);
                             }
                         }
@@ -262,7 +260,7 @@ public class PropertyTreeViewer extends TreeViewer {
         super.setInput(null);
     }
 
-    protected void addProperty(Object node, IPropertyDescriptor property)
+    protected void addProperty(Object node, DBPPropertyDescriptor property)
     {
         if (node instanceof TreeNode) {
             TreeNode treeNode = (TreeNode) node;
@@ -295,7 +293,7 @@ public class PropertyTreeViewer extends TreeViewer {
         super.refresh();
     }
 
-    public IPropertyDescriptor getSelectedProperty()
+    public DBPPropertyDescriptor getSelectedProperty()
     {
         return selectedProperty;
     }
@@ -385,7 +383,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
-            final CellEditor cellEditor = prop.property.createPropertyEditor(treeControl);
+            final CellEditor cellEditor = UIUtils.createPropertyEditor(treeControl, prop.propertySource, prop.property);
             if (cellEditor == null) {
                 return;
             }
@@ -510,7 +508,7 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
-    private boolean isCustomProperty(IPropertyDescriptor property)
+    private boolean isCustomProperty(DBPPropertyDescriptor property)
     {
         if (customCategories != null) {
             for (String category : customCategories) {
@@ -527,7 +525,7 @@ public class PropertyTreeViewer extends TreeViewer {
         return null;
     }
 
-    protected void contributeContextMenu(IMenuManager manager, Object node, String category, IPropertyDescriptor property)
+    protected void contributeContextMenu(IMenuManager manager, Object node, String category, DBPPropertyDescriptor property)
     {
 
     }
@@ -584,12 +582,12 @@ public class PropertyTreeViewer extends TreeViewer {
 
     private static class TreeNode {
         final TreeNode parent;
-        final IPropertySource propertySource;
-        final IPropertyDescriptor property;
+        final DBPPropertySource propertySource;
+        final DBPPropertyDescriptor property;
         final String category;
         final List<TreeNode> children = new ArrayList<TreeNode>();
 
-        private TreeNode(TreeNode parent, IPropertySource propertySource, IPropertyDescriptor property, String category)
+        private TreeNode(TreeNode parent, DBPPropertySource propertySource, DBPPropertyDescriptor property, String category)
         {
             this.parent = parent;
             this.propertySource = propertySource;
@@ -600,12 +598,12 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
 
-        private TreeNode(TreeNode parent, IPropertySource propertySource, IPropertyDescriptor property)
+        private TreeNode(TreeNode parent, DBPPropertySource propertySource, DBPPropertyDescriptor property)
         {
             this(parent, propertySource, property, null);
         }
 
-        private TreeNode(TreeNode parent, IPropertySource propertySource, String category)
+        private TreeNode(TreeNode parent, DBPPropertySource propertySource, String category)
         {
             this(parent, propertySource, null, category);
         }

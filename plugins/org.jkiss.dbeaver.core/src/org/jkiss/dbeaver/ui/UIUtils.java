@@ -24,6 +24,7 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
@@ -53,15 +54,24 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.*;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
+import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
+import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
+import org.jkiss.dbeaver.ui.controls.CustomTextCellEditor;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -1219,6 +1229,60 @@ public class UIUtils {
         SaveRunner saveRunner = new SaveRunner(monitor, saveable);
         runInUI(null, saveRunner);
         return saveRunner.getResult();
+    }
+
+    public static CellEditor createPropertyEditor(Composite parent, DBPPropertySource source, DBPPropertyDescriptor property)
+    {
+        if (source == null) {
+            return null;
+        }
+        final Object object = source.getEditableValue();
+        if (!property.isEditable(object)) {
+            return null;
+        }
+        return UIUtils.createCellEditor(parent, object, property);
+    }
+
+    public static CellEditor createCellEditor(Composite parent, Object object, DBPPropertyDescriptor property)
+    {
+        // List
+        if (property instanceof IPropertyValueListProvider) {
+            final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
+            final Object[] items = listProvider.getPossibleValues(object);
+            if (!ArrayUtils.isEmpty(items)) {
+                final String[] strings = new String[items.length];
+                for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+                    strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject)items[i]).getName() : CommonUtils.toString(items[i]);
+                }
+                final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
+                    parent,
+                    strings,
+                    SWT.DROP_DOWN | (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY));
+                return editor;
+            }
+        }
+        Class<?> propertyType = property.getDataType();
+        if (propertyType == null || CharSequence.class.isAssignableFrom(propertyType)) {
+            return new CustomTextCellEditor(parent);
+        } else if (BeanUtils.isNumericType(propertyType)) {
+            return new CustomNumberCellEditor(parent, propertyType);
+        } else if (BeanUtils.isBooleanType(propertyType)) {
+            return new CustomCheckboxCellEditor(parent);
+            //return new CheckboxCellEditor(parent);
+        } else if (propertyType.isEnum()) {
+            final Object[] enumConstants = propertyType.getEnumConstants();
+            final String[] strings = new String[enumConstants.length];
+            for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
+                strings[i] = ((Enum)enumConstants[i]).name();
+            }
+            return new CustomComboBoxCellEditor(
+                parent,
+                strings,
+                SWT.DROP_DOWN | SWT.READ_ONLY);
+        } else {
+            log.warn("Unsupported property type: " + propertyType.getName());
+            return null;
+        }
     }
 
     private static class SaveRunner implements Runnable {
