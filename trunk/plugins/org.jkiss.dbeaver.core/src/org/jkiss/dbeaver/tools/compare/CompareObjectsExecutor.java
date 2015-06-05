@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.tools.compare;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -29,11 +29,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
+import org.jkiss.dbeaver.ui.editors.entity.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.properties.DataSourcePropertyFilter;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
-import org.jkiss.dbeaver.ui.editors.entity.properties.PropertiesContributor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -53,7 +53,7 @@ public class CompareObjectsExecutor {
 
     private volatile int initializedCount = 0;
     private volatile IStatus initializeError;
-    private final Map<Object, Map<IPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<Object, Map<IPropertyDescriptor, Object>>();
+    private final Map<Object, Map<DBPPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<Object, Map<DBPPropertyDescriptor, Object>>();
 
     private final List<CompareReportLine> reportLines = new ArrayList<CompareReportLine>();
     private int reportDepth = 0;
@@ -92,7 +92,7 @@ public class CompareObjectsExecutor {
             if (node == null) {
                 continue;
             }
-            Map<IPropertyDescriptor, Object> valueMap = propertyValues.get(node.getObject());
+            Map<DBPPropertyDescriptor, Object> valueMap = propertyValues.get(node.getObject());
             if (valueMap != null) {
                 reportProperty.values[i] = valueMap.get(property);
             }
@@ -134,10 +134,10 @@ public class CompareObjectsExecutor {
         };
         lazyPropertyLoadListener = new ILazyPropertyLoadListener() {
             @Override
-            public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
+            public void handlePropertyLoad(Object object, DBPPropertyDescriptor property, Object propertyValue, boolean completed)
             {
                 synchronized (propertyValues) {
-                    Map<IPropertyDescriptor, Object> objectProps = propertyValues.get(object);
+                    Map<DBPPropertyDescriptor, Object> objectProps = propertyValues.get(object);
                     if (objectProps != null) {
                         objectProps.put(property, propertyValue);
                     }
@@ -238,9 +238,9 @@ public class CompareObjectsExecutor {
                 throw new InterruptedException();
             }
             DBSObject databaseObject = node.getObject();
-            Map<IPropertyDescriptor, Object> nodeProperties = propertyValues.get(databaseObject);
+            Map<DBPPropertyDescriptor, Object> nodeProperties = propertyValues.get(databaseObject);
             if (nodeProperties == null) {
-                nodeProperties = new IdentityHashMap<IPropertyDescriptor, Object>();
+                nodeProperties = new IdentityHashMap<DBPPropertyDescriptor, Object>();
                 propertyValues.put(databaseObject, nodeProperties);
             }
             PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties);
@@ -273,7 +273,7 @@ public class CompareObjectsExecutor {
             Thread.sleep(50);
             synchronized (PROPS_LOCK) {
                 hasLazy = false;
-                for (Map<IPropertyDescriptor, Object> objectProps : propertyValues.values()) {
+                for (Map<DBPPropertyDescriptor, Object> objectProps : propertyValues.values()) {
                     if (objectProps.values().contains(LAZY_VALUE)) {
                         hasLazy = true;
                         break;

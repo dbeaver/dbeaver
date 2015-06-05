@@ -35,6 +35,7 @@ import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -224,8 +225,8 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             TreeNode propNode = new TreeNode(category, propertySource, prop);
             // Load nested object's properties
-            if (!(propertySource instanceof IPropertySourceEditable) && prop instanceof IPropertyDescriptorEx) {
-                Class<?> propType = ((IPropertyDescriptorEx) prop).getDataType();
+            if (!(propertySource instanceof IPropertySourceEditable) && prop instanceof DBPPropertyDescriptor) {
+                Class<?> propType = ((DBPPropertyDescriptor) prop).getDataType();
                 if (propType != null) {
                     if (DBPObject.class.isAssignableFrom(propType)) {
                         Object propertyValue = propertySource.getPropertyValue(prop.getId());
@@ -611,8 +612,8 @@ public class PropertyTreeViewer extends TreeViewer {
 
         boolean isEditable()
         {
-            if (property instanceof IPropertyDescriptorEx) {
-                return ((IPropertyDescriptorEx) property).isEditable(propertySource.getEditableValue());
+            if (property instanceof DBPPropertyDescriptor) {
+                return ((DBPPropertyDescriptor) property).isEditable(propertySource.getEditableValue());
             } else {
                 return property != null;
             }
