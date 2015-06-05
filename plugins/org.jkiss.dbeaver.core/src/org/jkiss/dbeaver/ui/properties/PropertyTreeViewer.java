@@ -35,6 +35,7 @@ import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -276,8 +277,8 @@ public class PropertyTreeViewer extends TreeViewer {
     {
         if (node instanceof TreeNode) {
             TreeNode treeNode = (TreeNode) node;
-            if (treeNode.propertySource instanceof IPropertySourceEx) {
-                ((IPropertySourceEx) treeNode.propertySource).resetPropertyValueToDefault(treeNode.property.getId());
+            if (treeNode.propertySource instanceof DBPPropertySource) {
+                ((DBPPropertySource) treeNode.propertySource).resetPropertyValueToDefault(treeNode.property.getId());
             } else {
                 treeNode.propertySource.resetPropertyValue(treeNode.property.getId());
             }
@@ -489,7 +490,7 @@ public class PropertyTreeViewer extends TreeViewer {
                                 } else {
                                     manager.add(new ActionResetProperty(prop, false));
                                     if (!isCustomProperty(prop.property) &&
-                                        prop.propertySource instanceof IPropertySourceEx) {
+                                        prop.propertySource instanceof DBPPropertySource) {
                                         manager.add(new ActionResetProperty(prop, true));
                                     }
                                 }
@@ -805,8 +806,8 @@ public class PropertyTreeViewer extends TreeViewer {
         @Override
         public void run()
         {
-            if (toDefault && prop.propertySource instanceof IPropertySourceEx) {
-                ((IPropertySourceEx) prop.propertySource).resetPropertyValueToDefault(prop.property.getId());
+            if (toDefault && prop.propertySource instanceof DBPPropertySource) {
+                ((DBPPropertySource) prop.propertySource).resetPropertyValueToDefault(prop.property.getId());
             } else {
                 prop.propertySource.resetPropertyValue(prop.property.getId());
             }

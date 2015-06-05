@@ -15,19 +15,31 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-package org.jkiss.dbeaver.ui.properties;
-
-import org.eclipse.ui.views.properties.IPropertySource2;
+package org.jkiss.dbeaver.model;
 
 /**
- * Property source which supports default property values
+ * Property source
  */
-public interface IPropertySourceEx extends IPropertySource2 {
+public interface DBPPropertySource {
+
+    public Object getEditableValue();
+
+    public DBPPropertyDescriptor[] getPropertyDescriptors2();
+
+    public Object getPropertyValue(Object id);
+
+    public boolean isPropertySet(Object id);
+
+    boolean isPropertyResettable(Object id);
+
+    public void resetPropertyValue(Object id);
+
+    void resetPropertyValueToDefault(Object id);
+
+    public void setPropertyValue(Object id, Object value);
 
     boolean isDirty(Object id);
 
     boolean hasDefaultValue(Object id);
 
-    void resetPropertyValueToDefault(Object id);
 }
