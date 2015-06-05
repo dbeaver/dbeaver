@@ -664,7 +664,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(DBeaverPreferences.SQL_PARAMETERS_ENABLED)) {
             // Parse parameters
             for (SQLQuery query : queryList) {
-                query.parseParameters(getDocument(), getSyntaxManager());
+                query.setParameters(parseParameters(getDocument(), query.getOffset(), query.getLength()));
             }
         }
         return queryList;

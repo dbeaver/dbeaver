@@ -28,21 +28,13 @@ import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.update.Update;
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockBeginToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockEndToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLParameterToken;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -195,52 +187,9 @@ public class SQLQuery {
         return singleTableMeta;
     }
 
-    public void parseParameters(IDocument document, SQLSyntaxManager syntaxManager)
+    public void setParameters(List<SQLQueryParameter> parameters)
     {
-        syntaxManager.setRange(document, offset, length);
-        int blockDepth = 0;
-        for (;;) {
-            IToken token = syntaxManager.nextToken();
-            int tokenOffset = syntaxManager.getTokenOffset();
-            final int tokenLength = syntaxManager.getTokenLength();
-            if (token.isEOF() || tokenOffset > offset + length) {
-                break;
-            }
-            // Handle only parameters which are not in SQL blocks
-            if (token instanceof SQLBlockBeginToken) {
-                blockDepth++;
-            }else if (token instanceof SQLBlockEndToken) {
-                blockDepth--;
-            }
-            if (token instanceof SQLParameterToken && tokenLength > 0 && blockDepth <= 0) {
-                try {
-                    if (parameters == null) {
-                        parameters = new ArrayList<SQLQueryParameter>();
-                    }
-
-                    String paramName = document.get(tokenOffset, tokenLength);
-                    SQLQueryParameter parameter = new SQLQueryParameter(
-                        parameters.size(),
-                        paramName,
-                        tokenOffset - offset,
-                        tokenLength);
-
-                    SQLQueryParameter previous = null;
-                    if (parameter.isNamed()) {
-                        for (int i = parameters.size(); i > 0; i--) {
-                            if (parameters.get(i - 1).getName().equals(paramName)) {
-                                previous = parameters.get(i - 1);
-                                break;
-                            }
-                        }
-                    }
-                    parameter.setPrevious(previous);
-                    parameters.add(parameter);
-                } catch (BadLocationException e) {
-                    log.warn("Can't extract query parameter", e);
-                }
-            }
-        }
+        this.parameters = parameters;
         if (parameters != null) {
             // Replace parameter tokens with "?" symbol
             for (int i = parameters.size(); i > 0; i--) {
