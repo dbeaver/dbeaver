@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.*;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.entity.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
@@ -73,7 +74,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
     }
 
     @Override
-    public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
+    public void handlePropertyLoad(Object object, DBPPropertyDescriptor property, Object propertyValue, boolean completed)
     {
         // Make page refresh if our main object was updated
         if (!ArrayUtils.isEmpty(curSelection) && !getControl().isDisposed()) {
