@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -30,9 +29,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -673,9 +673,9 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return false;
     }
 
-    protected Set<IPropertyDescriptor> getAllProperties()
+    protected Set<DBPPropertyDescriptor> getAllProperties()
     {
-        Set<IPropertyDescriptor> props = new LinkedHashSet<IPropertyDescriptor>();
+        Set<DBPPropertyDescriptor> props = new LinkedHashSet<DBPPropertyDescriptor>();
         for (ObjectColumn column : columns) {
             props.addAll(column.propMap.values());
         }
@@ -818,10 +818,10 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         @Override
-        public IPropertyDescriptor[] getPropertyDescriptors()
+        public DBPPropertyDescriptor[] getPropertyDescriptors2()
         {
-            Set<IPropertyDescriptor> props = getAllProperties();
-            return props.toArray(new IPropertyDescriptor[props.size()]);
+            Set<DBPPropertyDescriptor> props = getAllProperties();
+            return props.toArray(new DBPPropertyDescriptor[props.size()]);
         }
 
     }

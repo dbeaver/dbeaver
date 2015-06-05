@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -52,7 +51,7 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
     private Object sourceObject;
     private Object object;
     private boolean loadLazyProps;
-    private final List<IPropertyDescriptor> props = new ArrayList<IPropertyDescriptor>();
+    private final List<DBPPropertyDescriptor> props = new ArrayList<DBPPropertyDescriptor>();
     private final Map<Object, Object> propValues = new HashMap<Object, Object>();
     private final Map<Object, Object> lazyValues = new HashMap<Object, Object>();
     private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<ObjectPropertyDescriptor>();
@@ -69,7 +68,7 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
         this.loadLazyProps = loadLazyProps;
     }
 
-    public PropertySourceAbstract addProperty(IPropertyDescriptor prop)
+    public PropertySourceAbstract addProperty(DBPPropertyDescriptor prop)
     {
         if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isHidden()) {
             // Do not add it to property list
@@ -311,11 +310,11 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
         for (final ObjectPropertyDescriptor desc : annoProps) {
             addProperty(desc);
         }
-        if (editableValue instanceof IPropertySource) {
-            IPropertySource ownPropSource = (IPropertySource) editableValue;
-            IPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors();
+        if (editableValue instanceof DBPPropertySource) {
+            DBPPropertySource ownPropSource = (DBPPropertySource) editableValue;
+            DBPPropertyDescriptor[] ownProperties = ownPropSource.getPropertyDescriptors2();
             if (!ArrayUtils.isEmpty(ownProperties)) {
-                for (IPropertyDescriptor prop : ownProperties) {
+                for (DBPPropertyDescriptor prop : ownProperties) {
                     props.add(prop);
                     propValues.put(prop.getId(), ownPropSource.getPropertyValue(prop.getId()));
                 }
