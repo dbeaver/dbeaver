@@ -31,20 +31,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -401,43 +393,6 @@ public class RuntimeUtils {
         return false;
     }
 
-    public static DBRProcessDescriptor processCommand(
-        final DBRShellCommand command,
-        final Map<String, Object> variables)
-    {
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
-        // Direct execute
-        try {
-            processDescriptor.execute();
-        } catch (DBException e) {
-            UIUtils.showErrorDialog(shell, "Execute process", processDescriptor.getName(), e);
-        }
-        if (command.isShowProcessPanel()) {
-            shell.getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run()
-                {
-                    try {
-                        final ShellProcessView processView =
-                            (ShellProcessView) DBeaverUI.getActiveWorkbenchWindow().getActivePage().showView(
-                                ShellProcessView.VIEW_ID,
-                                ShellProcessView.getNextId(),
-                                IWorkbenchPage.VIEW_VISIBLE
-                            );
-                        processView.initProcess(processDescriptor);
-                    } catch (PartInitException e) {
-                        log.error(e);
-                    }
-                }
-            });
-        }
-        if (command.isWaitProcessFinish()) {
-            processDescriptor.waitFor();
-        }
-        return processDescriptor;
-    }
-
     public static String getNativeBinaryName(String binName)
     {
         return DBeaverCore.getInstance().getLocalSystem().isWindows() ? binName + ".exe" : binName;
@@ -528,7 +483,7 @@ public class RuntimeUtils {
                 if (program != null) {
                     final ImageData imageData = program.getImageData();
                     if (imageData != null) {
-                        programInfo.image = new Image(DBeaverUI.getDisplay(), imageData);
+                        programInfo.image = new Image(null, imageData);
                     }
                 }
                 programMap.put(fileExtension, programInfo);
