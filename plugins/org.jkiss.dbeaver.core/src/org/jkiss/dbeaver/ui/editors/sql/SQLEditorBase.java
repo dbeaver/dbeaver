@@ -51,29 +51,25 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.runtime.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.utils.TextUtils;
+import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockBeginToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockEndToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * SQL Executor
@@ -473,7 +469,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             return null;
         }
         if (getActivePreferenceStore().getBoolean(DBeaverPreferences.SQL_PARAMETERS_ENABLED)) {
-            sqlQuery.parseParameters(getDocument(), getSyntaxManager());
+            sqlQuery.setParameters(parseParameters(getDocument(), sqlQuery.getOffset(), sqlQuery.getLength()));
         }
         return sqlQuery;
     }
@@ -625,42 +621,54 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
     }
 
-/*
-    public synchronized void updateFoldingStructure(int offset, int length, List<Position> positions)
-    {
-        if (curAnnotations == null) {
-            curAnnotations = new HashMap<Annotation, Position>();
-        }
-        List<Annotation> deletedAnnotations = new ArrayList<Annotation>();
-        Map<Annotation, Position> newAnnotations = new HashMap<Annotation, Position>();
+    protected List<SQLQueryParameter> parseParameters(IDocument document, int offset, int length) {
+        List<SQLQueryParameter> parameters = null;
+        syntaxManager.setRange(document, offset, length);
+        int blockDepth = 0;
+        for (;;) {
+            IToken token = syntaxManager.nextToken();
+            int tokenOffset = syntaxManager.getTokenOffset();
+            final int tokenLength = syntaxManager.getTokenLength();
+            if (token.isEOF() || tokenOffset > offset + length) {
+                break;
+            }
+            // Handle only parameters which are not in SQL blocks
+            if (token instanceof SQLBlockBeginToken) {
+                blockDepth++;
+            }else if (token instanceof SQLBlockEndToken) {
+                blockDepth--;
+            }
+            if (token instanceof SQLParameterToken && tokenLength > 0 && blockDepth <= 0) {
+                try {
+                    if (parameters == null) {
+                        parameters = new ArrayList<SQLQueryParameter>();
+                    }
 
-        // Delete all annotations if specified range
-        for (Map.Entry<Annotation, Position> entry : curAnnotations.entrySet()) {
-            int entryOffset = entry.getValue().getOffset();
-            if (entryOffset >= offset && entryOffset < offset + length) {
-                deletedAnnotations.add(entry.getKey());
+                    String paramName = document.get(tokenOffset, tokenLength);
+                    SQLQueryParameter parameter = new SQLQueryParameter(
+                        parameters.size(),
+                        paramName,
+                        tokenOffset - offset,
+                        tokenLength);
+
+                    SQLQueryParameter previous = null;
+                    if (parameter.isNamed()) {
+                        for (int i = parameters.size(); i > 0; i--) {
+                            if (parameters.get(i - 1).getName().equals(paramName)) {
+                                previous = parameters.get(i - 1);
+                                break;
+                            }
+                        }
+                    }
+                    parameter.setPrevious(previous);
+                    parameters.add(parameter);
+                } catch (BadLocationException e) {
+                    log.warn("Can't extract query parameter", e);
+                }
             }
         }
-        for (Annotation annotation : deletedAnnotations) {
-            curAnnotations.remove(annotation);
-        }
-
-        // Add new annotations
-        for (Position position : positions) {
-            ProjectionAnnotation annotation = new ProjectionAnnotation();
-            newAnnotations.put(annotation, position);
-        }
-
-        // Modify annotation set
-        annotationModel.modifyAnnotations(
-            deletedAnnotations.toArray(new Annotation[deletedAnnotations.size()]),
-            newAnnotations,
-            null);
-
-        // Update current annotations
-        curAnnotations.putAll(newAnnotations);
+        return parameters;
     }
-*/
 
     public boolean isDisposed()
     {
