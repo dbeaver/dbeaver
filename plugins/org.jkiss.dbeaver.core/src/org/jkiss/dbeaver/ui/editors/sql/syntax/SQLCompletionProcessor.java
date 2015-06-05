@@ -23,7 +23,6 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -534,7 +533,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         StringBuilder info = new StringBuilder();
         PropertyCollector collector = new PropertyCollector(object, false);
         collector.collectProperties();
-        for (IPropertyDescriptor descriptor : collector.getPropertyDescriptors()) {
+        for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
             Object propValue = collector.getPropertyValue(descriptor.getId());
             if (propValue == null) {
                 continue;

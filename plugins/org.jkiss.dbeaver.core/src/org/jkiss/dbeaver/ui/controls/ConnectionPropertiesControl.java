@@ -23,7 +23,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -91,7 +90,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     }
 
     @Override
-    protected void contributeContextMenu(IMenuManager manager, final Object node, final String category, final IPropertyDescriptor property)
+    protected void contributeContextMenu(IMenuManager manager, final Object node, final String category, final DBPPropertyDescriptor property)
     {
         boolean isCustom = USER_PROPERTIES_CATEGORY.equals(category);
         if (isCustom) {

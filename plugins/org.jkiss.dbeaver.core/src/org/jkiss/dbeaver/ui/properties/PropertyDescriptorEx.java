@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -126,7 +127,7 @@ public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyDes
         if (!editable) {
             return null;
         }
-        return ObjectPropertyDescriptor.createCellEditor(parent, null, this);
+        return UIUtils.createCellEditor(parent, null, this);
     }
 
     @Nullable

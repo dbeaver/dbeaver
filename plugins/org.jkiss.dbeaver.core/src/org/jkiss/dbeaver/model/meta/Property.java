@@ -99,8 +99,6 @@ public @interface Property
 
     Class<? extends IPropertyValueTransformer> valueTransformer() default IPropertyValueTransformer.class;
 
-    Class<? extends IPropertyValueEditorProvider> valueEditor() default IPropertyValueEditorProvider.class;
-
     Class<? extends IPropertyValueListProvider> listProvider() default IPropertyValueListProvider.class;
 
 }
