@@ -75,6 +75,9 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
         ACTIVE_CONTEXT.set(this);
         try {
             this.connection = dataSource.openConnection(monitor, purpose);
+            if (this.connection == null) {
+                throw new DBCException("Null connection returned");
+            }
 
             if (autoCommit != null) {
                 try {
@@ -103,7 +106,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
             QMUtils.getDefaultHandler().handleContextOpen(this, !this.autoCommit);
 
             // Copy context state
-            dataSource.initializeContextState(monitor, this, !primaryContext || forceActiveObject);
+            this.dataSource.initializeContextState(monitor, this, !primaryContext || forceActiveObject);
 
             // Add self to context list
             this.dataSource.allContexts.add(this);
@@ -112,7 +115,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
         }
     }
 
-    public Connection getConnection(DBRProgressMonitor monitor) throws SQLException
+    public @NotNull Connection getConnection(DBRProgressMonitor monitor) throws SQLException
     {
         if (connection == null) {
             try {
