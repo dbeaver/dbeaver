@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -28,7 +29,7 @@ import java.util.*;
  */
 public class PropertySourceCustom implements IPropertySourceEx {
 
-    private List<IPropertyDescriptor> props = new ArrayList<IPropertyDescriptor>();
+    private List<DBPPropertyDescriptor> props = new ArrayList<DBPPropertyDescriptor>();
 
     private Map<Object, Object> originalValues = new TreeMap<Object, Object>();
     private Map<Object, Object> propValues = new TreeMap<Object, Object>();
@@ -38,7 +39,7 @@ public class PropertySourceCustom implements IPropertySourceEx {
     {
     }
 
-    public PropertySourceCustom(Collection<? extends IPropertyDescriptor> properties, Map<Object, Object> values)
+    public PropertySourceCustom(Collection<? extends DBPPropertyDescriptor> properties, Map<Object, Object> values)
     {
         addProperties(properties);
         setValues(values);
@@ -50,10 +51,10 @@ public class PropertySourceCustom implements IPropertySourceEx {
         // Set only allowed properties + transform property types
         for (Map.Entry<Object, Object> value : values.entrySet()) {
             Object propValue = value.getValue();
-            for (IPropertyDescriptor prop : props) {
+            for (DBPPropertyDescriptor prop : props) {
                 if (prop.getId().equals(value.getKey())) {
-                    if (propValue instanceof String && prop instanceof IPropertyDescriptorEx) {
-                        propValue = RuntimeUtils.convertString((String) value.getValue(), ((IPropertyDescriptorEx) prop).getDataType());
+                    if (propValue instanceof String) {
+                        propValue = RuntimeUtils.convertString((String) value.getValue(), prop.getDataType());
                     }
                     originalValues.put(value.getKey(), propValue);
                     break;
@@ -81,15 +82,13 @@ public class PropertySourceCustom implements IPropertySourceEx {
         return allValues;
     }
 
-    public void addProperties(Collection<? extends IPropertyDescriptor> properties)
+    public void addProperties(Collection<? extends DBPPropertyDescriptor> properties)
     {
         props.addAll(properties);
-        for (IPropertyDescriptor prop : properties) {
-            if (prop instanceof IPropertyDescriptorEx) {
-                final Object defaultValue = ((IPropertyDescriptorEx) prop).getDefaultValue();
-                if (defaultValue != null) {
-                    defaultValues.put(prop.getId(), defaultValue);
-                }
+        for (DBPPropertyDescriptor prop : properties) {
+            final Object defaultValue = prop.getDefaultValue();
+            if (defaultValue != null) {
+                defaultValues.put(prop.getId(), defaultValue);
             }
         }
     }

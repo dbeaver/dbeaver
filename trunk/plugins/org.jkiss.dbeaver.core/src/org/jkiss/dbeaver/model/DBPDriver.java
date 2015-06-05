@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.Collection;
@@ -66,7 +65,7 @@ public interface DBPDriver extends DBPObject
 
     boolean isCustomDriverLoader();
 
-    Collection<IPropertyDescriptor> getConnectionPropertyDescriptors();
+    Collection<DBPPropertyDescriptor> getConnectionPropertyDescriptors();
 
     Map<Object, Object> getDefaultConnectionProperties();
 
