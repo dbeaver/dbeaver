@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,7 +67,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
-        AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION) ||
             store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS) ||

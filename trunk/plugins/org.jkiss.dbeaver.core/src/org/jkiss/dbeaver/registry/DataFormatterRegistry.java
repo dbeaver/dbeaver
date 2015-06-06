@@ -25,7 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -173,7 +173,7 @@ public class DataFormatterRegistry
                 for (DBDDataFormatterProfile profile : customProfiles) {
                     xml.startElement(RegistryConstants.TAG_PROFILE);
                     xml.addAttribute(RegistryConstants.ATTR_NAME, profile.getProfileName());
-                    AbstractPreferenceStore store = (AbstractPreferenceStore) profile.getPreferenceStore();
+                    SimplePreferenceStore store = (SimplePreferenceStore) profile.getPreferenceStore();
                     Map<String, String> props = store.getProperties();
                     if (props != null) {
                         for (Map.Entry<String,String> entry : props.entrySet()) {
@@ -214,7 +214,7 @@ public class DataFormatterRegistry
         }
     }
 
-    private class CustomProfileStore extends AbstractPreferenceStore {
+    private class CustomProfileStore extends SimplePreferenceStore {
         private CustomProfileStore()
         {
             super(DBeaverCore.getGlobalPreferenceStore());
@@ -230,7 +230,7 @@ public class DataFormatterRegistry
     private class FormattersParser implements SAXListener
     {
         private String profileName;
-        private AbstractPreferenceStore curStore;
+        private SimplePreferenceStore curStore;
 
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)

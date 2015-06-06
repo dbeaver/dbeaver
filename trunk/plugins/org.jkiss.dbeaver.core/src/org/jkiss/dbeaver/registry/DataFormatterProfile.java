@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -152,8 +152,8 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
     @Override
     public boolean isOverridesParent()
     {
-        if (store instanceof AbstractPreferenceStore) {
-            AbstractPreferenceStore prefStore = (AbstractPreferenceStore) store;
+        if (store instanceof SimplePreferenceStore) {
+            SimplePreferenceStore prefStore = (SimplePreferenceStore) store;
 
             if (prefStore.isSet(PROP_LANGUAGE) || prefStore.isSet(PROP_COUNTRY) || prefStore.isSet(PROP_VARIANT)) {
                 return true;
@@ -175,7 +175,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
     @Override
     public void reset()
     {
-        if (store instanceof AbstractPreferenceStore) {
+        if (store instanceof SimplePreferenceStore) {
             // Set all formatter properties to default
             store.setToDefault(PROP_LANGUAGE);
             store.setToDefault(PROP_COUNTRY);

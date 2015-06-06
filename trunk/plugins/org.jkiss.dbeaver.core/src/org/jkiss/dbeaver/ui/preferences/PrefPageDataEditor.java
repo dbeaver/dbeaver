@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 
 /**
  * PrefPageDataEditor
@@ -51,7 +51,7 @@ public class PrefPageDataEditor extends TargetPrefPage
     @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
-        AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
                 store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
                 store.contains(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
