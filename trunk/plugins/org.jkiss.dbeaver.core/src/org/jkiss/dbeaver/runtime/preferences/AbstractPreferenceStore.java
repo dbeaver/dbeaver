@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.utils;
+package org.jkiss.dbeaver.runtime.preferences;
 
 import org.eclipse.core.commands.common.EventManager;
 import org.eclipse.jface.resource.JFaceResources;

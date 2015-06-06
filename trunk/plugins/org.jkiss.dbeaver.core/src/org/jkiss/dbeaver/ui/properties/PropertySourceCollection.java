@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -92,11 +93,6 @@ public class PropertySourceCollection implements DBPPropertySource {
         return false;
     }
 
-    @Override
-    public boolean hasDefaultValue(Object id) {
-        return false;
-    }
-
     private class ItemPropertyDescriptor implements DBPPropertyDescriptor {
         private Integer id;
         private Object item;
@@ -136,11 +132,13 @@ public class PropertySourceCollection implements DBPPropertySource {
             return false;
         }
 
+        @NotNull
         @Override
         public String getDisplayName() {
             return DBUtils.getObjectShortName(item);
         }
 
+        @NotNull
         @Override
         public Object getId() {
             return id;

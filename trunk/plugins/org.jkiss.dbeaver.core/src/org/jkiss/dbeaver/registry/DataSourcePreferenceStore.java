@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.utils.SimplePreferenceStore;
+import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
