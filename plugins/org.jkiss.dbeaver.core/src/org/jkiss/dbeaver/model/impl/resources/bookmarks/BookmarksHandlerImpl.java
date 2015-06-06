@@ -108,6 +108,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'"); //$NON-NLS-2$
             }
             final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
+            if (dsNode == null) {
+                throw new DBException("Can't find datasource node for '" + dataSourceContainer.getName() + "'"); //$NON-NLS-2$
+            }
             dsNode.initializeNode(null, new DBRProcessListener() {
                 @Override
                 public void onProcessFinish(IStatus status)
@@ -223,12 +226,15 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         for (DBNNode parent = node; !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
             nodePath.add(0, parent.getNodeName());
         }
-
+        String dsId = null;
+        if (node.getObject() != null && node.getObject().getDataSource() != null) {
+            dsId = node.getObject().getDataSource().getContainer().getId();
+        }
         BookmarkStorage storage = new BookmarkStorage(
             title,
             node.getNodeType() + " " + node.getNodeName(), //$NON-NLS-1$
             node.getNodeIconDefault(),
-            node.getObject().getDataSource().getContainer().getId(),
+            dsId,
             nodePath);
 
         try {

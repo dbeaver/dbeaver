@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.net;
 
 import com.jcraft.jsch.*;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -28,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
@@ -228,7 +226,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         @Override
         public void showMessage(String message)
         {
-            UIUtils.showMessageBox(null, "SSH Tunnel", message, SWT.ICON_INFORMATION);
+            log.info(message);
         }
     }
 
