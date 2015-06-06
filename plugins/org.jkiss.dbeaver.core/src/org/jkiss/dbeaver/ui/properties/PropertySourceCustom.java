@@ -163,12 +163,6 @@ public class PropertySourceCustom implements DBPPropertySource {
     }
 
     @Override
-    public boolean hasDefaultValue(Object id)
-    {
-        return defaultValues.containsKey(id);
-    }
-
-    @Override
     public void resetPropertyValueToDefault(Object id)
     {
         propValues.remove(id);

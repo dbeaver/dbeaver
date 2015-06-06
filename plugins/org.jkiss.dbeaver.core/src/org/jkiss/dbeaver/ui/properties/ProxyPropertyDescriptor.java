@@ -21,6 +21,7 @@ import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
 /**
@@ -36,6 +37,7 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
         this.original = original;
     }
 
+    @NotNull
     @Override
     public Object getId()
     {
@@ -74,6 +76,7 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
         return original.isEditable(object);
     }
 
+    @NotNull
     @Override
     public String getDisplayName()
     {

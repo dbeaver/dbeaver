@@ -261,11 +261,6 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
     }
 
     @Override
-    public boolean hasDefaultValue(Object id) {
-        return false;
-    }
-
-    @Override
     public final void setPropertyValue(Object id, Object value)
     {
         Object prop = propValues.get(id);
