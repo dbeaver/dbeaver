@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.utils.SimplePreferenceStore;
+import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
 
 import java.util.HashMap;
 import java.util.Map;

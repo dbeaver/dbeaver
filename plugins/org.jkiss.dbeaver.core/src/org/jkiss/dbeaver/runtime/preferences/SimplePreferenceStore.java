@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.utils;
+package org.jkiss.dbeaver.runtime.preferences;
 
 import org.eclipse.core.commands.common.EventManager;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;

@@ -163,11 +163,6 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
     }
 
     @Override
-    public boolean hasDefaultValue(Object id) {
-        return false;
-    }
-
-    @Override
     public String toString() {
         StringBuilder title = new StringBuilder();
         title.append("Type: ").append(nodeType);

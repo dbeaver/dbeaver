@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
- * Property descriptor
+ * Property descriptor.
  */
 public interface DBPPropertyDescriptor {
 
@@ -29,7 +29,7 @@ public interface DBPPropertyDescriptor {
      * Returns the id for this property. This object is used internally to distinguish one property descriptor from another.
      */
     @NotNull
-    public Object getId();
+    Object getId();
 
     /**
      * Returns the name of the category to which this property belongs. Properties
@@ -37,7 +37,7 @@ public interface DBPPropertyDescriptor {
      * string is shown to the user
      */
     @Nullable
-    public String getCategory();
+    String getCategory();
 
     /**
      * Returns the display name for this property. This localized string is shown to
@@ -46,14 +46,14 @@ public interface DBPPropertyDescriptor {
      * @return a displayable name
      */
     @NotNull
-    public String getDisplayName();
+    String getDisplayName();
 
     /**
      * Returns a brief description of this property. This localized string is shown
      * to the user when this property is selected.
      */
     @Nullable
-    public String getDescription();
+    String getDescription();
 
     /**
      * Returns the type of this property. Types is a java class.

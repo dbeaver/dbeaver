@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.jface.viewers.IFilter;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
@@ -98,6 +99,7 @@ public abstract class ObjectAttributeDescriptor {
         return orderNumber;
     }
 
+    @NotNull
     public String getId()
     {
         return id;

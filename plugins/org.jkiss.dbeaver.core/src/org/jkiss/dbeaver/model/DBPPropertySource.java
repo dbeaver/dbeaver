@@ -22,24 +22,22 @@ package org.jkiss.dbeaver.model;
  */
 public interface DBPPropertySource {
 
-    public Object getEditableValue();
+    Object getEditableValue();
 
-    public DBPPropertyDescriptor[] getPropertyDescriptors2();
+    DBPPropertyDescriptor[] getPropertyDescriptors2();
 
-    public Object getPropertyValue(Object id);
+    Object getPropertyValue(Object id);
 
-    public boolean isPropertySet(Object id);
+    boolean isPropertySet(Object id);
 
     boolean isPropertyResettable(Object id);
 
-    public void resetPropertyValue(Object id);
+    void resetPropertyValue(Object id);
 
     void resetPropertyValueToDefault(Object id);
 
-    public void setPropertyValue(Object id, Object value);
+    void setPropertyValue(Object id, Object value);
 
     boolean isDirty(Object id);
-
-    boolean hasDefaultValue(Object id);
 
 }

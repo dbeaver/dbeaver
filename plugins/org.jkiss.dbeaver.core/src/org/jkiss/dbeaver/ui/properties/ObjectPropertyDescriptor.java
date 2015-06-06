@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
@@ -147,6 +148,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propDescription;
     }
 
+    @NotNull
     @Override
     public String getDisplayName()
     {

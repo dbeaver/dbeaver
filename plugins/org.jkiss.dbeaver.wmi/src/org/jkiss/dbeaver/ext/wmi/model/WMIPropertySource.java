@@ -127,9 +127,4 @@ public abstract class WMIPropertySource implements DBPPropertySource
         return false;
     }
 
-    @Override
-    public boolean hasDefaultValue(Object id) {
-        return false;
-    }
-
 }

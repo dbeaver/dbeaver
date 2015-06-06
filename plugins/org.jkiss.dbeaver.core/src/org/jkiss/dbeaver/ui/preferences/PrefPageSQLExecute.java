@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.SimplePreferenceStore;
+import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 /**
