@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 
 /**
  * PrefPageMetaData
@@ -50,7 +50,7 @@ public class PrefPageMetaData extends TargetPrefPage
     @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
-        AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES) ||
             store.contains(DBeaverPreferences.META_SEPARATE_CONNECTION) ||

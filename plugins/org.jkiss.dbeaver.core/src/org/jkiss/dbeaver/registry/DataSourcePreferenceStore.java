@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * DataSourcePreferenceStore
  */
-public class DataSourcePreferenceStore extends AbstractPreferenceStore
+public class DataSourcePreferenceStore extends SimplePreferenceStore
 {
     private final DataSourceDescriptor dataSourceDescriptor;
 
