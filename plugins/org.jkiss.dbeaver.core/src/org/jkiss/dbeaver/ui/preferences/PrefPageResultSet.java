@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -70,7 +70,7 @@ public class PrefPageResultSet extends TargetPrefPage
     @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
-        AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||

@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 
 /**
  * PrefPageOracle
@@ -50,7 +50,7 @@ public class PrefPageOracle extends TargetPrefPage
     @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
-        AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(OracleConstants.PREF_EXPLAIN_TABLE_NAME) ||
             store.contains(OracleConstants.PREF_SUPPORT_ROWID) ||

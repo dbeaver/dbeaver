@@ -57,7 +57,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -997,7 +997,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public AbstractPreferenceStore getPreferenceStore()
+    public SimplePreferenceStore getPreferenceStore()
     {
         return preferenceStore;
     }

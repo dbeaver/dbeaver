@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -181,7 +181,7 @@ public class SQLTemplateStore extends TemplateStore {
         log.error(x);
     }
 
-    private static class CustomTemplatesStore extends AbstractPreferenceStore {
+    private static class CustomTemplatesStore extends SimplePreferenceStore {
         private CustomTemplatesStore()
         {
             super(DBeaverCore.getGlobalPreferenceStore());

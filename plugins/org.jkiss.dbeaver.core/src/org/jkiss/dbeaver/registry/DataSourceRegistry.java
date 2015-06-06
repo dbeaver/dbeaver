@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.dbeaver.utils.SimplePreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -494,7 +494,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         // Preferences
         {
             // Save only properties who are differs from default values
-            AbstractPreferenceStore prefStore = dataSource.getPreferenceStore();
+            SimplePreferenceStore prefStore = dataSource.getPreferenceStore();
             for (String propName : prefStore.preferenceNames()) {
                 String propValue = prefStore.getString(propName);
                 String defValue = prefStore.getDefaultString(propName);
