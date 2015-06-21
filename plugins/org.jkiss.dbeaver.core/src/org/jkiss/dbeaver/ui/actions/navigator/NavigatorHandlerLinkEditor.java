@@ -40,12 +40,10 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         if (activePart instanceof NavigatorViewBase) {
             if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
                 IDatabaseEditorInput editorInput = (IDatabaseEditorInput) activeEditor.getEditorInput();
-                if (editorInput != null) {
-                    DBNNode dbnNode = editorInput.getTreeNode();
-                    if (dbnNode != null) {
-                        NavigatorViewBase view = (NavigatorViewBase)activePart;
-                        view.showNode(dbnNode);
-                    }
+                DBNNode dbnNode = editorInput.getNavigatorNode();
+                if (dbnNode != null) {
+                    NavigatorViewBase view = (NavigatorViewBase)activePart;
+                    view.showNode(dbnNode);
                 }
             } else if (activeEditor.getEditorInput() instanceof ProjectFileEditorInput) {
                 IFile editorFile = ((ProjectFileEditorInput)activeEditor.getEditorInput()).getFile();

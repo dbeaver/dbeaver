@@ -33,7 +33,7 @@ import java.util.Collection;
  */
 public interface IDatabaseEditorInput extends IEditorInput, DBPContextProvider {
 
-    DBNDatabaseNode getTreeNode();
+    DBNDatabaseNode getNavigatorNode();
 
     DBSObject getDatabaseObject();
 
