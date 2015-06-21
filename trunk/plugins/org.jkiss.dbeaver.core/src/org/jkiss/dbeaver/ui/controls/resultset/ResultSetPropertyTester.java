@@ -51,11 +51,11 @@ public class ResultSetPropertyTester extends PropertyTester
         if (PROP_ACTIVE.equals(property)) {
             return true;
         } else if (PROP_HAS_DATA.equals(property)) {
-            return rsv.getModel().getRowCount() > 0;
+            return rsv.getModel().hasData();
         } else if (PROP_HAS_MORE_DATA.equals(property)) {
             return rsv.isHasMoreData();
         } else if (PROP_CAN_COPY.equals(property)) {
-            return rsv.getActivePresentation().getCurrentAttribute() != null && rsv.getCurrentRow() != null;
+            return rsv.getModel().hasData();
         } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
             DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
             return attr != null && !rsv.isAttributeReadOnly(attr);
