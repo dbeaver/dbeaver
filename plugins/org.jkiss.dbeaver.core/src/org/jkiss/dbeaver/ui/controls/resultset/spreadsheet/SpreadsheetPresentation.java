@@ -497,7 +497,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
 
-        spreadsheet.refreshData(refreshMetadata);
+        spreadsheet.setRedraw(false);
+        try {
+            spreadsheet.refreshData(refreshMetadata);
+        } finally {
+            spreadsheet.setRedraw(true);
+        }
     }
 
     @Override

@@ -1643,6 +1643,7 @@ public class ResultSetViewer extends Viewer
                             model.setUpdateInProgress(false);
                             if (dataFilter != null) {
                                 model.updateDataFilter(dataFilter);
+                                activePresentation.refreshData(false, false);
                             }
                             updateFiltersText();
                             updateToolbar();
