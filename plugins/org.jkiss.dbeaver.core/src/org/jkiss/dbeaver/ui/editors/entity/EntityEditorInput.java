@@ -44,7 +44,7 @@ public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
     {
         StringBuilder toolTip = new StringBuilder();
 
-        for (DBNNode node = getTreeNode(); node != null; node = node.getParentNode()) {
+        for (DBNNode node = getNavigatorNode(); node != null; node = node.getParentNode()) {
             if (node instanceof DBSFolder) {
                 continue;
             }

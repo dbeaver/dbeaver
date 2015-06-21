@@ -134,7 +134,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     }
 
     @Override
-    public NODE getTreeNode()
+    public NODE getNavigatorNode()
     {
         return node;
     }
@@ -198,7 +198,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         if (propertySource == null) {
             propertySource = new PropertySourceEditable(
                 getCommandContext(),
-                getTreeNode(),
+                getNavigatorNode(),
                 getDatabaseObject());
             propertySource.collectProperties();
         }

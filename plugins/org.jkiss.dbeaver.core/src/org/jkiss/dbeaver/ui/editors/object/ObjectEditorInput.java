@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.editors.object;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IEditorDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
@@ -35,7 +34,7 @@ public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseObject>
     @Override
     public ImageDescriptor getImageDescriptor()
     {
-        DBNDatabaseObject node = getTreeNode();
+        DBNDatabaseObject node = getNavigatorNode();
 //        IEditorDescriptor editorDescriptor = node.getEditorDescriptor();
 //        if (editorDescriptor != null) {
 //            return editorDescriptor.getImageDescriptor();
@@ -47,7 +46,7 @@ public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseObject>
     @Override
     public String getToolTipText()
     {
-        return getTreeNode().getMeta().getDescription();
+        return getNavigatorNode().getMeta().getDescription();
     }
 
 }

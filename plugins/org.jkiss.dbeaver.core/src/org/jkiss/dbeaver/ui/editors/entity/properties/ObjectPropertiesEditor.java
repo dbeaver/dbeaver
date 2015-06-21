@@ -88,7 +88,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this);
         pageControl.setShowDivider(true);
 
-        DBNNode node = getEditorInput().getTreeNode();
+        DBNNode node = getEditorInput().getNavigatorNode();
 
         Composite container = new Composite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
@@ -379,7 +379,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void makeDatabaseEditorTabs(final IDatabaseEditor part, final List<FolderInfo> tabList)
     {
-        final DBNDatabaseNode node = part.getEditorInput().getTreeNode();
+        final DBNDatabaseNode node = part.getEditorInput().getNavigatorNode();
         final DBSObject object = node.getObject();
 
         // Collect tabs from navigator tree model

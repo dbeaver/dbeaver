@@ -53,7 +53,7 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
             if (adaptableObject instanceof IEditorPart) {
                 IEditorInput editorInput = ((IEditorPart) adaptableObject).getEditorInput();
                 if (editorInput instanceof IDatabaseEditorInput) {
-                    DBNNode node = ((IDatabaseEditorInput) editorInput).getTreeNode();
+                    DBNNode node = ((IDatabaseEditorInput) editorInput).getNavigatorNode();
                     if (node != null) {
                         DBSObject object = ((DBSWrapper)node).getObject();
                         if (object != null && adapterType.isAssignableFrom(object.getClass())) {

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -121,7 +122,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     }
 
     @Override
-    public boolean initializeNode(DBRProgressMonitor monitor, DBRProcessListener onFinish)
+    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProcessListener onFinish)
     {
         if (dataSource == null) {
             return false;
