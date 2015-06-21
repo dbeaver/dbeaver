@@ -53,7 +53,9 @@ public class DatabaseEditorUtils {
             }
         } else if (editor instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) editor).getExecutionContext();
-            bgColor = context.getDataSource().getContainer().getConnectionInfo().getColor();
+            if (context != null) {
+                bgColor = context.getDataSource().getContainer().getConnectionInfo().getColor();
+            }
         }
         if (bgColor == null) {
             rootComposite.setBackground(null);
