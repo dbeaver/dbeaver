@@ -98,24 +98,22 @@ public class DataSourceConnectHandler extends DataSourceHandler
                 }
             };
             if (monitor != null) {
-                final IStatus result = connectJob.runSync(monitor);
+                connectJob.runSync(monitor);
+                final IStatus result = connectJob.getConnectStatus();
                 jobChangeAdapter.done(new IJobChangeEvent() {
                     @Override
-                    public long getDelay()
-                    {
+                    public long getDelay() {
                         return 0;
                     }
 
                     @Override
-                    public Job getJob()
-                    {
+                    public Job getJob() {
                         return connectJob;
                     }
 
                     @Override
-                    public IStatus getResult()
-                    {
-                        return result;
+                    public IStatus getResult() {
+                        return connectJob.getConnectStatus();
                     }
                 });
                 if (!result.isOK()) {

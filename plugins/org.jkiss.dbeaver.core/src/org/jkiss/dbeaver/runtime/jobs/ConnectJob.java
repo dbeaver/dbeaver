@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
  * Connect job
@@ -36,6 +36,7 @@ public class ConnectJob extends EventProcessorJob
 {
     private volatile Thread connectThread;
     private boolean reflect = true;
+    private IStatus connectStatus;
 
     public ConnectJob(
         DataSourceDescriptor container)
@@ -43,6 +44,10 @@ public class ConnectJob extends EventProcessorJob
         super(NLS.bind(CoreMessages.runtime_jobs_connect_name, container.getName()), container);
         setUser(true);
         setProperty(IProgressConstants.ICON_PROPERTY, ImageDescriptor.createFromImage(container.getDriver().getIcon()));
+    }
+
+    public IStatus getConnectStatus() {
+        return connectStatus;
     }
 
     @Override
@@ -67,13 +72,16 @@ public class ConnectJob extends EventProcessorJob
             }
 
             processEvents(DBPConnectionEventType.AFTER_CONNECT);
+
+            connectStatus = Status.OK_STATUS;
         }
         catch (Throwable ex) {
-            UIUtils.showErrorDialog(
-                null,
-                NLS.bind(CoreMessages.runtime_jobs_connect_status_error, container.getName()),
-                null,
-                ex);
+            connectStatus = RuntimeUtils.makeExceptionStatus(ex);
+//            UIUtils.showErrorDialog(
+//                null,
+//                NLS.bind(CoreMessages.runtime_jobs_connect_status_error, container.getName()),
+//                null,
+//                ex);
         }
         return Status.OK_STATUS;
     }

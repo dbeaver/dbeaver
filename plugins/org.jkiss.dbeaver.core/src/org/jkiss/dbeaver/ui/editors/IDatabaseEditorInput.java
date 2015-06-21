@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.views.properties.IPropertySource2;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -53,6 +54,7 @@ public interface IDatabaseEditorInput extends IEditorInput, DBPContextProvider {
      * Command context
      * @return command context
      */
+    @Nullable
     DBECommandContext getCommandContext();
 
     /**

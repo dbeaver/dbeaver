@@ -22,13 +22,16 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -57,12 +60,18 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     protected DatabaseEditorInput(NODE node, DBECommandContext commandContext)
     {
         this.node = node;
-        this.executionContext = node.getDataSource().getDefaultContext(false);
-        this.commandContext = commandContext != null ?
-            commandContext :
-            new DBECommandContextImpl(
-                this.executionContext,
-                false);
+        DBPDataSource dataSource = node.getDataSource();
+        if (dataSource != null) {
+            this.executionContext = dataSource.getDefaultContext(false);
+            this.commandContext = commandContext != null ?
+                commandContext :
+                new DBECommandContextImpl(
+                    this.executionContext,
+                    false);
+        } else {
+            this.executionContext = null;
+            this.commandContext = null;
+        }
     }
 
     @Override
@@ -125,7 +134,13 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
-        return executionContext.getDataSource().getContainer();
+        if (executionContext != null) {
+            return executionContext.getDataSource().getContainer();
+        } else if (node instanceof DBNDataSource) {
+            return node.getDataSourceContainer();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -157,6 +172,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         return defaultFolderId;
     }
 
+    @Nullable
     @Override
     public DBECommandContext getCommandContext()
     {
