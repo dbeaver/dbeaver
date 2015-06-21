@@ -140,6 +140,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return getEditorInput().getDatabaseObject();
     }
 
+    @Nullable
     public DBECommandContext getCommandContext()
     {
         return getEditorInput().getCommandContext();
@@ -390,7 +391,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 firePropertyChange(IEditorPart.PROP_DIRTY);
             }
         };
-        getCommandContext().addCommandListener(commandListener);
+        DBECommandContext commandContext = getCommandContext();
+        if (commandContext != null) {
+            commandContext.addCommandListener(commandListener);
+        }
 
         // Property listener
         addPropertyListener(new IPropertyListener() {
