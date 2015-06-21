@@ -449,7 +449,9 @@ public abstract class LightGrid extends Canvas {
         if (refreshColumns) {
             this.removeAll();
         } else {
-            this.resetData();
+            this.deselectAll();
+            topIndex = -1;
+            bottomIndex = -1;
         }
         IGridContentProvider contentProvider = getContentProvider();
         {
@@ -1253,15 +1255,6 @@ public abstract class LightGrid extends Canvas {
     public void removeAll()
     {
         checkWidget();
-        resetData();
-
-        topColumns.clear();
-        columns.clear();
-        columnElements = new Object[0];
-        rowElements = new Object[0];
-    }
-
-    private void resetData() {
         deselectAll();
         vScroll.setSelection(0);
         hScroll.setSelection(0);
@@ -1271,6 +1264,11 @@ public abstract class LightGrid extends Canvas {
         topIndex = -1;
         bottomIndex = -1;
         shiftSelectionAnchorColumn = null;
+
+        topColumns.clear();
+        columns.clear();
+        columnElements = new Object[0];
+        rowElements = new Object[0];
     }
 
     /**
