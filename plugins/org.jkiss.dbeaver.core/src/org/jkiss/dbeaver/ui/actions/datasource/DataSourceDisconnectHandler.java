@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -26,6 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.utils.ArrayUtils;
 
@@ -48,13 +50,20 @@ public class DataSourceDisconnectHandler extends DataSourceHandler
                 // Already connecting/disconnecting - just return
                 return;
             }
-            DisconnectJob disconnectJob = new DisconnectJob(dataSourceDescriptor);
+            final DisconnectJob disconnectJob = new DisconnectJob(dataSourceDescriptor);
             disconnectJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event)
                 {
+                    IStatus result = disconnectJob.getConnectStatus();
                     if (onFinish != null) {
                         onFinish.run();
+                    } else if (!result.isOK()) {
+                        UIUtils.showErrorDialog(
+                            null,
+                            disconnectJob.getName(),
+                            null,
+                            result);
                     }
                 }
             });

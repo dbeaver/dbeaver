@@ -81,7 +81,8 @@ public class DataSourceConnectHandler extends DataSourceHandler
                 @Override
                 public void done(IJobChangeEvent event)
                 {
-                    if (event.getResult().isOK()) {
+                    IStatus result = connectJob.getConnectStatus();
+                    if (result.isOK()) {
                         if (!dataSourceDescriptor.isSavePassword()) {
                             // Rest password back to null
                             // TODO: to be correct we need to reset password info.
@@ -93,13 +94,18 @@ public class DataSourceConnectHandler extends DataSourceHandler
                         }
                     }
                     if (onFinish != null) {
-                        onFinish.onProcessFinish(event.getResult());
+                        onFinish.onProcessFinish(result);
+                    } else if (!result.isOK()) {
+                        UIUtils.showErrorDialog(
+                            null,
+                            connectJob.getName(),
+                            null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
+                            result);
                     }
                 }
             };
             if (monitor != null) {
                 connectJob.runSync(monitor);
-                final IStatus result = connectJob.getConnectStatus();
                 jobChangeAdapter.done(new IJobChangeEvent() {
                     @Override
                     public long getDelay() {
@@ -116,17 +122,6 @@ public class DataSourceConnectHandler extends DataSourceHandler
                         return connectJob.getConnectStatus();
                     }
                 });
-                if (!result.isOK()) {
-                    if (onFinish != null) {
-                        onFinish.onProcessFinish(result);
-                    } else {
-                        UIUtils.showErrorDialog(
-                            null,
-                            connectJob.getName(),
-                            null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
-                            result);
-                    }
-                }
             } else {
                 connectJob.addJobChangeListener(jobChangeAdapter);
                 // Schedule in UI because connect may be initiated during application startup
