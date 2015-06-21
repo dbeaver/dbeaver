@@ -30,7 +30,9 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
- * Connect job
+ * Connect job.
+ * Always returns OK status.
+ * To get real status use getConectStatus.
  */
 public class ConnectJob extends EventProcessorJob
 {
@@ -77,11 +79,6 @@ public class ConnectJob extends EventProcessorJob
         }
         catch (Throwable ex) {
             connectStatus = RuntimeUtils.makeExceptionStatus(ex);
-//            UIUtils.showErrorDialog(
-//                null,
-//                NLS.bind(CoreMessages.runtime_jobs_connect_status_error, container.getName()),
-//                null,
-//                ex);
         }
         return Status.OK_STATUS;
     }
