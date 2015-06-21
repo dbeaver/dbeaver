@@ -52,9 +52,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * DB2Schema
@@ -95,9 +93,6 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private final DB2TableForeignKeyCache associationCache = new DB2TableForeignKeyCache(tableCache);
     private final DB2TableReferenceCache referenceCache = new DB2TableReferenceCache(tableCache);
     private final DB2TableCheckConstraintCache checkCache = new DB2TableCheckConstraintCache(tableCache);
-
-    // Combined Cache for the content assist to work. Aliases being not DB2TableBase, they are alas not included...
-    private Map<String, DB2TableBase> allKindOfTableCache;
 
     private String name;
     private String owner;
@@ -268,34 +263,28 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Override
     public Collection<DB2TableBase> getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        // Build only once, a combined cache of ""Tables"" for content assist to work
-        if (allKindOfTableCache == null) {
-
-            allKindOfTableCache = new TreeMap<String, DB2TableBase>(); // TreeMap to keep things ordered
-
-            for (DB2Table db2Table : tableCache.getObjects(monitor, this)) {
-                allKindOfTableCache.put(db2Table.getName(), db2Table);
-            }
-            for (DB2View db2View : viewCache.getObjects(monitor, this)) {
-                allKindOfTableCache.put(db2View.getName(), db2View);
-            }
-            for (DB2MaterializedQueryTable db2Mqt : mqtCache.getObjects(monitor, this)) {
-                allKindOfTableCache.put(db2Mqt.getName(), db2Mqt);
-            }
-            for (DB2Nickname db2Nickname : nicknameCache.getObjects(monitor, this)) {
-                allKindOfTableCache.put(db2Nickname.getName(), db2Nickname);
-            }
-        }
-        return allKindOfTableCache.values();
+        List<DB2TableBase> allChildren = new ArrayList<DB2TableBase>();
+        allChildren.addAll(tableCache.getObjects(monitor, this));
+        allChildren.addAll(viewCache.getObjects(monitor, this));
+        allChildren.addAll(mqtCache.getObjects(monitor, this));
+        allChildren.addAll(nicknameCache.getObjects(monitor, this));
+        return allChildren;
     }
 
     @Override
     public DB2TableBase getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
-        if (allKindOfTableCache == null) {
-            getChildren(monitor);
+        DB2TableBase child = tableCache.getObject(monitor, this, childName);
+        if (child == null) {
+            child = viewCache.getObject(monitor, this, childName);
         }
-        return allKindOfTableCache.get(childName);
+        if (child == null) {
+            child = mqtCache.getObject(monitor, this, childName);
+        }
+        if (child == null) {
+            child = nicknameCache.getObject(monitor, this, childName);
+        }
+        return child;
     }
 
     // -----------------

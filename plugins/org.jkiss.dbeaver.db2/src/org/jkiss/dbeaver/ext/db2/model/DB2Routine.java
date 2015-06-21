@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineValidType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -175,13 +176,18 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     @Override
     public String getFullQualifiedName()
     {
-        return parent.getName() + "." + name;
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            parent,
+            this);
     }
 
     @Override
     public DBSObjectContainer getContainer()
     {
-        return getContainer();
+        if (parent instanceof DBSObjectContainer) {
+            return (DBSObjectContainer) parent;
+        }
+        return db2Schema;
     }
 
     @Override
