@@ -152,19 +152,16 @@ public class EntityEditor extends MultiPageDatabaseEditor
             GlobalContributorManager.getInstance().removeContributor(entry.getValue(), entry.getKey());
         }
         actionContributors.clear();
-        //final DBPDataSource dataSource = getDataSource();
 
-//        if (getCommandContext() != null && getCommandContext().isDirty()) {
-//            getCommandContext().resetChanges();
-//        }
-        if (commandListener != null && getCommandContext() != null) {
-            getCommandContext().removeCommandListener(commandListener);
+        DBECommandContext commandContext = getCommandContext();
+        if (commandListener != null && commandContext != null) {
+            commandContext.removeCommandListener(commandListener);
             commandListener = null;
         }
         super.dispose();
 
-        if (getDatabaseObject() != null) {
-            getCommandContext().resetChanges();
+        if (getDatabaseObject() != null && commandContext != null) {
+            commandContext.resetChanges();
 //            // Remove all non-persisted objects
 //            for (DBPObject object : getCommandContext().getEditedObjects()) {
 //                if (object instanceof DBPPersistedObject && !((DBPPersistedObject)object).isPersisted()) {
@@ -240,8 +237,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         if (previewResult == IDialogConstants.PROCEED_ID) {
             Throwable error = null;
+            final DBECommandContext commandContext = getCommandContext();
             try {
-                getCommandContext().saveChanges(monitorWrapper);
+                commandContext.saveChanges(monitorWrapper);
             } catch (DBException e) {
                 error = e;
             }
@@ -258,14 +256,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 // Refresh underlying node
                 // It'll refresh database object and all it's descendants
                 // So we'll get actual data from database
-                final DBNDatabaseNode treeNode = getEditorInput().getTreeNode();
+                final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
                 try {
                     DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
                             try {
-                                treeNode.refreshNode(monitor, getCommandContext());
+                                treeNode.refreshNode(monitor, commandContext);
                             } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }
@@ -301,8 +299,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     public void undoChanges()
     {
-        if (getCommandContext() != null && getCommandContext().getUndoCommand() != null) {
-            if (!getDatabaseObject().isPersisted() && getCommandContext().getUndoCommands().size() == 1) {
+        DBECommandContext commandContext = getCommandContext();
+        if (commandContext != null && commandContext.getUndoCommand() != null) {
+            if (!getDatabaseObject().isPersisted() && commandContext.getUndoCommands().size() == 1) {
                 //getSite().getPage().closeEditor(this, true);
                 //return;
                 // Undo of last command in command context will close editor
@@ -316,25 +315,27 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     return;
                 }
             }
-            getCommandContext().undoCommand();
+            commandContext.undoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void redoChanges()
     {
-        if (getCommandContext() != null && getCommandContext().getRedoCommand() != null) {
-            getCommandContext().redoCommand();
+        DBECommandContext commandContext = getCommandContext();
+        if (commandContext != null && commandContext.getRedoCommand() != null) {
+            commandContext.redoCommand();
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public int showChanges(boolean allowSave)
     {
-        if (getCommandContext() == null) {
+        DBECommandContext commandContext = getCommandContext();
+        if (commandContext == null) {
             return IDialogConstants.CANCEL_ID;
         }
-        Collection<? extends DBECommand> commands = getCommandContext().getFinalCommands();
+        Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             try {
@@ -421,7 +422,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             hasPropertiesEditor = addEditorTab(defaultEditor);
         }
         if (hasPropertiesEditor) {
-            DBNNode node = getEditorInput().getTreeNode();
+            DBNNode node = getEditorInput().getNavigatorNode();
             int propEditorIndex = getPageCount() - 1;
             setPageText(propEditorIndex, CoreMessages.editors_entity_properties_text);
             setPageToolTip(propEditorIndex, node.getNodeType() + CoreMessages.editors_entity_properties_tooltip_suffix);
@@ -430,7 +431,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 /*
         if (!mainAdded) {
             try {
-                DBNNode node = getEditorInput().getTreeNode();
+                DBNNode node = getEditorInput().getNavigatorNode();
                 int index = addPage(new ObjectPropertiesEditor(node), getEditorInput());
                 setPageText(index, "Properties");
                 if (node instanceof DBNDatabaseNode) {
@@ -490,7 +491,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 tabs.addAll(collectTabs(monitor));
             }
         };
-        DBNDatabaseNode node = getEditorInput().getTreeNode();
+        DBNDatabaseNode node = getEditorInput().getNavigatorNode();
         try {
             if (node.needsInitialization()) {
                 DBeaverUI.runInProgressService(tabsCollector);
@@ -577,7 +578,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             getSite().getShell(),
             DBeaverPreferences.CONFIRM_ENTITY_EDIT_CLOSE,
             ConfirmationDialog.QUESTION_WITH_CANCEL,
-            getEditorInput().getTreeNode().getNodeName());
+            getEditorInput().getNavigatorNode().getNodeName());
         if (result == IDialogConstants.YES_ID) {
 //            getWorkbenchPart().getSite().getPage().saveEditor(this, false);
             return ISaveablePart2.YES;
@@ -648,7 +649,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         List<TabInfo> tabs = new ArrayList<TabInfo>();
 
         // Add all nested folders as tabs
-        DBNDatabaseNode node = getEditorInput().getTreeNode();
+        DBNDatabaseNode node = getEditorInput().getNavigatorNode();
         if (node instanceof DBNDataSource &&
             (node.getDataSourceContainer() == null || !node.getDataSourceContainer().isConnected()))
         {
@@ -776,7 +777,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         if (hasPropertiesEditor) {
             // Update main editor image
-            setPageImage(0, getEditorInput().getTreeNode().getNodeIconDefault());
+            setPageImage(0, getEditorInput().getNavigatorNode().getNodeIconDefault());
         }
     }
 
@@ -807,7 +808,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         infoGroup.setLayout(new RowLayout());
 
-        DBNDatabaseNode node = getEditorInput().getTreeNode();
+        DBNDatabaseNode node = getEditorInput().getNavigatorNode();
 
         List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
         for (DBNNode n = node; n != null; n = n.getParentNode()) {
@@ -851,7 +852,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     public DBNNode getRootNode() {
-        return getEditorInput().getTreeNode();
+        return getEditorInput().getNavigatorNode();
     }
 
     @Nullable

@@ -28,7 +28,6 @@ import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -68,7 +67,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
     }
 
     @Override
-     public IAdaptable createElement(IMemento memento)
+    public IAdaptable createElement(IMemento memento)
     {
         // Get the node path.
         final String inputClass = memento.getString(TAG_CLASS);
@@ -174,7 +173,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
             // Detached - nothing to save
             return;
         }
-        DBNDatabaseNode node = input.getTreeNode();
+        DBNDatabaseNode node = input.getNavigatorNode();
         memento.putString(TAG_CLASS, input.getClass().getName());
         memento.putString(TAG_DATA_SOURCE, context.getDataSource().getContainer().getId());
         memento.putString(TAG_NODE, node.getNodeItemPath());
