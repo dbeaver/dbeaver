@@ -30,7 +30,7 @@ import java.util.Collection;
  */
 public interface DBSProcedure extends DBSObject, DBPQualifiedObject
 {
-    DBSObjectContainer getContainer();
+    DBSObject getContainer();
 
     DBSProcedureType getProcedureType();
 
