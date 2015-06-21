@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2StatefulObject;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -100,7 +101,9 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     @Override
     public String getFullQualifiedName()
     {
-        return getContainer().getName() + "." + this.getName();
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getContainer(),
+            this);
     }
 
     // -----------------

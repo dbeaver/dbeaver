@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -80,9 +81,8 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     @Override
     protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
-        String schemaName = command.getObject().getName();
         SQLDatabasePersistAction action = new SQLDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
-            schemaName));
+            DBUtils.getQuotedIdentifier(command.getObject())));
         return new DBEPersistAction[] { action };
     }
 
@@ -91,7 +91,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     {
         String schemaName = command.getObject().getName();
         DBEPersistAction action = new SQLDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
-            schemaName));
+            DBUtils.getQuotedIdentifier(command.getObject())));
         return new DBEPersistAction[] { action };
     }
 
