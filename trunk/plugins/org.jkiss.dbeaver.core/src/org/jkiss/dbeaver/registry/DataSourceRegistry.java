@@ -21,10 +21,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.resource.StringConverter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -419,7 +417,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_TYPE, connectionInfo.getConnectionType().getId());
             }
             if (connectionInfo.getConnectionColor() != null) {
-                xml.addAttribute(RegistryConstants.ATTR_COLOR, StringConverter.asString(connectionInfo.getConnectionColor().getRGB()));
+                xml.addAttribute(RegistryConstants.ATTR_COLOR, connectionInfo.getConnectionColor());
             }
             if (connectionInfo.getProperties() != null) {
 
@@ -654,9 +652,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         );
                     String colorValue = atts.getValue(RegistryConstants.ATTR_COLOR);
                     if (!CommonUtils.isEmpty(colorValue)) {
-                        curDataSource.getConnectionInfo().setConnectionColor(
-                            DBeaverUI.getSharedTextColors().getColor(
-                                StringConverter.asRGB(colorValue)));
+                        curDataSource.getConnectionInfo().setConnectionColor(colorValue);
                     }
                     curDataSource.refreshConnectionInfo();
                 }

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
@@ -110,7 +111,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                     DBPConnectionType newType = new DBPConnectionType(
                         SecurityUtils.generateUniqueId(),
                         name,
-                        new RGB(0xFF, 0xFF, 0xFF),
+                        "255,255,255",
                         "New type",
                         true,
                         false);
@@ -180,7 +181,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-                        getSelectedType().setColor(colorPicker.getItem(colorPicker.getSelectionIndex()).getBackground());
+                        getSelectedType().setColor(StringConverter.asString(colorPicker.getItem(colorPicker.getSelectionIndex()).getBackground().getRGB()));
                         updateTableInfo();
                     }
                 });
@@ -192,7 +193,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                     {
                         DBPConnectionType connectionType = getSelectedType();
                         ColorDialog colorDialog = new ColorDialog(parent.getShell());
-                        colorDialog.setRGB(connectionType.getColor().getRGB());
+                        colorDialog.setRGB(StringConverter.asRGB(connectionType.getColor()));
                         RGB rgb = colorDialog.open();
                         if (rgb != null) {
                             Color color = null;
@@ -209,7 +210,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                                 colorPicker.add(null, COLOR_TEXT, color, color);
                             }
                             colorPicker.select(color);
-                            getSelectedType().setColor(color);
+                            getSelectedType().setColor(StringConverter.asString(color.getRGB()));
                             updateTableInfo();
                         }
                     }
@@ -251,7 +252,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
 
     private void showSelectedType(DBPConnectionType connectionType)
     {
-        colorPicker.select(connectionType.getColor());
+        colorPicker.select(UIUtils.getConnectionTypeColor(connectionType));
         typeName.setText(connectionType.getName());
         typeDescription.setText(connectionType.getDescription());
         autocommitCheck.setSelection(connectionType.isAutocommit());
@@ -267,8 +268,9 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
             if (item.getData() == connectionType) {
                 item.setText(0, connectionType.getName());
                 item.setText(1, connectionType.getDescription());
-                item.setBackground(0, connectionType.getColor());
-                item.setBackground(1, connectionType.getColor());
+                Color connectionColor = UIUtils.getConnectionTypeColor(connectionType);
+                item.setBackground(0, connectionColor);
+                item.setBackground(1, connectionColor);
                 break;
             }
         }
@@ -319,9 +321,10 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
         item.setText(0, connectionType.getName());
         item.setText(1, CommonUtils.toString(connectionType.getDescription()));
         if (connectionType.getColor() != null) {
-            item.setBackground(0, connectionType.getColor());
-            item.setBackground(1, connectionType.getColor());
-            colorPicker.add(null, COLOR_TEXT, connectionType.getColor(), connectionType.getColor());
+            Color connectionColor = UIUtils.getConnectionTypeColor(connectionType);
+            item.setBackground(0, connectionColor);
+            item.setBackground(1, connectionColor);
+            colorPicker.add(null, COLOR_TEXT, connectionColor, connectionColor);
         }
         item.setData(connectionType);
     }

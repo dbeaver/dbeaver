@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -42,7 +41,7 @@ public class DBPConnectionInfo implements DBPObject
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
     private final List<DBWHandlerConfiguration> handlers;
     private DBPConnectionType connectionType;
-    private Color connectionColor;
+    private String connectionColor;
 
     public DBPConnectionInfo()
     {
@@ -232,23 +231,16 @@ public class DBPConnectionInfo implements DBPObject
         this.connectionType = connectionType;
     }
 
-    public Color getColor()
-    {
-        Color color = connectionColor != null ? connectionColor : connectionType.getColor();
-        if (color.getBlue() == 255 && color.getRed() == 255 && color.getGreen() == 255) {
-            // For white color return just null to avoid explicit color set.
-            // It is important for dark themes
-            return null;
-        }
-        return color;
-    }
-
-    public Color getConnectionColor()
+    /**
+     * Color in RGB format
+     * @return RGB color or null
+     */
+    public String getConnectionColor()
     {
         return connectionColor;
     }
 
-    public void setConnectionColor(Color color)
+    public void setConnectionColor(String color)
     {
         this.connectionColor = color;
     }

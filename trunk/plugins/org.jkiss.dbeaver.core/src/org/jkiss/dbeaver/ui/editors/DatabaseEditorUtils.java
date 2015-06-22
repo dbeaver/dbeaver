@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * DB editor utils
@@ -49,12 +50,12 @@ public class DatabaseEditorUtils {
         if (editor instanceof IDataSourceContainerProvider) {
             DBSDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
             if (container != null) {
-                bgColor = container.getConnectionInfo().getColor();
+                bgColor = UIUtils.getConnectionColor(container.getConnectionInfo());
             }
         } else if (editor instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) editor).getExecutionContext();
             if (context != null) {
-                bgColor = context.getDataSource().getContainer().getConnectionInfo().getColor();
+                bgColor = UIUtils.getConnectionColor(context.getDataSource().getContainer().getConnectionInfo());
             }
         }
         if (bgColor == null) {

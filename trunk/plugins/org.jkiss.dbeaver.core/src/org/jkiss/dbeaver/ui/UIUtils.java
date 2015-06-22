@@ -24,6 +24,7 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
@@ -54,10 +55,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.*;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.DBPPropertySource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -1349,5 +1347,30 @@ public class UIUtils {
                     break;
             }
         }
+    }
+
+    public static Color getConnectionColor(DBPConnectionInfo connectionInfo) {
+        String rgbString = connectionInfo.getConnectionColor();
+        if (CommonUtils.isEmpty(rgbString)) {
+            rgbString = connectionInfo.getConnectionType().getColor();
+        }
+        if (CommonUtils.isEmpty(rgbString)) {
+            return null;
+        }
+        Color connectionColor = DBeaverUI.getSharedTextColors().getColor(StringConverter.asRGB(rgbString));
+        if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
+            // For white color return just null to avoid explicit color set.
+            // It is important for dark themes
+            return null;
+        }
+        return connectionColor;
+    }
+
+    public static Color getConnectionTypeColor(DBPConnectionType connectionType) {
+        String rgbString = connectionType.getColor();
+        if (CommonUtils.isEmpty(rgbString)) {
+            return null;
+        }
+        return DBeaverUI.getSharedTextColors().getColor(StringConverter.asRGB(rgbString));
     }
 }
