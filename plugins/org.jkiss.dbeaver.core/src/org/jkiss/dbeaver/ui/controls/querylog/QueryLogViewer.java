@@ -515,11 +515,21 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         this.entriesPerPage = store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE);
 
         clearLog();
-        metaInfoChanged(QMUtils.getPastMetaEvents());
+        updateMetaInfo(QMUtils.getPastMetaEvents());
     }
 
     @Override
-    public synchronized void metaInfoChanged(java.util.List<QMMetaEvent> events)
+    public void metaInfoChanged(final java.util.List<QMMetaEvent> events) {
+        // Run in UI thread
+        UIUtils.runInUI(null, new Runnable() {
+            @Override
+            public void run() {
+                updateMetaInfo(events);
+            }
+        });
+    }
+
+    private synchronized void updateMetaInfo(final java.util.List<QMMetaEvent> events)
     {
         if (logTable.isDisposed()) {
             return;
