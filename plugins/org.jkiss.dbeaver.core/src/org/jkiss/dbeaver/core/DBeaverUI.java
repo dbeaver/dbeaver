@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.services.IDisposable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -42,6 +43,9 @@ import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.osgi.framework.Bundle;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * DBeaver UI core
@@ -54,6 +58,7 @@ public class DBeaverUI {
 
     private SharedTextColors sharedTextColors;
     private TrayIconHandler trayItem;
+    private final List<IDisposable> globalDisposables = new ArrayList<IDisposable>();
 
     public static DBeaverUI getInstance()
     {
@@ -83,6 +88,17 @@ public class DBeaverUI {
 
         if (trayItem != null) {
             trayItem.hide();
+        }
+
+        List<IDisposable> dispList = new ArrayList<IDisposable>(globalDisposables);
+        Collections.reverse(dispList);
+        for (IDisposable disp : dispList) {
+            try {
+                disp.dispose();
+            } catch (Exception e) {
+                log.error(e);
+            }
+            globalDisposables.remove(disp);
         }
     }
 
@@ -257,4 +273,7 @@ public class DBeaverUI {
         getInstance().trayItem.notify(message, status);
     }
 
+    public void addDisposeListener(IDisposable disposable) {
+        globalDisposables.add(disposable);
+    }
 }

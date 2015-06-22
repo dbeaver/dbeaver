@@ -164,8 +164,6 @@ public class DBeaverCore implements DBPApplication {
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
 
-        DBeaverUI.getInstance();
-
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
         this.queryManager = new QMControllerImpl();
@@ -279,8 +277,6 @@ public class DBeaverCore implements DBPApplication {
                 log.error("Can't save workspace", ex); //$NON-NLS-1$
             }
         }
-
-        DBeaverUI.disposeUI();
 
         DBeaverCore.instance = null;
         DBeaverCore.disposed = true;

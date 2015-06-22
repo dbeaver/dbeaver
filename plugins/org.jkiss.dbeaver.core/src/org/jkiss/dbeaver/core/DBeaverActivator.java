@@ -54,10 +54,6 @@ public class DBeaverActivator extends AbstractUIPlugin
         return instance;
     }
 
-    /*
-      * (non-Javadoc)
-      * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-      */
     @Override
     public void start(BundleContext context)
         throws Exception
@@ -65,6 +61,7 @@ public class DBeaverActivator extends AbstractUIPlugin
         super.start(context);
 
         instance = this;
+        DBeaverUI.getInstance();
 
         try {
             resourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
@@ -73,14 +70,11 @@ public class DBeaverActivator extends AbstractUIPlugin
         }
     }
 
-    /*
-      * (non-Javadoc)
-      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-      */
     @Override
     public void stop(BundleContext context)
         throws Exception
     {
+        this.shutdownUI();
         this.shutdownCore();
 
         if (debugWriter != null) {
@@ -90,6 +84,10 @@ public class DBeaverActivator extends AbstractUIPlugin
         instance = null;
 
         super.stop(context);
+    }
+
+    private void shutdownUI() {
+        DBeaverUI.disposeUI();
     }
 
     public synchronized PrintStream getDebugWriter()
@@ -145,6 +143,7 @@ public class DBeaverActivator extends AbstractUIPlugin
             return key;
         }
     }
+
     /**
      * Returns the workspace instance.
      */
@@ -155,7 +154,7 @@ public class DBeaverActivator extends AbstractUIPlugin
     private void shutdownCore()
     {
         try {
-// Dispose core
+            // Dispose core
             if (DBeaverCore.instance != null) {
                 DBeaverCore.instance.dispose();
             }

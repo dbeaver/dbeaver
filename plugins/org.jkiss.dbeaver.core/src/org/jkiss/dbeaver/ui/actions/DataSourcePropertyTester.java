@@ -21,15 +21,20 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
-import org.jkiss.dbeaver.runtime.qm.meta.*;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
@@ -47,7 +52,14 @@ public class DataSourcePropertyTester extends PropertyTester
 
     public DataSourcePropertyTester() {
         super();
-        QMUtils.registerHandler(new QMEventsHandler());
+        final QMEventsHandler qmHandler = new QMEventsHandler();
+        QMUtils.registerHandler(qmHandler);
+        DBeaverUI.getInstance().addDisposeListener(new IDisposable() {
+            @Override
+            public void dispose() {
+                QMUtils.unregisterHandler(qmHandler);
+            }
+        });
     }
 
     @Override
