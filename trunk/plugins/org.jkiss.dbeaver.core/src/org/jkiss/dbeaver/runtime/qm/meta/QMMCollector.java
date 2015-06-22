@@ -17,17 +17,19 @@
  */
 package org.jkiss.dbeaver.runtime.qm.meta;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
 import java.util.*;
@@ -298,19 +300,13 @@ public class QMMCollector extends DefaultExecutionHandler {
             final List<QMMetaListener> listeners = getListeners();
             if (!listeners.isEmpty() && !events.isEmpty()) {
                 // Dispatch all events
-                UIUtils.runInUI(null, new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        for (QMMetaListener listener : listeners) {
-                            try {
-                                listener.metaInfoChanged(events);
-                            } catch (Throwable e) {
-                                log.error("Error notifying event listener", e);
-                            }
-                        }
+                for (QMMetaListener listener : listeners) {
+                    try {
+                        listener.metaInfoChanged(events);
+                    } catch (Throwable e) {
+                        log.error("Error notifying event listener", e);
                     }
-                });
+                }
             }
             synchronized (pastEvents) {
                 pastEvents.addAll(events);
