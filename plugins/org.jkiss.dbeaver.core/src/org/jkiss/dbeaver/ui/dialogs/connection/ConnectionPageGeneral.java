@@ -441,7 +441,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     {
         connectionTypeCombo.removeAll();
         for (DBPConnectionType ct : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
-            connectionTypeCombo.add(null, ct.getName(), ct.getColor(), ct);
+            connectionTypeCombo.add(null, ct.getName(), UIUtils.getConnectionTypeColor(ct), ct);
         }
     }
 

@@ -357,12 +357,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             connectionCombo.add(
                                 dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
                                 ds.getName(),
-                                ds.getConnectionInfo().getColor(),
+                                UIUtils.getConnectionColor(ds.getConnectionInfo()),
                                 ds);
                         } else {
                             TableItem item = connectionCombo.getItem(i + 1);
                             item.setText(ds.getName());
-                            item.setBackground(ds.getConnectionInfo().getColor());
+                            item.setBackground(UIUtils.getConnectionColor(ds.getConnectionInfo()));
                         }
                         if (dataSourceContainer == ds) {
                             selectionIndex = i + 1;
@@ -527,7 +527,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                                 databaseCombo.add(
                                     dbNode.getNodeIconDefault(),
                                     database.getName(),
-                                    dataSource.getContainer().getConnectionInfo().getColor(),
+                                    UIUtils.getConnectionColor(dataSource.getContainer().getConnectionInfo()),
                                     database);
                             }
                         }

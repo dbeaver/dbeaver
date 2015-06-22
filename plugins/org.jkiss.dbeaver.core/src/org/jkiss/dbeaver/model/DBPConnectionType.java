@@ -1,25 +1,22 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
-import org.jkiss.dbeaver.core.DBeaverUI;
 
 /**
  * Connection type
  */
 public class DBPConnectionType implements IAdaptable {
 
-    public static final DBPConnectionType DEV = new DBPConnectionType("dev", "Development", new RGB(0xFF, 0xFF, 0xFF), "Regular development database", true, false, true);
-    public static final DBPConnectionType TEST = new DBPConnectionType("test", "Test", new RGB(0xC4, 0xFF, 0xB5), "Test (QA) database", true, false, true);
-    public static final DBPConnectionType PROD = new DBPConnectionType("prod", "Production", new RGB(0xF7, 0x9F, 0x81), "Production database", false, true, true);
+    public static final DBPConnectionType DEV = new DBPConnectionType("dev", "Development", "255,255,255", "Regular development database", true, false, true);
+    public static final DBPConnectionType TEST = new DBPConnectionType("test", "Test", "196,255,181", "Test (QA) database", true, false, true);
+    public static final DBPConnectionType PROD = new DBPConnectionType("prod", "Production", "247,159,129", "Production database", false, true, true);
 
     public static final DBPConnectionType[] SYSTEM_TYPES = { DEV, TEST, PROD };
     public static final DBPConnectionType DEFAULT_TYPE = DEV;
 
     private String id;
     private String name;
-    private RGB color;
+    private String color;
     private String description;
     private boolean autocommit;
     private boolean confirmExecute;
@@ -30,16 +27,16 @@ public class DBPConnectionType implements IAdaptable {
         this(source.id, source.name, source.color, source.description, source.autocommit, source.confirmExecute, source.predefined);
     }
 
-    public DBPConnectionType(String id, String name, RGB rgb, String description, boolean autocommit, boolean confirmExecute)
+    public DBPConnectionType(String id, String name, String color, String description, boolean autocommit, boolean confirmExecute)
     {
-        this(id, name, rgb, description, autocommit, confirmExecute, false);
+        this(id, name, color, description, autocommit, confirmExecute, false);
     }
 
-    private DBPConnectionType(String id, String name, RGB rgb, String description, boolean autocommit, boolean confirmExecute, boolean predefined)
+    private DBPConnectionType(String id, String name, String color, String description, boolean autocommit, boolean confirmExecute, boolean predefined)
     {
         this.id = id;
         this.name = name;
-        this.color = rgb;
+        this.color = color;
         this.description = description;
         this.autocommit = autocommit;
         this.confirmExecute = confirmExecute;
@@ -66,14 +63,14 @@ public class DBPConnectionType implements IAdaptable {
         this.name = name;
     }
 
-    public Color getColor()
+    public String getColor()
     {
-        return DBeaverUI.getSharedTextColors().getColor(color);
+        return color;
     }
 
-    public void setColor(Color color)
+    public void setColor(String color)
     {
-        this.color = color.getRGB();
+        this.color = color;
     }
 
     public String getDescription()

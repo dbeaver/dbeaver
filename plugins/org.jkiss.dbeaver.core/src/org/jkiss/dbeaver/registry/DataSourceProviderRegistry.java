@@ -17,13 +17,12 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPConnectionType;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -309,7 +308,7 @@ public class DataSourceProviderRegistry
                 xml.startElement(RegistryConstants.TAG_TYPE);
                 xml.addAttribute(RegistryConstants.ATTR_ID, connectionType.getId());
                 xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(connectionType.getName()));
-                xml.addAttribute(RegistryConstants.ATTR_COLOR, StringConverter.asString(connectionType.getColor().getRGB()));
+                xml.addAttribute(RegistryConstants.ATTR_COLOR, connectionType.getColor());
                 xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.toString(connectionType.getDescription()));
                 xml.addAttribute(RegistryConstants.ATTR_AUTOCOMMIT, connectionType.isAutocommit());
                 xml.addAttribute(RegistryConstants.ATTR_CONFIRM_EXECUTE, connectionType.isConfirmExecute());
@@ -373,7 +372,7 @@ public class DataSourceProviderRegistry
                 DBPConnectionType connectionType = new DBPConnectionType(
                     atts.getValue(RegistryConstants.ATTR_ID),
                     atts.getValue(RegistryConstants.ATTR_NAME),
-                    StringConverter.asRGB(atts.getValue(RegistryConstants.ATTR_COLOR)),
+                    atts.getValue(RegistryConstants.ATTR_COLOR),
                     atts.getValue(RegistryConstants.ATTR_DESCRIPTION),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT)),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE)));
