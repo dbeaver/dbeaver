@@ -99,7 +99,13 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public IPersistableElement getPersistable()
     {
-        return getExecutionContext() == null ? null : this;
+        if (getExecutionContext() == null ||
+            !DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS))
+        {
+            return null;
+        }
+
+        return this;
     }
 
     @Override

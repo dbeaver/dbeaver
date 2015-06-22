@@ -44,6 +44,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 
     private Button automaticUpdateCheck;
+    private Button keepEditorsOnRestart;
 
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
@@ -75,6 +76,8 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
             Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
             automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, false);
             automaticUpdateCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+
+            keepEditorsOnRestart = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_keep_database_editors, false);
         }
 
         // Agent settings
@@ -117,6 +120,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+        keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
         expandOnConnectCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT));
@@ -133,6 +137,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
+        store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());
         //store.setValue(DBeaverPreferences.AGENT_ENABLED, agentEnabledCheck.getSelection());
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
