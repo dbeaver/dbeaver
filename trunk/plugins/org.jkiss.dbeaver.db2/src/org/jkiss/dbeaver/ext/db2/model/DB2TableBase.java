@@ -59,6 +59,8 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
 
     private String remarks;
 
+    private String fullyQualifiedName;
+
     // -----------------
     // Constructors
     // -----------------
@@ -82,6 +84,9 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
             this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
             this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         }
+
+        // Compute this once for all
+        fullyQualifiedName = DBUtils.getFullQualifiedName(db2DataSource, schema, this);
     }
 
     public DB2TableBase(DB2Schema container, String name, Boolean persisted)
@@ -101,9 +106,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     @Override
     public String getFullQualifiedName()
     {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getContainer(),
-            this);
+        return fullyQualifiedName;
     }
 
     // -----------------
