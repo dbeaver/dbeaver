@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
@@ -168,6 +169,9 @@ public class DatabaseEditorInputFactory implements IElementFactory
 
     public static void saveState(IMemento memento, DatabaseEditorInput input)
     {
+        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS)) {
+            return;
+        }
         DBCExecutionContext context = input.getExecutionContext();
         if (context == null) {
             // Detached - nothing to save
