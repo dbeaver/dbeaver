@@ -142,6 +142,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
       // General UI
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_AUTO_UPDATE_CHECK, true);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_HOST, "");
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_PORT, 0);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_USER, "");

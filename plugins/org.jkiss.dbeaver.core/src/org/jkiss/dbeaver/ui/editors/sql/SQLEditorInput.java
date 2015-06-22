@@ -116,10 +116,6 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         return this;
     }
 
-    private static boolean restoreEditorState() {
-        return WorkbenchPlugin.getDefault().getPreferenceStore().getBoolean(IPreferenceConstants.USE_IPERSISTABLE_EDITORS);
-    }
-
     @Override
     public String getFactoryId()
     {
