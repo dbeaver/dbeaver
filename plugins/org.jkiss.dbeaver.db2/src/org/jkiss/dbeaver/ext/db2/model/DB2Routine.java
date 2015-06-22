@@ -60,6 +60,8 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
 
     private final DB2RoutineParmsCache parmsCache = new DB2RoutineParmsCache();
 
+    private String fullyQualifiedName;
+
     private DB2Schema db2Schema;
 
     private DB2RoutineType type;
@@ -139,6 +141,9 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
             db2Schema = ((DB2Module) owner).getSchema();
         }
 
+        // Compute this once for all
+        fullyQualifiedName = DBUtils.getFullQualifiedName(db2DataSource, owner, this);
+
     }
 
     public DB2RoutineType getType()
@@ -176,9 +181,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     @Override
     public String getFullQualifiedName()
     {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            parent,
-            this);
+        return fullyQualifiedName;
     }
 
     @Override
