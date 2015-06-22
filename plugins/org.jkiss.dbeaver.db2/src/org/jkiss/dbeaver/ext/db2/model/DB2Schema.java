@@ -18,9 +18,9 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2AliasCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2IndexCache;
@@ -52,7 +52,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * DB2Schema
@@ -61,6 +64,8 @@ import java.util.*;
  */
 public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject {
     private static final Log LOG = Log.getLog(DB2Schema.class);
+
+    private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS", "DB2QP", "SQLJ", "NULLID");
 
     private static final String C_SEQ = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR";
     private static final String C_PKG = "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR";
@@ -154,19 +159,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Override
     public boolean isSystem()
     {
-        if (getName().startsWith("SYS")) {
-            return true;
-        }
-        if (getName().equals("DB2QP")) {
-            return true;
-        }
-        if (getName().equals("SQLJ")) {
-            return true;
-        }
-        if (getName().equals("NULLID")) {
-            return true;
-        }
-        return false;
+        return SYSTEM_SCHEMA.contains(name);
     }
 
     @Override
