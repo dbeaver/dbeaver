@@ -29,8 +29,6 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
-import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
 import java.util.*;
 
@@ -179,10 +177,6 @@ public class QMMCollector extends DefaultExecutionHandler {
             }
             fireMetaEvent(sessionInfo, QMMetaEvent.Action.UPDATE);
         }
-        // Fire transactional mode change
-        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
-        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
-        DataSourcePropertyTester.fireCommandRefresh(ICommandIds.CMD_TOGGLE_AUTOCOMMIT);
     }
 
     @Override
@@ -195,7 +189,6 @@ public class QMMCollector extends DefaultExecutionHandler {
                 fireMetaEvent(oldTxn, QMMetaEvent.Action.END);
             }
         }
-        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
     }
 
     @Override
@@ -208,7 +201,6 @@ public class QMMCollector extends DefaultExecutionHandler {
                 fireMetaEvent(oldTxn, QMMetaEvent.Action.END);
             }
         }
-        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
     }
 
     @Override
@@ -245,7 +237,6 @@ public class QMMCollector extends DefaultExecutionHandler {
                 fireMetaEvent(exec, QMMetaEvent.Action.BEGIN);
             }
         }
-        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
     }
 
     @Override

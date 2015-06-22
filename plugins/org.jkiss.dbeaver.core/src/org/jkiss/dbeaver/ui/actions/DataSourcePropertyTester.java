@@ -26,14 +26,12 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
+import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
  * DatabaseEditorPropertyTester
@@ -49,6 +47,7 @@ public class DataSourcePropertyTester extends PropertyTester
 
     public DataSourcePropertyTester() {
         super();
+        QMUtils.registerHandler(new QMEventsHandler());
     }
 
     @Override
@@ -114,4 +113,40 @@ public class DataSourcePropertyTester extends PropertyTester
             });
         }
     }
+
+    // QM events handler
+    private static class QMEventsHandler extends DefaultExecutionHandler {
+        @Override
+        public String getHandlerName() {
+            return DataSourcePropertyTester.class.getName();
+        }
+
+        @Override
+        public synchronized void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
+        {
+            // Fire transactional mode change
+            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
+            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
+            DataSourcePropertyTester.fireCommandRefresh(ICommandIds.CMD_TOGGLE_AUTOCOMMIT);
+        }
+
+        @Override
+        public synchronized void handleTransactionCommit(DBCExecutionContext context)
+        {
+            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
+        }
+
+        @Override
+        public synchronized void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
+        {
+            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
+        }
+
+        @Override
+        public synchronized void handleStatementExecuteBegin(DBCStatement statement)
+        {
+            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
+        }
+    }
+
 }
