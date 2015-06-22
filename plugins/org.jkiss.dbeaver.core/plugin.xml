@@ -356,8 +356,8 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
             <with variable="activePart">
-                <instanceof value="org.jkiss.dbeaver.ui.INavigatorModelView"/>
-                <!--<test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>-->
+                <!--<instanceof value="org.jkiss.dbeaver.ui.INavigatorModelView"/>-->
+                <test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">
@@ -368,7 +368,7 @@
         <definition id="org.jkiss.dbeaver.core.ui.resultset.part">
             <with variable="activePart">
                 <!-- TODO: Should replace forcePluginActivation with some other non-active way to test property-->
-                <test property="org.jkiss.dbeaver.core.resultset.active"/>
+                <test property="org.jkiss.dbeaver.core.resultset.active" forcePluginActivation="true"/>
             </with>
         </definition>
     </extension>
