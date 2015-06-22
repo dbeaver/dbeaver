@@ -258,6 +258,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
     public void setAutoCommit(DBRProgressMonitor monitor, boolean autoCommit)
         throws DBCException
     {
+        monitor.subTask("Set JDBC connection auto-commit " + autoCommit);
         try {
             connection.setAutoCommit(autoCommit);
             this.autoCommit = null;

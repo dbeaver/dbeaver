@@ -308,11 +308,14 @@ public class DataSourceDescriptor
                         @Override
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException {
+                            monitor.beginTask("Set auto-commit mode", 1);
                             try {
                                 // Change auto-commit mode
                                 txnManager.setAutoCommit(monitor, autoCommit);
                             } catch (DBCException e) {
                                 throw new InvocationTargetException(e);
+                            } finally {
+                                monitor.done();
                             }
                         }
                     });
