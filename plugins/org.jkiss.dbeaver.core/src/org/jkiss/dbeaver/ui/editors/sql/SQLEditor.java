@@ -485,6 +485,15 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    public void toggleResultPanel() {
+        if (sashForm.getMaximizedControl() == null) {
+            sashForm.setMaximizedControl(editorControl);
+        } else {
+            sashForm.setMaximizedControl(null);
+        }
+    }
+
+
     @Override
     public IPathEditorInput getEditorInput()
     {
@@ -619,6 +628,10 @@ public class SQLEditor extends SQLEditorBase implements
                 CoreMessages.editors_sql_error_cant_obtain_session,
                 ex.getMessage());
             return;
+        }
+
+        if (sashForm.getMaximizedControl() != null) {
+            sashForm.setMaximizedControl(null);
         }
 
         final boolean isSingleQuery = (queries.size() == 1);
@@ -908,8 +921,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         DBeaverUI.runUIJob("Select SQL query in editor", new DBRRunnableWithProgress() {
             @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 if (select) {
                     selectAndReveal(query.getOffset(), query.getLength());
                     setStatus(query.getQuery(), false);

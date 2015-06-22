@@ -210,6 +210,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.validate" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.validate.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.validate.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.analyse" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.analyse.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.analyse.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.count" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.count.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.single" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -807,6 +808,13 @@
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
                     </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ToggleResultsPanelHandler">
+            <enabledWhen>
+                <with variable="activePart">
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -1579,6 +1587,14 @@
                         </with>
                     </visibleWhen>
                 </command>
+                <separator name="misc" visible="true"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
             </menu>
         </menuContribution>
 
@@ -1605,6 +1621,7 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
             <separator name="other" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
         </menuContribution>
 
         <!-- QM menu & toolbar -->
@@ -1689,6 +1706,11 @@
               contextId="org.jkiss.dbeaver.ui.editors.sql"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="CTRL+SHIFT+E"/>
+        <key
+                commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"
+                contextId="org.jkiss.dbeaver.ui.editors.sql"
+                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+                sequence="F6"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
