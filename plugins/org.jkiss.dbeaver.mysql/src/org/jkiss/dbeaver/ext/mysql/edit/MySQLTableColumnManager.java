@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
@@ -63,7 +62,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected MySQLTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, MySQLTableBase parent, Object copyFrom)
+    protected MySQLTableColumn createDatabaseObject(DBECommandContext context, MySQLTableBase parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
 

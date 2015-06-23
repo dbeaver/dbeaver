@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -85,8 +84,8 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // ------
 
     @Override
-    protected DB2TableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2TableBase parent,
-        Object copyFrom)
+    protected DB2TableColumn createDatabaseObject(DBECommandContext context, DB2TableBase parent,
+                                                  Object copyFrom)
     {
         DB2TableColumn column = new DB2TableColumn(parent);
         column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));

@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -64,7 +63,7 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
     }
 
     @Override
-    protected MySQLView createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
+    protected MySQLView createDatabaseObject(DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
         MySQLView newCatalog = new MySQLView(parent);
         newCatalog.setName("NewView"); //$NON-NLS-1$

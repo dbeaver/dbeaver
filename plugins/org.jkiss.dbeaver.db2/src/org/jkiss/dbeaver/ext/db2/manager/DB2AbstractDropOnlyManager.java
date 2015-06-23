@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -62,8 +61,8 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     }
 
     @Override
-    protected OBJECT_TYPE createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, CONTAINER_TYPE owner,
-        Object copyFrom)
+    protected OBJECT_TYPE createDatabaseObject(DBECommandContext context, CONTAINER_TYPE owner,
+                                               Object copyFrom)
     {
         return null;
     }

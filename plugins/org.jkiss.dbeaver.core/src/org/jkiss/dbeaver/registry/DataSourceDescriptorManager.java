@@ -17,9 +17,9 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -63,7 +63,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     }
 
     @Override
-    public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
+    public DataSourceDescriptor createNewObject(DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
@@ -92,7 +92,8 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             } else {
                 registry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
             }
-            CreateConnectionDialog dialog = new CreateConnectionDialog(workbenchWindow,
+            CreateConnectionDialog dialog = new CreateConnectionDialog(
+                DBeaverUI.getActiveWorkbenchWindow(),
                 new NewConnectionWizard(registry));
             dialog.open();
         }

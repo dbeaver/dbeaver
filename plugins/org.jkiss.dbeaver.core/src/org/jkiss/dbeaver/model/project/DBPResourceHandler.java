@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.project;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -42,7 +41,7 @@ public interface DBPResourceHandler {
 
     DBNNode makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException;
 
-    void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException;
+    void openResource(IResource resource) throws CoreException, DBException;
 
     String getTypeName(IResource resource);
 

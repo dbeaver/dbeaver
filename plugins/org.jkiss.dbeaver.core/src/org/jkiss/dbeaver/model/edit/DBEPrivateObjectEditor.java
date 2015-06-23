@@ -18,8 +18,6 @@
 
 package org.jkiss.dbeaver.model.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
-
 /**
  * Private editor.
  * Doesn't participates in common object edit framework. All object's modifications are done
@@ -27,6 +25,6 @@ import org.eclipse.ui.IWorkbenchWindow;
  */
 public interface DBEPrivateObjectEditor {
 
-    void editObject(IWorkbenchWindow workbenchWindow);
+    void editObject();
 
 }

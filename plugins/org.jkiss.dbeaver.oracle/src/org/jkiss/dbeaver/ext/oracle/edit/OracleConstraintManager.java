@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -47,12 +47,11 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
 
     @Override
     protected OracleTableConstraint createDatabaseObject(
-        IWorkbenchWindow workbenchWindow,
         DBECommandContext context, OracleTableBase parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(
-            workbenchWindow.getShell(),
+            DBeaverUI.getActiveWorkbenchShell(),
             OracleMessages.edit_oracle_constraint_manager_dialog_title,
             parent,
             new DBSEntityConstraintType[] {

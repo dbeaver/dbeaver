@@ -25,8 +25,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -62,10 +62,10 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     }
 
     @Override
-    protected DB2Schema createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2DataSource parent,
-        Object copyFrom)
+    protected DB2Schema createDatabaseObject(DBECommandContext context, DB2DataSource parent,
+                                             Object copyFrom)
     {
-        NewSchemaDialog dialog = new NewSchemaDialog(workbenchWindow.getShell());
+        NewSchemaDialog dialog = new NewSchemaDialog(DBeaverUI.getActiveWorkbenchShell());
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }

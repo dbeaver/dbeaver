@@ -19,9 +19,9 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -73,12 +73,11 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     }
 
     @Override
-    protected DB2Sequence createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                               DBECommandContext context,
+    protected DB2Sequence createDatabaseObject(DBECommandContext context,
                                                DB2Schema db2Schema,
                                                Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(),
+        CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(),
             db2Schema.getDataSource(),
             DB2Messages.edit_db2_sequence_manager_dialog_title);
         if (dialog.open() != IDialogConstants.OK_ID) {

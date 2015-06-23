@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.model.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -55,13 +54,10 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * Real object creation will be performed by saveChanges function.
      * Additionally implementation could add initial command(s) to this manager.
      * This function can be invoked only once per one manager.
-     *
-     * @param workbenchWindow workbench window
      * @param commandContext command context
      * @param parent parent object
-     * @param copyFrom template for new object (usually result of "paste" operation)    @return null if no additional actions should be performed   */
+     * @param copyFrom template for new object (usually result of "paste" operation)    @return null if no additional actions should be performed     */
     OBJECT_TYPE createNewObject(
-        IWorkbenchWindow workbenchWindow,
         DBECommandContext commandContext,
         CONTAINER_TYPE parent,
         Object copyFrom);

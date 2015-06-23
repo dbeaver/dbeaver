@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -65,7 +64,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     }
 
     @Override
-    public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
+    public MySQLUser createNewObject(DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
         MySQLUser newUser = new MySQLUser(parent, null);
         if (copyFrom instanceof MySQLUser) {
