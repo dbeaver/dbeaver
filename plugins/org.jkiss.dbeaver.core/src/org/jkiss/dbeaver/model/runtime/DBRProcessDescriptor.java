@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.utils.TextUtils;
 
 import java.io.IOException;
@@ -104,7 +105,7 @@ public class DBRProcessDescriptor
             }
             //exitValue = process.exitValue();
             process = null;
-            DBRProcessPropertyTester.firePropertyChange(DBRProcessPropertyTester.PROP_RUNNING);
+            ProcessPropertyTester.firePropertyChange(ProcessPropertyTester.PROP_RUNNING);
         }
     }
 

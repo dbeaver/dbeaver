@@ -969,9 +969,9 @@ public class UIUtils {
         window.getShell().setText(title);
     }
 
-    public static void showPreferencesFor(Shell shell, IAdaptable element, String defPageID)
+    public static void showPreferencesFor(Shell shell, Object element, String defPageID)
     {
-        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID, null, null);
+        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID, null, null, PreferencesUtil.OPTION_NONE);
         if (propDialog != null) {
             propDialog.open();
         }

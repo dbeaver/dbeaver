@@ -15,21 +15,22 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.runtime;
+package org.jkiss.dbeaver.ui.views.process;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.jkiss.dbeaver.model.runtime.DBRProcessController;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
- * DBRProcessPropertyTester
+ * ProcessPropertyTester
  */
-public class DBRProcessPropertyTester extends PropertyTester
+public class ProcessPropertyTester extends PropertyTester
 {
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.runtime.process";
     public static final String PROP_RUNNING = "running";
 
-    public DBRProcessPropertyTester() {
+    public ProcessPropertyTester() {
         super();
     }
 
