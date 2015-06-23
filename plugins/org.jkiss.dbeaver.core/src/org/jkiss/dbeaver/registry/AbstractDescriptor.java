@@ -195,7 +195,7 @@ public abstract class AbstractDescriptor {
             return null;
         } else if (icon.startsWith("#")) {
             // Predefined image
-            return DBeaverIcons.getImage(icon.substring(1));
+            return DBeaverIcons.getImageById(icon.substring(1));
         } else {
             URL iconPath = getContributorBundle().getEntry(icon);
             if (iconPath != null) {

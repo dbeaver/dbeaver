@@ -104,7 +104,7 @@ public class DBeaverUI {
 
     private void initialize()
     {
-        DBeaverIcons.initRegistry();
+        DBeaverIcons.getPredefinedImages();
 
         this.sharedTextColors = new SharedTextColors();
 
