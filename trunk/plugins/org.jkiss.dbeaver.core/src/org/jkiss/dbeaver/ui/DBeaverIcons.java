@@ -22,11 +22,13 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,15 +40,20 @@ public class DBeaverIcons
     static final Log log = Log.getLog(DBeaverIcons.class);
 
     private static class IconDescriptor {
-        DBIcon id;
+        String id;
         ImageDescriptor imageDescriptor;
         Image image;
+
+        public IconDescriptor(String id, ImageDescriptor imageDescriptor) {
+            this.id = id;
+            this.imageDescriptor = imageDescriptor;
+            this.image = imageDescriptor.createImage(false);
+        }
     }
 
     private static Map<String, IconDescriptor> iconMap = new HashMap<String, IconDescriptor>();
 
-    public static void initRegistry()
-    {
+    static  {
         for (Field field : DBIcon.class.getDeclaredFields()) {
             if ((field.getModifiers() & Modifier.STATIC) == 0 || field.getType() != DBIcon.class) {
                 continue;
@@ -54,10 +61,7 @@ public class DBeaverIcons
             try {
                 DBIcon icon = (DBIcon) field.get(null);
                 ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(new URL(icon.getLocation()));
-                IconDescriptor iconDescriptor = new IconDescriptor();
-                iconDescriptor.id = icon;
-                iconDescriptor.imageDescriptor = imageDescriptor;
-                iconDescriptor.image = imageDescriptor.createImage(false);
+                IconDescriptor iconDescriptor = new IconDescriptor(icon.getLocation(), imageDescriptor);
                 if (iconDescriptor.image == null) {
                     log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
                     continue;
@@ -69,22 +73,23 @@ public class DBeaverIcons
         }
     }
 
-    public static Image getImage(DBIcon icon)
-    {
-        return getImage(icon.getToken());
+    public static Collection<String> getPredefinedImages() {
+        return new ArrayList<String>(iconMap.keySet());
     }
 
-    public static ImageDescriptor getImageDescriptor(DBIcon icon)
+    public static Image getImage(DBPImage image)
     {
-        return getImageDescriptor(icon.getToken());
+        IconDescriptor icon = getIconByLocation(image.getLocation());
+        return icon == null ? null : icon.image;
     }
 
-    public static Image createImage(DBIcon icon)
+    public static ImageDescriptor getImageDescriptor(DBPImage image)
     {
-        return createImage(icon.getToken());
+        IconDescriptor icon = getIconByLocation(image.getLocation());
+        return icon == null ? null : icon.imageDescriptor;
     }
 
-    public static Image getImage(String token)
+    public static Image getImageById(String token)
     {
         IconDescriptor iconDescriptor = iconMap.get(token);
         if (iconDescriptor == null) {
@@ -93,21 +98,24 @@ public class DBeaverIcons
         return iconDescriptor.image;
     }
 
-    public static ImageDescriptor getImageDescriptor(String token)
-    {
-        IconDescriptor iconDescriptor = iconMap.get(token);
-        if (iconDescriptor == null) {
-            return null;
+    private static IconDescriptor getIconByLocation(String location) {
+        IconDescriptor icon = iconMap.get(location);
+        if (icon == null) {
+            try {
+                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(new URL(location));
+                icon = new IconDescriptor(location, imageDescriptor);
+                if (icon.image == null) {
+                    log.warn("Bad image: " + location);
+                    return null;
+                } else {
+                    iconMap.put(location, icon);
+                }
+            } catch (Exception e) {
+                log.error(e);
+                return null;
+            }
         }
-        return iconDescriptor.imageDescriptor;
+        return icon;
     }
 
-    public static Image createImage(String token)
-    {
-        IconDescriptor iconDescriptor = iconMap.get(token);
-        if (iconDescriptor == null) {
-            return null;
-        }
-        return iconDescriptor.imageDescriptor.createImage();
-    }
 }
