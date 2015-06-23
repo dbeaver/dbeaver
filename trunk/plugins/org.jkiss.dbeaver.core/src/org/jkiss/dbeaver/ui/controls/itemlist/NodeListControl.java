@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPartSite;
@@ -29,10 +28,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -254,7 +250,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     @Override
-    protected Image getObjectImage(DBNNode item)
+    protected DBPImage getObjectImage(DBNNode item)
     {
         return item.getNodeIconDefault();
     }

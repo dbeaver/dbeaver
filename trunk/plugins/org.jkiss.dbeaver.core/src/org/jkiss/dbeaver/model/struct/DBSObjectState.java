@@ -18,8 +18,8 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * Object state
@@ -32,9 +32,9 @@ public class DBSObjectState
     public static final DBSObjectState UNKNOWN = new DBSObjectState("Unknown", DBIcon.OVER_UNKNOWN);
 
     private final String title;
-    private final DBIcon overlayImage;
+    private final DBPImage overlayImage;
 
-    public DBSObjectState(String title, DBIcon overlayImage)
+    public DBSObjectState(String title, DBPImage overlayImage)
     {
         this.title = title;
         this.overlayImage = overlayImage;
@@ -45,9 +45,9 @@ public class DBSObjectState
         return title;
     }
 
-    public ImageDescriptor getOverlayImage()
+    public DBPImage getOverlayImage()
     {
-        return overlayImage == null ? null : overlayImage.getImageDescriptor();
+        return overlayImage;
     }
 
 }

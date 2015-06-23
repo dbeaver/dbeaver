@@ -36,20 +36,20 @@ public class TestDialog extends TrayDialog {
         super(shell);
 
         tabs = new FolderInfo[3];
-        tabs[0] = new FolderInfo("tab1", "Tab 1", DBIcon.TREE_TABLE.getImage(), "Tooltip 1", false, new FolderPage() {
+        tabs[0] = new FolderInfo("tab1", "Tab 1", DBIcon.TREE_TABLE, "Tooltip 1", false, new FolderPage() {
             @Override
             public void createControl(Composite parent) {
                 new Text(parent, SWT.NONE);
             }
         });
-        tabs[1] = new FolderInfo("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS.getImage(), "Tooltip 2", false, new FolderPage() {
+        tabs[1] = new FolderInfo("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS, "Tooltip 2", false, new FolderPage() {
 
             @Override
             public void createControl(Composite parent) {
                 new Label(parent, SWT.NONE);
             }
         });
-        tabs[2] = new FolderInfo("tab3", "Example", DBIcon.PROJECT.getImage(), "123123", false, new FolderPage() {
+        tabs[2] = new FolderInfo("tab3", "Example", DBIcon.PROJECT, "123123", false, new FolderPage() {
 
             @Override
             public void createControl(Composite parent) {

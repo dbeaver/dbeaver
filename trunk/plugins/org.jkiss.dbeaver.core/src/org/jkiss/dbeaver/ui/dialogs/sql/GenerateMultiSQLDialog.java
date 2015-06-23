@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
@@ -120,7 +121,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
         for (T table : selectedObjects) {
             TableItem item = new TableItem(objectsTable, SWT.NONE);
             item.setText(DBUtils.getObjectFullName(table));
-            item.setImage(DBIcon.TREE_TABLE.getImage());
+            item.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             item.setChecked(true);
             item.setData(table);
         }

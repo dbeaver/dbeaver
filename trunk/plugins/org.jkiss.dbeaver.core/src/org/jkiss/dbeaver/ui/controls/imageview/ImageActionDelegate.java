@@ -19,9 +19,10 @@
 package org.jkiss.dbeaver.ui.controls.imageview;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Action delegate for all toolbar push-buttons.
@@ -46,8 +47,8 @@ public class ImageActionDelegate extends Action {
      */
     public String id;
 
-    public ImageActionDelegate(ImageViewer viewControl, String id, String name, ImageDescriptor image) {
-        super(name, image);
+    public ImageActionDelegate(ImageViewer viewControl, String id, String name, DBPImage image) {
+        super(name, DBeaverIcons.getImageDescriptor(image));
         this.imageViewControl = viewControl;
         this.id = id;
     }

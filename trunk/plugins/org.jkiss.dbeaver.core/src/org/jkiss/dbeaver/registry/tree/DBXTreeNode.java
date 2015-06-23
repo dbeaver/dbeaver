@@ -20,10 +20,10 @@ package org.jkiss.dbeaver.registry.tree;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlException;
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
@@ -44,7 +44,7 @@ public abstract class DBXTreeNode
     private final DBXTreeNode parent;
     private final String id;
     private List<DBXTreeNode> children;
-    private Image defaultIcon;
+    private DBPImage defaultIcon;
     private List<DBXTreeIcon> icons;
     private final boolean navigable;
     private final boolean inline;
@@ -173,12 +173,12 @@ public abstract class DBXTreeNode
 //        return recursiveLink;
 //    }
 
-    public Image getDefaultIcon()
+    public DBPImage getDefaultIcon()
     {
         return defaultIcon;
     }
 
-    public void setDefaultIcon(Image defaultIcon)
+    public void setDefaultIcon(DBPImage defaultIcon)
     {
         this.defaultIcon = defaultIcon;
     }
@@ -196,7 +196,7 @@ public abstract class DBXTreeNode
         this.icons.add(icon);
     }
 
-    public Image getIcon(DBNNode context)
+    public DBPImage getIcon(DBNNode context)
     {
         List<DBXTreeIcon> extIcons = getIcons();
         if (!CommonUtils.isEmpty(extIcons)) {

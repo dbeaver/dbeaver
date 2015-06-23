@@ -17,13 +17,13 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -96,16 +96,16 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
 
     public abstract String getNodeDescription();
 
-    public abstract Image getNodeIcon();
+    public abstract DBPImage getNodeIcon();
 
-    public Image getNodeIconDefault()
+    public DBPImage getNodeIconDefault()
     {
-        Image image = getNodeIcon();
+        DBPImage image = getNodeIcon();
         if (image == null) {
             if (this.allowsChildren()) {
-                return DBIcon.TREE_FOLDER.getImage();
+                return DBIcon.TREE_FOLDER;
             } else {
-                return DBIcon.TREE_PAGE.getImage();
+                return DBIcon.TREE_PAGE;
             }
         } else {
             return image;

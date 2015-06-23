@@ -24,6 +24,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -66,7 +67,7 @@ public class StringEditorInput implements IEditorInput {
 
 	@Override
     public ImageDescriptor getImageDescriptor() {
-		return DBIcon.TREE_INFO.getImageDescriptor();
+		return DBeaverIcons.getImageDescriptor(DBIcon.TREE_INFO);
 	}
 
 	/* (non-Javadoc)

@@ -22,11 +22,11 @@ import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.*;
@@ -53,7 +53,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private final ObjectType implType;
     private final String name;
     private final String description;
-    private Image icon;
+    private DBPImage icon;
     private DBPDataSourceProvider instance;
     private DBXTreeNode treeDescriptor;
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<String, DBXTreeNode>();
@@ -75,7 +75,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
-            this.icon = DBIcon.GEN_DATABASE_TYPE.getImage();
+            this.icon = DBIcon.GEN_DATABASE_TYPE;
         }
 
         // Load tree structure
@@ -166,7 +166,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return description;
     }
 
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         return icon;
     }
@@ -412,7 +412,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 if (isDefault && CommonUtils.isEmpty(expr)) {
                     defaultIcon = icon;
                 } else {
-                    Image iconImage = iconToImage(icon);
+                    DBPImage iconImage = iconToImage(icon);
                     if (iconImage != null) {
                         node.addIcon(new DBXTreeIcon(expr, iconImage));
                     }
@@ -420,7 +420,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
         }
         if (defaultIcon != null) {
-            Image defaultImage = iconToImage(defaultIcon);
+            DBPImage defaultImage = iconToImage(defaultIcon);
             if (defaultImage != null) {
                 node.setDefaultIcon(defaultImage);
             }

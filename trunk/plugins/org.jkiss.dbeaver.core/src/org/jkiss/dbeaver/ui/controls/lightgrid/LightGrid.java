@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -4035,7 +4036,7 @@ public abstract class LightGrid extends Canvas {
     }
 
     @Nullable
-    public Image getCellImage(Object colElement, Object rowElement)
+    public DBPImage getCellImage(Object colElement, Object rowElement)
     {
         return getContentProvider().getCellImage(colElement, rowElement);
     }

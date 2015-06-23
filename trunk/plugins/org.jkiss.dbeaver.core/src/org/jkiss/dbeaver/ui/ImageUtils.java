@@ -77,10 +77,10 @@ public class ImageUtils {
         // Capture checkbox image - only for windows
         // There could be hard-to-understand problems in Linux
         if (!DBeaverCore.getInstance().getLocalSystem().isWindows()) {
-            imageCheckboxEnabledOff = DBIcon.CHECK_OFF.getImage();
-            imageCheckboxEnabledOn = DBIcon.CHECK_ON.getImage();
-            imageCheckboxDisabledOn = DBIcon.CHECK_ON.getImage();
-            imageCheckboxDisabledOff = DBIcon.CHECK_OFF.getImage();
+            imageCheckboxEnabledOff = DBeaverIcons.getImage(DBIcon.CHECK_OFF);
+            imageCheckboxEnabledOn = DBeaverIcons.getImage(DBIcon.CHECK_ON);
+            imageCheckboxDisabledOn = DBeaverIcons.getImage(DBIcon.CHECK_ON);
+            imageCheckboxDisabledOff = DBeaverIcons.getImage(DBIcon.CHECK_OFF);
             return;
         }
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();
@@ -92,13 +92,13 @@ public class ImageUtils {
         checkBox.setBounds(0, 0, checkboxSize.x, checkboxSize.y);
         try {
             checkBox.setSelection(false);
-            imageCheckboxEnabledOff = captureWidget(checkBox, borderColor, DBIcon.CHECK_OFF.getImage());
+            imageCheckboxEnabledOff = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(DBIcon.CHECK_OFF));
             checkBox.setSelection(true);
-            imageCheckboxEnabledOn = captureWidget(checkBox, borderColor, DBIcon.CHECK_ON.getImage());
+            imageCheckboxEnabledOn = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(DBIcon.CHECK_ON));
             checkBox.setEnabled(false);
-            imageCheckboxDisabledOn = captureWidget(checkBox, borderColor, DBIcon.CHECK_ON.getImage());
+            imageCheckboxDisabledOn = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(DBIcon.CHECK_ON));
             checkBox.setSelection(false);
-            imageCheckboxDisabledOff = captureWidget(checkBox, borderColor, DBIcon.CHECK_OFF.getImage());
+            imageCheckboxDisabledOff = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(DBIcon.CHECK_OFF));
         } finally {
             UIUtils.dispose(checkBox);
         }

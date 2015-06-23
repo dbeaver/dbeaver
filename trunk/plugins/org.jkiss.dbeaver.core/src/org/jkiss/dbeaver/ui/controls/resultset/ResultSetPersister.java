@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -299,7 +300,7 @@ class ResultSetPersister {
 
         protected DataUpdaterJob(@Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext)
         {
-            super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), executionContext);
+            super(CoreMessages.controls_resultset_viewer_job_update, DBeaverIcons.getImageDescriptor(DBIcon.SQL_EXECUTE), executionContext);
             this.listener = listener;
         }
 

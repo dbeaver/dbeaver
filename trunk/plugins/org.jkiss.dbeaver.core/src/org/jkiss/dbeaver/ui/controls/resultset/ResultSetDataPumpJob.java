@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.utils.CommonUtils;
 
 class ResultSetDataPumpJob extends DataSourceJob {
@@ -74,7 +75,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private String progressMessage;
 
     protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, IResultSetController controller, DBCExecutionContext executionContext, Composite progressControl) {
-        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBIcon.SQL_EXECUTE.getImageDescriptor(), executionContext);
+        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBeaverIcons.getImageDescriptor(DBIcon.SQL_EXECUTE), executionContext);
         progressMessage = CoreMessages.controls_rs_pump_job_name;
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;
@@ -189,7 +190,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 cancelButton = new Button(progressControl, SWT.PUSH);
                 cancelButton.setText("Cancel");
                 GridData gd = new GridData(GridData.FILL_BOTH);
-                gd.verticalIndent = DBIcon.PROGRESS0.getImage().getBounds().height * 2;
+                gd.verticalIndent = DBeaverIcons.getImage(DBIcon.PROGRESS0).getBounds().height * 2;
                 cancelButton.setLayoutData(gd);
                 cancelButton.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -207,7 +208,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 painListener = new PaintListener() {
                     @Override
                     public void paintControl(PaintEvent e) {
-                        Image image = PROGRESS_IMAGES[drawCount % PROGRESS_IMAGES.length].getImage();
+                        Image image = DBeaverIcons.getImage(PROGRESS_IMAGES[drawCount % PROGRESS_IMAGES.length]);
                         Rectangle buttonBounds = cancelButton.getBounds();
                         Rectangle imageBounds = image.getBounds();
                         e.gc.drawImage(

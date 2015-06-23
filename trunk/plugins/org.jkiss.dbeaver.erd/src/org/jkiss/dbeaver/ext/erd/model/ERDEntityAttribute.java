@@ -20,10 +20,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.DBIcon;
 
 /**
  * Column entry in model Table
@@ -44,12 +44,12 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 		return object.getName();
 	}
 
-    public Image getLabelImage()
+    public DBPImage getLabelImage()
     {
         if (object instanceof DBPImageProvider) {
             return ((DBPImageProvider)object).getObjectImage();
         } else {
-            return DBIcon.TYPE_UNKNOWN.getImage();
+            return DBIcon.TYPE_UNKNOWN;
         }
     }
 

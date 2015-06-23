@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -103,7 +104,7 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
             }
         });
         Button browseButton = new Button(outputGroup, SWT.PUSH);
-        browseButton.setImage(DBIcon.TREE_FOLDER.getImage());
+        browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

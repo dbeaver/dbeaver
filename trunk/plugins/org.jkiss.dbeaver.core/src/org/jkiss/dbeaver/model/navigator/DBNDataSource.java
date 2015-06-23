@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -139,14 +141,16 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     }
 
     @Override
-    public Image getNodeIcon() {
-        Image image = super.getNodeIcon();
-        DataSourceDescriptor dataSource = getDataSourceContainer();
-        if (dataSource.isConnectionReadOnly()) {
-            image = DBNModel.getLockedOverlayImage(image);
-        }
-        if (dataSource.hasNetworkHandlers()) {
-            image = DBNModel.getNetworkOverlayImage(image);
+    public DBPImage getNodeIcon() {
+        DBPImage image = super.getNodeIcon();
+        if (dataSource.isConnectionReadOnly() || dataSource.hasNetworkHandlers()) {
+            return new DBIconComposite(
+                image,
+                false,
+                null,
+                dataSource.hasNetworkHandlers() ? DBIcon.OVER_EXTERNAL : null,
+                dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null,
+                null);
         }
         return image;
     }

@@ -17,8 +17,8 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTriggerColumn;
@@ -37,7 +37,7 @@ public abstract class AbstractTriggerColumn implements DBSTriggerColumn, DBPImag
 
     @Nullable
     @Override
-    public Image getObjectImage()
+    public DBPImage getObjectImage()
     {
         DBSTableColumn tableColumn = getTableColumn();
         if (tableColumn instanceof DBPImageProvider) {

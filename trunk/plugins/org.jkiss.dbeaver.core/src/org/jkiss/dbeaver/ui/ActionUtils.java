@@ -40,6 +40,7 @@ import org.eclipse.ui.services.IEvaluationService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * Action utils
@@ -62,20 +63,20 @@ public class ActionUtils
             style));
     }
 
-    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, int style, ImageDescriptor icon)
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, int style, DBPImage icon)
     {
         CommandContributionItemParameter parameters = new CommandContributionItemParameter(
             serviceLocator,
             null,
             commandId,
             style);
-        parameters.icon = icon;
+        parameters.icon = DBeaverIcons.getImageDescriptor(icon);
         return new CommandContributionItem(parameters);
     }
 
-    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, ImageDescriptor imageDescriptor)
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, DBPImage image)
     {
-        return makeCommandContribution(serviceLocator, commandId, name, imageDescriptor, null, false);
+        return makeCommandContribution(serviceLocator, commandId, name, image, null, false);
     }
 
     public static ContributionItem makeActionContribution(
@@ -93,7 +94,7 @@ public class ActionUtils
         IServiceLocator serviceLocator,
         String commandId,
         String name,
-        @Nullable ImageDescriptor imageDescriptor,
+        @Nullable DBPImage image,
         @Nullable String toolTip,
         boolean showText)
     {
@@ -102,7 +103,7 @@ public class ActionUtils
             null,
             commandId,
             null,
-            imageDescriptor,
+            image == null ? null : DBeaverIcons.getImageDescriptor(image),
             null,
             null,
             name,

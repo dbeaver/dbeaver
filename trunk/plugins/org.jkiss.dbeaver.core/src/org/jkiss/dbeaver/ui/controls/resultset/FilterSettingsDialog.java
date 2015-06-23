@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
@@ -85,7 +86,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(CoreMessages.controls_resultset_filter_title);
-        getShell().setImage(DBIcon.FILTER.getImage());
+        getShell().setImage(DBeaverIcons.getImage(DBIcon.FILTER));
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
@@ -372,11 +373,11 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         {
             DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
             if (columnIndex == 0 && constraint.getAttribute() instanceof DBPImageProvider) {
-                return ((DBPImageProvider)constraint.getAttribute()).getObjectImage();
+                return DBeaverIcons.getImage(((DBPImageProvider) constraint.getAttribute()).getObjectImage());
             }
             if (columnIndex == 2) {
                 if (constraint.getOrderPosition() > 0) {
-                    return constraint.isOrderDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
+                    return DBeaverIcons.getImage(constraint.isOrderDescending() ? DBIcon.SORT_DECREASE : DBIcon.SORT_INCREASE);
                 }
             }
             return null;

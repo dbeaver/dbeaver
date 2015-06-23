@@ -17,12 +17,12 @@
  */
 package org.jkiss.dbeaver.ui.editors.content.parts;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryEditor;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 
@@ -62,9 +62,9 @@ public class ContentBinaryEditorPart extends BinaryEditor implements ContentEdit
     }
 
     @Override
-    public Image getContentTypeImage()
+    public DBPImage getContentTypeImage()
     {
-        return DBIcon.TYPE_BINARY.getImage();
+        return DBIcon.TYPE_BINARY;
     }
 
     @Override

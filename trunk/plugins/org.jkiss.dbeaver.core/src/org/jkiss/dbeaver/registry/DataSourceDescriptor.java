@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISaveablePart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -1032,7 +1031,7 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public Image getObjectImage()
+    public DBPImage getObjectImage()
     {
         return driver.getPlainIcon();
     }

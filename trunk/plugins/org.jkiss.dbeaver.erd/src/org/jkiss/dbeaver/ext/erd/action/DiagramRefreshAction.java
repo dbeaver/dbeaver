@@ -23,6 +23,7 @@ package org.jkiss.dbeaver.ext.erd.action;
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Action to toggle the layout between manual and automatic
@@ -35,7 +36,7 @@ public class DiagramRefreshAction extends Action
 
 	public DiagramRefreshAction(ERDEditorPart editor)
 	{
-		super("Refresh Diagram", DBIcon.REFRESH.getImageDescriptor());
+		super("Refresh Diagram", DBeaverIcons.getImageDescriptor(DBIcon.REFRESH));
 		this.editor = editor;
 	}
 

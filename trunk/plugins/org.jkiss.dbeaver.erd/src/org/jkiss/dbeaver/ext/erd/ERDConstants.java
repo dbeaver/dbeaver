@@ -50,5 +50,7 @@ public class ERDConstants {
     public static final String COLOR_ERD_ATTR_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.background";
     public static final String COLOR_ERD_ATTR_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.foreground";
 
+    public static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + Activator.PLUGIN_ID + "/icons/";
+
     public static DBSEntityConstraintType CONSTRAINT_LOGICAL_FK = new DBSEntityConstraintType("erdkey", "Logical Key", null, true, false);
 }

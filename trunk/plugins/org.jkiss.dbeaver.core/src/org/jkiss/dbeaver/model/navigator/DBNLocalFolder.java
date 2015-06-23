@@ -17,8 +17,8 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -80,9 +80,9 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public Image getNodeIcon()
+    public DBPImage getNodeIcon()
     {
-        return DBIcon.TREE_DATABASE_CATEGORY.getImage();
+        return DBIcon.TREE_DATABASE_CATEGORY;
     }
 
     @Override

@@ -17,9 +17,9 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -124,11 +124,11 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
 
     @Nullable
     @Override
-    public Image getObjectImage() {
+    public DBPImage getObjectImage() {
         if (attribute instanceof DBPImageProvider) {
             return ((DBPImageProvider) attribute).getObjectImage();
         }
-        return DBUtils.getDataIcon(this).getImage();
+        return DBUtils.getDataIcon(this);
     }
 
     @Override

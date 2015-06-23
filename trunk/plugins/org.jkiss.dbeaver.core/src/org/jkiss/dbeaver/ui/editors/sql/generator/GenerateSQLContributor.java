@@ -38,6 +38,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -51,7 +52,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
@@ -415,7 +416,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     private static ContributionItem makeAction(String text, final TableAnalysisRunner runnable)
     {
         return new ActionContributionItem(
-            new Action(text, DBIcon.SQL_TEXT.getImageDescriptor()) {
+            new Action(text, DBeaverIcons.getImageDescriptor(DBIcon.SQL_TEXT)) {
                 @Override
                 public void run()
                 {

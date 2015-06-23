@@ -28,6 +28,7 @@ import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * ProjectFileEditorInput
@@ -84,7 +85,7 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 
 	@Override
     public ImageDescriptor getImageDescriptor() {
-		return DBIcon.TYPE_UNKNOWN.getImageDescriptor();
+		return DBeaverIcons.getImageDescriptor(DBIcon.TYPE_UNKNOWN);
 	}
 
 	/* (non-Javadoc)

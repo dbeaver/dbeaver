@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -105,13 +106,13 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             TableItem item = new TableItem(resultTable, SWT.NONE);
             item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getSourceObject()));
             if (settings.getProducer().getIcon() != null) {
-                item.setImage(0, settings.getProducer().getIcon());
+                item.setImage(0, DBeaverIcons.getImage(settings.getProducer().getIcon()));
             }
             item.setText(1, pipe.getConsumer().getTargetName());
             if (settings.getProcessor() != null && settings.getProcessor().getIcon() != null) {
-                item.setImage(1, settings.getProcessor().getIcon());
+                item.setImage(1, DBeaverIcons.getImage(settings.getProcessor().getIcon()));
             } else if (settings.getConsumer().getIcon() != null) {
-                item.setImage(1, settings.getConsumer().getIcon());
+                item.setImage(1, DBeaverIcons.getImage(settings.getConsumer().getIcon()));
             }
         }
         activated = true;

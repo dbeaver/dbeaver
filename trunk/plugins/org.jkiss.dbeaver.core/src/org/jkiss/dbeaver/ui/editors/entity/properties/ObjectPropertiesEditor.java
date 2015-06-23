@@ -31,9 +31,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -46,10 +43,13 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ui.editors.entity.GlobalContributorManager;
 import org.jkiss.utils.CommonUtils;
 
@@ -372,7 +372,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             //PropertiesContributor.CATEGORY_INFO,
             PropertiesContributor.TAB_STANDARD,
             CoreMessages.ui_properties_category_information,
-            DBIcon.TREE_INFO.getImage(),
+            DBIcon.TREE_INFO,
             "General information",
             false,
             new FolderPageProperties(getEditorInput())));

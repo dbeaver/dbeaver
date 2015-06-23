@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -100,7 +101,7 @@ public abstract class ConfigImportWizardPage extends WizardPage {
                 } else {
                     for (ImportConnectionInfo connectionInfo : importData.getConnections()) {
                         TableItem item = new TableItem(connectionTable, SWT.NONE);
-                        item.setImage(0, DBIcon.TREE_DATABASE.getImage());
+                        item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
                         item.setText(0, connectionInfo.getAlias());
                         item.setText(1, connectionInfo.getDriverInfo().getName());
                         item.setText(2, connectionInfo.getUrl());

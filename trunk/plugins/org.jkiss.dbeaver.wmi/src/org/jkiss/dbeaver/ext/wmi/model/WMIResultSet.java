@@ -17,9 +17,9 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
@@ -304,7 +304,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
         @Nullable
         @Override
-        public Image getObjectImage()
+        public DBPImage getObjectImage()
         {
             return WMIClassAttribute.getPropertyImage(attribute.getType());
         }

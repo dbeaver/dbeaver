@@ -17,11 +17,11 @@
  */
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
@@ -211,10 +211,10 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
 
     @Nullable
     @Override
-    public Image getObjectImage() {
+    public DBPImage getObjectImage() {
         if (collection.getComponentType() instanceof DBPImageProvider) {
             return ((DBPImageProvider) collection.getComponentType()).getObjectImage();
         }
-        return DBUtils.getDataIcon(collection.getComponentType()).getImage();
+        return DBUtils.getDataIcon(collection.getComponentType());
     }
 }

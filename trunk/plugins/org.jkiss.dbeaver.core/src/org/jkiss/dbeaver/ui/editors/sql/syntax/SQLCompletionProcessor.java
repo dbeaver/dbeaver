@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.TextPresentation;
@@ -27,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -34,9 +34,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.sql.SQLConstants;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
@@ -58,7 +59,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 {
     static final Log log = Log.getLog(SQLCompletionProcessor.class);
 
-    private static enum QueryType {
+    private enum QueryType {
         TABLE,
         COLUMN
     }
@@ -526,7 +527,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
     }
 
-    private SQLCompletionProposal makeProposalsFromObject(DBPNamedObject object, @Nullable Image objectIcon)
+    private SQLCompletionProposal makeProposalsFromObject(DBPNamedObject object, @Nullable DBPImage objectIcon)
     {
         String objectFullName = DBUtils.getObjectFullName(object);
 
@@ -600,7 +601,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         String replaceString,
         String displayString,
         String description,
-        @Nullable Image image,
+        @Nullable DBPImage image,
         boolean isObject,
         @Nullable DBPNamedObject object)
     {
@@ -632,6 +633,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 break;
         }
 
+        Image img = image == null ? null : DBeaverIcons.getImage(image);
         return new SQLCompletionProposal(
             editor.getSyntaxManager(),
             displayString,
@@ -639,8 +641,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             wordDetector, // wordDetector
             replaceString.length(), //cursorPosition the position of the cursor following the insert
                                 // relative to replacementOffset
-            image, //image to display
-            new ContextInformation(image, displayString, displayString), //the context information associated with this proposal
+            img, //image to display
+            new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
             description,
             object);
     }

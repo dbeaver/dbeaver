@@ -17,10 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
@@ -31,7 +31,7 @@ public class ObjectSearchProvider extends AbstractDescriptor
     private String id;
     private String label;
     private String description;
-    private Image icon;
+    private DBPImage icon;
     private ObjectType pageClass;
     private ObjectType resultsClass;
 
@@ -62,7 +62,7 @@ public class ObjectSearchProvider extends AbstractDescriptor
         return description;
     }
 
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         return icon;
     }

@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 
 /**
@@ -27,6 +26,6 @@ import org.jkiss.code.Nullable;
 public interface DBPImageProvider {
 
     @Nullable
-    Image getObjectImage();
+    DBPImage getObjectImage();
 
 }

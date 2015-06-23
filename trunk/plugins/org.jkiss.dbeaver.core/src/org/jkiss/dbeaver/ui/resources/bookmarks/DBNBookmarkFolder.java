@@ -21,8 +21,8 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -42,11 +42,11 @@ public class DBNBookmarkFolder extends DBNResource
     }
 
     @Override
-    public Image getNodeIcon()
+    public DBPImage getNodeIcon()
     {
         IResource resource = getResource();
         if (resource != null && resource.getParent() instanceof IProject) {
-            return DBIcon.BOOKMARK_FOLDER.getImage();
+            return DBIcon.BOOKMARK_FOLDER;
         }
         return super.getNodeIcon();
     }

@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -68,7 +69,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             UIUtils.createTableColumn(nodesTable, SWT.LEFT, "Full qualified name");
             for (DBNDatabaseNode node : settings.getNodes()) {
                 TableItem item = new TableItem(nodesTable, SWT.NONE);
-                item.setImage(node.getNodeIconDefault());
+                item.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                 item.setText(0, node.getNodeName());
                 item.setText(1, node.getNodeType());
                 item.setText(2, node.getNodeFullName());

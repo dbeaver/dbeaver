@@ -19,21 +19,22 @@ package org.jkiss.dbeaver.ext.erd.navigator;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.erd.Activator;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * DBNDiagram
  */
 public class DBNDiagram extends DBNResource
 {
-    private Image image;
+    private static final DBIcon DIAGRAM_ICON = new DBIcon(ERDConstants.ICON_LOCATION_PREFIX + "erd.png");
+
+    private DBPImage image;
 
     public DBNDiagram(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
     {
@@ -41,17 +42,10 @@ public class DBNDiagram extends DBNResource
     }
 
     @Override
-    protected void dispose(boolean reflect)
-    {
-        UIUtils.dispose(image);
-        super.dispose(reflect);
-    }
-
-    @Override
-    public Image getNodeIcon()
+    public DBPImage getNodeIcon()
     {
         if (image == null) {
-            image = Activator.getImageDescriptor("icons/erd.png").createImage();
+            image = DIAGRAM_ICON;
         }
         return image;
     }

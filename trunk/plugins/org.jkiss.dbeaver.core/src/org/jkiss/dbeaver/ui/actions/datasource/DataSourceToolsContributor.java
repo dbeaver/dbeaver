@@ -22,7 +22,6 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
@@ -33,6 +32,7 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.ToolDescriptor;
 import org.jkiss.dbeaver.registry.ToolGroupDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
@@ -84,7 +84,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                             activePart.getSite(),
                             selection,
                             tool.getLabel(),
-                            tool.getIcon() == null ? null : ImageDescriptor.createFromImage(tool.getIcon()),
+                            tool.getIcon() == null ? null : DBeaverIcons.getImageDescriptor(tool.getIcon()),
                             tool.getDescription());
                         if (parentMenu == null) {
                             menuItems.add(new ActionContributionItem(action));

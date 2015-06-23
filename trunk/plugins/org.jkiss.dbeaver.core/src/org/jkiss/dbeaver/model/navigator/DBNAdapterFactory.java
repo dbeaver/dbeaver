@@ -30,6 +30,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 
@@ -137,7 +138,7 @@ public class DBNAdapterFactory implements IAdapterFactory
                     @Override
                     public ImageDescriptor getImageDescriptor(Object object)
                     {
-                        return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+                        return DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
                     }
 
                     @Override

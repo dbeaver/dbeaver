@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * DataSourceViewDescriptor
@@ -30,7 +30,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
     private String targetID;
     private String label;
     private ObjectType viewType;
-    private Image icon;
+    private DBPImage icon;
 
     public DataSourceViewDescriptor(DataSourceProviderDescriptor provider, IConfigurationElement config)
     {
@@ -57,7 +57,7 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         return label;
     }
 
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         return icon;
     }

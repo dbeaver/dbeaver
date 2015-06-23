@@ -19,21 +19,16 @@ package org.jkiss.dbeaver.registry;
 
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
-
-import java.io.IOException;
-import java.net.URL;
 
 /**
  * EntityEditorDescriptor
@@ -189,28 +184,19 @@ public abstract class AbstractDescriptor {
         return Platform.getBundle(pluginId);
     }
 
-    protected Image iconToImage(String icon)
+    protected DBPImage iconToImage(String icon)
     {
         if (CommonUtils.isEmpty(icon)) {
             return null;
         } else if (icon.startsWith("#")) {
             // Predefined image
-            return DBeaverIcons.getImageById(icon.substring(1));
+            return DBIcon.getImageById(icon.substring(1));
         } else {
-            URL iconPath = getContributorBundle().getEntry(icon);
-            if (iconPath != null) {
-                try {
-                    iconPath = FileLocator.toFileURL(iconPath);
-                }
-                catch (IOException ex) {
-                    log.error(ex);
-                    return null;
-                }
-                ImageDescriptor descriptor = ImageDescriptor.createFromURL(iconPath);
-                return descriptor.createImage();
+            if (!icon.startsWith("platform:")) {
+                icon = "platform:/plugin/" + pluginId + "/" + icon;
             }
+            return new DBIcon(icon);
         }
-        return null;
     }
 
     public Class<?> getObjectClass(String className)

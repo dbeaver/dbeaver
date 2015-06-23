@@ -56,7 +56,10 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
@@ -75,12 +78,14 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
@@ -96,7 +101,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.List;
 
 /**
  * Spreadsheet presentation.
@@ -124,7 +128,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<ISelectionChangedListener>();
 
     // UI modifiers
-    @NotNull
     private IThemeManager themeManager;
     private IPropertyChangeListener themeChangeListener;
 
@@ -1266,7 +1269,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Nullable
         @Override
-        public Image getCellImage(Object colElement, Object rowElement)
+        public DBPImage getCellImage(Object colElement, Object rowElement)
         {
             if (!showCelIcons) {
                 return null;
@@ -1345,7 +1348,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                return DBUtils.getTypeImage(((DBDAttributeBinding) element).getMetaAttribute());
+                return DBeaverIcons.getImage(DBUtils.getTypeImage(((DBDAttributeBinding) element).getMetaAttribute()));
             }
             return null;
         }

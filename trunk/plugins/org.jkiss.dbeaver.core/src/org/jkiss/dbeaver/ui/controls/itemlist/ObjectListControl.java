@@ -32,12 +32,14 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -663,7 +665,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
      * @return image or null
      */
     @Nullable
-    protected Image getObjectImage(OBJECT_TYPE item)
+    protected DBPImage getObjectImage(OBJECT_TYPE item)
     {
         return null;
     }
@@ -869,7 +871,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public Image getImage(Object element)
         {
             if (columnIndex == 0) {
-                return getObjectImage((OBJECT_TYPE) element);
+                return DBeaverIcons.getImage(getObjectImage((OBJECT_TYPE) element));
             }
             return null;
         }

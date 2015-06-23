@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -37,7 +38,7 @@ class GridCellRenderer extends AbstractRenderer
     private static final int TEXT_TOP_MARGIN = 1;
     private static final int INSIDE_MARGIN = 3;
 
-    static final Image LINK_IMAGE = DBIcon.TREE_LINK.getImage();
+    static final Image LINK_IMAGE = DBeaverIcons.getImage(DBIcon.TREE_LINK);
     static final Rectangle LINK_IMAGE_BOUNDS = LINK_IMAGE.getBounds();
 
     protected Color colorSelected;
@@ -115,7 +116,7 @@ class GridCellRenderer extends AbstractRenderer
             image = LINK_IMAGE;
             imageBounds = LINK_IMAGE_BOUNDS;
         } else {
-            image = grid.getCellImage(col, row);
+            image = DBeaverIcons.getImage(grid.getCellImage(col, row));
             if (image != null) {
                 imageBounds = image.getBounds();
             }

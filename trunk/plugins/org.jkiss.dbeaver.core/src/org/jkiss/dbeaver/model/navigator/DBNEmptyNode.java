@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -51,7 +51,7 @@ public class DBNEmptyNode extends DBNNode
     }
 
     @Override
-    public Image getNodeIcon()
+    public DBPImage getNodeIcon()
     {
         return null;
     }

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -123,7 +124,7 @@ class ProjectExportWizardPage extends WizardPage {
 
         for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
             final TableItem item = new TableItem(projectsTable, SWT.NONE);
-            item.setImage(DBIcon.PROJECT.getImage());
+            item.setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
             item.setText(project.getName());
             item.setData(project);
             if (projectList.contains(project)) {
@@ -162,7 +163,7 @@ class ProjectExportWizardPage extends WizardPage {
             });
 
             Button openFolder = new Button(generalSettings, SWT.PUSH);
-            openFolder.setImage(DBIcon.TREE_FOLDER.getImage());
+            openFolder.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
             openFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)

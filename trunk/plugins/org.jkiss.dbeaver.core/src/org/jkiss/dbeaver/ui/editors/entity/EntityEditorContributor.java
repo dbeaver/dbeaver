@@ -26,12 +26,12 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
 
@@ -88,8 +88,8 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
     {
         super.contributeToToolBar(manager);
         final IWorkbenchWindow workbenchWindow = getPage().getWorkbenchWindow();
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_SAVE, "Save", DBIcon.SAVE_TO_DATABASE.getImageDescriptor(), "View/Persist Changes", true));
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REVERT, "Revert", DBIcon.RESET.getImageDescriptor(), "Revert changes", true));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_SAVE, "Save", DBIcon.SAVE_TO_DATABASE, "View/Persist Changes", true));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.FILE_REVERT, "Revert", DBIcon.RESET, "Revert changes", true));
         manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_UNDO));
         manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_REDO));
 

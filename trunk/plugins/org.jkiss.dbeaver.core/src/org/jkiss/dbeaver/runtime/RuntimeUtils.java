@@ -20,16 +20,12 @@ package org.jkiss.dbeaver.runtime;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.JexlException;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.program.Program;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -51,7 +47,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * RuntimeUtils
@@ -449,49 +447,6 @@ public class RuntimeUtils {
             }
         }
         return object;
-    }
-
-    public static class ProgramInfo {
-        final Program program;
-        Image image;
-
-        private ProgramInfo(Program program)
-        {
-            this.program = program;
-        }
-
-        public Program getProgram()
-        {
-            return program;
-        }
-
-        public Image getImage()
-        {
-            return image;
-        }
-    }
-
-    private static final Map<String, ProgramInfo> programMap = new HashMap<String, ProgramInfo>();
-
-    public static ProgramInfo getProgram(IResource resource)
-    {
-        if (resource instanceof IFile) {
-            final String fileExtension = CommonUtils.notEmpty(resource.getFileExtension());
-            ProgramInfo programInfo = programMap.get(fileExtension);
-            if (programInfo == null) {
-                Program program = Program.findProgram(fileExtension);
-                programInfo = new ProgramInfo(program);
-                if (program != null) {
-                    final ImageData imageData = program.getImageData();
-                    if (imageData != null) {
-                        programInfo.image = new Image(null, imageData);
-                    }
-                }
-                programMap.put(fileExtension, programInfo);
-            }
-            return programInfo.program == null ? null : programInfo;
-        }
-        return null;
     }
 
     public static void pause(int ms)

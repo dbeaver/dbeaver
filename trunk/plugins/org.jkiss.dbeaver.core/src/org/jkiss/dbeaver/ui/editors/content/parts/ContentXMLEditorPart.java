@@ -17,13 +17,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.content.parts;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -62,9 +62,9 @@ public class ContentXMLEditorPart extends XMLEditor implements ContentEditorPart
     }
 
     @Override
-    public Image getContentTypeImage()
+    public DBPImage getContentTypeImage()
     {
-        return DBIcon.TYPE_XML.getImage();
+        return DBIcon.TYPE_XML;
     }
 
     @Override
