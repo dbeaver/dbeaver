@@ -49,7 +49,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
-import org.jkiss.dbeaver.model.impl.resources.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
