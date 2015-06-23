@@ -17,19 +17,19 @@
  */
 package org.jkiss.dbeaver.registry.editor;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInputFactory;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInputFactory;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditorInputFactory;
 import org.jkiss.utils.CommonUtils;
@@ -64,7 +64,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     private String name;
     private String description;
     private String position;
-    private Image icon;
+    private DBPImage icon;
     private Type type;
 
     EntityEditorDescriptor()
@@ -78,7 +78,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         this.name = CoreMessages.registry_entity_editor_descriptor_name;
         this.description = CoreMessages.registry_entity_editor_descriptor_description;
         this.position = null;
-        this.icon = DBIcon.TREE_DATABASE.getImage();
+        this.icon = DBIcon.TREE_DATABASE;
         this.type = Type.editor;
     }
 
@@ -129,7 +129,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
         return position;
     }
 
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         return icon;
     }

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesPanel;
@@ -134,7 +135,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             driver = provider.createDriver();
         } else {
             getShell().setText(CoreMessages.dialog_edit_driver_title_edit_driver + driver.getName() + "'"); //$NON-NLS-2$
-            getShell().setImage(driver.getPlainIcon());
+            getShell().setImage(DBeaverIcons.getImage(driver.getPlainIcon()));
         }
 
         boolean isReadOnly = !provider.isDriversManagable();
@@ -305,8 +306,8 @@ public class DriverEditDialog extends HelpEnabledDialog
                         !lib.getFile().exists() ?
                             PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
                             lib.getFile().isDirectory() ?
-                                DBIcon.TREE_FOLDER.getImage() :
-                                (lib.getType() == DBPDriverFileType.jar ? DBIcon.JAR.getImage() : DBIcon.TYPE_UNKNOWN.getImage()));
+                                DBeaverIcons.getImage(DBIcon.TREE_FOLDER) :
+                                DBeaverIcons.getImage((lib.getType() == DBPDriverFileType.jar ? DBIcon.JAR : DBIcon.TYPE_UNKNOWN)));
                 }
             });
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));

@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 
@@ -145,7 +146,7 @@ public class MigrateConnectionWizard extends Wizard
                     TableItem item = new TableItem(connectionsViewer, SWT.NONE);
                     item.setText(ds.getName());
                     item.setData(ds);
-                    item.setImage(ds.getDriver().getIcon());
+                    item.setImage(DBeaverIcons.getImage(ds.getDriver().getIcon()));
                     if (selectedConnections.contains(ds)) {
                         item.setChecked(true);
                     }

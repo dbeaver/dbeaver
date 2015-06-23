@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
@@ -580,14 +581,14 @@ public class ContentUtils {
         throws DBCException
     {
         if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
-            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBIcon.SAVE_AS.getImageDescriptor()) {
+            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(DBIcon.SAVE_AS)) {
                 @Override
                 public void run() {
                     saveToFile(controller);
                 }
             });
         }
-        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBIcon.LOAD.getImageDescriptor()) {
+        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(DBIcon.LOAD)) {
             @Override
             public void run() {
                 loadFromFile(controller);

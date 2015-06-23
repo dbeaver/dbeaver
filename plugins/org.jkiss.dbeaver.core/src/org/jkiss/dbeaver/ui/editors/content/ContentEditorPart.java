@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
 
 import javax.activation.MimeType;
@@ -37,7 +38,7 @@ public interface ContentEditorPart extends IEditorPart, ISingleControlEditor {
 
     String getContentTypeTitle();
 
-    Image getContentTypeImage();
+    DBPImage getContentTypeImage();
 
     String getPreferredMimeType();
 

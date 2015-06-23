@@ -29,10 +29,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TreeColumn;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -307,7 +309,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
                     cell.setText("");
                     break;
             }
-            cell.setImage(getImage(cell.getElement(), cell.getColumnIndex()));
+            cell.setImage(DBeaverIcons.getImage(getImage(cell.getElement(), cell.getColumnIndex())));
             if (cell.getElement() instanceof DriverDescriptor && !((DriverDescriptor)cell.getElement()).getUsedBy().isEmpty()) {
                 //cell.setFont(boldFont);
             } else {
@@ -326,22 +328,22 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
             }
         }
 
-        public Image getImage(Object obj, int index)
+        public DBPImage getImage(Object obj, int index)
         {
             if (index != 0) {
                 return null;
             }
-            Image defImage = DBIcon.TREE_PAGE.getImage();
+            DBPImage defImage = DBIcon.TREE_PAGE;
 			if (obj instanceof DataSourceProviderDescriptor) {
-                Image icon = ((DataSourceProviderDescriptor) obj).getIcon();
+                DBPImage icon = ((DataSourceProviderDescriptor) obj).getIcon();
                 if (icon != null) {
                     return icon;
                 }
-			    defImage = DBIcon.TREE_FOLDER.getImage();
+			    defImage = DBIcon.TREE_FOLDER;
             } else if (obj instanceof DriverCategory) {
-                return DBIcon.TREE_DATABASE_CATEGORY.getImage();
+                return DBIcon.TREE_DATABASE_CATEGORY;
             } else if (obj instanceof DriverDescriptor) {
-                Image icon = ((DriverDescriptor) obj).getIcon();
+                DBPImage icon = ((DriverDescriptor) obj).getIcon();
                 if (icon != null) {
                     return icon;
                 }
@@ -352,7 +354,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
 
         @Override
         public Image getImage(Object element) {
-            return getImage(element, 0);
+            return DBeaverIcons.getImage(getImage(element, 0));
         }
 
         @Override

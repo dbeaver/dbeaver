@@ -32,11 +32,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -78,7 +79,7 @@ abstract class ViewValuePanel extends Composite {
         //titleBar.setBackground(infoBackground);
 
         columnImageLabel = new Label(titleBar, SWT.NONE);
-        columnImageLabel.setImage(DBIcon.TYPE_OBJECT.getImage());
+        columnImageLabel.setImage(DBeaverIcons.getImage(DBIcon.TYPE_OBJECT));
 
         columnNameLabel = new Text(titleBar, SWT.READ_ONLY);
         columnNameLabel.setText("");
@@ -117,7 +118,7 @@ abstract class ViewValuePanel extends Composite {
         if (previewController == null || valueController.getValueType() != previewController.getValueType()) {
             cleanupPanel();
             // Rest column info
-            columnImageLabel.setImage(DBUtils.getTypeImage(valueController.getValueType()));
+            columnImageLabel.setImage(DBeaverIcons.getImage(DBUtils.getTypeImage(valueController.getValueType())));
             columnNameLabel.setText(valueController.getValueName());
             // Create a new one
             try {
@@ -186,7 +187,7 @@ abstract class ViewValuePanel extends Composite {
 
     private void fillStandardToolBar()
     {
-        toolBarManager.add(new Action("Hide panel", DBIcon.CLOSE.getImageDescriptor()) {
+        toolBarManager.add(new Action("Hide panel", DBeaverIcons.getImageDescriptor(DBIcon.CLOSE)) {
             @Override
             public void run() {
                 hidePanel();

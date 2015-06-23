@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -179,7 +180,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             if (element instanceof DBSObjectReference) {
                 DBSObjectType objectType = ((DBSObjectReference) element).getObjectType();
                 if (objectType != null) {
-                    return objectType.getImage();
+                    return DBeaverIcons.getImage(objectType.getImage());
                 }
             }
             return null;

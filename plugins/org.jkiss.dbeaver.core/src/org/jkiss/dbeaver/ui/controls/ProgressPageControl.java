@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -38,14 +37,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ui.ISearchExecutor;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -250,7 +247,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                         PlatformUI.getWorkbench(),
                             IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
                             CoreMessages.controls_progress_page_toolbar_title,
-                            DBIcon.SEARCH.getImageDescriptor()));
+                            DBIcon.SEARCH));
                 }
                 Label phLabel = new Label(searchControlsComposite, SWT.NONE);
                 phLabel.setText(""); //$NON-NLS-1$
@@ -369,12 +366,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                     PlatformUI.getWorkbench(),
                     IWorkbenchActionDefinitionIds.FIND_NEXT,
                     null,
-                    DBIcon.ARROW_DOWN.getImageDescriptor()));
+                    DBIcon.ARROW_DOWN));
             searchToolbarManager.add(ActionUtils.makeCommandContribution(
                     PlatformUI.getWorkbench(),
                     IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
                     null,
-                    DBIcon.ARROW_UP.getImageDescriptor()));
+                    DBIcon.ARROW_UP));
             //ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
             searchToolbarManager.add(new Action(CoreMessages.controls_progress_page_action_close, PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
                 @Override

@@ -18,11 +18,11 @@
 
 package org.jkiss.dbeaver.registry.transfer;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
@@ -48,7 +48,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     private final String id;
     private final String name;
     private final String description;
-    private final Image icon;
+    private final DBPImage icon;
     private final NodeType nodeType;
     private final ObjectType implType;
     private final ObjectType settingsType;
@@ -93,7 +93,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return description;
     }
 
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         return icon;
     }

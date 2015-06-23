@@ -43,6 +43,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 
@@ -221,15 +222,14 @@ public class FolderList extends Composite {
             int height = fm.getHeight();
             int textMiddle = (bounds.height - height) / 2;
 
-            if (selected && tab.getImage() != null
-                && !tab.getImage().isDisposed()) {
+            if (selected && tab.getImage() != null) {
 				/* draw the icon for the selected tab */
                 if (tab.isIndented()) {
                     textIndent = textIndent + INDENT_LEFT;
                 } else {
                     textIndent = textIndent - 3;
                 }
-                e.gc.drawImage(tab.getImage(), textIndent, textMiddle - 1);
+                e.gc.drawImage(DBeaverIcons.getImage(tab.getImage()), textIndent, textMiddle - 1);
                 textIndent = textIndent + 16 + 4;
             } else if (tab.isIndented()) {
                 textIndent = textIndent + INDENT_LEFT;
@@ -609,7 +609,7 @@ public class FolderList extends Composite {
 		 * an icon the width of the tab doesn't change.
 		 */
         if (folderInfo.getImage() != null) {
-            width = width + folderInfo.getImage().getBounds().width + 4;
+            width = width + DBeaverIcons.getImage(folderInfo.getImage()).getBounds().width + 4;
         }
         if (folderInfo.isIndented()) {
             width = width + INDENT_LEFT;

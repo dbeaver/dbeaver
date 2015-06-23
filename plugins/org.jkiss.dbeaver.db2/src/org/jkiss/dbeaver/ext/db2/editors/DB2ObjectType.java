@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -58,7 +59,7 @@ import java.util.Map;
  */
 public enum DB2ObjectType implements DBSObjectType {
 
-    ALIAS(DBIcon.TREE_SYNONYM.getImage(), DB2Alias.class, new ObjectFinder() {
+    ALIAS(DBIcon.TREE_SYNONYM, DB2Alias.class, new ObjectFinder() {
         @Override
         public DB2Alias findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -66,7 +67,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    CHECK(DBIcon.TREE_CONSTRAINT.getImage(), DB2TableCheckConstraint.class, new ObjectFinder() {
+    CHECK(DBIcon.TREE_CONSTRAINT, DB2TableCheckConstraint.class, new ObjectFinder() {
         @Override
         public DB2TableCheckConstraint findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName)
             throws DBException
@@ -75,7 +76,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    COLUMN(DBIcon.TREE_COLUMN.getImage(), DB2TableColumn.class, new ObjectFinder() {
+    COLUMN(DBIcon.TREE_COLUMN, DB2TableColumn.class, new ObjectFinder() {
         @Override
         public DB2TableColumn findObject(DBRProgressMonitor monitor, DB2Table db2Table, String objectName) throws DBException
         {
@@ -89,7 +90,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    FOREIGN_KEY(DBIcon.TREE_FOREIGN_KEY.getImage(), DB2TableForeignKey.class, new ObjectFinder() {
+    FOREIGN_KEY(DBIcon.TREE_FOREIGN_KEY, DB2TableForeignKey.class, new ObjectFinder() {
         @Override
         public DB2TableForeignKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -97,7 +98,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    MODULE(DBIcon.TREE_PACKAGE.getImage(), DB2Module.class, new ObjectFinder() {
+    MODULE(DBIcon.TREE_PACKAGE, DB2Module.class, new ObjectFinder() {
 
         @Override
         public DB2Module findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
@@ -106,7 +107,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    MQT(DBIcon.TREE_TABLE.getImage(), DB2MaterializedQueryTable.class, new ObjectFinder() {
+    MQT(DBIcon.TREE_TABLE, DB2MaterializedQueryTable.class, new ObjectFinder() {
 
         @Override
         public DB2MaterializedQueryTable findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName)
@@ -116,7 +117,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    INDEX(DBIcon.TREE_INDEX.getImage(), DB2Index.class, new ObjectFinder() {
+    INDEX(DBIcon.TREE_INDEX, DB2Index.class, new ObjectFinder() {
         @Override
         public DB2Index findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -124,7 +125,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    NICKNAME(DBIcon.TREE_SYNONYM.getImage(), DB2View.class, new ObjectFinder() {
+    NICKNAME(DBIcon.TREE_SYNONYM, DB2View.class, new ObjectFinder() {
         @Override
         public DB2Nickname findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -132,7 +133,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    PACKAGE(DBIcon.TREE_PACKAGE.getImage(), DB2Package.class, new ObjectFinder() {
+    PACKAGE(DBIcon.TREE_PACKAGE, DB2Package.class, new ObjectFinder() {
         @Override
         public DB2Package findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -140,7 +141,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    PROCEDURE(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
+    PROCEDURE(DBIcon.TREE_PROCEDURE, DB2Routine.class, new ObjectFinder() {
         @Override
         public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -157,7 +158,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    REFERENCE(DBIcon.TREE_REFERENCE.getImage(), DB2TableReference.class, new ObjectFinder() {
+    REFERENCE(DBIcon.TREE_REFERENCE, DB2TableReference.class, new ObjectFinder() {
         @Override
         public DB2TableReference findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -165,7 +166,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    ROUTINE(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
+    ROUTINE(DBIcon.TREE_PROCEDURE, DB2Routine.class, new ObjectFinder() {
         @Override
         public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -196,9 +197,9 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    SCHEMA(DBIcon.TREE_SCHEMA.getImage(), DB2Schema.class, null),
+    SCHEMA(DBIcon.TREE_SCHEMA, DB2Schema.class, null),
 
-    SEQUENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2Sequence.class, new ObjectFinder() {
+    SEQUENCE(DBIcon.TREE_SEQUENCE, DB2Sequence.class, new ObjectFinder() {
         @Override
         public DB2Sequence findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -206,7 +207,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    TABLE(DBIcon.TREE_TABLE.getImage(), DB2Table.class, new ObjectFinder() {
+    TABLE(DBIcon.TREE_TABLE, DB2Table.class, new ObjectFinder() {
         @Override
         public DB2Table findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -214,7 +215,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    TABLESPACE(DBIcon.TREE_TABLESPACE.getImage(), DB2Tablespace.class, new ObjectFinder() {
+    TABLESPACE(DBIcon.TREE_TABLESPACE, DB2Tablespace.class, new ObjectFinder() {
         @Override
         public DB2Tablespace findObject(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String objectName)
             throws DBException
@@ -223,7 +224,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    TRIGGER(DBIcon.TREE_TABLE.getImage(), DB2Trigger.class, new ObjectFinder() {
+    TRIGGER(DBIcon.TREE_TABLE, DB2Trigger.class, new ObjectFinder() {
         @Override
         public DB2Trigger findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -231,7 +232,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    UDF(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
+    UDF(DBIcon.TREE_PROCEDURE, DB2Routine.class, new ObjectFinder() {
         @Override
         public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -248,7 +249,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    UDT(DBIcon.TREE_DATA_TYPE.getImage(), DB2DataType.class, new ObjectFinder() {
+    UDT(DBIcon.TREE_DATA_TYPE, DB2DataType.class, new ObjectFinder() {
         @Override
         public DB2DataType findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -263,7 +264,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    UNIQUE_KEY(DBIcon.TREE_UNIQUE_KEY.getImage(), DB2TableUniqueKey.class, new ObjectFinder() {
+    UNIQUE_KEY(DBIcon.TREE_UNIQUE_KEY, DB2TableUniqueKey.class, new ObjectFinder() {
         @Override
         public DB2TableUniqueKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -271,7 +272,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    VIEW(DBIcon.TREE_VIEW.getImage(), DB2View.class, new ObjectFinder() {
+    VIEW(DBIcon.TREE_VIEW, DB2View.class, new ObjectFinder() {
         @Override
         public DB2View findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -279,7 +280,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    VARIABLE(DBIcon.TREE_ATTRIBUTE.getImage(), DB2Variable.class, new ObjectFinder() {
+    VARIABLE(DBIcon.TREE_ATTRIBUTE, DB2Variable.class, new ObjectFinder() {
         @Override
         public DB2Variable findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -297,7 +298,7 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    XML_SCHEMA(DBIcon.TREE_DATA_TYPE.getImage(), DB2XMLSchema.class, new ObjectFinder() {
+    XML_SCHEMA(DBIcon.TREE_DATA_TYPE, DB2XMLSchema.class, new ObjectFinder() {
         @Override
         public DB2XMLSchema findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
@@ -308,14 +309,14 @@ public enum DB2ObjectType implements DBSObjectType {
     private final static Log LOG = Log.getLog(DB2ObjectType.class);
     private final static String SPLIT_DOT = "\\.";
 
-    private final Image image;
+    private final DBPImage image;
     private final Class<? extends DBSObject> typeClass;
     private final ObjectFinder finder;
 
     // -----------
     // Constructor
     // -----------
-    <OBJECT_TYPE extends DBSObject> DB2ObjectType(Image image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder)
+    <OBJECT_TYPE extends DBSObject> DB2ObjectType(DBPImage image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder)
     {
         this.image = image;
         this.typeClass = typeClass;
@@ -380,7 +381,7 @@ public enum DB2ObjectType implements DBSObjectType {
     }
 
     @Override
-    public Image getImage()
+    public DBPImage getImage()
     {
         return image;
     }

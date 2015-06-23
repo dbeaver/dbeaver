@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
@@ -89,7 +90,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     @Override
     public ImageDescriptor getImageDescriptor()
     {
-        return DBIcon.TYPE_LOB.getImageDescriptor();
+        return DBeaverIcons.getImageDescriptor(DBIcon.TYPE_LOB);
     }
 
     @Override

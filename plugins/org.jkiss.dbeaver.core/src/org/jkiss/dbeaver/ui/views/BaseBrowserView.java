@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.ui.views;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -30,7 +29,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.ViewPart;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 
 /**
@@ -45,28 +46,28 @@ public class BaseBrowserView extends ViewPart {
     private Browser browser;
     private String initialUrl;
 
-    private Action backAction = new Action("Back", DBIcon.ARROW_LEFT.getImageDescriptor()) {
+    private Action backAction = new Action("Back", DBeaverIcons.getImageDescriptor(DBIcon.ARROW_LEFT)) {
         @Override
         public void run() {
             browser.back();
         }
     };
 
-    private Action forwardAction = new Action("Forward", DBIcon.ARROW_RIGHT.getImageDescriptor()) {
+    private Action forwardAction = new Action("Forward", DBeaverIcons.getImageDescriptor(DBIcon.ARROW_RIGHT)) {
         @Override
         public void run() {
             browser.forward();
         }
     };
 
-    private Action stopAction = new Action("Stop", DBIcon.REJECT.getImageDescriptor()) {
+    private Action stopAction = new Action("Stop", DBeaverIcons.getImageDescriptor(DBIcon.REJECT)) {
         @Override
         public void run() {
             browser.stop();
         }
     };
 
-    private Action refreshAction = new Action("Refresh", DBIcon.REFRESH.getImageDescriptor()) {
+    private Action refreshAction = new Action("Refresh", DBeaverIcons.getImageDescriptor(DBIcon.REFRESH)) {
         @Override
         public void run() {
             browser.refresh();

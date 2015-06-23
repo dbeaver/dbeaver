@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -92,7 +93,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
         {
             super(
                 kill ? OracleMessages.editors_oracle_session_editor_title_kill_session : OracleMessages.editors_oracle_session_editor_title_disconnect_session,
-                kill ? DBIcon.REJECT.getImageDescriptor() : DBIcon.SQL_DISCONNECT.getImageDescriptor());
+                DBeaverIcons.getImageDescriptor(kill ? DBIcon.REJECT : DBIcon.SQL_DISCONNECT));
             this.kill = kill;
         }
 

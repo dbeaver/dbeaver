@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
@@ -61,6 +60,7 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
@@ -73,17 +73,12 @@ import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ui.ISearchExecutor;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.ImageUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -551,7 +546,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         {
             // a group of default control tools
-            PaletteDrawer controls = new PaletteDrawer("Tools", DBIcon.CONFIGURATION.getImageDescriptor());
+            PaletteDrawer controls = new PaletteDrawer("Tools", DBeaverIcons.getImageDescriptor(DBIcon.CONFIGURATION));
 
             paletteRoot.add(controls);
 
@@ -911,12 +906,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         getSite(),
                         IWorkbenchCommandConstants.FILE_SAVE_AS,
                         "Save diagram as image",
-                        DBIcon.PICTURE_SAVE.getImageDescriptor()));
+                        DBIcon.PICTURE_SAVE));
                 toolBarManager.add(ActionUtils.makeCommandContribution(
                         getSite(),
                         IWorkbenchCommandConstants.FILE_PRINT,
                         "Print Diagram",
-                        PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ETOOL_PRINT_EDIT)));
+                        DBIcon.PRINT));
             }
             {
                 Action configAction = new Action("Configuration") {
@@ -929,7 +924,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                             ERDPreferencePage.PAGE_ID);
                     }
                 };
-                configAction.setImageDescriptor(DBIcon.CONFIGURATION.getImageDescriptor());
+                configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.CONFIGURATION));
                 toolBarManager.add(configAction);
             }
         }

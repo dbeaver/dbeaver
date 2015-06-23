@@ -18,15 +18,12 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -37,9 +34,8 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -1170,14 +1166,14 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static Image getTypeImage(DBSTypedObject column)
+    public static DBPImage getTypeImage(DBSTypedObject column)
     {
-        Image image = null;
+        DBPImage image = null;
         if (column instanceof DBPImageProvider) {
             image = ((DBPImageProvider)column).getObjectImage();
         }
         if (image == null) {
-            image = DBIcon.TREE_COLUMN.getImage();
+            image = DBIcon.TREE_COLUMN;
         }
         return image;
     }
@@ -1204,24 +1200,6 @@ public final class DBUtils {
             }
         }
         return null;
-    }
-
-    public static boolean showDatabaseError(Shell shell, String title, String message, DBException error)
-    {
-        DBPDataSource dataSource = error.getDataSource();
-        if (dataSource instanceof DBPErrorAssistant) {
-            DBPErrorAssistant.ErrorType errorType = ((DBPErrorAssistant) dataSource).discoverErrorType(error);
-            switch (errorType) {
-                case CONNECTION_LOST:
-                    DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
-                    return true;
-                case DRIVER_CLASS_MISSING:
-                    DriverEditDialog.showBadConfigDialog(shell, message, error);
-                    return true;
-            }
-        }
-
-        return false;
     }
 
     public static void releaseValue(@Nullable Object value)

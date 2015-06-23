@@ -17,18 +17,14 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-import org.jkiss.dbeaver.model.DBIcon;
 
 /**
  * AbstractProcedure
@@ -114,11 +110,11 @@ public abstract class AbstractProcedure<
 
     @Nullable
     @Override
-    public Image getObjectImage() {
+    public DBPImage getObjectImage() {
         if (getProcedureType() == DBSProcedureType.FUNCTION) {
-            return DBIcon.TREE_FUNCTION.getImage();
+            return DBIcon.TREE_FUNCTION;
         } else {
-            return DBIcon.TREE_PROCEDURE.getImage();
+            return DBIcon.TREE_PROCEDURE;
         }
     }
 }

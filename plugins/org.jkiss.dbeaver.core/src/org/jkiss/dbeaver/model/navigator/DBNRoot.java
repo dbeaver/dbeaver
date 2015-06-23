@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -86,7 +86,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     }
 
     @Override
-    public Image getNodeIcon()
+    public DBPImage getNodeIcon()
     {
         return null;
     }

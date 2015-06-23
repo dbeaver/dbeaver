@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SimpleCommandContext;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 
@@ -86,7 +87,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public ImageDescriptor getImageDescriptor()
     {
-        return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+        return DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
     }
 
     @Override
@@ -124,7 +125,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
             return new WorkbenchAdapter() {
                 @Override
                 public ImageDescriptor getImageDescriptor(Object object) {
-                    return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+                    return DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
                 }
                 @Override
                 public String getLabel(Object o) {

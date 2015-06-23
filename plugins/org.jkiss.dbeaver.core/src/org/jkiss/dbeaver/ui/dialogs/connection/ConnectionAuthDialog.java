@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -40,7 +41,7 @@ public class ConnectionAuthDialog extends BaseAuthDialog
             networkHandler != null ?
                     NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
                     "'" + dataSource.getName() + CoreMessages.dialog_connection_auth_title, //$NON-NLS-1$
-            dataSource.getDriver().getIcon());
+            DBeaverIcons.getImage(dataSource.getDriver().getIcon()));
 
         this.dataSource = dataSource;
         this.networkHandler = networkHandler;

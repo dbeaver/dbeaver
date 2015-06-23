@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPClientManager;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -251,7 +252,7 @@ public class ClientHomesPanel extends Composite
         homeInfo.isDefault = home.getHomeId().equals(clientManager.getDefaultClientHomeId());
         TableItem homeItem = new TableItem(homesTable, SWT.NONE);
         homeItem.setText(home.getDisplayName());
-        homeItem.setImage(DBIcon.HOME.getImage());
+        homeItem.setImage(DBeaverIcons.getImage(DBIcon.HOME));
         homeItem.setData(homeInfo);
         if (!homeInfo.isProvided) {
             homeItem.setFont(fontItalic);

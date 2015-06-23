@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -101,12 +102,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
                 item.setText("% (All)"); //$NON-NLS-1$
-                item.setImage(DBIcon.TREE_DATABASE.getImage());
+                item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
             }
             for (MySQLCatalog catalog : getDatabaseObject().getDataSource().getCatalogs()) {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
                 item.setText(catalog.getName());
-                item.setImage(DBIcon.TREE_DATABASE.getImage());
+                item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
                 item.setData(catalog);
             }
             UIUtils.packColumns(catalogsTable);
@@ -387,12 +388,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     {
                         TableItem item = new TableItem(tablesTable, SWT.NONE);
                         item.setText("% (All)"); //$NON-NLS-1$
-                        item.setImage(DBIcon.TREE_TABLE.getImage());
+                        item.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
                     }
                     for (MySQLTableBase table : tables) {
                         TableItem item = new TableItem(tablesTable, SWT.NONE);
                         item.setText(table.getName());
-                        item.setImage(table.isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage());
+                        item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
                         item.setData(table);
                     }
                     highlightTables();

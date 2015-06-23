@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.ControlEnableState;
@@ -27,7 +26,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -37,9 +35,12 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
@@ -84,7 +85,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
         Shell shell = getShell();
 
         shell.setText(CoreMessages.dialog_search_objects_title);
-        shell.setImage(DBIcon.FIND.getImage());
+        shell.setImage(DBeaverIcons.getImage(DBIcon.FIND));
 
         shell.addShellListener(new ShellAdapter() {
             @Override
@@ -117,9 +118,9 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             item.setData("provider", provider);
             item.setData("page", searchPage);
             item.setText(provider.getLabel());
-            Image icon = provider.getIcon();
+            DBPImage icon = provider.getIcon();
             if (icon != null) {
-                item.setImage(icon);
+                item.setImage(DBeaverIcons.getImage(icon));
             }
             item.setControl(searchPage.getControl());
         }

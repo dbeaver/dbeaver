@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -38,9 +37,11 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.utils.CommonUtils;
@@ -139,7 +140,7 @@ class ScriptsExportWizardPage extends WizardPage {
             });
 
             Button openFolder = new Button(generalSettings, SWT.PUSH);
-            openFolder.setImage(DBIcon.TREE_FOLDER.getImage());
+            openFolder.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
             openFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)

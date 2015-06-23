@@ -19,9 +19,9 @@
 package org.jkiss.dbeaver.registry.tree;
 
 import org.apache.commons.jexl2.Expression;
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
@@ -32,10 +32,10 @@ public class DBXTreeIcon
     static final Log log = Log.getLog(DBXTreeIcon.class);
 
     private String exprString;
-    private Image icon;
+    private DBPImage icon;
     private Expression expression;
 
-    public DBXTreeIcon(String exprString, Image icon)
+    public DBXTreeIcon(String exprString, DBPImage icon)
     {
         this.exprString = exprString;
         this.icon = icon;
@@ -48,9 +48,6 @@ public class DBXTreeIcon
 
     public void dispose()
     {
-        if (icon != null) {
-            icon.dispose();
-        }
     }
 
     public String getExprString()
@@ -63,7 +60,7 @@ public class DBXTreeIcon
         return expression;
     }
 
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         return icon;
     }

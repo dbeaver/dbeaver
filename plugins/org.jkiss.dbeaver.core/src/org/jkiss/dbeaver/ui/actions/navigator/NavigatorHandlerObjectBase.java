@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SimpleCommandContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
@@ -208,8 +209,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
                 view.getSite(),
                 commandContext.getExecutionContext(),
                 dialogTitle,
-                DBIcon.SQL_PREVIEW.getImage(),
-                script.toString());
+                DBeaverIcons.getImage(DBIcon.SQL_PREVIEW),
+                    script.toString());
             dialog.setShowSaveButton(true);
             return dialog.open() == IDialogConstants.PROCEED_ID;
         } else {

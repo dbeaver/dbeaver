@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
@@ -102,7 +103,7 @@ class ScriptsImportWizardPage extends WizardPage {
             });
 
             Button openFolder = new Button(generalSettings, SWT.PUSH);
-            openFolder.setImage(DBIcon.TREE_FOLDER.getImage());
+            openFolder.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
             openFolder.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -132,7 +133,7 @@ class ScriptsImportWizardPage extends WizardPage {
             final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject());
             if (dataSourceRegistry != null) {
                 for (DataSourceDescriptor dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
-                    scriptsDataSources.add(dataSourceDescriptor.getObjectImage(), dataSourceDescriptor.getName(), null, dataSourceDescriptor);
+                    scriptsDataSources.add(DBeaverIcons.getImage(dataSourceDescriptor.getObjectImage()), dataSourceDescriptor.getName(), null, dataSourceDescriptor);
                 }
 			}
             if (scriptsDataSources.getItemCount() > 0) {

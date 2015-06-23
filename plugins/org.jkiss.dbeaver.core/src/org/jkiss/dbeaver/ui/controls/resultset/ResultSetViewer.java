@@ -53,10 +53,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
@@ -208,6 +205,7 @@ public class ResultSetViewer extends Viewer
         changeMode(false);
     }
 
+    @NotNull
     public IResultSetContainer getContainer() {
         return container;
     }
@@ -233,7 +231,7 @@ public class ResultSetViewer extends Viewer
         filtersPanel.setLayout(gl);
 
         Button sourceQueryButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        sourceQueryButton.setImage(DBIcon.SQL_TEXT.getImage());
+        sourceQueryButton.setImage(DBeaverIcons.getImage(DBIcon.SQL_TEXT));
         sourceQueryButton.setText("SQL");
         sourceQueryButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -243,7 +241,7 @@ public class ResultSetViewer extends Viewer
                 if (queryText == null || queryText.isEmpty()) {
                     queryText = "<empty>";
                 }
-                ViewSQLDialog dialog = new ViewSQLDialog(site, getExecutionContext(), "Query Text", DBIcon.SQL_TEXT.getImage(), queryText);
+                ViewSQLDialog dialog = new ViewSQLDialog(site, getExecutionContext(), "Query Text", DBeaverIcons.getImage(DBIcon.SQL_TEXT), queryText);
                 dialog.setEnlargeViewPanel(false);
                 dialog.setWordWrap(true);
                 dialog.open();
@@ -251,7 +249,7 @@ public class ResultSetViewer extends Viewer
         });
 
         Button customizeButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        customizeButton.setImage(DBIcon.FILTER.getImage());
+        customizeButton.setImage(DBeaverIcons.getImage(DBIcon.FILTER));
         customizeButton.setText("Filters");
         customizeButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -294,7 +292,7 @@ public class ResultSetViewer extends Viewer
         ToolBar filterToolbar = new ToolBar(filtersPanel, SWT.HORIZONTAL | SWT.RIGHT);
 
         filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersApplyButton.setImage(DBIcon.FILTER_APPLY.getImage());
+        filtersApplyButton.setImage(DBeaverIcons.getImage(DBIcon.FILTER_APPLY));
         //filtersApplyButton.setText("Apply");
         filtersApplyButton.setToolTipText("Apply filter criteria");
         filtersApplyButton.addSelectionListener(new SelectionAdapter() {
@@ -306,7 +304,7 @@ public class ResultSetViewer extends Viewer
         filtersApplyButton.setEnabled(false);
 
         filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersClearButton.setImage(DBIcon.FILTER_RESET.getImage());
+        filtersClearButton.setImage(DBeaverIcons.getImage(DBIcon.FILTER_RESET));
         filtersClearButton.setToolTipText("Remove all filters");
         filtersClearButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -317,12 +315,12 @@ public class ResultSetViewer extends Viewer
         filtersClearButton.setEnabled(false);
 
         historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
-        historyBackButton.setImage(DBIcon.RS_BACK.getImage());
+        historyBackButton.setImage(DBeaverIcons.getImage(DBIcon.RS_BACK));
         historyBackButton.setEnabled(false);
         historyBackButton.addSelectionListener(new HistoryMenuListener(historyBackButton, true));
 
         historyForwardButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
-        historyForwardButton.setImage(DBIcon.RS_FORWARD.getImage());
+        historyForwardButton.setImage(DBeaverIcons.getImage(DBIcon.RS_FORWARD));
         historyForwardButton.setEnabled(false);
         historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
 
@@ -565,7 +563,7 @@ public class ResultSetViewer extends Viewer
                     combo.setEnabled(true);
                     combo.removeAll();
                     for (ResultSetPresentationDescriptor pd : availablePresentations) {
-                        combo.add(pd.getIcon(), pd.getLabel(), null, pd);
+                        combo.add(DBeaverIcons.getImage(pd.getIcon()), pd.getLabel(), null, pd);
                     }
                     combo.select(activePresentationDescriptor);
                 }
@@ -798,7 +796,7 @@ public class ResultSetViewer extends Viewer
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
-        Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBIcon.RS_REFRESH.getImageDescriptor()) {
+        Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBeaverIcons.getImageDescriptor(DBIcon.RS_REFRESH)) {
             @Override
             public void run()
             {
@@ -808,7 +806,11 @@ public class ResultSetViewer extends Viewer
         toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
         // Link to standard Find/Replace action - it has to be handled by owner site
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, CommandContributionItem.STYLE_PUSH, DBIcon.FIND_TEXT.getImageDescriptor()));
+        toolBarManager.add(ActionUtils.makeCommandContribution(
+            site,
+            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
+            CommandContributionItem.STYLE_PUSH,
+            DBIcon.FIND_TEXT));
 
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
@@ -1228,7 +1230,7 @@ public class ResultSetViewer extends Viewer
             manager.add(new Separator());
             MenuManager filtersMenu = new MenuManager(
                 CoreMessages.controls_resultset_viewer_action_order_filter,
-                DBIcon.FILTER.getImageDescriptor(),
+                DBeaverIcons.getImageDescriptor(DBIcon.FILTER),
                 "filters"); //$NON-NLS-1$
             filtersMenu.setRemoveAllWhenShown(true);
             filtersMenu.addMenuListener(new IMenuListener() {
@@ -1243,7 +1245,7 @@ public class ResultSetViewer extends Viewer
         // Fill general menu
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null && model.hasData()) {
-            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
+            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBeaverIcons.getImageDescriptor(DBIcon.EXPORT)) {
                 @Override
                 public void run() {
                     ActiveWizardDialog dialog = new ActiveWizardDialog(
@@ -1994,7 +1996,7 @@ public class ResultSetViewer extends Viewer
         public ConfigAction()
         {
             super(CoreMessages.controls_resultset_viewer_action_options, IAction.AS_DROP_DOWN_MENU);
-            setImageDescriptor(DBIcon.CONFIGURATION.getImageDescriptor());
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.CONFIGURATION));
         }
 
         @Override
@@ -2083,7 +2085,7 @@ public class ResultSetViewer extends Viewer
     private class ShowFiltersAction extends Action {
         public ShowFiltersAction()
         {
-            super(CoreMessages.controls_resultset_viewer_action_order_filter, DBIcon.FILTER.getImageDescriptor());
+            super(CoreMessages.controls_resultset_viewer_action_order_filter, DBeaverIcons.getImageDescriptor(DBIcon.FILTER));
         }
 
         @Override
@@ -2122,7 +2124,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private enum FilterByAttributeType {
-        VALUE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
+        VALUE(DBIcon.FILTER_VALUE) {
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
             {
@@ -2138,7 +2140,7 @@ public class ResultSetViewer extends Viewer
                 return cellValue;
             }
         },
-        INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
+        INPUT(DBIcon.FILTER_INPUT) {
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
             {
@@ -2158,7 +2160,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
-        CLIPBOARD(DBIcon.FILTER_CLIPBOARD.getImageDescriptor()) {
+        CLIPBOARD(DBIcon.FILTER_CLIPBOARD) {
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
             {
@@ -2170,7 +2172,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
-        NONE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
+        NONE(DBIcon.FILTER_VALUE) {
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
             {
@@ -2180,9 +2182,9 @@ public class ResultSetViewer extends Viewer
 
         final ImageDescriptor icon;
 
-        private FilterByAttributeType(ImageDescriptor icon)
+        FilterByAttributeType(DBPImage icon)
         {
-            this.icon = icon;
+            this.icon = DBeaverIcons.getImageDescriptor(icon);
         }
         @Nullable
         abstract Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault);
@@ -2233,7 +2235,7 @@ public class ResultSetViewer extends Viewer
         private final DBDAttributeBinding attribute;
         public FilterResetAttributeAction(DBDAttributeBinding attribute)
         {
-            super("Remove filter for '" + attribute.getName() + "'", DBIcon.REVERT.getImageDescriptor());
+            super("Remove filter for '" + attribute.getName() + "'", DBeaverIcons.getImageDescriptor(DBIcon.REVERT));
             this.attribute = attribute;
         }
 
@@ -2360,7 +2362,7 @@ public class ResultSetViewer extends Viewer
 
         protected Control  createControl(Composite parent) {
             combo = new CImageCombo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            combo.add(DBIcon.TYPE_UNKNOWN.getImage(), "", null, null);
+            combo.add(DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN), "", null, null);
             toolitem.setWidth(100);
             combo.addSelectionListener(this);
             combo.setToolTipText(ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_SWITCH_PRESENTATION, getSite(), false));

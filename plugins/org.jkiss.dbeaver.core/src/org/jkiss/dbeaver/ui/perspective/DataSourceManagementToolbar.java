@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
@@ -339,7 +340,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         try {
             if (update) {
                 connectionCombo.removeAll();
-                connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null, null);
+                connectionCombo.add(DBeaverIcons.getImage(DBIcon.TREE_DATABASE), EMPTY_SELECTION_TEXT, null, null);
             }
 
             int selectionIndex = 0;
@@ -355,7 +356,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                         if (update) {
                             DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(ds);
                             connectionCombo.add(
-                                dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
+                                DBeaverIcons.getImage(dsNode == null ? DBIcon.TREE_DATABASE : dsNode.getNodeIconDefault()),
                                 ds.getName(),
                                 UIUtils.getConnectionColor(ds.getConnectionInfo()),
                                 ds);
@@ -525,7 +526,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             DBPDataSource dataSource = database.getDataSource();
                             if (dataSource != null) {
                                 databaseCombo.add(
-                                    dbNode.getNodeIconDefault(),
+                                    DBeaverIcons.getImage(dbNode.getNodeIconDefault()),
                                     database.getName(),
                                     UIUtils.getConnectionColor(dataSource.getContainer().getConnectionInfo()),
                                     database);
@@ -748,7 +749,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.setVisibleItemCount(15);
         connectionCombo.setWidthHint(160);
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
-        connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null, null);
+        connectionCombo.add(DBeaverIcons.getImage(DBIcon.TREE_DATABASE), EMPTY_SELECTION_TEXT, null, null);
         connectionCombo.select(0);
         connectionCombo.addSelectionListener(new SelectionListener()
         {
@@ -773,7 +774,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         databaseCombo.setVisibleItemCount(15);
         databaseCombo.setWidthHint(140);
         databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
-        databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null, null);
+        databaseCombo.add(DBeaverIcons.getImage(DBIcon.TREE_DATABASE), EMPTY_SELECTION_TEXT, null, null);
         databaseCombo.select(0);
         databaseCombo.addSelectionListener(new SelectionListener() {
             @Override

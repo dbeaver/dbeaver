@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -174,7 +175,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
         // Set tool tip
         Label toolTip = new Label(getAssociation().getObject().getName() + " [" + getAssociation().getObject().getConstraintType().getName() + "]");
-        toolTip.setIcon(DBIcon.TREE_FOREIGN_KEY.getImage());
+        toolTip.setIcon(DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         //toolTip.setTextPlacement(PositionConstants.SOUTH);
         //toolTip.setIconTextGap();
         conn.setToolTip(toolTip);

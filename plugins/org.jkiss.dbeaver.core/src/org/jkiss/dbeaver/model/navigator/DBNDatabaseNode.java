@@ -18,13 +18,10 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.Status;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -103,9 +100,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     }
 
     @Override
-    public Image getNodeIcon()
+    public DBPImage getNodeIcon()
     {
-        Image image = null;
+        DBPImage image = null;
         final DBSObject object = getObject();
         if (object instanceof DBPImageProvider) {
             image = ((DBPImageProvider) object).getObjectImage();

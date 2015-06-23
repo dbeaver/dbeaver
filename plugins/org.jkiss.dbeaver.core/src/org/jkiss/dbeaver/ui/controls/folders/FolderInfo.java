@@ -29,7 +29,7 @@
 
 package org.jkiss.dbeaver.ui.controls.folders;
 
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * Folder info
@@ -38,12 +38,12 @@ public class FolderInfo {
 
     private final String id;
     private final String text;
-    private final Image image;
+    private final DBPImage image;
     private final String tooltip;
     private final boolean embeddable;
     private final IFolder contents;
 
-    public FolderInfo(String id, String text, Image image, String tooltip, boolean embeddable, IFolder contents) {
+    public FolderInfo(String id, String text, DBPImage image, String tooltip, boolean embeddable, IFolder contents) {
         this.id = id;
         this.text = text;
         this.image = image;
@@ -60,7 +60,7 @@ public class FolderInfo {
         return text;
     }
 
-    public Image getImage() {
+    public DBPImage getImage() {
         return image;
     }
 

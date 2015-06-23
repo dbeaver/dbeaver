@@ -17,28 +17,16 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
-
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
 
 /**
  * JDBC abstract column
  */
 public abstract class JDBCColumn extends AbstractAttribute implements DBSObject, DBPImageProvider {
-
-    private static final Map<Image, Map<JDBCColumnKeyType, Image>> overlayCache = new IdentityHashMap<Image, Map<JDBCColumnKeyType, Image>>();
 
     protected JDBCColumn()
     {
@@ -52,9 +40,9 @@ public abstract class JDBCColumn extends AbstractAttribute implements DBSObject,
 
     @Nullable
     @Override
-    public Image getObjectImage()
+    public DBPImage getObjectImage()
     {
-        Image columnImage = DBUtils.getDataIcon(this).getImage();
+        DBPImage columnImage = DBUtils.getDataIcon(this);
         JDBCColumnKeyType keyType = getKeyType();
         if (keyType != null) {
             columnImage = getOverlayImage(columnImage, keyType);
@@ -74,36 +62,21 @@ public abstract class JDBCColumn extends AbstractAttribute implements DBSObject,
         return JDBCUtils.resolveDataKind(getDataSource(), typeName, valueType);
     }
 
-    protected static Image getOverlayImage(Image columnImage, JDBCColumnKeyType keyType)
+    protected static DBPImage getOverlayImage(DBPImage columnImage, JDBCColumnKeyType keyType)
     {
         if (keyType == null || !(keyType.isInUniqueKey() || keyType.isInReferenceKey())) {
             return columnImage;
         }
-        synchronized (overlayCache) {
-            Map<JDBCColumnKeyType, Image> keyTypeImageMap = overlayCache.get(columnImage);
-            if (keyTypeImageMap == null) {
-                keyTypeImageMap = new HashMap<JDBCColumnKeyType, Image>();
-                overlayCache.put(columnImage, keyTypeImageMap);
-            }
-            Image finalImage = keyTypeImageMap.get(keyType);
-            if (finalImage == null) {
-                OverlayImageDescriptor overlay = new OverlayImageDescriptor(columnImage.getImageData());
-                ImageDescriptor overImage = null;
-                if (keyType.isInUniqueKey()) {
-                    overImage = DBIcon.OVER_KEY.getImageDescriptor();
-                } else if (keyType.isInReferenceKey()) {
-                    overImage = DBIcon.OVER_REFERENCE.getImageDescriptor();
-                }
-                if (overImage == null) {
-                    return columnImage;
-                }
-                overlay.setBottomRight(new ImageDescriptor[] {overImage} );
-                finalImage = overlay.createImage();
-                keyTypeImageMap.put(keyType, finalImage);
-            }
-
-            return finalImage;
+        DBPImage overImage = null;
+        if (keyType.isInUniqueKey()) {
+            overImage = DBIcon.OVER_KEY;
+        } else if (keyType.isInReferenceKey()) {
+            overImage = DBIcon.OVER_REFERENCE;
         }
+        if (overImage == null) {
+            return columnImage;
+        }
+        return new DBIconComposite(columnImage, false, null, null, null, overImage);
     }
 
 }

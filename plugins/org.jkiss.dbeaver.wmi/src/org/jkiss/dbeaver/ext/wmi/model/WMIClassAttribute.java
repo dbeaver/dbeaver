@@ -17,14 +17,14 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIException;
@@ -122,12 +122,12 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
 
     @Nullable
     @Override
-    public Image getObjectImage()
+    public DBPImage getObjectImage()
     {
         return getPropertyImage(element.getType());
     }
 
-    public static Image getPropertyImage(int type)
+    public static DBPImage getPropertyImage(int type)
     {
         switch (type) {
             case WMIConstants.CIM_SINT8:
@@ -140,16 +140,16 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
             case WMIConstants.CIM_UINT64:
             case WMIConstants.CIM_REAL32:
             case WMIConstants.CIM_REAL64:
-                return DBIcon.TYPE_NUMBER.getImage();
+                return DBIcon.TYPE_NUMBER;
             case WMIConstants.CIM_BOOLEAN:
-                return DBIcon.TYPE_BOOLEAN.getImage();
+                return DBIcon.TYPE_BOOLEAN;
             case WMIConstants.CIM_STRING:
             case WMIConstants.CIM_CHAR16:
-                return DBIcon.TYPE_STRING.getImage();
+                return DBIcon.TYPE_STRING;
             case WMIConstants.CIM_DATETIME:
-                return DBIcon.TYPE_DATETIME.getImage();
+                return DBIcon.TYPE_DATETIME;
             default:
-                return DBIcon.TYPE_UNKNOWN.getImage();
+                return DBIcon.TYPE_UNKNOWN;
         }
     }
 

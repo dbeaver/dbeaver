@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -95,33 +96,33 @@ public class PairListControl<ELEMENT> extends Composite
             GridLayout gl = new GridLayout(1, false);
             buttonsPane.setLayout(gl);
 
-            final Button btnMoveRight = createButton(buttonsPane, DBIcon.ARROW_RIGHT.getImage(), new SelectionAdapter() {
+            final Button btnMoveRight = createButton(buttonsPane, DBeaverIcons.getImage(DBIcon.ARROW_RIGHT), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     moveElements(true);
                 }
             });
-            final Button btnMoveRightAll = createButton(buttonsPane, DBIcon.ARROW_RIGHT_ALL.getImage(), new SelectionAdapter() {
+            final Button btnMoveRightAll = createButton(buttonsPane, DBeaverIcons.getImage(DBIcon.ARROW_RIGHT_ALL), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     leftList.selectAll();
                     moveElements(true);
                 }
             });
-            final Button btnMoveLeft = createButton(buttonsPane, DBIcon.ARROW_LEFT.getImage(), new SelectionAdapter() {
+            final Button btnMoveLeft = createButton(buttonsPane, DBeaverIcons.getImage(DBIcon.ARROW_LEFT), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     moveElements(false);
                 }
             });
-            final Button btnMoveLeftAll = createButton(buttonsPane, DBIcon.ARROW_LEFT_ALL.getImage(), new SelectionAdapter() {
+            final Button btnMoveLeftAll = createButton(buttonsPane, DBeaverIcons.getImage(DBIcon.ARROW_LEFT_ALL), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     rightList.selectAll();
                     moveElements(false);
                 }
             });
-            createButton(buttonsPane, DBIcon.ARROW_RESET.getImage(), new SelectionAdapter() {
+            createButton(buttonsPane, DBeaverIcons.getImage(DBIcon.ARROW_RESET), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     setListData(leftList, leftElements);

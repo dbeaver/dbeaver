@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
 
@@ -104,8 +103,6 @@ public class DBeaverUI {
 
     private void initialize()
     {
-        DBeaverIcons.getPredefinedImages();
-
         this.sharedTextColors = new SharedTextColors();
 
         this.trayItem = new TrayIconHandler();

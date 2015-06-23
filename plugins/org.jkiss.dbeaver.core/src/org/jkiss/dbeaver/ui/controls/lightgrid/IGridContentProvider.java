@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 
 public interface IGridContentProvider extends IContentProvider {
 
@@ -53,7 +54,7 @@ public interface IGridContentProvider extends IContentProvider {
     String getCellText(Object colElement, Object rowElement);
 
     @Nullable
-    Image getCellImage(Object colElement, Object rowElement);
+    DBPImage getCellImage(Object colElement, Object rowElement);
 
     @Nullable
     Color getCellForeground(Object colElement, Object rowElement);

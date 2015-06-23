@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.ProgramInfo;
 
 /**
  * Default resource handler
@@ -45,7 +46,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     @Override
     public String getTypeName(IResource resource)
     {
-        final RuntimeUtils.ProgramInfo program = RuntimeUtils.getProgram(resource);
+        final ProgramInfo program = ProgramInfo.getProgram(resource);
         if (program != null) {
             return program.getProgram().getName();
         }
@@ -62,7 +63,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
     {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
-        RuntimeUtils.ProgramInfo program = RuntimeUtils.getProgram(resource);
+        ProgramInfo program = ProgramInfo.getProgram(resource);
         if (program != null && program.getImage() != null) {
             node.setResourceImage(program.getImage());
         }

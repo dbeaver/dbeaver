@@ -20,15 +20,15 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -41,7 +41,7 @@ public class DBNResource extends DBNNode
     private IResource resource;
     private DBPResourceHandler handler;
     private List<DBNNode> children;
-    private Image resourceImage;
+    private DBPImage resourceImage;
 
     public DBNResource(DBNNode parentNode, IResource resource, DBPResourceHandler handler)
     {
@@ -101,7 +101,7 @@ public class DBNResource extends DBNNode
     }
 
     @Override
-    public Image getNodeIcon()
+    public DBPImage getNodeIcon()
     {
         if (resourceImage != null) {
             return resourceImage;
@@ -116,9 +116,9 @@ public class DBNResource extends DBNNode
             return null;
         }
         switch (resource.getType()) {
-            case IResource.FOLDER: return resource.isLinked() ? DBIcon.TREE_FOLDER_LINK.getImage() : DBIcon.TREE_FOLDER.getImage();
-            case IResource.PROJECT: return DBIcon.PROJECT.getImage();
-            default: return DBIcon.TREE_PAGE.getImage();
+            case IResource.FOLDER: return resource.isLinked() ? DBIcon.TREE_FOLDER_LINK : DBIcon.TREE_FOLDER;
+            case IResource.PROJECT: return DBIcon.PROJECT;
+            default: return DBIcon.TREE_PAGE;
         }
     }
 
@@ -321,7 +321,7 @@ public class DBNResource extends DBNNode
         });
     }
 
-    public void setResourceImage(Image resourceImage)
+    public void setResourceImage(DBPImage resourceImage)
     {
         this.resourceImage = resourceImage;
     }

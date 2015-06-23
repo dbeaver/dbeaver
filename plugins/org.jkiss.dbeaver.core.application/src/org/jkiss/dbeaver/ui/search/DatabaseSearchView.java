@@ -12,13 +12,9 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.INavigatorModelView;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.ProxyPageSite;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DatabaseSearchView extends ViewPart implements INavigatorModelView {
     public static final String VIEW_ID = "org.jkiss.dbeaver.ui.search.DatabaseSearchView";
@@ -91,7 +87,7 @@ public class DatabaseSearchView extends ViewPart implements INavigatorModelView 
         tabItem.setData(resultPage);
         tabItem.setControl(resultPage.getControl());
         tabItem.setText(query.getLabel());
-        tabItem.setImage(provider.getIcon());
+        tabItem.setImage(DBeaverIcons.getImage(provider.getIcon()));
         tabItem.setToolTipText(provider.getDescription());
         tabItem.setShowClose(true);
         resultsFolder.setSelection(tabItem);

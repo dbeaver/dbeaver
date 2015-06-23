@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -54,7 +55,7 @@ public abstract class BaseValueEditor<T extends Control> implements DBDValueEdit
         if (editToolBar != null) {
             editToolBar.add(new Separator());
             if (!valueController.isReadOnly()) {
-                editToolBar.add(new Action("Apply changes", DBIcon.CONFIRM.getImageDescriptor()) {
+                editToolBar.add(new Action("Apply changes", DBeaverIcons.getImageDescriptor(DBIcon.CONFIRM)) {
                     @Override
                     public void run() {
                         saveValue();

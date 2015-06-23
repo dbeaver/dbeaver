@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
@@ -134,7 +135,7 @@ public class TextViewDialog extends ValueViewDialog {
             if (useHex) {
                 CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
                 item.setText("Text");
-                item.setImage(DBIcon.TYPE_TEXT.getImage());
+                item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_TEXT));
                 item.setControl(textEdit);
             }
         }
@@ -150,7 +151,7 @@ public class TextViewDialog extends ValueViewDialog {
             minSize.y += 50;
             CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
             item.setText("Hex");
-            item.setImage(DBIcon.TYPE_BINARY.getImage());
+            item.setImage(DBeaverIcons.getImage(DBIcon.TYPE_BINARY));
             item.setControl(hexEditControl);
 
             if (selectedType >= editorContainer.getItemCount()) {

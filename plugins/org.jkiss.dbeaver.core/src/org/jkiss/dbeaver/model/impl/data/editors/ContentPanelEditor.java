@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
@@ -189,7 +190,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDV
             } else {
                 final HexEditControl hexEditor = new HexEditControl(editPlaceholder, SWT.BORDER);
                 if (editBar != null) {
-                    editBar.add(new Action("Switch Insert/Overwrite mode", DBIcon.CURSOR.getImageDescriptor()) {
+                    editBar.add(new Action("Switch Insert/Overwrite mode", DBeaverIcons.getImageDescriptor(DBIcon.CURSOR)) {
                         @Override
                         public void run() {
                             hexEditor.redrawCaret(true);

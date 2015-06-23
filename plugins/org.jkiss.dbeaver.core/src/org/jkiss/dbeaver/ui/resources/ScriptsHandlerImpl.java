@@ -164,10 +164,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
         if (resource instanceof IFolder) {
             if (resource.getParent() instanceof IProject) {
-                node.setResourceImage(DBIcon.SCRIPTS.getImage());
+                node.setResourceImage(DBIcon.SCRIPTS);
             }
         } else {
-            node.setResourceImage(DBIcon.SQL_SCRIPT.getImage());
+            node.setResourceImage(DBIcon.SQL_SCRIPT);
         }
         return node;
     }

@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 
 /**
@@ -51,7 +52,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
         Control contents = super.createContents(parent);
         DataSourceDescriptor activeDataSource = getWizard().getPageSettings().getActiveDataSource();
         getShell().setText("Connection '" + activeDataSource.getName() + "' configuration");
-        getShell().setImage(activeDataSource.getObjectImage());
+        getShell().setImage(DBeaverIcons.getImage(activeDataSource.getObjectImage()));
         return contents;
     }
 

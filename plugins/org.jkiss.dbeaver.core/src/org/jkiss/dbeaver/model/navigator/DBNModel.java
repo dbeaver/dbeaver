@@ -17,18 +17,18 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIconComposite;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -36,12 +36,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DBNModel.
@@ -54,10 +55,6 @@ import java.util.*;
  */
 public class DBNModel implements IResourceChangeListener {
     static final Log log = Log.getLog(DBNModel.class);
-
-    private static Map<Image, Map<DBSObjectState, Image>> overlayStateImageCache = new IdentityHashMap<Image, Map<DBSObjectState, Image>>();
-    private static Map<Image, Image> overlayLockImageCache = new IdentityHashMap<Image, Image>();
-    private static Map<Image, Image> overlayNetworkImageCache = new IdentityHashMap<Image, Image>();
 
     private DBNRoot root;
     private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
@@ -119,25 +116,6 @@ public class DBNModel implements IResourceChangeListener {
             this.listenersCopy = null;
         }
         this.root = null;
-
-        synchronized (DBNModel.class) {
-            // Clear images cache
-            for (Map<DBSObjectState, Image> state : overlayStateImageCache.values()) {
-                for (Image img : state.values()) {
-                    img.dispose();
-                }
-            }
-            overlayStateImageCache.clear();
-
-            for (Image img : overlayLockImageCache.values()) {
-                img.dispose();
-            }
-            overlayLockImageCache.clear();
-            for (Image img : overlayNetworkImageCache.values()) {
-                img.dispose();
-            }
-            overlayNetworkImageCache.clear();
-        }
     }
 
     public DBNRoot getRoot()
@@ -510,56 +488,22 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
-    public static synchronized Image getStateOverlayImage(Image image, DBSObjectState state)
+    public static synchronized DBPImage getStateOverlayImage(DBPImage image, DBSObjectState state)
     {
         if (state == null) {
             // Empty state
             return image;
         }
-        final ImageDescriptor overlayImage = state.getOverlayImage();
+        final DBPImage overlayImage = state.getOverlayImage();
         if (overlayImage == null) {
             // No overlay
             return image;
         }
-        Map<DBSObjectState, Image> stateOverlays = overlayStateImageCache.get(image);
-        if (stateOverlays == null) {
-            stateOverlays = new IdentityHashMap<DBSObjectState, Image>();
-            overlayStateImageCache.put(image, stateOverlays);
+        if (image instanceof DBIconComposite) {
+            ((DBIconComposite) image).setBottomRight(overlayImage);
+            return image;
         }
-        Image result = stateOverlays.get(state);
-        if (result == null) {
-            OverlayImageDescriptor oid = new OverlayImageDescriptor(image.getImageData());
-            oid.setBottomRight(new ImageDescriptor[] {overlayImage} );
-            result = oid.createImage();
-            stateOverlays.put(state, result);
-        }
-        return result;
-    }
-
-    public static synchronized Image getLockedOverlayImage(Image image)
-    {
-        final ImageDescriptor overlayImage = DBIcon.OVER_LOCK.getImageDescriptor();
-        Image result = overlayLockImageCache.get(image);
-        if (result == null) {
-            OverlayImageDescriptor oid = new OverlayImageDescriptor(image.getImageData());
-            oid.setBottomLeft(new ImageDescriptor[]{overlayImage});
-            result = oid.createImage();
-            overlayLockImageCache.put(image, result);
-        }
-        return result;
-    }
-
-    public static synchronized Image getNetworkOverlayImage(Image image)
-    {
-        final ImageDescriptor overlayImage = DBIcon.OVER_EXTERNAL.getImageDescriptor();
-        Image result = overlayNetworkImageCache.get(image);
-        if (result == null) {
-            OverlayImageDescriptor oid = new OverlayImageDescriptor(image.getImageData());
-            oid.setTopRight(new ImageDescriptor[]{overlayImage});
-            result = oid.createImage();
-            overlayNetworkImageCache.put(image, result);
-        }
-        return result;
+        return new DBIconComposite(image, false, null, null, null, overlayImage);
     }
 
     private static ProjectRegistry getProjectRegistry() {

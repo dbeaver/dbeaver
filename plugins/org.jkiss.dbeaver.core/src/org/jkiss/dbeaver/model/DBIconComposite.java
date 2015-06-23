@@ -21,13 +21,13 @@ package org.jkiss.dbeaver.model;
 /**
  * Image with overlays
  */
-public class DBIconCustom implements DBPImage
+public class DBIconComposite implements DBPImage
 {
     private final DBPImage main;
     private final boolean disabled;
-    private final DBPImage topLeft, topRight, bottomLeft, bottomRight;
+    private DBPImage topLeft, topRight, bottomLeft, bottomRight;
 
-    public DBIconCustom(DBPImage main, boolean disabled, DBPImage topLeft, DBPImage topRight, DBPImage bottomLeft, DBPImage bottomRight) {
+    public DBIconComposite(DBPImage main, boolean disabled, DBPImage topLeft, DBPImage topRight, DBPImage bottomLeft, DBPImage bottomRight) {
         this.main = main;
         this.disabled = disabled;
         this.topLeft = topLeft;
@@ -40,20 +40,40 @@ public class DBIconCustom implements DBPImage
         return disabled;
     }
 
+    public boolean hasOverlays() {
+        return topLeft != null || topRight != null || bottomLeft != null || bottomRight != null;
+    }
+
     public DBPImage getTopLeft() {
         return topLeft;
+    }
+
+    public void setTopLeft(DBPImage topLeft) {
+        this.topLeft = topLeft;
     }
 
     public DBPImage getTopRight() {
         return topRight;
     }
 
+    public void setTopRight(DBPImage topRight) {
+        this.topRight = topRight;
+    }
+
     public DBPImage getBottomLeft() {
         return bottomLeft;
     }
 
+    public void setBottomLeft(DBPImage bottomLeft) {
+        this.bottomLeft = bottomLeft;
+    }
+
     public DBPImage getBottomRight() {
         return bottomRight;
+    }
+
+    public void setBottomRight(DBPImage bottomRight) {
+        this.bottomRight = bottomRight;
     }
 
     @Override

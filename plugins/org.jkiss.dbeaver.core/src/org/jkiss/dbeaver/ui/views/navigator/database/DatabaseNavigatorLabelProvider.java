@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -97,7 +98,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
             return ((ILabelProvider)obj).getImage(obj);
         }
         if (obj instanceof DBNNode) {
-            return ((DBNNode)obj).getNodeIconDefault();
+            return DBeaverIcons.getImage(((DBNNode) obj).getNodeIconDefault());
         } else {
             return null;
         }
