@@ -365,17 +365,13 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     @Override
     public IAdaptable getElement()
     {
-        return selectedType;
+        return null;
     }
 
     @Override
     public void setElement(IAdaptable element)
     {
-        if (element instanceof DBPConnectionType) {
-            selectedType = (DBPConnectionType) element;
-        } else {
-            selectedType = null;
-        }
+        selectedType = (DBPConnectionType) element.getAdapter(DBPConnectionType.class);
     }
 
 }
