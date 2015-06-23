@@ -18,14 +18,14 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * Value annotation
  */
 public interface DBDValueAnnotation {
 
-    Image getImage();
+    DBPImage getImage();
 
     String getToolTip();
 }

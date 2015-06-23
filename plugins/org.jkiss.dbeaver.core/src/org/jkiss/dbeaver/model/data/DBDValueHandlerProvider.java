@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;

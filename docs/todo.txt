@@ -1,14 +1,8 @@
 Data transfer DECIMAL(x,y) types convert.
-Extract non-visual part to a separate plugin
+Extract non-visual part to a separate plugin (preferences + editors)
 RSV find/replace action
 Vertica keywords
 
-Make IDataSourceProvider -> IDatabaseContextProvider
-Connection per editor support. Host ExecutionContext in editors instead of DataSource.
-InvalidateContext -> InvalidateDataSource ??
-
-Fix product title (now Enterprise)
-Fix UI freeze in Mongo connection page
 Analyse exception for error line/offset and position cursor in SQL editor
 ERD export in XMI/GraphML formats
 
