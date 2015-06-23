@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -74,9 +73,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
     }
 
     @Override
-    public final OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
+    public final OBJECT_TYPE createNewObject(DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
-        OBJECT_TYPE newObject = createDatabaseObject(workbenchWindow, commandContext, parent, copyFrom);
+        OBJECT_TYPE newObject = createDatabaseObject(commandContext, parent, copyFrom);
         if (newObject == null) {
             return null;
         }
@@ -103,7 +102,6 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
     }
 
     protected abstract OBJECT_TYPE createDatabaseObject(
-        IWorkbenchWindow workbenchWindow,
         DBECommandContext context,
         CONTAINER_TYPE parent,
         Object copyFrom);

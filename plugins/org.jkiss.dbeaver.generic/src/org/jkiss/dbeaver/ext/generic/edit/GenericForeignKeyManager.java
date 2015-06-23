@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -44,10 +44,10 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
     }
 
     @Override
-    protected GenericTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, GenericTable table, Object from)
+    protected GenericTableForeignKey createDatabaseObject(DBECommandContext context, GenericTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-            workbenchWindow.getShell(),
+            DBeaverUI.getActiveWorkbenchShell(),
             "Create foreign key",
             table,
             new DBSForeignKeyModifyRule[] {

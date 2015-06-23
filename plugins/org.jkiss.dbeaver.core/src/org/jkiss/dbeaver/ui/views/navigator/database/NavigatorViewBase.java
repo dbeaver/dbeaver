@@ -144,7 +144,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                             NavigatorViewBase.DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
                         switch (doubleClickBehavior) {
                             case EDIT:
-                                dataSource.editObject(getSite().getWorkbenchWindow());
+                                dataSource.editObject();
                                 break;
                             case CONNECT:
                                 if (dataSource.isConnected()) {

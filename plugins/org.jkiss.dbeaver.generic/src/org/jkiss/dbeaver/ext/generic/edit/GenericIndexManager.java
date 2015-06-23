@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
@@ -50,12 +50,11 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
 
     @Override
     protected GenericTableIndex createDatabaseObject(
-        IWorkbenchWindow workbenchWindow,
         DBECommandContext context, GenericTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(
-            workbenchWindow.getShell(),
+            DBeaverUI.getActiveWorkbenchShell(),
             "Create index",
             parent,
             Collections.singletonList(DBSIndexType.OTHER));

@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -67,7 +66,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     }
 
     @Override
-    protected OracleView createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleView createDatabaseObject(DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         OracleView newView = new OracleView(parent, "NewView"); //$NON-NLS-1$
         return newView;

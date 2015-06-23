@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -98,14 +97,14 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(final IResource resource, final IWorkbenchWindow window) throws CoreException, DBException
+    public void openResource(final IResource resource) throws CoreException, DBException
     {
         if (!(resource instanceof IFile)) {
             return;
         }
 
         ERDEditorInput erdInput = new ERDEditorInput((IFile)resource);
-        window.getActivePage().openEditor(
+        DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
             erdInput,
             ERDEditorStandalone.class.getName());
     }

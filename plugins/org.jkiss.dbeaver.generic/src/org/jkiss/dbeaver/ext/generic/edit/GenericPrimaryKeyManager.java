@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -45,12 +45,11 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
 
     @Override
     protected GenericPrimaryKey createDatabaseObject(
-        IWorkbenchWindow workbenchWindow,
         DBECommandContext context, GenericTable parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(
-            workbenchWindow.getShell(),
+            DBeaverUI.getActiveWorkbenchShell(),
             "Create constraint",
             parent,
             new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY} );

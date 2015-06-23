@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -46,10 +46,10 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
     }
 
     @Override
-    protected OracleTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleTableBase table, Object from)
+    protected OracleTableForeignKey createDatabaseObject(DBECommandContext context, OracleTableBase table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-            workbenchWindow.getShell(),
+            DBeaverUI.getActiveWorkbenchShell(),
             OracleMessages.edit_oracle_foreign_key_manager_dialog_title,
             table,
             new DBSForeignKeyModifyRule[] {

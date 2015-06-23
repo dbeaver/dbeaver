@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -45,10 +45,10 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
     }
 
     @Override
-    protected MySQLTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, MySQLTable table, Object from)
+    protected MySQLTableForeignKey createDatabaseObject(DBECommandContext context, MySQLTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
-            workbenchWindow.getShell(),
+            DBeaverUI.getActiveWorkbenchShell(),
             MySQLMessages.edit_foreign_key_manager_title,
             table,
             new DBSForeignKeyModifyRule[] {

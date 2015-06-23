@@ -93,7 +93,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         try {
             DBPResourceHandler handler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
             if (handler != null) {
-                handler.openResource(resource, window);
+                handler.openResource(resource);
             }
         } catch (Exception e) {
             UIUtils.showErrorDialog(window.getShell(), CoreMessages.actions_navigator_error_dialog_open_resource_title, "Can't open resource '" + resource.getName() + "'", e); //$NON-NLS-3$
@@ -125,7 +125,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         IWorkbenchWindow workbenchWindow)
     {
         if (selectedNode.getObject() instanceof DBEPrivateObjectEditor) {
-            ((DBEPrivateObjectEditor)selectedNode.getObject()).editObject(workbenchWindow);
+            ((DBEPrivateObjectEditor)selectedNode.getObject()).editObject();
             return null;
         }
         if (!selectedNode.isPersisted()) {

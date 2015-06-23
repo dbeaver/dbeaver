@@ -17,13 +17,13 @@
  */
 package org.jkiss.dbeaver.model.impl.resources;
 
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -173,11 +173,11 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
+    public void openResource(IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
             SQLEditorInput sqlInput = new SQLEditorInput((IFile)resource);
-            window.getActivePage().openEditor(
+            DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName());
         } else {
