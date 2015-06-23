@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -48,7 +49,7 @@ public class TrayIconHandler {
 
         File logoFile;
         try {
-            logoFile = DBIcon.DBEAVER_LOGO.getFile();
+            logoFile = RuntimeUtils.getPlatformFile(DBIcon.DBEAVER_LOGO.getLocation());
         } catch (IOException e) {
             log.error(e);
             return;

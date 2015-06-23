@@ -18,9 +18,6 @@
 
 package org.jkiss.dbeaver.model;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  * Image with overlays
  */
@@ -64,8 +61,4 @@ public class DBIconCustom implements DBPImage
         return main.getLocation();
     }
 
-    @Override
-    public File getFile() throws IOException {
-        return main.getFile();
-    }
 }
