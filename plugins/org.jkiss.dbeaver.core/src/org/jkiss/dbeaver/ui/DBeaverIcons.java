@@ -23,7 +23,9 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -51,7 +53,8 @@ public class DBeaverIcons
         }
     }
 
-    private static Map<String, IconDescriptor> iconMap = new HashMap<String, IconDescriptor>();
+    private static Map<String, DBPImage> iconMap = new HashMap<String, DBPImage>();
+    private static Map<String, IconDescriptor> imageMap = new HashMap<String, IconDescriptor>();
 
     static  {
         for (Field field : DBIcon.class.getDeclaredFields()) {
@@ -60,21 +63,20 @@ public class DBeaverIcons
             }
             try {
                 DBIcon icon = (DBIcon) field.get(null);
-                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(new URL(icon.getLocation()));
-                IconDescriptor iconDescriptor = new IconDescriptor(icon.getLocation(), imageDescriptor);
-                if (iconDescriptor.image == null) {
+                File file = RuntimeUtils.getPlatformFile(icon.getLocation());
+                if (!file.exists()) {
                     log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
                     continue;
                 }
-                iconMap.put(icon.getToken(), iconDescriptor);
+                iconMap.put(icon.getToken(), icon);
             } catch (Exception e) {
                 log.error(e);
             }
         }
     }
 
-    public static Collection<String> getPredefinedImages() {
-        return new ArrayList<String>(iconMap.keySet());
+    public static Collection<DBPImage> getPredefinedImages() {
+        return new ArrayList<DBPImage>(iconMap.values());
     }
 
     public static Image getImage(DBPImage image)
@@ -91,15 +93,15 @@ public class DBeaverIcons
 
     public static Image getImageById(String token)
     {
-        IconDescriptor iconDescriptor = iconMap.get(token);
-        if (iconDescriptor == null) {
+        DBPImage image = iconMap.get(token);
+        if (image == null) {
             return null;
         }
-        return iconDescriptor.image;
+        return getImage(image);
     }
 
     private static IconDescriptor getIconByLocation(String location) {
-        IconDescriptor icon = iconMap.get(location);
+        IconDescriptor icon = imageMap.get(location);
         if (icon == null) {
             try {
                 ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(new URL(location));
@@ -108,7 +110,7 @@ public class DBeaverIcons
                     log.warn("Bad image: " + location);
                     return null;
                 } else {
-                    iconMap.put(location, icon);
+                    imageMap.put(location, icon);
                 }
             } catch (Exception e) {
                 log.error(e);

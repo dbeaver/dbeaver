@@ -30,6 +30,4 @@ public interface DBPImage
 
     String getLocation();
 
-    File getFile() throws IOException;
-
 }

@@ -281,10 +281,5 @@ public class DBIcon implements DBPImage
         return path;
     }
 
-    @Override
-    public File getFile() throws IOException {
-        return RuntimeUtils.getPlatformFile(path);
-    }
-
     static final String ICON_LOCATION_PREFIX = "platform:/plugin/org.jkiss.dbeaver.core/icons/";
 }
