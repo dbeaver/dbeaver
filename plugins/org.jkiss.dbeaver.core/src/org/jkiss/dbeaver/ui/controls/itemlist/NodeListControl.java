@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.IDBNListener;
+import org.jkiss.dbeaver.model.navigator.INavigatorListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
@@ -61,7 +61,7 @@ import java.util.Set;
 /**
  * NodeListControl
  */
-public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceContainerProvider, INavigatorModelView, IDBNListener, IMenuListener {
+public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceContainerProvider, INavigatorModelView, INavigatorListener, IMenuListener {
     //static final Log log = Log.getLog(NodeListControl.class);
 
     private final IWorkbenchSite workbenchSite;

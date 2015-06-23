@@ -19,9 +19,9 @@
 package org.jkiss.dbeaver.model.navigator;
 
 /**
- * IDBNListener
+ * INavigatorListener
  */
-public interface IDBNListener
+public interface INavigatorListener
 {
     void nodeChanged(DBNEvent event);
 }
