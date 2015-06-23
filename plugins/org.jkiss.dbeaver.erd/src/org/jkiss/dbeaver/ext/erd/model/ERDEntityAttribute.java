@@ -23,7 +23,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 
 /**
  * Column entry in model Table

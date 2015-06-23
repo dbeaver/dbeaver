@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;

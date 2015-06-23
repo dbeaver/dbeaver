@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.utils.TextUtils;
 
 /**

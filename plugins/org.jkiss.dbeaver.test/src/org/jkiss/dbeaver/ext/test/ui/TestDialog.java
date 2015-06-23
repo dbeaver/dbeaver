@@ -21,7 +21,7 @@ import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.controls.folders.FolderComposite;
 import org.jkiss.dbeaver.ui.controls.folders.FolderInfo;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
