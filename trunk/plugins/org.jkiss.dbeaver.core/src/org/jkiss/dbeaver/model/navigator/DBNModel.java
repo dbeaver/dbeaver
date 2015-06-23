@@ -53,8 +53,8 @@ public class DBNModel implements IResourceChangeListener {
     static final Log log = Log.getLog(DBNModel.class);
 
     private DBNRoot root;
-    private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
-    private transient IDBNListener[] listenersCopy = null;
+    private final List<INavigatorListener> listeners = new ArrayList<INavigatorListener>();
+    private transient INavigatorListener[] listenersCopy = null;
     private final Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
 
     public DBNModel()
@@ -96,7 +96,7 @@ public class DBNModel implements IResourceChangeListener {
         }
         synchronized (this.listeners) {
             if (!listeners.isEmpty()) {
-                for (IDBNListener listener : listeners) {
+                for (INavigatorListener listener : listeners) {
                     log.warn("Listener '" + listener + "' is not unregistered from DBM model");
                 }
             }
@@ -389,7 +389,7 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
-    public void addListener(IDBNListener listener)
+    public void addListener(INavigatorListener listener)
     {
         synchronized (this.listeners) {
             if (this.listeners.contains(listener)) {
@@ -397,17 +397,17 @@ public class DBNModel implements IResourceChangeListener {
             } else {
                 this.listeners.add(listener);
             }
-            this.listenersCopy = this.listeners.toArray(new IDBNListener[this.listeners.size()]);
+            this.listenersCopy = this.listeners.toArray(new INavigatorListener[this.listeners.size()]);
         }
     }
 
-    public void removeListener(IDBNListener listener)
+    public void removeListener(INavigatorListener listener)
     {
         synchronized (this.listeners) {
             if (!this.listeners.remove(listener)) {
                 log.warn("Listener " + listener + " wasn't registered in model");
             }
-            this.listenersCopy = this.listeners.toArray(new IDBNListener[this.listeners.size()]);
+            this.listenersCopy = this.listeners.toArray(new INavigatorListener[this.listeners.size()]);
         }
     }
 
@@ -418,14 +418,14 @@ public class DBNModel implements IResourceChangeListener {
 
     void fireNodeEvent(final DBNEvent event)
     {
-        IDBNListener[] listenersCopy;
+        INavigatorListener[] listenersCopy;
         synchronized (this.listeners) {
             if (listeners.isEmpty()) {
                 return;
             }
             listenersCopy = this.listenersCopy;
         }
-        for (IDBNListener listener :  listenersCopy) {
+        for (INavigatorListener listener :  listenersCopy) {
             listener.nodeChanged(event);
         }
     }

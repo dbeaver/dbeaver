@@ -22,14 +22,14 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.IDBNListener;
+import org.jkiss.dbeaver.model.navigator.INavigatorListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 
 /**
  * DatabaseEditorListener
  */
-public class DatabaseEditorListener implements IDBNListener
+public class DatabaseEditorListener implements INavigatorListener
 {
 
     private final IDatabaseEditor databaseEditor;
