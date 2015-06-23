@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model.impl.resources.bookmarks;
+package org.jkiss.dbeaver.ui.resources.bookmarks;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;

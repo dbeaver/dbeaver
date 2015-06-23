@@ -46,7 +46,7 @@
             id="org.jkiss.dbeaver.bookmark"
             name="Bookmark"
             priority="normal"
-            describer="org.jkiss.dbeaver.model.impl.resources.bookmarks.BookmarkContentTypeDescriber"/>
+            describer="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarkContentTypeDescriber"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
@@ -2323,14 +2323,14 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler class="org.jkiss.dbeaver.model.impl.resources.ProjectHandlerImpl">
+        <handler class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.model.impl.resources.ScriptsHandlerImpl">
+        <handler class="org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl">
             <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.model.impl.resources.bookmarks.BookmarksHandlerImpl">
+        <handler class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl">
             <root folder="Bookmarks"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
         </handler>
