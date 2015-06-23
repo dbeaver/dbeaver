@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
