@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;

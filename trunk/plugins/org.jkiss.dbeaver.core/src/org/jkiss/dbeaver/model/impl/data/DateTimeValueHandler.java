@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.impl.data.editors.DateTimeInlineEditor;
 import org.jkiss.dbeaver.model.impl.data.editors.DateTimeStandaloneEditor;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.text.ParseException;

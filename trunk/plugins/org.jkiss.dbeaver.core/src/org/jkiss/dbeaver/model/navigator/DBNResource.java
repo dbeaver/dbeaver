@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;

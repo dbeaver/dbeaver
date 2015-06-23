@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 
 /**
  * DB2 View Status

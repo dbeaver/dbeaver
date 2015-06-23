@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.runtime.sql.SQLConstants;

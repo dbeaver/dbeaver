@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.utils.CommonUtils;

@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -49,7 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
 class ResultSetDataPumpJob extends DataSourceJob {

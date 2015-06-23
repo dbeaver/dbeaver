@@ -38,9 +38,9 @@ import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
-import org.osgi.framework.Bundle;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -104,8 +104,7 @@ public class DBeaverUI {
 
     private void initialize()
     {
-        Bundle coreBundle = DBeaverActivator.getInstance().getBundle();
-        DBeaverIcons.initRegistry(coreBundle);
+        DBeaverIcons.initRegistry();
 
         this.sharedTextColors = new SharedTextColors();
 

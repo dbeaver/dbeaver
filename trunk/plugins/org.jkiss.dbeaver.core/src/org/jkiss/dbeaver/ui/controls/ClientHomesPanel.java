@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.DBPClientManager;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;

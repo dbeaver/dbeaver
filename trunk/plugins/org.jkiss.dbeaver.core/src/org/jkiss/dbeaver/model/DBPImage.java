@@ -15,35 +15,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-/*
- * Created on Jul 23, 2004
- */
-package org.jkiss.dbeaver.ext.erd.action;
 
-import org.eclipse.jface.action.Action;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
-import org.jkiss.dbeaver.model.DBIcon;
+package org.jkiss.dbeaver.model;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 
 /**
- * Action to toggle the layout between manual and automatic
- *
- * @author Serge Rieder
+ * Image reference
  */
-public class DiagramRefreshAction extends Action
+public interface DBPImage
 {
-	private ERDEditorPart editor;
 
-	public DiagramRefreshAction(ERDEditorPart editor)
-	{
-		super("Refresh Diagram", DBIcon.REFRESH.getImageDescriptor());
-		this.editor = editor;
-	}
+    String getLocation();
 
-	@Override
-    public void run()
-	{
-        //editor.get
-        editor.refreshDiagram();
-	}
+    File getFile() throws IOException;
 
 }

@@ -27,7 +27,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverIcons;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;

@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInputFactory;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditorInputFactory;
