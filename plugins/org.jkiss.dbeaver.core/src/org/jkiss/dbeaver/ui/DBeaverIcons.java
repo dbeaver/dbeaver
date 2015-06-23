@@ -22,9 +22,10 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.osgi.framework.Bundle;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,8 +47,12 @@ public class DBeaverIcons
 
     public static void initRegistry()
     {
-        for (DBIcon icon : DBIcon.values()) {
+        for (Field field : DBIcon.class.getDeclaredFields()) {
+            if ((field.getModifiers() & Modifier.STATIC) == 0 || field.getType() != DBIcon.class) {
+                continue;
+            }
             try {
+                DBIcon icon = (DBIcon) field.get(null);
                 ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(new URL(icon.getLocation()));
                 IconDescriptor iconDescriptor = new IconDescriptor();
                 iconDescriptor.id = icon;
@@ -58,7 +63,7 @@ public class DBeaverIcons
                     continue;
                 }
                 iconMap.put(icon.getToken(), iconDescriptor);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error(e);
             }
         }
