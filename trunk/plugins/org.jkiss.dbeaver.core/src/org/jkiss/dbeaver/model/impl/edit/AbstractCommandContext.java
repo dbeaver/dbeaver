@@ -17,11 +17,8 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.*;
@@ -38,9 +35,9 @@ import java.util.*;
 /**
  * DBECommandContextImpl
  */
-public class DBECommandContextImpl implements DBECommandContext {
+public abstract class AbstractCommandContext implements DBECommandContext {
 
-    static final Log log = Log.getLog(DBECommandContextImpl.class);
+    static final Log log = Log.getLog(AbstractCommandContext.class);
 
     private final DBCExecutionContext executionContext;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
@@ -58,7 +55,7 @@ public class DBECommandContextImpl implements DBECommandContext {
      * @param atomic atomic context reflect commands in UI only after all comands were executed. Non-atomic
      *               reflects each command at the moment it executed
      */
-    public DBECommandContextImpl(DBCExecutionContext executionContext, boolean atomic)
+    public AbstractCommandContext(DBCExecutionContext executionContext, boolean atomic)
     {
         this.executionContext = executionContext;
         this.atomic = atomic;
@@ -653,13 +650,8 @@ public class DBECommandContextImpl implements DBECommandContext {
         session.close();
     }
 
-    private void refreshCommandState()
+    protected void refreshCommandState()
     {
-        ICommandService commandService = (ICommandService) DBeaverUI.getActiveWorkbenchWindow().getService(ICommandService.class);
-        if (commandService != null) {
-            commandService.refreshElements(IWorkbenchCommandConstants.EDIT_UNDO, null);
-            commandService.refreshElements(IWorkbenchCommandConstants.EDIT_REDO, null);
-        }
     }
 
     private static class PersistInfo {

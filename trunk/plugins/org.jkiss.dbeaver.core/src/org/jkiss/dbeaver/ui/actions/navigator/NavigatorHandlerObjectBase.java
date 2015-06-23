@@ -26,14 +26,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
+import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -45,9 +43,12 @@ import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.SimpleCommandContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
@@ -68,7 +69,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         private CommandTarget()
         {
         }
-        private CommandTarget(DBECommandContextImpl context)
+        private CommandTarget(AbstractCommandContext context)
         {
             this.context = context;
         }
@@ -132,7 +133,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             // No editor found - create new command context
             DBPDataSource dataSource = ((DBNDatabaseNode) container).getObject().getDataSource();
             if (dataSource != null) {
-                return new CommandTarget(new DBECommandContextImpl(dataSource.getDefaultContext(true), !openEditor));
+                return new CommandTarget(new SimpleCommandContext(dataSource.getDefaultContext(true), !openEditor));
             }
         }
         return new CommandTarget();

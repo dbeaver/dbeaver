@@ -30,14 +30,17 @@ import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandContextImpl;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.SimpleCommandContext;
 import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * DatabaseEditorInput
@@ -65,7 +68,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
             this.executionContext = dataSource.getDefaultContext(false);
             this.commandContext = commandContext != null ?
                 commandContext :
-                new DBECommandContextImpl(
+                new SimpleCommandContext(
                     this.executionContext,
                     false);
         } else {
