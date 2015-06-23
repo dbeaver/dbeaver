@@ -18,15 +18,11 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
