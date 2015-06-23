@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -54,7 +53,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected OracleTable createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleTable createDatabaseObject(DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         OracleTable table = new OracleTable(parent, "");
         try {

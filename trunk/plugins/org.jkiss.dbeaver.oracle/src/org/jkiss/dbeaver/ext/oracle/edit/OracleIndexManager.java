@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
@@ -53,12 +53,11 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
 
     @Override
     protected OracleTableIndex createDatabaseObject(
-        IWorkbenchWindow workbenchWindow,
         DBECommandContext context, OracleTablePhysical parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(
-            workbenchWindow.getShell(),
+            DBeaverUI.getActiveWorkbenchShell(),
             OracleMessages.edit_oracle_index_manager_dialog_title,
             parent,
             Collections.singletonList(DBSIndexType.OTHER));

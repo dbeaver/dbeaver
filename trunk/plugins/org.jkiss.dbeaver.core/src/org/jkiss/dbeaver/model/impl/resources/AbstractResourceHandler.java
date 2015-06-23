@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.impl.resources;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -54,7 +53,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     }
 
     @Override
-    public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
+    public void openResource(IResource resource) throws CoreException, DBException
     {
         //throw new DBException("Resource open is not implemented");
     }

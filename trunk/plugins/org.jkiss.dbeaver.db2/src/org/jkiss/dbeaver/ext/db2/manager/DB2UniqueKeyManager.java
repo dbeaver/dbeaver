@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
@@ -77,10 +77,10 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
     // ------
 
     @Override
-    public DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table db2Table,
-        Object from)
+    public DB2TableUniqueKey createDatabaseObject(DBECommandContext context, DB2Table db2Table,
+                                                  Object from)
     {
-        EditConstraintDialog editDialog = new EditConstraintDialog(workbenchWindow.getShell(),
+        EditConstraintDialog editDialog = new EditConstraintDialog(DBeaverUI.getActiveWorkbenchShell(),
             DB2Messages.edit_db2_constraint_manager_dialog_title, db2Table, CONS_TYPES);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;

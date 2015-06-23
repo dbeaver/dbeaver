@@ -26,9 +26,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
@@ -62,9 +62,9 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected OracleSchema createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleDataSource parent, Object copyFrom)
+    protected OracleSchema createDatabaseObject(DBECommandContext context, OracleDataSource parent, Object copyFrom)
     {
-        NewUserDialog dialog = new NewUserDialog(workbenchWindow.getShell(), parent);
+        NewUserDialog dialog = new NewUserDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }

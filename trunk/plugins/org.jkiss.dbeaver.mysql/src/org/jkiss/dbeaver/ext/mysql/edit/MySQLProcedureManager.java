@@ -19,9 +19,9 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
@@ -63,9 +63,9 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     }
 
     @Override
-    protected MySQLProcedure createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, MySQLCatalog parent, Object copyFrom)
+    protected MySQLProcedure createDatabaseObject(DBECommandContext context, MySQLCatalog parent, Object copyFrom)
     {
-        CreateProcedureDialog dialog = new CreateProcedureDialog(workbenchWindow.getShell(), parent.getDataSource());
+        CreateProcedureDialog dialog = new CreateProcedureDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource());
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }

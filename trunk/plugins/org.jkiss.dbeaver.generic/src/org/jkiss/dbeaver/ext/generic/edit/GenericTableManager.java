@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.generic.edit;
 
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -55,7 +54,7 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
     }
 
     @Override
-    protected GenericTable createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, GenericStructContainer parent, Object copyFrom)
+    protected GenericTable createDatabaseObject(DBECommandContext context, GenericStructContainer parent, Object copyFrom)
     {
         final GenericTable table = new GenericTable(parent);
         try {

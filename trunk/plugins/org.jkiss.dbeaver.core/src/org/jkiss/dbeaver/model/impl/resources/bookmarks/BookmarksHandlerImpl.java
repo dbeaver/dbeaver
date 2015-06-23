@@ -24,7 +24,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -92,7 +91,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(final IResource resource, final IWorkbenchWindow window) throws CoreException, DBException
+    public void openResource(final IResource resource) throws CoreException, DBException
     {
         if (!(resource instanceof IFile)) {
             return;
@@ -120,7 +119,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                             @Override
                             public void run()
                             {
-                            openNodeByPath(dsNode, (IFile) resource, storage, window);
+                            openNodeByPath(dsNode, (IFile) resource, storage);
                             }
                         });
                     }
@@ -132,7 +131,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
-    private void openNodeByPath(final DBNDataSource dsNode, final IFile file, final BookmarkStorage storage, final IWorkbenchWindow window)
+    private void openNodeByPath(final DBNDataSource dsNode, final IFile file, final BookmarkStorage storage)
     {
         try {
             DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
@@ -169,7 +168,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                                 @Override
                                 public void run()
                                 {
-                                    NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, window);
+                                    NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, DBeaverUI.getActiveWorkbenchWindow());
                                 }
                             });
                         } else if (currentNode != null) {
@@ -183,7 +182,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 }
             });
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(window.getShell(), CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
+            UIUtils.showErrorDialog(null, CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }

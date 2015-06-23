@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.impl.resources;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -71,7 +70,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
+    public void openResource(IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
             RuntimeUtils.launchProgram(resource.getLocation().toFile().getAbsolutePath());

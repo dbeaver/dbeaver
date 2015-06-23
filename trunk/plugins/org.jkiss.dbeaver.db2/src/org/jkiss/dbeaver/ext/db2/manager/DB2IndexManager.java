@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
@@ -76,10 +76,10 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2Table> {
     }
 
     @Override
-    protected DB2Index createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table db2Table,
-        Object from)
+    protected DB2Index createDatabaseObject(DBECommandContext context, DB2Table db2Table,
+                                            Object from)
     {
-        EditIndexDialog editDialog = new EditIndexDialog(workbenchWindow.getShell(),
+        EditIndexDialog editDialog = new EditIndexDialog(DBeaverUI.getActiveWorkbenchShell(),
             DB2Messages.edit_db2_index_manager_dialog_title, db2Table, IX_TYPES);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;

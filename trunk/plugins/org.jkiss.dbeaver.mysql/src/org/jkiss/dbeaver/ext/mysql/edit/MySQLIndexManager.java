@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -48,12 +48,11 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
 
     @Override
     protected MySQLTableIndex createDatabaseObject(
-        IWorkbenchWindow workbenchWindow,
         DBECommandContext context, MySQLTable parent,
         Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(
-            workbenchWindow.getShell(),
+            DBeaverUI.getActiveWorkbenchShell(),
             MySQLMessages.edit_index_manager_title,
             parent,
             Collections.singletonList(DBSIndexType.OTHER));

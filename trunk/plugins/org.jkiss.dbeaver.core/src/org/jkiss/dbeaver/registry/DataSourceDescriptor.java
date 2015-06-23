@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISaveablePart;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -1143,9 +1142,9 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void editObject(IWorkbenchWindow workbenchWindow)
+    public void editObject()
     {
-        EditConnectionDialog dialog = new EditConnectionDialog(workbenchWindow, new EditConnectionWizard(this));
+        EditConnectionDialog dialog = new EditConnectionDialog(DBeaverUI.getActiveWorkbenchWindow(), new EditConnectionWizard(this));
         dialog.open();
     }
 

@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -84,10 +84,10 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     // Create
     // ------
     @Override
-    public DB2TableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table db2Table,
-        Object from)
+    public DB2TableForeignKey createDatabaseObject(DBECommandContext context, DB2Table db2Table,
+                                                   Object from)
     {
-        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(workbenchWindow.getShell(),
+        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(DBeaverUI.getActiveWorkbenchShell(),
             DB2Messages.edit_db2_foreign_key_manager_dialog_title, db2Table, FK_RULES);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
