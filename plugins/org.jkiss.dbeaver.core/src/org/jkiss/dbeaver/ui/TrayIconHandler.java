@@ -17,18 +17,18 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.osgi.framework.Bundle;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.net.URL;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Tray icon handler
@@ -45,10 +45,15 @@ public class TrayIconHandler {
         if (trayItem != null) {
             return;
         }
-        Bundle coreBundle = DBeaverActivator.getInstance().getBundle();
 
-        URL logoURL = coreBundle.getEntry(DBIcon.DBEAVER_LOGO.getPath());
-        trayItem = new TrayIcon(Toolkit.getDefaultToolkit().getImage(logoURL));
+        File logoFile;
+        try {
+            logoFile = DBIcon.DBEAVER_LOGO.getFile();
+        } catch (IOException e) {
+            log.error(e);
+            return;
+        }
+        trayItem = new TrayIcon(Toolkit.getDefaultToolkit().getImage(logoFile.getAbsolutePath()));
         trayItem.setImageAutoSize(true);
         trayItem.addActionListener(new ActionListener() {
             @Override

@@ -16,12 +16,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.ui;
 
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.osgi.framework.Bundle;
 
 import java.io.IOException;
@@ -34,6 +34,8 @@ import java.util.Map;
  */
 public class DBeaverIcons
 {
+    static final Log log = Log.getLog(DBeaverIcons.class);
+
     private static class IconDescriptor {
         DBIcon id;
         ImageDescriptor imageDescriptor;
@@ -42,23 +44,22 @@ public class DBeaverIcons
 
     private static Map<String, IconDescriptor> iconMap = new HashMap<String, IconDescriptor>();
 
-    static void initRegistry(Bundle coreBundle)
+    public static void initRegistry()
     {
         for (DBIcon icon : DBIcon.values()) {
-            URL iconPath = coreBundle.getEntry(icon.getPath());
-            if (iconPath != null) {
-                try {
-                    iconPath = FileLocator.toFileURL(iconPath);
-                }
-                catch (IOException ex) {
-                    continue;
-                }
-                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(iconPath);
+            try {
+                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(new URL(icon.getLocation()));
                 IconDescriptor iconDescriptor = new IconDescriptor();
                 iconDescriptor.id = icon;
                 iconDescriptor.imageDescriptor = imageDescriptor;
-                iconDescriptor.image = imageDescriptor.createImage();
+                iconDescriptor.image = imageDescriptor.createImage(false);
+                if (iconDescriptor.image == null) {
+                    log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
+                    continue;
+                }
                 iconMap.put(icon.getToken(), iconDescriptor);
+            } catch (IOException e) {
+                log.error(e);
             }
         }
     }

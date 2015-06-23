@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.ui.views.navigator.database.load;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.core.DBeaverIcons;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 
 import java.util.HashMap;
 import java.util.Map;

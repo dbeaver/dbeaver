@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ui.actions.common;
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 
 /**
  * Context search action

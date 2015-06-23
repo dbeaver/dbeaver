@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.eclipse.swt.graphics.Image;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBIcon;
 
 /**
  * Entity type
