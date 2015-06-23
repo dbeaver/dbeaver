@@ -1,11 +1,9 @@
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.core.runtime.IAdaptable;
-
 /**
  * Connection type
  */
-public class DBPConnectionType implements IAdaptable {
+public class DBPConnectionType {
 
     public static final DBPConnectionType DEV = new DBPConnectionType("dev", "Development", "255,255,255", "Regular development database", true, false, true);
     public static final DBPConnectionType TEST = new DBPConnectionType("test", "Test", "196,255,181", "Test (QA) database", true, false, true);
@@ -101,12 +99,6 @@ public class DBPConnectionType implements IAdaptable {
     public void setConfirmExecute(boolean confirmExecute)
     {
         this.confirmExecute = confirmExecute;
-    }
-
-    @Override
-    public Object getAdapter(Class adapter)
-    {
-        return null;
     }
 
     @Override

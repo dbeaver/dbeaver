@@ -117,8 +117,8 @@
                 properties="dirty,canUndo,canRedo"
                 type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
         <propertyTester
-                class="org.jkiss.dbeaver.model.runtime.DBRProcessPropertyTester"
-                id="org.jkiss.dbeaver.model.runtime.DBRProcessPropertyTester"
+                class="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
+                id="org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester"
                 namespace="org.jkiss.dbeaver.runtime.process"
                 properties="running"
                 type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>

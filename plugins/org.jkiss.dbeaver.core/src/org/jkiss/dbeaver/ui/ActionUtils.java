@@ -42,7 +42,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
- * NavigatorUtils
+ * Action utils
  */
 public class ActionUtils
 {
