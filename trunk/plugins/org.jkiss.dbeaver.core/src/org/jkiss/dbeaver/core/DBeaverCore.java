@@ -60,8 +60,6 @@ public class DBeaverCore implements DBPApplication {
     private static boolean standalone = false;
     private static volatile boolean isClosing = false;
 
-    private DatabaseEditorAdapterFactory editorsAdapter;
-    //private DBeaverProgressProvider progressProvider;
     private IWorkspace workspace;
     private IProject tempProject;
     private OSDescriptor localSystem;
@@ -156,10 +154,6 @@ public class DBeaverCore implements DBPApplication {
     private void initialize()
     {
         // Register properties adapter
-        this.editorsAdapter = new DatabaseEditorAdapterFactory();
-        IAdapterManager mgr = Platform.getAdapterManager();
-        mgr.registerAdapters(editorsAdapter, IWorkbenchPart.class);
-
         this.workspace = ResourcesPlugin.getWorkspace();
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
@@ -263,12 +257,6 @@ public class DBeaverCore implements DBPApplication {
             //queryManager = null;
         }
         DataSourceProviderRegistry.getInstance().dispose();
-
-        if (this.editorsAdapter != null) {
-            // Unregister properties adapter
-            Platform.getAdapterManager().unregisterAdapters(this.editorsAdapter);
-            this.editorsAdapter = null;
-        }
 
         if (isStandalone() && workspace != null) {
             try {
