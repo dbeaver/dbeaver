@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.object;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseObject;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
@@ -39,7 +40,7 @@ public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseObject>
 //        if (editorDescriptor != null) {
 //            return editorDescriptor.getImageDescriptor();
 //        } else {
-            return ImageDescriptor.createFromImage(node.getNodeIconDefault());
+            return DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
 //        }
     }
 

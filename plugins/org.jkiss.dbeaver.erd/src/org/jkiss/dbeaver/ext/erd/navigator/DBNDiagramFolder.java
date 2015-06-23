@@ -17,26 +17,25 @@
  */
 package org.jkiss.dbeaver.ext.erd.navigator;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
-import org.jkiss.dbeaver.ui.UIUtils;
-
-import java.util.Collection;
 
 /**
  * DBNDiagramFolder
  */
 public class DBNDiagramFolder extends DBNResource
 {
-    private Image image;
+    private static final DBIcon FOLDER_ICON = new DBIcon(ERDConstants.ICON_LOCATION_PREFIX + "erd_folder.png");
+
+    private DBPImage image;
 
     public DBNDiagramFolder(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
     {
@@ -46,17 +45,16 @@ public class DBNDiagramFolder extends DBNResource
     @Override
     protected void dispose(boolean reflect)
     {
-        UIUtils.dispose(image);
         super.dispose(reflect);
     }
 
     @Override
-    public Image getNodeIcon()
+    public DBPImage getNodeIcon()
     {
         IResource resource = getResource();
         if (resource != null && resource.getParent() instanceof IProject) {
             if (image == null) {
-                image = Activator.getImageDescriptor("icons/erd_folder.png").createImage();
+                image = FOLDER_ICON;
             }
             return image;
         }

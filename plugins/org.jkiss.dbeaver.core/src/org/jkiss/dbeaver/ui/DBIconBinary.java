@@ -15,33 +15,39 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.code.Nullable;
+package org.jkiss.dbeaver.ui;
+
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
 /**
- * Abstract constraint column
+ * Image with binary data
  */
-public abstract class AbstractTableConstraintColumn implements DBSTableConstraintColumn, DBPImageProvider
+public class DBIconBinary implements DBPImage
 {
-    @Nullable
-    @Override
-    public DBPImage getObjectImage()
-    {
-        DBSTableColumn tableColumn = getAttribute();
-        if (tableColumn instanceof DBPImageProvider) {
-            return ((DBPImageProvider)tableColumn).getObjectImage();
-        }
-        return null;
+    private final String location;
+    private Image image;
+    private ImageDescriptor imageDescriptor;
+
+    public DBIconBinary(final String location, final ImageData data) {
+        this.location = "binary:" + location;
+        this.image = new Image(null, data);
+        imageDescriptor = ImageDescriptor.createFromImageData(data);
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public ImageDescriptor getImageDescriptor() {
+        return imageDescriptor;
     }
 
     @Override
-    public boolean isPersisted()
-    {
-        return getParentObject().isPersisted();
+    public String getLocation() {
+        return location;
     }
 }

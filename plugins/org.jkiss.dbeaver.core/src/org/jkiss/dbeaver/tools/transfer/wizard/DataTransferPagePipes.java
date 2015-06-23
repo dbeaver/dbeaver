@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.transfer.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferRegistry;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
@@ -97,10 +98,10 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 TransferTarget element = (TransferTarget) cell.getElement();
                 if (cell.getColumnIndex() == 0) {
                     if (element.processor != null) {
-                        cell.setImage(element.processor.getIcon());
+                        cell.setImage(DBeaverIcons.getImage(element.processor.getIcon()));
                         cell.setText(element.processor.getName());
                     } else {
-                        cell.setImage(element.consumer.getIcon());
+                        cell.setImage(DBeaverIcons.getImage(element.consumer.getIcon()));
                         cell.setText(element.consumer.getName());
                     }
                 } else {

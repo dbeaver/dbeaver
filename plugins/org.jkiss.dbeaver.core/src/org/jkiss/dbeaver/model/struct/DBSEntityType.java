@@ -17,29 +17,29 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * Entity type
  */
 public class DBSEntityType
 {
-    public static final DBSEntityType TABLE = new DBSEntityType("table", "Table", DBIcon.TREE_TABLE.getImage(), true); //$NON-NLS-1$
-    public static final DBSEntityType VIEW = new DBSEntityType("view", "View", DBIcon.TREE_VIEW.getImage(), true); //$NON-NLS-1$
-    public static final DBSEntityType TYPE = new DBSEntityType("type", "Type", DBIcon.TREE_DATA_TYPE.getImage(), true); //$NON-NLS-1$
-    public static final DBSEntityType CLASS = new DBSEntityType("class", "Class", DBIcon.TREE_CLASS.getImage(), false); //$NON-NLS-1$
-    public static final DBSEntityType ASSOCIATION = new DBSEntityType("association", "Association", DBIcon.TREE_ASSOCIATION.getImage(), false); //$NON-NLS-1$
+    public static final DBSEntityType TABLE = new DBSEntityType("table", "Table", DBIcon.TREE_TABLE, true); //$NON-NLS-1$
+    public static final DBSEntityType VIEW = new DBSEntityType("view", "View", DBIcon.TREE_VIEW, true); //$NON-NLS-1$
+    public static final DBSEntityType TYPE = new DBSEntityType("type", "Type", DBIcon.TREE_DATA_TYPE, true); //$NON-NLS-1$
+    public static final DBSEntityType CLASS = new DBSEntityType("class", "Class", DBIcon.TREE_CLASS, false); //$NON-NLS-1$
+    public static final DBSEntityType ASSOCIATION = new DBSEntityType("association", "Association", DBIcon.TREE_ASSOCIATION, false); //$NON-NLS-1$
 
-    public static final DBSEntityType VIRTUAL_ENTITY = new DBSEntityType("virtual_entity", "Virtual Entity", DBIcon.TREE_TABLE.getImage(), true); //$NON-NLS-1$
-    public static final DBSEntityType VIRTUAL_ASSOCIATION = new DBSEntityType("virtual_association", "Virtual Association", DBIcon.TREE_ASSOCIATION.getImage(), false); //$NON-NLS-1$
+    public static final DBSEntityType VIRTUAL_ENTITY = new DBSEntityType("virtual_entity", "Virtual Entity", DBIcon.TREE_TABLE, true); //$NON-NLS-1$
+    public static final DBSEntityType VIRTUAL_ASSOCIATION = new DBSEntityType("virtual_association", "Virtual Association", DBIcon.TREE_ASSOCIATION, false); //$NON-NLS-1$
 
     private final String id;
     private final String name;
-    private final Image icon;
+    private final DBPImage icon;
     private final boolean physical;
 
-    public DBSEntityType(String id, String name, Image icon, boolean physical)
+    public DBSEntityType(String id, String name, DBPImage icon, boolean physical)
     {
         this.id = id;
         this.name = name;
@@ -55,7 +55,7 @@ public class DBSEntityType
         return name;
     }
 
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         return icon;
     }

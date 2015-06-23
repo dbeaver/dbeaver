@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
@@ -313,7 +314,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 TableItem item = new TableItem(typesTable, SWT.NONE);
                 item.setText(objectType.getTypeName());
                 if (objectType.getImage() != null) {
-                    item.setImage(0, objectType.getImage());
+                    item.setImage(0, DBeaverIcons.getImage(objectType.getImage()));
                 }
                 if (!CommonUtils.isEmpty(objectType.getDescription())) {
                     item.setText(1, objectType.getDescription());

@@ -22,6 +22,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -216,8 +218,8 @@ class GridColumn {
         if ((state & IGridContentProvider.STATE_LINK) != 0) {
             imageBounds = GridCellRenderer.LINK_IMAGE_BOUNDS;
         } else {
-            Image image = grid.getContentProvider().getCellImage(col, row);
-            imageBounds = image == null ? null : image.getBounds();
+            DBPImage image = grid.getContentProvider().getCellImage(col, row);
+            imageBounds = image == null ? null : DBeaverIcons.getImage(image).getBounds();
         }
         if (imageBounds != null) {
             x += imageBounds.width + insideMargin;

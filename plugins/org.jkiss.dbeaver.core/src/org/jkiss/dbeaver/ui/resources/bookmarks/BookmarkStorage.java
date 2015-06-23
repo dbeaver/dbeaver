@@ -20,14 +20,11 @@ package org.jkiss.dbeaver.ui.resources.bookmarks;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.Base64;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -55,7 +52,7 @@ public class BookmarkStorage {
     public static final String TAG_BOOKMARK = "bookmark"; //NON-NLS-1
     private String title;
     private String description;
-    private Image image;
+    private DBPImage image;
     private String dataSourceId;
     private List<String> dataSourcePath;
 
@@ -80,10 +77,8 @@ public class BookmarkStorage {
                 if (loadImage) {
                     Element imgElement = XMLUtils.getChildElement(root, TAG_IMAGE);
                     if (imgElement != null) {
-                        String imgString = XMLUtils.getElementBody(imgElement);
-                        final byte[] imgBytes = Base64.decode(imgString);
-                        ImageLoader loader = new ImageLoader();
-                        this.image = new Image(null, loader.load(new ByteArrayInputStream(imgBytes))[0]);
+                        String imgLocation = XMLUtils.getElementBody(imgElement);
+                        this.image = new DBIcon(imgLocation);
                     }
                 }
             } finally {
@@ -94,7 +89,7 @@ public class BookmarkStorage {
         }
     }
 
-    BookmarkStorage(String title, String description, Image image, String dataSourceId, List<String> dataSourcePath)
+    BookmarkStorage(String title, String description, DBPImage image, String dataSourceId, List<String> dataSourcePath)
     {
         this.title = title;
         this.description = description;
@@ -105,9 +100,6 @@ public class BookmarkStorage {
 
     public void dispose()
     {
-        if (image != null) {
-            image.dispose();
-        }
     }
 
     public String getTitle()
@@ -125,17 +117,14 @@ public class BookmarkStorage {
         return description;
     }
 
-    public Image getImage()
+    public DBPImage getImage()
     {
         return image;
     }
 
-    public void setImage(Image image)
+    public void setImage(DBPImage image)
     {
-        if (this.image != null) {
-            this.image.dispose();
-        }
-        this.image = new Image(null, image, SWT.IMAGE_COPY);
+        this.image = image;
     }
 
     public String getDataSourceId()
@@ -166,12 +155,7 @@ public class BookmarkStorage {
 
         {
             xml.startElement(TAG_IMAGE);
-
-            ImageLoader loader = new ImageLoader();
-            loader.data = new ImageData[] {image.getImageData()};
-            ByteArrayOutputStream imageBuffer = new ByteArrayOutputStream(5000);
-            loader.save(imageBuffer, SWT.IMAGE_PNG);
-            xml.addText(Base64.encode(imageBuffer.toByteArray()));
+            xml.addText(image.getLocation());
 
             xml.endElement();
         }

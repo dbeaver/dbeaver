@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBPImage;
 
 /**
  * Object type
@@ -29,7 +29,7 @@ public interface DBSObjectType
 
     String getDescription();
 
-    Image getImage();
+    DBPImage getImage();
 
     Class<? extends DBSObject> getTypeClass();
 }

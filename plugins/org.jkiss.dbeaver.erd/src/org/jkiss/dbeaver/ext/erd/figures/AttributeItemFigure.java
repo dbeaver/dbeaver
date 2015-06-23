@@ -20,10 +20,8 @@
  */
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.*;
-import org.eclipse.draw2d.geometry.Insets;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Figure used to hold the column labels
@@ -37,7 +35,7 @@ public class AttributeItemFigure extends EditableLabel
 	{
         super(attribute.getLabelText());
         this.attribute = attribute;
-        setIcon(attribute.getLabelImage());
+        setIcon(DBeaverIcons.getImage(attribute.getLabelImage()));
 
 	}
 

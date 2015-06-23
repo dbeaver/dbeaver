@@ -32,6 +32,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -242,7 +243,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
         public SimpleAction(String id, String text, String toolTip, DBIcon icon)
         {
-            super(text, icon.getImageDescriptor());
+            super(text, DBeaverIcons.getImageDescriptor(icon));
             setId(id);
             //setActionDefinitionId(id);
             setToolTipText(toolTip);

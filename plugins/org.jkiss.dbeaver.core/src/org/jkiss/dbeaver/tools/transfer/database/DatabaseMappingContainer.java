@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -108,9 +108,9 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     @Override
-    public Image getIcon()
+    public DBPImage getIcon()
     {
-        return DBIcon.TREE_TABLE.getImage();
+        return DBIcon.TREE_TABLE;
     }
 
     @Override

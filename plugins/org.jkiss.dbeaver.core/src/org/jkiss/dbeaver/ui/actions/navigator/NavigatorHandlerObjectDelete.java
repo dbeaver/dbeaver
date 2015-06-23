@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -118,7 +119,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             } else if (resource instanceof IProject) {
                 // Delete project (with all contents)
                 ((IProject) resource).delete(true, true, new NullProgressMonitor());
-            } else {
+            } else if (resource != null) {
                 resource.delete(true, new NullProgressMonitor());
             }
         } catch (CoreException e) {
@@ -244,9 +245,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         MessageDialog dialog = new MessageDialog(
             workbenchWindow.getShell(),
             UIUtils.formatMessage(bundle.getString(titleKey), nodeTypeName, node.getNodeName()),
-            DBIcon.REJECT.getImage(),
-            UIUtils.formatMessage(bundle.getString(messageKey), nodeTypeName.toLowerCase(), node.getNodeName()),
-            MessageDialog.CONFIRM, null, 0)
+            DBeaverIcons.getImage(DBIcon.REJECT),
+                UIUtils.formatMessage(bundle.getString(messageKey), nodeTypeName.toLowerCase(), node.getNodeName()),
+                MessageDialog.CONFIRM, null, 0)
         {
             @Override
             protected void createButtonsForButtonBar(Composite parent)

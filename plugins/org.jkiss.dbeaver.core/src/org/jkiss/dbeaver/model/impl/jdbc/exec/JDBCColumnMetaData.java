@@ -17,14 +17,10 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -271,8 +267,8 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
 
     @Nullable
     @Override
-    public Image getObjectImage() {
-        return DBUtils.getDataIcon(this).getImage();
+    public DBPImage getObjectImage() {
+        return DBUtils.getDataIcon(this);
     }
 
     @Override

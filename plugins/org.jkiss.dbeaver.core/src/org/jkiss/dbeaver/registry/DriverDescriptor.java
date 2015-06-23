@@ -23,10 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.window.IShellProvider;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
@@ -42,7 +39,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -93,9 +89,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private String sampleURL, origSampleURL;
     private String note;
     private String webURL;
-    private Image iconPlain;
-    private Image iconNormal;
-    private Image iconError;
+    private DBPImage iconPlain;
+    private DBPImage iconNormal;
+    private DBPImage iconError;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess;
@@ -134,7 +130,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.providerDescriptor = providerDescriptor;
         this.id = id;
         this.custom = true;
-        this.iconPlain = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
+        this.iconPlain = providerDescriptor.getIcon();
         makeIconExtensions();
     }
 
@@ -172,7 +168,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.iconPlain == null) {
-            this.iconPlain = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
+            this.iconPlain = providerDescriptor.getIcon();
         }
         makeIconExtensions();
 
@@ -273,31 +269,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private void makeIconExtensions()
     {
         if (isCustom()) {
-            OverlayImageDescriptor customDescriptor = new OverlayImageDescriptor(this.iconPlain.getImageData());
-            customDescriptor.setBottomLeft(new ImageDescriptor[]{DBIcon.OVER_LAMP.getImageDescriptor()});
-            this.iconNormal = new Image(this.iconPlain.getDevice(), customDescriptor.getImageData());
+            this.iconNormal = new DBIconComposite(this.iconPlain, false, null, null, DBIcon.OVER_LAMP, null);
         } else {
-            this.iconNormal = new Image(this.iconPlain.getDevice(), iconPlain, SWT.IMAGE_COPY);
+            this.iconNormal = this.iconPlain;
         }
-        OverlayImageDescriptor failedDescriptor = new OverlayImageDescriptor(this.iconNormal.getImageData());
-        failedDescriptor.setBottomRight(new ImageDescriptor[] {DBIcon.OVER_ERROR.getImageDescriptor()} );
-        this.iconError = new Image(this.iconNormal.getDevice(), failedDescriptor.getImageData());
+        this.iconError = new DBIconComposite(this.iconPlain, false, null, null, isCustom() ? DBIcon.OVER_LAMP : null, DBIcon.OVER_ERROR);
     }
 
     public void dispose()
     {
-        if (iconPlain != null) {
-            iconPlain.dispose();
-            iconPlain = null;
-        }
-        if (iconNormal != null) {
-            iconNormal.dispose();
-            iconNormal = null;
-        }
-        if (iconError != null) {
-            iconError.dispose();
-            iconError = null;
-        }
         synchronized (usedBy) {
             if (!usedBy.isEmpty()) {
                 log.error("Driver '" + getName() + "' still used by " + usedBy.size() + " data sources");
@@ -417,7 +397,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
      * Plain icon (without any overlays).
      * @return plain icon
      */
-    public Image getPlainIcon()
+    public DBPImage getPlainIcon()
     {
         return iconPlain;
     }
@@ -427,7 +407,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
      * @return icon
      */
     @Override
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         if (!isLoaded && (isFailed || (isManagable() && !isInternalDriver() && !hasValidLibraries()))) {
             return iconError;

@@ -37,11 +37,8 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.IPropertyChangeReflector;
-import org.jkiss.dbeaver.ui.INavigatorModelView;
-import org.jkiss.dbeaver.ui.IProgressControlProvider;
-import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -58,9 +55,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.IFolder;
@@ -70,6 +65,7 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.utils.CommonUtils;
 
@@ -430,7 +426,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             int propEditorIndex = getPageCount() - 1;
             setPageText(propEditorIndex, CoreMessages.editors_entity_properties_text);
             setPageToolTip(propEditorIndex, node.getNodeType() + CoreMessages.editors_entity_properties_tooltip_suffix);
-            setPageImage(propEditorIndex, node.getNodeIconDefault());
+            setPageImage(propEditorIndex, DBeaverIcons.getImage(node.getNodeIconDefault()));
         }
 /*
         if (!mainAdded) {
@@ -728,7 +724,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             int index = addPage(editor, nestedInput);
             setPageText(index, descriptor.getName());
             if (descriptor.getIcon() != null) {
-                setPageImage(index, descriptor.getIcon());
+                setPageImage(index, DBeaverIcons.getImage(descriptor.getIcon()));
             }
             if (!CommonUtils.isEmpty(descriptor.getDescription())) {
                 setPageToolTip(index, descriptor.getDescription());
@@ -781,7 +777,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         if (hasPropertiesEditor) {
             // Update main editor image
-            setPageImage(0, getEditorInput().getNavigatorNode().getNodeIconDefault());
+            setPageImage(0, DBeaverIcons.getImage(getEditorInput().getNavigatorNode().getNodeIconDefault()));
         }
     }
 
@@ -837,7 +833,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return infoGroup;
     }
 
-    private void createPathRow(Composite infoGroup, Image image, String label, String value, @Nullable SelectionListener selectionListener)
+    private void createPathRow(Composite infoGroup, DBPImage image, String label, String value, @Nullable SelectionListener selectionListener)
     {
         UIUtils.createImageLabel(infoGroup, image);
         //UIUtils.createControlLabel(infoGroup, label);
@@ -891,7 +887,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 getEditorSite(),
                 getExecutionContext(),
                 allowSave ? CoreMessages.editors_entity_dialog_persist_title : CoreMessages.editors_entity_dialog_preview_title,
-                DBIcon.SQL_PREVIEW.getImage(),
+                DBeaverIcons.getImage(DBIcon.SQL_PREVIEW),
                 script.toString());
             dialog.setShowSaveButton(allowSave);
             result = dialog.open();

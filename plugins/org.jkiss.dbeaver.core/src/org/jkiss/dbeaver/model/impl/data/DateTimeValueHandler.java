@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.data.editors.DateTimeStandaloneEditor;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.text.ParseException;
@@ -115,7 +116,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final DBDValueController controller)
         throws DBCException
     {
-        manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBIcon.TYPE_DATETIME.getImageDescriptor()) {
+        manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME)) {
             @Override
             public void run() {
                 controller.updateValue(new Date());

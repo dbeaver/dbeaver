@@ -23,6 +23,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -87,7 +88,7 @@ public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDataba
 
         public ForceApplicationAction()
         {
-            super(DB2Messages.editors_db2_application_editor_title_force_application, DBIcon.REJECT.getImageDescriptor());
+            super(DB2Messages.editors_db2_application_editor_title_force_application, DBeaverIcons.getImageDescriptor(DBIcon.REJECT));
         }
 
         @Override

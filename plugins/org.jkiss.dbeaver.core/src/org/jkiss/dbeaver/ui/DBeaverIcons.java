@@ -21,16 +21,10 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,61 +37,81 @@ public class DBeaverIcons
 
     private static class IconDescriptor {
         String id;
-        ImageDescriptor imageDescriptor;
         Image image;
+        ImageDescriptor imageDescriptor;
 
         public IconDescriptor(String id, ImageDescriptor imageDescriptor) {
             this.id = id;
-            this.imageDescriptor = imageDescriptor;
             this.image = imageDescriptor.createImage(false);
+            this.imageDescriptor = imageDescriptor;
+        }
+        public IconDescriptor(String id, Image image) {
+            this.id = id;
+            this.image = image;
+            this.imageDescriptor = ImageDescriptor.createFromImage(image);
         }
     }
 
-    private static Map<String, DBPImage> iconMap = new HashMap<String, DBPImage>();
     private static Map<String, IconDescriptor> imageMap = new HashMap<String, IconDescriptor>();
-
-    static  {
-        for (Field field : DBIcon.class.getDeclaredFields()) {
-            if ((field.getModifiers() & Modifier.STATIC) == 0 || field.getType() != DBIcon.class) {
-                continue;
-            }
-            try {
-                DBIcon icon = (DBIcon) field.get(null);
-                File file = RuntimeUtils.getPlatformFile(icon.getLocation());
-                if (!file.exists()) {
-                    log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
-                    continue;
-                }
-                iconMap.put(icon.getToken(), icon);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-    }
-
-    public static Collection<DBPImage> getPredefinedImages() {
-        return new ArrayList<DBPImage>(iconMap.values());
-    }
+    private static Map<String, IconDescriptor> compositeMap = new HashMap<String, IconDescriptor>();
 
     public static Image getImage(DBPImage image)
     {
-        IconDescriptor icon = getIconByLocation(image.getLocation());
-        return icon == null ? null : icon.image;
+        if (image == null) {
+            return null;
+        } else if (image instanceof DBIconBinary) {
+            return ((DBIconBinary) image).getImage();
+        } else {
+            IconDescriptor icon = getIconByLocation(image.getLocation());
+            if (icon == null) {
+                return null;
+            } else if (image instanceof DBIconComposite) {
+                return getCompositeIcon(icon, (DBIconComposite) image).image;
+            } else {
+                return icon.image;
+            }
+        }
     }
 
     public static ImageDescriptor getImageDescriptor(DBPImage image)
     {
-        IconDescriptor icon = getIconByLocation(image.getLocation());
-        return icon == null ? null : icon.imageDescriptor;
-    }
-
-    public static Image getImageById(String token)
-    {
-        DBPImage image = iconMap.get(token);
         if (image == null) {
             return null;
+        } else if (image instanceof DBIconBinary) {
+            return ((DBIconBinary) image).getImageDescriptor();
+        } else {
+            IconDescriptor icon = getIconByLocation(image.getLocation());
+            if (icon == null) {
+                return null;
+            } else if (image instanceof DBIconComposite) {
+                return getCompositeIcon(icon, (DBIconComposite) image).imageDescriptor;
+            } else {
+                return icon.imageDescriptor;
+            }
         }
-        return getImage(image);
+    }
+
+    private static IconDescriptor getCompositeIcon(IconDescriptor mainIcon, DBIconComposite image) {
+        if (!image.hasOverlays()) {
+            return mainIcon;
+        }
+        String compositeId = mainIcon.id + "^" +
+            (image.getTopLeft() == null ? "" : image.getTopLeft().getLocation()) + "^" +
+            (image.getTopRight() == null ? "" : image.getTopRight().getLocation()) + "^" +
+            (image.getBottomLeft() == null ? "" : image.getBottomLeft().getLocation()) + "^" +
+            (image.getBottomRight() == null ? "" : image.getBottomRight().getLocation());
+        IconDescriptor icon = compositeMap.get(compositeId);
+        if (icon == null) {
+            OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.image.getImageData());
+            if (image.getTopLeft() != null) ovrImage.setTopLeft(new ImageDescriptor[] { getImageDescriptor(image.getTopLeft())} );
+            if (image.getTopRight() != null) ovrImage.setTopRight(new ImageDescriptor[]{ getImageDescriptor(image.getTopRight()) });
+            if (image.getBottomLeft() != null) ovrImage.setBottomLeft(new ImageDescriptor[]{getImageDescriptor(image.getBottomLeft())});
+            if (image.getBottomRight() != null) ovrImage.setBottomRight(new ImageDescriptor[]{getImageDescriptor(image.getBottomRight())});
+            Image resultImage = ovrImage.createImage();
+            icon = new IconDescriptor(compositeId, resultImage);
+            compositeMap.put(compositeId, icon);
+        }
+        return icon;
     }
 
     private static IconDescriptor getIconByLocation(String location) {

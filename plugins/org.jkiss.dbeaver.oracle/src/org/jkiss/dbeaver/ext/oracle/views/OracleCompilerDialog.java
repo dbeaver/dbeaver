@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -117,7 +118,7 @@ public class OracleCompilerDialog extends TrayDialog
                     final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(unit);
                     if (node != null) {
                         cell.setText(node.getNodeName());
-                        cell.setImage(node.getNodeIconDefault());
+                        cell.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
                     } else {
                         cell.setText(unit.toString());
                     }

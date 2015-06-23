@@ -17,10 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.content.parts;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
@@ -61,9 +61,9 @@ public class ContentTextEditorPart extends BaseTextEditor implements ContentEdit
     }
 
     @Override
-    public Image getContentTypeImage()
+    public DBPImage getContentTypeImage()
     {
-        return DBIcon.TYPE_TEXT.getImage();
+        return DBIcon.TYPE_TEXT;
     }
 
     @Override

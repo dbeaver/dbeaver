@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -212,13 +213,14 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("openTableOnFinish", openTableOnFinish);
     }
 
-    @Nullable
+    @NotNull
     public String getContainerFullName()
     {
         DBSObjectContainer container = getContainer();
         return container == null ? "" :
-            container instanceof DBPDataSource ? DBUtils.getObjectFullName(container) :
-            DBUtils.getObjectFullName(container) + " [" + container.getDataSource().getContainer().getName() + "]";
+            container instanceof DBPDataSource ?
+                DBUtils.getObjectFullName(container) :
+                DBUtils.getObjectFullName(container) + " [" + container.getDataSource().getContainer().getName() + "]";
     }
 
 }

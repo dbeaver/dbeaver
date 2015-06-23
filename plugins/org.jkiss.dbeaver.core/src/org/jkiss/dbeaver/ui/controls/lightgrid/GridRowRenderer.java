@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.TextUtils;
 
 /**
@@ -27,8 +28,8 @@ import org.jkiss.dbeaver.utils.TextUtils;
  */
 class GridRowRenderer extends AbstractRenderer {
 
-    static final Image IMG_EXPAND = DBIcon.TREE_EXPAND.getImage();
-    static final Image IMG_COLLAPSE = DBIcon.TREE_COLLAPSE.getImage();
+    static final Image IMG_EXPAND = DBeaverIcons.getImage(DBIcon.TREE_EXPAND);
+    static final Image IMG_COLLAPSE = DBeaverIcons.getImage(DBIcon.TREE_COLLAPSE);
     static final Rectangle EXPANDED_BOUNDS = IMG_EXPAND.getBounds();
 
     public static final int LEFT_MARGIN = 4;

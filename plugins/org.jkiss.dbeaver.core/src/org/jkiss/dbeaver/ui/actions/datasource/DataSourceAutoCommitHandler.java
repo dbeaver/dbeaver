@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 
 import java.util.Map;
@@ -80,7 +81,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                     boolean autoCommit = txnManager.isAutoCommit();
                     element.setChecked(autoCommit);
                     // Update command image
-                    element.setIcon(autoCommit ? DBIcon.TXN_COMMIT_AUTO.getImageDescriptor() : DBIcon.TXN_COMMIT_MANUAL.getImageDescriptor());
+                    element.setIcon(DBeaverIcons.getImageDescriptor(autoCommit ? DBIcon.TXN_COMMIT_AUTO : DBIcon.TXN_COMMIT_MANUAL));
                     DBPTransactionIsolation isolation = txnManager.getTransactionIsolation();
                     String isolationName = isolation == null ? "?" : isolation.getTitle();
                     element.setText(autoCommit ? "Switch to manual commit (" + isolationName + ")" : "Switch to auto-commit");

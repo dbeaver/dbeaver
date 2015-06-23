@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
@@ -134,7 +135,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                 {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
                     cell.setText(DBUtils.getObjectFullName(attrMapping.getSource()));
-                    cell.setImage(attrMapping.getIcon());
+                    cell.setImage(DBeaverIcons.getImage(attrMapping.getIcon()));
                 }
             });
             columnSource.getColumn().setText("Source Column");

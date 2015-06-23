@@ -17,18 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.ext.wmi.Activator;
-import org.jkiss.dbeaver.model.DBPCloseableObject;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -38,8 +31,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.*;
 
@@ -53,32 +44,25 @@ import java.util.List;
 public class WMIClass extends WMIContainer
     implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBPSystemObject, DBSDataContainer, DBPImageProvider
 {
-    private static Image IMG_CLASS;
-    private static Image IMG_CLASS_ABSTRACT;
-    private static Image IMG_CLASS_FINAL;
-    private static Image IMG_CLASS_ABSTRACT_FINAL;
-    private static Image IMG_ASSOCIATION;
-    private static Image IMG_ASSOCIATION_ABSTRACT;
+    static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + Activator.PLUGIN_ID + "/icons/";
+
+    private static DBPImage IMG_CLASS;
+    private static DBPImage IMG_CLASS_ABSTRACT;
+    private static DBPImage IMG_CLASS_FINAL;
+    private static DBPImage IMG_CLASS_ABSTRACT_FINAL;
+    private static DBPImage IMG_ASSOCIATION;
+    private static DBPImage IMG_ASSOCIATION_ABSTRACT;
+
+    private static DBIcon IMG_ABSTRACT_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_abstract.png");
+    private static DBIcon IMG_FINAL_OVR = new DBIcon(ICON_LOCATION_PREFIX + "ovr_final.png");
 
     static {
-        IMG_CLASS = DBIcon.TREE_CLASS.getImage();
-        ImageData baseData = IMG_CLASS.getImageData();
-        OverlayImageDescriptor ovrDescriptor = new OverlayImageDescriptor(baseData);
-        ovrDescriptor.setTopRight(new ImageDescriptor[]{
-            Activator.getImageDescriptor("icons/ovr_abstract.png")});
-        IMG_CLASS_ABSTRACT = ovrDescriptor.createImage();
-        ovrDescriptor.setBottomRight(new ImageDescriptor[]{
-            Activator.getImageDescriptor("icons/ovr_final.png")});
-        IMG_CLASS_ABSTRACT_FINAL = ovrDescriptor.createImage();
-        ovrDescriptor.setTopRight(null);
-        IMG_CLASS_FINAL = ovrDescriptor.createImage();
-
-        IMG_ASSOCIATION = DBIcon.TREE_ASSOCIATION.getImage();
-        baseData = IMG_ASSOCIATION.getImageData();
-        ovrDescriptor = new OverlayImageDescriptor(baseData);
-        ovrDescriptor.setTopRight(new ImageDescriptor[]{
-            Activator.getImageDescriptor("icons/ovr_abstract.png")});
-        IMG_ASSOCIATION_ABSTRACT = ovrDescriptor.createImage();
+        IMG_CLASS = DBIcon.TREE_CLASS;
+        IMG_CLASS_ABSTRACT = new DBIconComposite(IMG_CLASS, false, null, IMG_ABSTRACT_OVR, null, null);
+        IMG_CLASS_ABSTRACT_FINAL = new DBIconComposite(IMG_CLASS, false, null, IMG_ABSTRACT_OVR, null, IMG_FINAL_OVR);
+        IMG_CLASS_FINAL = new DBIconComposite(IMG_CLASS, false, null, null, null, IMG_FINAL_OVR);
+        IMG_ASSOCIATION = DBIcon.TREE_ASSOCIATION;
+        IMG_ASSOCIATION_ABSTRACT = new DBIconComposite(IMG_ASSOCIATION, false, null, IMG_ABSTRACT_OVR, null, null);
     }
 
     private WMIClass superClass;
@@ -477,7 +461,7 @@ public class WMIClass extends WMIContainer
 
     @Nullable
     @Override
-    public Image getObjectImage()
+    public DBPImage getObjectImage()
     {
         try {
             if (isAssociation()) {

@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -169,7 +170,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
             TableItem item = new TableItem(paramTable, SWT.NONE);
             item.setData(param);
-            item.setImage(DBIcon.TREE_ATTRIBUTE.getImage());
+            item.setImage(DBeaverIcons.getImage(DBIcon.TREE_ATTRIBUTE));
             item.setText(0, String.valueOf(param.getOrdinalPosition() + 1));
             item.setText(1, param.getTitle());
             item.setText(2, CommonUtils.toString(param.getTypeName()));

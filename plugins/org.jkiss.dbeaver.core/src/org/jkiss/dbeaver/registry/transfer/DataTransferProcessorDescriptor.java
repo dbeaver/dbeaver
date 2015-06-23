@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.registry.transfer;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -42,7 +42,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
     private final List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
     private final String name;
     private final String description;
-    private final Image icon;
+    private final DBPImage icon;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<DBPPropertyDescriptor>();
 
     public DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config)
@@ -79,7 +79,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
         return description;
     }
 
-    public Image getIcon()
+    public DBPImage getIcon()
     {
         return icon;
     }

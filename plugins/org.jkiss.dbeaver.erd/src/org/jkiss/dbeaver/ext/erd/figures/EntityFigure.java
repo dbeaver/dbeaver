@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Figure used to represent a table in the schema
@@ -45,7 +46,7 @@ public class EntityFigure extends Figure {
     {
         this.entity = entity;
 
-        Image tableImage = entity.getObject().getEntityType().getIcon();
+        Image tableImage = DBeaverIcons.getImage(entity.getObject().getEntityType().getIcon());
 
         keyFigure = new AttributeListFigure(entity, true);
         attributeFigure = new AttributeListFigure(entity, false);

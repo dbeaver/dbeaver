@@ -33,6 +33,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -145,7 +146,7 @@ public class SessionManagerViewer
         @Override
         protected void fillCustomToolbar(ToolBarManager toolbarManager) {
             contributeToToolbar(sessionManager, toolbarManager);
-            toolbarManager.add(new Action("Refresh sessions", DBIcon.REFRESH.getImageDescriptor()) {
+            toolbarManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(DBIcon.REFRESH)) {
                 @Override
                 public void run()
                 {

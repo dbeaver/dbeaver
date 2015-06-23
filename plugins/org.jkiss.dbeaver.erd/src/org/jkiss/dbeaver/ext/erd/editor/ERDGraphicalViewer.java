@@ -20,7 +20,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.gef.DefaultEditDomain;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.GraphicalViewer;
@@ -32,7 +31,6 @@ import org.eclipse.gef.palette.ToolEntry;
 import org.eclipse.gef.tools.SelectionTool;
 import org.eclipse.gef.ui.parts.AbstractEditPartViewer;
 import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.DisposeEvent;
@@ -43,16 +41,18 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
@@ -286,7 +286,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 
         PaletteDrawer dsDrawer = new PaletteDrawer(
             container.getName(),
-            ImageDescriptor.createFromImage(container.getDriver().getIcon()));
+            DBeaverIcons.getImageDescriptor(container.getDriver().getIcon()));
         dsDrawer.setDescription(container.getDescription());
         dsDrawer.setId(container.getId());
 
@@ -343,7 +343,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         private final DBSEntity table;
         public ToolEntryTable(DBSEntity table)
         {
-            super(table.getName(), table.getDescription(), DBIcon.TREE_TABLE.getImageDescriptor(), null);
+            super(table.getName(), table.getDescription(), DBeaverIcons.getImageDescriptor(DBIcon.TREE_TABLE), null);
             this.setUserModificationPermission(PERMISSION_NO_MODIFICATION);
             setDescription(DBUtils.getObjectFullName(table));
             this.table = table;

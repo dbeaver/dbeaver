@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ProxyPageSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewer;
@@ -179,7 +180,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     @Override
     protected Image getImage(Template template)
     {
-        return DBIcon.SQL_SCRIPT.getImage();
+        return DBeaverIcons.getImage(DBIcon.SQL_SCRIPT);
     }
 
     @Override

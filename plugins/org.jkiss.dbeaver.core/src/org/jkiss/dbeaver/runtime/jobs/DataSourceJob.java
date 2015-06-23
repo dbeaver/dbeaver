@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * DataSourceJob
@@ -46,7 +47,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
         //setProperty(IProgressConstants.KEEP_PROPERTY, Boolean.TRUE);
         //setProperty(IProgressConstants.KEEPONE_PROPERTY, Boolean.TRUE);
         if (image == null) {
-            image = ImageDescriptor.createFromImage(dataSourceContainer.getDriver().getIcon());
+            image = DBeaverIcons.getImageDescriptor(dataSourceContainer.getDriver().getIcon());
         }
         setProperty(IProgressConstants.ICON_PROPERTY, image);
 

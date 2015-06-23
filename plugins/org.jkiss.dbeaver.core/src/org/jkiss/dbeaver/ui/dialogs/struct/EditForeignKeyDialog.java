@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IProgressControlProvider;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -350,7 +351,7 @@ public class EditForeignKeyDialog extends Dialog {
     private Image getColumnIcon(DBSEntityAttribute column)
     {
         if (column instanceof DBPImageProvider) {
-            return ((DBPImageProvider) column).getObjectImage();
+            return DBeaverIcons.getImage(((DBPImageProvider) column).getObjectImage());
         }
         return null;
     }
@@ -386,7 +387,7 @@ public class EditForeignKeyDialog extends Dialog {
         super.configureShell(shell);
         if (ownerTableNode != null) {
             shell.setText(NLS.bind(CoreMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
-            shell.setImage(ownerTableNode.getNodeIcon());
+            shell.setImage(DBeaverIcons.getImage(ownerTableNode.getNodeIcon()));
         }
     }
 

@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -37,7 +37,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final String label;
     private final String description;
     private final ObjectType presentationType;
-    private final Image icon;
+    private final DBPImage icon;
     private final int order;
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
@@ -63,7 +63,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         return description;
     }
 
-    public Image getIcon() {
+    public DBPImage getIcon() {
         return icon;
     }
 

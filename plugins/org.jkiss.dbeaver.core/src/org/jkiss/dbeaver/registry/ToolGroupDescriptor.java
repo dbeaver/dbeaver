@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -31,7 +31,7 @@ public class ToolGroupDescriptor extends AbstractContextDescriptor {
     private final String id;
     private final String label;
     private final String description;
-    private final Image icon;
+    private final DBPImage icon;
     private final ToolGroupDescriptor parent;
 
     public ToolGroupDescriptor(
@@ -58,7 +58,7 @@ public class ToolGroupDescriptor extends AbstractContextDescriptor {
         return description;
     }
 
-    public Image getIcon() {
+    public DBPImage getIcon() {
         return icon;
     }
 

@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -198,7 +199,7 @@ public abstract class AttributesSelectorDialog extends Dialog {
 
             DBNDatabaseNode attributeNode = DBeaverCore.getInstance().getNavigatorModel().findNode(attribute);
             if (attributeNode != null) {
-                columnItem.setImage(0, attributeNode.getNodeIcon());
+                columnItem.setImage(0, DBeaverIcons.getImage(attributeNode.getNodeIcon()));
             }
             columnItem.setText(0, attribute.getName());
             columnItem.setText(2, attribute.getTypeName());

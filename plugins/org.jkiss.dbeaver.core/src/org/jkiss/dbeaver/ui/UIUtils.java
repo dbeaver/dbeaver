@@ -59,12 +59,14 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomTextCellEditor;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -451,10 +453,10 @@ public class UIUtils {
         return textLabel;
     }
 
-    public static Label createImageLabel(Composite parent, Image image)
+    public static Label createImageLabel(Composite parent, DBPImage image)
     {
         Label imageLabel = new Label(parent, SWT.NONE);
-        imageLabel.setImage(image);
+        imageLabel.setImage(DBeaverIcons.getImage(image));
 
         return imageLabel;
     }
@@ -781,7 +783,7 @@ public class UIUtils {
     {
         for (IStatus s = status; s != null; ) {
             if (s.getException() instanceof DBException) {
-                if (DBUtils.showDatabaseError(shell, title, message, (DBException) s.getException())) {
+                if (showDatabaseError(shell, title, message, (DBException) s.getException())) {
                     // If this DB error was handled by some DB-specific way then just don't care about it
                     return;
                 }
@@ -902,7 +904,7 @@ public class UIUtils {
         });
 
         Button openFolder = new Button(chooserPlaceholder, SWT.PUSH | SWT.FLAT);
-        openFolder.setImage(DBIcon.TREE_FOLDER.getImage());
+        openFolder.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
         openFolder.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER));
         openFolder.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -1281,6 +1283,24 @@ public class UIUtils {
             log.warn("Unsupported property type: " + propertyType.getName());
             return null;
         }
+    }
+
+    public static boolean showDatabaseError(Shell shell, String title, String message, DBException error)
+    {
+        DBPDataSource dataSource = error.getDataSource();
+        if (dataSource instanceof DBPErrorAssistant) {
+            DBPErrorAssistant.ErrorType errorType = ((DBPErrorAssistant) dataSource).discoverErrorType(error);
+            switch (errorType) {
+                case CONNECTION_LOST:
+                    DataSourceInvalidateHandler.showConnectionLostDialog(shell, message, error);
+                    return true;
+                case DRIVER_CLASS_MISSING:
+                    DriverEditDialog.showBadConfigDialog(shell, message, error);
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private static class SaveRunner implements Runnable {

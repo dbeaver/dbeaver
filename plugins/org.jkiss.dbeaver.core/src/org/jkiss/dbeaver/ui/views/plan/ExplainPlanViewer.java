@@ -36,13 +36,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
@@ -224,7 +225,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private class RefreshPlanAction extends Action {
         private RefreshPlanAction()
         {
-            super("Reevaluate", DBIcon.REFRESH.getImageDescriptor());
+            super("Reevaluate", DBeaverIcons.getImageDescriptor(DBIcon.REFRESH));
         }
 
         @Override
@@ -243,7 +244,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private class ToggleViewAction extends Action {
         private ToggleViewAction()
         {
-            super("View Source", DBIcon.SQL_TEXT.getImageDescriptor());
+            super("View Source", DBeaverIcons.getImageDescriptor(DBIcon.SQL_TEXT));
         }
 
         @Override
