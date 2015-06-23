@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
-import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
@@ -49,7 +48,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-public class DatabaseNavigatorTree extends Composite implements IDBNListener
+public class DatabaseNavigatorTree extends Composite implements INavigatorListener
 {
     static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 

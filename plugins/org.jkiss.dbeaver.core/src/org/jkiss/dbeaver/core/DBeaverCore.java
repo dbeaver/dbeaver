@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
@@ -34,7 +33,6 @@ import org.jkiss.dbeaver.registry.OSDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
-import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
