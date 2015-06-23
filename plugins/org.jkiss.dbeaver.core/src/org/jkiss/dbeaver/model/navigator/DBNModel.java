@@ -21,16 +21,12 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.runtime.IAdapterManager;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -60,7 +56,6 @@ public class DBNModel implements IResourceChangeListener {
     private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
     private transient IDBNListener[] listenersCopy = null;
     private final Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
-    private DBNAdapterFactory nodesAdapter;
 
     public DBNModel()
     {
@@ -90,17 +85,10 @@ public class DBNModel implements IResourceChangeListener {
 */
 
         core.getWorkspace().addResourceChangeListener(this);
-
-        nodesAdapter = new DBNAdapterFactory();
-        IAdapterManager mgr = Platform.getAdapterManager();
-        mgr.registerAdapters(nodesAdapter, DBNNode.class);
-        mgr.registerAdapters(nodesAdapter, DBPObject.class);
-        mgr.registerAdapters(nodesAdapter, DBPQualifiedObject.class);
     }
 
     public void dispose()
     {
-        Platform.getAdapterManager().unregisterAdapters(nodesAdapter);
         DBeaverCore.getInstance().getWorkspace().removeResourceChangeListener(this);
         this.root.dispose(false);
         synchronized (nodeMap) {

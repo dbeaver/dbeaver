@@ -38,7 +38,7 @@ class GridCellRenderer extends AbstractRenderer
     private static final int TEXT_TOP_MARGIN = 1;
     private static final int INSIDE_MARGIN = 3;
 
-    static final Image LINK_IMAGE = DBeaverIcons.getImage(DBIcon.TREE_LINK);
+    static final Image LINK_IMAGE = DBeaverIcons.getImage(DBIcon.LINK);
     static final Rectangle LINK_IMAGE_BOUNDS = LINK_IMAGE.getBounds();
 
     protected Color colorSelected;

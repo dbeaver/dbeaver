@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.navigator;
+package org.jkiss.dbeaver.ui.views.navigator;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -29,6 +29,9 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
@@ -37,7 +40,7 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 /**
  * Navigator AdapterFactory
  */
-public class DBNAdapterFactory implements IAdapterFactory
+public class NavigatorAdapterFactory implements IAdapterFactory
 {
     private static final Class<?>[] ADAPTER_LIST = {
         DBPNamedObject.class,
