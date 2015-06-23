@@ -435,30 +435,34 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public void writeBinaryData(InputStream stream, long streamLength) throws IOException
         {
-            exportSite.flush();
-            switch (settings.getLobEncoding()) {
-                case BASE64:
-                {
-                    Base64.encode(stream, streamLength, writer);
-                    break;
-                }
-                case HEX:
-                {
-                    writer.write("0x"); //$NON-NLS-1$
-                    byte[] buffer = new byte[5000];
-                    for (;;) {
-                        int count = stream.read(buffer);
-                        if (count <= 0) {
-                            break;
-                        }
-                        GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
+            try {
+                exportSite.flush();
+                switch (settings.getLobEncoding()) {
+                    case BASE64:
+                    {
+                        Base64.encode(stream, streamLength, writer);
+                        break;
                     }
-                    break;
+                    case HEX:
+                    {
+                        writer.write("0x"); //$NON-NLS-1$
+                        byte[] buffer = new byte[5000];
+                        for (;;) {
+                            int count = stream.read(buffer);
+                            if (count <= 0) {
+                                break;
+                            }
+                            GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
+                        }
+                        break;
+                    }
+                    default:
+                        // Binary stream
+                        IOUtils.copyStream(stream, outputStream, 5000);
+                        break;
                 }
-                default:
-                    // Binary stream
-                    IOUtils.copyStream(stream, outputStream, 5000);
-                    break;
+            } finally {
+                ContentUtils.close(stream);
             }
         }
     }
