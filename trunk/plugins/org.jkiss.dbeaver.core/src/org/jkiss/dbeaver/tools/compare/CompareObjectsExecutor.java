@@ -30,10 +30,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.editors.entity.properties.PropertiesContributor;
-import org.jkiss.dbeaver.ui.properties.DataSourcePropertyFilter;
-import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
-import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.properties.DataSourcePropertyFilter;
+import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;

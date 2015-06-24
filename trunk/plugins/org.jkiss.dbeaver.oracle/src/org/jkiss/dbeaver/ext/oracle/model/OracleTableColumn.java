@@ -27,11 +27,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.runtime.properties.IPropertyValueListProvider;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;

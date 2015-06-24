@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.editors.ContentInlineEditor;
 import org.jkiss.dbeaver.model.impl.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.Blob;

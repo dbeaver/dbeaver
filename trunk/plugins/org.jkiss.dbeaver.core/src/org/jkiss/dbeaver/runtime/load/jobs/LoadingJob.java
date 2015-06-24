@@ -118,7 +118,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             if (innerError != null) {
                 log.debug(innerError);
                 UIUtils.showErrorDialog(
-                    visualizer.getShell(),
+                    null,
                     getName(),
                     null,
                     innerError);
