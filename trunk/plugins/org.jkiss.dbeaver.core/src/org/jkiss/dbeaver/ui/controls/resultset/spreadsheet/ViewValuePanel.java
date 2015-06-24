@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueManager;
 
 /**
  * RSV value view panel
@@ -121,15 +122,16 @@ abstract class ViewValuePanel extends Composite {
             columnImageLabel.setImage(DBeaverIcons.getImage(DBUtils.getTypeImage(valueController.getValueType())));
             columnNameLabel.setText(valueController.getValueName());
             // Create a new one
+            IValueManager valueManager = valueController.getValueManager();
             try {
-                valueViewer = valueController.getValueManager().createEditor(valueController);
+                valueViewer = valueManager.createEditor(valueController);
             } catch (DBException e) {
                 UIUtils.showErrorDialog(getShell(), "Value preview", "Can't create value viewer", e);
                 return;
             }
             toolBarManager.removeAll();
             try {
-                valueController.getValueManager().contributeActions(toolBarManager, valueController);
+                valueManager.contributeActions(toolBarManager, valueController);
             } catch (DBCException e) {
                 log.error("Error filling toolbar actions", e);
             }
