@@ -17,19 +17,14 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.eclipse.jface.viewers.IFilter;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
 /**
- * Standard filter for property view
+ * Interface for filters. Can accept or reject items.
  */
-public class PropertyViewFilter implements IFilter {
-
-    public static final PropertyViewFilter INSTANCE = new PropertyViewFilter();
-
-    @Override
-    public boolean select(Object toTest)
-    {
-        return toTest instanceof IPropertyDescriptor && !"name".equals(((IPropertyDescriptor)toTest).getId());
-    }
+public interface IPropertyFilter {
+	/**
+	 * Determines if the given property passes this filter.
+	 */
+	boolean select(DBPPropertyDescriptor toTest);
 }
