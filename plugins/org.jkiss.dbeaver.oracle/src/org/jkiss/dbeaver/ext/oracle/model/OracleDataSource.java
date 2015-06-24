@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.runtime.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;

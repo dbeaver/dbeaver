@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
-import org.jkiss.dbeaver.runtime.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.IOException;
