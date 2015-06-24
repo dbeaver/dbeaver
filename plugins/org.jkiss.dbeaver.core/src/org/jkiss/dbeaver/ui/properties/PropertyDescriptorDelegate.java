@@ -40,7 +40,7 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
 
     @Override
     public CellEditor createPropertyEditor(Composite parent) {
-        return UIUtils.createCellEditor(parent, propSource, source);
+        return UIUtils.createCellEditor(parent, propSource.getEditableValue(), source);
     }
 
     @Override

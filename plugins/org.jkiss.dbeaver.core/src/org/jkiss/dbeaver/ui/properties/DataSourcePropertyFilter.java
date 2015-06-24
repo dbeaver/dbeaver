@@ -17,17 +17,17 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.eclipse.jface.viewers.IFilter;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
  * Datasource property filter
  */
-public class DataSourcePropertyFilter implements IFilter {
+public class DataSourcePropertyFilter implements IPropertyFilter {
 
     private final boolean showExpensive;
 
@@ -49,7 +49,7 @@ public class DataSourcePropertyFilter implements IFilter {
     }
 
     @Override
-    public boolean select(Object toTest)
+    public boolean select(DBPPropertyDescriptor toTest)
     {
         if (toTest instanceof ObjectPropertyDescriptor) {
             ObjectPropertyDescriptor prop = (ObjectPropertyDescriptor)toTest;
