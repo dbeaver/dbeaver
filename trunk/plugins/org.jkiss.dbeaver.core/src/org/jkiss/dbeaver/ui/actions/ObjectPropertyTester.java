@@ -30,9 +30,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
-
-import java.util.Collection;
 
 /**
  * ObjectPropertyTester
@@ -68,13 +65,13 @@ public class ObjectPropertyTester extends PropertyTester
         if (property.equals(PROP_CAN_OPEN)) {
             return node.isPersisted();
         } else if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
-            Class objectType = null;
+            Class objectType;
             if (!(node instanceof DBNContainer)) {
                 if (node.getParentNode() instanceof DBNContainer) {
                     node = node.getParentNode();
                 }
             }
-            DBNContainer container = null;
+            DBNContainer container;
             if (node instanceof DBNContainer) {
                 // Try to detect child type
                 objectType = ((DBNContainer)node).getChildrenClass();
@@ -143,9 +140,9 @@ public class ObjectPropertyTester extends PropertyTester
             if (node instanceof DBNDatabaseNode) {
                 DBSObject object = ((DBNDatabaseNode)node).getObject();
                 return
+                    object != null &&
                     !isReadOnly(object) &&
                     node.getParentNode() instanceof DBNContainer &&
-                    object != null &&
                     getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
             }
         } else if (property.equals(PROP_CAN_FILTER)) {
@@ -165,7 +162,7 @@ public class ObjectPropertyTester extends PropertyTester
         return dataSource == null || dataSource.getContainer().isConnectionReadOnly();
     }
 
-    private static <T extends DBEObjectManager> T getObjectManager(Class objectType, Class<T> managerType)
+    private static <T extends DBEObjectManager> T getObjectManager(Class<?> objectType, Class<T> managerType)
     {
         return EntityEditorsRegistry.getInstance().getObjectManager(objectType, managerType);
     }

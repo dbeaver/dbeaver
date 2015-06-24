@@ -19,14 +19,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 
 import java.io.IOException;
@@ -38,6 +31,7 @@ public class PreferenceStoreDelegate implements IPreferenceStore, IPersistentPre
 {
     private final DBPPreferenceStore delegate;
 
+/*
     private static class PropertyChangeListenerDelegate implements IPropertyChangeListener {
         private final DBPPreferenceListener delegate;
 
@@ -56,6 +50,7 @@ public class PreferenceStoreDelegate implements IPreferenceStore, IPersistentPre
                 ));
         }
     }
+*/
 
     public PreferenceStoreDelegate(DBPPreferenceStore delegate) {
         this.delegate = delegate;
