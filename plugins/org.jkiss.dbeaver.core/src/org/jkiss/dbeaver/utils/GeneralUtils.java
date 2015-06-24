@@ -18,10 +18,10 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -91,7 +91,7 @@ public class GeneralUtils {
 
     public static String getDefaultBinaryFileEncoding(DBPDataSource dataSource)
     {
-        IPreferenceStore preferenceStore;
+        DBPPreferenceStore preferenceStore;
         if (dataSource == null) {
             preferenceStore = DBeaverCore.getGlobalPreferenceStore();
         } else {

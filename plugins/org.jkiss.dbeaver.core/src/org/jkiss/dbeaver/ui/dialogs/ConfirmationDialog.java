@@ -20,14 +20,15 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 
 import java.util.ResourceBundle;
 
@@ -67,7 +68,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         boolean toggleState,
         String key)
     {
-        IPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
         if (ConfirmationDialog.ALWAYS.equals(prefStore.getString(key))) {
             if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
                 return IDialogConstants.YES_ID;
@@ -91,7 +92,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             0,
             toggleMessage,
             toggleState);
-        dialog.setPrefStore(prefStore);
+        dialog.setPrefStore(new PreferenceStoreDelegate(prefStore));
         dialog.setPrefKey(key);
         return dialog.open();
     }

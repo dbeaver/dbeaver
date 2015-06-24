@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.ProxyPageSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
+import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 
 
 /**
@@ -135,7 +136,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     @Override
     protected IPreferenceStore getTemplatePreferenceStore()
     {
-        return DBeaverCore.getGlobalPreferenceStore();
+        return new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore());
     }
 
     @Override

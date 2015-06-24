@@ -17,10 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.erd;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.preferences.BundlePreferenceStore;
 import org.osgi.framework.BundleContext;
 
 import java.util.MissingResourceException;
@@ -39,20 +39,19 @@ public class Activator extends AbstractUIPlugin {
 	
     private static ResourceBundle resourceBundle;
 
-	/**
-	 * The constructor
-	 */
+    private DBPPreferenceStore preferences;
+
+    /**
+     * The constructor
+     */
 	public Activator() {
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
-	 */
 	@Override
     public void start(BundleContext context) throws Exception {
         super.start(context);
 		plugin = this;
+        preferences = new BundlePreferenceStore(getBundle());
 
         try {
             resourceBundle = ResourceBundle.getBundle(ERDMessages.BUNDLE_NAME);
@@ -65,10 +64,6 @@ public class Activator extends AbstractUIPlugin {
         System.setProperty("sun.java2d.d3d", Boolean.FALSE.toString()); //$NON-NLS-1$
 	}
 
-    /*
-      * (non-Javadoc)
-      * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
-      */
 	@Override
     public void stop(BundleContext context) throws Exception {
 		plugin = null;
@@ -104,17 +99,7 @@ public class Activator extends AbstractUIPlugin {
         return resourceBundle;
     }
 
-    /**
-     * Returns the string from the plugin's resource bundle, or 'key' if not
-     * found.
-     */
-    public static String getResourceString(String key)
-    {
-        ResourceBundle bundle = getResourceBundle();
-        try {
-            return bundle.getString(key);
-        } catch (MissingResourceException e) {
-            return key;
-        }
+    public DBPPreferenceStore getPreferences() {
+        return preferences;
     }
 }

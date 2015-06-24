@@ -18,8 +18,8 @@
 
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.utils.CommonUtils;
@@ -45,7 +45,7 @@ public class DefaultEventFilter implements QMEventFilter {
 
     public void reloadPreferences()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
         this.showSessions = objectTypes.contains(QMObjectType.session);

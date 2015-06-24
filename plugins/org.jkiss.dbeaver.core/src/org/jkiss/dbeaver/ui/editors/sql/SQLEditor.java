@@ -28,8 +28,6 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.*;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -52,7 +50,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -106,7 +103,7 @@ public class SQLEditor extends SQLEditorBase implements
     IResultSetContainer,
     DBPDataSourceUser,
     DBPDataSourceHandler,
-    IPropertyChangeListener
+    DBPPreferenceListener
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
@@ -951,7 +948,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
+    public void preferenceChange(PreferenceChangeEvent event) {
         if (event.getProperty().equals(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER) ||
             event.getProperty().equals(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER))
         {

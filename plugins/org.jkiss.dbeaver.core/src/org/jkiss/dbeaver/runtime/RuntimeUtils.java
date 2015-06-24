@@ -24,13 +24,12 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.preference.IPersistentPreferenceStore;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.program.Program;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -189,27 +188,23 @@ public class RuntimeUtils {
         });
     }
 
-    public static void savePreferenceStore(IPreferenceStore store)
+    public static void savePreferenceStore(DBPPreferenceStore store)
     {
-        if (store instanceof IPersistentPreferenceStore) {
-            try {
-                ((IPersistentPreferenceStore) store).save();
-            } catch (IOException e) {
-                log.warn(e);
-            }
-        } else {
-            log.debug("Can't save preference store '" + store + "' - not a persistent one"); //$NON-NLS-1$
+        try {
+            store.save();
+        } catch (IOException e) {
+            log.warn(e);
         }
     }
 
-    public static void setDefaultPreferenceValue(IPreferenceStore store, String name, Object value)
+    public static void setDefaultPreferenceValue(DBPPreferenceStore store, String name, Object value)
     {
         if (CommonUtils.isEmpty(store.getDefaultString(name))) {
             store.setDefault(name, value.toString());
         }
     }
 
-    public static Object getPreferenceValue(IPreferenceStore store, String propName, Class<?> valueType)
+    public static Object getPreferenceValue(DBPPreferenceStore store, String propName, Class<?> valueType)
     {
         try {
             if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
@@ -241,7 +236,7 @@ public class RuntimeUtils {
         return CommonUtils.isEmpty(string) ? null : string;
     }
 
-    public static void setPreferenceValue(IPreferenceStore store, String propName, Object value)
+    public static void setPreferenceValue(DBPPreferenceStore store, String propName, Object value)
     {
         if (value == null) {
             return;
@@ -263,7 +258,7 @@ public class RuntimeUtils {
         }
     }
 
-    public static void setPreferenceDefaultValue(IPreferenceStore store, String propName, Object value)
+    public static void setPreferenceDefaultValue(DBPPreferenceStore store, String propName, Object value)
     {
         if (value == null) {
             return;

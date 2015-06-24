@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -49,7 +50,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
      */
     public static FontData getPrefFontData()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         String fontName = store.getString(DBeaverPreferences.HEX_FONT_NAME);
         int fontStyle = store.getInt(DBeaverPreferences.HEX_FONT_STYLE);
         int fontSize = store.getInt(DBeaverPreferences.HEX_FONT_SIZE);
@@ -100,7 +101,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
     @Override
     public boolean performOk()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         FontData fontData = preferences.getFontData();
         store.setValue(DBeaverPreferences.HEX_FONT_NAME, fontData.getName());
         store.setValue(DBeaverPreferences.HEX_FONT_STYLE, fontData.getStyle());

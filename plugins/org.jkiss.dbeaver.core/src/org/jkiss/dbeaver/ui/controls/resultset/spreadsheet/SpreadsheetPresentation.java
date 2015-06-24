@@ -43,7 +43,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -76,10 +75,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -190,7 +186,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             };
 
-            final IPreferenceStore preferences = getPreferenceStore();
+            final DBPPreferenceStore preferences = getPreferenceStore();
             int ratio = preferences.getInt(VIEW_PANEL_RATIO);
             boolean viewPanelVisible = preferences.getBoolean(VIEW_PANEL_VISIBLE);
             if (ratio <= 0) {
@@ -496,7 +492,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public void refreshData(boolean refreshMetadata, boolean append) {
         // Cache preferences
-        IPreferenceStore preferenceStore = getPreferenceStore();
+        DBPPreferenceStore preferenceStore = getPreferenceStore();
         showOddRows = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
 
@@ -927,7 +923,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     ///////////////////////////////////////////////
     // Misc
 
-    public IPreferenceStore getPreferenceStore() {
+    public DBPPreferenceStore getPreferenceStore() {
         return controller.getPreferenceStore();
     }
 

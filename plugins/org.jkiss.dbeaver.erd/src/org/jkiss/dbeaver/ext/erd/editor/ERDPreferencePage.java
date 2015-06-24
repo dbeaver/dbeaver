@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -136,7 +137,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     @Override
     public boolean performOk()
     {
-        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        DBPPreferenceStore store = Activator.getDefault().getPreferences();
 
         store.setValue(ERDConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
         store.setValue(ERDConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());

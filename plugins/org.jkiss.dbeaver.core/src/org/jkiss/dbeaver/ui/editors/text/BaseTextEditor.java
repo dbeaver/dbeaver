@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
+import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -117,7 +118,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
     @Override
     public void createPartControl(Composite parent)
     {
-        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
+        setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
 
         super.createPartControl(parent);
     }

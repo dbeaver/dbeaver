@@ -22,11 +22,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -123,6 +122,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private final List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
 
     private transient boolean isFailed = false;
+
+    static {
+        File driversHome = DriverDescriptor.getCustomDriversHome();
+        System.setProperty(DBeaverConstants.PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
+    }
 
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
     {
@@ -972,7 +976,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private boolean acceptLicense(String licenseText) {
         // Check registry
-        IPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
         String acceptedStr = prefs.getString(LICENSE_ACCEPT_KEY + getId());
         if (!CommonUtils.isEmpty(acceptedStr)) {
             return true;
@@ -1018,7 +1022,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private void downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
     {
-        IPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
         String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
         Proxy proxy = null;
         if (!CommonUtils.isEmpty(proxyHost)) {

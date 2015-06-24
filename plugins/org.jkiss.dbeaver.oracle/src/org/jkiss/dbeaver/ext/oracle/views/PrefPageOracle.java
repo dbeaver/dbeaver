@@ -18,15 +18,16 @@
  */
 package org.jkiss.dbeaver.ext.oracle.views;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
 import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
 
@@ -44,7 +45,7 @@ public class PrefPageOracle extends TargetPrefPage
     public PrefPageOracle()
     {
         super();
-        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
+        setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
     }
 
     @Override
@@ -91,7 +92,7 @@ public class PrefPageOracle extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(IPreferenceStore store)
+    protected void loadPreferences(DBPPreferenceStore store)
     {
         explainTableText.setText(store.getString(OracleConstants.PREF_EXPLAIN_TABLE_NAME));
         rowidSupportCheck.setSelection(store.getBoolean(OracleConstants.PREF_SUPPORT_ROWID));
@@ -99,7 +100,7 @@ public class PrefPageOracle extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(IPreferenceStore store)
+    protected void savePreferences(DBPPreferenceStore store)
     {
         store.setValue(OracleConstants.PREF_EXPLAIN_TABLE_NAME, explainTableText.getText());
         store.setValue(OracleConstants.PREF_SUPPORT_ROWID, rowidSupportCheck.getSelection());
@@ -108,7 +109,7 @@ public class PrefPageOracle extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(IPreferenceStore store)
+    protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(OracleConstants.PREF_EXPLAIN_TABLE_NAME);
         store.setToDefault(OracleConstants.PREF_SUPPORT_ROWID);

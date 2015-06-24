@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -97,7 +97,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             }
         });
         //shell.setDefaultButton(searchButton);
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         providersFolder = new TabFolder(group, SWT.TOP);
         providersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -168,7 +168,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
 
     public void saveState()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.setValue(NEW_TAB_PREF_NAME, openNewTabCheck.getSelection());
         for (TabItem item : providersFolder.getItems()) {
             IObjectSearchPage page = (IObjectSearchPage) item.getData("page");

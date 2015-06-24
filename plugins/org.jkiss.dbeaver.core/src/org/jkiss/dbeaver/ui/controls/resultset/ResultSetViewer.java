@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
@@ -465,7 +464,7 @@ public class ResultSetViewer extends Viewer
     // Misc
 
     @NotNull
-    public IPreferenceStore getPreferenceStore()
+    public DBPPreferenceStore getPreferenceStore()
     {
         DBCExecutionContext context = getExecutionContext();
         if (context != null) {
@@ -2116,7 +2115,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            IPreferenceStore preferenceStore = getPreferenceStore();
+            DBPPreferenceStore preferenceStore = getPreferenceStore();
             preferenceStore.setValue(
                 DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE,
                 !preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));

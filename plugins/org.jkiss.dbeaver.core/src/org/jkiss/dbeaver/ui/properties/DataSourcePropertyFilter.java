@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.IFilter;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
@@ -42,7 +43,7 @@ public class DataSourcePropertyFilter implements IFilter {
 
     public DataSourcePropertyFilter(DBSDataSourceContainer container)
     {
-        IPreferenceStore store = container != null ?
+        DBPPreferenceStore store = container != null ?
             container.getPreferenceStore() :
             DBeaverCore.getGlobalPreferenceStore();
         this.showExpensive = store.getBoolean(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES);

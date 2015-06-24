@@ -3,9 +3,13 @@ package org.jkiss.dbeaver.runtime.preferences;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
+import org.osgi.service.prefs.BackingStoreException;
 
-public class BundlePreferenceStore extends AbstractPreferenceStore{
+import java.io.IOException;
+
+public class BundlePreferenceStore extends AbstractPreferenceStore {
 
     private final IEclipsePreferences defaultProps;
     private final IEclipsePreferences props;
@@ -147,36 +151,108 @@ public class BundlePreferenceStore extends AbstractPreferenceStore{
 
     @Override
     public void setToDefault(String name) {
-
+        String oldValue = getString(name);
+        String defaultValue = getDefaultString(name);
+        props.remove(name);
+        if (!CommonUtils.equalObjects(oldValue, defaultValue)) {
+            dirty = true;
+            firePropertyChangeEvent(name, oldValue, defaultValue);
+        }
     }
 
     @Override
     public void setValue(String name, double value) {
-
+        double oldValue = getDouble(name);
+        if (oldValue == value) {
+            return;
+        }
+        if (getDefaultDouble(name) == value) {
+            props.remove(name);
+        } else {
+            props.putDouble(name, value);
+        }
+        dirty = true;
+        firePropertyChangeEvent(name, new Double(oldValue), new Double(value));
     }
 
     @Override
     public void setValue(String name, float value) {
-
+        float oldValue = getFloat(name);
+        if (oldValue == value) {
+            return;
+        }
+        if (getDefaultFloat(name) == value) {
+            props.remove(name);
+        } else {
+            props.putFloat(name, value);
+        }
+        dirty = true;
+        firePropertyChangeEvent(name, new Float(oldValue), new Float(value));
     }
 
     @Override
     public void setValue(String name, int value) {
-
+        int oldValue = getInt(name);
+        if (oldValue == value) {
+            return;
+        }
+        if (getDefaultInt(name) == value) {
+            props.remove(name);
+        } else {
+            props.putInt(name, value);
+        }
+        dirty = true;
+        firePropertyChangeEvent(name, new Integer(oldValue), new Integer(value));
     }
 
     @Override
     public void setValue(String name, long value) {
-
+        long oldValue = getLong(name);
+        if (oldValue == value) {
+            return;
+        }
+        if (getDefaultLong(name) == value) {
+            props.remove(name);
+        } else {
+            props.putLong(name, value);
+        }
+        dirty = true;
+        firePropertyChangeEvent(name, new Long(oldValue), new Long(value));
     }
 
     @Override
     public void setValue(String name, String value) {
-
+        if (getDefaultString(name).equals(value)) {
+            props.remove(name);
+        } else {
+            props.put(name, value);
+        }
+        dirty = true;
     }
 
     @Override
     public void setValue(String name, boolean value) {
-
+        boolean oldValue = getBoolean(name);
+        if (oldValue == value) {
+            return;
+        }
+        if (getDefaultBoolean(name) == value) {
+            props.remove(name);
+        } else {
+            props.putBoolean(name, value);
+        }
+        dirty = true;
+        firePropertyChangeEvent(name, oldValue ? Boolean.TRUE : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
     }
+
+    @Override
+    public void save() throws IOException {
+        try {
+            props.flush();
+            defaultProps.flush();
+        } catch (BackingStoreException e) {
+            throw new IOException(e);
+        }
+    }
+
 }

@@ -19,11 +19,7 @@ package org.jkiss.dbeaver.ui.editors.text;
 
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.source.*;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -32,6 +28,8 @@ import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 
 /**
  * The line number ruler contribution. Encapsulates a {@link org.eclipse.jface.text.source.LineNumberChangeRulerColumn} as a
@@ -205,7 +203,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
             ((IVerticalRulerInfoExtension) fDelegate).removeVerticalRulerListener(listener);
     }
 
-    private IPreferenceStore getPreferenceStore()
+    private DBPPreferenceStore getPreferenceStore()
     {
         return DBeaverCore.getGlobalPreferenceStore();
     }
@@ -220,7 +218,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
      */
     private void initialize()
     {
-        final IPreferenceStore store = getPreferenceStore();
+        final DBPPreferenceStore store = getPreferenceStore();
         if (store == null)
             return;
 
@@ -235,9 +233,9 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
         // listen to changes
         fDispatcher = new PropertyEventDispatcher(store);
 
-        fDispatcher.addPropertyChangeListener(LINE_NUMBER_KEY, new IPropertyChangeListener() {
+        fDispatcher.addPropertyChangeListener(LINE_NUMBER_KEY, new DBPPreferenceListener() {
             @Override
-            public void propertyChange(PropertyChangeEvent event)
+            public void preferenceChange(PreferenceChangeEvent event)
             {
                 // only handle quick diff on/off information, but not ruler visibility (handled by AbstractDecoratedTextEditor)
                 updateLineNumbersVisibility(fDelegate);
@@ -272,7 +270,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
      */
     public void initializeLineNumberRulerColumn(LineNumberRulerColumn rulerColumn)
     {
-        IPreferenceStore store = getPreferenceStore();
+        DBPPreferenceStore store = getPreferenceStore();
         if (store != null) {
             updateLineNumbersVisibility(rulerColumn);
         }

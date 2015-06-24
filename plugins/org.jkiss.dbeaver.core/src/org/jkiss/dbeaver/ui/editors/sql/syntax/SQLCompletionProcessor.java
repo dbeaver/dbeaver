@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.contentassist.*;
@@ -582,8 +581,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             object);
     }
 
-    private IPreferenceStore getPreferences() {
-        IPreferenceStore store = null;
+    private DBPPreferenceStore getPreferences() {
+        DBPPreferenceStore store = null;
         DBPDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
             store = dataSource.getContainer().getPreferenceStore();
@@ -605,7 +604,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         boolean isObject,
         @Nullable DBPNamedObject object)
     {
-        IPreferenceStore store = getPreferences();
+        DBPPreferenceStore store = getPreferences();
         DBPDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
             if (isObject) {

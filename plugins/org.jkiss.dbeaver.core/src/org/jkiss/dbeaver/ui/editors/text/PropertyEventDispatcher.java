@@ -18,23 +18,23 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
+import org.jkiss.dbeaver.model.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 
 import java.util.*;
 
 public final class PropertyEventDispatcher {
 	private final Map fHandlerMap= new HashMap();
 	private final Map fReverseMap= new HashMap();
-	private final IPreferenceStore fStore;
-	private final IPropertyChangeListener fListener= new IPropertyChangeListener() {
+	private final DBPPreferenceStore fStore;
+	private final DBPPreferenceListener fListener= new DBPPreferenceListener() {
 		@Override
-        public void propertyChange(PropertyChangeEvent event) {
+        public void preferenceChange(PreferenceChangeEvent event) {
 			firePropertyChange(event);
 		}
 	};
-	public PropertyEventDispatcher(IPreferenceStore store) {
+	public PropertyEventDispatcher(DBPPreferenceStore store) {
 		Assert.isLegal(store != null);
 		fStore= store;
 	}
@@ -44,15 +44,15 @@ public final class PropertyEventDispatcher {
 		fReverseMap.clear();
 		fHandlerMap.clear();
 	}
-	private void firePropertyChange(PropertyChangeEvent event) {
+	private void firePropertyChange(DBPPreferenceListener.PreferenceChangeEvent event) {
 		Object value= fHandlerMap.get(event.getProperty());
-		if (value instanceof IPropertyChangeListener)
-			((IPropertyChangeListener) value).propertyChange(event);
+		if (value instanceof DBPPreferenceListener)
+			((DBPPreferenceListener) value).preferenceChange(event);
 		else if (value instanceof Set)
 			for (Iterator it= ((Set) value).iterator(); it.hasNext(); )
-				((IPropertyChangeListener) it.next()).propertyChange(event);
+				((DBPPreferenceListener) it.next()).preferenceChange(event);
 	}
-	public void addPropertyChangeListener(String property, IPropertyChangeListener listener) {
+	public void addPropertyChangeListener(String property, DBPPreferenceListener listener) {
 		Assert.isLegal(property != null);
 		Assert.isLegal(listener != null);
 
