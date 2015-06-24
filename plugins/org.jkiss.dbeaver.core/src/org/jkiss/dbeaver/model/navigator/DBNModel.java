@@ -494,6 +494,18 @@ public class DBNModel implements IResourceChangeListener {
         return new DBIconComposite(image, false, null, null, null, overlayImage);
     }
 
+    public static void updateConfigAndRefreshDatabases(DBNNode node)
+    {
+        for (DBNNode parentNode = node.getParentNode(); parentNode != null; parentNode = parentNode.getParentNode()) {
+            if (parentNode instanceof DBNProjectDatabases) {
+                DBNProjectDatabases projectDatabases = (DBNProjectDatabases) parentNode;
+                projectDatabases.getDataSourceRegistry().flushConfig();
+                projectDatabases.refreshChildren();
+                break;
+            }
+        }
+    }
+
     private static ProjectRegistry getProjectRegistry() {
         return DBeaverCore.getInstance().getProjectRegistry();
     }

@@ -102,7 +102,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         for (DBNDataSource dataSource : dataSources) {
             dataSource.setFolderPath(null);
         }
-        NavigatorUtils.updateConfigAndRefreshDatabases(localFolder);
+        DBNModel.updateConfigAndRefreshDatabases(localFolder);
     }
 
     private boolean deleteResource(IWorkbenchWindow workbenchWindow, final DBNResource resourceNode)

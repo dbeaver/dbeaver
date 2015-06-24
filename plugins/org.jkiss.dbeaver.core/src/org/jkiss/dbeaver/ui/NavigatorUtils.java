@@ -423,15 +423,4 @@ public class NavigatorUtils {
         return false;
     }
 
-    public static void updateConfigAndRefreshDatabases(DBNNode node)
-    {
-        for (DBNNode parentNode = node.getParentNode(); parentNode != null; parentNode = parentNode.getParentNode()) {
-            if (parentNode instanceof DBNProjectDatabases) {
-                DBNProjectDatabases projectDatabases = (DBNProjectDatabases) parentNode;
-                projectDatabases.getDataSourceRegistry().flushConfig();
-                projectDatabases.refreshChildren();
-                break;
-            }
-        }
-    }
 }

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.IActionFilter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -46,7 +45,7 @@ import java.util.*;
 /**
  * DBNDatabaseNode
  */
-public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, DBSWrapper, DBPContextProvider, IDataSourceContainerProvider {
+public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBPContextProvider, IDataSourceContainerProvider {
 
     private volatile boolean locked;
     protected volatile List<DBNDatabaseNode> childNodes;
@@ -232,16 +231,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
         return true;
     }
-
-/*
-    @Override
-    public boolean supportsRename()
-    {
-        final DBSObject object = getObject();
-        return !(object == null || !object.isPersisted()) &&
-            DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
-    }
-*/
 
     /**
      * Refreshes node.
@@ -580,21 +569,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         synchronized (this) {
             childNodes = newChildren;
         }
-    }
-
-    @Override
-    public boolean testAttribute(Object target, String name, String value) {
-        if (getObject() != null) {
-            if (name.equals("targetType")) { //$NON-NLS-1$
-                try {
-                    Class<?> targetClass = Class.forName(value);
-                    return targetClass.isAssignableFrom(getObject().getClass());
-                } catch (ClassNotFoundException e) {
-                    log.warn("Unknown target type: " + value); //$NON-NLS-1$
-                }
-            }
-        }
-        return false;
     }
 
     private static boolean equalObjects(DBSObject object1, DBSObject object2) {
