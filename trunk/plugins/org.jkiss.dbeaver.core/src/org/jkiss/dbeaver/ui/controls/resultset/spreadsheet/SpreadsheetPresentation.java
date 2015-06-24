@@ -735,7 +735,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             placeholder);
         final IValueEditor editor;
         try {
-            editor = attr.getValueHandler().createEditor(valueController);
+            editor = valueController.getValueManager().createEditor(valueController);
         }
         catch (Exception e) {
             UIUtils.showErrorDialog(spreadsheet.getShell(), "Cannot edit value", null, e);
@@ -953,7 +953,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             null);
                         PropertyCollector props = new PropertyCollector(valueController.getBinding().getAttribute(), false);
                         props.collectProperties();
-                        valueController.getValueHandler().contributeProperties(props, valueController);
+                        valueController.getValueManager().contributeProperties(props, valueController);
                         return new PropertySourceDelegate(props);
                     }
                     return null;

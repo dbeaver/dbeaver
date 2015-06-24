@@ -18,27 +18,35 @@
 package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.data.editors.BitInlineEditor;
+import org.jkiss.dbeaver.ui.data.editors.NumberInlineEditor;
+import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 /**
- * Default value handler
+ * JDBC number value handler
  */
-public class DefaultValueManager extends BaseValueManager {
+public class NumericValueManager extends BaseValueManager {
 
-    public static final DefaultValueManager INSTANCE = new DefaultValueManager();
-
+    @Nullable
     @Override
-    public IValueEditor createEditor(@NotNull final IValueController controller) throws DBException {
+    public IValueEditor createEditor(@NotNull IValueController controller)
+        throws DBException
+    {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new StringInlineEditor(controller);
+                if (controller.getValueType().getDataKind() == DBPDataKind.BOOLEAN) {
+                    return new BitInlineEditor(controller);
+                } else {
+                    return new NumberInlineEditor(controller);
+                }
             case EDITOR:
-                return new TextViewDialog(controller);
+                return new DefaultValueViewDialog(controller);
             default:
                 return null;
         }

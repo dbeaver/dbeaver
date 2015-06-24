@@ -18,18 +18,12 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.ComplexValueInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 import java.sql.SQLException;
 
@@ -73,40 +67,6 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
         throws DBCException, SQLException
     {
         throw new DBCException("Unsupported value type: " + value);
-    }
-
-/*
-    @Override
-    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull IValueController controller)
-    {
-        super.contributeProperties(propertySource, controller);
-        try {
-            Object value = controller.getValue();
-            if (value instanceof DBDComplexValue) {
-                propertySource.addProperty(
-                    PROP_CATEGORY_COMPLEX,
-                    "object_type", //$NON-NLS-1$
-                    CoreMessages.model_jdbc_type_name,
-                    ((DBDComplexValue) value).getObjectDataType().getName());
-            }
-        } catch (Exception e) {
-            log.warn("Can't extract complex type information", e); //$NON-NLS-1$
-        }
-    }
-*/
-
-    @Override
-    public IValueEditor createEditor(@NotNull final IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case PANEL:
-                return new ComplexValueInlineEditor(controller);
-            case EDITOR:
-                return new DefaultValueViewDialog(controller);
-            default:
-                return null;
-        }
     }
 
 }

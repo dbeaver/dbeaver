@@ -58,7 +58,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         }
         timeEditor = new CustomTimeEditor(dateTimeGroup,
             (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG,
-            helper.getFormatter(valueController.getValueType()));
+            helper.getFormatter(valueController, valueController.getValueType()));
         timeEditor.setEnabled(!valueController.isReadOnly());
         if (!inline) {
             timeEditor.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

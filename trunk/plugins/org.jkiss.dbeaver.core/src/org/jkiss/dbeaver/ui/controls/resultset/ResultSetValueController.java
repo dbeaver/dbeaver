@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IRowController;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
 
 import java.util.Arrays;
 import java.util.List;
@@ -142,6 +144,15 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     public DBDValueHandler getValueHandler()
     {
         return binding.getValueHandler();
+    }
+
+    @Override
+    public IValueManager getValueManager() {
+        DBSTypedObject valueType = getValueType();
+        return DataManagerRegistry.getInstance().getManager(
+            getExecutionContext().getDataSource(),
+            valueType.getDataKind(),
+            getValueHandler().getValueObjectType(valueType));
     }
 
     @Override

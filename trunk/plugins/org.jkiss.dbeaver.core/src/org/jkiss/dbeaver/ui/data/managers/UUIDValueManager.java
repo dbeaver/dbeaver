@@ -23,22 +23,33 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.UUID;
 
 /**
- * Default value handler
+ * UUID value manager
  */
-public class DefaultValueManager extends BaseValueManager {
-
-    public static final DefaultValueManager INSTANCE = new DefaultValueManager();
+public class UUIDValueManager extends BaseValueManager {
 
     @Override
-    public IValueEditor createEditor(@NotNull final IValueController controller) throws DBException {
+    public IValueEditor createEditor(@NotNull IValueController controller) throws DBException {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new StringInlineEditor(controller);
+                return new StringInlineEditor(controller) {
+                    @Override
+                    public Object extractEditorValue() {
+                        return UUID.fromString(CommonUtils.toString(super.extractEditorValue()));
+                    }
+                };
             case EDITOR:
-                return new TextViewDialog(controller);
+                return new TextViewDialog(controller) {
+                    @Override
+                    public Object extractEditorValue() {
+                        return UUID.fromString(CommonUtils.toString(super.extractEditorValue()));
+                    }
+                };
             default:
                 return null;
         }

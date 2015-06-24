@@ -1206,7 +1206,7 @@ public class ResultSetViewer extends Viewer
             // Menus from value handler
             try {
                 manager.add(new Separator());
-                attr.getValueHandler().contributeActions(manager, valueController);
+                valueController.getValueManager().contributeActions(manager, valueController);
             }
             catch (Exception e) {
                 log.error(e);

@@ -17,22 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.data;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
-
 /**
  * MySQL SET value handler
  */
@@ -40,6 +24,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
 
     public static final MySQLSetValueHandler INSTANCE = new MySQLSetValueHandler();
 
+/*
     @Override
     public IValueEditor createEditor(@NotNull final IValueController controller)
         throws DBException
@@ -109,5 +94,6 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
             editor.select(selIndices);
         }
     }
+*/
 
 }

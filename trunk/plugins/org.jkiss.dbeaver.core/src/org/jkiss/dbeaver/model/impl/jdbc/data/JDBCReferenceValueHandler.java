@@ -76,7 +76,7 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return Ref.class;
     }

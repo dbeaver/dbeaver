@@ -17,26 +17,15 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.ui.data.editors.DateTimeEditorHelper;
-import org.jkiss.dbeaver.ui.data.editors.DateTimeInlineEditor;
-import org.jkiss.dbeaver.ui.data.editors.DateTimeStandaloneEditor;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -44,7 +33,7 @@ import java.util.Date;
 /**
  * Date/time value handler
  */
-public abstract class DateTimeValueHandler extends BaseValueHandler implements DateTimeEditorHelper {
+public abstract class DateTimeValueHandler extends BaseValueHandler {
 
     protected static final Log log = Log.getLog(DateTimeValueHandler.class);
 
@@ -57,28 +46,13 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     }
 
     @Override
-    public IValueEditor createEditor(@NotNull IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case INLINE:
-            case PANEL:
-                return new DateTimeInlineEditor(controller, this);
-            case EDITOR:
-                return new DateTimeStandaloneEditor(controller, this);
-            default:
-                return null;
-        }
-    }
-
-    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return Date.class;
     }
@@ -112,29 +86,6 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
             return null;
         }
-    }
-
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
-        throws DBCException
-    {
-        manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME)) {
-            @Override
-            public void run() {
-                controller.updateValue(new Date());
-            }
-        });
-    }
-
-    @Override
-    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller)
-    {
-        super.contributeProperties(propertySource, controller);
-        propertySource.addProperty(
-            "Date/Time",
-            "format", //$NON-NLS-1$
-            "Pattern",
-            getFormatter(controller.getValueType()).getPattern());
     }
 
     @NotNull
@@ -212,7 +163,6 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
         }
     }
 
-    @Override
     @NotNull
     public DBDDataFormatter getFormatter(DBSTypedObject column)
     {

@@ -122,14 +122,14 @@ abstract class ViewValuePanel extends Composite {
             columnNameLabel.setText(valueController.getValueName());
             // Create a new one
             try {
-                valueViewer = valueController.getValueHandler().createEditor(valueController);
+                valueViewer = valueController.getValueManager().createEditor(valueController);
             } catch (DBException e) {
                 UIUtils.showErrorDialog(getShell(), "Value preview", "Can't create value viewer", e);
                 return;
             }
             toolBarManager.removeAll();
             try {
-                valueController.getValueHandler().contributeActions(toolBarManager, valueController);
+                valueController.getValueManager().contributeActions(toolBarManager, valueController);
             } catch (DBCException e) {
                 log.error("Error filling toolbar actions", e);
             }

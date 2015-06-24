@@ -330,6 +330,12 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ext.mysql.data.MySQLEnumValueManager" id="org.jkiss.dbeaver.ext.mysql.data.MySQLEnumValueManager">
+            <supports type="org.jkiss.dbeaver.ext.mysql.data.MySQLTypeEnum"/>
+        </manager>
+    </extension>
+
     <extension point="org.eclipse.ui.editors">
         <editor
             name="%editor.session_manager.name"

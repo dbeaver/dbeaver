@@ -17,24 +17,16 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
-import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -116,7 +108,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return DBDContent.class;
     }
@@ -188,61 +180,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             }
         }
         return super.getValueDisplayString(column, value, format);
-    }
-
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
-        throws DBCException
-    {
-        ContentUtils.contributeContentActions(manager, controller);
-    }
-
-    @Override
-    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller)
-    {
-        super.contributeProperties(propertySource, controller);
-        try {
-            Object value = controller.getValue();
-            if (value instanceof DBDContent) {
-                propertySource.addProperty(
-                    PROP_CATEGORY_CONTENT,
-                    "content_type", //$NON-NLS-1$
-                    CoreMessages.model_jdbc_content_type,
-                    ((DBDContent)value).getContentType());
-                final long contentLength = ((DBDContent) value).getContentLength();
-                if (contentLength >= 0) {
-                    propertySource.addProperty(
-                        PROP_CATEGORY_CONTENT,
-                        "content_length", //$NON-NLS-1$
-                        CoreMessages.model_jdbc_content_length,
-                        contentLength);
-                }
-            }
-        }
-        catch (Exception e) {
-            log.warn("Can't extract LOB value information", e); //$NON-NLS-1$
-        }
-    }
-
-    @Override
-    public IValueEditor createEditor(@NotNull final IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case INLINE:
-                // Open inline/panel editor
-                if (controller.getValue() instanceof DBDContentCached) {
-                    return new ContentInlineEditor(controller);
-                } else {
-                    return null;
-                }
-            case EDITOR:
-                return ContentUtils.openContentEditor(controller);
-            case PANEL:
-                return new ContentPanelEditor(controller);
-            default:
-                return null;
-        }
     }
 
 }
