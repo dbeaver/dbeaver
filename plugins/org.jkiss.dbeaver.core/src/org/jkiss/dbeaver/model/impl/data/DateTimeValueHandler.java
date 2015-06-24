@@ -20,12 +20,13 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -180,10 +181,6 @@ public abstract class DateTimeValueHandler extends BaseValueHandler {
             }
         }
         return formatter;
-    }
-
-    private boolean isTimestamp(IValueController valueController) {
-        return valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP;
     }
 
 }

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -30,16 +31,24 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IDisposable;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.ui.DBUICallback;
+import org.jkiss.dbeaver.model.ui.DBUserInterface;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -49,7 +58,7 @@ import java.util.List;
 /**
  * DBeaver UI core
  */
-public class DBeaverUI {
+public class DBeaverUI implements DBUICallback {
 
     static final Log log = Log.getLog(DBeaverUI.class);
 
@@ -104,8 +113,8 @@ public class DBeaverUI {
     private void initialize()
     {
         this.sharedTextColors = new SharedTextColors();
-
         this.trayItem = new TrayIconHandler();
+        DBUserInterface.setInstance(this);
     }
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
@@ -271,5 +280,32 @@ public class DBeaverUI {
 
     public void addDisposeListener(IDisposable disposable) {
         globalDisposables.add(disposable);
+    }
+
+    @Override
+    public void showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
+        UIUtils.showErrorDialog(null, title, message, status);
+    }
+
+    @Override
+    public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword) {
+        // Ask user
+        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
+        final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt);
+        authDialog.setUserName(userName);
+        authDialog.setUserPassword(userPassword);
+        final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
+            @Override
+            public void run()
+            {
+                result = (authDialog.open() == IDialogConstants.OK_ID);
+            }
+        };
+        UIUtils.runInUI(shell, binder);
+        if (binder.getResult() != null && binder.getResult()) {
+            return authDialog.getAuthInfo();
+        } else {
+            return null;
+        }
     }
 }

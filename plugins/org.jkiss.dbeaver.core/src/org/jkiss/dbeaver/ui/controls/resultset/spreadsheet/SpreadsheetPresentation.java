@@ -92,6 +92,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
@@ -448,7 +449,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 IValueController valueController = new SpreadsheetValueController(
                     controller, column, row, IValueController.EditType.NONE, null);
                 if (!valueController.isReadOnly()) {
-                    valueController.updateValue(DBUtils.makeNullValue(valueController));
+                    valueController.updateValue(BaseValueManager.makeNullValue(valueController));
                 }
             }
 

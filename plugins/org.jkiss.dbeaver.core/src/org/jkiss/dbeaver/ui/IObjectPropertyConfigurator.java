@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Composite;
 /**
  * IDataSourceConnectionEditor
  */
-public interface IObjectPropertyConfigurator<T extends IObjectPropertyConfiguration>
+public interface IObjectPropertyConfigurator<T>
 {
     void createControl(Composite parent);
 

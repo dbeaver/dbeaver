@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.model.edit.prop.ControlPropertyCommandListener;
+import org.jkiss.dbeaver.ui.editors.ControlPropertyCommandListener;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;

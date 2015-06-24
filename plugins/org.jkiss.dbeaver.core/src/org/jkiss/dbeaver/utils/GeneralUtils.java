@@ -18,15 +18,22 @@
 
 package org.jkiss.dbeaver.utils;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.ui.data.editors.NumberInlineEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,11 +42,14 @@ import java.util.Map;
  */
 public class GeneralUtils {
 
+    static final Log log = Log.getLog(GeneralUtils.class);
 
     public static final String DEFAULT_FILE_CHARSET_NAME = "UTF-8";
     public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
     public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
     public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
+    public static final String[] byteToHex = new String[256];
+    public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     static final Map<String, byte[]> BOM_MAP = new HashMap<String, byte[]>();
     static final char[] HEX_CHAR_TABLE = {
       '0', '1', '2', '3',
@@ -47,6 +57,15 @@ public class GeneralUtils {
       '8', '9', 'a', 'b',
       'c', 'd', 'e', 'f'
     };
+    private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
+
+    static {
+        // Compose byte to hex map
+        for (int i = 0; i < 256; ++i) {
+            byteToHex[i] = Character.toString(nibbleToHex[i >>> 4]) + nibbleToHex[i & 0x0f];
+        }
+    }
+
 
     public static String getDefaultFileEncoding()
     {
@@ -136,5 +155,52 @@ public class GeneralUtils {
             bytes[i] = (byte)c;
         }
         return bytes;
+    }
+
+    @Nullable
+    public static Number convertStringToNumber(String text, Class<? extends Number> hintType, DBDDataFormatter formatter)
+    {
+        if (text == null || text.length() == 0) {
+            return null;
+        }
+        try {
+            if (hintType == Long.class) {
+                try {
+                    return Long.valueOf(text);
+                } catch (NumberFormatException e) {
+                    return new BigInteger(text);
+                }
+            } else if (hintType == Integer.class) {
+                return Integer.valueOf(text);
+            } else if (hintType == Short.class) {
+                return Short.valueOf(text);
+            } else if (hintType == Byte.class) {
+                return Byte.valueOf(text);
+            } else if (hintType == Float.class) {
+                return Float.valueOf(text);
+            } else if (hintType == Double.class) {
+                return toDouble(text);
+            } else if (hintType == BigInteger.class) {
+                return new BigInteger(text);
+            } else {
+                return new BigDecimal(text);
+            }
+        } catch (NumberFormatException e) {
+            log.debug("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
+            try {
+                return (Number)formatter.parseValue(text, hintType);
+            } catch (ParseException e1) {
+                log.debug("Can't parse numeric value [" + text + "] using formatter", e);
+                return null;
+            }
+        }
+    }
+
+    private static Number toDouble(String text)
+    {
+        if (text.equals(BAD_DOUBLE_VALUE)) {
+            return Double.MIN_VALUE;
+        }
+        return Double.valueOf(text);
     }
 }

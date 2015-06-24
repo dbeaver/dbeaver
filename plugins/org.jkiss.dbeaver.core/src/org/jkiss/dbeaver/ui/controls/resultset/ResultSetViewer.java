@@ -73,6 +73,7 @@ import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
@@ -1196,7 +1197,7 @@ public class ResultSetViewer extends Viewer
                         public void run()
                         {
                             valueController.updateValue(
-                                DBUtils.makeNullValue(valueController));
+                                BaseValueManager.makeNullValue(valueController));
                         }
                     });
                 }
