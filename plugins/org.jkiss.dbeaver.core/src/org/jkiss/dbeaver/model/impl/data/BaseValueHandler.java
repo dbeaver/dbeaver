@@ -17,15 +17,11 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
  * Base value handler
@@ -44,18 +40,6 @@ public abstract class BaseValueHandler implements DBDValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
         return DBUtils.getDefaultValueDisplayString(value, format);
-    }
-
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller)
-        throws DBCException
-    {
-
-    }
-
-    @Override
-    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller)
-    {
     }
 
 

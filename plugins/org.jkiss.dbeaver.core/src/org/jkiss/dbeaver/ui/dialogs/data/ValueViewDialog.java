@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -123,7 +124,8 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
     protected IValueEditor createPanelEditor(final Composite placeholder)
         throws DBException
     {
-        IValueEditor editor = valueController.getValueHandler().createEditor(new IValueController() {
+        IValueEditor editor = valueController.getValueManager().createEditor(new IValueController() {
+            @NotNull
             @Override
             public DBCExecutionContext getExecutionContext() {
                 return valueController.getExecutionContext();
@@ -157,6 +159,11 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             public DBDValueHandler getValueHandler()
             {
                 return valueController.getValueHandler();
+            }
+
+            @Override
+            public IValueManager getValueManager() {
+                return valueController.getValueManager();
             }
 
             @Override

@@ -47,6 +47,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -202,7 +204,7 @@ public class ComplexObjectEditor extends TreeViewer {
             value,
             advanced ? IValueController.EditType.EDITOR : IValueController.EditType.INLINE);
         try {
-            curCellEditor = valueHandler.createEditor(valueController);
+            curCellEditor = valueController.getValueManager().createEditor(valueController);
             if (curCellEditor != null) {
                 curCellEditor.createControl();
                 if (curCellEditor instanceof IValueEditorStandalone) {
@@ -269,6 +271,7 @@ public class ComplexObjectEditor extends TreeViewer {
             this.editType = editType;
         }
 
+        @NotNull
         @Override
         public DBCExecutionContext getExecutionContext()
         {
@@ -304,6 +307,15 @@ public class ComplexObjectEditor extends TreeViewer {
         public DBDValueHandler getValueHandler()
         {
             return valueHandler;
+        }
+
+        @Override
+        public IValueManager getValueManager() {
+            DBSTypedObject valueType = getValueType();
+            return DataManagerRegistry.getInstance().getManager(
+                getExecutionContext().getDataSource(),
+                valueType.getDataKind(),
+                getValueHandler().getValueObjectType(valueType));
         }
 
         @Override

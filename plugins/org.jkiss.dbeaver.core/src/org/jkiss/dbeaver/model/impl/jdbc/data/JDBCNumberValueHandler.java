@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -28,14 +26,10 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.ui.data.editors.BitInlineEditor;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.ui.data.editors.NumberEditorHelper;
 import org.jkiss.dbeaver.ui.data.editors.NumberInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -215,26 +209,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         }
     }
 
-    @Nullable
-    @Override
-    public IValueEditor createEditor(@NotNull IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case INLINE:
-            case PANEL:
-                if (controller.getValueType().getDataKind() == DBPDataKind.BOOLEAN) {
-                    return new BitInlineEditor(controller);
-                } else {
-                    return new NumberInlineEditor(controller, this);
-                }
-            case EDITOR:
-                return new DefaultValueViewDialog(controller);
-            default:
-                return null;
-        }
-    }
-
     @Override
     public int getFeatures()
     {
@@ -242,9 +216,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
-        return Number.class;
+        return getNumberType(valueType);
     }
 
     @Nullable
@@ -305,4 +279,33 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
             }
         }
     }
+
+    public Class<? extends Number> getNumberType(DBSTypedObject type) {
+        switch (type.getTypeID()) {
+            case java.sql.Types.BIGINT:
+                return Long.class;
+            case java.sql.Types.DECIMAL:
+            case java.sql.Types.DOUBLE:
+            case java.sql.Types.REAL:
+                return Double.class;
+            case java.sql.Types.FLOAT:
+                return Float.class;
+            case java.sql.Types.INTEGER:
+                return Integer.class;
+            case java.sql.Types.SMALLINT:
+            case java.sql.Types.TINYINT:
+                return Short.class;
+            case java.sql.Types.BIT:
+                return Byte.class;
+            case java.sql.Types.NUMERIC:
+                return BigDecimal.class;
+            default:
+                if (type.getScale() > 0) {
+                    return Double.class;
+                } else {
+                    return Long.class;
+                }
+        }
+    }
+
 }

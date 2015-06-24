@@ -41,7 +41,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     public static final JDBCArrayValueHandler INSTANCE = new JDBCArrayValueHandler();
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return JDBCArray.class;
     }

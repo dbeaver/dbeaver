@@ -18,13 +18,8 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 
 /**
  * Default value handler
@@ -40,7 +35,7 @@ public class DefaultValueHandler extends BaseValueHandler {
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return Object.class;
     }
@@ -70,19 +65,6 @@ public class DefaultValueHandler extends BaseValueHandler {
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         return object;
-    }
-
-    @Override
-    public IValueEditor createEditor(@NotNull final IValueController controller) throws DBException {
-        switch (controller.getEditType()) {
-            case INLINE:
-            case PANEL:
-                return new StringInlineEditor(controller);
-            case EDITOR:
-                return new TextViewDialog(controller);
-            default:
-                return null;
-        }
     }
 
 }

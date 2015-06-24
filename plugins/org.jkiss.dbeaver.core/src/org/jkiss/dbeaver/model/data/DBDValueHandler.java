@@ -18,15 +18,10 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
 
 /**
  * DBD Value Handler.
@@ -59,9 +54,10 @@ public interface DBDValueHandler
      * May return base interface of object's type -
      * it is not required to return exact implementation class
      * (moreover it may be unknown before certain value is extracted)
+     * @param valueType value type
      * @return value object type
      */
-    Class getValueObjectType();
+    Class getValueObjectType(DBSTypedObject valueType);
 
     /**
      * Extracts object from result set
@@ -124,41 +120,6 @@ public interface DBDValueHandler
      */
     @NotNull
     String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format);
-
-    /**
-     * Fills context menu for certain value
-     *
-     * @param manager context menu manager
-     * @param controller value controller
-     * @throws DBCException on error
-     */
-    void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller)
-        throws DBCException;
-
-    /**
-     * Fills value's custom properties
-     * @param propertySource property source
-     * @param controller value controller
-     */
-    void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller);
-
-    /**
-     * Creates value editor.
-     * Value editor could be:
-     * <li>inline editor (control created withing inline placeholder)</li>
-     * <li>dialog (modal or modeless)</li>
-     * <li>workbench editor</li>
-     * Modeless dialogs and editors must implement IValueEditor and
-     * must register themselves within value controller. On close they must unregister themselves within
-     * value controller.
-     * @param controller value controller  @return true if editor was successfully opened.
-     * makes since only for inline editors, otherwise return value is ignored.
-     * @return true on success
-     * @throws org.jkiss.dbeaver.DBException on error
-     */
-    @Nullable
-    IValueEditor createEditor(@NotNull IValueController controller)
-        throws DBException;
 
     DBCLogicalOperator[] getSupportedOperators(@NotNull DBDAttributeBinding attribute);
 

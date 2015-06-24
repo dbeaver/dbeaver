@@ -18,17 +18,12 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 
 import java.sql.SQLException;
 
@@ -63,28 +58,13 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public IValueEditor createEditor(@NotNull IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case INLINE:
-            case PANEL:
-                return new StringInlineEditor(controller);
-            case EDITOR:
-                return new TextViewDialog(controller);
-            default:
-                return null;
-        }
-    }
-
-    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return String.class;
     }

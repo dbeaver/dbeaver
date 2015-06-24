@@ -64,7 +64,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         }
 
         UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        DBDDataFormatter formatter = helper.getFormatter(valueController.getValueType());
+        DBDDataFormatter formatter = helper.getFormatter(valueController, valueController.getValueType());
         timeEditor = new CustomTimeEditor(panel, style, formatter);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);

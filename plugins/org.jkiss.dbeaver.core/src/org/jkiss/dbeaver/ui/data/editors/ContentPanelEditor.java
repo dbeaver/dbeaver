@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.resource.JFaceResources;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
@@ -173,6 +174,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
         if (ContentUtils.isTextContent(content)) {
             Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
             text.setEditable(!valueController.isReadOnly());
+            text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
             return text;
         } else {
             ImageDetector imageDetector = new ImageDetector(content);

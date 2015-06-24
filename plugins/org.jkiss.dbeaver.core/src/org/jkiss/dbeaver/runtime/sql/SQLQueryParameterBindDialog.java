@@ -36,19 +36,21 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -219,7 +221,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         //placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
         ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
         try {
-            IValueEditor editor = valueHandler.createEditor(valueController);
+            IValueEditor editor = valueController.getValueManager().createEditor(valueController);
             if (editor != null) {
                 editor.createControl();
                 editor.primeEditorValue(param.getValue());
@@ -406,6 +408,15 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         public DBDValueHandler getValueHandler()
         {
             return parameter.getValueHandler();
+        }
+
+        @Override
+        public IValueManager getValueManager() {
+            DBSTypedObject valueType = getValueType();
+            return DataManagerRegistry.getInstance().getManager(
+                getExecutionContext().getDataSource(),
+                valueType.getDataKind(),
+                getValueHandler().getValueObjectType(valueType));
         }
 
         @Override

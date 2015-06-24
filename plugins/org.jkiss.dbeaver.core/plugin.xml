@@ -24,6 +24,7 @@
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataManager" name="Data managers" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTransfer" name="Data Transformer Provider" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data Formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
@@ -2261,11 +2262,42 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
-        <manager class="org.jkiss.dbeaver.ui.data.manager.BooleanValueManager" id="org.jkiss.dbeaver.ui.data.manager.BooleanValueManager">
+        <manager class="org.jkiss.dbeaver.ui.data.managers.BooleanValueManager" id="org.jkiss.dbeaver.ui.data.managers.BooleanValueManager">
             <supports kind="BOOLEAN"/>
         </manager>
-        <manager class="org.jkiss.dbeaver.ui.data.manager.NumericValueManager" id="org.jkiss.dbeaver.ui.data.manager.NumericValueManager">
+        <manager class="org.jkiss.dbeaver.ui.data.managers.NumericValueManager" id="org.jkiss.dbeaver.ui.data.managers.NumericValueManager">
             <supports kind="NUMERIC"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ui.data.managers.StringValueManager">
+            <supports kind="STRING"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.DateTimeValueManager" id="org.jkiss.dbeaver.ui.data.managers.DateTimeValueManager">
+            <supports kind="DATETIME"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ArrayValueManager" id="org.jkiss.dbeaver.ui.data.managers.ArrayValueManager">
+            <supports kind="ARRAY"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ReferenceValueManager" id="org.jkiss.dbeaver.ui.data.managers.ReferenceValueManager">
+            <supports kind="REF"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ui.data.managers.StructValueManager">
+            <supports kind="STRUCT"/>
+            <supports type="java.util.Map"/>
+            <supports type="java.util.List"/>
+            <supports type="java.util.Set"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ContentValueManager" id="org.jkiss.dbeaver.ui.data.managers.ContentValueManager">
+            <supports kind="LOB"/>
+            <supports kind="BINARY"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.ObjectValueManager" id="org.jkiss.dbeaver.ui.data.managers.ObjectValueManager">
+            <supports kind="OBJECT"/>
+            <supports kind="DOCUMENT"/>
+            <supports kind="ROWID"/>
+            <supports kind="ANY"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager" id="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager">
+            <supports type="java.util.UUID"/>
         </manager>
     </extension>
 

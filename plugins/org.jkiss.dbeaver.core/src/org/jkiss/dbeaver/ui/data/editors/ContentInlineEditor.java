@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -77,6 +78,7 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
     {
         final Text editor = new Text(editPlaceholder, SWT.BORDER);
         editor.setEditable(!valueController.isReadOnly());
+        editor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
         long maxLength = valueController.getValueType().getMaxLength();
         if (maxLength <= 0) {
             maxLength = MAX_STRING_LENGTH;
@@ -92,6 +94,7 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
     {
         String newValue = control.getText();
         final DBDContent content = (DBDContent) valueController.getValue();
+        assert content != null;
         try {
             if (isText) {
                 content.updateContents(
