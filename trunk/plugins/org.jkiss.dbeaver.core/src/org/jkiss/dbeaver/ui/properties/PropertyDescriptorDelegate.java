@@ -31,31 +31,34 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class PropertyDescriptorDelegate implements IPropertyDescriptor
 {
     private final DBPPropertySource propSource;
-    private final DBPPropertyDescriptor source;
+    private final DBPPropertyDescriptor delegate;
 
-    public PropertyDescriptorDelegate(DBPPropertySource propSource, DBPPropertyDescriptor source) {
+    public PropertyDescriptorDelegate(DBPPropertySource propSource, DBPPropertyDescriptor delegate) {
         this.propSource = propSource;
-        this.source = source;
+        this.delegate = delegate;
     }
 
     @Override
     public CellEditor createPropertyEditor(Composite parent) {
-        return UIUtils.createCellEditor(parent, propSource.getEditableValue(), source);
+        if (!delegate.isEditable(propSource.getEditableValue())) {
+            return null;
+        }
+        return UIUtils.createCellEditor(parent, propSource.getEditableValue(), delegate);
     }
 
     @Override
     public String getCategory() {
-        return source.getCategory();
+        return delegate.getCategory();
     }
 
     @Override
     public String getDescription() {
-        return source.getDescription();
+        return delegate.getDescription();
     }
 
     @Override
     public String getDisplayName() {
-        return source.getDisplayName();
+        return delegate.getDisplayName();
     }
 
     @Override
@@ -70,7 +73,7 @@ public class PropertyDescriptorDelegate implements IPropertyDescriptor
 
     @Override
     public Object getId() {
-        return source.getId();
+        return delegate.getId();
     }
 
     @Override
