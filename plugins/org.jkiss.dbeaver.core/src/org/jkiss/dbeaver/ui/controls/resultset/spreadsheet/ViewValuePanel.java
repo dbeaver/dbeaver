@@ -136,7 +136,11 @@ abstract class ViewValuePanel extends Composite {
                 log.error("Error filling toolbar actions", e);
             }
             if (valueViewer != null) {
-                valueViewer.createControl();
+                try {
+                    valueViewer.createControl();
+                } catch (Exception e) {
+                    log.error(e);
+                }
             } else {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
                 placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
