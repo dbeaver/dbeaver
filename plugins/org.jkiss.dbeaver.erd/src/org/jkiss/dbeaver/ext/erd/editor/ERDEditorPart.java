@@ -18,6 +18,9 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
@@ -60,6 +63,7 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
@@ -960,11 +964,18 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 if (entityDiagram != null) {
                     List<String> errorMessages = entityDiagram.getErrorMessages();
                     if (!errorMessages.isEmpty()) {
+                        // log.debug(message);
+                        List<Status> messageStatuses = new ArrayList<Status>(errorMessages.size());
+                        for (String error : errorMessages) {
+                            messageStatuses.add(new Status(Status.ERROR, DBeaverCore.getCorePluginID(), error));
+                        }
+                        MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[messageStatuses.size()]), null, null);
+
                         UIUtils.showErrorDialog(
                             control.getShell(),
                             "Diagram loading errors",
                             "Error(s) occurred during diagram loading. If these errors are recoverable then fix errors and then refresh/reopen diagram",
-                            errorMessages);
+                            status);
                     }
                     setInfo(entityDiagram.getEntityCount() + " objects");
                 } else {

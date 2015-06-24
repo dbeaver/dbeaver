@@ -20,34 +20,32 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
-import org.jkiss.dbeaver.ui.data.editors.NumberEditorHelper;
-import org.jkiss.dbeaver.ui.data.editors.NumberInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.SQLException;
-import java.util.Locale;
 
 /**
  * JDBC number value handler
  */
-public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements NumberEditorHelper {
+public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
-    private Locale locale;
     private DBDDataFormatter formatter;
 
     public JDBCNumberValueHandler(DBDDataFormatterProfile formatterProfile)
     {
         try {
-            locale = formatterProfile.getLocale();
             formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER);
         } catch (Exception e) {
             log.error("Can't create formatter for number value handler", e); //$NON-NLS-1$
@@ -230,53 +228,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
         } else if (object instanceof Number) {
             return object;
         } else if (object instanceof String) {
-            return NumberInlineEditor.convertStringToNumber((String)object, getNumberType(type, null), formatter);
+            return GeneralUtils.convertStringToNumber((String) object, getNumberType(type), formatter);
         } else {
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to numeric");
             return null;
-        }
-    }
-
-    @Override
-    public Locale getLocale() {
-        return locale;
-    }
-
-    @Override
-    public DBDDataFormatter getFormatter() {
-        return formatter;
-    }
-
-    @Override
-    public Class<? extends Number> getNumberType(DBSTypedObject type, Object originalValue) {
-        if (originalValue instanceof Number) {
-            return ((Number)originalValue).getClass();
-        } else {
-            switch (type.getTypeID()) {
-                case java.sql.Types.BIGINT:
-                    return Long.class;
-                case java.sql.Types.DECIMAL:
-                case java.sql.Types.DOUBLE:
-                case java.sql.Types.REAL:
-                    return Double.class;
-                case java.sql.Types.FLOAT:
-                    return Float.class;
-                case java.sql.Types.INTEGER:
-                    return Integer.class;
-                case java.sql.Types.SMALLINT:
-                case java.sql.Types.TINYINT:
-                    return Short.class;
-                case java.sql.Types.BIT:
-                    return Byte.class;
-                case java.sql.Types.NUMERIC:
-                    return BigDecimal.class;
-                default:
-                    if (type.getScale() > 0) {
-                        return Double.class;
-                    } else {
-                        return Long.class;
-                    }
-            }
         }
     }
 

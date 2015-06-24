@@ -28,11 +28,10 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.ParseException;
 import java.util.Locale;
 
 /**
@@ -42,7 +41,6 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
 
     static final Log log = Log.getLog(NumberInlineEditor.class);
     private static final int MAX_NUMBER_LENGTH = 100;
-    private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
 
     private DBDDataFormatterProfile formatterProfile;
 
@@ -96,58 +94,11 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
             curValue.getClass() :
             valueController.getValueHandler().getValueObjectType(valueController.getValueType());
         try {
-            return convertStringToNumber(text, hintType, formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER));
+            return GeneralUtils.convertStringToNumber(text, hintType, formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER));
         } catch (Exception e) {
             log.error(e);
             return null;
         }
-    }
-
-    @Nullable
-    public static Number convertStringToNumber(String text, Class<? extends Number> hintType, DBDDataFormatter formatter)
-    {
-        if (text == null || text.length() == 0) {
-            return null;
-        }
-        try {
-            if (hintType == Long.class) {
-                try {
-                    return Long.valueOf(text);
-                } catch (NumberFormatException e) {
-                    return new BigInteger(text);
-                }
-            } else if (hintType == Integer.class) {
-                return Integer.valueOf(text);
-            } else if (hintType == Short.class) {
-                return Short.valueOf(text);
-            } else if (hintType == Byte.class) {
-                return Byte.valueOf(text);
-            } else if (hintType == Float.class) {
-                return Float.valueOf(text);
-            } else if (hintType == Double.class) {
-                return toDouble(text);
-            } else if (hintType == BigInteger.class) {
-                return new BigInteger(text);
-            } else {
-                return new BigDecimal(text);
-            }
-        } catch (NumberFormatException e) {
-            log.debug("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
-            try {
-                return (Number)formatter.parseValue(text, hintType);
-            } catch (ParseException e1) {
-                log.debug("Can't parse numeric value [" + text + "] using formatter", e);
-                return null;
-            }
-        }
-    }
-
-    private static Number toDouble(String text)
-    {
-        if (text.equals(BAD_DOUBLE_VALUE)) {
-            return Double.MIN_VALUE;
-        }
-        return Double.valueOf(text);
     }
 
 }

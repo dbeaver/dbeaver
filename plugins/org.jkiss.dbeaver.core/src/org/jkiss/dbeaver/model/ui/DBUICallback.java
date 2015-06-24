@@ -15,22 +15,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.data.editors;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+package org.jkiss.dbeaver.model.ui;
 
-import java.util.Locale;
+import org.eclipse.core.runtime.IStatus;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 
 /**
-* NumberEditorHelper
-*/
-public interface NumberEditorHelper {
+ * User interface interactions
+ */
+public interface DBUICallback {
 
-    Locale getLocale();
+    void showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
 
-    DBDDataFormatter getFormatter();
-
-    Class<? extends Number> getNumberType(DBSTypedObject type, Object originalValue);
+    DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword);
 
 }

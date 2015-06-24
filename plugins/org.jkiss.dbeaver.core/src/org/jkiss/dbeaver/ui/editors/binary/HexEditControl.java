@@ -28,7 +28,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -79,7 +78,7 @@ public class HexEditControl extends Composite {
         // Compose header row
         StringBuilder rowChars = new StringBuilder();
         for (int i = 0; i < maxScreenResolution / minCharSize / 3; ++i)
-            rowChars.append(TextUtils.byteToHex[i & 0x0ff]).append(' ');
+            rowChars.append(GeneralUtils.byteToHex[i & 0x0ff]).append(' ');
         headerRow = rowChars.toString().toUpperCase();
     }
 
@@ -842,10 +841,10 @@ public class HexEditControl extends Composite {
                     else
                         theText.append('0');
                 } else {
-                    theText.append(TextUtils.nibbleToHex[nibble]);
+                    theText.append(GeneralUtils.nibbleToHex[nibble]);
                 }
             }
-            theText.append(TextUtils.nibbleToHex[((int) address) & 0x0f]).append(':');
+            theText.append(GeneralUtils.nibbleToHex[((int) address) & 0x0f]).append(':');
         }
 
         return theText;
@@ -860,7 +859,7 @@ public class HexEditControl extends Composite {
         if (isHexOutput) {
             result = new StringBuilder(length * 3);
             for (int i = 0; i < length; ++i) {
-                result.append(TextUtils.byteToHex[tmpRawBuffer[i] & 0x0ff]).append(' ');
+                result.append(GeneralUtils.byteToHex[tmpRawBuffer[i] & 0x0ff]).append(' ');
             }
         } else {
             result = new StringBuilder(length);
@@ -935,7 +934,7 @@ public class HexEditControl extends Composite {
                     }
                     content.get(ByteBuffer.wrap(tmpRawBuffer, 0, 1), null, getCaretPos());
                     int offset = (int) (getCaretPos() - textAreasStart);
-                    hexText.replaceTextRange(offset * 3, 2, TextUtils.byteToHex[tmpRawBuffer[0] & 0x0ff]);
+                    hexText.replaceTextRange(offset * 3, 2, GeneralUtils.byteToHex[tmpRawBuffer[0] & 0x0ff]);
                     hexText.setStyleRange(new StyleRange(offset * 3, 2, COLOR_BLUE, null));
                     previewText.replaceTextRange(
                         offset,

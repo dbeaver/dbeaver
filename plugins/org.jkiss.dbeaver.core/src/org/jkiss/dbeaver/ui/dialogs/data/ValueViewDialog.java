@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.utils.CommonUtils;
@@ -384,7 +385,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
 
         if (buttonId == IDialogConstants.IGNORE_ID) {
             if (!valueController.isReadOnly()) {
-                editedValue = DBUtils.makeNullValue(valueController);
+                editedValue = BaseValueManager.makeNullValue(valueController);
             }
             super.okPressed();
         } else {

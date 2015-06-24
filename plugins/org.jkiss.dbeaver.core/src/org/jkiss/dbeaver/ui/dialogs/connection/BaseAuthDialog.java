@@ -17,13 +17,15 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,50 +35,44 @@ import org.jkiss.utils.CommonUtils;
 public class BaseAuthDialog extends BaseDialog
 {
 
-    public static class AuthInfo {
-        public String userName;
-        public String userPassword;
-        public boolean savePassword;
-    }
-
-    private AuthInfo authInfo = new AuthInfo();
+    private DBAAuthInfo authInfo = new DBAAuthInfo();
 
     private Text usernameText;
     private Text passwordText;
     private Button savePasswordCheck;
 
-    public BaseAuthDialog(Shell parentShell, String title, Image icon)
+    public BaseAuthDialog(Shell parentShell, String title)
     {
-        super(parentShell, title, icon);
+        super(parentShell, title, DBeaverIcons.getImage(DBIcon.CONNECTIONS));
     }
 
-    public AuthInfo getAuthInfo()
+    public DBAAuthInfo getAuthInfo()
     {
         return authInfo;
     }
 
     public String getUserName() {
-        return authInfo.userName;
+        return authInfo.getUserName();
     }
 
     public void setUserName(String userName) {
-        this.authInfo.userName = userName;
+        this.authInfo.setUserName(userName);
     }
 
     public String getUserPassword() {
-        return authInfo.userPassword;
+        return authInfo.getUserPassword();
     }
 
     public void setUserPassword(String userPassword) {
-        this.authInfo.userPassword = userPassword;
+        this.authInfo.setUserPassword(userPassword);
     }
 
     public boolean isSavePassword() {
-        return authInfo.savePassword;
+        return authInfo.isSavePassword();
     }
 
     public void setSavePassword(boolean savePassword) {
-        this.authInfo.savePassword = savePassword;
+        this.authInfo.setSavePassword(savePassword);
     }
 
     @Override
@@ -110,8 +106,8 @@ public class BaseAuthDialog extends BaseDialog
             gd.widthHint = 120;
             //gd.horizontalSpan = 3;
             usernameText.setLayoutData(gd);
-            if (authInfo.userName != null) {
-                usernameText.setText(authInfo.userName);
+            if (authInfo.getUserName() != null) {
+                usernameText.setText(authInfo.getUserName());
             }
 
             Label passwordLabel = new Label(credGroup, SWT.NONE);
@@ -122,8 +118,8 @@ public class BaseAuthDialog extends BaseDialog
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             passwordText.setLayoutData(gd);
-            if (authInfo.userPassword != null) {
-                passwordText.setText(authInfo.userPassword);
+            if (authInfo.getUserPassword() != null) {
+                passwordText.setText(authInfo.getUserPassword());
             }
         }
 
@@ -131,7 +127,7 @@ public class BaseAuthDialog extends BaseDialog
         savePasswordCheck.setText(CoreMessages.dialog_connection_auth_checkbox_save_password);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         savePasswordCheck.setLayoutData(gd);
-        savePasswordCheck.setSelection(authInfo.savePassword);
+        savePasswordCheck.setSelection(authInfo.isSavePassword());
 
         if (!CommonUtils.isEmpty(usernameText.getText())) {
             passwordText.setFocus();
@@ -142,9 +138,9 @@ public class BaseAuthDialog extends BaseDialog
 
     @Override
     protected void okPressed() {
-        authInfo.userName = usernameText.getText();
-        authInfo.userPassword = passwordText.getText();
-        authInfo.savePassword = savePasswordCheck.getSelection();
+        authInfo.setUserName(usernameText.getText());
+        authInfo.setUserPassword(passwordText.getText());
+        authInfo.setSavePassword(savePasswordCheck.getSelection());
 
         super.okPressed();
     }

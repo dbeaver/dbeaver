@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.dbeaver.utils.TextUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * Hex formatter
@@ -42,7 +42,7 @@ public class BinaryFormatterHex implements DBDBinaryFormatter {
     {
         char[] chars = new char[length * 2];
         for (int i = offset; i < offset + length; i++) {
-            String hex = TextUtils.byteToHex[bytes[i] & 0x0ff];
+            String hex = GeneralUtils.byteToHex[bytes[i] & 0x0ff];
             chars[i * 2] = hex.charAt(0);
             chars[i * 2 + 1] = hex.charAt(1);
         }
