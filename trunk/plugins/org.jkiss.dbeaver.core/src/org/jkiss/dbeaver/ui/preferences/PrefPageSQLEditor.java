@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,6 +28,7 @@ import org.eclipse.ui.texteditor.rulers.RulerColumnPreferenceAdapter;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -178,7 +178,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(IPreferenceStore store)
+    protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
             editorSeparateConnectionCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION));
@@ -193,7 +193,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
 
             final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
-                store,
+                new PreferenceStoreDelegate(store),
                 AbstractTextEditor.PREFERENCE_RULER_CONTRIBUTIONS);
             for (Map.Entry<RulerColumnDescriptor, Button> entry : rulerChecks.entrySet()) {
                 entry.getValue().setSelection(adapter.isEnabled(entry.getKey()));
@@ -207,7 +207,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(IPreferenceStore store)
+    protected void savePreferences(DBPPreferenceStore store)
     {
         try {
             store.setValue(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
@@ -223,7 +223,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
 
             final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
-                    store,
+                new PreferenceStoreDelegate(store),
                     AbstractTextEditor.PREFERENCE_RULER_CONTRIBUTIONS);
             for (Map.Entry<RulerColumnDescriptor, Button> entry : rulerChecks.entrySet()) {
                 adapter.setEnabled(entry.getKey(), entry.getValue().getSelection());
@@ -238,7 +238,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(IPreferenceStore store)
+    protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION);
 

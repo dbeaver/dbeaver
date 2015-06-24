@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.perspective;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
@@ -26,9 +24,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -38,15 +33,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
-import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -61,7 +55,6 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -78,7 +71,7 @@ import java.util.List;
 /**
  * DataSource Toolbar
  */
-public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
+public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, DBPPreferenceListener, IPageListener, IPartListener, ISelectionListener {
     static final Log log = Log.getLog(DataSourceManagementToolbar.class);
 
     public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
@@ -428,7 +421,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             if (rsSize.length() == 0) {
                 rsSize = "1"; //$NON-NLS-1$
             }
-            IPreferenceStore store = dsContainer.getPreferenceStore();
+            DBPPreferenceStore store = dsContainer.getPreferenceStore();
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, rsSize);
             RuntimeUtils.savePreferenceStore(store);
         }
@@ -634,7 +627,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event)
+    public void preferenceChange(PreferenceChangeEvent event)
     {
         if (event.getProperty().equals(DBeaverPreferences.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
             if (event.getNewValue() != null) {

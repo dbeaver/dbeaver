@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -31,6 +30,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.QMConstants;
@@ -118,7 +118,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
     @Override
     protected void performDefaults()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
         Collection<String> queryTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',');
 
@@ -160,7 +160,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         Integer historyDays = UIUtils.getTextInteger(textHistoryDays);
         Integer entriesPerPage = UIUtils.getTextInteger(textEntriesPerPage);
 
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(objectTypes));
         store.setValue(QMConstants.PROP_QUERY_TYPES, CommonUtils.makeString(queryTypes, ','));
         if (historyDays != null) {

@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -31,6 +30,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
@@ -58,7 +58,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     public PrefPageDatabaseGeneral()
     {
         super();
-        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
+        setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
     }
 
     @Override
@@ -117,7 +117,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     @Override
     protected void performDefaults()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
         keepEditorsOnRestart.setSelection(store.getBoolean(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS));
@@ -134,7 +134,7 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     @Override
     public boolean performOk()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
         store.setValue(DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, keepEditorsOnRestart.getSelection());

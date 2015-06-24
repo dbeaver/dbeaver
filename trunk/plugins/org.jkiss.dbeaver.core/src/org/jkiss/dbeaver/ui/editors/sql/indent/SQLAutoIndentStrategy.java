@@ -17,10 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -151,7 +151,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private void clearCachedValues()
     {
         autoCompletionMap.clear();
-        IPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
         boolean closeBeginEnd = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END);
         if (closeBeginEnd) {
             autoCompletionMap.put(SQLIndentSymbols.Tokenbegin, SQLIndentSymbols.beginTrail);

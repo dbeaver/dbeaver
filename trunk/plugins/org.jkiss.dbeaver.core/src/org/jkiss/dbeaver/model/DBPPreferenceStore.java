@@ -1,5 +1,7 @@
 package org.jkiss.dbeaver.model;
 
+import java.io.IOException;
+
 public interface DBPPreferenceStore {
 
     boolean contains(String name);
@@ -39,5 +41,8 @@ public interface DBPPreferenceStore {
 
     void addPropertyChangeListener(DBPPreferenceListener listener);
     void removePropertyChangeListener(DBPPreferenceListener listener);
+    void firePropertyChangeEvent(String name, Object oldValue, Object newValue);
+
+    void save() throws IOException;
 
 }

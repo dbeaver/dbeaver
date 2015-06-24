@@ -17,19 +17,16 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.DialogPage;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -62,7 +59,7 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
 
     protected abstract void updateEnablement();
 
-    protected static List<DBNNode> loadTreeState(IPreferenceStore store, String propName)
+    protected static List<DBNNode> loadTreeState(DBPPreferenceStore store, String propName)
     {
         final List<DBNNode> result = new ArrayList<DBNNode>();
         final String sources = store.getString(propName);

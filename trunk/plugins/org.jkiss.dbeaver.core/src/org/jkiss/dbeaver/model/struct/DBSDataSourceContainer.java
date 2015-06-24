@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -130,7 +129,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      * Preference store associated with this datasource
      * @return preference store
      */
-    IPreferenceStore getPreferenceStore();
+    DBPPreferenceStore getPreferenceStore();
 
     @NotNull
     DBPDataSourceRegistry getRegistry();

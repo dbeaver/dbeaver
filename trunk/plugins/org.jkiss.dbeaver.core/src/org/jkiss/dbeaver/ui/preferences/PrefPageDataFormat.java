@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
@@ -69,7 +69,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     public PrefPageDataFormat()
     {
         super();
-        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
+        setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
     }
 
     @Override
@@ -341,7 +341,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(IPreferenceStore store)
+    protected void loadPreferences(DBPPreferenceStore store)
     {
         refreshProfileList();
 
@@ -349,7 +349,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(IPreferenceStore store)
+    protected void savePreferences(DBPPreferenceStore store)
     {
         try {
             formatterProfile.setProfileName(profileName);
@@ -365,7 +365,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(IPreferenceStore store)
+    protected void clearPreferences(DBPPreferenceStore store)
     {
         formatterProfile.reset();
     }

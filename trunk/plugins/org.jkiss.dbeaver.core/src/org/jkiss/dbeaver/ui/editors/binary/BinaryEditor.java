@@ -17,14 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -41,6 +37,9 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -58,7 +57,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     //static final String textSavingFilePleaseWait = "Saving file, please wait";
 
     private HexManager manager;
-    private IPropertyChangeListener preferencesChangeListener = null;
+    private DBPPreferenceListener preferencesChangeListener = null;
     private Set<ISelectionChangedListener> selectionListeners = null;  // of ISelectionChangedListener
 
     public BinaryEditor()
@@ -169,15 +168,15 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
         bars.updateActionBars();
 
-        preferencesChangeListener = new IPropertyChangeListener() {
+        preferencesChangeListener = new DBPPreferenceListener() {
             @Override
-            public void propertyChange(PropertyChangeEvent event)
+            public void preferenceChange(PreferenceChangeEvent event)
             {
                 if (HexPreferencesPage.PROP_FONT_DATA.equals(event.getProperty()))
                     manager.setTextFont((FontData) event.getNewValue());
             }
         };
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.addPropertyChangeListener(preferencesChangeListener);
 
         manager.addLongSelectionListener(new SelectionAdapter() {
@@ -248,7 +247,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             manager = null;
         }
 
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.removePropertyChangeListener(preferencesChangeListener);
 
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);

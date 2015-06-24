@@ -18,12 +18,12 @@
 package org.jkiss.dbeaver.model.impl.net;
 
 import com.jcraft.jsch.*;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -157,7 +157,7 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     private int findFreePort()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         int minPort = store.getInt(DBeaverPreferences.NET_TUNNEL_PORT_MIN);
         int maxPort = store.getInt(DBeaverPreferences.NET_TUNNEL_PORT_MAX);
         int portRange = Math.abs(maxPort - minPort);

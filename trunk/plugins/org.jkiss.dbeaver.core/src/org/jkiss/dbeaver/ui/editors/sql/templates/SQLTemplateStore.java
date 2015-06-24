@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -44,9 +45,6 @@ import java.util.ResourceBundle;
  * <p>
  * Clients may instantiate but not subclass this class.
  * </p>
- *
- * @noextend This class is not intended to be subclassed by clients.
- * @since 3.0
  */
 public class SQLTemplateStore extends TemplateStore {
 
@@ -55,7 +53,7 @@ public class SQLTemplateStore extends TemplateStore {
 
     public SQLTemplateStore(ContextTypeRegistry registry)
     {
-        super(registry, new CustomTemplatesStore(), PREF_STORE_KEY); //$NON-NLS-1$
+        super(registry, new PreferenceStoreDelegate(new CustomTemplatesStore()), PREF_STORE_KEY); //$NON-NLS-1$
     }
 
     /**
@@ -188,7 +186,7 @@ public class SQLTemplateStore extends TemplateStore {
             try {
                 File configurationFile = getConfigurationFile();
                 if (configurationFile.exists()) {
-                    putValue(PREF_STORE_KEY, ContentUtils.readFileToString(configurationFile));
+                    setValue(PREF_STORE_KEY, ContentUtils.readFileToString(configurationFile));
                 }
             } catch (IOException e) {
                 log.error(e);

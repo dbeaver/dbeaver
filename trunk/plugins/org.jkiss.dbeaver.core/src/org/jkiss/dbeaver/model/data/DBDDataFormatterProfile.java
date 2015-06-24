@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public interface DBDDataFormatterProfile {
 
-    IPreferenceStore getPreferenceStore();
+    DBPPreferenceStore getPreferenceStore();
 
     String getProfileName();
     

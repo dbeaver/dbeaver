@@ -17,10 +17,9 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -31,8 +30,6 @@ import java.text.BreakIterator;
  * Auto indent strategy for SQL multi-line comments
  */
 public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
-
-    static final Log log = Log.getLog(SQLCommentAutoIndentStrategy.class);
 
     private static final int DEFAULT_MARGIN = 5;
     private static final int DEFAULT_TAB_WIDTH = 4;
@@ -542,7 +539,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
         return paragraphBuffer.toString();
     }
 
-    private static IPreferenceStore getPreferenceStore()
+    private static DBPPreferenceStore getPreferenceStore()
     {
         return DBeaverCore.getGlobalPreferenceStore();
     }

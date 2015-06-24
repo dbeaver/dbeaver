@@ -21,9 +21,9 @@
 package org.jkiss.dbeaver.ext.erd.action;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.ext.erd.Activator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
@@ -41,7 +41,7 @@ public class DiagramToggleGridAction extends Action
 	@Override
     public void run()
 	{
-        final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        final DBPPreferenceStore store = Activator.getDefault().getPreferences();
         final boolean gridEnabled = store.getBoolean(ERDConstants.PREF_GRID_ENABLED);
         store.setValue(ERDConstants.PREF_GRID_ENABLED, !gridEnabled);
         RuntimeUtils.savePreferenceStore(store);

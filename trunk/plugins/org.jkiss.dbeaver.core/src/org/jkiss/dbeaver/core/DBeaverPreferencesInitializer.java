@@ -19,25 +19,24 @@ package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
-import org.eclipse.core.runtime.preferences.DefaultScope;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.registry.DataFormatterProfile;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.runtime.qm.QMConstants;
 import org.jkiss.dbeaver.runtime.qm.QMObjectType;
+import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
-import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
@@ -54,16 +53,10 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
   @Override
   public void initializeDefaultPreferences() {
-      IEclipsePreferences node = DefaultScope.INSTANCE.getNode(DBeaverConstants.PLUGIN_ID);
-
       boolean isMac = Platform.getOS().toLowerCase().contains("macos");
 
       // Init default preferences
-      IPreferenceStore store = DBeaverActivator.getInstance().getPreferenceStore();
-      {
-          File driversHome = DriverDescriptor.getCustomDriversHome();
-          System.setProperty(DBeaverConstants.PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
-      }
+      DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
 
       // Agent
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);

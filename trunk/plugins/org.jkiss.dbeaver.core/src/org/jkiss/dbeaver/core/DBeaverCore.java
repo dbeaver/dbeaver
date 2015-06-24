@@ -20,10 +20,10 @@ package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.model.impl.net.GlobalProxySelector;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.OSDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.runtime.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.osgi.framework.Bundle;
@@ -140,9 +141,9 @@ public class DBeaverCore implements DBPApplication {
         return Platform.getProduct().getName() + " " + getVersion();
     }
 
-    public static IPreferenceStore getGlobalPreferenceStore()
+    public static DBPPreferenceStore getGlobalPreferenceStore()
     {
-        return DBeaverActivator.getInstance().getPreferenceStore();
+        return DBeaverActivator.getInstance().getPreferences();
     }
 
     DBeaverCore()

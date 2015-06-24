@@ -17,17 +17,20 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -59,7 +62,7 @@ public class SearchDataPage extends AbstractSearchPage {
     private SearchDataParams params = new SearchDataParams();
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private CheckboxTreeManager checkboxTreeManager;
-    private IPreferenceStore store;
+    private DBPPreferenceStore store;
 
     public SearchDataPage() {
 		super("Database objects search");
@@ -248,7 +251,7 @@ public class SearchDataPage extends AbstractSearchPage {
     }
 
     @Override
-    public void loadState(IPreferenceStore store)
+    public void loadState(DBPPreferenceStore store)
     {
         params.searchString = store.getString(PROP_MASK);
         params.caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
@@ -267,7 +270,7 @@ public class SearchDataPage extends AbstractSearchPage {
     }
 
     @Override
-    public void saveState(IPreferenceStore store)
+    public void saveState(DBPPreferenceStore store)
     {
         store.setValue(PROP_MASK, params.searchString);
         store.setValue(PROP_CASE_SENSITIVE, params.caseSensitive);
@@ -290,7 +293,7 @@ public class SearchDataPage extends AbstractSearchPage {
         }
     }
 
-    protected static void saveTreeState(IPreferenceStore store, String propName, DatabaseNavigatorTree tree)
+    protected static void saveTreeState(DBPPreferenceStore store, String propName, DatabaseNavigatorTree tree)
     {
         // Object sources
         StringBuilder sourcesString = new StringBuilder();
