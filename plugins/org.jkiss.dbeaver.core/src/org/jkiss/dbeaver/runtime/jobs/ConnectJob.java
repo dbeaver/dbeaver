@@ -20,14 +20,12 @@ package org.jkiss.dbeaver.runtime.jobs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Connect job.
@@ -45,7 +43,6 @@ public class ConnectJob extends EventProcessorJob
     {
         super(NLS.bind(CoreMessages.runtime_jobs_connect_name, container.getName()), container);
         setUser(true);
-        setProperty(IProgressConstants.ICON_PROPERTY, DBeaverIcons.getImageDescriptor(container.getDriver().getIcon()));
     }
 
     public IStatus getConnectStatus() {
