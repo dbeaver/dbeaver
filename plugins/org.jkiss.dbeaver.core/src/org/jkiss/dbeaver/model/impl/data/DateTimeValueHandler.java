@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -125,7 +125,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     }
 
     @Override
-    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller)
+    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull DBDValueController controller)
     {
         super.contributeProperties(propertySource, controller);
         propertySource.addProperty(
