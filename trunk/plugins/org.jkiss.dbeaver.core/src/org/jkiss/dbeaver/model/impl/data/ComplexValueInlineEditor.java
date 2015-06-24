@@ -23,18 +23,18 @@ import org.eclipse.swt.widgets.Tree;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDComplexValue;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.impl.data.editors.BaseValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 
 /**
 * ComplexValueInlineEditor
 */
 public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
-    private final DBDValueController controller;
+    private final IValueController controller;
     ComplexObjectEditor editor;
 
-    public ComplexValueInlineEditor(DBDValueController controller) {
+    public ComplexValueInlineEditor(IValueController controller) {
         super(controller);
         this.controller = controller;
     }

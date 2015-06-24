@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.data.IAttributeController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
@@ -49,13 +51,13 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
 {
     static final Log log = Log.getLog(ContentEditorInput.class);
 
-    private DBDValueController valueController;
+    private IValueController valueController;
     private ContentEditorPart[] editorParts;
     private IFile contentFile;
     private boolean contentDetached = false;
 
     public ContentEditorInput(
-        DBDValueController valueController,
+        IValueController valueController,
         ContentEditorPart[] editorParts,
         DBRProgressMonitor monitor)
         throws DBException
@@ -65,12 +67,12 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         this.prepareContent(monitor);
     }
 
-    public DBDValueController getValueController()
+    public IValueController getValueController()
     {
         return valueController;
     }
 
-    public void refreshContent(DBRProgressMonitor monitor, DBDValueController valueController) throws DBException
+    public void refreshContent(DBRProgressMonitor monitor, IValueController valueController) throws DBException
     {
         this.valueController = valueController;
         this.prepareContent(monitor);
@@ -97,8 +99,8 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     public String getName()
     {
         String inputName;
-        if (valueController instanceof DBDAttributeController) {
-            inputName = ((DBDAttributeController) valueController).getColumnId();
+        if (valueController instanceof IAttributeController) {
+            inputName = ((IAttributeController) valueController).getColumnId();
         } else {
             inputName = valueController.getValueName();
         }
@@ -159,8 +161,8 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
                 // Create file
                 if (contentFile == null) {
                     String valueId;
-                    if (valueController instanceof DBDAttributeController) {
-                        valueId = ((DBDAttributeController) valueController).getColumnId();
+                    if (valueController instanceof IAttributeController) {
+                        valueId = ((IAttributeController) valueController).getColumnId();
                     } else {
                         valueId = valueController.getValueName();
                     }

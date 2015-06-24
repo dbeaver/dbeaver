@@ -28,14 +28,14 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.editors.BaseValueEditor;
+import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -124,7 +124,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(@NotNull final DBDValueController controller)
+    public IValueEditor createEditor(@NotNull final IValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
@@ -213,7 +213,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
                         if (editor.getSelectionIndex() < 0) {
                             editor.select(0);
                         }
-                        if (controller.getEditType() == DBDValueController.EditType.INLINE) {
+                        if (controller.getEditType() == IValueController.EditType.INLINE) {
                             editor.setFocus();
                         }
                         return editor;
@@ -244,7 +244,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
 /*
-    public void contributeProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    public void contributeProperties(PropertySourceAbstract propertySource, IValueController controller)
     {
         propertySource.addProperty(
             "max_length",

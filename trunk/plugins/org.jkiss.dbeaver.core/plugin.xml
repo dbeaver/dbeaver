@@ -2260,6 +2260,15 @@
         </formatter>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ui.data.manager.BooleanValueManager" id="org.jkiss.dbeaver.ui.data.manager.BooleanValueManager">
+            <supports kind="BOOLEAN"/>
+        </manager>
+        <manager class="org.jkiss.dbeaver.ui.data.manager.NumericValueManager" id="org.jkiss.dbeaver.ui.data.manager.NumericValueManager">
+            <supports kind="NUMERIC"/>
+        </manager>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataTransfer">
         <node type="producer"
               id="database_producer"

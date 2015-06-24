@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.data.IAttributeController;
+import org.jkiss.dbeaver.ui.data.IRowController;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +37,7 @@ import java.util.List;
 /**
 * ResultSetValueController
 */
-public class ResultSetValueController implements DBDAttributeController, DBDRowController {
+public class ResultSetValueController implements IAttributeController, IRowController {
 
     protected final IResultSetController controller;
     protected final EditType editType;
@@ -85,7 +88,7 @@ public class ResultSetValueController implements DBDAttributeController, DBDRowC
 
     @NotNull
     @Override
-    public DBDRowController getRowController() {
+    public IRowController getRowController() {
         return this;
     }
 
@@ -183,7 +186,7 @@ public class ResultSetValueController implements DBDAttributeController, DBDRowC
     }
 
     @Override
-    public void unregisterEditor(DBDValueEditorStandalone editor) {
+    public void unregisterEditor(IValueEditorStandalone editor) {
     }
 
     @Override

@@ -15,45 +15,44 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ui.data;
 
-package org.jkiss.dbeaver.model.data;
-
-import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 
 /**
- * DBD Value Editor.
- * Must be implemented by all visual value editors (dialogs, editors, inline controls).
+ * DBD Value Controller
  */
-public interface DBDValueEditor
+public interface IAttributeController extends IValueController
 {
-    /**
-     * Create editor control(s)
-     */
-    void createControl();
 
     /**
-     * Gets control which actually performs edit
-     * @return control reference
+     * Row controller
+     * @return row controller
      */
-    Control getControl();
+    @NotNull
+    IRowController getRowController();
 
     /**
-     * Extracts value from value editor.
-     * @return value. Possibly NULL
-     * @throws DBException on any error
+     * Attribute meta data
+     * @return meta data
+     */
+    @NotNull
+    DBDAttributeBinding getBinding();
+
+    /**
+     * Column unique ID string
+     * @return string
+     */
+    @NotNull
+    String getColumnId();
+
+    /**
+     * Row identifier
      */
     @Nullable
-    Object extractEditorValue()
-        throws DBException;
-
-    /**
-     * Fills current editor with specified value. Do not updates value in controller.
-     * @param value new value for editor
-     * @throws DBException on any error
-     */
-    void primeEditorValue(@Nullable Object value)
-        throws DBException;
+    DBDRowIdentifier getRowIdentifier();
 
 }

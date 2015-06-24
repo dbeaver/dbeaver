@@ -29,9 +29,11 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.editors.ContentInlineEditor;
-import org.jkiss.dbeaver.model.impl.data.editors.ContentPanelEditor;
+import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
+import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.Blob;
@@ -189,14 +191,14 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final DBDValueController controller)
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
         throws DBCException
     {
         ContentUtils.contributeContentActions(manager, controller);
     }
 
     @Override
-    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull DBDValueController controller)
+    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller)
     {
         super.contributeProperties(propertySource, controller);
         try {
@@ -223,7 +225,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(@NotNull final DBDValueController controller)
+    public IValueEditor createEditor(@NotNull final IValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {

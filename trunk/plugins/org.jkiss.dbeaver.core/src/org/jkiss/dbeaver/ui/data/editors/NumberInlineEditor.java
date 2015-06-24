@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
@@ -25,7 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,7 +43,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
     private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
     private final NumberEditorHelper helper;
 
-    public NumberInlineEditor(DBDValueController controller, NumberEditorHelper helper) {
+    public NumberInlineEditor(IValueController controller, NumberEditorHelper helper) {
         super(controller);
         this.helper = helper;
     }
@@ -71,7 +71,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         } else {
             control.setText("");
         }
-        if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
+        if (valueController.getEditType() == IValueController.EditType.INLINE) {
             control.selectAll();
         }
     }

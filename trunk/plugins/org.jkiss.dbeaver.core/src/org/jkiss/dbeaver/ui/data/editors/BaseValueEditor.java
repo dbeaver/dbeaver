@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
@@ -28,8 +28,8 @@ import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -37,11 +37,11 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
 * BaseValueEditor
 */
-public abstract class BaseValueEditor<T extends Control> implements DBDValueEditor {
-    protected final DBDValueController valueController;
+public abstract class BaseValueEditor<T extends Control> implements IValueEditor {
+    protected final IValueController valueController;
     protected T control;
     private boolean activated;
-    protected BaseValueEditor(final DBDValueController valueController)
+    protected BaseValueEditor(final IValueController valueController)
     {
         this.valueController = valueController;
     }
@@ -75,7 +75,7 @@ public abstract class BaseValueEditor<T extends Control> implements DBDValueEdit
 
     protected void initInlineControl(final Control inlineControl)
     {
-        boolean isInline = (valueController.getEditType() == DBDValueController.EditType.INLINE);
+        boolean isInline = (valueController.getEditType() == IValueController.EditType.INLINE);
         if (isInline && UIUtils.isInDialog(inlineControl)) {
             //isInline = false;
         }

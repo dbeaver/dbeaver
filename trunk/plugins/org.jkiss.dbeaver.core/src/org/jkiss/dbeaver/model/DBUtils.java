@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.SQLConstants;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -442,7 +443,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static Object makeNullValue(@NotNull final DBDValueController valueController)
+    public static Object makeNullValue(@NotNull final IValueController valueController)
     {
         try {
             DBCExecutionContext executionContext = valueController.getExecutionContext();
