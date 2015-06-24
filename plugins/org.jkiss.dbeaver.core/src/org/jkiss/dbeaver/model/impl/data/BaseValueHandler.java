@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
  * Base value handler
@@ -46,14 +47,14 @@ public abstract class BaseValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull DBDValueController controller)
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller)
         throws DBCException
     {
 
     }
 
     @Override
-    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull DBDValueController controller)
+    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller)
     {
     }
 

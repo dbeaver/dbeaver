@@ -28,11 +28,13 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.data.editors.BitInlineEditor;
+import org.jkiss.dbeaver.ui.data.editors.BitInlineEditor;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
-import org.jkiss.dbeaver.model.impl.data.editors.NumberEditorHelper;
-import org.jkiss.dbeaver.model.impl.data.editors.NumberInlineEditor;
+import org.jkiss.dbeaver.ui.data.editors.NumberEditorHelper;
+import org.jkiss.dbeaver.ui.data.editors.NumberInlineEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 import java.math.BigDecimal;
@@ -215,7 +217,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler implements 
 
     @Nullable
     @Override
-    public DBDValueEditor createEditor(@NotNull DBDValueController controller)
+    public IValueEditor createEditor(@NotNull IValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {

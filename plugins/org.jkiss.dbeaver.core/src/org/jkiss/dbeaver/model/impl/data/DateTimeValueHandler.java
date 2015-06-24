@@ -28,13 +28,15 @@ import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.data.editors.DateTimeEditorHelper;
-import org.jkiss.dbeaver.model.impl.data.editors.DateTimeInlineEditor;
-import org.jkiss.dbeaver.model.impl.data.editors.DateTimeStandaloneEditor;
+import org.jkiss.dbeaver.ui.data.editors.DateTimeEditorHelper;
+import org.jkiss.dbeaver.ui.data.editors.DateTimeInlineEditor;
+import org.jkiss.dbeaver.ui.data.editors.DateTimeStandaloneEditor;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -55,7 +57,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     }
 
     @Override
-    public DBDValueEditor createEditor(@NotNull DBDValueController controller)
+    public IValueEditor createEditor(@NotNull IValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
@@ -113,7 +115,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final DBDValueController controller)
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
         throws DBCException
     {
         manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME)) {
@@ -125,7 +127,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
     }
 
     @Override
-    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull DBDValueController controller)
+    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller)
     {
         super.contributeProperties(propertySource, controller);
         propertySource.addProperty(
@@ -230,7 +232,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler implements D
         return formatter;
     }
 
-    private boolean isTimestamp(DBDValueController valueController) {
+    private boolean isTimestamp(IValueController valueController) {
         return valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP;
     }
 

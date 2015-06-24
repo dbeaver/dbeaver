@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 
@@ -37,7 +37,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     private final DateTimeEditorHelper helper;
     private CustomTimeEditor timeEditor;
 
-    public DateTimeInlineEditor(DBDValueController controller, DateTimeEditorHelper helper) {
+    public DateTimeInlineEditor(IValueController controller, DateTimeEditorHelper helper) {
         super(controller);
         this.helper = helper;
     }
@@ -45,7 +45,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     protected Control createControl(Composite editPlaceholder)
     {
-        boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
+        boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         final Composite dateTimeGroup = inline ?
             valueController.getEditPlaceholder() :
             new Composite(valueController.getEditPlaceholder(), SWT.BORDER);

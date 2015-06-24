@@ -15,41 +15,50 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.utils.CommonUtils;
 
 /**
-* BooleanPanelEditor
+* StringInlineEditor
 */
-public class BooleanPanelEditor extends BaseValueEditor<List> {
-    public BooleanPanelEditor(DBDValueController controller) {
+public class StringInlineEditor extends BaseValueEditor<Text> {
+
+    private static final int MAX_STRING_LENGTH = 0xffff;
+
+    public StringInlineEditor(IValueController controller) {
         super(controller);
     }
 
     @Override
-    public Object extractEditorValue()
+    protected Text createControl(Composite editPlaceholder)
     {
-        return control.getSelectionIndex() == 1;
+        final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
+        final Text editor = new Text(valueController.getEditPlaceholder(),
+            SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
+        editor.setTextLimit(MAX_STRING_LENGTH);
+        editor.setEditable(!valueController.isReadOnly());
+        return editor;
     }
 
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        control.setSelection(Boolean.TRUE.equals(value) ? 1 : 0);
+        control.setText(CommonUtils.toString(value));
+        if (valueController.getEditType() == IValueController.EditType.INLINE) {
+            control.selectAll();
+        }
     }
 
     @Override
-    protected List createControl(Composite editPlaceholder)
+    public Object extractEditorValue()
     {
-        final List editor = new List(valueController.getEditPlaceholder(), SWT.SINGLE | SWT.READ_ONLY);
-        editor.add("FALSE");
-        editor.add("TRUE");
-        return editor;
+        return control.getText();
     }
 }

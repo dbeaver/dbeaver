@@ -44,6 +44,9 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -57,7 +60,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private IWorkbenchPartSite partSite;
     private DBCExecutionContext executionContext;
     private final TreeEditor treeEditor;
-    private DBDValueEditor curCellEditor;
+    private IValueEditor curCellEditor;
 
     public ComplexObjectEditor(IWorkbenchPartSite partSite, Composite parent, int style)
     {
@@ -192,18 +195,18 @@ public class ComplexObjectEditor extends TreeViewer {
         if (valueHandler == null) {
             return;
         }
-        DBDValueController valueController = new ComplexValueController(
+        IValueController valueController = new ComplexValueController(
             valueHandler,
             type,
             name,
             value,
-            advanced ? DBDValueController.EditType.EDITOR : DBDValueController.EditType.INLINE);
+            advanced ? IValueController.EditType.EDITOR : IValueController.EditType.INLINE);
         try {
             curCellEditor = valueHandler.createEditor(valueController);
             if (curCellEditor != null) {
                 curCellEditor.createControl();
-                if (curCellEditor instanceof DBDValueEditorStandalone) {
-                    ((DBDValueEditorStandalone) curCellEditor).showValueEditor();
+                if (curCellEditor instanceof IValueEditorStandalone) {
+                    ((IValueEditorStandalone) curCellEditor).showValueEditor();
                 } else if (curCellEditor.getControl() != null) {
                     treeEditor.setEditor(curCellEditor.getControl(), item, 1);
                 }
@@ -251,7 +254,7 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
-    private class ComplexValueController implements DBDValueController {
+    private class ComplexValueController implements IValueController {
         private final DBDValueHandler valueHandler;
         private final DBSTypedObject type;
         private final String name;
@@ -346,7 +349,7 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditorStandalone editor)
+        public void unregisterEditor(IValueEditorStandalone editor)
         {
 
         }

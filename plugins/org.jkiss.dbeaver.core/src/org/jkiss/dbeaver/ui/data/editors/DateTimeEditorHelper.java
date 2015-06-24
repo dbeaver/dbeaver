@@ -15,24 +15,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ui.data.editors;
 
-package org.jkiss.dbeaver.model.data;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
- * Standalone Value Editor.
- * Visualizes cell editor in separate non-modal dialog or editor
- */
-public interface DBDValueEditorStandalone extends DBDValueEditor
-{
-    /**
-     * Brings editor to the top of screen
-     */
-    void showValueEditor();
+* DateTimeEditorHelper
+*/
+public interface DateTimeEditorHelper {
 
-    /**
-     * Closes this editor.
-     * Implementor must call unregisterEditor on it's value controller
-     */
-    void closeValueEditor();
+    DBDDataFormatter getFormatter(DBSTypedObject column);
 
 }

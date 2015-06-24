@@ -89,6 +89,9 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
@@ -118,7 +121,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private DBDAttributeBinding curAttribute;
     private int columnOrder = SWT.NONE;
 
-    private final Map<SpreadsheetValueController, DBDValueEditorStandalone> openEditors = new HashMap<SpreadsheetValueController, DBDValueEditorStandalone>();
+    private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<SpreadsheetValueController, IValueEditorStandalone>();
 
     private SpreadsheetFindReplaceTarget findReplaceTarget;
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<ISelectionChangedListener>();
@@ -442,8 +445,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             tdt.append(cellText);
 
             if (cut) {
-                DBDValueController valueController = new SpreadsheetValueController(
-                    controller, column, row, DBDValueController.EditType.NONE, null);
+                IValueController valueController = new SpreadsheetValueController(
+                    controller, column, row, IValueController.EditType.NONE, null);
                 if (!valueController.isReadOnly()) {
                     valueController.updateValue(DBUtils.makeNullValue(valueController));
                 }
@@ -476,7 +479,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 controller,
                 attr,
                 row,
-                DBDValueController.EditType.NONE,
+                IValueController.EditType.NONE,
                 null).updateValue(newValue);
         }
         catch (Exception e) {
@@ -644,7 +647,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 controller,
                 attr,
                 row,
-                DBDValueController.EditType.PANEL,
+                IValueController.EditType.PANEL,
                 previewPane.getViewPlaceholder());
         } else {
             panelValueController.setCurRow(row);
@@ -656,8 +659,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     // Edit
 
     private void closeEditors() {
-        List<DBDValueEditorStandalone> editors = new ArrayList<DBDValueEditorStandalone>(openEditors.values());
-        for (DBDValueEditorStandalone editor : editors) {
+        List<IValueEditorStandalone> editors = new ArrayList<IValueEditorStandalone>(openEditors.values());
+        for (IValueEditorStandalone editor : editors) {
             editor.closeValueEditor();
         }
         if (!openEditors.isEmpty()) {
@@ -728,9 +731,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             controller,
             attr,
             row,
-            inline ? DBDValueController.EditType.INLINE : DBDValueController.EditType.EDITOR,
+            inline ? IValueController.EditType.INLINE : IValueController.EditType.EDITOR,
             placeholder);
-        final DBDValueEditor editor;
+        final IValueEditor editor;
         try {
             editor = attr.getValueHandler().createEditor(valueController);
         }
@@ -741,18 +744,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (editor != null) {
             editor.createControl();
         }
-        if (editor instanceof DBDValueEditorStandalone) {
-            valueController.registerEditor((DBDValueEditorStandalone)editor);
+        if (editor instanceof IValueEditorStandalone) {
+            valueController.registerEditor((IValueEditorStandalone)editor);
             // show dialog in separate job to avoid block
             new UIJob("Open separate editor") {
                 @Override
                 public IStatus runInUIThread(IProgressMonitor monitor)
                 {
-                    ((DBDValueEditorStandalone)editor).showValueEditor();
+                    ((IValueEditorStandalone)editor).showValueEditor();
                     return Status.OK_STATUS;
                 }
             }.schedule();
-            //((DBDValueEditorStandalone)editor).showValueEditor();
+            //((IValueEditorStandalone)editor).showValueEditor();
         } else {
             // Set editable value
             if (editor != null) {
@@ -946,7 +949,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                             controller,
                             attr,
                             row,
-                            DBDValueController.EditType.NONE,
+                            IValueController.EditType.NONE,
                             null);
                         PropertyCollector props = new PropertyCollector(valueController.getBinding().getAttribute(), false);
                         props.collectProperties();
@@ -1477,12 +1480,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             openValueEditor(true);
         }
 
-        public void registerEditor(DBDValueEditorStandalone editor) {
+        public void registerEditor(IValueEditorStandalone editor) {
             openEditors.put(this, editor);
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditorStandalone editor) {
+        public void unregisterEditor(IValueEditorStandalone editor) {
             openEditors.remove(this);
         }
 

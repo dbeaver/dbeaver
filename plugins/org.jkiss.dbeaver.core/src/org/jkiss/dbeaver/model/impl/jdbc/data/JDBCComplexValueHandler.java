@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -77,7 +77,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
 
 /*
     @Override
-    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller)
+    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull IValueController controller)
     {
         super.contributeProperties(propertySource, controller);
         try {
@@ -96,7 +96,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
 */
 
     @Override
-    public DBDValueEditor createEditor(@NotNull final DBDValueController controller)
+    public IValueEditor createEditor(@NotNull final IValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {

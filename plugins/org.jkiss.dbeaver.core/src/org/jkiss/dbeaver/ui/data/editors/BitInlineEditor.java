@@ -15,50 +15,49 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
-* StringInlineEditor
+* BitInlineEditor
 */
-public class StringInlineEditor extends BaseValueEditor<Text> {
-
-    private static final int MAX_STRING_LENGTH = 0xffff;
-
-    public StringInlineEditor(DBDValueController controller) {
+public class BitInlineEditor extends BaseValueEditor<Combo> {
+    public BitInlineEditor(IValueController controller) {
         super(controller);
     }
 
     @Override
-    protected Text createControl(Composite editPlaceholder)
+    protected Combo createControl(Composite editPlaceholder)
     {
-        final boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
-        final Text editor = new Text(valueController.getEditPlaceholder(),
-            SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
-        editor.setTextLimit(MAX_STRING_LENGTH);
-        editor.setEditable(!valueController.isReadOnly());
+        final Combo editor = new Combo(valueController.getEditPlaceholder(), SWT.READ_ONLY);
+        editor.add("0"); //$NON-NLS-1$
+        editor.add("1"); //$NON-NLS-1$
+        editor.setEnabled(!valueController.isReadOnly());
         return editor;
     }
 
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        control.setText(CommonUtils.toString(value));
-        if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
-            control.selectAll();
-        }
+        control.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
     }
 
     @Override
     public Object extractEditorValue()
     {
-        return control.getText();
+        switch (control.getSelectionIndex()) {
+            case 0:
+                return (byte) 0;
+            case 1:
+                return (byte) 1;
+            default:
+                return null;
+        }
     }
 }

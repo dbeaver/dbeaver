@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -66,7 +66,7 @@ public class TextViewDialog extends ValueViewDialog {
     private HexEditControl hexEditControl;
     private CTabFolder editorContainer;
 
-    public TextViewDialog(DBDValueController valueController) {
+    public TextViewDialog(IValueController valueController) {
         super(valueController);
     }
 

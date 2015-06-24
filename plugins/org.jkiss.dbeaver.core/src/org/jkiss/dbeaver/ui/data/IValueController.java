@@ -15,20 +15,21 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.ui.data;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * DBD Value Controller
  */
-public interface DBDValueController
+public interface IValueController
 {
     /**
      * Value editor type
@@ -120,7 +121,7 @@ public interface DBDValueController
      */
     void nextInlineEditor(boolean next);
 
-    void unregisterEditor(DBDValueEditorStandalone editor);
+    void unregisterEditor(IValueEditorStandalone editor);
 
     /**
      * Show error/warning message in grid control.

@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -52,7 +52,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEditorStandalone, IResourceChangeListener
+public class ContentEditor extends MultiPageAbstractEditor implements IValueEditorStandalone, IResourceChangeListener
 {
     @Override
     public ContentEditorInput getEditorInput()
@@ -61,7 +61,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
     }
 
     @Nullable
-    public static ContentEditor openEditor(DBDValueController valueController, ContentEditorPart[] editorParts)
+    public static ContentEditor openEditor(IValueController valueController, ContentEditorPart[] editorParts)
     {
         ContentEditorInput editorInput;
         // Save data to file
@@ -104,11 +104,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
     }
 
     private static class LOBInitializer implements DBRRunnableWithProgress {
-        DBDValueController valueController;
+        IValueController valueController;
         ContentEditorPart[] editorParts;
         ContentEditorInput editorInput;
 
-        private LOBInitializer(DBDValueController valueController, ContentEditorPart[] editorParts, @Nullable ContentEditorInput editorInput)
+        private LOBInitializer(IValueController valueController, ContentEditorPart[] editorParts, @Nullable ContentEditorInput editorInput)
         {
             this.valueController = valueController;
             this.editorParts = editorParts;
@@ -258,7 +258,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
         if (valueEditorRegistered) {
-            DBDValueController valueController = getValueController();
+            IValueController valueController = getValueController();
             if (valueController != null) {
                 valueController.unregisterEditor(this);
             }
@@ -393,7 +393,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
         panel.setLayoutData(gd);
 
         {
-            DBDValueController valueController = getValueController();
+            IValueController valueController = getValueController();
             assert valueController != null;
             infoPanel = new ColumnInfoPanel(panel, SWT.NONE, valueController);
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -429,7 +429,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
     @Nullable
     DBDContent getContent()
     {
-        DBDValueController valueController = getValueController();
+        IValueController valueController = getValueController();
         Object value = valueController == null? null : valueController.getValue();
         if (value instanceof DBDContent) {
             return (DBDContent) value;
@@ -439,7 +439,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
     }
 
     @Nullable
-    public DBDValueController getValueController()
+    public IValueController getValueController()
     {
         ContentEditorInput input = getEditorInput();
         return input == null ? null : input.getValueController();
@@ -477,7 +477,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        DBDValueController valueController = getEditorInput().getValueController();
+        IValueController valueController = getEditorInput().getValueController();
         LOBInitializer initializer = new LOBInitializer(valueController, getEditorInput().getEditors(), getEditorInput());
         try {
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
@@ -505,7 +505,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements DBDValueEd
             // Special case - occurred when entire workbench is closed
             // We need to unregister editor and release all resource here
             if (valueEditorRegistered) {
-                DBDValueController valueController = getValueController();
+                IValueController valueController = getValueController();
                 if (valueController != null) {
                     valueController.unregisterEditor(this);
                 }
