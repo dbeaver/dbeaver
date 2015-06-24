@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,7 +40,7 @@ import java.util.*;
 /**
  * PropertyCollector
  */
-public abstract class PropertySourceAbstract implements DBPPropertySource, IPropertySourceMulti
+public abstract class PropertySourceAbstract implements DBPPropertyManager, IPropertySourceMulti
 {
     static final Log log = Log.getLog(PropertySourceAbstract.class);
 
@@ -63,7 +64,7 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
         this.loadLazyProps = loadLazyProps;
     }
 
-    public PropertySourceAbstract addProperty(DBPPropertyDescriptor prop)
+    public void addProperty(DBPPropertyDescriptor prop)
     {
         if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isHidden()) {
             // Do not add it to property list
@@ -71,15 +72,12 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
             props.add(prop);
         }
         propValues.put(prop.getId(), prop);
-        return this;
     }
 
-    public PropertySourceAbstract addProperty(@Nullable String category, Object id, String name, Object value)
+    public void addProperty(@Nullable String category, Object id, String name, Object value)
     {
         props.add(new PropertyDescriptorEx(category, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
         propValues.put(id, value);
-
-        return this;
     }
 
     public void clearProperties()

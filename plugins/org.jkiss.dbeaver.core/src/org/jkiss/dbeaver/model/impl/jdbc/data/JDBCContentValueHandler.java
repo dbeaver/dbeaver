@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -31,7 +32,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.editors.ContentInlineEditor;
 import org.jkiss.dbeaver.model.impl.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.Blob;
@@ -196,7 +196,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller)
+    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull DBDValueController controller)
     {
         super.contributeProperties(propertySource, controller);
         try {

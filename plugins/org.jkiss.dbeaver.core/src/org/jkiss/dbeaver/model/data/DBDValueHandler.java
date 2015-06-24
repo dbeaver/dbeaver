@@ -22,9 +22,9 @@ import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 
 /**
  * DBD Value Handler.
@@ -138,7 +138,7 @@ public interface DBDValueHandler
      * @param propertySource property source
      * @param controller value controller
      */
-    void contributeProperties(@NotNull PropertySourceAbstract propertySource, @NotNull DBDValueController controller);
+    void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull DBDValueController controller);
 
     /**
      * Creates value editor.
