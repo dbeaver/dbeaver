@@ -18,8 +18,6 @@
 
 package org.jkiss.dbeaver.model.meta;
 
-import org.jkiss.dbeaver.runtime.properties.IPropertyValueListProvider;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -32,9 +30,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Property
 {
-    public static final String DEFAULT_LOCAL_STRING = "#"; //NON-NLS-1
-    public static final String RESOURCE_TYPE_NAME = "name"; //NON-NLS-1
-    public static final String RESOURCE_TYPE_DESCRIPTION = "description"; //NON-NLS-1
+    String DEFAULT_LOCAL_STRING = "#"; //NON-NLS-1
+    String RESOURCE_TYPE_NAME = "name"; //NON-NLS-1
+    String RESOURCE_TYPE_DESCRIPTION = "description"; //NON-NLS-1
 
     /**
      * Property unique ID (unique within class)

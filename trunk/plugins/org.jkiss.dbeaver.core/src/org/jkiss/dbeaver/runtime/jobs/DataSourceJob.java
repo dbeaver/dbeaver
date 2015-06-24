@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.runtime.jobs;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.progress.IProgressConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -28,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * DataSourceJob
@@ -44,12 +42,6 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
         final DBSDataSourceContainer dataSourceContainer = executionContext.getDataSource().getContainer();
 
         setUser(true);
-        //setProperty(IProgressConstants.KEEP_PROPERTY, Boolean.TRUE);
-        //setProperty(IProgressConstants.KEEPONE_PROPERTY, Boolean.TRUE);
-        if (image == null) {
-            image = DBeaverIcons.getImageDescriptor(dataSourceContainer.getDriver().getIcon());
-        }
-        setProperty(IProgressConstants.ICON_PROPERTY, image);
 
         addJobChangeListener(new JobChangeAdapter() {
             @Override

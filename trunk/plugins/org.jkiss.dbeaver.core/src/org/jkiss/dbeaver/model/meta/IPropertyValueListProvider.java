@@ -15,21 +15,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.editors.binary;
+
+package org.jkiss.dbeaver.model.meta;
 
 /**
- * Hex utils
+ * Property value provider
  */
-public class HexUtils {
+public interface IPropertyValueListProvider<OBJECT_TYPE> {
 
-    public static final String[] byteToHex = new String[256];
-    public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    boolean allowCustomValue();
 
-    static {
-        // Compose byte to hex map
-        for (int i = 0; i < 256; ++i) {
-            HexUtils.byteToHex[i] = Character.toString(HexUtils.nibbleToHex[i >>> 4]) + HexUtils.nibbleToHex[i & 0x0f];
-        }
-    }
+    Object[] getPossibleValues(OBJECT_TYPE object);
 
 }
