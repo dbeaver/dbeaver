@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -70,7 +69,7 @@ public class NavigatorHandlerLocalFolderCreate extends AbstractHandler {
         for (DBNDataSource node : nodes) {
             node.setFolderPath(newName);
         }
-        NavigatorUtils.updateConfigAndRefreshDatabases(nodes.iterator().next());
+        DBNModel.updateConfigAndRefreshDatabases(nodes.iterator().next());
 
         return true;
     }
