@@ -33,17 +33,17 @@ import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 public interface DBDValueHandler 
 {
     // Default value, means no features are supported
-    public static final int FEATURE_NONE = 0;
+    int FEATURE_NONE = 0;
     // VIEWER is ability to render value editor in separate panel
-    public static final int FEATURE_VIEWER = 1;
+    int FEATURE_VIEWER = 1;
     // EDITOR is ability to show value editor in separate dialog or standalone editor
-    public static final int FEATURE_EDITOR = 2;
+    int FEATURE_EDITOR = 2;
     // INLINE_EDITOR is ability to show editor in grid cell
-    public static final int FEATURE_INLINE_EDITOR = 4;
+    int FEATURE_INLINE_EDITOR = 4;
     // SHOW_ICON means grid should render type icon before cell value
-    public static final int FEATURE_SHOW_ICON = 8;
+    int FEATURE_SHOW_ICON = 8;
     // FEATURE_COMPOSITE composite values (which doesn't have their own "value" but have nested valuable elements)
-    public static final int FEATURE_COMPOSITE = 16;
+    int FEATURE_COMPOSITE = 16;
 
     /**
      * Handler features. Bit set.
