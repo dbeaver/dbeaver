@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IFilter;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
