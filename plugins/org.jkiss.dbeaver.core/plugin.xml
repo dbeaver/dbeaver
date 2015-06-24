@@ -2181,7 +2181,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
-        <provider class="org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStandardValueHandlerProvider" id="org.jkiss.dbeaver.core.standardDataTypeProvider">
+        <provider class="org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStandardValueHandlerProvider" id="org.jkiss.dbeaver.core.standardDataTypeProvider">
             <type standard="BIT"/>
             <type standard="TINYINT"/>
             <type standard="SMALLINT"/>
@@ -2278,7 +2278,7 @@
             <supports kind="ARRAY"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.ReferenceValueManager" id="org.jkiss.dbeaver.ui.data.managers.ReferenceValueManager">
-            <supports kind="REF"/>
+            <supports kind="REFERENCE"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ui.data.managers.StructValueManager">
             <supports kind="STRUCT"/>

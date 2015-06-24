@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Calendar;
