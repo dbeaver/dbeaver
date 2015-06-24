@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+import org.jkiss.dbeaver.runtime.properties.IPropertyValueListProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Set;

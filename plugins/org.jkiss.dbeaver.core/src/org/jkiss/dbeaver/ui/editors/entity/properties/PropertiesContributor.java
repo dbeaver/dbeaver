@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
+import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
 
 import java.util.ArrayList;
 import java.util.List;

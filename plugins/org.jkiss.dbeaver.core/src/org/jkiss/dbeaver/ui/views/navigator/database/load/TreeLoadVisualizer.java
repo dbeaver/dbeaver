@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.views.navigator.database.load;
 
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -43,11 +42,6 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         this.viewer = viewer;
         this.placeHolder = placeHolder;
         this.parent = parent;
-    }
-
-    @Override
-    public Shell getShell() {
-        return viewer.getControl().getShell();
     }
 
     @Override

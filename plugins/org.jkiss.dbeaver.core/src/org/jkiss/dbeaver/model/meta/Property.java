@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.meta;
 
-import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+import org.jkiss.dbeaver.runtime.properties.IPropertyValueListProvider;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

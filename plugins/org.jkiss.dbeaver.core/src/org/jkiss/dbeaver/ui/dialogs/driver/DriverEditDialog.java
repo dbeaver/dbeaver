@@ -55,7 +55,7 @@ import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
-import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;

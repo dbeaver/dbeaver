@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;

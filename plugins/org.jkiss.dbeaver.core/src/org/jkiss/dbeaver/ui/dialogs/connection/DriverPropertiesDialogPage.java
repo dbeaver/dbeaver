@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 
 import java.lang.reflect.InvocationTargetException;
 

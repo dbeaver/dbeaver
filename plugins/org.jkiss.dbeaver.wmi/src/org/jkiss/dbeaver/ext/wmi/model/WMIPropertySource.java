@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIQualifiedObject;
 import org.jkiss.wmi.service.WMIQualifier;

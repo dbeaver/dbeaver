@@ -24,7 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 
 /**
  * DBD Value Handler.

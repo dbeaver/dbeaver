@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
-import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
