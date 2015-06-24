@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
+import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 /**

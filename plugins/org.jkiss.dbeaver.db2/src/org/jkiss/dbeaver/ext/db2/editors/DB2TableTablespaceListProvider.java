@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.editors;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
-import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
+import org.jkiss.dbeaver.runtime.properties.IPropertyValueListProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;

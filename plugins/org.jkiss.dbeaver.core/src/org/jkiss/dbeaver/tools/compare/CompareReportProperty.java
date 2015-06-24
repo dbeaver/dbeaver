@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.compare;
 
-import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 
 /**
 * Report property

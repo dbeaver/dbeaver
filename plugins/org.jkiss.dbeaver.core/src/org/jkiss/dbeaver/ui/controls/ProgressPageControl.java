@@ -42,7 +42,10 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.ISearchContextProvider;
+import org.jkiss.dbeaver.ui.ISearchExecutor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -522,11 +525,6 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         private boolean completed = false;
         private String curStatus;
         private final java.util.List<TaskInfo> tasksRunning = new ArrayList<TaskInfo>();
-
-        @Override
-        public Shell getShell() {
-            return getProgressControl().isDisposed() ? null : getProgressControl().getShell();
-        }
 
         @Override
         public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor)

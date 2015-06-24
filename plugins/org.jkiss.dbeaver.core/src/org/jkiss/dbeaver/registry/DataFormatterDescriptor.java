@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
 
 import java.util.ArrayList;
 import java.util.List;

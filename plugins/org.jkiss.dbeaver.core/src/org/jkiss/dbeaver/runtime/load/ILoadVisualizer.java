@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Lazy loading visualizer
  */
-public interface ILoadVisualizer<RESULT> extends IShellProvider {
+public interface ILoadVisualizer<RESULT> {
 
     /**
      * Allows visualizer to overwrite monitor by its own implementation.

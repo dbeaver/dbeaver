@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SimpleCommandContext;
-import org.jkiss.dbeaver.ui.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 
 import java.util.ArrayList;
 import java.util.Collection;

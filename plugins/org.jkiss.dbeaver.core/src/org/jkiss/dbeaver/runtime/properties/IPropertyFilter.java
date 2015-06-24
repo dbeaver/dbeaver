@@ -15,16 +15,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.runtime.properties;
 
-package org.jkiss.dbeaver.ui.properties;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
 /**
- * Property value provider
+ * Interface for filters. Can accept or reject items.
  */
-public interface IPropertyValueListProvider<OBJECT_TYPE> {
-
-    boolean allowCustomValue();
-
-    Object[] getPossibleValues(OBJECT_TYPE object);
-
+public interface IPropertyFilter {
+	/**
+	 * Determines if the given property passes this filter.
+	 */
+	boolean select(DBPPropertyDescriptor toTest);
 }

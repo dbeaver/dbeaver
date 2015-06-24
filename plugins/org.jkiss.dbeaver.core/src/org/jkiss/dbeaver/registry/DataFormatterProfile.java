@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;

@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter;
-import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;

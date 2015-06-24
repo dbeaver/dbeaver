@@ -16,21 +16,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ui.properties;
+package org.jkiss.dbeaver.runtime.properties;
 
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
 /**
- * Editable property source
+ * Lazy properties listener
  */
-public interface IPropertySourceEditable {
+public interface ILazyPropertyLoadListener {
 
-    boolean isEditable(Object object);
-
-    DBECommandContext getCommandContext();
-
-//    void addPropertySourceListener(IPropertySourceListener listener);
-
-//    void removePropertySourceListener(IPropertySourceListener listener);
+    void handlePropertyLoad(Object object, DBPPropertyDescriptor property, Object propertyValue, boolean completed);
 
 }

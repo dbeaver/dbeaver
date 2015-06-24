@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 
 import java.text.ParseException;
 import java.util.Date;

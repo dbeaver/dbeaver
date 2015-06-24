@@ -16,23 +16,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ui.properties;
+package org.jkiss.dbeaver.runtime.properties;
 
-import org.jkiss.dbeaver.model.DBPPropertySource;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 
 /**
- * Property source which allows editing of multiple objects.
+ * Editable property source
  */
-public interface IPropertySourceMulti extends DBPPropertySource {
+public interface IPropertySourceEditable {
 
-    boolean isPropertySet(Object object, ObjectPropertyDescriptor id);
+    boolean isEditable(Object object);
 
-    Object getPropertyValue(Object object, ObjectPropertyDescriptor prop);
+    DBECommandContext getCommandContext();
 
-    boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop);
+//    void addPropertySourceListener(IPropertySourceListener listener);
 
-    void resetPropertyValue(Object object, ObjectPropertyDescriptor prop);
-
-    void setPropertyValue(Object object, ObjectPropertyDescriptor prop, Object value);
+//    void removePropertySourceListener(IPropertySourceListener listener);
 
 }

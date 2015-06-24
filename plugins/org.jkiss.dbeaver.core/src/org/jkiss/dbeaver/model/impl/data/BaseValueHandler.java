@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 
 /**
  * Base value handler

@@ -15,34 +15,24 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.properties;
 
-import org.eclipse.core.resources.IResource;
+package org.jkiss.dbeaver.runtime.properties;
+
+import org.jkiss.dbeaver.model.DBPPropertySource;
 
 /**
-* Property type
-*/
-public enum PropertyType
-{
-    STRING(String.class),
-    BOOLEAN(Boolean.class),
-    SHORT(Short.class),
-    INTEGER(Integer.class),
-    LONG(Long.class),
-    FLOAT(Float.class),
-    DOUBLE(Double.class),
-    NUMERIC(Double.class),
-    RESOURCE(IResource.class);
+ * Property source which allows editing of multiple objects.
+ */
+public interface IPropertySourceMulti extends DBPPropertySource {
 
-    private final Class<?> valueType;
+    boolean isPropertySet(Object object, ObjectPropertyDescriptor id);
 
-    PropertyType(Class<?> valueType)
-    {
-        this.valueType = valueType;
-    }
+    Object getPropertyValue(Object object, ObjectPropertyDescriptor prop);
 
-    public Class<?> getValueType()
-    {
-        return valueType;
-    }
+    boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop);
+
+    void resetPropertyValue(Object object, ObjectPropertyDescriptor prop);
+
+    void setPropertyValue(Object object, ObjectPropertyDescriptor prop, Object value);
+
 }

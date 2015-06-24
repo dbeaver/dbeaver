@@ -16,16 +16,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ui.properties;
-
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+package org.jkiss.dbeaver.runtime.properties;
 
 /**
- * Lazy properties listener
+ * Property value provider
  */
-public interface ILazyPropertyLoadListener {
+public interface IPropertyValueListProvider<OBJECT_TYPE> {
 
-    void handlePropertyLoad(Object object, DBPPropertyDescriptor property, Object propertyValue, boolean completed);
+    boolean allowCustomValue();
+
+    Object[] getPossibleValues(OBJECT_TYPE object);
 
 }

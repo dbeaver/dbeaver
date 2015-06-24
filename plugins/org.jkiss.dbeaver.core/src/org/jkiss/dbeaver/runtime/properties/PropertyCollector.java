@@ -15,16 +15,22 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.properties;
 
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+package org.jkiss.dbeaver.runtime.properties;
 
 /**
- * Interface for filters. Can accept or reject items.
+ * PropertyCollector
  */
-public interface IPropertyFilter {
-	/**
-	 * Determines if the given property passes this filter.
-	 */
-	boolean select(DBPPropertyDescriptor toTest);
+public class PropertyCollector extends PropertySourceAbstract
+{
+    public PropertyCollector(Object sourceObject, Object object, boolean loadLazyProps)
+    {
+        super(sourceObject, object, loadLazyProps);
+    }
+
+    public PropertyCollector(Object object, boolean loadLazyProps)
+    {
+        super(object, object, loadLazyProps);
+    }
+
 }

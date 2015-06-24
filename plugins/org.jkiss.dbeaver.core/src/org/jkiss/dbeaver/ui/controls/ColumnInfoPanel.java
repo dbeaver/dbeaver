@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 import java.util.ArrayList;

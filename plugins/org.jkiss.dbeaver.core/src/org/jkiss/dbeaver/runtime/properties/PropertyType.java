@@ -15,22 +15,34 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.runtime.properties;
 
-package org.jkiss.dbeaver.ui.properties;
+import org.eclipse.core.resources.IResource;
 
 /**
- * PropertyCollector
- */
-public class PropertyCollector extends PropertySourceAbstract
+* Property type
+*/
+public enum PropertyType
 {
-    public PropertyCollector(Object sourceObject, Object object, boolean loadLazyProps)
+    STRING(String.class),
+    BOOLEAN(Boolean.class),
+    SHORT(Short.class),
+    INTEGER(Integer.class),
+    LONG(Long.class),
+    FLOAT(Float.class),
+    DOUBLE(Double.class),
+    NUMERIC(Double.class),
+    RESOURCE(IResource.class);
+
+    private final Class<?> valueType;
+
+    PropertyType(Class<?> valueType)
     {
-        super(sourceObject, object, loadLazyProps);
+        this.valueType = valueType;
     }
 
-    public PropertyCollector(Object object, boolean loadLazyProps)
+    public Class<?> getValueType()
     {
-        super(object, object, loadLazyProps);
+        return valueType;
     }
-
 }

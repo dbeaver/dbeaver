@@ -15,11 +15,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.properties;
+package org.jkiss.dbeaver.runtime.properties;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.properties.PropertiesContributor;
 import org.jkiss.utils.ArrayUtils;
 
@@ -368,11 +366,6 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
 
         private PropertySheetLoadVisualizer()
         {
-        }
-
-        @Override
-        public Shell getShell() {
-            return UIUtils.getActiveShell();
         }
 
         @Override
