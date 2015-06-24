@@ -41,7 +41,6 @@ class LoadingUIJob<RESULT> extends AbstractUIJob {
         this.visualizer = loadingJob.getVisualizer();
         this.mainMonitor = mainMonitor;
         setSystem(true);
-        setRule(new NonConflictingRule());
     }
 
     @Override

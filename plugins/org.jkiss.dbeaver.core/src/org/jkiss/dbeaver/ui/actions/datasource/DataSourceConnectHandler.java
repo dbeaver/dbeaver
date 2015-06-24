@@ -23,20 +23,21 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.ui.DBUserInterface;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionAuthDialog;
 import org.jkiss.utils.ArrayUtils;
 
 public class DataSourceConnectHandler extends DataSourceHandler
@@ -96,8 +97,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
                     if (onFinish != null) {
                         onFinish.onProcessFinish(result);
                     } else if (!result.isOK()) {
-                        UIUtils.showErrorDialog(
-                            null,
+                        DBUserInterface.getInstance().showError(
                             connectJob.getName(),
                             null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
                             result);
@@ -156,27 +156,34 @@ public class DataSourceConnectHandler extends DataSourceHandler
             false);
     }
 
-    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration handler)
+    public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler)
     {
-        final boolean[] authResult = new boolean[] { false };
-        UIUtils.runInUI(null, new Runnable() {
-            @Override
-            public void run()
-            {
-                ConnectionAuthDialog auth = new ConnectionAuthDialog(UIUtils.getActiveShell(), dataSourceContainer, handler);
-                int result = auth.open();
-                if (result == IDialogConstants.OK_ID) {
-                    if (dataSourceContainer.isSavePassword()) {
-                        // Update connection properties
-                        dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
-                    }
-                    authResult[0] = true;
-                } else {
-                    authResult[0] = false;
-                }
-            }
-        });
-        return authResult[0];
+        String prompt = networkHandler != null ?
+            NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
+            "'" + dataSourceContainer.getName() + CoreMessages.dialog_connection_auth_title; //$NON-NLS-1$
+        String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionInfo().getUserName();
+        String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionInfo().getUserPassword();
+
+        DBAAuthInfo authInfo = DBUserInterface.getInstance().promptUserCredentials(prompt, user, password);
+        if (authInfo == null) {
+            return false;
+        }
+
+        if (networkHandler != null) {
+            networkHandler.setUserName(authInfo.getUserName());
+            networkHandler.setPassword(authInfo.getUserPassword());
+            networkHandler.setSavePassword(authInfo.isSavePassword());
+        } else {
+            dataSourceContainer.getConnectionInfo().setUserName(authInfo.getUserName());
+            dataSourceContainer.getConnectionInfo().setUserPassword(authInfo.getUserPassword());
+            dataSourceContainer.setSavePassword(authInfo.isSavePassword());
+        }
+        if (dataSourceContainer.isSavePassword()) {
+            // Update connection properties
+            dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
+        }
+
+        return true;
     }
 
 }
