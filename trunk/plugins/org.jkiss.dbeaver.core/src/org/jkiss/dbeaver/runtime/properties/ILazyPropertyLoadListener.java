@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.runtime.properties;
 
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
 /**
