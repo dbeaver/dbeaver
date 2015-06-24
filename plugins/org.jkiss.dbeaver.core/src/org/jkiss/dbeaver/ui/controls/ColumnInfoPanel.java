@@ -31,6 +31,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.data.IAttributeController;
+import org.jkiss.dbeaver.ui.data.IRowController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 import java.util.ArrayList;
@@ -41,14 +44,14 @@ import java.util.List;
  */
 public class ColumnInfoPanel extends Composite {
 
-    public ColumnInfoPanel(Composite parent, int style, DBDValueController valueController) {
+    public ColumnInfoPanel(Composite parent, int style, IValueController valueController) {
         super(parent, style);
-        if (valueController instanceof DBDAttributeController) {
-            this.createPanel((DBDAttributeController) valueController);
+        if (valueController instanceof IAttributeController) {
+            this.createPanel((IAttributeController) valueController);
         }
     }
 
-    protected void createPanel(DBDAttributeController valueController)
+    protected void createPanel(IAttributeController valueController)
     {
         PropertyCollector infoItem = new PropertyCollector(valueController.getBinding().getMetaAttribute(), false);
         infoItem.collectProperties();
@@ -92,11 +95,11 @@ public class ColumnInfoPanel extends Composite {
 
     public static class CellKeyInfo implements DBPObject {
         @NotNull
-        private final DBDRowController rowController;
+        private final IRowController rowController;
         @NotNull
         private final DBDRowIdentifier rowIdentifier;
 
-        public CellKeyInfo(@NotNull DBDRowController rowController, @NotNull DBDRowIdentifier rowIdentifier) {
+        public CellKeyInfo(@NotNull IRowController rowController, @NotNull DBDRowIdentifier rowIdentifier) {
             this.rowController = rowController;
             this.rowIdentifier = rowIdentifier;
         }

@@ -15,16 +15,32 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
-* DateTimeEditorHelper
-*/
-public interface DateTimeEditorHelper {
+ * DBD Row Controller
+ */
+public interface IRowController
+{
 
-    DBDDataFormatter getFormatter(DBSTypedObject column);
+    @NotNull
+    List<DBDAttributeBinding> getRowAttributes();
+
+    /**
+     * Tries to read value of certain column from result set.
+     * @param attribute column, must belong to the same result set as controller's value
+     * @return value or null
+     */
+    @Nullable
+    Object getAttributeValue(DBDAttributeBinding attribute);
 
 }

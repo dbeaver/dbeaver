@@ -59,6 +59,9 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
+import org.jkiss.dbeaver.ui.data.*;
+import org.jkiss.dbeaver.ui.data.IAttributeController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.utils.CommonUtils;
@@ -72,14 +75,14 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public abstract class ValueViewDialog extends Dialog implements DBDValueEditorStandalone {
+public abstract class ValueViewDialog extends Dialog implements IValueEditorStandalone {
 
     static final Log log = Log.getLog(ValueViewDialog.class);
 
     private static int dialogCount = 0;
     public static final String SETTINGS_SECTION_DI = "ValueViewDialog";
 
-    private DBDValueController valueController;
+    private IValueController valueController;
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
     private boolean handleEditorChange;
@@ -90,7 +93,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
     private final IDialogSettings dialogSettings;
     private boolean opened;
 
-    protected ValueViewDialog(DBDValueController valueController) {
+    protected ValueViewDialog(IValueController valueController) {
         super(valueController.getValueSite().getShell());
         setShellStyle(SWT.SHELL_TRIM);
         this.valueController = valueController;
@@ -117,10 +120,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
     }
 
     @Nullable
-    protected DBDValueEditor createPanelEditor(final Composite placeholder)
+    protected IValueEditor createPanelEditor(final Composite placeholder)
         throws DBException
     {
-        DBDValueEditor editor = valueController.getValueHandler().createEditor(new DBDValueController() {
+        IValueEditor editor = valueController.getValueHandler().createEditor(new IValueController() {
             @Override
             public DBCExecutionContext getExecutionContext() {
                 return valueController.getExecutionContext();
@@ -197,7 +200,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
             }
 
             @Override
-            public void unregisterEditor(DBDValueEditorStandalone editor)
+            public void unregisterEditor(IValueEditorStandalone editor)
             {
             }
 
@@ -212,7 +215,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         return editor;
     }
 
-    public DBDValueController getValueController() {
+    public IValueController getValueController() {
         return valueController;
     }
 
@@ -251,7 +254,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
 
 */
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
-        if (valueController instanceof DBDAttributeController) {
+        if (valueController instanceof IAttributeController) {
             final Link columnHideLink = new Link(dialogGroup, SWT.NONE);
             columnHideLink.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -385,8 +388,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        if (valueController instanceof DBDAttributeController) {
-            DBSAttributeBase meta = ((DBDAttributeController)valueController).getBinding();
+        if (valueController instanceof IAttributeController) {
+            DBSAttributeBase meta = ((IAttributeController)valueController).getBinding();
             shell.setText(meta.getName());
         }
     }
@@ -394,9 +397,9 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
     @Nullable
     private DBSEntityReferrer getEnumerableConstraint()
     {
-        if (valueController instanceof DBDAttributeController) {
+        if (valueController instanceof IAttributeController) {
             try {
-                DBSEntityAttribute entityAttribute = ((DBDAttributeController) valueController).getBinding().getEntityAttribute();
+                DBSEntityAttribute entityAttribute = ((IAttributeController) valueController).getBinding().getEntityAttribute();
                 if (entityAttribute != null) {
                     java.util.List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(VoidProgressMonitor.INSTANCE, entityAttribute);
                     DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
@@ -416,7 +419,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
 
     protected void createEditorSelector(Composite parent)
     {
-        if (!(valueController instanceof DBDAttributeController) || valueController.isReadOnly()) {
+        if (!(valueController instanceof IAttributeController) || valueController.isReadOnly()) {
             return;
         }
         refConstraint = getEnumerableConstraint();
@@ -558,7 +561,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         {
             final Map<Object, String> keyValues = new TreeMap<Object, String>();
             try {
-                DBDAttributeController attributeController = (DBDAttributeController)valueController;
+                IAttributeController attributeController = (IAttributeController)valueController;
                 final DBSEntityAttribute tableColumn = attributeController.getBinding().getEntityAttribute();
                 if (tableColumn == null) {
                     return Status.OK_STATUS;

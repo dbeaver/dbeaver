@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
@@ -43,7 +43,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     private final DateTimeEditorHelper helper;
     private CustomTimeEditor timeEditor;
 
-    public DateTimeStandaloneEditor(DBDValueController valueController, DateTimeEditorHelper helper) {
+    public DateTimeStandaloneEditor(IValueController valueController, DateTimeEditorHelper helper) {
         super(valueController);
         this.helper = helper;
     }
@@ -51,7 +51,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        DBDValueController valueController = getValueController();
+        IValueController valueController = getValueController();
         Object value = valueController.getValue();
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);

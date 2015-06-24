@@ -15,31 +15,24 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-
-import java.util.Collection;
-import java.util.List;
+package org.jkiss.dbeaver.ui.data;
 
 /**
- * DBD Row Controller
+ * Standalone Value Editor.
+ * Visualizes cell editor in separate non-modal dialog or editor
  */
-public interface DBDRowController
+public interface IValueEditorStandalone extends IValueEditor
 {
-
-    @NotNull
-    List<DBDAttributeBinding> getRowAttributes();
+    /**
+     * Brings editor to the top of screen
+     */
+    void showValueEditor();
 
     /**
-     * Tries to read value of certain column from result set.
-     * @param attribute column, must belong to the same result set as controller's value
-     * @return value or null
+     * Closes this editor.
+     * Implementor must call unregisterEditor on it's value controller
      */
-    @Nullable
-    Object getAttributeValue(DBDAttributeBinding attribute);
+    void closeValueEditor();
 
 }

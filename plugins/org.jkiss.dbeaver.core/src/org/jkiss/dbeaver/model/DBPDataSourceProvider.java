@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
  */
 public interface DBPDataSourceProvider
 {
-    public static final long FEATURE_CATALOGS    = 1;
-    public static final long FEATURE_SCHEMAS     = 2;
+    long FEATURE_CATALOGS    = 1;
+    long FEATURE_SCHEMAS     = 2;
 
     /**
      * Initializes data source provider

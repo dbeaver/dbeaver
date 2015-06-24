@@ -23,9 +23,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.impl.data.editors.BaseValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,7 +41,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
     public static final MySQLSetValueHandler INSTANCE = new MySQLSetValueHandler();
 
     @Override
-    public DBDValueEditor createEditor(@NotNull final DBDValueController controller)
+    public IValueEditor createEditor(@NotNull final IValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {

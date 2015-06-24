@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -44,7 +44,7 @@ class FilterValueEditDialog extends BaseDialog {
     private final DBCLogicalOperator operator;
 
     private Object value;
-    private DBDValueEditor editor;
+    private IValueEditor editor;
     private Text textControl;
 
     public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow row, DBCLogicalOperator operator) {
@@ -71,7 +71,7 @@ class FilterValueEditDialog extends BaseDialog {
             viewer,
             attr,
             row,
-            DBDValueController.EditType.INLINE,
+            IValueController.EditType.INLINE,
             editorPlaceholder);
 
         label.setText(valueController.getBinding().getName() + " " + operator.getStringValue() + " :");

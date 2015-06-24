@@ -45,6 +45,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
@@ -535,12 +537,12 @@ public class ContentUtils {
         return wFile == null ? null : wFile.getFullPath();
     }
 
-    public static DBDValueEditor openContentEditor(@NotNull DBDValueController controller)
+    public static IValueEditor openContentEditor(@NotNull IValueController controller)
     {
         Object value = controller.getValue();
-        DBDValueController.EditType binaryEditType = DBDValueController.EditType.valueOf(
+        IValueController.EditType binaryEditType = IValueController.EditType.valueOf(
             controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
-        if (binaryEditType != DBDValueController.EditType.EDITOR && value instanceof DBDContentCached) {
+        if (binaryEditType != IValueController.EditType.EDITOR && value instanceof DBDContentCached) {
             // Use string editor for cached content
             return new TextViewDialog(controller);
         } else if (value instanceof DBDContent) {
@@ -577,7 +579,7 @@ public class ContentUtils {
         return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
     }
 
-    public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final DBDValueController controller)
+    public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
         throws DBCException
     {
         if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
@@ -596,7 +598,7 @@ public class ContentUtils {
         });
     }
 
-    private static void loadFromFile(final DBDValueController controller)
+    private static void loadFromFile(final IValueController controller)
     {
         if (!(controller.getValue() instanceof DBDContent)) {
             log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
@@ -629,7 +631,7 @@ public class ContentUtils {
         });
     }
 
-    private static void saveToFile(DBDValueController controller)
+    private static void saveToFile(IValueController controller)
     {
         if (!(controller.getValue() instanceof DBDContent)) {
             log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());

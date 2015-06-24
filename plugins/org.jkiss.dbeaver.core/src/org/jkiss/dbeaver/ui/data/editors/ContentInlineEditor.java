@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -44,7 +44,7 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
 
     private final boolean isText;
 
-    public ContentInlineEditor(DBDValueController controller) {
+    public ContentInlineEditor(IValueController controller) {
         super(controller);
         this.isText = ContentUtils.isTextContent(((DBDContent) controller.getValue()));
     }

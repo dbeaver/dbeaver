@@ -46,6 +46,9 @@ import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -216,7 +219,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         //placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
         ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
         try {
-            DBDValueEditor editor = valueHandler.createEditor(valueController);
+            IValueEditor editor = valueHandler.createEditor(valueController);
             if (editor != null) {
                 editor.createControl();
                 editor.primeEditorValue(param.getValue());
@@ -315,7 +318,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
     }
 
-    private class ParameterValueController implements DBDValueController {
+    private class ParameterValueController implements IValueController {
 
         private final SQLQueryParameter parameter;
         private final Composite placeholder;
@@ -447,7 +450,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditorStandalone editor)
+        public void unregisterEditor(IValueEditorStandalone editor)
         {
         }
 

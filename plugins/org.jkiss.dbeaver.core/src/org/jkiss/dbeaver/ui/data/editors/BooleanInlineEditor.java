@@ -15,20 +15,20 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
 * BooleanInlineEditor
 */
 public class BooleanInlineEditor extends BaseValueEditor<Combo> {
-    public BooleanInlineEditor(DBDValueController controller) {
+    public BooleanInlineEditor(IValueController controller) {
         super(controller);
     }
 

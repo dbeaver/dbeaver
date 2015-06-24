@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -34,7 +33,7 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -53,7 +52,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     private CursorDataContainer dataContainer;
     private static boolean keepStatementOpenToggleState = false;
 
-    public CursorViewDialog(DBDValueController valueController) {
+    public CursorViewDialog(IValueController valueController) {
         super(valueController);
         dataContainer = new CursorDataContainer();
     }
@@ -61,7 +60,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        final DBDValueController valueController = getValueController();
+        final IValueController valueController = getValueController();
         value = (DBDCursor) valueController.getValue();
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
@@ -223,7 +222,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         @Override
         public DBPDataSource getDataSource()
         {
-            final DBDValueController valueController = getValueController();
+            final IValueController valueController = getValueController();
             return valueController == null ? null : valueController.getExecutionContext().getDataSource();
         }
 

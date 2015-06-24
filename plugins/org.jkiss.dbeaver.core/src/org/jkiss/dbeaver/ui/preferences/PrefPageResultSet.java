@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -200,8 +200,8 @@ public class PrefPageResultSet extends TargetPrefPage
                 }
             }
 
-            DBDValueController.EditType editorType = DBDValueController.EditType.valueOf(store.getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
-            if (editorType == DBDValueController.EditType.EDITOR) {
+            IValueController.EditType editorType = IValueController.EditType.valueOf(store.getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
+            if (editorType == IValueController.EditType.EDITOR) {
                 binaryEditorType.select(0);
             } else {
                 binaryEditorType.select(1);
@@ -238,8 +238,8 @@ public class PrefPageResultSet extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE,
                 binaryEditorType.getSelectionIndex() == 0 ?
-                    DBDValueController.EditType.EDITOR.name() :
-                    DBDValueController.EditType.PANEL.name());
+                    IValueController.EditType.EDITOR.name() :
+                    IValueController.EditType.PANEL.name());
 
             store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
 

@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.impl.data.editors;
+package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -52,11 +52,11 @@ import java.nio.ByteBuffer;
 /**
 * ControlPanelEditor
 */
-public class ContentPanelEditor extends BaseValueEditor<Control> implements DBDValueEditorStandalone {
+public class ContentPanelEditor extends BaseValueEditor<Control> implements IValueEditorStandalone {
 
     static final Log log = Log.getLog(ContentPanelEditor.class);
 
-    public ContentPanelEditor(DBDValueController controller) {
+    public ContentPanelEditor(IValueController controller) {
         super(controller);
     }
 

@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,8 +51,8 @@ abstract class ViewValuePanel extends Composite {
     private final Text columnNameLabel;
     private final Composite viewPlaceholder;
 
-    private DBDValueController previewController;
-    private DBDValueEditor valueViewer;
+    private IValueController previewController;
+    private IValueEditor valueViewer;
     private ToolBarManager toolBarManager;
 
     ViewValuePanel(Composite parent)
@@ -113,7 +113,7 @@ abstract class ViewValuePanel extends Composite {
         return viewPlaceholder;
     }
 
-    public void viewValue(final DBDValueController valueController)
+    public void viewValue(final IValueController valueController)
     {
         if (previewController == null || valueController.getValueType() != previewController.getValueType()) {
             cleanupPanel();

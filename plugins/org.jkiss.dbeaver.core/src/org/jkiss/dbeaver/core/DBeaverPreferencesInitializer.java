@@ -24,10 +24,9 @@ import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.registry.DataFormatterProfile;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.runtime.qm.QMConstants;
@@ -42,7 +41,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -153,7 +151,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL, true);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION, DBDBinaryFormatter.FORMATS[0].getId());
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_SHOW_STRINGS, true);
-      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE, DBDValueController.EditType.EDITOR);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE, IValueController.EditType.EDITOR);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, 32);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, true);
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, true);

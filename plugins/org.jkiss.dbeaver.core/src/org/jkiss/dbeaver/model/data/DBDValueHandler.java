@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 
 /**
  * DBD Value Handler.
@@ -130,7 +132,7 @@ public interface DBDValueHandler
      * @param controller value controller
      * @throws DBCException on error
      */
-    void contributeActions(@NotNull IContributionManager manager, @NotNull DBDValueController controller)
+    void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller)
         throws DBCException;
 
     /**
@@ -138,7 +140,7 @@ public interface DBDValueHandler
      * @param propertySource property source
      * @param controller value controller
      */
-    void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull DBDValueController controller);
+    void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller);
 
     /**
      * Creates value editor.
@@ -146,7 +148,7 @@ public interface DBDValueHandler
      * <li>inline editor (control created withing inline placeholder)</li>
      * <li>dialog (modal or modeless)</li>
      * <li>workbench editor</li>
-     * Modeless dialogs and editors must implement DBDValueEditor and
+     * Modeless dialogs and editors must implement IValueEditor and
      * must register themselves within value controller. On close they must unregister themselves within
      * value controller.
      * @param controller value controller  @return true if editor was successfully opened.
@@ -155,7 +157,7 @@ public interface DBDValueHandler
      * @throws org.jkiss.dbeaver.DBException on error
      */
     @Nullable
-    DBDValueEditor createEditor(@NotNull DBDValueController controller)
+    IValueEditor createEditor(@NotNull IValueController controller)
         throws DBException;
 
     DBCLogicalOperator[] getSupportedOperators(@NotNull DBDAttributeBinding attribute);
