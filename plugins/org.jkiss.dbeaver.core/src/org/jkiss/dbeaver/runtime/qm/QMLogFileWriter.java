@@ -17,12 +17,11 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -38,7 +37,7 @@ import java.util.List;
 /**
  * Query manager log writer
  */
-public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener {
+public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
 
     static final Log log = Log.getLog(QMLogFileWriter.class);
 
@@ -107,7 +106,7 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event)
+    public void preferenceChange(PreferenceChangeEvent event)
     {
         if (event.getProperty().startsWith(QMConstants.PROP_PREFIX)) {
             initLogFile();

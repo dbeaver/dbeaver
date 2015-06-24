@@ -5,14 +5,14 @@ import java.util.EventObject;
 
 public interface DBPPreferenceListener extends EventListener {
 
-    class PropertyChangeEvent extends EventObject {
+    class PreferenceChangeEvent extends EventObject {
 
         private String propertyName;
         private Object oldValue;
         private Object newValue;
 
-        public PropertyChangeEvent(Object source, String property, Object oldValue,
-                                   Object newValue) {
+        public PreferenceChangeEvent(Object source, String property, Object oldValue,
+                                     Object newValue) {
             super(source);
             this.propertyName = property;
             this.oldValue = oldValue;
@@ -31,5 +31,5 @@ public interface DBPPreferenceListener extends EventListener {
     }
 
 
-    void propertyChange(PropertyChangeEvent event);
+    void preferenceChange(PreferenceChangeEvent event);
 }

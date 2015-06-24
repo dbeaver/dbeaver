@@ -23,6 +23,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.runtime.preferences.BundlePreferenceStore;
 import org.osgi.framework.BundleContext;
 
 import java.io.File;
@@ -41,6 +43,7 @@ public class DBeaverActivator extends AbstractUIPlugin
     private static DBeaverActivator instance;
     private ResourceBundle resourceBundle;
     private PrintStream debugWriter;
+    private DBPPreferenceStore preferences;
 
     /**
      * The constructor
@@ -61,6 +64,7 @@ public class DBeaverActivator extends AbstractUIPlugin
         super.start(context);
 
         instance = this;
+        preferences = new BundlePreferenceStore(getBundle());
         DBeaverUI.getInstance();
 
         try {
@@ -130,18 +134,8 @@ public class DBeaverActivator extends AbstractUIPlugin
         return getInstance().resourceBundle;
     }
 
-    /**
-     * Returns the string from the plugin's resource bundle, or 'key' if not
-     * found.
-     */
-    public static String getResourceString(String key)
-    {
-        ResourceBundle bundle = getResourceBundle();
-        try {
-            return bundle.getString(key);
-        } catch (MissingResourceException e) {
-            return key;
-        }
+    public DBPPreferenceStore getPreferences() {
+        return preferences;
     }
 
     /**

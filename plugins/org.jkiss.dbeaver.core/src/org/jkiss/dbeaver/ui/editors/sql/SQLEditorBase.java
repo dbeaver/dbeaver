@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.rules.IToken;
@@ -52,6 +51,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -121,7 +122,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         return context == null ? null : context.getDataSource();
     }
 
-    public IPreferenceStore getActivePreferenceStore() {
+    public DBPPreferenceStore getActivePreferenceStore() {
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ? DBeaverCore.getGlobalPreferenceStore() : dataSource.getContainer().getPreferenceStore();
     }
@@ -171,7 +172,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         {
             SQLSymbolInserter symbolInserter = new SQLSymbolInserter(this);
 
-            IPreferenceStore preferenceStore = getActivePreferenceStore();
+            DBPPreferenceStore preferenceStore = getActivePreferenceStore();
             boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
             boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
             boolean closeBrackets = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
@@ -187,7 +188,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
 
         if (decorationSupport != null) {
-            decorationSupport.install(getActivePreferenceStore());
+            decorationSupport.install(new PreferenceStoreDelegate(getActivePreferenceStore()));
         }
     }
 

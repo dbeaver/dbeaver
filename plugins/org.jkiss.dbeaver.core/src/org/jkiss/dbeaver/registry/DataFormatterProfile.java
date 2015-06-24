@@ -17,12 +17,12 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.jface.preference.IPreferenceStore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -41,12 +41,12 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
     public static final String DATAFORMAT_PREFIX = "dataformat."; //$NON-NLS-1$
     public static final String DATAFORMAT_TYPE_PREFIX = DATAFORMAT_PREFIX + "type."; //$NON-NLS-1$
 
-    private IPreferenceStore store;
+    private DBPPreferenceStore store;
     private String name;
     private Locale locale;
     private Map<String, Map<Object, Object>> properties = new HashMap<String, Map<Object, Object>>();
 
-    DataFormatterProfile(String profileName, IPreferenceStore store)
+    DataFormatterProfile(String profileName, DBPPreferenceStore store)
     {
         this.name = profileName;
         this.store = store;
@@ -108,7 +108,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
     }
 
     @Override
-    public IPreferenceStore getPreferenceStore()
+    public DBPPreferenceStore getPreferenceStore()
     {
         return store;
     }
@@ -213,7 +213,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
         return formatter;
     }
 
-    public static void initDefaultPreferences(IPreferenceStore store, Locale locale)
+    public static void initDefaultPreferences(DBPPreferenceStore store, Locale locale)
     {
         for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
             Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);

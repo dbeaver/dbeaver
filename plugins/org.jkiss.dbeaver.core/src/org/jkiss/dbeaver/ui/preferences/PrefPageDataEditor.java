@@ -18,12 +18,12 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -114,7 +114,7 @@ public class PrefPageDataEditor extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(IPreferenceStore store)
+    protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
             alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
@@ -129,7 +129,7 @@ public class PrefPageDataEditor extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(IPreferenceStore store)
+    protected void savePreferences(DBPPreferenceStore store)
     {
         try {
             store.setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
@@ -145,7 +145,7 @@ public class PrefPageDataEditor extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(IPreferenceStore store)
+    protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);
         store.setToDefault(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);

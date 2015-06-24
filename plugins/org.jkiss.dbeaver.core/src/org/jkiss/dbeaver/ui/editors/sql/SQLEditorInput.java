@@ -21,11 +21,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.internal.IPreferenceConstants;
-import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -33,12 +30,13 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
+import org.jkiss.dbeaver.utils.TextUtils;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
@@ -78,7 +76,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public String getName()
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        IPreferenceStore preferenceStore;
+        DBPPreferenceStore preferenceStore;
         if (dataSourceContainer != null) {
             preferenceStore = dataSourceContainer.getPreferenceStore();
         } else {

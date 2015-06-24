@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
@@ -37,8 +36,6 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
@@ -48,6 +45,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
@@ -153,13 +152,13 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         final DBPDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
             store = dataSource.getContainer().getPreferenceStore();
         }
 
-        final IPreferenceStore configStore = store;
+        final DBPPreferenceStore configStore = store;
 
         final ContentAssistant assistant = new ContentAssistant();
 
@@ -187,9 +186,9 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         //Set auto insert mode.
         assistant.enableAutoInsert(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
 
-        final IPropertyChangeListener prefListener = new IPropertyChangeListener() {
+        final DBPPreferenceListener prefListener = new DBPPreferenceListener() {
             @Override
-            public void propertyChange(PropertyChangeEvent event)
+            public void preferenceChange(PreferenceChangeEvent event)
             {
                 if (event.getProperty().equals(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)) {
                     assistant.enableAutoActivation(configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));

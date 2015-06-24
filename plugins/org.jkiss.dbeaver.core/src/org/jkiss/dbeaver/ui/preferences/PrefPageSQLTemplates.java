@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 public class PrefPageSQLTemplates extends TemplatePreferencePage implements IWorkbenchPropertyPage {
     public PrefPageSQLTemplates()
     {
-        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
+        setPreferenceStore(new PreferenceStoreDelegate(DBeaverCore.getGlobalPreferenceStore()));
         setTemplateStore(SQLTemplatesRegistry.getInstance().getTemplateStore());
         setContextTypeRegistry(SQLTemplatesRegistry.getInstance().getTemplateContextRegistry());
     }

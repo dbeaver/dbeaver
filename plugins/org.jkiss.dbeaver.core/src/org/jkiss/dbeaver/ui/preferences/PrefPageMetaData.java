@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -26,6 +25,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -82,7 +82,7 @@ public class PrefPageMetaData extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(IPreferenceStore store)
+    protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
             readExpensiveCheck.setSelection(store.getBoolean(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES));
@@ -94,7 +94,7 @@ public class PrefPageMetaData extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(IPreferenceStore store)
+    protected void savePreferences(DBPPreferenceStore store)
     {
         try {
             store.setValue(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
@@ -107,7 +107,7 @@ public class PrefPageMetaData extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(IPreferenceStore store)
+    protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES);
         store.setToDefault(DBeaverPreferences.META_SEPARATE_CONNECTION);

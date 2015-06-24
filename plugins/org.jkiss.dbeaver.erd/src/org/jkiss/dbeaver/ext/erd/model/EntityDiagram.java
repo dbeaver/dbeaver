@@ -68,7 +68,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void setAttributeVisibility(ERDAttributeVisibility attributeVisibility)
     {
         this.attributeVisibility = attributeVisibility;
-        ERDAttributeVisibility.setDefaultVisibility(Activator.getDefault().getPreferenceStore(), attributeVisibility);
+        ERDAttributeVisibility.setDefaultVisibility(Activator.getDefault().getPreferences(), attributeVisibility);
     }
 
 	public synchronized void addTable(ERDEntity entity, boolean reflect)

@@ -18,12 +18,12 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
@@ -142,7 +142,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     }
 
     @Override
-    protected void loadPreferences(IPreferenceStore store)
+    protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
             invalidateBeforeExecuteCheck.setSelection(store.getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
@@ -161,7 +161,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     }
 
     @Override
-    protected void savePreferences(IPreferenceStore store)
+    protected void savePreferences(DBPPreferenceStore store)
     {
         try {
             store.setValue(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
@@ -181,7 +181,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     }
 
     @Override
-    protected void clearPreferences(IPreferenceStore store)
+    protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE);
         store.setToDefault(DBeaverPreferences.STATEMENT_TIMEOUT);

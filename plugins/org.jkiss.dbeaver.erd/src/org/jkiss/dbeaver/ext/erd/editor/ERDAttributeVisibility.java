@@ -17,9 +17,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -60,7 +61,7 @@ public enum ERDAttributeVisibility
         return PRIMARY;
     }
 
-    public static void setDefaultVisibility(IPreferenceStore store, ERDAttributeVisibility visibility)
+    public static void setDefaultVisibility(DBPPreferenceStore store, ERDAttributeVisibility visibility)
     {
         store.setValue(
             ERDConstants.PREF_ATTR_VISIBILITY,

@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -62,7 +63,7 @@ public interface IResultSetController extends DBPContextProvider {
     boolean isAttributeReadOnly(DBDAttributeBinding attr);
 
     @NotNull
-    IPreferenceStore getPreferenceStore();
+    DBPPreferenceStore getPreferenceStore();
 
     void applyChanges(@Nullable DBRProgressMonitor monitor);
 

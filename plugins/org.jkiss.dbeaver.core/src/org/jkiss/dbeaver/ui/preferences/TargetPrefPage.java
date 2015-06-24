@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -81,9 +82,9 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     protected abstract Control createPreferenceContent(Composite composite);
 
-    protected abstract void loadPreferences(IPreferenceStore store);
-    protected abstract void savePreferences(IPreferenceStore store);
-    protected abstract void clearPreferences(IPreferenceStore store);
+    protected abstract void loadPreferences(DBPPreferenceStore store);
+    protected abstract void savePreferences(DBPPreferenceStore store);
+    protected abstract void clearPreferences(DBPPreferenceStore store);
 
     protected abstract String getPropertyPageID();
 
@@ -187,7 +188,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         }
 
         {
-            IPreferenceStore store = useDataSourceSettings() ?
+            DBPPreferenceStore store = useDataSourceSettings() ?
                 getDataSourceContainer().getPreferenceStore() :
                 DBeaverCore.getGlobalPreferenceStore();
             loadPreferences(store);
@@ -308,7 +309,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     @Override
     public final boolean performOk()
     {
-        IPreferenceStore store = isDataSourcePreferencePage() ?
+        DBPPreferenceStore store = isDataSourcePreferencePage() ?
             getDataSourceContainer().getPreferenceStore() :
             DBeaverCore.getGlobalPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {

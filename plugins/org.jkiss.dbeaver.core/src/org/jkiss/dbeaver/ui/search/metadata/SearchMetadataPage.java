@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.search.metadata;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -387,7 +387,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     }
 
     @Override
-    public void loadState(IPreferenceStore store)
+    public void loadState(DBPPreferenceStore store)
     {
         nameMask = store.getString(PROP_MASK);
         caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
@@ -414,7 +414,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     }
 
     @Override
-    public void saveState(IPreferenceStore store)
+    public void saveState(DBPPreferenceStore store)
     {
         store.setValue(PROP_MASK, nameMask);
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
@@ -459,7 +459,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         container.setSearchEnabled(enabled);
     }
 
-    protected static void saveTreeState(IPreferenceStore store, String propName, DatabaseNavigatorTree tree)
+    protected static void saveTreeState(DBPPreferenceStore store, String propName, DatabaseNavigatorTree tree)
     {
         // Object sources
         StringBuilder sourcesString = new StringBuilder();

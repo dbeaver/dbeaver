@@ -25,10 +25,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.source.ISharedTextColors;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -51,18 +48,20 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.qm.*;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
+import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TableToolTip;
-import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -76,7 +75,7 @@ import java.util.Locale;
 /**
  * QueryLogViewer
  */
-public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyChangeListener {
+public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPreferenceListener {
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
 
@@ -509,7 +508,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
     private void reloadEvents()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         this.defaultFilter = new DefaultEventFilter();
         this.entriesPerPage = store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE);
@@ -771,7 +770,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     private ConfigRefreshJob configRefreshJob = null;
 
     @Override
-    public synchronized void propertyChange(PropertyChangeEvent event)
+    public synchronized void preferenceChange(PreferenceChangeEvent event)
     {
         if (event.getProperty().startsWith(QMConstants.PROP_PREFIX)) {
             // Many properties could be changed at once

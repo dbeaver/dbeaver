@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -66,7 +67,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         if (value != null) {
-            IPreferenceStore globalPreferenceStore = DBeaverCore.getGlobalPreferenceStore();
+            DBPPreferenceStore globalPreferenceStore = DBeaverCore.getGlobalPreferenceStore();
             if (!globalPreferenceStore.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
                         getShell(),

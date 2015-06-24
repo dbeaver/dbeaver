@@ -1,10 +1,6 @@
 package org.jkiss.dbeaver.runtime.preferences;
 
 import org.eclipse.core.commands.common.EventManager;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.util.SafeRunnable;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 
@@ -19,24 +15,17 @@ public abstract class AbstractPreferenceStore extends EventManager implements DB
     public static final String TRUE = "true"; //$NON-NLS-1$
     public static final String FALSE = "false"; //$NON-NLS-1$
 
-    public void firePropertyChangeEvent(String name, Object oldValue,
-                                        Object newValue)
+    @Override
+    public void firePropertyChangeEvent(String name, Object oldValue, Object newValue)
     {
         final Object[] finalListeners = getListeners();
         // Do we need to fire an event.
         if (finalListeners.length > 0
             && (oldValue == null || !oldValue.equals(newValue))) {
-            final PropertyChangeEvent pe = new PropertyChangeEvent(this, name,
-                oldValue, newValue);
+            final DBPPreferenceListener.PreferenceChangeEvent pe = new DBPPreferenceListener.PreferenceChangeEvent(this, name, oldValue, newValue);
             for (int i = 0; i < finalListeners.length; ++i) {
-                final IPropertyChangeListener l = (IPropertyChangeListener) finalListeners[i];
-                SafeRunnable.run(new SafeRunnable(JFaceResources.getString("PreferenceStore.changeError")) //$NON-NLS-1$
-                {
-                    @Override
-                    public void run() {
-                        l.propertyChange(pe);
-                    }
-                });
+                final DBPPreferenceListener l = (DBPPreferenceListener) finalListeners[i];
+                l.preferenceChange(pe);
             }
         }
     }

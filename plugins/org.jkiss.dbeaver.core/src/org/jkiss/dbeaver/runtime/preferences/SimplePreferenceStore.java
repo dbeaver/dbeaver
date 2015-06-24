@@ -17,17 +17,12 @@
  */
 package org.jkiss.dbeaver.runtime.preferences;
 
-import org.eclipse.core.commands.common.EventManager;
-import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.util.SafeRunnable;
+import org.jkiss.dbeaver.model.DBPPreferenceListener;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.util.HashMap;
+    import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -36,8 +31,8 @@ import java.util.Map;
  * However, save will always use THIS store, not parent.
  * Originally copied from standard PreferenceStore class
  */
-public abstract class SimplePreferenceStore extends EventManager implements IPersistentPreferenceStore, IPropertyChangeListener {
-    private IPreferenceStore parentStore;
+public abstract class SimplePreferenceStore extends AbstractPreferenceStore implements DBPPreferenceListener {
+    private DBPPreferenceStore parentStore;
     private Map<String, String> properties;
     private Map<String, String> defaultProperties;
     private boolean dirty = false;
@@ -48,7 +43,7 @@ public abstract class SimplePreferenceStore extends EventManager implements IPer
         properties = new HashMap<String, String>();
     }
 
-    protected SimplePreferenceStore(IPreferenceStore parentStore)
+    protected SimplePreferenceStore(DBPPreferenceStore parentStore)
     {
         this();
         this.parentStore = parentStore;
@@ -57,7 +52,7 @@ public abstract class SimplePreferenceStore extends EventManager implements IPer
         }
     }
 
-    public IPreferenceStore getParentStore()
+    public DBPPreferenceStore getParentStore()
     {
         return parentStore;
     }
@@ -88,9 +83,15 @@ public abstract class SimplePreferenceStore extends EventManager implements IPer
     }
 
     @Override
-    public void addPropertyChangeListener(IPropertyChangeListener listener)
+    public void addPropertyChangeListener(DBPPreferenceListener listener)
     {
         addListenerObject(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(DBPPreferenceListener listener)
+    {
+        removeListenerObject(listener);
     }
 
     @Override
@@ -107,18 +108,11 @@ public abstract class SimplePreferenceStore extends EventManager implements IPer
         // Do we need to fire an event.
         if (finalListeners.length > 0
             && (oldValue == null || !oldValue.equals(newValue))) {
-            final PropertyChangeEvent pe = new PropertyChangeEvent(this, name,
+            final PreferenceChangeEvent pe = new PreferenceChangeEvent(this, name,
                 oldValue, newValue);
             for (int i = 0; i < finalListeners.length; ++i) {
-                final IPropertyChangeListener l = (IPropertyChangeListener) finalListeners[i];
-                SafeRunnable.run(new SafeRunnable(JFaceResources.getString("PreferenceStore.changeError")) //$NON-NLS-1$
-                {
-                    @Override
-                    public void run()
-                    {
-                        l.propertyChange(pe);
-                    }
-                });
+                final DBPPreferenceListener l = (DBPPreferenceListener) finalListeners[i];
+                l.preferenceChange(pe);
             }
         }
     }
@@ -292,22 +286,6 @@ public abstract class SimplePreferenceStore extends EventManager implements IPer
     }
 
     @Override
-    public void putValue(String name, String value)
-    {
-        String oldValue = getString(name);
-        if (oldValue == null || !oldValue.equals(value)) {
-            properties.put(name, String.valueOf(value));
-            dirty = true;
-        }
-    }
-
-    @Override
-    public void removePropertyChangeListener(IPropertyChangeListener listener)
-    {
-        removeListenerObject(listener);
-    }
-
-    @Override
     public void setDefault(String name, double value)
     {
         defaultProperties.put(name, String.valueOf(value));
@@ -424,16 +402,10 @@ public abstract class SimplePreferenceStore extends EventManager implements IPer
     }
 
     @Override
-    public void save() throws IOException
-    {
-
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent event)
+    public void preferenceChange(PreferenceChangeEvent event)
     {
         for (Object listener : getListeners()) {
-            ((IPropertyChangeListener)listener).propertyChange(event);
+            ((DBPPreferenceListener)listener).preferenceChange(event);
         }
     }
 }

@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -33,6 +31,8 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
@@ -163,7 +163,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     @Override
     protected void performDefaults()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         proxyHostText.setText(store.getString(DBeaverPreferences.UI_PROXY_HOST));
         proxyPortSpinner.setSelection(store.getInt(DBeaverPreferences.UI_PROXY_PORT));
@@ -189,7 +189,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     @Override
     public boolean performOk()
     {
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.setValue(DBeaverPreferences.UI_PROXY_HOST, proxyHostText.getText());
         store.setValue(DBeaverPreferences.UI_PROXY_PORT, proxyPortSpinner.getSelection());
         store.setValue(DBeaverPreferences.UI_PROXY_USER, proxyUserText.getText());
