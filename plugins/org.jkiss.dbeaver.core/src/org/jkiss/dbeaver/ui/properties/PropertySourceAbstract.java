@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
@@ -285,7 +284,7 @@ public abstract class PropertySourceAbstract implements DBPPropertySource, IProp
         propValues.clear();
 
         final Object editableValue = getEditableValue();
-        IFilter filter;
+        IPropertyFilter filter;
         if (editableValue instanceof DBSObject) {
             filter = new DataSourcePropertyFilter(((DBSObject) editableValue).getDataSource());
         } else if (editableValue instanceof DBPContextProvider) {

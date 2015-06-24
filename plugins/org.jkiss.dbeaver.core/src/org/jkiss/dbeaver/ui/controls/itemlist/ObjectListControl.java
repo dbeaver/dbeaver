@@ -43,10 +43,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.properties.DataSourcePropertyFilter;
-import org.jkiss.dbeaver.ui.properties.ObjectAttributeDescriptor;
-import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.dbeaver.ui.properties.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -368,7 +365,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     }
                 }
 
-                IFilter propertyFilter = new DataSourcePropertyFilter(
+                IPropertyFilter propertyFilter = new DataSourcePropertyFilter(
                     ObjectListControl.this instanceof IDataSourceContainerProvider ?
                         ((IDataSourceContainerProvider)ObjectListControl.this).getDataSourceContainer() :
                         null);

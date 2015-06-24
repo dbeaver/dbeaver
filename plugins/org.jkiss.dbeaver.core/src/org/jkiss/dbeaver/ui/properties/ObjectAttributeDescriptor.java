@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.eclipse.jface.viewers.IFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPPropertySource;
@@ -152,14 +151,14 @@ public abstract class ObjectAttributeDescriptor {
     public static List<ObjectPropertyDescriptor> extractAnnotations(
         DBPPropertySource source,
         Class<?> theClass,
-        IFilter filter)
+        IPropertyFilter filter)
     {
         List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
         extractAnnotations(source, null, theClass, annoProps, filter);
         return annoProps;
     }
 
-    static void extractAnnotations(DBPPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IFilter filter)
+    static void extractAnnotations(DBPPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IPropertyFilter filter)
     {
         Method[] methods = theClass.getMethods();
         for (Method method : methods) {
