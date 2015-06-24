@@ -17,21 +17,23 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
+import java.util.Locale;
 
 /**
 * NumberInlineEditor
@@ -41,11 +43,12 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
     static final Log log = Log.getLog(NumberInlineEditor.class);
     private static final int MAX_NUMBER_LENGTH = 100;
     private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
-    private final NumberEditorHelper helper;
 
-    public NumberInlineEditor(IValueController controller, NumberEditorHelper helper) {
+    private DBDDataFormatterProfile formatterProfile;
+
+    public NumberInlineEditor(IValueController controller) {
         super(controller);
-        this.helper = helper;
+        this.formatterProfile = valueController.getExecutionContext().getDataSource().getContainer().getDataFormatterProfile();
     }
 
     @Override
@@ -54,11 +57,15 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         final Text editor = new Text(valueController.getEditPlaceholder(), SWT.BORDER);
         editor.setEditable(!valueController.isReadOnly());
         editor.setTextLimit(MAX_NUMBER_LENGTH);
-        Class<? extends Number> type = helper.getNumberType(valueController.getValueType(), valueController.getValue());
+        Object curValue = valueController.getValue();
+        Class type = curValue instanceof Number ?
+            curValue.getClass() :
+            valueController.getValueHandler().getValueObjectType(valueController.getValueType());
+        Locale locale = formatterProfile.getLocale();
         if (type == Float.class || type == Double.class || type == BigDecimal.class) {
-            editor.addVerifyListener(UIUtils.getNumberVerifyListener(helper.getLocale()));
+            editor.addVerifyListener(UIUtils.getNumberVerifyListener(locale));
         } else {
-            editor.addVerifyListener(UIUtils.getIntegerVerifyListener(helper.getLocale()));
+            editor.addVerifyListener(UIUtils.getIntegerVerifyListener(locale));
         }
         return editor;
     }
@@ -84,8 +91,16 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         if (CommonUtils.isEmpty(text)) {
             return null;
         }
-        Class<? extends Number> hintType = helper.getNumberType(valueController.getValueType(), valueController.getValue());
-        return convertStringToNumber(text, hintType, helper.getFormatter());
+        Object curValue = valueController.getValue();
+        Class hintType = curValue instanceof Number ?
+            curValue.getClass() :
+            valueController.getValueHandler().getValueObjectType(valueController.getValueType());
+        try {
+            return convertStringToNumber(text, hintType, formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER));
+        } catch (Exception e) {
+            log.error(e);
+            return null;
+        }
     }
 
     @Nullable

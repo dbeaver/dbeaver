@@ -15,18 +15,32 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.data.editors;
+package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.data.editors.ComplexValueInlineEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 /**
-* DateTimeEditorHelper
-*/
-public interface DateTimeEditorHelper {
+ * Complex value manager.
+ */
+public abstract class ComplexValueManager extends BaseValueManager {
 
-    DBDDataFormatter getFormatter(@NotNull IValueController controller, DBSTypedObject column);
+    @Override
+    public IValueEditor createEditor(@NotNull final IValueController controller)
+        throws DBException
+    {
+        switch (controller.getEditType()) {
+            case PANEL:
+                return new ComplexValueInlineEditor(controller);
+            case EDITOR:
+                return new DefaultValueViewDialog(controller);
+            default:
+                return null;
+        }
+    }
 
 }

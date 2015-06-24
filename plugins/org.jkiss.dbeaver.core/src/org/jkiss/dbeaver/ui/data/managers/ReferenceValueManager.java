@@ -15,18 +15,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.data.editors;
-
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
+package org.jkiss.dbeaver.ui.data.managers;
 
 /**
-* DateTimeEditorHelper
-*/
-public interface DateTimeEditorHelper {
+ * Reference value manager.
+ */
+public class ReferenceValueManager extends ComplexValueManager {
 
-    DBDDataFormatter getFormatter(@NotNull IValueController controller, DBSTypedObject column);
 
 }

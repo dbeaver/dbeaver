@@ -15,18 +15,33 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.data.editors;
+package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 
 /**
-* DateTimeEditorHelper
-*/
-public interface DateTimeEditorHelper {
+ * String value manager
+ */
+public class StringValueManager extends BaseValueManager {
 
-    DBDDataFormatter getFormatter(@NotNull IValueController controller, DBSTypedObject column);
+    @Override
+    public IValueEditor createEditor(@NotNull IValueController controller)
+        throws DBException
+    {
+        switch (controller.getEditType()) {
+            case INLINE:
+            case PANEL:
+                return new StringInlineEditor(controller);
+            case EDITOR:
+                return new TextViewDialog(controller);
+            default:
+                return null;
+        }
+    }
 
 }

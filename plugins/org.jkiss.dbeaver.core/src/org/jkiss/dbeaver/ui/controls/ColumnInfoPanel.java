@@ -55,7 +55,7 @@ public class ColumnInfoPanel extends Composite {
     {
         PropertyCollector infoItem = new PropertyCollector(valueController.getBinding().getMetaAttribute(), false);
         infoItem.collectProperties();
-        valueController.getValueHandler().contributeProperties(infoItem, valueController);
+        valueController.getValueManager().contributeProperties(infoItem, valueController);
         DBDRowIdentifier rowIdentifier = valueController.getRowIdentifier();
         if (rowIdentifier != null) {
             infoItem.addProperty(

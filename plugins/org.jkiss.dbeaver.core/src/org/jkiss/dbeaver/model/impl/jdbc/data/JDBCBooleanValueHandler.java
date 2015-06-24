@@ -19,18 +19,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.ui.data.editors.BooleanInlineEditor;
-import org.jkiss.dbeaver.ui.data.editors.BooleanPanelEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 import java.sql.SQLException;
 
@@ -69,7 +63,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return Boolean.class;
     }
@@ -88,22 +82,6 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         } else {
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to boolean");
             return null;
-        }
-    }
-
-    @Override
-    public IValueEditor createEditor(@NotNull IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case INLINE:
-                return new BooleanInlineEditor(controller);
-            case PANEL:
-                return new BooleanPanelEditor(controller);
-            case EDITOR:
-                return new DefaultValueViewDialog(controller);
-            default:
-                return null;
         }
     }
 

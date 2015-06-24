@@ -76,7 +76,7 @@ class FilterValueEditDialog extends BaseDialog {
 
         label.setText(valueController.getBinding().getName() + " " + operator.getStringValue() + " :");
         try {
-            editor = valueController.getValueHandler().createEditor(valueController);
+            editor = valueController.getValueManager().createEditor(valueController);
             if (editor != null) {
                 editor.createControl();
                 editor.primeEditorValue(valueController.getValue());

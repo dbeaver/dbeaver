@@ -80,6 +80,12 @@ public interface IValueController
      */
     DBDValueHandler getValueHandler();
 
+    /**
+     * Associated value manager
+     * @return value manager
+     */
+    IValueManager getValueManager();
+
     EditType getEditType();
 
     /**

@@ -18,12 +18,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.core.Log;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -31,12 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.CursorViewDialog;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.RowId;
@@ -99,7 +89,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return Object.class;
     }
@@ -124,41 +114,6 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
             return value.toString();
         }
         return DBUtils.getDefaultValueDisplayString(value, format);
-    }
-
-    @Override
-    public IValueEditor createEditor(@NotNull final IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case PANEL:
-                return new BaseValueEditor<Text>(controller) {
-                    @Override
-                    protected Text createControl(Composite editPlaceholder)
-                    {
-                        return new Text(valueController.getEditPlaceholder(),
-                            SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
-                    }
-                    @Override
-                    public void primeEditorValue(@Nullable Object value) throws DBException
-                    {
-                        control.setText(CommonUtils.toString(value));
-                    }
-                    @Override
-                    public Object extractEditorValue()
-                    {
-                        return null;
-                    }
-                };
-            case EDITOR:
-                final Object value = controller.getValue();
-                if (value instanceof DBDCursor) {
-                    return new CursorViewDialog(controller);
-                }
-                return null;
-            default:
-                return null;
-        }
     }
 
 }

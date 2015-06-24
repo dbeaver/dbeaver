@@ -18,10 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -71,7 +68,7 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Class getValueObjectType()
+    public Class getValueObjectType(DBSTypedObject valueType)
     {
         return java.lang.Object.class;
     }
@@ -86,12 +83,6 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
         } else {
             return new OracleObjectValue(object);
         }
-    }
-
-    @Override
-    public IValueEditor createEditor(@NotNull IValueController controller) throws DBException
-    {
-        return null;
     }
 
 }
