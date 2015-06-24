@@ -17,24 +17,18 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.ui.DBUserInterface;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
-import org.jkiss.dbeaver.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.Authenticator;
@@ -61,11 +55,11 @@ public class GlobalProxyAuthenticator extends Authenticator {
                 String userName = store.getString(DBeaverPreferences.UI_PROXY_USER);
                 String userPassword = decryptPassword(store.getString(DBeaverPreferences.UI_PROXY_PASSWORD));
                 if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-                    BaseAuthDialog.AuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
+                    DBAAuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
                     if (authInfo != null) {
-                        userName = authInfo.userName;
-                        userPassword = authInfo.userPassword;
-                        if (authInfo.savePassword) {
+                        userName = authInfo.getUserName();
+                        userPassword = authInfo.getUserPassword();
+                        if (authInfo.isSavePassword()) {
                             // Save in preferences
                             store.setValue(DBeaverPreferences.UI_PROXY_USER, userName);
                             store.setValue(DBeaverPreferences.UI_PROXY_PASSWORD, encryptPassword(userPassword));
@@ -90,11 +84,11 @@ public class GlobalProxyAuthenticator extends Authenticator {
                             String userName = networkHandler.getUserName();
                             String userPassword = networkHandler.getPassword();
                             if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-                                BaseAuthDialog.AuthInfo authInfo = readCredentialsInUI(getRequestingPrompt(), userName, userPassword);
+                                DBAAuthInfo authInfo = readCredentialsInUI(getRequestingPrompt(), userName, userPassword);
                                 if (authInfo != null) {
-                                    userName = authInfo.userName;
-                                    userPassword = authInfo.userPassword;
-                                    if (authInfo.savePassword) {
+                                    userName = authInfo.getUserName();
+                                    userPassword = authInfo.getUserPassword();
+                                    if (authInfo.isSavePassword()) {
                                         // Save DS config
                                         networkHandler.setUserName(userName);
                                         networkHandler.setPassword(userPassword);
@@ -140,26 +134,9 @@ public class GlobalProxyAuthenticator extends Authenticator {
         }
     }
 
-    private BaseAuthDialog.AuthInfo readCredentialsInUI(String prompt, String userName, String userPassword)
+    private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword)
     {
-        // Ask user
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, DBeaverIcons.getImage(DBIcon.CONNECTIONS));
-        authDialog.setUserName(userName);
-        authDialog.setUserPassword(userPassword);
-        final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
-            @Override
-            public void run()
-            {
-                result = (authDialog.open() == IDialogConstants.OK_ID);
-            }
-        };
-        UIUtils.runInUI(shell, binder);
-        if (binder.getResult() != null && binder.getResult()) {
-            return authDialog.getAuthInfo();
-        } else {
-            return null;
-        }
+        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword);
     }
 
 }

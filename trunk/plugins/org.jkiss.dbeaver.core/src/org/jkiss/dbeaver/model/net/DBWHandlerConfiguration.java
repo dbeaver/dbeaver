@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.NetworkHandlerDescriptor;
 
@@ -29,7 +28,7 @@ import java.util.Map;
 /**
  * Network handler configuration
  */
-public class DBWHandlerConfiguration implements IObjectPropertyConfiguration {
+public class DBWHandlerConfiguration {
 
     private final NetworkHandlerDescriptor descriptor;
     private final DBPDriver driver;
@@ -131,7 +130,6 @@ public class DBWHandlerConfiguration implements IObjectPropertyConfiguration {
         this.savePassword = savePassword;
     }
 
-    @Override
     public Map<String, String> getProperties()
     {
         return properties;

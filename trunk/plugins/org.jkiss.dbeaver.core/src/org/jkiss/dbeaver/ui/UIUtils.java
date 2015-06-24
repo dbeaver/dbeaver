@@ -765,21 +765,7 @@ public class UIUtils {
         showErrorDialog(shell, title, message, (Throwable) null);
     }
 
-    public static void showErrorDialog(@Nullable Shell shell, @NotNull String title, @Nullable String message,
-        @NotNull Collection<String> errorMessages)
-    {
-        // log.debug(message);
-        java.util.List<Status> messageStatuses = new ArrayList<Status>(errorMessages.size());
-        for (String error : errorMessages) {
-            messageStatuses.add(new Status(Status.ERROR, DBeaverCore.getCorePluginID(), error));
-        }
-        MultiStatus status = new MultiStatus(DBeaverCore.getCorePluginID(), 0, messageStatuses.toArray(new IStatus[messageStatuses
-            .size()]), message, null);
-        showErrorDialog(shell, title, message, status);
-    }
-
-    public static void showErrorDialog(@Nullable final Shell shell, @NotNull final String title, @Nullable final String message,
-        @NotNull final IStatus status)
+    public static void showErrorDialog(@Nullable final Shell shell, @NotNull final String title, @Nullable final String message, @NotNull final IStatus status)
     {
         for (IStatus s = status; s != null; ) {
             if (s.getException() instanceof DBException) {

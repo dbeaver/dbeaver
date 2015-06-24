@@ -40,8 +40,8 @@ public class ConnectionAuthDialog extends BaseAuthDialog
         super(parentShell,
             networkHandler != null ?
                     NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
-                    "'" + dataSource.getName() + CoreMessages.dialog_connection_auth_title, //$NON-NLS-1$
-            DBeaverIcons.getImage(dataSource.getDriver().getIcon()));
+                    "'" + dataSource.getName() + CoreMessages.dialog_connection_auth_title //$NON-NLS-1$
+            );
 
         this.dataSource = dataSource;
         this.networkHandler = networkHandler;

@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.utils.Pair;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * SQL dialect
  */
-public interface SQLDialect extends ICommentsSupport {
+public interface SQLDialect {
 
     int USAGE_NONE = 0;
     int USAGE_DML = 1;
@@ -199,5 +199,18 @@ public interface SQLDialect extends ICommentsSupport {
     MultiValueInsertMode getMultiValueInsertMode();
 
     String addFiltersToQuery(DBPDataSource dataSource, String query, DBDDataFilter filter) throws DBException;
+
+    /**
+     * Two-item array containing begin and end of multi-line comments.
+     * @return string array or null if multi-line comments are not supported
+     */
+    @Nullable
+    Pair<String, String> getMultiLineComments();
+
+    /**
+     * List of possible single-line comment prefixes
+     * @return comment prefixes or null if single line comments are nto supported
+     */
+    String[] getSingleLineComments();
 
 }

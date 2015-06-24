@@ -53,10 +53,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.runtime.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
@@ -69,6 +66,7 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.utils.TextUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.util.*;
 
@@ -686,7 +684,19 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         DBCExecutionContext context = getExecutionContext();
         DBPDataSource dataSource = context == null ? null : context.getDataSource();
         if (dataSource instanceof SQLDataSource) {
-            return ((SQLDataSource) dataSource).getSQLDialect();
+            final SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
+            return new ICommentsSupport() {
+                @Nullable
+                @Override
+                public Pair<String, String> getMultiLineComments() {
+                    return dialect.getMultiLineComments();
+                }
+
+                @Override
+                public String[] getSingleLineComments() {
+                    return dialect.getSingleLineComments();
+                }
+            };
         } else {
             return null;
         }

@@ -37,17 +37,7 @@ import java.util.regex.Pattern;
 public class TextUtils {
     public static final char PARAGRAPH_CHAR = (char) 182;
 
-    public static final String[] byteToHex = new String[256];
-    public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
     public static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
-
-    static {
-        // Compose byte to hex map
-        for (int i = 0; i < 256; ++i) {
-            TextUtils.byteToHex[i] = Character.toString(TextUtils.nibbleToHex[i >>> 4]) + TextUtils.nibbleToHex[i & 0x0f];
-        }
-    }
 
     public static boolean isEmptyLine(IDocument document, int line)
             throws BadLocationException {

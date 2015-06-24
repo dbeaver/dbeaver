@@ -22,7 +22,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -35,9 +34,7 @@ import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -440,30 +437,6 @@ public final class DBUtils {
     public static Object makeNullValue(DBCSession session, DBDValueHandler valueHandler, DBSTypedObject type) throws DBCException
     {
         return valueHandler.getValueFromObject(session, type, null, false);
-    }
-
-    @Nullable
-    public static Object makeNullValue(@NotNull final IValueController valueController)
-    {
-        try {
-            DBCExecutionContext executionContext = valueController.getExecutionContext();
-            if (executionContext == null) {
-                throw new DBCException(CoreMessages.editors_sql_status_not_connected_to_database);
-            }
-            // We are going to create NULL value - it shouldn't result in any DB roundtrips so let's use dummy monitor
-            DBCSession session = executionContext.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Set NULL value");
-            try {
-                return DBUtils.makeNullValue(
-                    session,
-                    valueController.getValueHandler(),
-                    valueController.getValueType());
-            } finally {
-                session.close();
-            }
-        } catch (DBCException e) {
-            log.error("Can't make NULL value", e);
-            return null;
-        }
     }
 
     @NotNull
