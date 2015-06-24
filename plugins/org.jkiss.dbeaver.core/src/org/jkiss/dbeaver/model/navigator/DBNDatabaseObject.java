@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.ui.IEditorDescriptor;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,14 +32,12 @@ import org.jkiss.utils.CommonUtils;
 public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
 {
     private DBXTreeObject meta;
-    private IEditorDescriptor editorDescriptor;
 
     DBNDatabaseObject(DBNNode parent, DBXTreeObject meta)
     {
         super(parent);
         this.meta = meta;
         DBNModel.getInstance().addNode(this);
-        this.editorDescriptor = DBeaverUI.getActiveWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(meta.getEditorId());
     }
 
     @Override
@@ -50,11 +45,6 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     {
         DBNModel.getInstance().removeNode(this, reflect);
         super.dispose(reflect);
-    }
-
-    public IEditorDescriptor getEditorDescriptor()
-    {
-        return editorDescriptor;
     }
 
     @Override

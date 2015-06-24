@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,7 +42,7 @@ import java.util.Collection;
  */
 public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
 {
-    private DataSourceDescriptor dataSource;
+    private final DataSourceDescriptor dataSource;
     private DBXTreeNode treeRoot;
 
     public DBNDataSource(DBNNode parentNode, DataSourceDescriptor dataSource)
@@ -57,7 +56,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     public DBNNode getParentNode()
     {
-        String folderPath = dataSource == null ? null : dataSource.getFolderPath();
+        String folderPath = dataSource.getFolderPath();
         if (!CommonUtils.isEmpty(folderPath)) {
             DBNLocalFolder localFolder = ((DBNProjectDatabases) super.getParentNode()).getLocalFolder(folderPath);
             if (localFolder != null) {
@@ -72,7 +71,6 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     {
         DBNModel.getInstance().removeNode(this, reflect);
 
-        this.dataSource = null;
         super.dispose(reflect);
     }
 
@@ -120,7 +118,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
 
     @Override
     protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
-        dataSource = (DataSourceDescriptor) object;
+
     }
 
     @Override
@@ -219,18 +217,18 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     public void dropNodes(Collection<DBNNode> nodes) throws DBException
     {
-        String folderPath = getDataSourceContainer().getFolderPath();
+        String folderPath = dataSource.getFolderPath();
         for (DBNNode node : nodes) {
             if (node instanceof DBNDataSource) {
                 ((DBNDataSource) node).setFolderPath(folderPath);
             }
         }
-        NavigatorUtils.updateConfigAndRefreshDatabases(this);
+        DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
     public void setFolderPath(String folder)
     {
-        getDataSourceContainer().setFolderPath(folder);
+        dataSource.setFolderPath(folder);
     }
 
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException

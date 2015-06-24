@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -135,7 +134,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 ((DBNDataSource) node).setFolderPath(getName());
             }
         }
-        NavigatorUtils.updateConfigAndRefreshDatabases(this);
+        DBNModel.updateConfigAndRefreshDatabases(this);
     }
 
     @Override
@@ -155,6 +154,6 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
             dataSource.setFolderPath(newName);
         }
         name = newName;
-        NavigatorUtils.updateConfigAndRefreshDatabases(this);
+        DBNModel.updateConfigAndRefreshDatabases(this);
     }
 }
