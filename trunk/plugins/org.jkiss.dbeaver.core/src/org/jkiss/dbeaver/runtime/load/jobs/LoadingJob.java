@@ -45,7 +45,6 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         this.loadingService = loadingService;
         this.visualizer = visualizer;
         setUser(false);
-        setRule(new NonConflictingRule());
     }
 
     public ILoadService<RESULT> getLoadingService()
