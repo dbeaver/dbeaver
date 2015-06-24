@@ -21,8 +21,11 @@ package org.jkiss.dbeaver.ui.data.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +58,10 @@ public class DataManagerRegistry {
         }
     }
 
-    public DataManagerDescriptor findManager(DBPDataSource dataSource, DBPDataKind dataKind, Class<?> valueType) {
+    @NotNull
+    public IValueManager getManager(@NotNull DBPDataSource dataSource, @NotNull DBPDataKind dataKind, @NotNull Class<?> valueType) {
         // Check starting from most restrictive to less restrictive
-        DataManagerDescriptor manager = findManager(dataSource, dataKind, valueType, true, true);
+        IValueManager manager = findManager(dataSource, dataKind, valueType, true, true);
         if (manager == null) {
             manager = findManager(dataSource, dataKind, valueType, false, true);
         }
@@ -67,13 +71,16 @@ public class DataManagerRegistry {
         if (manager == null) {
             manager = findManager(dataSource, dataKind, valueType, false, false);
         }
+        if (manager == null) {
+            manager = DefaultValueManager.INSTANCE;
+        }
         return manager;
     }
 
-    private DataManagerDescriptor findManager(DBPDataSource dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType) {
+    private IValueManager findManager(DBPDataSource dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType) {
         for (DataManagerDescriptor manager : managers) {
             if (manager.supportsType(dataSource, dataKind, valueType, checkDataSource, checkType)) {
-                return manager;
+                return manager.getInstance();
             }
         }
         return null;
