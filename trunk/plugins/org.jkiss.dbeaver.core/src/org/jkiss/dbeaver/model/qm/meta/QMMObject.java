@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.runtime.qm.meta;
+package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.core.Log;
 
@@ -43,7 +43,7 @@ public class QMMObject {
         this.openTime = getTimeStamp();
     }
 
-    protected void close()
+    public void close()
     {
         this.closeTime = getTimeStamp();
         this.update();

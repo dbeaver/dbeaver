@@ -15,44 +15,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.model.qm;
 
-package org.jkiss.dbeaver.runtime.qm;
-
-import org.jkiss.dbeaver.runtime.qm.meta.QMMObject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 
 /**
- * QM meta event
+ * Query manager execution handler implementation
  */
-public class QMMetaEvent {
+public interface QMMCollector extends QMExecutionHandler {
 
-    public enum Action {
-        BEGIN,
-        END,
-        UPDATE,
-    }
-
-    private final QMMObject object;
-    private final Action action;
-
-    public QMMetaEvent(QMMObject object, Action action)
-    {
-        this.object = object;
-        this.action = action;
-    }
-
-    public QMMObject getObject()
-    {
-        return object;
-    }
-
-    public Action getAction()
-    {
-        return action;
-    }
-
-    @Override
-    public String toString()
-    {
-        return action + " " + object;
-    }
+    QMMSessionInfo getSessionInfo(DBCExecutionContext context);
 }

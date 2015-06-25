@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -987,7 +986,7 @@ public final class DBUtils {
                 byte[] bytes = (byte[]) value;
                 return CommonUtils.toHexString(bytes, 0, 2000);
             } else {
-                return RuntimeUtils.makeDisplayString(value).toString();
+                return GeneralUtils.makeDisplayString(value).toString();
             }
         }
         String className = value.getClass().getName();

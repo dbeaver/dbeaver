@@ -31,10 +31,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 

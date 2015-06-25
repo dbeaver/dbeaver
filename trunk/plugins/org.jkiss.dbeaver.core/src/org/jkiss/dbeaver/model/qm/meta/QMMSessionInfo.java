@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.runtime.qm.meta;
+package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -40,7 +40,7 @@ public class QMMSessionInfo extends QMMObject {
     private QMMStatementExecuteInfo executionStack;
     private QMMTransactionInfo transaction;
 
-    QMMSessionInfo(DBCExecutionContext context, boolean transactional, QMMSessionInfo previous)
+    public QMMSessionInfo(DBCExecutionContext context, boolean transactional, QMMSessionInfo previous)
     {
         this.containerId = context.getDataSource().getContainer().getId();
         this.reference = new SoftReference<DBCExecutionContext>(context);
@@ -50,7 +50,7 @@ public class QMMSessionInfo extends QMMObject {
     }
 
     @Override
-    protected void close()
+    public void close()
     {
         if (transaction != null) {
             transaction.rollback(null);
@@ -66,7 +66,7 @@ public class QMMSessionInfo extends QMMObject {
         super.close();
     }
 
-    QMMTransactionInfo changeTransactional(boolean transactional)
+    public QMMTransactionInfo changeTransactional(boolean transactional)
     {
         if (this.transactional == transactional) {
             return null;
@@ -81,7 +81,7 @@ public class QMMSessionInfo extends QMMObject {
         return this.transaction.getPrevious();
     }
 
-    QMMTransactionInfo commit()
+    public QMMTransactionInfo commit()
     {
         if (this.transactional) {
             if (this.transaction != null) {
@@ -93,7 +93,7 @@ public class QMMSessionInfo extends QMMObject {
         return null;
     }
 
-    QMMObject rollback(DBCSavepoint savepoint)
+    public QMMObject rollback(DBCSavepoint savepoint)
     {
         if (this.transactional) {
             if (this.transaction != null) {
@@ -111,12 +111,12 @@ public class QMMSessionInfo extends QMMObject {
         return null;
     }
 
-    QMMStatementInfo openStatement(DBCStatement statement)
+    public QMMStatementInfo openStatement(DBCStatement statement)
     {
         return this.statementStack = new QMMStatementInfo(this, statement, this.statementStack);
     }
 
-    QMMStatementInfo closeStatement(DBCStatement statement)
+    public QMMStatementInfo closeStatement(DBCStatement statement)
     {
         for (QMMStatementInfo stat = this.statementStack; stat != null; stat = stat.getPrevious()) {
             if (stat.getReference() == statement) {
@@ -128,7 +128,7 @@ public class QMMSessionInfo extends QMMObject {
         return null;
     }
 
-    QMMStatementInfo getStatement(DBCStatement statement)
+    public QMMStatementInfo getStatement(DBCStatement statement)
     {
         for (QMMStatementInfo stat = this.statementStack; stat != null; stat = stat.getPrevious()) {
             if (stat.getReference() == statement) {
@@ -139,7 +139,7 @@ public class QMMSessionInfo extends QMMObject {
         return null;
     }
 
-    QMMStatementExecuteInfo getExecution(DBCStatement statement)
+    public QMMStatementExecuteInfo getExecution(DBCStatement statement)
     {
         for (QMMStatementExecuteInfo exec = this.executionStack; exec != null; exec = exec.getPrevious()) {
             if (exec.getStatement().getReference() == statement) {
@@ -150,7 +150,7 @@ public class QMMSessionInfo extends QMMObject {
         return null;
     }
 
-    QMMStatementExecuteInfo beginExecution(DBCStatement statement)
+    public QMMStatementExecuteInfo beginExecution(DBCStatement statement)
     {
         QMMStatementInfo stat = getStatement(statement);
         if (stat != null) {
@@ -168,7 +168,7 @@ public class QMMSessionInfo extends QMMObject {
         }
     }
 
-    QMMStatementExecuteInfo endExecution(DBCStatement statement, long rowCount, Throwable error)
+    public QMMStatementExecuteInfo endExecution(DBCStatement statement, long rowCount, Throwable error)
     {
         QMMStatementExecuteInfo exec = getExecution(statement);
         if (exec != null) {
@@ -177,7 +177,7 @@ public class QMMSessionInfo extends QMMObject {
         return exec;
     }
 
-    QMMStatementExecuteInfo beginFetch(DBCResultSet resultSet)
+    public QMMStatementExecuteInfo beginFetch(DBCResultSet resultSet)
     {
         QMMStatementExecuteInfo exec = getExecution(resultSet.getSourceStatement());
         if (exec == null) {
@@ -189,7 +189,7 @@ public class QMMSessionInfo extends QMMObject {
         return exec;
     }
 
-    QMMStatementExecuteInfo endFetch(DBCResultSet resultSet, long rowCount)
+    public QMMStatementExecuteInfo endFetch(DBCResultSet resultSet, long rowCount)
     {
         QMMStatementExecuteInfo exec = getExecution(resultSet.getSourceStatement());
         if (exec != null) {
