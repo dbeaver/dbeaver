@@ -105,10 +105,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                     log.warn("Can't check auto-commit state", e); //$NON-NLS-1$
                 }
             }
-            // Copy context state
-            this.dataSource.initializeContextState(monitor, this, forceActiveObject);
 
             this.initContextBootstrap(monitor, autoCommit);
+
+            // Copy context state
+            this.dataSource.initializeContextState(monitor, this, forceActiveObject);
 
             // Add self to context list
             this.dataSource.allContexts.add(this);
