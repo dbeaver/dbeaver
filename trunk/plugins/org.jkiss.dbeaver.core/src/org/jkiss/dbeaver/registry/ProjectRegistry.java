@@ -56,6 +56,7 @@ public class ProjectRegistry {
     public ProjectRegistry(IWorkspace workspace)
     {
         this.workspace = workspace;
+        loadExtensions(Platform.getExtensionRegistry());
     }
 
     public void loadExtensions(IExtensionRegistry registry)
