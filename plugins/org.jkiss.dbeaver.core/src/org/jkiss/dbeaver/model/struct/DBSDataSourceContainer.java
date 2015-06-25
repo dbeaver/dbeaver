@@ -77,8 +77,6 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
 
-    String getDefaultActiveObject();
-
     /**
      * Search for object filter which corresponds specified object type and parent object.
      * Search filter which match any super class or interface implemented by specified type.
