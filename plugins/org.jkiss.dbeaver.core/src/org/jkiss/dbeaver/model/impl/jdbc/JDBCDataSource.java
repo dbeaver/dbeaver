@@ -45,7 +45,7 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * GenericDataSource
+ * JDBC data source
  */
 public abstract class JDBCDataSource
     implements
