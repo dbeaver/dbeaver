@@ -34,9 +34,6 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_EDITOR_FULL_NAME = "navigator.editor.full-name"; //$NON-NLS-1$
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
 
-    public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
-    public static final String DEFAULT_ISOLATION = "default.isolation"; //$NON-NLS-1$
-    public static final String DEFAULT_ACTIVE_OBJECT = "default.activeObject"; //$NON-NLS-1$
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
     public static final String QUERY_ROLLBACK_ON_ERROR = "query.rollback-on-error"; //$NON-NLS-1$
 
