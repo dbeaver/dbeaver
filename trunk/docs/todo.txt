@@ -1,3 +1,4 @@
+Execute custom SQL on connect (e.g. set timezone).
 Data transfer DECIMAL(x,y) types convert.
 Extract non-visual part to a separate plugin (preferences + editors)
 RSV find/replace action

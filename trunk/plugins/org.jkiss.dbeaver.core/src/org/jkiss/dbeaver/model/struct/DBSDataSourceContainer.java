@@ -70,7 +70,10 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
     void setDefaultAutoCommit(boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection);
 
     @Nullable
-    DBPTransactionIsolation getDefaultTransactionsIsolation();
+    DBPTransactionIsolation getActiveTransactionsIsolation();
+
+    @Nullable
+    Integer getDefaultTransactionsIsolation();
 
     void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
 
