@@ -52,7 +52,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
     public DBPPropertyDescriptor[] getConnectionProperties(
         DBRRunnableContext runnableContext,
         DBPDriver driver,
-        DBPConnectionInfo connectionInfo)
+        DBPConnectionConfiguration connectionInfo)
         throws DBException {
         Collection<DBPPropertyDescriptor> props = null;
         Object driverInstance = driver.getDriverInstance(runnableContext);
@@ -66,7 +66,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
     }
 
     private Collection<DBPPropertyDescriptor> readDriverProperties(
-        DBPConnectionInfo connectionInfo,
+        DBPConnectionConfiguration connectionInfo,
         Driver driver)
         throws DBException {
         Properties driverProps = new Properties();

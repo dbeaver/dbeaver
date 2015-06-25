@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -39,7 +39,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     private ConnectionPropertiesControl propsControl;
     private PropertySourceCustom propertySource;
 
-    private DBPConnectionInfo prevConnectionInfo = null;
+    private DBPConnectionConfiguration prevConnectionInfo = null;
 
     public DriverPropertiesDialogPage(ConnectionPageAbstract hostPage)
     {
@@ -73,10 +73,10 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     protected void refreshDriverProperties()
     {
         DataSourceDescriptor activeDataSource = site.getActiveDataSource();
-        if (prevConnectionInfo == activeDataSource.getConnectionInfo()) {
+        if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
             return;
         }
-        DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
+        DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
         DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
             site.getDataSourceRegistry(),
             activeDataSource.getId(),
@@ -84,13 +84,13 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             tmpConnectionInfo);
         try {
             hostPage.saveSettings(tempDataSource);
-            tmpConnectionInfo.getProperties().putAll(activeDataSource.getConnectionInfo().getProperties());
+            tmpConnectionInfo.getProperties().putAll(activeDataSource.getConnectionConfiguration().getProperties());
             propertySource = propsControl.makeProperties(
                 site.getRunnableContext(),
                 site.getDriver(),
                 tmpConnectionInfo);
             propsControl.loadProperties(propertySource);
-            prevConnectionInfo = activeDataSource.getConnectionInfo();
+            prevConnectionInfo = activeDataSource.getConnectionConfiguration();
         } finally {
             tempDataSource.dispose();
         }
@@ -100,7 +100,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     public void saveSettings(DataSourceDescriptor dataSource)
     {
         if (propertySource != null) {
-            dataSource.getConnectionInfo().getProperties().putAll(propertySource.getProperties());
+            dataSource.getConnectionConfiguration().getProperties().putAll(propertySource.getProperties());
         }
     }
 

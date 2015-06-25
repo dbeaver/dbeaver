@@ -75,7 +75,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             dataSourceRegistry,
             dataSource.getId(),
             getSelectedDriver(),
-            dataSource.getConnectionInfo());
+            dataSource.getConnectionConfiguration());
         try {
             saveSettings(testDataSource);
 
@@ -142,7 +142,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
 
             try {
-                testDataSource.setName(testDataSource.getConnectionInfo().getUrl());
+                testDataSource.setName(testDataSource.getConnectionConfiguration().getUrl());
                 monitor.worked(1);
                 testDataSource.connect(monitor, initOnTest, false);
                 monitor.worked(1);

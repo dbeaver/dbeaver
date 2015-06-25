@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -62,7 +62,7 @@ public abstract class EventProcessorJob extends AbstractJob {
 
     protected void processEvents(DBPConnectionEventType eventType)
     {
-        DBPConnectionInfo info = container.getActualConnectionInfo();
+        DBPConnectionConfiguration info = container.getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
             Map<String, Object> variables = new HashMap<String, Object>();

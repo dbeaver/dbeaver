@@ -128,7 +128,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (connectionNameText != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
             if (settings != null && connectionNameText != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
-                DBPConnectionInfo connectionInfo = settings.getActiveDataSource().getConnectionInfo();
+                DBPConnectionConfiguration connectionInfo = settings.getActiveDataSource().getConnectionConfiguration();
                 String newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
                 if (CommonUtils.isEmpty(newName)) {
                     newName = connectionInfo.getDatabaseName();
@@ -159,7 +159,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (dataSourceDescriptor != null) {
             if (!activated) {
                 // Get settings from data source descriptor
-                connectionTypeCombo.select(dataSourceDescriptor.getConnectionInfo().getConnectionType());
+                connectionTypeCombo.select(dataSourceDescriptor.getConnectionConfiguration().getConnectionType());
                 savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
@@ -191,8 +191,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             if (eventsButton != null) {
                 eventsButton.setFont(getFont());
                 DataSourceDescriptor dataSource = getWizard().getPageSettings().getActiveDataSource();
-                for (DBPConnectionEventType eventType : dataSource.getConnectionInfo().getDeclaredEvents()) {
-                    if (dataSource.getConnectionInfo().getEvent(eventType).isEnabled()) {
+                for (DBPConnectionEventType eventType : dataSource.getConnectionConfiguration().getDeclaredEvents()) {
+                    if (dataSource.getConnectionConfiguration().getEvent(eventType).isEnabled()) {
                         eventsButton.setFont(boldFont);
                         break;
                     }
@@ -295,10 +295,10 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     DataSourceDescriptor dataSource = wizard.getPageSettings().getActiveDataSource();
                     UIUtils.showPreferencesFor(
                         getControl().getShell(),
-                        dataSource.getConnectionInfo().getConnectionType(),
+                        dataSource.getConnectionConfiguration().getConnectionType(),
                         PrefPageConnectionTypes.PAGE_ID);
                     loadConnectionTypes();
-                    DBPConnectionType connectionType = dataSource.getConnectionInfo().getConnectionType();
+                    DBPConnectionType connectionType = dataSource.getConnectionConfiguration().getConnectionType();
                     connectionTypeCombo.select(connectionType);
                     autocommit.setSelection(connectionType.isAutocommit());
                 }
@@ -487,7 +487,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             dataSource.resetPassword();
         }
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
-            dataSource.getConnectionInfo().setConnectionType(
+            dataSource.getConnectionConfiguration().setConnectionType(
                 (DBPConnectionType) connectionTypeCombo.getData(connectionTypeCombo.getSelectionIndex()));
         }
         for (FilterInfo filterInfo : filters) {
@@ -505,8 +505,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             dataSource);
         if (dialog.open() == IDialogConstants.OK_ID) {
             eventsButton.setFont(getFont());
-            for (DBPConnectionEventType eventType : dataSource.getConnectionInfo().getDeclaredEvents()) {
-                if (dataSource.getConnectionInfo().getEvent(eventType).isEnabled()) {
+            for (DBPConnectionEventType eventType : dataSource.getConnectionConfiguration().getDeclaredEvents()) {
+                if (dataSource.getConnectionConfiguration().getEvent(eventType).isEnabled()) {
                     eventsButton.setFont(boldFont);
                     break;
                 }

@@ -80,7 +80,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
                 DBCExecutionContext activeContext = DBCExecutionContext.ACTIVE_CONTEXT.get();
                 if (activeContext != null) {
                     DBSDataSourceContainer container = activeContext.getDataSource().getContainer();
-                    for (DBWHandlerConfiguration networkHandler : container.getConnectionInfo().getDeclaredHandlers()) {
+                    for (DBWHandlerConfiguration networkHandler : container.getConnectionConfiguration().getDeclaredHandlers()) {
                         if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                             String userName = networkHandler.getUserName();
                             String userPassword = networkHandler.getPassword();

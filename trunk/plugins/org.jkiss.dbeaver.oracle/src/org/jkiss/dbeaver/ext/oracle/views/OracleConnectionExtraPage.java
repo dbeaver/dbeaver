@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
@@ -119,7 +119,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
         //oraHomeSelector.setVisible(isOCI);
 
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
         // Settings
@@ -148,7 +148,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     public void saveSettings(DataSourceDescriptor dataSource)
     {
         super.saveSettings(dataSource);
-        Map<Object, Object> connectionProperties = dataSource.getConnectionInfo().getProperties();
+        Map<Object, Object> connectionProperties = dataSource.getConnectionConfiguration().getProperties();
 
         {
             // Settings
@@ -172,7 +172,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 OracleConstants.PROP_ALWAYS_SHOW_DBA,
                 String.valueOf(showDBAAlwaysCheckbox.getSelection()));
         }
-        saveConnectionURL(dataSource.getConnectionInfo());
+        saveConnectionURL(dataSource.getConnectionConfiguration());
     }
 
 }

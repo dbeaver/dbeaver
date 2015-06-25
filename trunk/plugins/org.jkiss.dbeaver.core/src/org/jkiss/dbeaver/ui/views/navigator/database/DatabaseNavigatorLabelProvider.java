@@ -135,7 +135,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         if (element instanceof DBNDataSource) {
             DataSourceDescriptor ds = ((DBNDatabaseNode) element).getDataSourceContainer();
             if (ds != null) {
-                return UIUtils.getConnectionColor(ds.getConnectionInfo());
+                return UIUtils.getConnectionColor(ds.getConnectionConfiguration());
             }
         }
         return null;

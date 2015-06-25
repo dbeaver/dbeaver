@@ -50,12 +50,12 @@ public class DatabaseEditorUtils {
         if (editor instanceof IDataSourceContainerProvider) {
             DBSDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
             if (container != null) {
-                bgColor = UIUtils.getConnectionColor(container.getConnectionInfo());
+                bgColor = UIUtils.getConnectionColor(container.getConnectionConfiguration());
             }
         } else if (editor instanceof DBPContextProvider) {
             DBCExecutionContext context = ((DBPContextProvider) editor).getExecutionContext();
             if (context != null) {
-                bgColor = UIUtils.getConnectionColor(context.getDataSource().getContainer().getConnectionInfo());
+                bgColor = UIUtils.getConnectionColor(context.getDataSource().getContainer().getConnectionConfiguration());
             }
         }
         if (bgColor == null) {

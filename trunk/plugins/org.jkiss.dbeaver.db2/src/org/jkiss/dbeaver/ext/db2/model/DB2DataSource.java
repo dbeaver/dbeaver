@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -169,7 +169,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
                 this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_USER);
                 if (this.activeSchemaName == null) {
                     LOG.warn("Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Use connection username as active schema");
-                    this.activeSchemaName = getContainer().getActualConnectionInfo().getUserName();
+                    this.activeSchemaName = getContainer().getActualConnectionConfiguration().getUserName();
                 }
             }
 
@@ -212,7 +212,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // -----------------------
 
     @Override
-    protected String getConnectionUserName(DBPConnectionInfo connectionInfo)
+    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
     {
         return connectionInfo.getUserName();
     }

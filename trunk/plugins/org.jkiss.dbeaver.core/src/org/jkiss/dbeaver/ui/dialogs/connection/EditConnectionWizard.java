@@ -22,7 +22,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -40,7 +40,7 @@ import java.util.List;
 public class EditConnectionWizard extends ConnectionWizard
 {
     private DataSourceDescriptor dataSource;
-    private DBPConnectionInfo oldData;
+    private DBPConnectionConfiguration oldData;
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
@@ -54,7 +54,7 @@ public class EditConnectionWizard extends ConnectionWizard
     {
         super(dataSource.getRegistry());
         this.dataSource = dataSource;
-        this.oldData = new DBPConnectionInfo(this.dataSource.getConnectionInfo());
+        this.oldData = new DBPConnectionConfiguration(this.dataSource.getConnectionConfiguration());
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
     }
 

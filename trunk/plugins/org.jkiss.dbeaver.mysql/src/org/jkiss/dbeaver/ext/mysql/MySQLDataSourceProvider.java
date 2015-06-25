@@ -82,7 +82,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         String trustStorePath = "D:/temp/ssl/test-cert-store";
 
