@@ -1661,8 +1661,8 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+END"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ENTER"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT++"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT++"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+INSERT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
