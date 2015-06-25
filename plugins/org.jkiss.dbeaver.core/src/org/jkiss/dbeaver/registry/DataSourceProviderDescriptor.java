@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Element;
