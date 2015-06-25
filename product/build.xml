@@ -114,6 +114,9 @@
                 <include name="**" />
                 <exclude name="**/*.class" />
             </fileset>
+            <fileset dir="${enterpriseSources}/contrib/plugins">
+                <include name="**.jar" />
+            </fileset>
             <fileset dir="${enterpriseSources}/contrib/drivers/plugins">
                 <include name="**" />
             </fileset>
