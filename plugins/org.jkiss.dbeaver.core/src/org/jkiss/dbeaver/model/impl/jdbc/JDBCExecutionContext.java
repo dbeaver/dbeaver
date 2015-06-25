@@ -22,10 +22,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,21 +38,17 @@ import java.sql.Savepoint;
 /**
  * JDBCExecutionContext
  */
-public class JDBCExecutionContext implements DBCExecutionContext, DBCTransactionManager
+public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager
 {
     static final Log log = Log.getLog(JDBCExecutionContext.class);
 
-    @NotNull
-    private final JDBCDataSource dataSource;
     private volatile Connection connection;
-    private final String purpose;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
 
     public JDBCExecutionContext(@NotNull JDBCDataSource dataSource, String purpose)
     {
-        this.dataSource = dataSource;
-        this.purpose = purpose;
+        super(dataSource, purpose);
     }
 
     private Connection getConnection() {
@@ -109,10 +105,10 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                     log.warn("Can't check auto-commit state", e); //$NON-NLS-1$
                 }
             }
-            QMUtils.getDefaultHandler().handleContextOpen(this, !this.autoCommit);
-
             // Copy context state
             this.dataSource.initializeContextState(monitor, this, forceActiveObject);
+
+            this.initContextBootstrap(autoCommit);
 
             // Add self to context list
             this.dataSource.allContexts.add(this);
@@ -141,17 +137,6 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
     public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         return dataSource.createConnection(monitor, this, purpose, taskTitle);
-    }
-
-    @Override
-    public String getContextName() {
-        return purpose;
-    }
-
-    @NotNull
-    @Override
-    public DBPDataSource getDataSource() {
-        return dataSource;
     }
 
     @Override
@@ -198,13 +183,14 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                 catch (Throwable ex) {
                     log.error(ex);
                 }
-                QMUtils.getDefaultHandler().handleContextClose(this);
                 connection = null;
             }
+            super.closeContext();
         }
 
         // Remove self from context list
         this.dataSource.allContexts.remove(this);
+
     }
 
     //////////////////////////////////////////////////////////////
@@ -364,8 +350,4 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
         }
     }
 
-    @Override
-    public String toString() {
-        return dataSource.getName() + " - " + purpose;
-    }
 }
