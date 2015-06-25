@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;

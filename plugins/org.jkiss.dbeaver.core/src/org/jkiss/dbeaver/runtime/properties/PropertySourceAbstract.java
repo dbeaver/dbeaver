@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;

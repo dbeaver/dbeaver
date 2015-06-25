@@ -15,8 +15,9 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.runtime.properties;
+package org.jkiss.dbeaver.model.impl;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -35,6 +36,30 @@ import java.util.List;
  */
 public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
 {
+    public enum PropertyType
+    {
+        STRING(String.class),
+        BOOLEAN(Boolean.class),
+        SHORT(Short.class),
+        INTEGER(Integer.class),
+        LONG(Long.class),
+        FLOAT(Float.class),
+        DOUBLE(Double.class),
+        NUMERIC(Double.class),
+        RESOURCE(IResource.class);
+
+        private final Class<?> valueType;
+
+        PropertyType(Class<?> valueType)
+        {
+            this.valueType = valueType;
+        }
+
+        public Class<?> getValueType()
+        {
+            return valueType;
+        }
+    }
 
     static final Log log = Log.getLog(PropertyDescriptor.class);
 
