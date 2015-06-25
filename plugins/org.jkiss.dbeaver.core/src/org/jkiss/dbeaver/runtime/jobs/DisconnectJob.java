@@ -59,6 +59,13 @@ public class DisconnectJob extends EventProcessorJob
         catch (Throwable ex) {
             connectStatus = RuntimeUtils.makeExceptionStatus(ex);
         }
+        // Add 100ms pause to bring job progress dialog up.
+        // Stupid workaround to update workbench actions
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return Status.OK_STATUS;
     }
 
