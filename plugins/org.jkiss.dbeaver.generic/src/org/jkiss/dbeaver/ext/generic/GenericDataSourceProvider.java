@@ -24,7 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -86,7 +86,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         try {
             DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(driver.getSampleURL());

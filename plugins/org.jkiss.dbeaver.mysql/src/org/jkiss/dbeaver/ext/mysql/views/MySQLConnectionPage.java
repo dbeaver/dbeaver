@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -191,7 +191,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         }
 
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         if (hostText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 hostText.setText(connectionInfo.getHostName());
@@ -230,7 +230,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     @Override
     public void saveSettings(DataSourceDescriptor dataSource)
     {
-        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText());
         }

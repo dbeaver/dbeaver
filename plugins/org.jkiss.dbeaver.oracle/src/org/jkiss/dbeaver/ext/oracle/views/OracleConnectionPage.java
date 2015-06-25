@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
@@ -103,7 +103,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             public void widgetSelected(SelectionEvent e)
             {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection()[0].getData();
-                site.getActiveDataSource().getConnectionInfo().setProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
+                site.getActiveDataSource().getConnectionConfiguration().setProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
                 updateUI();
             }
         });
@@ -317,7 +317,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         //oraHomeSelector.setVisible(isOCI);
 
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
         final Object sidService = connectionProperties.get(OracleConstants.PROP_SID_SERVICE);
@@ -385,7 +385,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     @Override
     public void saveSettings(DataSourceDescriptor dataSource)
     {
-        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         super.saveSettings(dataSource);
         Map<Object, Object> connectionProperties = connectionInfo.getProperties();
         //if (isOCI) {

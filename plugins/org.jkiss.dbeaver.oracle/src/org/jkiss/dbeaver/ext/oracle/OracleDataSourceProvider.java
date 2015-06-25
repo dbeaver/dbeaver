@@ -66,7 +66,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType;

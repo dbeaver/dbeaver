@@ -174,7 +174,7 @@ public class GenericDataSource extends JDBCDataSource
             try {
                 final Driver driver = getDriverInstance(VoidProgressMonitor.INSTANCE); // Use void monitor - driver already loaded
                 if (driver != null) {
-                    driver.connect(getContainer().getActualConnectionInfo().getUrl() + paramShutdown, null);
+                    driver.connect(getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown, null);
                 }
             } catch (Exception e) {
                 log.debug(e);

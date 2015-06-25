@@ -119,8 +119,8 @@ public class DataSourceDescriptor
     @NotNull
     private DriverDescriptor driver;
     @NotNull
-    private DBPConnectionInfo connectionInfo;
-    private DBPConnectionInfo tunnelConnectionInfo;
+    private DBPConnectionConfiguration connectionInfo;
+    private DBPConnectionConfiguration tunnelConnectionInfo;
     @NotNull
     private String id;
     private String name;
@@ -154,7 +154,7 @@ public class DataSourceDescriptor
         @NotNull DataSourceRegistry registry,
         @NotNull String id,
         @NotNull DriverDescriptor driver,
-        @NotNull DBPConnectionInfo connectionInfo)
+        @NotNull DBPConnectionConfiguration connectionInfo)
     {
         this.registry = registry;
         this.id = id;
@@ -218,18 +218,18 @@ public class DataSourceDescriptor
 
     @NotNull
     @Override
-    public DBPConnectionInfo getConnectionInfo()
+    public DBPConnectionConfiguration getConnectionConfiguration()
     {
         return connectionInfo;
     }
 
-    public void setConnectionInfo(@NotNull DBPConnectionInfo connectionInfo)
+    public void setConnectionInfo(@NotNull DBPConnectionConfiguration connectionInfo)
     {
         this.connectionInfo = connectionInfo;
     }
 
     @Override
-    public DBPConnectionInfo getActualConnectionInfo()
+    public DBPConnectionConfiguration getActualConnectionConfiguration()
     {
         return tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo;
     }
@@ -291,7 +291,7 @@ public class DataSourceDescriptor
         if (preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
             return preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
         } else {
-            return getConnectionInfo().getConnectionType().isAutocommit();
+            return getConnectionConfiguration().getConnectionType().isAutocommit();
         }
     }
 
@@ -324,7 +324,7 @@ public class DataSourceDescriptor
             }
         }
         // Save in preferences
-        if (autoCommit == getConnectionInfo().getConnectionType().isAutocommit()) {
+        if (autoCommit == getConnectionConfiguration().getConnectionType().isAutocommit()) {
             preferenceStore.setToDefault(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
         } else {
             preferenceStore.setValue(DBeaverPreferences.DEFAULT_AUTO_COMMIT, autoCommit);
@@ -600,7 +600,7 @@ public class DataSourceDescriptor
         }
 
         connecting = true;
-        DBPConnectionInfo savedConnectionInfo = null;
+        DBPConnectionConfiguration savedConnectionInfo = null;
         tunnelConnectionInfo = null;
         try {
             // Handle tunnel

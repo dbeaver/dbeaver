@@ -386,7 +386,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
         {
             // Connection info
-            DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+            DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
             xml.startElement(RegistryConstants.TAG_CONNECTION);
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
                 xml.addAttribute(RegistryConstants.ATTR_HOST, connectionInfo.getHostName());
@@ -598,7 +598,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     DataSourceRegistry.this,
                     id,
                     driver,
-                    new DBPConnectionInfo());
+                    new DBPConnectionConfiguration());
                 curDataSource.setName(name);
                 String createDate = atts.getValue(RegistryConstants.ATTR_CREATE_DATE);
                 if (!CommonUtils.isEmpty(createDate)) {
@@ -637,22 +637,22 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         driver.setName(atts.getValue(RegistryConstants.ATTR_URL));
                         driver.setDriverClassName("java.sql.Driver");
                     }
-                    curDataSource.getConnectionInfo().setHostName(atts.getValue(RegistryConstants.ATTR_HOST));
-                    curDataSource.getConnectionInfo().setHostPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                    curDataSource.getConnectionInfo().setServerName(atts.getValue(RegistryConstants.ATTR_SERVER));
-                    curDataSource.getConnectionInfo().setDatabaseName(atts.getValue(RegistryConstants.ATTR_DATABASE));
-                    curDataSource.getConnectionInfo().setUrl(atts.getValue(RegistryConstants.ATTR_URL));
-                    curDataSource.getConnectionInfo().setUserName(atts.getValue(RegistryConstants.ATTR_USER));
-                    curDataSource.getConnectionInfo().setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
-                    curDataSource.getConnectionInfo().setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
-                    curDataSource.getConnectionInfo().setConnectionType(
+                    curDataSource.getConnectionConfiguration().setHostName(atts.getValue(RegistryConstants.ATTR_HOST));
+                    curDataSource.getConnectionConfiguration().setHostPort(atts.getValue(RegistryConstants.ATTR_PORT));
+                    curDataSource.getConnectionConfiguration().setServerName(atts.getValue(RegistryConstants.ATTR_SERVER));
+                    curDataSource.getConnectionConfiguration().setDatabaseName(atts.getValue(RegistryConstants.ATTR_DATABASE));
+                    curDataSource.getConnectionConfiguration().setUrl(atts.getValue(RegistryConstants.ATTR_URL));
+                    curDataSource.getConnectionConfiguration().setUserName(atts.getValue(RegistryConstants.ATTR_USER));
+                    curDataSource.getConnectionConfiguration().setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
+                    curDataSource.getConnectionConfiguration().setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
+                    curDataSource.getConnectionConfiguration().setConnectionType(
                         DataSourceProviderRegistry.getInstance().getConnectionType(
                             CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_TYPE)),
                             DBPConnectionType.DEFAULT_TYPE)
                         );
                     String colorValue = atts.getValue(RegistryConstants.ATTR_COLOR);
                     if (!CommonUtils.isEmpty(colorValue)) {
-                        curDataSource.getConnectionInfo().setConnectionColor(colorValue);
+                        curDataSource.getConnectionConfiguration().setConnectionColor(colorValue);
                     }
                     curDataSource.refreshConnectionInfo();
                 }
@@ -662,7 +662,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         atts.getValue(RegistryConstants.ATTR_NAME),
                         atts.getValue(RegistryConstants.ATTR_VALUE));
                 } else if (curDataSource != null) {
-                    curDataSource.getConnectionInfo().setProperty(
+                    curDataSource.getConnectionConfiguration().setProperty(
                         atts.getValue(RegistryConstants.ATTR_NAME),
                         atts.getValue(RegistryConstants.ATTR_VALUE));
                 }
@@ -674,7 +674,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_PANEL)));
                     curCommand.setWaitProcessFinish(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_WAIT_PROCESS)));
                     curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT)));
-                    curDataSource.getConnectionInfo().setEvent(eventType, curCommand);
+                    curDataSource.getConnectionConfiguration().setEvent(eventType, curCommand);
                 }
             } else if (localName.equals(RegistryConstants.TAG_CUSTOM_PROPERTY)) {
                 if (curDataSource != null) {
@@ -696,7 +696,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curNetworkHandler.setUserName(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_USER)));
                     curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                     curNetworkHandler.setPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
-                    curDataSource.getConnectionInfo().addHandler(curNetworkHandler);
+                    curDataSource.getConnectionConfiguration().addHandler(curNetworkHandler);
                 }
             } else if (localName.equals(RegistryConstants.TAG_FILTER)) {
                 if (curDataSource != null) {

@@ -59,8 +59,8 @@ public class DataSourceConnectHandler extends DataSourceHandler
                 // Already connecting/disconnecting - just return
                 return;
             }
-            final String oldName = dataSourceDescriptor.getConnectionInfo().getUserName();
-            final String oldPassword = dataSourceDescriptor.getConnectionInfo().getUserPassword();
+            final String oldName = dataSourceDescriptor.getConnectionConfiguration().getUserName();
+            final String oldPassword = dataSourceDescriptor.getConnectionConfiguration().getUserPassword();
             if (!dataSourceDescriptor.isSavePassword()) {
                 // Ask for password
                 if (!askForPassword(dataSourceDescriptor, null)) {
@@ -68,7 +68,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
                     return;
                 }
             }
-            for (DBWHandlerConfiguration handler : dataSourceDescriptor.getConnectionInfo().getDeclaredHandlers()) {
+            for (DBWHandlerConfiguration handler : dataSourceDescriptor.getConnectionConfiguration().getDeclaredHandlers()) {
                 if (handler.isEnabled() && handler.isSecured() && !handler.isSavePassword()) {
                     if (!askForPassword(dataSourceDescriptor, handler)) {
                         updateDataSourceObject(dataSourceDescriptor);
@@ -90,8 +90,8 @@ public class DataSourceConnectHandler extends DataSourceHandler
                             // but we need a password to open isolated contexts (e.g. for data export)
                             // Currently it is not possible to ask for password from isolation context opening
                             // procedure. We need to do something here...
-                            //dataSourceDescriptor.getConnectionInfo().setUserName(oldName);
-                            //dataSourceDescriptor.getConnectionInfo().setUserPassword(oldPassword);
+                            //dataSourceDescriptor.getConnectionConfiguration().setUserName(oldName);
+                            //dataSourceDescriptor.getConnectionConfiguration().setUserPassword(oldPassword);
                         }
                     }
                     if (onFinish != null) {
@@ -161,8 +161,8 @@ public class DataSourceConnectHandler extends DataSourceHandler
         String prompt = networkHandler != null ?
             NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
             "'" + dataSourceContainer.getName() + CoreMessages.dialog_connection_auth_title; //$NON-NLS-1$
-        String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionInfo().getUserName();
-        String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionInfo().getUserPassword();
+        String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
+        String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
 
         DBAAuthInfo authInfo = DBUserInterface.getInstance().promptUserCredentials(prompt, user, password);
         if (authInfo == null) {
@@ -174,8 +174,8 @@ public class DataSourceConnectHandler extends DataSourceHandler
             networkHandler.setPassword(authInfo.getUserPassword());
             networkHandler.setSavePassword(authInfo.isSavePassword());
         } else {
-            dataSourceContainer.getConnectionInfo().setUserName(authInfo.getUserName());
-            dataSourceContainer.getConnectionInfo().setUserPassword(authInfo.getUserPassword());
+            dataSourceContainer.getConnectionConfiguration().setUserName(authInfo.getUserName());
+            dataSourceContainer.getConnectionConfiguration().setUserPassword(authInfo.getUserPassword());
             dataSourceContainer.setSavePassword(authInfo.isSavePassword());
         }
         if (dataSourceContainer.isSavePassword()) {

@@ -29,6 +29,9 @@ import java.util.List;
  */
 public interface DBPDataSourceRegistry {
 
+    /**
+     * Owner project.
+     */
     IProject getProject();
 
     @Nullable

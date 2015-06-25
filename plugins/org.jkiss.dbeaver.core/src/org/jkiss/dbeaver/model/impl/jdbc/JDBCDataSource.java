@@ -108,7 +108,7 @@ public abstract class JDBCDataSource
             }
         }
 
-        DBPConnectionInfo connectionInfo = container.getActualConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
         if (connectionInfo.getProperties() != null) {
             for (Map.Entry<Object,Object> prop : connectionInfo.getProperties().entrySet()) {
                 connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
@@ -163,12 +163,12 @@ public abstract class JDBCDataSource
         }
     }
 
-    protected String getConnectionUserName(DBPConnectionInfo connectionInfo)
+    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
     {
         return connectionInfo.getUserName();
     }
 
-    protected String getConnectionUserPassword(DBPConnectionInfo connectionInfo)
+    protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo)
     {
         return connectionInfo.getUserPassword();
     }

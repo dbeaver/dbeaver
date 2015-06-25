@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
@@ -145,7 +145,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     public void loadSettings()
     {
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
         // Settings
@@ -179,7 +179,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     public void saveSettings(DataSourceDescriptor dataSource)
     {
         super.saveSettings(dataSource);
-        Map<Object, Object> connectionProperties = dataSource.getConnectionInfo().getProperties();
+        Map<Object, Object> connectionProperties = dataSource.getConnectionConfiguration().getProperties();
 
         {
             connectionProperties.put(DB2Constants.PROP_TRACE_ENABLED, enableTraceCheck.getSelection());
@@ -194,7 +194,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
             }
             connectionProperties.put(DB2Constants.PROP_TRACE_LEVEL, traceLevel);
         }
-        saveConnectionURL(dataSource.getConnectionInfo());
+        saveConnectionURL(dataSource.getConnectionConfiguration());
     }
 
 }

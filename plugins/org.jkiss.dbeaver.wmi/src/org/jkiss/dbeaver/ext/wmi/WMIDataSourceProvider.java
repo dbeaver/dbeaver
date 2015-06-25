@@ -47,14 +47,14 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     public DBPPropertyDescriptor[] getConnectionProperties(
         DBRRunnableContext runnableContext,
         DBPDriver driver,
-        DBPConnectionInfo connectionInfo) throws DBException
+        DBPConnectionConfiguration connectionInfo) throws DBException
     {
         driver.validateFilesPresence(runnableContext);
         return null;
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         return
             "wmi://" + connectionInfo.getServerName() +

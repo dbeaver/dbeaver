@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
@@ -48,7 +48,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     private transient Session session;
 
     @Override
-    public DBPConnectionInfo initializeTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionInfo connectionInfo)
+    public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
         String dbPortString = connectionInfo.getHostPort();
@@ -143,7 +143,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         } catch (JSchException e) {
             throw new DBException("Cannot establish tunnel", e);
         }
-        connectionInfo = new DBPConnectionInfo(connectionInfo);
+        connectionInfo = new DBPConnectionConfiguration(connectionInfo);
         String newPortValue = String.valueOf(localPort);
         // Replace database host/port and URL - let's use localhost
         connectionInfo.setHostName(LOCALHOST_NAME);
@@ -178,7 +178,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public void closeTunnel(DBRProgressMonitor monitor, DBPConnectionInfo connectionInfo) throws DBException, IOException
+    public void closeTunnel(DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo) throws DBException, IOException
     {
         if (session != null) {
             session.disconnect();

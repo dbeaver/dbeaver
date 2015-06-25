@@ -24,7 +24,7 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
@@ -158,7 +158,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             name = connectionInfo.getAlias() + " " + (i + 1);
         }
 
-        DBPConnectionInfo config = new DBPConnectionInfo();
+        DBPConnectionConfiguration config = new DBPConnectionConfiguration();
         config.setProperties(connectionInfo.getProperties());
         config.setUrl(connectionInfo.getUrl());
         config.setUserName(connectionInfo.getUser());

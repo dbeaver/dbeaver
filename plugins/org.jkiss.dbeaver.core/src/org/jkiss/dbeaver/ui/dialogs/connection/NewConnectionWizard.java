@@ -164,7 +164,7 @@ public class NewConnectionWizard extends ConnectionWizard
         DriverDescriptor driver = getSelectedDriver();
         DataSourceDescriptor dataSourceTpl = getPageSettings().getActiveDataSource();
         DataSourceDescriptor dataSourceNew = new DataSourceDescriptor(
-            dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionInfo());
+            dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionConfiguration());
         dataSourceNew.copyFrom(dataSourceTpl);
         saveSettings(dataSourceNew);
         dataSourceRegistry.addDataSource(dataSourceNew);

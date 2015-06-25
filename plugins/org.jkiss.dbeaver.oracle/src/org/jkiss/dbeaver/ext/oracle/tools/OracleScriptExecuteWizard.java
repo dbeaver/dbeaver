@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 
@@ -78,7 +78,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     {
         List<String> cmd = new ArrayList<String>();
         fillProcessParameters(cmd);
-        DBPConnectionInfo conInfo = getConnectionInfo();
+        DBPConnectionConfiguration conInfo = getConnectionInfo();
         String url;
         if ("TNS".equals(conInfo.getProperty(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$
             url = conInfo.getServerName();

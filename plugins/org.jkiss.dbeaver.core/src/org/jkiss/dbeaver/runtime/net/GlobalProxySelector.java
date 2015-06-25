@@ -61,7 +61,7 @@ public class GlobalProxySelector extends ProxySelector {
             if (activeContext != null) {
                 List<Proxy> proxies = null;
                 DBSDataSourceContainer container = activeContext.getDataSource().getContainer();
-                for (DBWHandlerConfiguration networkHandler : container.getConnectionInfo().getDeclaredHandlers()) {
+                for (DBWHandlerConfiguration networkHandler : container.getConnectionConfiguration().getDeclaredHandlers()) {
                     if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                         Map<String,String> proxyProps = networkHandler.getProperties();
                         String proxyHost = proxyProps.get(SocksConstants.PROP_HOST);

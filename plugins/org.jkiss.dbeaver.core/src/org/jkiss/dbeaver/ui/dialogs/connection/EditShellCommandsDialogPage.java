@@ -60,7 +60,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
         setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.EVENT));
         for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
-            DBRShellCommand command = dataSource.getConnectionInfo().getEvent(eventType);
+            DBRShellCommand command = dataSource.getConnectionConfiguration().getEvent(eventType);
             eventsCache.put(eventType, command == null ? null : new DBRShellCommand(command));
         }
     }
@@ -238,7 +238,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
     void saveConfigurations(DataSourceDescriptor dataSource)
     {
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : eventsCache.entrySet()) {
-            dataSource.getConnectionInfo().setEvent(entry.getKey(), entry.getValue());
+            dataSource.getConnectionConfiguration().setEvent(entry.getKey(), entry.getValue());
         }
     }
 
