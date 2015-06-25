@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
@@ -51,9 +52,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * General connection page (common for all connection types)
@@ -79,6 +78,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private Group filtersGroup;
     private boolean activated = false;
     private java.util.List<DBPTransactionIsolation> supportedLevels = new ArrayList<DBPTransactionIsolation>();
+    private java.util.List<String> bootstrapQueries;
+    private boolean ignoreBootstrapErrors;
 
     private static class FilterInfo {
         final Class<?> type;
@@ -103,6 +104,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));
         filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
         filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
+
+        bootstrapQueries = new ArrayList<String>();
     }
 
     ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
@@ -113,6 +116,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         for (FilterInfo filterInfo : filters) {
             filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, false);
         }
+        bootstrapQueries = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries();
+        ignoreBootstrapErrors = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().isIgnoreErrors();
     }
 
     @Override
@@ -356,9 +361,28 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 isolationLevel = UIUtils.createLabelCombo(txnGroup, "Isolation level", SWT.DROP_DOWN | SWT.READ_ONLY);
                 isolationLevel.setToolTipText(
                     "Default transaction isolation level.");
-                defaultSchema = UIUtils.createLabelCombo(txnGroup, "Default schema/catalog", SWT.DROP_DOWN);
+                defaultSchema = UIUtils.createLabelCombo(txnGroup, "Default schema", SWT.DROP_DOWN);
                 defaultSchema.setToolTipText(
                     "Name of schema or catalog which will be set as default.");
+
+                UIUtils.createControlLabel(txnGroup, "Bootstrap queries");
+                Button queriesConfigButton = UIUtils.createPushButton(txnGroup, "Configure ...", DBeaverIcons.getImage(DBIcon.SQL_SCRIPT));
+                if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
+                    queriesConfigButton.setFont(boldFont);
+                }
+                queriesConfigButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        EditBootstrapQueriesDialog dialog = new EditBootstrapQueriesDialog(
+                            getShell(),
+                            bootstrapQueries,
+                            ignoreBootstrapErrors);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            bootstrapQueries = dialog.getQueries();
+                            ignoreBootstrapErrors = dialog.isIgnoreErrors();
+                        }
+                    }
+                });
             }
 
             {
@@ -395,7 +419,6 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     filterInfo.link.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
-                            //DBSObjectFilter filter =
                             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                                 getShell(),
                                 filterInfo.title,
@@ -496,6 +519,9 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
             }
         }
+        DBPConnectionBootstrap bootstrap = dataSource.getConnectionConfiguration().getBootstrap();
+        bootstrap.setIgnoreErrors(ignoreBootstrapErrors);
+        bootstrap.setInitQueries(bootstrapQueries);
     }
 
     private void configureEvents()

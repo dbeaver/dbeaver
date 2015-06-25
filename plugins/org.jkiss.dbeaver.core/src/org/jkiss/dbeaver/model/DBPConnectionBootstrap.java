@@ -50,6 +50,11 @@ public class DBPConnectionBootstrap
         return initQueries;
     }
 
+    public void setInitQueries(Collection<String> queries) {
+        initQueries.clear();
+        initQueries.addAll(queries);
+    }
+
     public String getDefaultObjectName() {
         return defaultObjectName;
     }

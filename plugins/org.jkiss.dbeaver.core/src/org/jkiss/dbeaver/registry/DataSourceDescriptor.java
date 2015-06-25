@@ -328,7 +328,6 @@ public class DataSourceDescriptor
             connectionInfo.getBootstrap().setDefaultAutoCommit(null);
         } else {
             connectionInfo.getBootstrap().setDefaultAutoCommit(autoCommit);
-            //preferenceStore.setValue(DBeaverPreferences.DEFAULT_AUTO_COMMIT, autoCommit);
         }
     }
 
@@ -352,9 +351,6 @@ public class DataSourceDescriptor
 
     @Override
     public Integer getDefaultTransactionsIsolation() {
-//        if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
-//            return preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
-//        }
         return connectionInfo.getBootstrap().getDefaultTransactionIsolation();
     }
 
@@ -364,10 +360,8 @@ public class DataSourceDescriptor
         try {
             if (isolationLevel == null) {
                 connectionInfo.getBootstrap().setDefaultTransactionIsolation(null);
-                //preferenceStore.setToDefault(DBeaverPreferences.DEFAULT_ISOLATION);
             } else {
                 connectionInfo.getBootstrap().setDefaultTransactionIsolation(isolationLevel.getCode());
-                //preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
                 if (dataSource != null) {
                     DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
@@ -397,14 +391,8 @@ public class DataSourceDescriptor
         }
     }
 
-    @Override
-    public String getDefaultActiveObject() {
-        return connectionInfo.getBootstrap().getDefaultObjectName();//preferenceStore.getString(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT);
-    }
-
     public void setDefaultActiveObject(String defaultActiveObject) {
         connectionInfo.getBootstrap().setDefaultObjectName(defaultActiveObject);
-        //preferenceStore.setValue(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT, defaultActiveObject);
     }
 
     public Collection<FilterMapping> getObjectFilters()
