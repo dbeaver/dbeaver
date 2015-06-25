@@ -18,11 +18,20 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Abstract execution context.
@@ -31,6 +40,8 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
  */
 public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource> implements DBCExecutionContext
 {
+    static final Log log = Log.getLog(AbstractExecutionContext.class);
+
     @NotNull
     protected final DATASOURCE dataSource;
     protected final String purpose;
@@ -57,9 +68,40 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
      * Executes bootstrap queries and other init functions.
      * This function must be called by all implementations.
      */
-    protected void initContextBootstrap(boolean autoCommit) throws DBCException
+    protected void initContextBootstrap(DBRProgressMonitor monitor, boolean autoCommit) throws DBCException
     {
+        // Notify QM
         QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommit);
+
+        // Execute bootstrap queries
+        DBPConnectionBootstrap bootstrap = dataSource.getContainer().getConnectionConfiguration().getBootstrap();
+        List<String> initQueries = bootstrap.getInitQueries();
+        if (!CommonUtils.isEmpty(initQueries)) {
+            DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries");
+            try {
+                for (String query : initQueries) {
+                    try {
+                        DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false);
+                        try {
+                            dbStat.executeStatement();
+                        } finally {
+                            dbStat.close();
+                        }
+                    } catch (Exception e) {
+                        String message = "Error executing bootstrap query: " + query;
+                        if (bootstrap.isIgnoreErrors()) {
+                            log.warn(message);
+                        } else {
+                            QMUtils.getDefaultHandler().handleContextClose(this);
+                            throw new DBCException(message, e, dataSource);
+                        }
+                    }
+                }
+            }
+            finally {
+                session.close();
+            }
+        }
     }
 
     protected void closeContext()
