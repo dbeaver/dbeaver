@@ -55,7 +55,7 @@ public interface DBPDataSourceProvider
     DBPPropertyDescriptor[] getConnectionProperties(
         DBRRunnableContext runnableContext,
         DBPDriver driver,
-        DBPConnectionInfo connectionInfo)
+        DBPConnectionConfiguration connectionInfo)
         throws DBException;
 
     /**
@@ -64,7 +64,7 @@ public interface DBPDataSourceProvider
      * @param connectionInfo connection info
      * @return valid connection URL or null (if URLs not supported by driver)
      */
-    String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo);
+    String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo);
 
     /**
      * Opens new data source

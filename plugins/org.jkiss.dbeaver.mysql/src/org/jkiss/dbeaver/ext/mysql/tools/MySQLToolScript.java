@@ -22,7 +22,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
@@ -60,7 +60,7 @@ public class MySQLToolScript implements IExternalTool
         if (toolWizard.isVerbose()) {
             cmd.add("-v");
         }
-        DBPConnectionInfo connectionInfo = toolWizard.getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = toolWizard.getConnectionInfo();
         cmd.add("--host=" + connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             cmd.add("--port=" + connectionInfo.getHostPort());

@@ -1355,7 +1355,7 @@ public class UIUtils {
         }
     }
 
-    public static Color getConnectionColor(DBPConnectionInfo connectionInfo) {
+    public static Color getConnectionColor(DBPConnectionConfiguration connectionInfo) {
         String rgbString = connectionInfo.getConnectionColor();
         if (CommonUtils.isEmpty(rgbString)) {
             rgbString = connectionInfo.getConnectionType().getColor();

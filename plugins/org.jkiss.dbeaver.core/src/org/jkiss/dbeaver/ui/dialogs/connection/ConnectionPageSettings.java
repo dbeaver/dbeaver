@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
@@ -130,7 +130,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     void saveSettings(DataSourceDescriptor dataSource)
     {
-        getActiveDataSource().getConnectionInfo().getProperties().clear();
+        getActiveDataSource().getConnectionConfiguration().getProperties().clear();
         if (connectionEditor != null) {
             connectionEditor.saveSettings(dataSource);
         }
@@ -231,13 +231,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         DriverDescriptor driver = getDriver();
         DataSourceDescriptor info = infoMap.get(driver);
         if (info == null) {
-            DBPConnectionInfo connectionInfo = new DBPConnectionInfo();
+            DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
             info = new DataSourceDescriptor(
                 wizard.getDataSourceRegistry(),
                 DataSourceDescriptor.generateNewId(wizard.getSelectedDriver()),
                 wizard.getSelectedDriver(),
                 connectionInfo);
-            info.getConnectionInfo().setClientHomeId(driver.getDefaultClientHomeId());
+            info.getConnectionConfiguration().setClientHomeId(driver.getDefaultClientHomeId());
             infoMap.put(driver, info);
         }
         return info;

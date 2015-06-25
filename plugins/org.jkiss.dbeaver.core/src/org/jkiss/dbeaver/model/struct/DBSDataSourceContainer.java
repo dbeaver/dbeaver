@@ -48,18 +48,18 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
     DBPDriver getDriver();
 
     /**
-     * Connection info
+     * Connection configuration.
      * @return connection details
      */
     @NotNull
-    DBPConnectionInfo getConnectionInfo();
+    DBPConnectionConfiguration getConnectionConfiguration();
 
     /**
-     * Actual connection info. Contains actual parameters used to connect to this datasource.
-     * Differs from getConnectionInfo() in case if tunnel or proxy was used.
-     * @return actual connection info.
+     * Actual connection configuration. Contains actual parameters used to connect to this datasource.
+     * Differs from getConnectionConfiguration() in case if tunnel or proxy was used.
+     * @return actual connection configuration.
      */
-    DBPConnectionInfo getActualConnectionInfo();
+    DBPConnectionConfiguration getActualConnectionConfiguration();
 
     boolean isShowSystemObjects();
 

@@ -136,7 +136,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
         TabItem selectItem = null;
         for (NetworkHandlerDescriptor descriptor : registry.getDescriptors()) {
-            DBWHandlerConfiguration configuration = dataSource.getConnectionInfo().getHandler(descriptor.getId());
+            DBWHandlerConfiguration configuration = dataSource.getConnectionConfiguration().getHandler(descriptor.getId());
             if (configuration == null) {
                 configuration = new DBWHandlerConfiguration(descriptor, driver);
             }
@@ -185,7 +185,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
             }
         }
         if (foundHandlers) {
-            dataSource.getConnectionInfo().setHandlers(handlers);
+            dataSource.getConnectionConfiguration().setHandlers(handlers);
         }
     }
 

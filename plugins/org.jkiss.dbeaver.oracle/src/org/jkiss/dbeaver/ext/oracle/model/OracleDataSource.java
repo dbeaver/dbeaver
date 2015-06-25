@@ -116,7 +116,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected String getConnectionUserName(DBPConnectionInfo connectionInfo)
+    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
     {
         final Object role = connectionInfo.getProperty(OracleConstants.PROP_INTERNAL_LOGON);
         return role == null ? connectionInfo.getUserName() : connectionInfo.getUserName() + " AS " + role;
@@ -230,7 +230,7 @@ public class OracleDataSource extends JDBCDataSource
             final JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
             try {
                 // Set session settings
-                DBPConnectionInfo connectionInfo = getContainer().getConnectionInfo();
+                DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
                 Object sessionLanguage = connectionInfo.getProperty(OracleConstants.PROP_SESSION_LANGUAGE);
                 if (sessionLanguage != null) {
                     try {
@@ -580,7 +580,7 @@ public class OracleDataSource extends JDBCDataSource
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
         {
             StringBuilder schemasQuery = new StringBuilder();
-            boolean manyObjects = "false".equals(owner.getContainer().getConnectionInfo().getProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
+            boolean manyObjects = "false".equals(owner.getContainer().getConnectionConfiguration().getProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
             schemasQuery.append("SELECT U.USERNAME FROM SYS.ALL_USERS U\n");
 
 //                if (owner.isAdmin() && false) {

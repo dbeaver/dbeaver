@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -72,7 +72,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
                 registry,
                 DataSourceDescriptor.generateNewId(dsTpl.getDriver()),
                 dsTpl.getDriver(),
-                new DBPConnectionInfo(dsTpl.getConnectionInfo()));
+                new DBPConnectionConfiguration(dsTpl.getConnectionConfiguration()));
             dataSource.copyFrom(dsTpl);
             // Generate new name
             String origName = dsTpl.getName();

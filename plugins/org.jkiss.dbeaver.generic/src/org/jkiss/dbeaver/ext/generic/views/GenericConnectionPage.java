@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -363,7 +363,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     public void loadSettings()
     {
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         if (site.getDriver() != null) {
             driverText.setText(CommonUtils.toString(site.getDriver().getFullName()));
         }
@@ -422,7 +422,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     @Override
     public void saveSettings(DataSourceDescriptor dataSource)
     {
-        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         final Set<String> properties = metaURL == null ? Collections.<String>emptySet() : metaURL.getAvailableProperties();
 
         if (hostText != null && properties.contains(DriverDescriptor.PROP_HOST)) {

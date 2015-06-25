@@ -27,7 +27,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPClientHome;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -50,7 +50,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
 
     private final BASE_OBJECT databaseObject;
     private DBPClientHome clientHome;
-    private DBPConnectionInfo connectionInfo;
+    private DBPConnectionConfiguration connectionInfo;
     private String toolUserName;
     private String toolUserPassword;
 
@@ -76,7 +76,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         return databaseObject;
     }
 
-    public DBPConnectionInfo getConnectionInfo()
+    public DBPConnectionConfiguration getConnectionInfo()
     {
         return connectionInfo;
     }
@@ -112,7 +112,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     public void createPageControls(Composite pageContainer)
     {
         DBSDataSourceContainer container = getDatabaseObject().getDataSource().getContainer();
-        connectionInfo = container.getActualConnectionInfo();
+        connectionInfo = container.getActualConnectionConfiguration();
 
         super.createPageControls(pageContainer);
 

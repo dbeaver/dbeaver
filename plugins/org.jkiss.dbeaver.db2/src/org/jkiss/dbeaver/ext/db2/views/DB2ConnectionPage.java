@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.ext.db2.Activator;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
@@ -150,7 +150,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     public void loadSettings()
     {
         // Load values from new connection info
-        DBPConnectionInfo connectionInfo = site.getActiveDataSource().getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         if (hostText != null) {
             hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
         }
@@ -175,7 +175,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     @Override
     public void saveSettings(DataSourceDescriptor dataSource)
     {
-        DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
+        DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText());
         }

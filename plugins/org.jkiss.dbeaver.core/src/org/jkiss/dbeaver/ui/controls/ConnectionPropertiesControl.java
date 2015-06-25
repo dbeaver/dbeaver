@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -55,7 +55,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         setExpandSingleRoot(false);
     }
 
-    public PropertySourceCustom makeProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public PropertySourceCustom makeProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         Map<Object, Object> connectionProps = new HashMap<Object, Object>();
         connectionProps.putAll(driver.getConnectionProperties());
@@ -132,7 +132,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         return propertyDescriptors;
     }
 
-    private void loadDriverProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
+    private void loadDriverProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         try {
             final DBPPropertyDescriptor[] connectionsProps =

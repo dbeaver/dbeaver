@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -118,7 +118,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        final DBPConnectionInfo connectionInfo = container.getActualConnectionInfo();
+        final DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
         try {
             WMIService service = WMIService.connect(
                 connectionInfo.getServerName(),

@@ -21,7 +21,7 @@ import org.eclipse.jface.dialogs.DialogPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
@@ -54,10 +54,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     @Override
     public void saveSettings(DataSourceDescriptor dataSource)
     {
-        saveConnectionURL(dataSource.getConnectionInfo());
+        saveConnectionURL(dataSource.getConnectionConfiguration());
     }
 
-    protected void saveConnectionURL(DBPConnectionInfo connectionInfo)
+    protected void saveConnectionURL(DBPConnectionConfiguration connectionInfo)
     {
         if (!isCustomURL()) {
             try {

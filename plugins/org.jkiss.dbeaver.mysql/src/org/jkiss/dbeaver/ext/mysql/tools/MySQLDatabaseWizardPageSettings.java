@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -49,7 +49,7 @@ public abstract class MySQLDatabaseWizardPageSettings<WIZARD extends AbstractToo
     {
         try {
             final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
-            final DBPConnectionInfo connectionInfo = wizard.getConnectionInfo();
+            final DBPConnectionConfiguration connectionInfo = wizard.getConnectionInfo();
             final String authProperty = DBConstants.INTERNAL_PROP_PREFIX + "-auth-" + wizard.getDatabaseObject().getName() + "@";
             String authUser = null;
             String authPassword = null;

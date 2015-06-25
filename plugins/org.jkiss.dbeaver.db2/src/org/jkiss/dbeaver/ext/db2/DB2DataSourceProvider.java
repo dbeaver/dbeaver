@@ -22,7 +22,7 @@ import com.ibm.db2.jcc.DB2BaseDataSource;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -66,7 +66,7 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         StringBuilder url = new StringBuilder(128);
         url.append("jdbc:db2://").append(connectionInfo.getHostName());
