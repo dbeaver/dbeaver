@@ -38,10 +38,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -189,9 +189,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         {
             // Connection property groups
-            IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
+            IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP);
             for (IConfigurationElement prop : propElements) {
-                connectionPropertyDescriptors.addAll(PropertyDescriptorEx.extractProperties(prop));
+                connectionPropertyDescriptors.addAll(PropertyDescriptor.extractProperties(prop));
             }
         }
 

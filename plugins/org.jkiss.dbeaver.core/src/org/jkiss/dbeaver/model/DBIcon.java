@@ -18,13 +18,17 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -262,12 +266,17 @@ public class DBIcon implements DBPImage
             }
             try {
                 DBIcon icon = (DBIcon) field.get(null);
-                File file = RuntimeUtils.getPlatformFile(icon.getLocation());
-                if (!file.exists()) {
-                    log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
-                    continue;
+                URL fileURL = FileLocator.toFileURL(new URL(icon.getLocation()));
+                try {
+                    File file = new File(new URI(fileURL.toString()));
+                    if (!file.exists()) {
+                        log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
+                        continue;
+                    }
+                    DBIcon.iconMap.put(icon.getToken(), icon);
+                } catch (URISyntaxException e) {
+                    throw new IOException("Bad local file path: " + fileURL, e);
                 }
-                DBIcon.iconMap.put(icon.getToken(), icon);
             } catch (Exception e) {
                 log.error(e);
             }

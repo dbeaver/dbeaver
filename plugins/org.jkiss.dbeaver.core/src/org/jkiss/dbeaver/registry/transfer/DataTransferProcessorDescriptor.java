@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
@@ -59,8 +59,8 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
         }
 
-        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP))) {
-            properties.addAll(PropertyDescriptorEx.extractProperties(prop));
+        for (IConfigurationElement prop : ArrayUtils.safeArray(config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP))) {
+            properties.addAll(PropertyDescriptor.extractProperties(prop));
         }
     }
 
