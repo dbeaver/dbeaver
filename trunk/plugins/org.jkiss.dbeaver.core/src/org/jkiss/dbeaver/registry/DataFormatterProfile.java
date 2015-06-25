@@ -18,11 +18,11 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -73,7 +73,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
         for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
             Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
             Map<Object, Object> formatterProps = new HashMap<Object, Object>();
-            for (PropertyDescriptorEx prop : formatter.getProperties()) {
+            for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                 Object defaultValue = defaultProperties.get(prop.getId());
                 Object propValue = RuntimeUtils.getPreferenceValue(
                     store,
@@ -95,7 +95,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
 
         for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
             Map<Object, Object> formatterProps = properties.get(formatter.getId());
-            for (PropertyDescriptorEx prop : formatter.getProperties()) {
+            for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                 Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
                 if (propValue != null) {
                     RuntimeUtils.setPreferenceValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), propValue);
@@ -160,7 +160,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
             }
 
             for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
-                for (PropertyDescriptorEx prop : formatter.getProperties()) {
+                for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                     if (prefStore.isSet(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId())) {
                         return true;
                     }
@@ -182,7 +182,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
             store.setToDefault(PROP_VARIANT);
 
             for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
-                for (PropertyDescriptorEx prop : formatter.getProperties()) {
+                for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                     store.setToDefault(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId());
                 }
             }
@@ -218,7 +218,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
         for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
             Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
             Map<Object, Object> formatterProps = new HashMap<Object, Object>();
-            for (PropertyDescriptorEx prop : formatter.getProperties()) {
+            for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                 Object defaultValue = defaultProperties.get(prop.getId());
                 if (defaultValue != null) {
                     RuntimeUtils.setPreferenceDefaultValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), defaultValue);

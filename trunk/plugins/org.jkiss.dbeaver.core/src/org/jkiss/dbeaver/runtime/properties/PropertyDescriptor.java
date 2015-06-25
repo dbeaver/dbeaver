@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PropertyDescriptorEx
+ * PropertyDescriptor
  */
-public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
+public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
 {
 
-    static final Log log = Log.getLog(PropertyDescriptorEx.class);
+    static final Log log = Log.getLog(PropertyDescriptor.class);
 
     public static final String TAG_PROPERTY_GROUP = "propertyGroup"; //NON-NLS-1
     public static final String NAME_UNDEFINED = "<undefined>"; //NON-NLS-1
@@ -60,21 +60,21 @@ public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyVal
     private Object[] validValues;
     private boolean editable;
 
-    public static List<PropertyDescriptorEx> extractProperties(IConfigurationElement config)
+    public static List<PropertyDescriptor> extractProperties(IConfigurationElement config)
     {
         String category = config.getAttribute(ATTR_LABEL);
         if (CommonUtils.isEmpty(category)) {
             category = NAME_UNDEFINED;
         }
-        List<PropertyDescriptorEx> properties = new ArrayList<PropertyDescriptorEx>();
-        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY);
+        List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY);
         for (IConfigurationElement prop : propElements) {
-            properties.add(new PropertyDescriptorEx(category, prop));
+            properties.add(new PropertyDescriptor(category, prop));
         }
         return properties;
     }
 
-    public PropertyDescriptorEx(String category, IConfigurationElement config)
+    public PropertyDescriptor(String category, IConfigurationElement config)
     {
         this.category = category;
         this.id = config.getAttribute(ATTR_ID);
@@ -105,7 +105,7 @@ public class PropertyDescriptorEx implements DBPPropertyDescriptor, IPropertyVal
         this.editable = true;
     }
 
-    public PropertyDescriptorEx(String category, Object id, String name, String description, Class<?> type, boolean required, String defaultValue, String[] validValues, boolean editable) {
+    public PropertyDescriptor(String category, Object id, String name, String description, Class<?> type, boolean required, String defaultValue, String[] validValues, boolean editable) {
         this.category = category;
         this.id = id;
         this.name = name;

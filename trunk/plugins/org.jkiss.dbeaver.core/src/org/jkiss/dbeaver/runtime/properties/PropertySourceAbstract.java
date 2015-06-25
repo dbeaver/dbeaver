@@ -76,7 +76,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
 
     public void addProperty(@Nullable String category, Object id, String name, Object value)
     {
-        props.add(new PropertyDescriptorEx(category, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
+        props.add(new PropertyDescriptor(category, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
         propValues.put(id, value);
     }
 
