@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.properties.ProxyPropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.ProxyPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;

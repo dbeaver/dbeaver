@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.utils.ArrayUtils;
 
