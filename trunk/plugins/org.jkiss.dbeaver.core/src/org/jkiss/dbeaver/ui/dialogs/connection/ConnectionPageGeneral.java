@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -32,12 +34,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
@@ -46,6 +52,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 /**
@@ -159,16 +166,20 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
                 isolationLevel.add("");
                 if (dataSourceDescriptor.isConnected()) {
+                    DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
                     isolationLevel.setEnabled(!autocommit.getSelection());
                     supportedLevels.clear();
                     DBPTransactionIsolation defaultLevel = dataSourceDescriptor.getActiveTransactionsIsolation();
-                    for (DBPTransactionIsolation level : CommonUtils.safeCollection(dataSourceDescriptor.getDataSource().getInfo().getSupportedTransactionsIsolation())) {
+                    for (DBPTransactionIsolation level : CommonUtils.safeCollection(dataSource.getInfo().getSupportedTransactionsIsolation())) {
                         if (!level.isEnabled()) continue;
                         isolationLevel.add(level.getTitle());
                         supportedLevels.add(level);
                         if (level.equals(defaultLevel)) {
                             isolationLevel.select(isolationLevel.getItemCount() - 1);
                         }
+                    }
+                    if (dataSource instanceof DBSObjectContainer) {
+                        new SchemaReadJob((DBSObjectContainer)dataSource).schedule();
                     }
                 } else {
                     isolationLevel.setEnabled(false);
@@ -503,4 +514,44 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         }
     }
 
+    private class SchemaReadJob extends AbstractJob {
+        private DBSObjectContainer objectContainer;
+        public SchemaReadJob(DBSObjectContainer objectContainer) {
+            super("Schema reader");
+            this.objectContainer = objectContainer;
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            try {
+                final java.util.List<String> schemaNames = new ArrayList<String>();
+                Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
+                if (children != null) {
+                    for (DBSObject child : children) {
+                        schemaNames.add(DBUtils.getQuotedIdentifier(child));
+                    }
+                }
+                if (!schemaNames.isEmpty()) {
+                    UIUtils.runInUI(null, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!defaultSchema.isDisposed()) {
+                                String oldText = defaultSchema.getText();
+                                defaultSchema.removeAll();
+                                for (String name : schemaNames) {
+                                    defaultSchema.add(name);
+                                }
+                                if (!CommonUtils.isEmpty(oldText)) {
+                                    defaultSchema.setText(oldText);
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (DBException e) {
+                log.warn("Can't read schema list", e);
+            }
+            return Status.OK_STATUS;
+        }
+    }
 }
