@@ -108,7 +108,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             // Copy context state
             this.dataSource.initializeContextState(monitor, this, forceActiveObject);
 
-            this.initContextBootstrap(autoCommit);
+            this.initContextBootstrap(monitor, autoCommit);
 
             // Add self to context list
             this.dataSource.allContexts.add(this);
