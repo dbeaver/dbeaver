@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIQualifiedObject;
 import org.jkiss.wmi.service.WMIQualifier;
@@ -68,7 +68,7 @@ public abstract class WMIPropertySource implements DBPPropertySource
             int index = 0;
             for (WMIQualifier qualifier : qualifiers) {
                 String name = qualifier.getName();
-                PropertyDescriptorEx prop = new PropertyDescriptorEx("WMI", name, name, null, null, false, null, null, false);
+                PropertyDescriptor prop = new PropertyDescriptor("WMI", name, name, null, null, false, null, null, false);
                 result[index++] = prop;
             }
             return result;

@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Element;
@@ -122,7 +122,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
         DBPPropertyDescriptor[] props = new DBPPropertyDescriptor[attributes.size()];
         int index = 0;
         for (Map.Entry<String, String> attr : attributes.entrySet()) {
-            props[index++] = new PropertyDescriptorEx("Source", attr.getKey(), attr.getKey(), null, String.class, false, null, null, false);
+            props[index++] = new PropertyDescriptor("Source", attr.getKey(), attr.getKey(), null, String.class, false, null, null, false);
         }
         return props;
     }

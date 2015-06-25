@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
@@ -116,7 +116,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         String propName = EnterNameDialog.chooseName(getControl().getShell(), CoreMessages.controls_connection_properties_dialog_new_property_title);
         if (propName != null) {
             // Check property name (must be unique
-            addProperty(node, new PropertyDescriptorEx(category, propName, propName, null, null, false, null, null, true));
+            addProperty(node, new PropertyDescriptor(category, propName, propName, null, null, false, null, null, true));
         }
     }
 
@@ -163,7 +163,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
                 continue;
             }
             if (!propNames.contains(propName)) {
-                customProperties.add(new PropertyDescriptorEx(
+                customProperties.add(new PropertyDescriptor(
                     USER_PROPERTIES_CATEGORY,
                     propName,
                     propName,

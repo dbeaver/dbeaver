@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.runtime.properties.PropertyDescriptorEx;
+import org.jkiss.dbeaver.runtime.properties.PropertyDescriptor;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
@@ -89,7 +89,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider {
                 continue;
             }
             desc.value = getConnectionPropertyDefaultValue(desc.name, desc.value);
-            properties.add(new PropertyDescriptorEx(
+            properties.add(new PropertyDescriptor(
                 CoreMessages.model_jdbc_driver_properties,
                 desc.name,
                 desc.name,
