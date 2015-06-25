@@ -67,7 +67,7 @@ import java.util.*;
 public class DataSourceDescriptor
     implements
         DBSDataSourceContainer,
-    DBPImageProvider,
+        DBPImageProvider,
         IAdaptable,
         DBEPrivateObjectEditor,
         DBSObjectStateful,
@@ -113,6 +113,7 @@ public class DataSourceDescriptor
             return firstMatch ? null : defaultFilter;
         }
     }
+
     @NotNull
     private final DataSourceRegistry registry;
     @NotNull
@@ -332,7 +333,7 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public DBPTransactionIsolation getDefaultTransactionsIsolation()
+    public DBPTransactionIsolation getActiveTransactionsIsolation()
     {
         if (dataSource != null) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
@@ -344,6 +345,14 @@ public class DataSourceDescriptor
                     return null;
                 }
             }
+        }
+        return null;
+    }
+
+    @Override
+    public Integer getDefaultTransactionsIsolation() {
+        if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
+            return preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
         }
         return null;
     }
@@ -669,40 +678,6 @@ public class DataSourceDescriptor
     private void prepareContext(DBRProgressMonitor monitor) throws DBException {
         if (dataSource == null) {
             return;
-        }
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
-        if (txnManager != null) {
-            try {
-                // Set auto-commit
-                boolean autoCommit = txnManager.isAutoCommit();
-                boolean newAutoCommit;
-                if (!preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
-                    newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
-                } else {
-                    newAutoCommit = preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
-                }
-                if (autoCommit != newAutoCommit) {
-                    // Change auto-commit state
-                    txnManager.setAutoCommit(monitor, newAutoCommit);
-                }
-                // Set txn isolation level
-                if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
-                    int isolationCode = preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
-                    Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
-                    if (!CommonUtils.isEmpty(supportedLevels)) {
-                        for (DBPTransactionIsolation level : supportedLevels) {
-                            if (level.getCode() == isolationCode) {
-                                txnManager.setTransactionIsolation(monitor, level);
-                                break;
-                            }
-                        }
-                    }
-                }
-            } catch (DBCException e) {
-                log.error("Can't set session transactions state", e);
-            } finally {
-                monitor.worked(1);
-            }
         }
 
         // Set active object
