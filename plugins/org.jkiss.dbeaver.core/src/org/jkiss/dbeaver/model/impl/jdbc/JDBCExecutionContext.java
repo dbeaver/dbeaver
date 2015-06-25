@@ -20,11 +20,9 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -46,17 +44,15 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
 
     @NotNull
     private final JDBCDataSource dataSource;
-    private final boolean primaryContext;
     private volatile Connection connection;
     private final String purpose;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
 
-    public JDBCExecutionContext(@NotNull JDBCDataSource dataSource, String purpose, boolean primary)
+    public JDBCExecutionContext(@NotNull JDBCDataSource dataSource, String purpose)
     {
         this.dataSource = dataSource;
         this.purpose = purpose;
-        this.primaryContext = primary;
     }
 
     private Connection getConnection() {
@@ -97,7 +93,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                 log.warn("Can't set auto-commit state", e); //$NON-NLS-1$
             }
 
-            if (txnLevel != null) {
+            if (!this.autoCommit && txnLevel != null) {
                 try {
                     connection.setTransactionIsolation(txnLevel);
                     this.transactionIsolationLevel = txnLevel;
@@ -116,7 +112,7 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
             QMUtils.getDefaultHandler().handleContextOpen(this, !this.autoCommit);
 
             // Copy context state
-            this.dataSource.initializeContextState(monitor, this, !primaryContext || forceActiveObject);
+            this.dataSource.initializeContextState(monitor, this, forceActiveObject);
 
             // Add self to context list
             this.dataSource.allContexts.add(this);

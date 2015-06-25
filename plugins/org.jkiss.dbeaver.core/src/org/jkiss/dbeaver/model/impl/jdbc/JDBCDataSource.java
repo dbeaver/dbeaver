@@ -72,8 +72,8 @@ public abstract class JDBCDataSource
         throws DBException
     {
         this.container = container;
-        this.executionContext = new JDBCExecutionContext(this, "Main", true);
-        this.executionContext.connect(monitor);
+        this.executionContext = new JDBCExecutionContext(this, "Main");
+        this.executionContext.connect(monitor, null, null, false);
     }
 
     protected Connection openConnection(DBRProgressMonitor monitor, String purpose)
@@ -208,8 +208,8 @@ public abstract class JDBCDataSource
     @Override
     public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException
     {
-        JDBCExecutionContext context = new JDBCExecutionContext(this, purpose, false);
-        context.connect(monitor);
+        JDBCExecutionContext context = new JDBCExecutionContext(this, purpose);
+        context.connect(monitor, null, null, true);
         return context;
     }
 
@@ -266,7 +266,7 @@ public abstract class JDBCDataSource
     {
         if (!isEmbeddedDataSource() && container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {
             synchronized (this) {
-                this.metaContext = new JDBCExecutionContext(this, "Metadata", true);
+                this.metaContext = new JDBCExecutionContext(this, "Metadata");
                 this.metaContext.connect(monitor, true, null, false);
             }
         }
