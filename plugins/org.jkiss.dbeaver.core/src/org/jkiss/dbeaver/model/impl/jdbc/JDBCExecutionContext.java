@@ -20,9 +20,11 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -79,14 +81,22 @@ public class JDBCExecutionContext implements DBCExecutionContext, DBCTransaction
                 throw new DBCException("Null connection returned");
             }
 
-            if (autoCommit != null) {
-                try {
-                    connection.setAutoCommit(autoCommit);
-                    this.autoCommit = autoCommit;
-                } catch (Throwable e) {
-                    log.warn("Can't set auto-commit state", e); //$NON-NLS-1$
-                }
+            // Get defaults from preferences
+            if (autoCommit == null) {
+                autoCommit = dataSource.getContainer().isDefaultAutoCommit();
             }
+            // Get default txn isolation level
+            if (txnLevel == null) {
+                txnLevel = dataSource.getContainer().getDefaultTransactionsIsolation();
+            }
+
+            try {
+                connection.setAutoCommit(autoCommit);
+                this.autoCommit = autoCommit;
+            } catch (Throwable e) {
+                log.warn("Can't set auto-commit state", e); //$NON-NLS-1$
+            }
+
             if (txnLevel != null) {
                 try {
                     connection.setTransactionIsolation(txnLevel);
