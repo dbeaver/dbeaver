@@ -40,8 +40,14 @@ public class DBPConnectionInfo implements DBPObject
     private final Map<Object, Object> properties;
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
     private final List<DBWHandlerConfiguration> handlers;
+    private final List<String> bootstrapQueries;
     private DBPConnectionType connectionType;
     private String connectionColor;
+
+    public static class Bootstrap {
+        List<String> queries;
+        boolean ignoreErrors;
+    }
 
     public DBPConnectionInfo()
     {
@@ -49,6 +55,7 @@ public class DBPConnectionInfo implements DBPObject
         this.properties = new HashMap<Object, Object>();
         this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>();
         this.handlers = new ArrayList<DBWHandlerConfiguration>();
+        this.bootstrapQueries = new ArrayList<String>();
     }
 
     public DBPConnectionInfo(DBPConnectionInfo info)
@@ -71,6 +78,7 @@ public class DBPConnectionInfo implements DBPObject
         for (DBWHandlerConfiguration handler : info.handlers) {
             this.handlers.add(new DBWHandlerConfiguration(handler));
         }
+        this.bootstrapQueries = new ArrayList<String>(info.bootstrapQueries);
     }
 
     public String getClientHomeId()
