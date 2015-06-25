@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.qm.QMConstants;
-import org.jkiss.dbeaver.runtime.qm.QMObjectType;
+import org.jkiss.dbeaver.model.qm.QMConstants;
+import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 

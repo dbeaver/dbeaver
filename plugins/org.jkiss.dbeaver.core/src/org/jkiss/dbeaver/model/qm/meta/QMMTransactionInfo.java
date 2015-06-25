@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.runtime.qm.meta;
+package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 

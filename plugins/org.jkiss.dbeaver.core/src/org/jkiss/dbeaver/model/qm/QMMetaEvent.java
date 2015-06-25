@@ -18,24 +18,41 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import java.util.List;
+import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 
 /**
- * Query manager controller
+ * QM meta event
  */
-public interface QMController {
+public class QMMetaEvent {
 
-    QMMCollector getMetaCollector();
+    public enum Action {
+        BEGIN,
+        END,
+        UPDATE,
+    }
 
-    QMExecutionHandler getDefaultHandler();
+    private final QMMObject object;
+    private final Action action;
 
-    void registerHandler(QMExecutionHandler handler);
+    public QMMetaEvent(QMMObject object, Action action)
+    {
+        this.object = object;
+        this.action = action;
+    }
 
-    void unregisterHandler(QMExecutionHandler handler);
+    public QMMObject getObject()
+    {
+        return object;
+    }
 
-    void registerMetaListener(QMMetaListener metaListener);
+    public Action getAction()
+    {
+        return action;
+    }
 
-    void unregisterMetaListener(QMMetaListener metaListener);
-
-    List<QMMetaEvent> getPastMetaEvents();
+    @Override
+    public String toString()
+    {
+        return action + " " + object;
+    }
 }

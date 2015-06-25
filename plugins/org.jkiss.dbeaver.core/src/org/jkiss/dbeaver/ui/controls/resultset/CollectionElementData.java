@@ -24,9 +24,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

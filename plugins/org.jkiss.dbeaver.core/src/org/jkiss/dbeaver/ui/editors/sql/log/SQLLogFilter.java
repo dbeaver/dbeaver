@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.ui.editors.sql.log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.runtime.qm.QMEventFilter;
-import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
-import org.jkiss.dbeaver.runtime.qm.meta.*;
+import org.jkiss.dbeaver.model.qm.QMEventFilter;
+import org.jkiss.dbeaver.model.qm.QMMetaEvent;
+import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**

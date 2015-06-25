@@ -21,7 +21,11 @@ package org.jkiss.dbeaver.runtime.qm;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.runtime.qm.meta.*;
+import org.jkiss.dbeaver.model.qm.QMConstants;
+import org.jkiss.dbeaver.model.qm.QMEventFilter;
+import org.jkiss.dbeaver.model.qm.QMMetaEvent;
+import org.jkiss.dbeaver.model.qm.QMObjectType;
+import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
