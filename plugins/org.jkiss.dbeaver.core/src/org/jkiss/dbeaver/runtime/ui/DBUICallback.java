@@ -16,15 +16,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.runtime.qm;
+package org.jkiss.dbeaver.runtime.ui;
 
-import java.util.List;
+import org.eclipse.core.runtime.IStatus;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 
 /**
- * DBC meta events listener
+ * User interface interactions
  */
-public interface QMMetaListener {
+public interface DBUICallback {
 
-    void metaInfoChanged(List<QMMetaEvent> events);
+    void showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
+
+    DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword);
 
 }

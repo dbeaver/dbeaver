@@ -27,9 +27,9 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.text.Collator;
 
@@ -324,7 +324,7 @@ public abstract class ObjectViewerRenderer {
         if (value instanceof DBPNamedObject) {
             value = ((DBPNamedObject)value).getName();
         }
-        return RuntimeUtils.makeDisplayString(value).toString();
+        return GeneralUtils.makeDisplayString(value).toString();
     }
 
     private class MouseListener extends MouseAdapter {

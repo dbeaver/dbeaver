@@ -37,13 +37,13 @@ import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -991,7 +991,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         lazyCache.put(element, objectCache);
                     }
                 }
-                String objectName = RuntimeUtils.makeDisplayString(getObjectValue(element)).toString();
+                String objectName = GeneralUtils.makeDisplayString(getObjectValue(element)).toString();
                 monitor.subTask(NLS.bind(CoreMessages.controls_object_list_monitor_load_props, objectName));
                 for (ObjectColumn column : entry.getValue()) {
                     if (monitor.isCanceled() || isDisposed()) {

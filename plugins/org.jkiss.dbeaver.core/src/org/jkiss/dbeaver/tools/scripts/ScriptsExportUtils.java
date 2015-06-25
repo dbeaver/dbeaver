@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 /**
  * Utils

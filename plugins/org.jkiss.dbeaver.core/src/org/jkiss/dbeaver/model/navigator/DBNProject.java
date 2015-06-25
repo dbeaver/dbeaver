@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.DBIcon;
 
 import java.util.ArrayList;

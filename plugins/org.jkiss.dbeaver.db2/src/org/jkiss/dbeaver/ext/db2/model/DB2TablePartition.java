@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Date;

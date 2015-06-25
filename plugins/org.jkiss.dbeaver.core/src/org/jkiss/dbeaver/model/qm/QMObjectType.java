@@ -15,12 +15,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.runtime.qm;
+package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.runtime.qm.meta.QMMObject;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementInfo;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMObject;
+import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMStatementInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

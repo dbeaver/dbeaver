@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;

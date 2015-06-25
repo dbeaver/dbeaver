@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.runtime.qm.meta;
+package org.jkiss.dbeaver.runtime.qm;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -24,20 +24,21 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.qm.QMMCollector;
+import org.jkiss.dbeaver.model.qm.QMMetaEvent;
+import org.jkiss.dbeaver.model.qm.QMMetaListener;
+import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
-import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
-import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
 
 import java.util.*;
 
 /**
  * Query manager execution handler implementation
  */
-public class QMMCollector extends DefaultExecutionHandler {
+public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMCollector {
 
-    static final Log log = Log.getLog(QMMCollector.class);
+    static final Log log = Log.getLog(QMMCollectorImpl.class);
 
     private static final long EVENT_DISPATCH_PERIOD = 250;
 
@@ -47,7 +48,7 @@ public class QMMCollector extends DefaultExecutionHandler {
     private final List<QMMetaEvent> pastEvents = new ArrayList<QMMetaEvent>();
     private boolean running = true;
 
-    public QMMCollector()
+    public QMMCollectorImpl()
     {
         new EventDispatcher().schedule(EVENT_DISPATCH_PERIOD);
     }

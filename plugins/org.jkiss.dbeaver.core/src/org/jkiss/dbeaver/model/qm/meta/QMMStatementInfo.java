@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.runtime.qm.meta;
+package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -41,7 +41,7 @@ public class QMMStatementInfo extends QMMObject {
     }
 
     @Override
-    protected void close()
+    public void close()
     {
         super.close();
     }

@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;

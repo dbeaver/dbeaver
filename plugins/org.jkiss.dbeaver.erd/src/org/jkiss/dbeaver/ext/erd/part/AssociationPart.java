@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.utils.CommonUtils;

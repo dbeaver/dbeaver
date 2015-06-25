@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
