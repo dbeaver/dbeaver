@@ -24,6 +24,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.PluginServiceRegistry;
+import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -66,6 +68,8 @@ public class DBeaverCore implements DBPApplication {
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private ProjectRegistry projectRegistry;
+
+    private final List<IPluginService> activatedServices = new ArrayList<IPluginService>();
 
     private static boolean disposed = false;
 
@@ -156,8 +160,6 @@ public class DBeaverCore implements DBPApplication {
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
 
-        IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
-
         this.queryManager = new QMControllerImpl();
         this.qmLogWriter = new QMLogFileWriter();
         this.queryManager.registerMetaListener(qmLogWriter);
@@ -168,7 +170,6 @@ public class DBeaverCore implements DBPApplication {
 
         // Init project registry
         this.projectRegistry = new ProjectRegistry(workspace);
-        this.projectRegistry.loadExtensions(extensionRegistry);
 
         // Projects registry
         initializeProjects();
@@ -176,6 +177,16 @@ public class DBeaverCore implements DBPApplication {
         // Navigator model
         this.navigatorModel = new DBNModel();
         this.navigatorModel.initialize();
+
+        // Activate plugin services
+        for (IPluginService pluginService : PluginServiceRegistry.getInstance().getServices()) {
+            try {
+                pluginService.activateService();
+                activatedServices.add(pluginService);
+            } catch (Exception e) {
+                log.error("Error activating plugin service", e);
+            }
+        }
     }
 
     private void initializeProjects()
@@ -218,6 +229,16 @@ public class DBeaverCore implements DBPApplication {
         long startTime = System.currentTimeMillis();
 
         DBeaverCore.setClosing(true);
+
+        // Deactivate plugin services
+        for (IPluginService pluginService : activatedServices) {
+            try {
+                pluginService.deactivateService();
+            } catch (Exception e) {
+                log.error("Error deactivating plugin service", e);
+            }
+        }
+        activatedServices.clear();
 
         // Dispose navigator model first
         // It is a part of UI

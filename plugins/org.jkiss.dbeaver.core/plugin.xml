@@ -21,6 +21,7 @@
   -->
 
 <plugin>
+    <extension-point id="org.jkiss.dbeaver.pluginService" name="Plugin service" schema="schema/org.jkiss.dbeaver.pluginService.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>

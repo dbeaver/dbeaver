@@ -1,3 +1,4 @@
+DBeaver features usage model
 Data transfer DECIMAL(x,y) types convert.
 Extract non-visual part to a separate plugin (preferences + editors)
 RSV find/replace action
