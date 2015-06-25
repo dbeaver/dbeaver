@@ -76,10 +76,13 @@ public class RegistryConstants {
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
     public static final String ATTR_AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
+    public static final String ATTR_TXN_ISOLATION = "txnIsolation"; //$NON-NLS-1$
+    public static final String ATTR_DEFAULT_OBJECT = "defaultObject"; //$NON-NLS-1$
     public static final String ATTR_CONFIRM_EXECUTE = "confirmExecute"; //$NON-NLS-1$
     public static final String ATTR_PARENT = "parent"; //$NON-NLS-1$
     public static final String ATTR_GROUP = "group"; //$NON-NLS-1$
     public static final String ATTR_SINGLETON = "singleton"; //$NON-NLS-1$
+    public static final String ATTR_IGNORE_ERRORS = "ignoreErrors"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -130,6 +133,8 @@ public class RegistryConstants {
     public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$
     public static final String TAG_DESCRIPTION = "description"; //$NON-NLS-1$
     public static final String TAG_CONNECTION = "connection"; //$NON-NLS-1$
+    public static final String TAG_BOOTSTRAP = "bootstrap"; //$NON-NLS-1$
+    public static final String TAG_QUERY = "query"; //$NON-NLS-1$
 
     public static final String ATTR_CREATE_DATE = "create-date"; //$NON-NLS-1$
     public static final String ATTR_UPDATE_DATE = "update-date"; //$NON-NLS-1$

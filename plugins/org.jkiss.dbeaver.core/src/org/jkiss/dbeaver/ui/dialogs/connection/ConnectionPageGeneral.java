@@ -184,7 +184,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 } else {
                     isolationLevel.setEnabled(false);
                 }
-                defaultSchema.setText(CommonUtils.notEmpty(dataSourceDescriptor.getDefaultActiveObject()));
+                defaultSchema.setText(CommonUtils.notEmpty(
+                    dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getDefaultObjectName()));
                 activated = true;
             }
         } else {

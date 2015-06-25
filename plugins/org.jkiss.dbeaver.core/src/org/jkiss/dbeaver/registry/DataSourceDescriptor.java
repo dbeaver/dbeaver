@@ -288,8 +288,8 @@ public class DataSourceDescriptor
     @Override
     public boolean isDefaultAutoCommit()
     {
-        if (preferenceStore.contains(DBeaverPreferences.DEFAULT_AUTO_COMMIT)) {
-            return preferenceStore.getBoolean(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
+        if (connectionInfo.getBootstrap().getDefaultAutoCommit() != null) {
+            return connectionInfo.getBootstrap().getDefaultAutoCommit();
         } else {
             return getConnectionConfiguration().getConnectionType().isAutocommit();
         }
@@ -325,9 +325,10 @@ public class DataSourceDescriptor
         }
         // Save in preferences
         if (autoCommit == getConnectionConfiguration().getConnectionType().isAutocommit()) {
-            preferenceStore.setToDefault(DBeaverPreferences.DEFAULT_AUTO_COMMIT);
+            connectionInfo.getBootstrap().setDefaultAutoCommit(null);
         } else {
-            preferenceStore.setValue(DBeaverPreferences.DEFAULT_AUTO_COMMIT, autoCommit);
+            connectionInfo.getBootstrap().setDefaultAutoCommit(autoCommit);
+            //preferenceStore.setValue(DBeaverPreferences.DEFAULT_AUTO_COMMIT, autoCommit);
         }
     }
 
@@ -351,10 +352,10 @@ public class DataSourceDescriptor
 
     @Override
     public Integer getDefaultTransactionsIsolation() {
-        if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
-            return preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
-        }
-        return null;
+//        if (preferenceStore.contains(DBeaverPreferences.DEFAULT_ISOLATION)) {
+//            return preferenceStore.getInt(DBeaverPreferences.DEFAULT_ISOLATION);
+//        }
+        return connectionInfo.getBootstrap().getDefaultTransactionIsolation();
     }
 
     @Override
@@ -362,9 +363,11 @@ public class DataSourceDescriptor
     {
         try {
             if (isolationLevel == null) {
-                preferenceStore.setToDefault(DBeaverPreferences.DEFAULT_ISOLATION);
+                connectionInfo.getBootstrap().setDefaultTransactionIsolation(null);
+                //preferenceStore.setToDefault(DBeaverPreferences.DEFAULT_ISOLATION);
             } else {
-                preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
+                connectionInfo.getBootstrap().setDefaultTransactionIsolation(isolationLevel.getCode());
+                //preferenceStore.setValue(DBeaverPreferences.DEFAULT_ISOLATION, isolationLevel.getCode());
                 if (dataSource != null) {
                     DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
@@ -396,11 +399,12 @@ public class DataSourceDescriptor
 
     @Override
     public String getDefaultActiveObject() {
-        return preferenceStore.getString(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT);
+        return connectionInfo.getBootstrap().getDefaultObjectName();//preferenceStore.getString(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT);
     }
 
     public void setDefaultActiveObject(String defaultActiveObject) {
-        preferenceStore.setValue(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT, defaultActiveObject);
+        connectionInfo.getBootstrap().setDefaultObjectName(defaultActiveObject);
+        //preferenceStore.setValue(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT, defaultActiveObject);
     }
 
     public Collection<FilterMapping> getObjectFilters()
@@ -683,7 +687,7 @@ public class DataSourceDescriptor
 
         // Set active object
         if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
-            String activeObject = getDefaultActiveObject();
+            String activeObject = getConnectionConfiguration().getBootstrap().getDefaultObjectName();
             if (!CommonUtils.isEmptyTrimmed(activeObject)) {
                 DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
                 if (child != null) {
