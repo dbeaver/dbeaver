@@ -394,6 +394,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
     public String getDefaultActiveObject() {
         return preferenceStore.getString(DBeaverPreferences.DEFAULT_ACTIVE_OBJECT);
     }
@@ -637,7 +638,7 @@ public class DataSourceDescriptor
                 dataSource.initialize(monitor);
                 // Change connection properties
 
-                prepareContext(monitor);
+                initConnectionState(monitor);
             }
 
             connectFailed = false;
@@ -675,7 +676,7 @@ public class DataSourceDescriptor
         }
     }
 
-    private void prepareContext(DBRProgressMonitor monitor) throws DBException {
+    private void initConnectionState(DBRProgressMonitor monitor) throws DBException {
         if (dataSource == null) {
             return;
         }
