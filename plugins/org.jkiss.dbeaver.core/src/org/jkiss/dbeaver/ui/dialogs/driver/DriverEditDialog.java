@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -81,6 +82,8 @@ public class DriverEditDialog extends HelpEnabledDialog
 {
     static final Log log = Log.getLog(DriverEditDialog.class);
 
+    private static final String DIALOG_ID = "DBeaver.DriverEditDialog";//$NON-NLS-1$
+
     private DataSourceProviderDescriptor provider;
     private String defaultCategory;
     private DriverDescriptor driver;
@@ -118,6 +121,12 @@ public class DriverEditDialog extends HelpEnabledDialog
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.provider = provider;
         this.defaultCategory = category;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
