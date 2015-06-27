@@ -245,9 +245,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             }
 
             embeddedDriverCheck = UIUtils.createLabelCheckbox(propsGroup, "Embedded", "Embedded driver", driver.isEmbedded());
-            if (isReadOnly) {
-                embeddedDriverCheck.setEnabled(false);
-            }
+            embeddedDriverCheck.setEnabled(!isReadOnly);
         }
 
         {
@@ -616,7 +614,9 @@ public class DriverEditDialog extends HelpEnabledDialog
         changeLibContent();
         parametersEditor.loadProperties(driverPropertySource);
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
-        clientHomesPanel.loadHomes(driver);
+        if (clientHomesPanel != null) {
+            clientHomesPanel.loadHomes(driver);
+        }
     }
 
     @Override
