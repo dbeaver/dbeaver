@@ -50,7 +50,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     protected Control createContents(Composite parent)
     {
         Control contents = super.createContents(parent);
-        DataSourceDescriptor activeDataSource = getWizard().getPageSettings().getActiveDataSource();
+        DataSourceDescriptor activeDataSource = getWizard().getActiveDataSource();
         getShell().setText("Connection '" + activeDataSource.getName() + "' configuration");
         getShell().setImage(DBeaverIcons.getImage(activeDataSource.getObjectImage()));
         return contents;
