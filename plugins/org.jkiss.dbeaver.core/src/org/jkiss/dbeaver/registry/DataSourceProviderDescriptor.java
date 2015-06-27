@@ -73,6 +73,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
         if (!CommonUtils.isEmpty(parentId)) {
             this.parentProvider = registry.getDataSourceProvider(parentId);
+            if (this.parentProvider == null) {
+                log.warn("Provider '" + parentId + "' not found");
+            }
         } else {
             this.parentProvider = null;
         }
