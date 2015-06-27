@@ -507,9 +507,24 @@ public class JDBCUtils {
         }
     }
 
-    public static void executeSQL(JDBCSession session, String sql) throws SQLException
+    public static void executeSQL(Connection session, String sql, Object ... params) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+        final PreparedStatement dbStat = session.prepareStatement(sql);
+        try {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    dbStat.setObject(i + 1, params[i]);
+                }
+            }
+            dbStat.execute();
+        } finally {
+            dbStat.close();
+        }
+    }
+
+    public static void executeProcedure(Connection session, String sql) throws SQLException
+    {
+        final PreparedStatement dbStat = session.prepareCall(sql);
         try {
             dbStat.execute();
         } finally {
@@ -517,11 +532,25 @@ public class JDBCUtils {
         }
     }
 
-    public static void executeProcedure(JDBCSession session, String sql) throws SQLException
+    public static <T> T executeQuery(Connection session, String sql, Object ... params) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = session.prepareCall(sql);
+        final PreparedStatement dbStat = session.prepareStatement(sql);
         try {
-            dbStat.execute();
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    dbStat.setObject(i + 1, params[i]);
+                }
+            }
+            ResultSet resultSet = dbStat.executeQuery();
+            try {
+                if (resultSet.next()) {
+                    return (T) resultSet.getObject(1);
+                } else {
+                    return null;
+                }
+            } finally {
+                resultSet.close();
+            }
         } finally {
             dbStat.close();
         }
