@@ -183,7 +183,7 @@ public class DBeaverCore implements DBPApplication {
             try {
                 pluginService.activateService();
                 activatedServices.add(pluginService);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 log.error("Error activating plugin service", e);
             }
         }

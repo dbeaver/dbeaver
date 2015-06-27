@@ -65,7 +65,7 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
 import org.jkiss.dbeaver.ext.erd.action.DiagramRefreshAction;
@@ -160,7 +160,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         //getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(this);
 
         configPropertyListener = new ConfigPropertyListener();
-        Activator.getDefault().getPreferenceStore().addPropertyChangeListener(configPropertyListener);
+        ERDActivator.getDefault().getPreferenceStore().addPropertyChangeListener(configPropertyListener);
     }
 
     @Override
@@ -195,7 +195,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void dispose()
     {
-        Activator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
+        ERDActivator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
 
         if (diagramLoadingJob != null) {
             diagramLoadingJob.cancel();
@@ -394,7 +394,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         getEditorSite().registerContextMenu(getClass().getName() + ".EditorContext", manager, graphicalViewer, true); //$NON-NLS-1$
 */
 
-        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
 
         graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
         graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, store.getBoolean(ERDConstants.PREF_GRID_ENABLED));
@@ -571,10 +571,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
                 controls.add(separator);
 
-                final ImageDescriptor connectImage = Activator.getImageDescriptor("icons/connect.png");
+                final ImageDescriptor connectImage = ERDActivator.getImageDescriptor("icons/connect.png");
                 controls.add(new ConnectionCreationToolEntry("Connection", "Create Connection", null, connectImage, connectImage));
 
-                final ImageDescriptor noteImage = Activator.getImageDescriptor("icons/note.png");
+                final ImageDescriptor noteImage = ERDActivator.getImageDescriptor("icons/note.png");
                 controls.add(new CreationToolEntry(
                     "Note",
                     "Create Note",
@@ -597,19 +597,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
 /*
             PaletteDrawer drawer = new PaletteDrawer("New Component",
-                Activator.getImageDescriptor("icons/connection.gif"));
+                ERDActivator.getImageDescriptor("icons/connection.gif"));
 
             List<CombinedTemplateCreationEntry> entries = new ArrayList<CombinedTemplateCreationEntry>();
 
             CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
                 ERDEntity.class, new DataElementFactory(ERDEntity.class),
-                Activator.getImageDescriptor("icons/table.gif"),
-                Activator.getImageDescriptor("icons/table.gif"));
+                ERDActivator.getImageDescriptor("icons/table.gif"),
+                ERDActivator.getImageDescriptor("icons/table.gif"));
 
             CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
                 ERDEntityAttribute.class, new DataElementFactory(ERDEntityAttribute.class),
-                Activator.getImageDescriptor("icons/column.gif"),
-                Activator.getImageDescriptor("icons/column.gif"));
+                ERDActivator.getImageDescriptor("icons/column.gif"),
+                ERDActivator.getImageDescriptor("icons/column.gif"));
 
             entries.add(tableEntry);
             entries.add(columnEntry);
@@ -738,7 +738,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 PrintFigureOperation printOp = new PrintFigureOperation(new Printer(data), rootFigure);
 
                 // Set print preferences
-                IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+                IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
                 printOp.setPrintMode(store.getInt(ERDConstants.PREF_PRINT_PAGE_MODE));
                 printOp.setPrintMargin(new Insets(
                     store.getInt(ERDConstants.PREF_PRINT_MARGIN_TOP),
@@ -810,7 +810,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, enabled);
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, enabled);
             } else if (ERDConstants.PREF_GRID_WIDTH.equals(event.getProperty()) || ERDConstants.PREF_GRID_HEIGHT.equals(event.getProperty())) {
-                final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+                final IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_SPACING, new Dimension(
                     store.getInt(ERDConstants.PREF_GRID_WIDTH),
                     store.getInt(ERDConstants.PREF_GRID_HEIGHT)));
