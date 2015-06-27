@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
@@ -25,6 +26,7 @@ import org.eclipse.ui.INewWizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -41,6 +43,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Abstract connection wizard
@@ -51,11 +55,21 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
     // protected final IProject project;
     protected final DataSourceRegistry dataSourceRegistry;
+    private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<DriverDescriptor, DataSourceDescriptor>();
 
     protected ConnectionWizard(DataSourceRegistry dataSourceRegistry)
     {
         setNeedsProgressMonitor(true);
         this.dataSourceRegistry = dataSourceRegistry;
+    }
+
+    @Override
+    public void dispose() {
+        // Dispose all temp data sources
+        for (DataSourceDescriptor dataSource : infoMap.values()) {
+            dataSource.dispose();
+        }
+        super.dispose();
     }
 
     public DataSourceRegistry getDataSourceRegistry() {
@@ -67,6 +81,24 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     public abstract ConnectionPageSettings getPageSettings();
 
     protected abstract void saveSettings(DataSourceDescriptor dataSource);
+
+    @NotNull
+    public DataSourceDescriptor getActiveDataSource()
+    {
+        DriverDescriptor driver = getSelectedDriver();
+        DataSourceDescriptor info = infoMap.get(driver);
+        if (info == null) {
+            DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
+            info = new DataSourceDescriptor(
+                getDataSourceRegistry(),
+                DataSourceDescriptor.generateNewId(getSelectedDriver()),
+                getSelectedDriver(),
+                connectionInfo);
+            info.getConnectionConfiguration().setClientHomeId(driver.getDefaultClientHomeId());
+            infoMap.put(driver, info);
+        }
+        return info;
+    }
 
     public void testConnection()
     {

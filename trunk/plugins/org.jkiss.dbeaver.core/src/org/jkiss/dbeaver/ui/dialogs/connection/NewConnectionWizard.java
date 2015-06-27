@@ -113,15 +113,14 @@ public class NewConnectionWizard extends ConnectionWizard
                     for (DataSourceProviderDescriptor provider : providers) {
                         monitor.subTask(provider.getName());
                         DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
-                        if (view == null) {
-                            continue;
-                        }
                         availableProvides.add(provider);
-                        ConnectionPageSettings pageSettings = new ConnectionPageSettings(
-                            NewConnectionWizard.this,
-                            view);
-                        settingsPages.put(provider, pageSettings);
-                        addPage(pageSettings);
+                        if (view != null) {
+                            ConnectionPageSettings pageSettings = new ConnectionPageSettings(
+                                NewConnectionWizard.this,
+                                view);
+                            settingsPages.put(provider, pageSettings);
+                            addPage(pageSettings);
+                        }
                         monitor.worked(1);
                     }
                     monitor.done();
@@ -143,13 +142,14 @@ public class NewConnectionWizard extends ConnectionWizard
     public IWizardPage getNextPage(IWizardPage page)
     {
         if (page == pageDrivers) {
-            return getPageSettings(pageDrivers.getSelectedDriver());
-        } else if (page instanceof ConnectionPageSettings) {
-            if (pageDrivers.getSelectedDriver().isEmbedded()) {
-                return pageGeneral;
+            ConnectionPageSettings pageSettings = getPageSettings(pageDrivers.getSelectedDriver());
+            if (pageSettings == null) {
+                return pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
             } else {
-                return pageNetwork;
+                return pageSettings;
             }
+        } else if (page instanceof ConnectionPageSettings) {
+            return pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
         } else if (page instanceof ConnectionPageNetwork) {
             return pageGeneral;
         } else {
@@ -166,7 +166,8 @@ public class NewConnectionWizard extends ConnectionWizard
     public boolean performFinish()
     {
         DriverDescriptor driver = getSelectedDriver();
-        DataSourceDescriptor dataSourceTpl = getPageSettings().getActiveDataSource();
+        ConnectionPageSettings pageSettings = getPageSettings();
+        DataSourceDescriptor dataSourceTpl = pageSettings == null ? getActiveDataSource() : pageSettings.getActiveDataSource();
         DataSourceDescriptor dataSourceNew = new DataSourceDescriptor(
             dataSourceRegistry, dataSourceTpl.getId(), driver, dataSourceTpl.getConnectionConfiguration());
         dataSourceNew.copyFrom(dataSourceTpl);
@@ -182,7 +183,10 @@ public class NewConnectionWizard extends ConnectionWizard
 
     @Override
     protected void saveSettings(DataSourceDescriptor dataSource) {
-        getPageSettings(dataSource.getDriver()).saveSettings(dataSource);
+        ConnectionPageSettings pageSettings = getPageSettings(dataSource.getDriver());
+        if (pageSettings != null) {
+            pageSettings.saveSettings(dataSource);
+        }
         pageGeneral.saveSettings(dataSource);
         pageNetwork.saveConfigurations(dataSource);
     }

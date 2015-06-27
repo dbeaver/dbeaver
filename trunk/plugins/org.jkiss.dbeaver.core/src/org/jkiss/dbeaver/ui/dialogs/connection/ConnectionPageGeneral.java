@@ -30,6 +30,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
@@ -132,9 +133,10 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     {
         if (connectionNameText != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
-            if (settings != null && connectionNameText != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
+            String newName;
+            if (settings != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
                 DBPConnectionConfiguration connectionInfo = settings.getActiveDataSource().getConnectionConfiguration();
-                String newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
+                newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
                 if (CommonUtils.isEmpty(newName)) {
                     newName = connectionInfo.getDatabaseName();
                     if (CommonUtils.isEmpty(newName)) {
@@ -157,9 +159,11 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     }
                     newName = CommonUtils.truncateString(newName, 50);
                 }
-                connectionNameText.setText(newName);
-                connectionNameChanged = false;
+            } else {
+                newName = wizard.getSelectedDriver().getName();
             }
+            connectionNameText.setText(newName);
+            connectionNameChanged = false;
         }
         if (dataSourceDescriptor != null) {
             if (!activated) {
@@ -196,7 +200,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         } else {
             if (eventsButton != null) {
                 eventsButton.setFont(getFont());
-                DataSourceDescriptor dataSource = getWizard().getPageSettings().getActiveDataSource();
+                DataSourceDescriptor dataSource = getActiveDataSource();
                 for (DBPConnectionEventType eventType : dataSource.getConnectionConfiguration().getDeclaredEvents()) {
                     if (dataSource.getConnectionConfiguration().getEvent(eventType).isEnabled()) {
                         eventsButton.setFont(boldFont);
@@ -218,7 +222,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         }
         long features = 0;
         try {
-            features = wizard.getPageSettings().getDriver().getDataSourceProvider().getFeatures();
+            features = wizard.getSelectedDriver().getDataSourceProvider().getFeatures();
         } catch (DBException e) {
             log.error("Can't obtain data source provider instance", e); //$NON-NLS-1$
         }
@@ -235,6 +239,12 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         filtersGroup.layout();
     }
 
+    @NotNull
+    private DataSourceDescriptor getActiveDataSource() {
+        ConnectionPageSettings pageSettings = getWizard().getPageSettings();
+        return pageSettings == null ? wizard.getActiveDataSource() : pageSettings.getActiveDataSource();
+    }
+
     private void enableFilter(FilterInfo filterInfo, boolean enable)
     {
         filterInfo.link.setEnabled(enable);
@@ -248,7 +258,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             }
         } else {
             filterInfo.link.setText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
-            filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip, filterInfo.title, wizard.getPageSettings().getDriver().getName()));
+            filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip, filterInfo.title, wizard.getSelectedDriver().getName()));
         }
     }
 
@@ -298,7 +308,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    DataSourceDescriptor dataSource = wizard.getPageSettings().getActiveDataSource();
+                    DataSourceDescriptor dataSource = getActiveDataSource();
                     UIUtils.showPreferencesFor(
                         getControl().getShell(),
                         dataSource.getConnectionConfiguration().getConnectionType(),
@@ -526,7 +536,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
 
     private void configureEvents()
     {
-        DataSourceDescriptor dataSource = getWizard().getPageSettings().getActiveDataSource();
+        DataSourceDescriptor dataSource = getActiveDataSource();
         EditShellCommandsDialog dialog = new EditShellCommandsDialog(
             getShell(),
             dataSource);
