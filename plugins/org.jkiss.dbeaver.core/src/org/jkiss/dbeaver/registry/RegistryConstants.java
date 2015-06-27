@@ -70,6 +70,7 @@ public class RegistryConstants {
     public static final String ATTR_SUPPORTS_DRIVER_PROPERTIES = "supportsDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_CLIENT_REQUIRED = "clientRequired"; //$NON-NLS-1$
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
+    public static final String ATTR_EMBEDDED = "embedded"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$

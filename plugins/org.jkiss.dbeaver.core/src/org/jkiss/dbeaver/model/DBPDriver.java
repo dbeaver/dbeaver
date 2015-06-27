@@ -60,6 +60,7 @@ public interface DBPDriver extends DBPObject
 
     boolean supportsDriverProperties();
 
+    boolean isEmbedded();
     boolean isAnonymousAccess();
 
     boolean isCustomDriverLoader();

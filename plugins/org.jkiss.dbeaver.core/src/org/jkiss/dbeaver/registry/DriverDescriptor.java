@@ -91,6 +91,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private DBPImage iconPlain;
     private DBPImage iconNormal;
     private DBPImage iconError;
+    private boolean embedded;
     private boolean clientRequired;
     private boolean supportsDriverProperties;
     private boolean anonymousAccess;
@@ -161,7 +162,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
         this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
-        this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
+        this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
+        this.anonymousAccess = this.embedded || CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.custom = false;
         this.isLoaded = false;
 
@@ -545,6 +547,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public boolean supportsDriverProperties()
     {
         return this.supportsDriverProperties;
+    }
+
+    @Override
+    public boolean isEmbedded() {
+        return embedded;
     }
 
     @Override
