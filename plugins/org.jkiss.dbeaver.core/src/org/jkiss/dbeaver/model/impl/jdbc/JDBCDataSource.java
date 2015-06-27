@@ -163,6 +163,18 @@ public abstract class JDBCDataSource
         }
     }
 
+    protected void closeConnection(Connection connection)
+    {
+        if (connection != null) {
+            try {
+                connection.close();
+            }
+            catch (Throwable ex) {
+                log.error(ex);
+            }
+        }
+    }
+
     protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
     {
         return connectionInfo.getUserName();
