@@ -264,7 +264,7 @@ public abstract class JDBCDataSource
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!isEmbeddedDataSource() && container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {
+        if (!container.getDriver().isEmbedded() && container.getPreferenceStore().getBoolean(DBeaverPreferences.META_SEPARATE_CONNECTION)) {
             synchronized (this) {
                 this.metaContext = new JDBCExecutionContext(this, "Metadata");
                 this.metaContext.connect(monitor, true, null, false);
@@ -281,10 +281,6 @@ public abstract class JDBCDataSource
         finally {
             session.close();
         }
-    }
-
-    protected boolean isEmbeddedDataSource() {
-        return false;
     }
 
     @Override

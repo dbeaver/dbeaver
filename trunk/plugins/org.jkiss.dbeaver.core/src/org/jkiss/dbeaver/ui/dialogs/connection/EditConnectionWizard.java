@@ -82,12 +82,17 @@ public class EditConnectionWizard extends ConnectionWizard
             addPage(pageSettings);
         }
 
+        boolean embedded = dataSource.getDriver().isEmbedded();
         pageGeneral = new ConnectionPageGeneral(this, dataSource);
-        pageNetwork = new ConnectionPageNetwork(this);
+        if (!embedded) {
+            pageNetwork = new ConnectionPageNetwork(this);
+        }
         pageEvents = new EditShellCommandsDialogPage(dataSource);
 
         addPage(pageGeneral);
-        addPage(pageNetwork);
+        if (!embedded) {
+            addPage(pageNetwork);
+        }
         addPage(pageEvents);
 
         addPreferencePage(new PrefPageMetaData(), "Metadata", "Metadata reading preferences");
@@ -146,7 +151,9 @@ public class EditConnectionWizard extends ConnectionWizard
     {
         pageSettings.saveSettings(dataSource);
         pageGeneral.saveSettings(dataSource);
-        pageNetwork.saveConfigurations(dataSource);
+        if (pageNetwork != null) {
+            pageNetwork.saveConfigurations(dataSource);
+        }
         pageEvents.saveConfigurations(dataSource);
         for (WizardPrefPage prefPage : prefPages) {
             prefPage.performFinish();
