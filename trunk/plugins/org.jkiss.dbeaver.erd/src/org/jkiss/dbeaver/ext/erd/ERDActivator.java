@@ -29,13 +29,13 @@ import java.util.ResourceBundle;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class ERDActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.erd";
 
 	// The shared instance
-	private static Activator plugin;
+	private static ERDActivator plugin;
 	
     private static ResourceBundle resourceBundle;
 
@@ -44,7 +44,7 @@ public class Activator extends AbstractUIPlugin {
     /**
      * The constructor
      */
-	public Activator() {
+	public ERDActivator() {
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class Activator extends AbstractUIPlugin {
 	 *
 	 * @return the shared instance
 	 */
-	public static Activator getDefault() {
+	public static ERDActivator getDefault() {
 		return plugin;
 	}
 

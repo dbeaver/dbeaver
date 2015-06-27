@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
@@ -58,7 +58,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     @Override
     protected Control createContents(Composite parent)
     {
-        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+        IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
 
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
@@ -137,7 +137,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     @Override
     public boolean performOk()
     {
-        DBPPreferenceStore store = Activator.getDefault().getPreferences();
+        DBPPreferenceStore store = ERDActivator.getDefault().getPreferences();
 
         store.setValue(ERDConstants.PREF_GRID_ENABLED, gridCheck.getSelection());
         store.setValue(ERDConstants.PREF_GRID_SNAP_ENABLED, snapCheck.getSelection());
