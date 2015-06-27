@@ -1167,6 +1167,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             xml.addAttribute(RegistryConstants.ATTR_CATEGORY, this.getCategory());
         }
         xml.addAttribute(RegistryConstants.ATTR_CUSTOM, this.isCustom());
+        xml.addAttribute(RegistryConstants.ATTR_EMBEDDED, this.isEmbedded());
         xml.addAttribute(RegistryConstants.ATTR_NAME, this.getName());
         xml.addAttribute(RegistryConstants.ATTR_CLASS, this.getDriverClassName());
         if (!CommonUtils.isEmpty(this.getSampleURL())) {
@@ -1339,6 +1340,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
                     curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
                     curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
+                    curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), false));
                 }
                 curDriver.setCustomDriverLoader(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false));
                 curDriver.setModified(true);
