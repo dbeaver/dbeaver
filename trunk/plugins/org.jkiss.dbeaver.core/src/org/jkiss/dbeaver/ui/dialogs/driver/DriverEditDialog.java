@@ -103,6 +103,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private PropertySourceCustom driverPropertySource;
     private PropertySourceCustom connectionPropertySource;
     private ClientHomesPanel clientHomesPanel;
+    private Button embeddedDriverCheck;
     //private Button anonymousCheck;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
@@ -241,6 +242,11 @@ public class DriverEditDialog extends HelpEnabledDialog
                 });
                 urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+            }
+
+            embeddedDriverCheck = UIUtils.createLabelCheckbox(propsGroup, "Embedded", "Embedded driver", driver.isEmbedded());
+            if (isReadOnly) {
+                embeddedDriverCheck.setEnabled(false);
             }
         }
 
@@ -598,6 +604,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         } else if (!CommonUtils.isEmpty(defaultCategory)) {
             driverCategoryCombo.setText(defaultCategory);
         }
+        embeddedDriverCheck.setSelection(driver.isEmbedded());
 //        anonymousCheck.setSelection(driver.isAnonymousAccess());
         libList.clear();
         for (DriverFileDescriptor lib : driver.getOrigFiles()) {
@@ -632,6 +639,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         driver.setDriverClassName(driverClassText.getText());
         driver.setSampleURL(driverURLText.getText());
         driver.setDriverDefaultPort(driverPortText.getText());
+        driver.setEmbedded(embeddedDriverCheck.getSelection());
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 
