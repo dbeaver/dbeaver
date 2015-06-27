@@ -25,7 +25,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
@@ -316,7 +316,7 @@ public class DiagramPart extends PropertyAwarePart {
     public Object getAdapter(Class key)
     {
         if (key == SnapToHelper.class) {
-            final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+            final IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
             if (store.getBoolean(ERDConstants.PREF_GRID_ENABLED) && store.getBoolean(ERDConstants.PREF_GRID_SNAP_ENABLED)) {
                 return new SnapToGrid(this);
             } else {

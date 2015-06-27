@@ -13,7 +13,7 @@ public class ERDPreferencesInitializer extends AbstractPreferenceInitializer {
   @Override
   public void initializeDefaultPreferences() {
       // Init default preferences
-      DBPPreferenceStore store = new BundlePreferenceStore(Activator.getDefault().getBundle());
+      DBPPreferenceStore store = new BundlePreferenceStore(ERDActivator.getDefault().getBundle());
       RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_PAGE_MODE, ERDConstants.PRINT_MODE_DEFAULT);
       RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_TOP, ERDConstants.PRINT_MARGIN_DEFAULT);
       RuntimeUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_BOTTOM, ERDConstants.PRINT_MARGIN_DEFAULT);

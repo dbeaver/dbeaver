@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
-import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDActivator;
 
 
 /**
@@ -41,7 +41,7 @@ public class ERDPalettePreferences implements FlyoutPreferences
 	@Override
     public int getDockLocation()
 	{
-		int location = Activator.getDefault().getPreferenceStore().getInt(PALETTE_DOCK_LOCATION);
+		int location = ERDActivator.getDefault().getPreferenceStore().getInt(PALETTE_DOCK_LOCATION);
 		if (location == 0)
 		{
 			return PositionConstants.WEST;
@@ -52,13 +52,13 @@ public class ERDPalettePreferences implements FlyoutPreferences
 	@Override
     public int getPaletteState()
 	{
-		return Activator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
+		return ERDActivator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
 	}
 
 	@Override
     public int getPaletteWidth()
 	{
-		int width = Activator.getDefault().getPreferenceStore().getInt(PALETTE_SIZE);
+		int width = ERDActivator.getDefault().getPreferenceStore().getInt(PALETTE_SIZE);
 		if (width == 0)
 			return DEFAULT_PALETTE_WIDTH;
 		return width;
@@ -67,19 +67,19 @@ public class ERDPalettePreferences implements FlyoutPreferences
 	@Override
     public void setDockLocation(int location)
 	{
-		Activator.getDefault().getPreferenceStore().setValue(PALETTE_DOCK_LOCATION, location);
+		ERDActivator.getDefault().getPreferenceStore().setValue(PALETTE_DOCK_LOCATION, location);
 	}
 
 	@Override
     public void setPaletteState(int state)
 	{
-		Activator.getDefault().getPreferenceStore().setValue(PALETTE_STATE, state);
+		ERDActivator.getDefault().getPreferenceStore().setValue(PALETTE_STATE, state);
 	}
 
 	@Override
     public void setPaletteWidth(int width)
 	{
-		Activator.getDefault().getPreferenceStore().setValue(PALETTE_SIZE, width);
+		ERDActivator.getDefault().getPreferenceStore().setValue(PALETTE_SIZE, width);
 	}
 
 }

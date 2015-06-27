@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.jkiss.dbeaver.ext.erd.Activator;
+import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -56,7 +56,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		if (name == null)
 			throw new NullPointerException("Name cannot be null");
 		this.name = name;
-        this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(Activator.getDefault().getPreferenceStore());
+        this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(ERDActivator.getDefault().getPreferenceStore());
 	}
 
 
@@ -68,7 +68,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void setAttributeVisibility(ERDAttributeVisibility attributeVisibility)
     {
         this.attributeVisibility = attributeVisibility;
-        ERDAttributeVisibility.setDefaultVisibility(Activator.getDefault().getPreferences(), attributeVisibility);
+        ERDAttributeVisibility.setDefaultVisibility(ERDActivator.getDefault().getPreferences(), attributeVisibility);
     }
 
 	public synchronized void addTable(ERDEntity entity, boolean reflect)
