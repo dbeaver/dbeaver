@@ -21,6 +21,7 @@ import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -56,6 +57,12 @@ public class EditConnectionWizard extends ConnectionWizard
         this.dataSource = dataSource;
         this.oldData = new DBPConnectionConfiguration(this.dataSource.getConnectionConfiguration());
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
+    }
+
+    @NotNull
+    @Override
+    public DataSourceDescriptor getActiveDataSource() {
+        return dataSource;
     }
 
     @Override
