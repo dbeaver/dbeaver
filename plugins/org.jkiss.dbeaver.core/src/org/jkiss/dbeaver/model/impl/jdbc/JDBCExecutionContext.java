@@ -88,6 +88,15 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             } catch (Throwable e) {
                 log.warn("Can't set auto-commit state", e); //$NON-NLS-1$
             }
+            {
+                // Cache auto-commit
+                try {
+                    this.autoCommit = connection.getAutoCommit();
+                } catch (Throwable e) {
+                    log.warn("Can't check auto-commit state", e); //$NON-NLS-1$
+                    this.autoCommit = false;
+                }
+            }
 
             if (!this.autoCommit && txnLevel != null) {
                 try {
@@ -95,14 +104,6 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                     this.transactionIsolationLevel = txnLevel;
                 } catch (Throwable e) {
                     log.warn("Can't set transaction isolation level", e); //$NON-NLS-1$
-                }
-            }
-            {
-                // Cache auto-commit
-                try {
-                    this.autoCommit = connection.getAutoCommit();
-                } catch (Throwable e) {
-                    log.warn("Can't check auto-commit state", e); //$NON-NLS-1$
                 }
             }
 
@@ -172,18 +173,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
-//            try {
-//                Thread.sleep(10000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//            }
             if (connection != null) {
-                try {
-                    connection.close();
-                }
-                catch (Throwable ex) {
-                    log.error(ex);
-                }
+                this.dataSource.closeConnection(connection);
                 connection = null;
             }
             super.closeContext();

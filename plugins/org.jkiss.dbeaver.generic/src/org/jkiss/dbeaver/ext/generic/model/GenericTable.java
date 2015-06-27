@@ -366,7 +366,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 if (!CommonUtils.isEmpty(info.pkName)) {
                     pk = DBUtils.findObject(this.getConstraints(monitor), info.pkName);
                     if (pk == null) {
-                        log.warn("Unique key '" + info.pkName + "' not found in table " + this.getFullQualifiedName());
+                        log.debug("Unique key '" + info.pkName + "' not found in table " + this.getFullQualifiedName());
                     }
                 }
                 if (pk == null) {
