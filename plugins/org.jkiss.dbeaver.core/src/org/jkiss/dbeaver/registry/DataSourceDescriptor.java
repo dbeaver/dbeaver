@@ -1023,7 +1023,9 @@ public class DataSourceDescriptor
 
     public static String generateNewId(DriverDescriptor driver)
     {
-        return driver.getId() + "-" + System.currentTimeMillis() + "-" + new Random().nextInt();
+        long rnd = new Random().nextLong();
+        if (rnd < 0) rnd = -rnd;
+        return driver.getId() + "-" + Long.toHexString(System.currentTimeMillis()) + "-" + Long.toHexString(rnd);
     }
 
     private void firePropertyChange()
