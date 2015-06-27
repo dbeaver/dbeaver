@@ -554,6 +554,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return embedded;
     }
 
+    public void setEmbedded(boolean embedded) {
+        this.embedded = embedded;
+    }
+
     @Override
     public boolean isAnonymousAccess()
     {
