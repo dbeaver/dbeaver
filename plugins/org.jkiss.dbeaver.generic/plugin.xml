@@ -108,7 +108,6 @@
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
                     <property id="supports-multiple-results" label="Driver supports multiple results" description="Driver supports multiple results for a single query." type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-struct-cache" label="Driver supports structure cache" description="Driver supports structure cache reading. Enables schema columns, keys, etc." type="boolean" required="false" defaultValue="true"/>
-                    <property id="embedded" label="Embedded database" description="True for embedded databases (in-process server or local fs database)." type="boolean" required="false" defaultValue="false"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -342,8 +341,8 @@
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:{database}"
                     webURL="http://www.h2database.com/"
+                    embedded="true"
                     description="H2 Embedded">
-                    <parameter name="embedded" value="true"/>
                     <file type="jar" path="drivers/h2/h2-1.4.185.jar" url="*"/>
                     <file type="license" path="drivers/h2/LICENSE.txt" url="*"/>
                 </driver>
@@ -363,9 +362,8 @@
                     class="org.apache.derby.jdbc.EmbeddedDriver"
                     sampleURL="jdbc:derby:{folder}"
                     webURL="http://db.apache.org/"
-                    anonymous="true"
+                    embedded="true"
                     description="Derby (Java DB) embedded driver">
-                    <parameter name="embedded" value="true"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
@@ -420,11 +418,10 @@
                     class="org.hsqldb.jdbc.JDBCDriver"
                     sampleURL="jdbc:hsqldb:file:{folder}"
                     webURL="http://hsqldb.org/"
-                    anonymous="true"
+                    embedded="true"
                     description="HyperSQL DataBase - Embedded Mode">
                     <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar" url="*"/>
                     <file type="license" path="drivers/hsqldb/LICENSE.txt" url="*"/>
-                    <parameter name="embedded" value="true"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -489,10 +486,10 @@
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
                     webURL="http://www.zentus.com/sqlitejdbc/"
+                    embedded="true"
                     description="SQLite3 JDBC driver by David Crawshaw (Windows, Linux and Mac OS)">
                     <file type="jar" path="drivers/sqlite/zentus/sqlitejdbc-v056.jar" url="*"/>
                     <file type="license" path="drivers/sqlite/zentus/LICENSE.txt" url="*"/>
-                    <parameter name="embedded" value="true"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
@@ -505,10 +502,10 @@
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
                     webURL="http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC/"
+                    embedded="true"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
                     <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="*"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
-                    <parameter name="embedded" value="true"/>
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
                     <parameter name="supports-indexes" value="true"/>
@@ -523,10 +520,10 @@
                     sampleURL="jdbc:sqlite:/{file}"
                     defaultPort=""
                     webURL="http://www.ch-werner.de/javasqlite/"
+                    embedded="true"
                     description="SQLite3 JDBC driver by Christian Werner (Windows only)">
                     <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="*"/>
-                    <parameter name="embedded" value="true"/>
                     <parameter name="supports-stored-code" value="false"/>
                 </driver>
                 <driver
@@ -537,6 +534,7 @@
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
                     webURL="https://bitbucket.org/xerial/sqlite-jdbc"
+                    embedded="true"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
                     <replace provider="generic" driver="sqlite_zentus"/>
                     <replace provider="generic" driver="sqlite_xerial"/>
@@ -548,7 +546,6 @@
                     <file type="executable" path="drivers/sqlite/shell/win32/sqlite3.exe" os="win32" url="*"/>
                     <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
 
-                    <parameter name="embedded" value="true"/>
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
                     <parameter name="supports-indexes" value="true"/>
@@ -597,6 +594,7 @@
                     class="org.relique.jdbc.csv.CsvDriver"
                     sampleURL="jdbc:relique:csv:{folder}"
                     webURL="http://csvjdbc.sourceforge.net/"
+                    embedded="true"
                     description="CsvJdbc driver for CSV and DBF files">
                     <parameter name="supports-select-count" value="false"/>
                     <property name="separator" value=","/>
@@ -606,7 +604,6 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <file type="license" path="drivers/csvjdbc/LICENSE.txt" url="*"/>
                     <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0-23.jar" url="*"/>
-                    <parameter name="embedded" value="true"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
@@ -615,13 +612,13 @@
                     class="net.ucanaccess.jdbc.UcanaccessDriver"
                     sampleURL="jdbc:ucanaccess://{file}"
                     webURL="http://ucanaccess.sourceforge.net/site.html"
+                    embedded="true"
                     description="Microsoft Access driver">
                     <file type="license" path="drivers/ucanaccess/LICENSE.txt" url="*"/>
                     <file type="jar" path="drivers/ucanaccess/ucanaccess-2.0.1.jar" url="*"/>
                     <file type="jar" path="drivers/ucanaccess/commons-lang-2.6.jar" url="*"/>
                     <file type="jar" path="drivers/ucanaccess/hsqldb.jar" url="*"/>
                     <file type="jar" path="drivers/ucanaccess/jackcess-2.0.1.jar" url="*"/>
-                    <parameter name="embedded" value="true"/>
                 </driver>
                 <driver
                     id="netezza"

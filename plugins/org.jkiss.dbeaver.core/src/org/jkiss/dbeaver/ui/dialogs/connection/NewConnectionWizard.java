@@ -145,7 +145,11 @@ public class NewConnectionWizard extends ConnectionWizard
         if (page == pageDrivers) {
             return getPageSettings(pageDrivers.getSelectedDriver());
         } else if (page instanceof ConnectionPageSettings) {
-            return pageNetwork;
+            if (pageDrivers.getSelectedDriver().isEmbedded()) {
+                return pageGeneral;
+            } else {
+                return pageNetwork;
+            }
         } else if (page instanceof ConnectionPageNetwork) {
             return pageGeneral;
         } else {

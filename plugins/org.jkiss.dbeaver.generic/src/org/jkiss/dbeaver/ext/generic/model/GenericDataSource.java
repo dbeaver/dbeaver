@@ -74,7 +74,6 @@ public class GenericDataSource extends JDBCDataSource
     private boolean selectedEntityFromAPI;
     private String allObjectsPattern;
     private boolean supportsStructCache;
-    private boolean isEmbedded;
     private DBCQueryPlanner queryPlanner;
 
     public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container, GenericMetaModel metaModel)
@@ -97,8 +96,6 @@ public class GenericDataSource extends JDBCDataSource
         } else if ("null".equalsIgnoreCase(this.allObjectsPattern)) {
             this.allObjectsPattern = null;
         }
-
-        isEmbedded = Boolean.TRUE.equals(container.getDriver().getDriverParameter(GenericConstants.PARAM_EMBEDDED));
     }
 
     JDBCExecutionContext getExecutionContext() {
@@ -416,11 +413,6 @@ public class GenericDataSource extends JDBCDataSource
         finally {
             session.close();
         }
-    }
-
-    @Override
-    protected boolean isEmbeddedDataSource() {
-        return isEmbedded;
     }
 
     List<GenericSchema> loadSchemas(JDBCSession session, GenericCatalog catalog)

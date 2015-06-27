@@ -142,9 +142,13 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
             metaModel = metaModels.get(container.getDriver().getDriverClassName());
         }
         if (metaModel == null) {
-            metaModel = metaModels.get(GenericConstants.META_MODEL_STANDARD);
+            metaModel = getStandardMetaModel();
         }
         return new GenericDataSource(monitor, container, metaModel);
+    }
+
+    protected GenericMetaModel getStandardMetaModel() {
+        return metaModels.get(GenericConstants.META_MODEL_STANDARD);
     }
 
     private static String makePropPattern(String prop)

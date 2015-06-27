@@ -49,6 +49,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 
     private DataSourceProviderRegistry registry;
+    private final DataSourceProviderDescriptor parentProvider;
     private final String id;
     private final ObjectType implType;
     private final String name;
@@ -68,6 +69,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         super(config);
         this.registry = registry;
+
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        if (!CommonUtils.isEmpty(parentId)) {
+            this.parentProvider = registry.getDataSourceProvider(parentId);
+        } else {
+            this.parentProvider = null;
+        }
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
@@ -196,7 +204,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     public DBXTreeNode getTreeDescriptor()
     {
-        return treeDescriptor;
+        return treeDescriptor != null ?
+            treeDescriptor :
+            parentProvider == null ?
+                null :
+                parentProvider.getTreeDescriptor();
     }
 
     public boolean isDriversManagable()
