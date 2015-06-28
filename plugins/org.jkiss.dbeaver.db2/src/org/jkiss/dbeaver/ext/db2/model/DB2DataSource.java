@@ -148,6 +148,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         super(monitor, container);
     }
 
+    @Override
+    protected boolean isConnectionReadOnlyBroken() {
+        return true;
+    }
+
     // -----------------------
     // Initialisation/Structure
     // -----------------------
