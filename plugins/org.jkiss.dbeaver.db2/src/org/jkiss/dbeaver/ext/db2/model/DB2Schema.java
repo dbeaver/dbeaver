@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
@@ -62,7 +63,7 @@ import java.util.List;
  * 
  * @author Denis Forveille
  */
-public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject {
+public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer {
     private static final Log LOG = Log.getLog(DB2Schema.class);
 
     private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS", "DB2QP", "SQLJ", "NULLID");

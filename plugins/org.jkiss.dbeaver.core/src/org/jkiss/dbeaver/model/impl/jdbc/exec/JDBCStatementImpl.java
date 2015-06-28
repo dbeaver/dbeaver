@@ -252,7 +252,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Nullable
-    private JDBCResultSetImpl makeResultSet(@Nullable ResultSet resultSet)
+    protected JDBCResultSetImpl makeResultSet(@Nullable ResultSet resultSet)
         throws SQLException
     {
         if (resultSet == null) {

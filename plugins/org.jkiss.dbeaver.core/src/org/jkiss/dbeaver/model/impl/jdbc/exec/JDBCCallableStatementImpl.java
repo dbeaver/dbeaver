@@ -19,9 +19,17 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -29,6 +37,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -36,6 +45,8 @@ import java.util.Map;
  * Stores information about execution in query manager and operated progress monitor.
  */
 public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl implements JDBCCallableStatement {
+
+    private DBSProcedure procedure;
 
     public JDBCCallableStatementImpl(
         @NotNull JDBCSession connection,
@@ -51,6 +62,64 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     {
         return (CallableStatement)original;
     }
+
+    ////////////////////////////////////////////////////////////////////
+    // Procedure bindings
+    ////////////////////////////////////////////////////////////////////
+
+    void bindProcedure(@NotNull DBSProcedure procedure) throws DBException {
+        this.procedure = procedure;
+        try {
+            Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
+            if (!CommonUtils.isEmpty(params)) {
+                int index = 0;
+                for (DBSProcedureParameter param : params) {
+                    if (param.getParameterType() == DBSProcedureParameterType.OUT || param.getParameterType() == DBSProcedureParameterType.INOUT) {
+                        index++;
+                        registerOutParameter(index, param.getTypeID());
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Error binding callable statement parameters", e);
+        }
+    }
+
+    @Override
+    public boolean executeStatement() throws DBCException {
+        boolean hasResults = super.executeStatement();
+        if (!hasResults && procedure != null) {
+            return true;
+        }
+        return hasResults;
+    }
+
+    @Nullable
+    @Override
+    public JDBCResultSet getResultSet()
+        throws SQLException
+    {
+        JDBCResultSetImpl resultSet = makeResultSet(getOriginal().getResultSet());
+        if (resultSet == null && procedure != null) {
+            JDBCResultSetCallable procResults = new JDBCResultSetCallable(getConnection(), this);
+            try {
+                Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
+                if (!CommonUtils.isEmpty(params)) {
+                    for (DBSProcedureParameter param : params) {
+                        if (param.getParameterType() == DBSProcedureParameterType.OUT || param.getParameterType() == DBSProcedureParameterType.INOUT) {
+                            procResults.addColumn(param.getName(), param);
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.warn("Error extracting callable results", e);
+            }
+            procResults.addRow();
+            return procResults;
+        }
+        return resultSet;
+    }
+
 
     ////////////////////////////////////////////////////////////////////
     // JDBC Callable Statement overrides
@@ -843,4 +912,5 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
         return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class[] {String.class, Class.class}, parameterName, type);
     }
+
 }

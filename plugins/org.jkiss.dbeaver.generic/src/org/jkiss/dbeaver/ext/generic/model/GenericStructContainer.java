@@ -22,13 +22,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 
 import java.util.Collection;
 
 /**
  * Generic struct container
  */
-public interface GenericStructContainer extends DBSObjectContainer
+public interface GenericStructContainer extends DBSObjectContainer, DBSProcedureContainer
 {
 
     @NotNull

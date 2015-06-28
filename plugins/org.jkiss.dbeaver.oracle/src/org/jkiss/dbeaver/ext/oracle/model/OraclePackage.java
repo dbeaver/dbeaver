@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -43,7 +45,7 @@ import java.util.*;
  * GenericProcedure
  */
 public class OraclePackage extends OracleSchemaObject
-    implements OracleSourceObjectEx, DBSObjectContainer, DBPRefreshableObject
+    implements OracleSourceObjectEx, DBSObjectContainer, DBPRefreshableObject, DBSProcedureContainer
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;
@@ -111,6 +113,11 @@ public class OraclePackage extends OracleSchemaObject
     public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException
     {
         return proceduresCache.getObjects(monitor, this);
+    }
+
+    @Override
+    public OracleProcedurePackaged getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+        return proceduresCache.getObject(monitor, this, uniqueName);
     }
 
     @Override

@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -45,7 +47,7 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
+public class DB2Module extends DB2SchemaObject implements DBSProcedureContainer, DBPRefreshableObject {
 
     private static final String C_CON = "SELECT * FROM SYSCAT.CONDITIONS WHERE CONDSCHEMA = ? AND CONDMODULENAME = ? ORDER BY CONDNAME WITH UR";
     private static final String C_FCT = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINEMODULENAME = ? AND ROUTINETYPE = 'F' ORDER BY ROUTINENAME WITH UR";
@@ -126,6 +128,11 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
     public Collection<DB2Routine> getProcedures(DBRProgressMonitor monitor) throws DBException
     {
         return procedureCache.getObjects(monitor, this);
+    }
+
+    @Override
+    public DBSProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+        return procedureCache.getObject(monitor, this, uniqueName);
     }
 
     @Association
