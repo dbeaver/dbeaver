@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCCallableStatementImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -173,40 +175,6 @@ public abstract class JDBCDataSource
                 log.error(ex);
             }
         }
-    }
-
-    protected boolean isConnectionReadOnlyBroken() {
-        return false;
-    }
-
-    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
-    {
-        return connectionInfo.getUserName();
-    }
-
-    protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo)
-    {
-        return connectionInfo.getUserPassword();
-    }
-
-    protected Driver getDriverInstance(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return Driver.class.cast(
-            container.getDriver().getDriverInstance(
-                RuntimeUtils.makeContext(monitor)
-            ));
-    }
-
-    /**
-     * Could be overridden by extenders. May contain any additional connection properties.
-     * Note: these properties may be overwritten by connection advanced properties.
-     * @return predefined connection properties
-     */
-    @Nullable
-    protected Map<String, String> getInternalConnectionProperties()
-    {
-        return null;
     }
 
 /*
@@ -467,6 +435,40 @@ public abstract class JDBCDataSource
     /////////////////////////////////////////////////
     // Overridable functions
 
+    protected boolean isConnectionReadOnlyBroken() {
+        return false;
+    }
+
+    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
+    {
+        return connectionInfo.getUserName();
+    }
+
+    protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo)
+    {
+        return connectionInfo.getUserPassword();
+    }
+
+    protected Driver getDriverInstance(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return Driver.class.cast(
+            container.getDriver().getDriverInstance(
+                RuntimeUtils.makeContext(monitor)
+            ));
+    }
+
+    /**
+     * Could be overridden by extenders. May contain any additional connection properties.
+     * Note: these properties may be overwritten by connection advanced properties.
+     * @return predefined connection properties
+     */
+    @Nullable
+    protected Map<String, String> getInternalConnectionProperties()
+    {
+        return null;
+    }
+
     protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
         return new JDBCDataSourceInfo(metaData);
@@ -475,6 +477,11 @@ public abstract class JDBCDataSource
     protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData)
     {
         return new JDBCSQLDialect(this, "JDBC", metaData);
+    }
+
+    public DBSProcedure describeCall(JDBCCallableStatementImpl call) {
+        String queryString = call.getQueryString();
+        return null;
     }
 
     /////////////////////////////////////////////////
@@ -508,4 +515,5 @@ public abstract class JDBCDataSource
         }
         return null;
     }
+
 }

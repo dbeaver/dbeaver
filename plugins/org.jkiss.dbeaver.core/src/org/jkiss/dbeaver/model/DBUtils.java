@@ -829,6 +829,19 @@ public final class DBUtils {
             statementType = DBCStatementType.EXEC;
         }
 */
+        if (isExecQuery(session, query)) {
+            statementType = DBCStatementType.EXEC;
+        }
+
+        return session.prepareStatement(
+            statementType,
+            query,
+            scrollable && session.getDataSource().getInfo().supportsResultSetScroll(),
+            false,
+            false);
+    }
+
+    public static boolean isExecQuery(DBCSession session, String query) {
         DBPDataSource dataSource = session.getDataSource();
         if (dataSource instanceof SQLDataSource) {
             // Check for EXEC query
@@ -837,36 +850,12 @@ public final class DBUtils {
                 final String queryStart = SQLUtils.getFirstKeyword(query);
                 for (String keyword : executeKeywords) {
                     if (keyword.equalsIgnoreCase(queryStart)) {
-                        statementType = DBCStatementType.EXEC;
-                        break;
+                        return true;
                     }
                 }
             }
         }
-
-/*
-        final DBCStatement statement = context.prepareStatement(statementType, query, false, false, false);
-        if (outParamName != null) {
-            if (statement instanceof CallableStatement) {
-                try {
-                    if (outParamName.equals("?")) {
-                        ((CallableStatement)statement).registerOutParameter(1, java.sql.Types.OTHER);
-                    } else {
-                        ((CallableStatement)statement).registerOutParameter(outParamName, java.sql.Types.OTHER);
-                    }
-                } catch (SQLException e) {
-                    throw new DBCException(e);
-                }
-            }
-        }
-        return statement;
-*/
-        return session.prepareStatement(
-            statementType,
-            query,
-            scrollable && dataSource.getInfo().supportsResultSetScroll(),
-            false,
-            false);
+        return false;
     }
 
     public static void fireObjectUpdate(DBSObject object)

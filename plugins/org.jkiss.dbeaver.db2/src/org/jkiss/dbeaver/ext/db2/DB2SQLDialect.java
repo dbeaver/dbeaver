@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * DB2 SQL dialect
  * 
@@ -44,6 +47,13 @@ public class DB2SQLDialect extends JDBCSQLDialect {
     public MultiValueInsertMode getMultiValueInsertMode()
     {
         return MultiValueInsertMode.GROUP_ROWS;
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getExecuteKeywords()
+    {
+        return Collections.singleton("call");
     }
 
 }
