@@ -142,13 +142,18 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     public DBPImage getNodeIcon() {
         DBPImage image = super.getNodeIcon();
         if (dataSource.isConnectionReadOnly() || dataSource.hasNetworkHandlers()) {
-            return new DBIconComposite(
-                image,
-                false,
-                null,
-                dataSource.hasNetworkHandlers() ? DBIcon.OVER_EXTERNAL : null,
-                dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null,
-                null);
+            if (image instanceof DBIconComposite) {
+                ((DBIconComposite) image).setTopRight(dataSource.hasNetworkHandlers() ? DBIcon.OVER_EXTERNAL : null);
+                ((DBIconComposite) image).setBottomLeft(dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null);
+            } else {
+                image = new DBIconComposite(
+                    image,
+                    false,
+                    null,
+                    dataSource.hasNetworkHandlers() ? DBIcon.OVER_EXTERNAL : null,
+                    dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null,
+                    null);
+            }
         }
         return image;
     }

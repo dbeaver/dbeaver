@@ -92,7 +92,6 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                         if (bootstrap.isIgnoreErrors()) {
                             log.warn(message);
                         } else {
-                            QMUtils.getDefaultHandler().handleContextClose(this);
                             throw new DBCException(message, e, dataSource);
                         }
                     }
